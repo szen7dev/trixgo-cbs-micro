@@ -101,6 +101,7 @@ module.exports = {
         params: {
             departmentID                    : { type: "string", optional: true },
             name                            : { type: "string", optional: true },
+            type                            : { type: "number", optional: true },
             admins                          : { type: "array", optional: true  },
             adminsRemove                    : { type: "array", optional: true },
             members                         : { type: "array", optional: true  },
@@ -207,7 +208,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let {  departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+                let {  departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
                     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
                     pm, assistant, budget, vatBudget, note, position, image, files, milestones, completedMilestones, tasks, completedTasks,
                     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -219,7 +220,7 @@ module.exports = {
                     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs } = ctx.params;
 
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.update({
-                    departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+                    departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
                     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
                     pm, assistant, budget, vatBudget, note, position, image, files, userUpdate: userID, milestones, completedMilestones, tasks, completedTasks,
                     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
