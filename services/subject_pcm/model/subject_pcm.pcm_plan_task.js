@@ -788,8 +788,6 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
-                console.log({ dataUpdate })
-
                 let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
 
                 if(!infoAfterUpdate)
@@ -800,7 +798,7 @@ class Model extends BaseModel {
                     // Việc con
                     if(infoAfterUpdate.type == 1){
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedSubtask: 1}})
-                    }else{
+                    } else{
                         // checklist
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
@@ -826,7 +824,7 @@ class Model extends BaseModel {
                         }
                     };
 
-                    await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: taskName,
                         receivers: newRelated,
                         project: project?.toString(),

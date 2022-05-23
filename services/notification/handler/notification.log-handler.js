@@ -93,6 +93,7 @@ module.exports = {
         auth: "required",
         params: {
             projectID 		: { type: "string", optional: true },
+            isUnRead 		: { type: "string", optional: true },
             lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
 			limit 			: { type: "string", optional: true },
@@ -103,10 +104,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { lastestID, projectID, keyword, limit, populates, select } = ctx.params;
+                const { lastestID, projectID, isUnRead, keyword, limit, populates, select } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
-                    authorID, lastestID, projectID, keyword, limit, select, populates
+                    authorID, lastestID, projectID, isUnRead, keyword, limit, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -2,12 +2,13 @@
  * Constants
  */
 const { EVENT_SOCKET_CONSTANT_SUBJECT_PCM }		= require('./helper/subject_pcm.events-socket-constant');
-// const { CF_DOMAIN_SERVICES } 					= require('../gateway/helper/domain.constant');
+const { CF_DOMAIN_SERVICES } 					= require('../gateway/helper/domain.constant');
+const { CF_ACTIONS_NOTIFICATION }               = require('../notification/helper/notification.actions-constant');
 // const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant');
 // const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
 // const { CF_ACTIONS_ITEM }						= require('../item/helper/item.actions-constant');
-// const { APP_KEYS } 								= require('../../tools/keys');
-// const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant')
+const { APP_KEYS, LANGUAGE_KEYS }				= require('../../tools/keys');
+const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant')
 
 /**
  * Utils
@@ -17,7 +18,7 @@ const PCM_PLAN_TASK_COLL                		= require('./database/subject_pcm.pcm_
 
 exports.SUBJECT_SOCKET = {
 
-    [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_CHECKLIST]: async function(data) { 
+    [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_CHECKLIST]: async function(data) {
         try {
 			let socket                     		= this;
 			let listUserActive             		= socket.$service.listUserConnected;
@@ -26,10 +27,10 @@ exports.SUBJECT_SOCKET = {
 			let { taskID, checklistID } 		= data;
 
 			if(!taskID || !checklistID){
-				return sendDataToMultilSocketsOfListUser({ 
+				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Tham số taskID hoặc checklistID không hợp lệ" }, 
+					data: { error: true, message: "Tham số taskID hoặc checklistID không hợp lệ" },
 					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_CHECKLIST], io
 				});
 			}
@@ -46,10 +47,10 @@ exports.SUBJECT_SOCKET = {
 				.lean();
 
 			if(!infoCheckList || !infoTask) {
-				return sendDataToMultilSocketsOfListUser({ 
+				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Task hoặc Checklist không tồn tại" }, 
+					data: { error: true, message: "Task hoặc Checklist không tồn tại" },
 					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_CHECKLIST], io
 				});
 			}
@@ -61,8 +62,8 @@ exports.SUBJECT_SOCKET = {
 			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
 			// SEND SOCKET
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: receivers,
 				data: {
 					error: false,
@@ -79,7 +80,7 @@ exports.SUBJECT_SOCKET = {
 		}
 	},
 
-	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_CHILD_TASK]: async function(data) { 
+	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_CHILD_TASK]: async function(data) {
         try {
 			let socket                     		= this;
 			let listUserActive             		= socket.$service.listUserConnected;
@@ -88,10 +89,10 @@ exports.SUBJECT_SOCKET = {
 			let { taskID, childTaskID } 		= data;
 
 			if(!taskID || !childTaskID){
-				return sendDataToMultilSocketsOfListUser({ 
+				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Tham số taskID hoặc childTaskID không hợp lệ" }, 
+					data: { error: true, message: "Tham số taskID hoặc childTaskID không hợp lệ" },
 					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_CHILD_TASK], io
 				});
 			}
@@ -108,10 +109,10 @@ exports.SUBJECT_SOCKET = {
 				.lean();
 
 			if(!infoChildTask || !infoTask) {
-				return sendDataToMultilSocketsOfListUser({ 
+				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Task hoặc ChildTask không tồn tại" }, 
+					data: { error: true, message: "Task hoặc ChildTask không tồn tại" },
 					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_CHILD_TASK], io
 				});
 			}
@@ -123,8 +124,8 @@ exports.SUBJECT_SOCKET = {
 			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
 			// SEND SOCKET
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: receivers,
 				data: {
 					error: false,
@@ -141,7 +142,7 @@ exports.SUBJECT_SOCKET = {
 		}
 	},
 
-	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_RELATION_USER]: async function(data) { 
+	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_RELATION_USER]: async function(data) {
         try {
 			let socket                     		= this;
 			let listUserActive             		= socket.$service.listUserConnected;
@@ -150,10 +151,10 @@ exports.SUBJECT_SOCKET = {
 			let { taskID, relationUsersID }		= data;
 
 			if(!taskID || !relationUsersID || !relationUsersID.length){
-				return sendDataToMultilSocketsOfListUser({ 
+				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Tham số taskID hoặc relationUsersID không hợp lệ" }, 
+					data: { error: true, message: "Tham số taskID hoặc relationUsersID không hợp lệ" },
 					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_RELATION_USER], io
 				});
 			}
@@ -164,10 +165,10 @@ exports.SUBJECT_SOCKET = {
 				.lean();
 
 			if(!infoTask) {
-				return sendDataToMultilSocketsOfListUser({ 
+				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Task không tồn tại" }, 
+					data: { error: true, message: "Task không tồn tại" },
 					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_RELATION_USER], io
 				});
 			}
@@ -179,8 +180,8 @@ exports.SUBJECT_SOCKET = {
 			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
 			// SEND SOCKET
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: receivers,
 				data: {
 					error: false,
@@ -194,6 +195,71 @@ exports.SUBJECT_SOCKET = {
 		} catch (error) {
 			console.info('======EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_RELATION_USER=====');
 			console.error(error);
+		}
+	},
+
+	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_SIGNATURE]: async function(data) {
+		let socket                     		= this;
+		let broker							= socket.$service.broker;
+		let listUserActive             		= socket.$service.listUserConnected;
+		let userID             				= socket.client.user;
+		let io                         		= socket.$service.io;
+
+        try {
+			let { taskID, bizfullname } = data;
+
+			if(!taskID){
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, message: "Tham số taskID không hợp lệ" },
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_SIGNATURE], io
+				});
+			}
+
+			const infoTask = await PCM_PLAN_TASK_COLL
+				.findById(taskID)
+				.select('_id name sign author assignee related')
+				.lean();
+
+			if(!infoTask) {
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, message: "Task không tồn tại" },
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_SIGNATURE], io
+				});
+			}
+
+			let { author, assignee, related } = infoTask;
+			related = related.map(userID => userID.toString());
+
+			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+
+			// SEND CLOUD-MSG
+			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+				users: receivers,
+				title: infoTask.name,
+				description: `${bizfullname} đã phê duyệt 1 công việc`,
+				dataSend: {
+					app: APP_KEYS.PCM_PLAN_TASK,
+					languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
+					mainColl: {
+						kind: 'pcm_plan_task',
+						item: { _id: taskID }
+					}
+				},
+				web_url: `/pcm/detail/${taskID}`,
+				env: ENV_DEVICE_WEB_CBS
+			});
+		} catch (error) {
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
+				arrReceiver: [userID],
+				data: { error: true, message: error.message },
+				event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_SIGNATURE], io
+			});
 		}
 	},
 }

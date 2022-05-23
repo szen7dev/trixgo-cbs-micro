@@ -177,7 +177,7 @@ class Model extends BaseModel {
 	 * Date: 17/12/2021
 	 * Updated: 22/02/2022
 	 */
-    getList({ authorID, lastestID, keyword, limit = 20, select, populates }){
+    getList({ authorID, lastestID, isUnRead, keyword, limit = 20, select, populates }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([authorID])) {
@@ -206,9 +206,15 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-				let conditionObj    = {  receiver: authorID };
+
+				let conditionObj    = { receiver: authorID };
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy          = {};
+
+                if(isUnRead) {
+                    conditionObj.status = 2;
+                }
+
                 let conditionObjOrg = { ...conditionObj }
 
 				// GET CONDITION PAGINATION
@@ -229,7 +235,7 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
-				// SEARCH TEXT
+                // SEARCH TEXT
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
