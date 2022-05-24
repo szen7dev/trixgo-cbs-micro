@@ -1,32 +1,28 @@
 /**
- * CONSTATNS
- */
-
-/**
  * TOOLS
  */
- const { renderStatusCodeAndResponse }          = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }       = require('../../../tools/utils/status_code');
 
  /**
   * MODELS
   */
-const NOTIFICATION_LOG_MODEL                    = require('../model/notification.log-model').MODEL;
- 
- 
+const NOTIFICATION_LOG_MODEL                = require('../model/notification.log-model').MODEL;
+
+
 module.exports = {
- 
+
      /**
       * ============================ ***************** ===============================
       * ============================    NOTIFICATION   ===============================
       * ============================ ***************** ===============================
       */
- 
+
      /**
       * Dev: MinhVH 🐸
       * Func: Thêm thông báo
       * Date: 16/12/2021
       */
-    insertNotification: {
+    insert: {
         auth: "required",
         params: {
             content     : { type: "string" },
@@ -86,6 +82,29 @@ module.exports = {
 
     /**
       * Dev: MinhVH 🐸
+      * Func: Cập nhật trạng thái gửi thông báo
+      * Date: 16/12/2021
+      */
+    markAllRead: {
+        auth: "required",
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.markAllRead({
+                    userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+      * Dev: MinhVH 🐸
       * Func: Lấy danh sách thông báo
       * Date: 16/12/2021
       */
@@ -93,7 +112,7 @@ module.exports = {
         auth: "required",
         params: {
             projectID 		: { type: "string", optional: true },
-            isUnRead 		: { type: "string", optional: true },
+            status 		    : { type: "string", optional: true },
             lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
 			limit 			: { type: "string", optional: true },
@@ -104,10 +123,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { lastestID, projectID, isUnRead, keyword, limit, populates, select } = ctx.params;
+                const { lastestID, projectID, status, keyword, limit, populates, select } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
-                    authorID, lastestID, projectID, isUnRead, keyword, limit, select, populates
+                    authorID, lastestID, projectID, status, keyword, limit, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

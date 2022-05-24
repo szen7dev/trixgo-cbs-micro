@@ -173,11 +173,39 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
+	 * Func: Cập nhật tất cả thông báo sang trạng thái đã đọc
+	 * Date: 24/05/2022
+	 */
+    markAllRead({ userID }){
+        return new Promise(async resolve => {
+            try {
+                const infoAfterUpdate = await NOTIFICATION__LOG_COLL.updateMany({
+                    receiver: userID
+                }, { status: 3 });
+
+                if(!infoAfterUpdate) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch(error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
 	 * Func: Lấy danh sách thông báo
 	 * Date: 17/12/2021
 	 * Updated: 22/02/2022
 	 */
-    getList({ authorID, lastestID, isUnRead, keyword, limit = 20, select, populates }){
+    getList({ authorID, lastestID, status, keyword, limit = 20, select, populates }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([authorID])) {
@@ -211,8 +239,8 @@ class Model extends BaseModel {
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy          = {};
 
-                if(isUnRead) {
-                    conditionObj.status = 2;
+                if([2,3].includes(+status)) {
+                    conditionObj.status = status;
                 }
 
                 let conditionObjOrg = { ...conditionObj }

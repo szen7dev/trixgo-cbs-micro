@@ -5,6 +5,7 @@ const LOG           = 'LOG';
 const CF_ACTIONS_NOTIFICATION = {
     INSERT_NOTIFICATION                         : `${BASE_ACTIONS}_${LOG}_INSERT`,
     UPDATE_NOTIFICATION                         : `${BASE_ACTIONS}_${LOG}_UPDATE`,
+    MARK_ALL_READ_NOTIFICATION                  : `${BASE_ACTIONS}_${LOG}_MARK_ALL_READ`,
     GET_INFO_AND_GET_LIST_NOTIFICATION          : `${BASE_ACTIONS}_${LOG}_GET_INFO_AND_GET_LIST`,
 }
 

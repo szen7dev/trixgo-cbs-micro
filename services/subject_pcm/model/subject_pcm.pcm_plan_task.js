@@ -805,7 +805,7 @@ class Model extends BaseModel {
                 }
 
                 if(related && related.length) {
-                    const relatedCurrent = infoTask?.related?.map(item => item.toString()) ?? [];
+                    const relatedCurrent = infoTask.related.map(item => item.toString());
                     const newRelated = related.filter(item => !relatedCurrent.includes(item));
 
                     /**
@@ -825,7 +825,7 @@ class Model extends BaseModel {
                     };
 
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: taskName,
+                        content: `đã thêm bạn làm người liên quan`,
                         receivers: newRelated,
                         project: project?.toString(),
                         contract: contract?.toString(),
@@ -847,6 +847,28 @@ class Model extends BaseModel {
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
                     });
+                }
+
+                if(isAddSignature) {
+                    const { project, contract, related, assignee, author } = infoAfterUpdate;
+                    const relatedUsers = related.map(item => item.toString());
+                    const listReceivers = [...relatedUsers, assignee.toString(), author.toString()];
+                    const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
+
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content: `đã phê duyệt 1 công việc`,
+                        receivers,
+                        project: project.toString(),
+                        contract: contract?.toString(),
+                        path: `/pcm/detail/${taskID}`,
+                        languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        mainColl: {
+                            kind: "pcm_plan_task",
+                            item: taskID
+                        },
+                        type: 1 // InApp (Socket)
+                    })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
