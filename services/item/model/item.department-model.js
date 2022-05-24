@@ -129,7 +129,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({
-        departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+        departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
         pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -169,6 +169,10 @@ class Model extends BaseModel {
 
                 if(name){
                     dataUpdate.name = name;
+                }
+
+                if(type){
+                    dataUpdate.type = type;
                 }
 
                 if(checkObjectIDs(admins)){
