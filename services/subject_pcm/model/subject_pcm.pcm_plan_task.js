@@ -108,7 +108,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, bizfullname, select, populates, ctx }) {
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -158,6 +158,7 @@ class Model extends BaseModel {
                      * Chứ không phải lấy theo company của user tạo task
                      */
                     companyID = infoProject?.data?.company;
+
                     if(!companyID)
                         return resolve({ error: true, message: "company_invalid", status: 400 });
                 } else{
@@ -199,11 +200,11 @@ class Model extends BaseModel {
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
                     dataInsert.actualFinishTime = new Date(expiredTime);
-                }else{
+                } else{
                     dataInsert.expiredTime = new Date();
                     dataInsert.actualFinishTime = new Date();
                 }
-                //precalculated
+                // precalculated
                 // companyOfAuthor
                 // companyOfAssignee
                 // subtype (Xử lý sau)
@@ -247,10 +248,6 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "relatedIDs_invalid", status: 400 });
                     }
                     dataInsert.related = relatedIDs;
-                }
-
-                if(isproposal){
-                    dataInsert.subtype = isproposal;
                 }
 
                 if(description){
@@ -311,12 +308,12 @@ class Model extends BaseModel {
                 }
 
                 //_________Trường hợp tạo Đệ trình phê duyệt
-                if(isproposal && !isNaN(isproposal)){
-                    dataInsert.subtype = Number(isproposal);
-                }else{
+                if(subType && !isNaN(subType)){
+                    dataInsert.subtype = +subType;
+                } else{
                     // Lấy theo group
                     if(infoGroup.type){
-                        dataInsert.subtype = infoGroup.type
+                        dataInsert.subtype = infoGroup.type;
                     }
                 }
 
@@ -474,7 +471,7 @@ class Model extends BaseModel {
      */
     update({ typeUpdate,
         taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
-        contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+        contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature,
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, ctx
     }){
@@ -574,8 +571,8 @@ class Model extends BaseModel {
                 }
 
                 //_________Phân loại công việc
-                if(isproposal){
-                    dataUpdate.subtype = +isproposal;
+                if(subType && !isNaN(subType)){
+                    dataUpdate.subtype = +subType;
                 }
 
                 //_________User xóa task
@@ -621,10 +618,12 @@ class Model extends BaseModel {
                 if(checkObjectIDs(templateID)){
                     dataUpdate.template = templateID;
                 }
+
                 //_________Phân loại mức độ quan trọng (cao, bình thường, thấp, siêu cao)
                 if(priority){
                     dataUpdate.priority = priority;
                 }
+
                 //_________Khoá/Mở
                 if(lock){
                     dataUpdate.lock = lock;
@@ -680,7 +679,7 @@ class Model extends BaseModel {
                     dataUpdate.punish = punish;
                 }
 
-               //_________Người phê duyệt
+                //_________Người phê duyệt
                 if(checkObjectIDs(approver)){
                     dataUpdate.approver = approver;
                 }

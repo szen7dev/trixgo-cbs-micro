@@ -23,7 +23,6 @@ module.exports = {
             authorAttachs    : { type: "array", optional: true },
             actualStartTime  : { type: "string", optional: true },
             type             : { type: "number", optional: true },
-            isproposal       : { type: "number", optional: true },
             description      : { type: "string", optional: true },
             sign             : { type: "string", optional: true },
             startTime        : { type: "string", optional: true },
@@ -44,6 +43,7 @@ module.exports = {
             amountoftime     : { type: "string", optional: true },
             amountPerHour    : { type: "string", optional: true },
             fieldID          : { type: "string", optional: true },
+            subType          : { type: "number", optional: true },
             select           : { type: "string", optional: true },
             populates        : { type: "string", optional: true },
         },
@@ -51,11 +51,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-				let { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, select, populates } = ctx.params;
+				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
+                const { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, type, bizfullname, select, populates, ctx
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
+                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, bizfullname, select, populates, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -86,7 +86,6 @@ module.exports = {
             fieldID        : { type: "string", optional: true },
             contractID     : { type: "string", optional: true },
             draft          : { type: "number", optional: true },
-            isproposal     : { type: "number", optional: true },
             userIDDelete   : { type: "number", optional: true },
             typeUpdate     : { type: "number", optional: true },
             flags          : { type: "array", optional: true },
@@ -98,23 +97,24 @@ module.exports = {
             authorAttachs  : { type: "array", optional: true },
             assigneeAttachs: { type: "array", optional: true },
             milestone      : { type: "number", optional: true },
+            subType          : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {
+                const {
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID,
-                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, milestone
                  } = ctx.params;
 				const { _id: userID, bizfullname, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
-                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature,
                     companyOfUser: company._id, milestone, ctx
@@ -122,7 +122,7 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
