@@ -449,7 +449,7 @@ exports.CHATTING_SOCKET = {
 					break;
 				case 8:
 					infoMessageAfterInsert = await CHATTING__MESSAGE_NPS_MODEL.insert({
-						conversationID, serviceID, type: typeNps, authorID: userID
+						conversationID, serviceID, type: typeNps, userID
 					});
 					break;
 				default:
@@ -540,6 +540,12 @@ exports.CHATTING_SOCKET = {
 						}
 					})
 					.populate({
+						path: 'nps',
+						populate: {
+							path: 'service usersVote.reasons'
+						}
+					})
+					.populate({
 						path: 'files.file',
 						populate: {
 							path: 'file',
@@ -590,6 +596,9 @@ exports.CHATTING_SOCKET = {
 					break;
 				case 5:
 					description = `đã tạo 1 cuộc bình chọn`;
+					break;
+				case 8:
+					description = `đã tạo 1 tin nhắn NPS`;
 					break;
 				default:
 					description = infoMessage.content;

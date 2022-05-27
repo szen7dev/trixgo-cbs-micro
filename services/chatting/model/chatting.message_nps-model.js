@@ -38,45 +38,47 @@ class Model extends BaseModel {
 	 * Func: Thêm tin nhắn nps mới
 	 * Date: 20/02/2022
 	 */
-	insert({ type, conversationID, serviceID, authorID }) {
+	insert({ type, conversationID, serviceID, userID }) {
         return new Promise(async (resolve) => {
             try {
-				if(!checkObjectIDs([authorID])) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số authorID không hợp lệ', 
-						keyError: 'params_authorID_invalid',
-						status: 400 
+				if(!checkObjectIDs([userID])) {
+					return resolve({
+						error: true,
+						message: 'Tham số userID không hợp lệ',
+						keyError: 'params_userID_invalid',
+						status: 400
 					});
 				}
 
 				if(!checkObjectIDs([conversationID, serviceID])) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số conversationID hoặc serviceID không hợp lệ', 
+					return resolve({
+						error: true,
+						message: 'Tham số conversationID hoặc serviceID không hợp lệ',
 						keyError: 'params_conversationID_or_serviceID_invalid',
-						status: 400 
+						status: 400
 					});
 				}
 
 				if(!NPS_TYPE.includes(type)) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số type là không hợp lệ', 
+					return resolve({
+						error: true,
+						message: 'Tham số type là không hợp lệ',
 						keyError: 'params_type_invalid',
-						status: 400 
+						status: 400
 					});
 				}
 
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
-					members: { $in: [authorID] }
-                }).lean();
+					members: { $in: [userID] }
+                })
+				.select('members')
+				.lean();
 
-                if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+                if(!infoConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -90,19 +92,19 @@ class Model extends BaseModel {
 				})
 
 				if(!infoNpsAfterInsert) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyEror: 'error_occurred',
 						status: 422
 					});
 				}
 
 				let dataInsertMessage = {
-					usersSeen: [authorID],
-					sender: authorID,
+					usersSeen: [userID],
+					sender: userID,
 					conversation: conversationID,
-					receivers: checkExistConversation.members,
+					receivers: infoConversation.members,
 					nps: infoNpsAfterInsert._id,
 					type: 8
 				}
@@ -111,9 +113,9 @@ class Model extends BaseModel {
 				let infoMessageNps = await CHATTING__MESSAGE_MODEL.insertData(dataInsertMessage);
 
 				if(!infoMessageNps) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyEror: 'error_occurred',
 						status: 422
 					});
@@ -125,9 +127,9 @@ class Model extends BaseModel {
                 });
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
-				await CHATTING__MESSAGE_MODEL.updateUserMissMessage({ 
-					conversationID, 
-					userID: authorID,
+				await CHATTING__MESSAGE_MODEL.updateUserMissMessage({
+					conversationID,
+					userID,
 					numberMissMessage: 1
 				});
 
@@ -147,28 +149,28 @@ class Model extends BaseModel {
 	 * Func: Cập nhật nps
 	 * Date: 20/02/2022
 	 */
-	update({ conversationID, messageID, score, reasons, authorID }) {
+	update({ conversationID, messageID, score, reasons, userID }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, messageID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số conversationID hoặc messageID không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số conversationID hoặc messageID không hợp lệ",
 						keyError: 'params_conversationID_or_messageID_invalid',
 						status: 400
 					});
 				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
-					members: { $in: [authorID] }
+					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+				if(!infoConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -177,26 +179,27 @@ class Model extends BaseModel {
 				let infoMessage = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
 					.select('_id nps')
-					.populate('nps');
+					.populate('nps')
+					.lean();
 
 				if(!infoMessage || !infoMessage.nps) {
-					return resolve({ 
-						error: true, 
-						message: "Tin nhắn không tồn tại", 
+					return resolve({
+						error: true,
+						message: "Tin nhắn không tồn tại",
 						keyEror: 'message_is_not_exists',
 						status: 400
 					});
 				}
-                   
+
 				let { nps } = infoMessage;
 
 				// Check the user who vote for the first time, Then create message notify
-				let isVoted = nps.usersVote.find(item => item.user.toString() === authorID);
+				let isVoted = nps.usersVote.find(item => item.user.toString() === userID);
 
 				// PULL USER VOTE MESSAGE NPS
 				await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
 					$pullAll: {
-						"usersVote.$[elem].user": authorID
+						"usersVote.$[elem].user": userID
 					}
 				});
 
@@ -205,7 +208,7 @@ class Model extends BaseModel {
 					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
 						$addToSet: {
 							usersVote: {
-								user: authorID,
+								user: userID,
 								score
 							}
 						}
@@ -214,7 +217,7 @@ class Model extends BaseModel {
 					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
 						$addToSet: {
 							usersVote: {
-								user: authorID,
+								user: userID,
 								reasons: reasons
 							}
 						}
@@ -223,10 +226,10 @@ class Model extends BaseModel {
 
 				let lastMessage = null;
 				let dataInsertMessage = {
-					usersSeen: [authorID],
-					sender: authorID,
+					usersSeen: [userID],
+					sender: userID,
 					conversation: conversationID,
-					receivers: checkExistConversation.members,
+					receivers: infoConversation.members,
 					nps: nps._id,
 				}
 
@@ -260,9 +263,9 @@ class Model extends BaseModel {
 						lastMessage: lastMessage._id, modifyAt: Date.now()
 					});
 
-					await CHATTING__MESSAGE_MODEL.updateUserMissMessage({ 
-						conversationID, 
-						userID: authorID, 
+					await CHATTING__MESSAGE_MODEL.updateUserMissMessage({
+						conversationID,
+						userID,
 						numberMissMessage: 1
 					});
 				}
@@ -270,10 +273,7 @@ class Model extends BaseModel {
 				return resolve({
 					error: false,
 					status: 200,
-					data: {
-						infoMessage,
-						infoMessageNotification: lastMessage
-					}
+					data: infoMessage
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -286,28 +286,28 @@ class Model extends BaseModel {
 	 * Func: Đóng nps
 	 * Date: 20/02/2022
 	 */
-	closeNps({ conversationID, messageID, authorID }) {
+	closeNps({ conversationID, messageID, userID }) {
 		return new Promise(async resolve => {
 			try {
-				if (!checkObjectIDs([messageID, authorID, conversationID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số messageID hoặc conversationID không hợp lệ", 
+				if (!checkObjectIDs([messageID, userID, conversationID])) {
+					return resolve({
+						error: true,
+						message: "Tham số messageID hoặc conversationID không hợp lệ",
 						keyEror: 'params_messageID_or_conversationID_invalid',
 						status: 400
 					});
 				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
-					members: { $in: [authorID] }
+					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+				if(!infoConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -316,12 +316,13 @@ class Model extends BaseModel {
 				let infoMessage = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
 					.select('_id nps')
-					.populate('nps');
+					.populate('nps')
+					.lean();
 
 				if(!infoMessage || !infoMessage.nps) {
-					return resolve({ 
-						error: true, 
-						message: "Tin nhắn không tồn tại", 
+					return resolve({
+						error: true,
+						message: "Tin nhắn không tồn tại",
 						keyEror: 'message_is_not_exists',
 						status: 400
 					});
@@ -330,9 +331,9 @@ class Model extends BaseModel {
 				let { nps } = infoMessage;
 
 				if(nps.status === 2) {
-					return resolve({ 
-						error: true, 
-						message: "Tin nhắn nps đã được đóng", 
+					return resolve({
+						error: true,
+						message: "Tin nhắn nps đã được đóng",
 						keyEror: 'message_nps_is_closed',
 						status: 400
 					});
@@ -345,9 +346,9 @@ class Model extends BaseModel {
 				}, { new: true });
 
 				if(!infoNps) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyEror: 'error_occurred',
 						status: 422
 					});
@@ -355,10 +356,10 @@ class Model extends BaseModel {
 
 				// INSERT MESSAGE NOTIFY CLOSE NPS
 				const lastMessage = await CHATTING__MESSAGE_MODEL.insertData({
-					usersSeen: [authorID],
-					sender: authorID,
+					usersSeen: [userID],
+					sender: userID,
 					conversation: conversationID,
-					receivers: checkExistConversation.members,
+					receivers: infoConversation.members,
 					nps: nps._id,
 					type: 122
 				})
@@ -369,9 +370,9 @@ class Model extends BaseModel {
 						lastMessage: lastMessage._id, modifyAt: Date.now()
 					}, { new: true });
 
-					await CHATTING__MESSAGE_MODEL.updateUserMissMessage({ 
-						conversationID, 
-						userID: authorID, 
+					await CHATTING__MESSAGE_MODEL.updateUserMissMessage({
+						conversationID,
+						userID,
 						numberMissMessage: 1
 					});
 				}
@@ -379,10 +380,7 @@ class Model extends BaseModel {
 				return resolve({
 					error: false,
 					status: 200,
-					data: {
-						infoNps,
-						infoMessageNotification: lastMessage
-					}
+					data: infoNps
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -395,18 +393,18 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách nps
 	 * Date: 20/02/2022
 	 */
-	getList({ conversationID, lastestID, limit = 10, select, populates, authorID }){
+	getList({ conversationID, lastestID, limit = 10, select, populates, userID }){
 		return new Promise(async resolve => {
 			try {
 				let conditionObj = { conversation: conversationID, type: 8 };
-                let sortBy = { createAt: -1 };
+                let sortBy = {};
                 let keys = ['createAt__-1', '_id__-1'];
 
-				if(!checkObjectIDs([authorID])) {
+				if(!checkObjectIDs([userID])) {
 					return resolve({
 						error: true,
-						message: "Tham số authorID không hợp lệ",
-						keyError: "params_authorID_invalid",
+						message: "Tham số userID không hợp lệ",
+						keyError: "params_userID_invalid",
 						status: 400,
 					})
 				}
@@ -432,15 +430,15 @@ class Model extends BaseModel {
                     }
                 }
 
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
-					members: { $in: [authorID] }
+					members: { $in: [userID] }
                 }).lean();
 
-                if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+                if(!infoConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -551,9 +549,9 @@ class Model extends BaseModel {
                 }).lean();
 
                 if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -566,9 +564,9 @@ class Model extends BaseModel {
 					.lean();
 
 				if(!infoMessageNPS) {
-					return resolve({ 
-						error: true, 
-						message: "Tin nhắn không tồn tại", 
+					return resolve({
+						error: true,
+						message: "Tin nhắn không tồn tại",
 						keyEror: 'message_not_exists',
 						status: 400
 					});
@@ -580,11 +578,11 @@ class Model extends BaseModel {
                             _id: ObjectID(messageNPSID)
                         }
                     },
-                    { 
+                    {
                         $group: {
                             _id: "$usersVote.score",
                             amount: { $sum: 1 },
-                        } 
+                        }
                     }
                 ]);
 				console.log({ groupScore })

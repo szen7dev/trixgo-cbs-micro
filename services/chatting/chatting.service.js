@@ -89,10 +89,10 @@ module.exports = {
 		// Tự động xoá tất cả tin nhắn của cuộc hội thoại
 		[CF_ACTIONS_CHATTING.AUTO_DELETE_MESSAGE_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.autoDeleteMessagesConversation,
 
-		// Chia sẻ tin nhắn đến các cuộc hội thoại 
+		// Chia sẻ tin nhắn đến các cuộc hội thoại
 		[CF_ACTIONS_CHATTING.SHARE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.shareMessageConversation,
 
-		// Pin 1 tin nhắn trong cuộc hội thoại 
+		// Pin 1 tin nhắn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_PIN_MESSAGE_CONVERSATION] 					: CHATTING__MESSAGE_HANDLER.updatePinMessageConversation,
 
 		// Danh sách tin nhắn được pin trong cuộc hội thoại (phân trang)
@@ -109,10 +109,10 @@ module.exports = {
 
 
 		// =========================  MESSAGE POLL  ============================
-		// Thêm tin nhắn bình chọn trong cuộc hội thoại 
+		// Thêm tin nhắn bình chọn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_POLL_HANDLER.insert,
 
-		// Cập nhật tin nhắn bình chọn trong cuộc hội thoại 
+		// Cập nhật tin nhắn bình chọn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_POLL_HANDLER.update,
 
 		// Đóng tin nhắn bình chọn trong cuộc hội thoại
@@ -140,10 +140,10 @@ module.exports = {
 
 
 		// =========================  MESSAGE NPS  ============================
-		// Thêm tin nhắn NPS trong cuộc hội thoại 
+		// Thêm tin nhắn NPS trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_NPS_CONVERSATION]					: CHATTING__MESSAGE_NPS_HANDLER.insert,
 
-		// Cập nhật tin nhắn NPS trong cuộc hội thoại 
+		// Cập nhật tin nhắn NPS trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_NPS_CONVERSATION]					: CHATTING__MESSAGE_NPS_HANDLER.update,
 
 		// Đóng tin nhắn NPS trong cuộc hội thoại

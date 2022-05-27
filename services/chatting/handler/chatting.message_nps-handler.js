@@ -25,18 +25,18 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-			conversationID	: { type: 'string' },
+			conversationID	: { type: "string" },
             serviceID       : { type: "string" },
-            type            : { type: "number" },
+            typeNps         : { type: "number" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
-                const { type, conversationID, serviceID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                const { typeNps, conversationID, serviceID } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.insert({
-					type, conversationID, serviceID, authorID
+					type: typeNps, conversationID, serviceID, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -62,11 +62,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: userID } = ctx.meta.infoUser;
                 const { conversationID, messageID, score, reasons } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.update({
-					conversationID, messageID, score, reasons, authorID
+					conversationID, messageID, score, reasons, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -90,11 +90,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: userID } = ctx.meta.infoUser;
                 const { conversationID, messageID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.closeNps({ 
-					conversationID, messageID, authorID
+                const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.closeNps({
+					conversationID, messageID, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -112,7 +112,7 @@ module.exports = {
 	getList: {
         auth: "required",
         params: {
-            conversationID	: { type: 'string' },
+            conversationID	: { type: "string" },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             select          : { type: "string", optional: true },
@@ -121,11 +121,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: authorID } = ctx.meta.infoUser;
+                const { _id: userID } = ctx.meta.infoUser;
                 const { conversationID, lastestID, limit, select, populates } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.getList({ 
-					conversationID, lastestID, limit, select, populates, authorID
+                const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.getList({
+					conversationID, lastestID, limit, select, populates, userID
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
