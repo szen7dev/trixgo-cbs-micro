@@ -16,7 +16,7 @@ const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.consta
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
@@ -126,10 +126,10 @@ class Model extends BaseModel {
                 let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
                     {
                         $match: {
-                            createdAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                            createAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                         }
                     },
-                    { 
+                    {
                         $group: {
                             _id: { 
                                 type:  "$type"
@@ -158,11 +158,10 @@ class Model extends BaseModel {
             try {
                 if(!fromDate || !toDate)
                     return resolve({ error: true, message: "Request params fromDate or toDate invalid" });
-
                 let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
                     {
                         $match: {
-                            createdAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                            createAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                         }
                     },
                     { 
@@ -178,25 +177,14 @@ class Model extends BaseModel {
                             "_id.app": -1
                         }
                     },
-                    {
-                        $lookup: {
-                            from: "apps",
-                            localField:"_id.app",
-                            foreignField: "_id",
-                            as: "app"
-                        } 
-                    },
-                    {
-                        $unwind: "$app"
-                    },
-                    {
-                      "$project": {
-                        "_id": 0,
-                        "app.name": 1,
-                        "amountAccesses": 1
-                      }
-                    }
                 ])
+
+                await ANALYSIS__HISTORY_TRAFFIC_COLL.populate(infoData, {  
+                    path: '_id.app',
+                    select: 'name',
+                    model: 'app' 
+                })
+                
             return resolve({ error: false, data: infoData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -218,7 +206,7 @@ class Model extends BaseModel {
                 let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
                     {
                         $match: {
-                            createdAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                            createAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                         }
                     },
                     { 
@@ -230,9 +218,6 @@ class Model extends BaseModel {
                             amountAccesses: { $sum: 1 },
                         } 
                     },
-                    {
-                        $sort: { "_id.app": 1 }
-                    },
                     { 
                         $group: {
                             _id: { 
@@ -241,27 +226,15 @@ class Model extends BaseModel {
                             data: { $push:  { type: "$_id.type", amountAccesses: "$amountAccesses" } }
                         } 
                     },
-                    { 
-                        $lookup: {
-                            from: "apps",
-                            localField:"_id.app",
-                            foreignField: "_id",
-                            as: "app"
-                        } 
-                    },
                     {
-                        $unwind: "$app"
+                        $sort: { "_id.app": 1 }
                     },
-                    {
-                        $project: {
-                            _id: 0,
-                            "app.name": 1,
-                            amountAccesses: 1,
-                            data: 1
-                        }
-                    }
                 ])
-
+                await ANALYSIS__HISTORY_TRAFFIC_COLL.populate(infoData, {  
+                    path: '_id.app',
+                    select: 'name',
+                    model: 'app' 
+                })
                 return resolve({ error: false, data: infoData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -276,38 +249,32 @@ class Model extends BaseModel {
      */
     getList({
         companyID, type, app, menu, fromDate, toDate, userID,
-        keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
+
+                if(limit > 20 || isNaN(limit)){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    company: companyID
-                };
-
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                let sortBy;
+                let conditionObj = { company: companyID };
+                let keys	 = ['createAt__-1', '_id__-1'];
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-               
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
 					populates = JSON.parse(populates);
 				}else{
                     populates = {
@@ -320,23 +287,6 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                
-
-                // PHÂN TRANG KIỂU MỚI
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
-
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
                 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -360,15 +310,35 @@ class Model extends BaseModel {
                 }
 
                 if(fromDate && toDate){
-                    conditionObj.createdAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                    conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                 }
 
                 if(checkObjectIDs(userID)){
                     conditionObj.userCreate = userID;
                 }
+
+                let conditionObjOrg = { ...conditionObj };
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+                    sortBy       = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
                 
-                let infoDataAfterGet = await ANALYSIS__HISTORY_TRAFFIC_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
-                    .limit(+limit+1)
+                let infoDataAfterGet = await ANALYSIS__HISTORY_TRAFFIC_COLL
+                    .find(conditionObj)
+                    .select(select)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .populate(populates)
                     .lean(); 
@@ -384,7 +354,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await ANALYSIS__HISTORY_TRAFFIC_COLL.countDocuments(conditionObj);
+                let totalRecord = await ANALYSIS__HISTORY_TRAFFIC_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

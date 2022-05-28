@@ -1246,7 +1246,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
      * Name: Gom nhóm theo tháng trong năm
      * Author: Hiepnh
