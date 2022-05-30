@@ -194,18 +194,25 @@ class Model extends BaseModel {
 				let { nps } = infoMessage;
 
 				// Check the user who vote for the first time, Then create message notify
-				let isVoted = nps.usersVote.find(item => item.user.toString() === userID);
+				let isVoted = nps.usersVote.find(item => item.user.toString() === userID.toString());
 
-				// PULL USER VOTE MESSAGE NPS
-				await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
-					$pull: {
-						"usersVote.$[elem].user": userID
-					}
-				}, {
-					arrayFilters: [{
-						"elem.user": userID
-					}]
-				});
+				console.log({ nps, userVote: nps.usersVote, isVoted, userID })
+				if(isVoted) {
+					const removeUserVote = nps.usersVote.filter(item => item.user.toString() !== userID.toString());
+					// PULL USER VOTE MESSAGE NPS
+					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
+						usersVote: removeUserVote
+					})
+					// await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
+					// 	$pull: {
+					// 		"usersVote.$[elem].user": { $in: [userID] }
+					// 	}
+					// }, {
+					// 	arrayFilters: [{
+					// 		"elem.user": userID
+					// 	}]
+					// });
+				}
 
 				// PUSH USER VOTE MESSAGE NPS
 				if(nps.type === this.SERVICE_SCORE) {
