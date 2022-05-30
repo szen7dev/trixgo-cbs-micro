@@ -196,7 +196,6 @@ class Model extends BaseModel {
 				// Check the user who vote for the first time, Then create message notify
 				let isVoted = nps.usersVote.find(item => item.user.toString() === userID.toString());
 
-				console.log({ nps, userVote: nps.usersVote, isVoted, userID })
 				if(isVoted) {
 					const removeUserVote = nps.usersVote.filter(item => item.user.toString() !== userID.toString());
 					// PULL USER VOTE MESSAGE NPS
