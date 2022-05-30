@@ -198,7 +198,7 @@ class Model extends BaseModel {
 
 				// PULL USER VOTE MESSAGE NPS
 				await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
-					$pullAll: {
+					$pull: {
 						"usersVote.$[elem].user": userID
 					}
 				});
