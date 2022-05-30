@@ -175,13 +175,12 @@ module.exports = {
             menuID          : { type: "string", optional: true },
             userID          : { type: "string", optional: true },
             // Field mặc định
-            fromDate           : { type: "string", optional: true },
-            toDate           : { type: "string", optional: true },
+            fromDate        : { type: "string", optional: true },
+            toDate          : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
-            filter          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -196,10 +195,9 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ANALYSIS__HISTORY_TRAFFIC_MODEL.getList({
-                        companyID, type, appID, menuID, userID, fromDate, toDate, lastestID, keyword, limit, filter, populates
+                        companyID, type, appID, menuID, userID, fromDate, toDate, lastestID, keyword, limit, select, populates
                     });
                 }
-
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
