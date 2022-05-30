@@ -1,4 +1,4 @@
-let { config }                          = require('../file.keys-constant');
+let { config }                          = require('../../../../tools/s3/config');
 let { checkObjectIDs, getExtension }    = require('../../../../tools/utils/utils');
 let { nonAccentVietnamese }             = require('../../../../tools/utils/string_utils');
 let { APP_KEYS }                        = require('../../../../tools/keys');

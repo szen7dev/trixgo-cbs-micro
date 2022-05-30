@@ -99,6 +99,7 @@
     "swagger-stats": "^0.95.18",
     "swagger-ui-dist": "^3.40.0",
     "uuid": "^8.3.2",
+    "xlsx-populate": "^1.21.0",
     "zip-dir": "^2.0.0"
   },
   "engines": {

@@ -1341,7 +1341,7 @@ class Model extends BaseModel {
      */
     getListByFilter({
         fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        projectsID, subtypes, status, fieldsID, isExpired, keyword,
+        projectsID, subtypes, status, fieldsID, isExpired, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID
     }) {
         return new Promise(async resolve => {
@@ -1468,6 +1468,24 @@ class Model extends BaseModel {
 				} else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                /**
+                 * Dùng để lấy all data, Chỉ:
+                 * - Dùng internal services
+                 * - Không cho client truyền qua API
+                 */
+                if(unlimited) {
+                    const infoDataAfterGet = await PCM_PLAN_TASK_COLL
+                        .find(conditionObj)
+                        .select(select)
+                        .populate(populates)
+                        .sort(sortBy)
+                        .lean();
+
+                    return resolve({
+                        data: infoDataAfterGet
+                    });
                 }
 
                 /**

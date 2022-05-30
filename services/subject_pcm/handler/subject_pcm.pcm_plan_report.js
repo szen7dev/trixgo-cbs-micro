@@ -139,4 +139,31 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: MinhVH
+     * Func: Demo Download Excel
+     * Date: 27/05/2022
+     */
+    exportTaskReport: {
+        auth: 'required',
+        params: {
+            reportID: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { reportID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.exportTaskReport({
+                    reportID, userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }

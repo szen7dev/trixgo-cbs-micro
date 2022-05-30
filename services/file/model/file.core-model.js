@@ -6,6 +6,7 @@ const FILE__CORE_COLL                           = require('../database/file.core
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid } = require('../../../tools/utils/utils');
 const { FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS }  = require('../helper/file.keys-constant');
+
 class Model extends BaseModel {
     constructor() {
         super(FILE__CORE_COLL);

@@ -28,6 +28,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
 
     // Report
     SUBJECT__PCM_PLAN_REPORT                            : `${BASE_ROUTE}${PCM_PLAN_REPORT}`,
+    SUBJECT__PCM_PLAN_REPORT_EXPORT_TASK                : `${BASE_ROUTE}${PCM_PLAN_REPORT}/export-task-report`,
     SUBJECT__USER_PCM_PLAN_REPORT                       : `${BASE_ROUTE}${USER_PCM_PLAN_REPORT}`,
 
     // Group

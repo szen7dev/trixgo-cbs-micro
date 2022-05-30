@@ -1,23 +1,25 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
-                                        = require('../../../tools/utils/utils');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const moment                            = require('moment');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+
+const BaseModel                         = require('../../../tools/db/base_model');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
+const { removeHtmlTag }                 = require('../../../tools/utils/string_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
+const { PCM_STATUS_TASK }			    = require('../../../tools/constants');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
  * import inter-coll, exter-coll
  */
-const PCM_PLAN_REPORT_COLL        = require('../database/subject_pcm.pcm_plan_report-coll');
-const USER_PCM_PLAN_REPORT_COLL   = require('../database/subject_pcm.user_pcm_plan_report-coll');
+const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll');
+const PCM_PLAN_TASK_MODEL               = require('../model/subject_pcm.pcm_plan_task').MODEL;
 
-const { RANGE_BASE_PAGINATION_V2 } 	   = require('../../../tools/cursor_base/playground/index');
-
-/**
- * import inter-model, exter-model
- */
-const PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
 
 class Model extends BaseModel {
 
@@ -379,6 +381,123 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Export Task Report
+     * Date: 28/05/2022
+     */
+    exportTaskReport({ reportID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({ reportID, userID });
+                if(validation.error) return resolve(validation);
+
+                const getPercentageCompletion = (startTimeX, expiredTimeX) => {
+                    let startTime  = moment(startTimeX);
+                    let endTime    = moment(expiredTimeX);
+                    let toDateTime = moment();
+
+                    let percentageCompletion = Math.round(100*(toDateTime - startTime)/(endTime - startTime));
+                    if(percentageCompletion > 100){
+                        percentageCompletion = 100;
+                    }
+
+                    if(!percentageCompletion){
+                        percentageCompletion = 0;
+                    }
+
+                    if(percentageCompletion == "-Infinity"){
+                        percentageCompletion = 0;
+                    }
+
+                    return percentageCompletion;
+                }
+
+                const infoReport = await PCM_PLAN_REPORT_COLL
+                    .findOne({
+                        _id: reportID,
+                        // members: {
+                        //     $in: [userID]
+                        // }
+                    })
+                    .lean();
+
+                if(!infoReport) {
+                    return resolve({
+                        error: true,
+                        message: 'Report không tồn tại hoặc bạn không có quyền xem report',
+                        keyError: 'report_not_exists',
+                        status: 400
+                    });
+                }
+
+                const dataTaskByCondition = await PCM_PLAN_TASK_MODEL.getListByFilter({
+                    ...infoReport.conditionPin,
+                    select: 'name expiredTime startTime percentage assignee note status',
+                    populates: JSON.stringify({
+                        path: 'assignee',
+                        select: 'bizfullname'
+                    }),
+                    unlimited: true,
+                    userID
+                })
+
+                if(!dataTaskByCondition.data) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                const listTaskPin = dataTaskByCondition.data;
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_13_TaskPin.xlsm')))
+                    .then(async workbook => {
+
+                        workbook.sheet("Data").row(1).cell(1).value(infoReport.name.toUpperCase());
+                        workbook.sheet("Data").row(2).cell(1).value(infoReport.description);
+
+                        let indexExcel = 4;
+
+                        listTaskPin.map((infoTask, index) => {
+                            workbook.sheet("Data").row(indexExcel).cell(1).value(index+1);
+                            workbook.sheet("Data").row(indexExcel).cell(2).value(infoTask.name);
+                            workbook.sheet("Data").row(indexExcel).cell(3).value(infoTask.expiredTime);
+
+                            workbook.sheet("Data").row(indexExcel).cell(4).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
+
+                            workbook.sheet("Data").row(indexExcel).cell(5).value(infoTask.assignee?.bizfullname);
+
+                            if (infoTask.note) {
+                                // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.note));
+                                workbook.sheet("Data").row(indexExcel).cell(8).value(infoTask.note);
+                            }
+
+                            workbook.sheet("Data").row(indexExcel).cell(9).value(PCM_STATUS_TASK[infoTask.status - 1].text);
+
+                            indexExcel++;
+                        })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `pcm_13_TaskPin${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
