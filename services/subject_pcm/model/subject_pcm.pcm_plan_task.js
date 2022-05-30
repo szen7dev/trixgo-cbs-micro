@@ -450,6 +450,8 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Update amountTasks cho group;
+                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
                 const infoTask = await PCM_PLAN_TASK_COLL
                     .findById(infoAfterInsert._id)
                     .select(select)

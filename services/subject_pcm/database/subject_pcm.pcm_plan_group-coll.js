@@ -87,5 +87,10 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : "user"
-    }
+    },
+    //______Số lượng công việc
+    amountTasks: {
+        type: Number,
+        default: 0
+    },
 });

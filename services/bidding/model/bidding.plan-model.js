@@ -628,7 +628,7 @@ class Model extends BaseModel {
                 }else{
                     conditionObj.project = ObjectID(projectID)
                 }
-
+                            
                 let listData = await BIDDING__PLAN_COLL.aggregate([
                     {
                         $match: conditionObj
