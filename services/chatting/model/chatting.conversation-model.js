@@ -1059,6 +1059,12 @@ class Model extends BaseModel {
 					})
 					.populate('reminder', select.reminder)
 					.populate({
+						path: 'nps',
+						populate: {
+							path: 'service usersVote.reasons'
+						}
+					})
+					.populate({
 						path: 'files.file',
 						populate: {
 							path: 'file',
