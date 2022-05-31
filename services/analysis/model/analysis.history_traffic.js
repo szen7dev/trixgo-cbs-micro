@@ -39,7 +39,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => { 
             try {
                 let dataInsert = { companyOfAuthor, userCreate}; 
-              
+                
                 if(!checkObjectIDs(appID))
                     return resolve({ error: true, message: "Request params appID invalid" });
 
