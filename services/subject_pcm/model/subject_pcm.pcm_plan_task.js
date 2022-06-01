@@ -748,6 +748,15 @@ class Model extends BaseModel {
 
                     const { _id } = infoSignature.data;
                     dataAddToset = { ...dataAddToset, signatures: _id }
+
+                    /**
+                     * Nếu người được gán việc nhấn "Đồng ý" (trong chi tiết task)
+                     * trong task có phân loại là "Lựa chọn nhà thầu"
+                     * -> Cập nhật trạng thái của task thành "Hoàn thành"
+                     */
+                    if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?.toString()) {
+                        dataUpdate.status = 3;
+                    }
                 }
 
                 //_________File của người tạo việc-cân nhắc bỏ do không linh hoạt phiên bản
