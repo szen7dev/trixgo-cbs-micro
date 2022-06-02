@@ -26,14 +26,15 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
         16-Hợp đồng phân loại công nợ
         17-Hợp đồng nguyên nhân phát sinh
         18-Chung-Nguyên nhân thất bại
-        20-Chung các lỗi hay gặp
-        21- Công việc, Đánh giá chất lượng
-        22-Theo service (áp dụng cho message nps)
+        19-Chung các lỗi hay gặp
+        20- Công việc, Đánh giá chất lượng
+        21-NPS điểm số (áp dụng cho message nps)
+        22-NPS lý do (áp dụng cho message nps)
     */
     type: { type: Number, default: 1 },
     //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)
     belongSystem: { type: Number, default: 0 },
-    //_________Công ty 
+    //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -41,7 +42,7 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     //_________Phòng ban/dự án
     project: {
         type: Schema.Types.ObjectId,
-        ref : "department"                  
+        ref : "department"
     },
     //_________Phần tử cha
     parent: {
@@ -50,13 +51,13 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     },
     level: {
         type: Number,
-        default: 1 
+        default: 1
     },
     //_________Phần tử con (Sử dụng dụng cho phân loại của Message NPS)
     childs: [{
         type: Schema.Types.ObjectId,
         ref: "doctype"
-    }], 
+    }],
     //_________Tên
     name: String,
     //_________Mô tả

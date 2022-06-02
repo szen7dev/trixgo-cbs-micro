@@ -218,7 +218,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, projectID, type, keyword, limit = 10, lastestID, select, populates }) {
+    getList({ companyID, projectID, parentID, type, keyword, limit = 10, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(isNaN(limit) || +limit > 20) {
@@ -226,6 +226,7 @@ class Model extends BaseModel {
 				} else{
 					limit = +limit;
 				}
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -250,8 +251,6 @@ class Model extends BaseModel {
                     }
                 }
 
-
-
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -260,13 +259,20 @@ class Model extends BaseModel {
 
                 // TRẠNG THÁI CÔNG VIỆC
                 //____________Công ty
-                if(companyID){
+                if(checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
                 }
 
                 //____________Dự án
-                if(projectID){
+                if(checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
+                }
+
+                //____________Doctype con
+                if(checkObjectIDs(parentID)) {
+                    conditionObj.parent = parentID;
+                } else{
+                    conditionObj.parent = { $exists: false };
                 }
 
                 //____________Loại doctype
