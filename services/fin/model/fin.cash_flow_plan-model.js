@@ -56,7 +56,7 @@ class Model extends BaseModel {
                     if(infoContract){
                         let { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
 
-                        dataInsert.outin = outin
+                        // dataInsert.outin = outin // outin lấy theo infoParent
                         dataInsert.real = real
                         dataInsert.field = field
                         dataInsert.chair = chair
@@ -144,13 +144,19 @@ class Model extends BaseModel {
     }){
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'param_not_valid' })
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
+
+                let info = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID).populate('parent')
+                if(info.parent && checkObjectIDs(info.parent._id)){
+                    console.log('========OK==============')
+                    dataUpdate.outin = info.parent.outin
+                    console.log(info.parent.outin)
+                }
+                // console.log(info)
+                console.log(dataUpdate)
 
                 /**
                  * VALIDATION STEP (2)
@@ -169,7 +175,7 @@ class Model extends BaseModel {
                     if(infoContract && !infoContract.error){
                         const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
 
-                        dataUpdate.outin = outin
+                        // dataUpdate.outin = outin // outin lấy theo infoParent
                         dataUpdate.real = real
                         dataUpdate.field = field
                         dataUpdate.chair = chair
@@ -586,7 +592,8 @@ class Model extends BaseModel {
                  * 4-Tổng hợp theo dự án
                  * 5-Tổng hợp theo hợp đồng
                  */
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"_id.realValue": -1}
+                let conditionObj = {parent: { $exists: true, $ne: null }}
+                let conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"_id.realValue": -1}
 
                 let conditionProject = {
                     year : {$year : "$date"},
@@ -598,6 +605,10 @@ class Model extends BaseModel {
                     type: 1,
                     property: 1,
                     outin: 1,
+                }
+
+                if(outin && !isNaN(outin)){
+                    conditionObj.outin = Number(outin)
                 }
 
                 if(real && Number(real) === 1){
@@ -660,7 +671,7 @@ class Model extends BaseModel {
                         parent: {$exists: false},// Không lấy các phần tử cha-Kế hoạch tổng
                         company: companyID
                     })
-                    console.log(listActiveParent)
+                    // console.log(listActiveParent)
 
                     conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
                 }
