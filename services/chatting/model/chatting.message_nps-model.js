@@ -192,6 +192,13 @@ class Model extends BaseModel {
 				}
 
 				let { nps } = infoMessage;
+				let dataUpdate = {
+					$addToSet: {
+						usersVote: {
+							user: userID
+						}
+					}
+				};
 
 				// Check the user who vote for the first time, Then create message notify
 				let isVoted = nps.usersVote.find(item => item.user.toString() === userID.toString());
@@ -200,7 +207,9 @@ class Model extends BaseModel {
 					const removeUserVote = nps.usersVote.filter(item => item.user.toString() !== userID.toString());
 					// PULL USER VOTE MESSAGE NPS
 					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
-						usersVote: removeUserVote
+						$set: {
+							usersVote: removeUserVote
+						}
 					})
 					// await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
 					// 	$pull: {
@@ -214,25 +223,22 @@ class Model extends BaseModel {
 				}
 
 				// PUSH USER VOTE MESSAGE NPS
-				if(nps.type === this.SERVICE_SCORE) {
-					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
-						$addToSet: {
-							usersVote: {
-								user: userID,
-								score
-							}
-						}
-					});
-				} else if(reasons && reasons.length && checkObjectIDs(reasons)){
-					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
-						$addToSet: {
-							usersVote: {
-								user: userID,
-								reasons: reasons
-							}
-						}
-					});
+				if(nps.type === this.SERVICE_SCORE && score) {
+					dataUpdate.$addToSet['usersVote'] = {
+						...dataUpdate.$addToSet['usersVote'],
+						score
+					}
 				}
+
+				if(reasons && checkObjectIDs(reasons)){
+					dataUpdate.$addToSet['usersVote'] = {
+						...dataUpdate.$addToSet['usersVote'],
+						reasons
+					}
+				}
+				// console.log(dataUpdate.$addToSet)
+
+				await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, dataUpdate);
 
 				let lastMessage = null;
 				let dataInsertMessage = {
@@ -283,7 +289,10 @@ class Model extends BaseModel {
 				return resolve({
 					error: false,
 					status: 200,
-					data: infoMessage
+					data: {
+						infoMessage,
+						infoMessageNotification: lastMessage
+					}
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
