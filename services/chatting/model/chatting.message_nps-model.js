@@ -267,8 +267,8 @@ class Model extends BaseModel {
 					.populate({
 						path: 'nps service',
 						populate: {
-							path: 'usersVote.user usersVote.reasons',
-							select: '_id bizfullname fullname image'
+							path: 'usersVote.user usersVote.reasons childs',
+							select: '_id bizfullname fullname image name description type'
 						}
 					})
 					.lean();
