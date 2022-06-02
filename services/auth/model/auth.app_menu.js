@@ -157,7 +157,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ app,
-        parent, limit = 10, lastestID, select, populates = {} }) { 
+        parent, limit = 20, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
