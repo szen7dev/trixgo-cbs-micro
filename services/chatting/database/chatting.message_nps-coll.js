@@ -17,7 +17,7 @@ module.exports = DATABASE_MIDDLEWARE("message_message_nps", {
 
     /**
      * Mã dịch vụ
-     * - Với tin nhắn loại 2, 3 => Populdate vào trong doctype để lấy mảng phần tử con
+     * - Với tin nhắn loại 2, 3 => populate vào trong doctype để lấy mảng phần tử con
      */
     service: {
         type: Schema.Types.ObjectId,

@@ -109,6 +109,7 @@ module.exports = {
             type            : { type: "string", optional: true },
             doctypeID       : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -120,7 +121,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, doctypeID, projectID, type, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, doctypeID, projectID, parentID, type, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -134,7 +135,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getList({
-                        companyID, projectID, lastestID, userID, type, keyword, limit, select, populates
+                        companyID, projectID, parentID, lastestID, userID, type, keyword, limit, select, populates
                     });
                 }
 
