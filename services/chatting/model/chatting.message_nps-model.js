@@ -265,10 +265,14 @@ class Model extends BaseModel {
 				infoMessage = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
 					.populate({
-						path: 'nps service',
+						path: 'nps',
 						populate: {
-							path: 'usersVote.user usersVote.reasons childs',
-							select: '_id bizfullname fullname image name description type'
+							path: 'usersVote.user usersVote.reasons service',
+							select: '_id bizfullname fullname image name description type childs',
+							populate: {
+								path: 'childs',
+								select: 'name description type'
+							}
 						}
 					})
 					.lean();
