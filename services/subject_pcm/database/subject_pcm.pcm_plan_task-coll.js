@@ -89,7 +89,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 1-Yêu cầu thông tin
      * 2-Yêu cầu phê duyệt
      * 3-Thanh toán/Chi phí
-     * 4-Đấu thầu
+     * 4-Đấu thầu (lựa chọn nhà thầu)
      * 5-Nghiệm thu chất lượng
      * 6-Yêu cầu sửa chữa
      * 7-Yêu cầu thay đổi
