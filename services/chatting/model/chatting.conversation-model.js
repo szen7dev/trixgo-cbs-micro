@@ -827,10 +827,10 @@ class Model extends BaseModel {
 					.populate({
 						path: 'messagesPin',
 						populate: {
-							path: 'sender poll reminder nps files.file',
-							select: '_id fullname bizfullname email image name options status content service',
+							path: 'sender poll reminder files.file',
+							select: '_id fullname bizfullname email image name options status content',
 							populate: {
-								path: 'options.usersVote file childs',
+								path: 'options.usersVote file',
 								select: '_id bizfullname fullname image name nameOrg path size'
 							},
 						},
@@ -1060,11 +1060,13 @@ class Model extends BaseModel {
 					.populate('reminder', select.reminder)
 					.populate({
 						path: 'nps',
+						select: select.nps,
 						populate: {
-							path: 'service usersVote.reasons',
+							path: 'service usersVote.reason usersVote.user',
+							select: 'name description type childs bizfullname',
 							populate: {
-								path: 'childs usersVote.reasons.user',
-								select: 'name description type bizfullname'
+								path: 'childs',
+								select: 'name description type'
 							}
 						}
 					})

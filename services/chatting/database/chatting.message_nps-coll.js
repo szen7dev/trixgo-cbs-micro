@@ -35,14 +35,13 @@ module.exports = DATABASE_MIDDLEWARE("message_message_nps", {
 		},
         // Điểm số đánh giá (áp dụng cho tin nhắn Type=1)
         score: {
-            type   : Number,
-            default: 5
+            type: Number,
         },
         // Lý do hài lòng/không hài lòng (áp dụng cho tin nhắn Type=2, 3)
-        reasons: [{
+        reason: {
             type: Schema.Types.ObjectId,
 		    ref: 'doctype' // Là childs của service (được tạo ra khi khởi tạo danh mục)
-        }],
+        },
 		createAt: {
 			type: Date,
 			default: Date.now

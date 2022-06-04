@@ -93,6 +93,7 @@ module.exports = {
 		//==========================================  DOCTYPE  ===================================
 		[CF_ACTIONS_ITEM.DOCTYPE_INSERT] 						: ITEM__DOCTYPE_HANDLER.insert,
 		[CF_ACTIONS_ITEM.DOCTYPE_UPDATE] 						: ITEM__DOCTYPE_HANDLER.update,
+		[CF_ACTIONS_ITEM.DOCTYPE_REMOVE] 						: ITEM__DOCTYPE_HANDLER.remove,
 		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetList,
 
 		//==========================================  CONTACT  ===================================

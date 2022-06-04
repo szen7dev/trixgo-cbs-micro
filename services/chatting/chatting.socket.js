@@ -1024,13 +1024,10 @@ exports.CHATTING_SOCKET = {
 			select: '_id bizfullname fullname image'
 		});
 
-		const { members, usersMute } = infoConversation;
-		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+		const { members } = infoConversation;
 
 		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
+		const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
 
 		sendDataToMultilSocketsOfListUser({
 			listUserConnected: listUserActive,
@@ -1048,24 +1045,34 @@ exports.CHATTING_SOCKET = {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Xoá tin nhắn bình chọn
-	 * Date: 06/09/2021
+	 * Func: Cập nhật tin nhắn NPS
+	 * Date: 04/06/2022
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MESSAGE_POLL]: async function(data, ack) {
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_MESSAGE_NPS]: async function(data, ack) {
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
 		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
-		let { conversationID, messageID } 	= data;
+		let { conversationID, messageID }	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 		const infoMessage	   = await CHATTING__MESSAGE_COLL
 			.findById(messageID)
-			.populate('poll')
+			.populate({
+				path: 'nps',
+				populate: {
+					path: 'usersVote.user usersVote.reason service',
+					select: '_id bizfullname image name description type childs',
+					populate: {
+						path: 'childs',
+						select: 'name description type'
+					}
+				}
+			})
 			.populate({
 				path: 'sender',
-				select: '_id bizfullname fullname image'
+				select: '_id bizfullname image'
 			})
 			.lean();
 
@@ -1074,22 +1081,19 @@ exports.CHATTING_SOCKET = {
 				listUserConnected: listUserActive,
 				arrReceiver: [userID],
 				data: { error: true, message: "Can't get info conversation or message" },
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REMOVE_MESSAGE_POLL], io
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_MESSAGE_NPS], io
 			});
 		}
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizfullname fullname image'
+			select: '_id bizfullname image'
 		});
 
-		const { members, usersMute } = infoConversation;
-		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+		const { members } = infoConversation;
 
 		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
+		const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
 
 		sendDataToMultilSocketsOfListUser({
 			listUserConnected: listUserActive,
@@ -1101,7 +1105,7 @@ exports.CHATTING_SOCKET = {
 					infoMessage,
 					infoSender: infoSender.data,
 				}
-			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REMOVE_MESSAGE_POLL], io
+			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_MESSAGE_NPS], io
 		});
 	},
 

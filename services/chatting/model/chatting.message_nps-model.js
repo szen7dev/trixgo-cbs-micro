@@ -192,55 +192,55 @@ class Model extends BaseModel {
 				}
 
 				let { nps } = infoMessage;
-				let dataUpdate = {
-					$addToSet: {
-						usersVote: {
-							user: userID
-						}
-					}
-				};
+				let dataUpdate = {};
 
-				// Check the user who vote for the first time, Then create message notify
+				// Kiểm tra user đánh giá lần đầu -> Tạo message noti
 				let isVoted = nps.usersVote.find(item => item.user.toString() === userID.toString());
 
-				if(isVoted) {
+				/**
+				 * Nếu user đã đánh giá và NPS là loại đánh giá điểm số:
+				 * - Remove user khỏi mảng usersVote
+				 */
+				if(isVoted && nps.type === this.SERVICE_SCORE) {
 					const removeUserVote = nps.usersVote.filter(item => item.user.toString() !== userID.toString());
-					// PULL USER VOTE MESSAGE NPS
-					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
+
+					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdclate(nps._id, {
 						$set: {
 							usersVote: removeUserVote
 						}
 					})
-					// await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
-					// 	$pull: {
-					// 		"usersVote.$[elem].user": { $in: [userID] }
-					// 	}
-					// }, {
-					// 	arrayFilters: [{
-					// 		"elem.user": userID
-					// 	}]
-					// });
 				}
 
-				// PUSH USER VOTE MESSAGE NPS
-				if(nps.type === this.SERVICE_SCORE && score) {
-					dataUpdate.$addToSet['usersVote'] = {
-						...dataUpdate.$addToSet['usersVote'],
-						score
+				// Đánh giá điểm số
+				if(nps.type === this.SERVICE_SCORE) {
+					dataUpdate = {
+						$addToSet: {
+							usersVote: {
+								user: userID,
+								score
+							}
+						}
 					}
-				}
+				} else{
+					// Đánh giá hài lòng/không hài lòng
+					if(reasons && checkObjectIDs(reasons)){
+						const newUsersVote = reasons.map(reason => ({
+							user: userID,
+							reason
+						}))
 
-				if(reasons && checkObjectIDs(reasons)){
-					dataUpdate.$addToSet['usersVote'] = {
-						...dataUpdate.$addToSet['usersVote'],
-						reasons
+						dataUpdate = {
+							$push: {
+								usersVote: {
+									$each: newUsersVote
+								}
+							}
+						}
 					}
 				}
-				// console.log(dataUpdate.$addToSet)
 
 				await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, dataUpdate);
 
-				let lastMessage = null;
 				let dataInsertMessage = {
 					usersSeen: [userID],
 					sender: userID,
@@ -250,25 +250,22 @@ class Model extends BaseModel {
 				}
 
 				// INSERT MESSAGE NOTIFY JOIN VOTE NPS
-				if(isVoted){
-					lastMessage = await CHATTING__MESSAGE_MODEL.insertData({
-						...dataInsertMessage,
-						type: 120 // Tham gia bình chọn trong cuộc hội thoại
-					})
-				} else if(reasons.length) {
-					lastMessage = await CHATTING__MESSAGE_MODEL.insertData({
-						...dataInsertMessage,
-						type: 121 // Thay đổi bình chọn trong cuộc hội thoại
-					})
-				}
+				/**
+				 * 120: Tham gia bình chọn trong cuộc hội thoại
+				 * 121: Thay đổi bình chọn trong cuộc hội thoại
+				 */
+				const lastMessage = await CHATTING__MESSAGE_MODEL.insertData({
+					...dataInsertMessage,
+					type: isVoted ? 120 : 121
+				})
 
 				infoMessage = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
 					.populate({
 						path: 'nps',
 						populate: {
-							path: 'usersVote.user usersVote.reasons service',
-							select: '_id bizfullname fullname image name description type childs',
+							path: 'usersVote.user usersVote.reason service',
+							select: '_id bizfullname image name description type childs',
 							populate: {
 								path: 'childs',
 								select: 'name description type'
