@@ -96,7 +96,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ reportID, name, type, userID, select, members, conditionPin }) {
+    update({ reportID, name, type, description, userID, select, members, conditionPin }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -156,6 +156,10 @@ class Model extends BaseModel {
                     dataUpdate.name = name;
                 }
 
+                if(description) {
+                    dataUpdate.description = description;
+                }
+
                 if(type){
                     dataUpdate.type = type;
                 }
@@ -178,40 +182,41 @@ class Model extends BaseModel {
         })
     }
 
-
      /**
      * Name: Remove pcm_plan_report
      * Author: Depv
      * Code: F02503
      */
-    remove({ reportID }) {
+    remove({ reportsID, userID }) {
         return new Promise(async (resolve) => {
             try {
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(!checkObjectIDs(reportID))
-                    return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
+                if(!reportsID.length || !checkObjectIDs(reportsID))
+                    return resolve({ error: true, message: 'Request params reportsID invalid', status: 400 });
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-
-                let infoAfterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndDelete(reportID);
+                const infoAfterUpdate = await PCM_PLAN_REPORT_COLL.deleteMany({
+                    _id: {
+                        $in: reportsID
+                    },
+                    author: userID
+                });
 
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't remove subject", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
 
-                return resolve({ error: false, message: "Remove success", status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -504,6 +509,6 @@ class Model extends BaseModel {
         })
     }
 
- }
+}
 
 exports.MODEL = new Model;
