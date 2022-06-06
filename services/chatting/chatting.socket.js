@@ -1473,6 +1473,17 @@ exports.CHATTING_SOCKET = {
 					select: '_id bizfullname fullname image'
 				}
 			})
+			.populate({
+				path: 'nps',
+				populate: {
+					path: 'usersVote.user usersVote.reason service',
+					select: '_id bizfullname image name description type childs',
+					populate: {
+						path: 'childs',
+						select: 'name description type'
+					}
+				}
+			})
 			.lean();
 
         sendDataToMultilSocketsOfListUser({
