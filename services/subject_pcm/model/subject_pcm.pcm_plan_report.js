@@ -453,7 +453,7 @@ class Model extends BaseModel {
                     userID
                 })
 
-                if(!dataTaskByCondition.data) {
+                if(!dataTaskByCondition || !dataTaskByCondition.data) {
                     return resolve({
                         error: true,
                         message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
