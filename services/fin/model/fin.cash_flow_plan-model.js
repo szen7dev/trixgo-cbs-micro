@@ -578,9 +578,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 17/04/2022
      */
-    getAmountByProperty({ userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, real, ctx }){
-        // console.log('=========>Tham số đầu vào')
-        // console.log({ userID, companyID, parentID, projectID, outin, year, type, property, option })
+    getAmountByProperty({ companyID, parentID, projectID, contractID, outin, year, type, property, option, real, ctx }){
         return new Promise(async resolve => {
             try {
                 /**
@@ -679,25 +677,19 @@ class Model extends BaseModel {
                 // 3-Tổng hợp theo kế hoạch cụ thể
                 if(Number(option) === 3 && parentID && checkObjectIDs(parentID)){
                     console.log('3-Tổng hợp theo kế hoạch cụ thể')
-                    if(parentID && checkObjectIDs(parentID)){
-                        conditionObj.parent = ObjectID(parentID)
-                    }
+                    conditionObj.parent = ObjectID(parentID)
                 }
 
                 // 4-Tổng hợp theo dự án
                 if(Number(option) === 4 && projectID && checkObjectIDs(projectID)){
                     console.log('4-Tổng hợp theo dự án')
-                    if(projectID && checkObjectIDs(projectID)){
-                        conditionObj.project = ObjectID(projectID)
-                    }
+                    conditionObj.project = ObjectID(projectID)
                 }
 
                 // 5-Tổng hợp theo hợp đồng
                 if(Number(option) === 5 && contractID && checkObjectIDs(contractID)){
                     console.log('5-Tổng hợp theo hợp đồng')
-                    if(contractID && checkObjectIDs(contractID)){
-                        conditionObj.contract = ObjectID(contractID)
-                    }
+                    conditionObj.contract = ObjectID(contractID)
                 }
 
                 // Thống kê theo biểu đồ (tháng/năm)
@@ -719,9 +711,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
-                console.log(conditionProject)
-                console.log(conditionGroup)
+                // console.log(conditionObj)
+                // console.log(conditionProject)
+                // console.log(conditionGroup)
 
                 let listData = await FIN__CASH_FLOW_PLAN_COLL.aggregate([
                     {

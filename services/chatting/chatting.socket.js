@@ -1093,11 +1093,11 @@ exports.CHATTING_SOCKET = {
 		const { members } = infoConversation;
 
 		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
+		// const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
 
 		sendDataToMultilSocketsOfListUser({
 			listUserConnected: listUserActive,
-			arrReceiver,
+			arrReceiver: members,
 			data: {
 				error: false,
 				data: {
