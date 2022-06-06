@@ -30,7 +30,9 @@ class Model extends BaseModel {
     constructor() {
         super(CHATTING__MESSAGE_NPS_COLL);
 
-		this.SERVICE_SCORE = 1;
+		this.NPS_SCORE = 1;
+		this.NPS_UNSATISFIED = 2;
+		this.NPS_SATISFIED = 3;
     }
 
 	/**
@@ -149,7 +151,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật nps
 	 * Date: 20/02/2022
 	 */
-	update({ conversationID, messageID, score, reasons, userID }) {
+	update({ conversationID, messageID, score, reasons, reasonsCancel, userID }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, messageID])) {
@@ -192,72 +194,126 @@ class Model extends BaseModel {
 				}
 
 				let { nps } = infoMessage;
-				let dataUpdate = {};
 
-				// Kiểm tra user đánh giá lần đầu -> Tạo message noti
-				let isVoted = nps.usersVote.find(item => item.user.toString() === userID.toString());
+				// Kiểm tra user đã đánh giá chưa
+				let isVoted = nps.usersVote.find(({ user }) => user.toString() === userID.toString());
 
-				/**
-				 * Nếu user đã đánh giá và NPS là loại đánh giá điểm số:
-				 * - Remove user khỏi mảng usersVote
-				 */
-				if(isVoted && nps.type === this.SERVICE_SCORE) {
-					const removeUserVote = nps.usersVote.filter(item => item.user.toString() !== userID.toString());
+				switch (nps.type) {
+					case this.NPS_SCORE: {
 
-					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdclate(nps._id, {
-						$set: {
-							usersVote: removeUserVote
+						/**
+						 * Nếu user đã đánh giá và NPS là loại đánh giá điểm số:
+						 * - Remove user khỏi mảng usersVote
+						 */
+						if(isVoted) {
+							const removeUserVote = nps.usersVote.filter(item => item.user.toString() !== userID.toString());
+
+							await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
+								$set: {
+									usersVote: removeUserVote
+								}
+							})
 						}
-					})
-				}
 
-				// Đánh giá điểm số
-				if(nps.type === this.SERVICE_SCORE) {
-					dataUpdate = {
-						$addToSet: {
-							usersVote: {
-								user: userID,
-								score
-							}
-						}
-					}
-				} else{
-					// Đánh giá hài lòng/không hài lòng
-					if(reasons && checkObjectIDs(reasons)){
-						const newUsersVote = reasons.map(reason => ({
-							user: userID,
-							reason
-						}))
-
-						dataUpdate = {
-							$push: {
+						/**
+						 * Add user vào mảng usersVote
+						 */
+						await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
+							$addToSet: {
 								usersVote: {
-									$each: newUsersVote
+									user: userID,
+									score
 								}
 							}
-						}
+						});
+
+						break;
 					}
+					case this.NPS_UNSATISFIED:
+					case this.NPS_SATISFIED: {
+
+						if(reasons && checkObjectIDs(reasons)){
+							const newUsersVote = [];
+
+							reasons.map(reason => {
+								const isVote = nps.usersVote.find(({ user, reason: reasonUser }) =>
+									user?.toString() === userID && reasonUser.toString() === reason.toString())
+
+								let isVoteCanceled = false;
+
+								if(reasonsCancel && reasonsCancel.length && reasonsCancel.includes(reason.toString())) {
+									isVoteCanceled = true;
+								}
+
+								if(!isVote && !isVoteCanceled) {
+									newUsersVote[newUsersVote.length] = {
+										user: userID,
+										reason
+									}
+								}
+							})
+
+							await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
+								$push: {
+									usersVote: {
+										$each: newUsersVote
+									}
+								}
+							});
+						}
+
+						if(reasonsCancel && checkObjectIDs(reasonsCancel)){
+							const voteCancel = nps.usersVote.filter(({ user, reason }) =>
+								user?.toString() === userID && reasonsCancel.includes(reason.toString()));
+
+							const voteIDCancel = voteCancel.map(vote => vote._id);
+
+							if(voteIDCancel.length) {
+								await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
+									$pull: {
+										usersVote: {
+											_id: {
+												$in: voteIDCancel
+											},
+											user: userID
+										}
+									}
+								}, { multi: true });
+							}
+						}
+
+						break;
+					}
+					default:
+						break;
 				}
 
-				await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, dataUpdate);
-
-				let dataInsertMessage = {
+				/**
+				 * INSERT MESSAGE NOTIFY JOIN VOTE NPS
+				 * 120: Tham gia bình chọn trong cuộc hội thoại
+				 * 121: Thay đổi bình chọn trong cuộc hội thoại
+				 */
+				const lastMessage = await CHATTING__MESSAGE_MODEL.insertData({
 					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
 					receivers: infoConversation.members,
 					nps: nps._id,
-				}
-
-				// INSERT MESSAGE NOTIFY JOIN VOTE NPS
-				/**
-				 * 120: Tham gia bình chọn trong cuộc hội thoại
-				 * 121: Thay đổi bình chọn trong cuộc hội thoại
-				 */
-				const lastMessage = await CHATTING__MESSAGE_MODEL.insertData({
-					...dataInsertMessage,
 					type: isVoted ? 120 : 121
 				})
+
+				// UPDATE LAST MESSAGE & UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
+				if(lastMessage){
+					await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						lastMessage: lastMessage._id, modifyAt: Date.now()
+					});
+
+					await CHATTING__MESSAGE_MODEL.updateUserMissMessage({
+						conversationID,
+						userID,
+						numberMissMessage: 1
+					});
+				}
 
 				infoMessage = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
@@ -273,19 +329,6 @@ class Model extends BaseModel {
 						}
 					})
 					.lean();
-
-				// UPDATE LAST MESSAGE & UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
-				if(lastMessage){
-					await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-						lastMessage: lastMessage._id, modifyAt: Date.now()
-					});
-
-					await CHATTING__MESSAGE_MODEL.updateUserMissMessage({
-						conversationID,
-						userID,
-						numberMissMessage: 1
-					});
-				}
 
 				return resolve({
 					error: false,

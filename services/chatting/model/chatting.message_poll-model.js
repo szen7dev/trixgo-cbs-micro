@@ -30,9 +30,9 @@ class Model extends BaseModel {
 		return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs([authorID, conversationID]) || !name || !options.length) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số không hợp lệ",
 						keyEror: 'params_invalid',
 						status: 400
 					});
@@ -45,9 +45,9 @@ class Model extends BaseModel {
                 }).lean();
 
                 if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -59,9 +59,9 @@ class Model extends BaseModel {
 
 					// User is not author of conversation
 					if(!listAuthorsID.includes(authorID)) {
-						return resolve({ 
-							error: true, 
-							message: "Bạn không có quyền tạo poll", 
+						return resolve({
+							error: true,
+							message: "Bạn không có quyền tạo poll",
 							keyEror: 'you_do_not_have_permission_to_create_poll',
 							status: 403
 						});
@@ -75,9 +75,9 @@ class Model extends BaseModel {
 				})
 
 				if(!infoPollAfterInsert) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyEror: 'error_occurred',
 						status: 422
 					});
@@ -96,9 +96,9 @@ class Model extends BaseModel {
 				let infoMessagePoll = await CHATTING__MESSAGE_MODEL.insertData(dataInsertMessage);
 
 				if(!infoMessagePoll) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyEror: 'error_occurred',
 						status: 422
 					});
@@ -132,9 +132,9 @@ class Model extends BaseModel {
 		return new Promise(async (resolve) => {
 			try {
 				if (!checkObjectIDs([messageID, authorID, conversationID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số messageID hoặc conversationID không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số messageID hoặc conversationID không hợp lệ",
 						keyEror: 'params_messageID_or_conversationID_invalid',
 						status: 400
 					});
@@ -147,9 +147,9 @@ class Model extends BaseModel {
 				}).lean();
 
 				if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -161,9 +161,9 @@ class Model extends BaseModel {
 					.populate('poll');
 
 				if(!infoMessagePoll || !infoMessagePoll.poll) {
-					return resolve({ 
-						error: true, 
-						message: "Tin nhắn không tồn tại", 
+					return resolve({
+						error: true,
+						message: "Tin nhắn không tồn tại",
 						keyEror: 'message_is_not_exists',
 						status: 400
 					});
@@ -292,9 +292,9 @@ class Model extends BaseModel {
 		return new Promise(async resolve => {
 			try {
 				if (!checkObjectIDs([messageID, authorID, conversationID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số messageID hoặc conversationID không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số messageID hoặc conversationID không hợp lệ",
 						keyEror: 'params_messageID_or_conversationID_invalid',
 						status: 400
 					});
@@ -307,9 +307,9 @@ class Model extends BaseModel {
 				}).lean();
 
 				if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -321,9 +321,9 @@ class Model extends BaseModel {
 					.populate('poll');
 
 				if(!infoMessagePoll || !infoMessagePoll.poll) {
-					return resolve({ 
-						error: true, 
-						message: "Tin nhắn không tồn tại", 
+					return resolve({
+						error: true,
+						message: "Tin nhắn không tồn tại",
 						keyEror: 'message_is_not_exists',
 						status: 400
 					});
@@ -332,9 +332,9 @@ class Model extends BaseModel {
 				let { poll } = infoMessagePoll;
 
 				if(poll.status === 2) {
-					return resolve({ 
-						error: true, 
-						message: "Tin nhắn poll đã được đóng", 
+					return resolve({
+						error: true,
+						message: "Tin nhắn poll đã được đóng",
 						keyEror: 'message_poll_is_closed',
 						status: 400
 					});
@@ -347,9 +347,9 @@ class Model extends BaseModel {
 				}, { new: true });
 
 				if(!infoPoll) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyEror: 'error_occurred',
 						status: 422
 					});
@@ -371,9 +371,9 @@ class Model extends BaseModel {
 						lastMessage: lastMessage._id, modifyAt: Date.now()
 					});
 
-					await CHATTING__MESSAGE_MODEL.updateUserMissMessage({ 
-						conversationID, 
-						userID: authorID, 
+					await CHATTING__MESSAGE_MODEL.updateUserMissMessage({
+						conversationID,
+						userID: authorID,
 						numberMissMessage: 1
 					});
 				}
@@ -405,9 +405,9 @@ class Model extends BaseModel {
                 let keys = ['modifyAt__-1', 'createAt__-1'];
 
 				if(!checkObjectIDs([conversationID, authorID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số authorID hoặc conversationID không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số authorID hoặc conversationID không hợp lệ",
 						keyEror: 'params_authorID_or_conversationID_invalid',
 						status: 400
 					});
@@ -439,9 +439,9 @@ class Model extends BaseModel {
                 }).lean();
 
                 if(!infoConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -463,7 +463,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy = dataPagingAndSort.data.sort;
                 }
-				
+
 				let	listMessagesPoll = await CHATTING__MESSAGE_COLL
 					.find(conditionObj, filter)
 					.populate('sender', select.sender)
@@ -480,9 +480,9 @@ class Model extends BaseModel {
 					.lean();
 
 				if(!listMessagesPoll) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyEror: 'error_occurred',
 						status: 422
 					});
