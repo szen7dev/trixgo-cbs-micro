@@ -1063,9 +1063,9 @@ class Model extends BaseModel {
 						select: select.nps,
 						populate: {
 							path: 'service usersVote.reason usersVote.user',
-							select: 'name description type childs bizfullname image',
+							select: 'name description type childs bizfullname position image',
 							populate: {
-								path: 'childs',
+								path: 'childs position',
 								select: 'name description type'
 							}
 						}

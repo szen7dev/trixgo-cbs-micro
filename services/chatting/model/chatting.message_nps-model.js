@@ -15,7 +15,9 @@ const { NPS_TYPE } 									= require('../helper/chatting.keys-constant');
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
-const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils');
+const {
+	checkObjectIDs, IsJsonString, validateParamsObjectID
+} = require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS, MODELS
@@ -566,30 +568,131 @@ class Model extends BaseModel {
 	}
 
 	/**
-	 * Dev: MinhVH
-	 * Func: Lấy danh sách user vote nps
-	 * Date: 22/02/2022
-	 */
-	getListUsersVote({ conversationID, messageNPSID, lastestID, limit = 10, select, populates, authorID }) {
+     * Dev: MinhVH
+     * Func: Điểm thống kê
+     * Date: 07/06/2022
+     */
+	scoreStatistics({ conversationID, messageID, userID }) {
+		return new Promise(async resolve => {
+			try {
+				const validation = validateParamsObjectID({
+                    conversationID,
+                    messageID,
+                    userID
+                })
+                if(validation.error) return resolve(validation);
+
+				const infoMessage = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
+					.select('nps')
+					.lean();
+
+				if(!infoMessage) {
+					return resolve({
+						error: true,
+						message: "Tin nhắn không tồn tại",
+						keyEror: 'message_not_exists',
+						status: 400
+					});
+				}
+
+				const dataStatistics = await CHATTING__MESSAGE_NPS_COLL.aggregate([
+                    {
+                        $match: {
+                            _id: ObjectID(infoMessage.nps),
+                        }
+                    },
+					{
+						$addFields: {
+							avg: { $avg: "$usersVote.score" }
+						}
+					},
+					{
+						$unwind: {
+							path: "$usersVote",
+							preserveNullAndEmptyArrays: true
+						},
+					},
+                    {
+                        $group: {
+                            _id: { score: "$usersVote.score" },
+                            users: { $push: "$usersVote.user" },
+                            avg: { $first: "$avg" },
+                            total: { $sum: 1 },
+                        }
+                    },
+					{
+						$sort: {
+							"_id.score": -1
+						}
+					},
+                ]);
+
+				if(!dataStatistics || !dataStatistics.length) {
+					return resolve({
+						error: true,
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+						keyError: 'error_occurred',
+						status: 422
+					});
+				}
+
+				await CHATTING__MESSAGE_NPS_COLL.populate(dataStatistics, {
+					path: "users",
+					select: "_id bizfullname image",
+					model: 'user'
+				})
+
+				const dataAverage = {
+					scoreAverage: dataStatistics[0].avg,
+					avgs: []
+				}
+
+				dataStatistics.map(item => {
+					if(item._id?.score === item.avg) {
+						dataAverage.avgs[dataAverage.avgs.length] = item;
+					}
+				})
+
+				return resolve({
+					error: false,
+					status: 200,
+					data: {
+						dataStatistics,
+						dataAverage
+					}
+				})
+			} catch(error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+     * Dev: MinhVH
+     * Func: Thống kê khảo sát NPS
+     * Date: 07/06/2022
+     */
+	surveyStatistics({ conversationID, messageID, select, populates, userID }) {
 		return new Promise(async resolve => {
 			try {
 				const conditionObj = {};
 				const scores = [1,2,3,4,5,6,7,8,9,10];
 
-				if(!checkObjectIDs([authorID])) {
+				if(!checkObjectIDs([userID])) {
 					return resolve({
 						error: true,
-						message: "Tham số authorID không hợp lệ",
-						keyError: "params_authorID_invalid",
+						message: "Tham số userID không hợp lệ",
+						keyError: "params_userID_invalid",
 						status: 400,
 					})
 				}
 
-				if(!checkObjectIDs([conversationID, messageNPSID])) {
+				if(!checkObjectIDs([conversationID, messageID])) {
 					return resolve({
 						error: true,
-						message: "Tham số conversationID hoặc messageNPSID không hợp lệ",
-						keyError: "params_conversationID__or_messageNPSID_invalid",
+						message: "Tham số conversationID hoặc messageID không hợp lệ",
+						keyError: "params_conversationID__or_messageID_invalid",
 						status: 400,
 					})
 				}
@@ -606,12 +709,12 @@ class Model extends BaseModel {
                     }
                 }
 
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+				const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
-					members: { $in: [authorID] }
+					members: { $in: [userID] }
                 }).lean();
 
-                if(!checkExistConversation) {
+                if(!infoConversation) {
 					return resolve({
 						error: true,
 						message: "Bạn không phải thành viên của cuộc hội thoại",
@@ -620,13 +723,11 @@ class Model extends BaseModel {
 					});
 				}
 
-				const infoMessageNPS = await CHATTING__MESSAGE_NPS_COLL
-					.findById(messageNPSID)
-					.select(select)
-					.populate(populates)
+				const infoMessage = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
 					.lean();
 
-				if(!infoMessageNPS) {
+				if(!infoMessage) {
 					return resolve({
 						error: true,
 						message: "Tin nhắn không tồn tại",
@@ -635,7 +736,9 @@ class Model extends BaseModel {
 					});
 				}
 
-				let groupScore = await CHATTING__MESSAGE_NPS_COLL.aggregate([
+				const { nps } = infoMessage;
+
+				const groupScore = await CHATTING__MESSAGE_NPS_COLL.aggregate([
                     {
                         $match: {
                             _id: ObjectID(messageNPSID)
@@ -649,12 +752,6 @@ class Model extends BaseModel {
                     }
                 ]);
 				console.log({ groupScore })
-
-				// if(infoMessageNPS.type === 1) {
-				// 	scores.map(score => {
-				// 		infoMessageNPS.usersVote.find(user => user.score === score);
-				// 	})
-				// }
 
 				return resolve({ error: false, status: 200 });
 			} catch (error) {

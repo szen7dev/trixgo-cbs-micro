@@ -152,6 +152,9 @@ module.exports = {
 		// Danh sách tin nhắn NPS trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_NPS_CONVERSATION]					: CHATTING__MESSAGE_NPS_HANDLER.getList,
 
+		// Thống kê điểm
+		[CF_ACTIONS_CHATTING.GET_SCORE_STATISTICS_NPS]							: CHATTING__MESSAGE_NPS_HANDLER.scoreStatistics,
+
 
 		// ======================  CONVERSATION ===========================
 		// Thêm cuộc hội thoại mới

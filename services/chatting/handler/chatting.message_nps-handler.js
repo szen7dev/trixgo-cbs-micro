@@ -136,4 +136,62 @@ module.exports = {
         }
     },
 
+    /**
+     * Dev: MinhVH
+     * Func: Điểm thống kê
+     * Date: 07/06/2022
+     */
+    scoreStatistics: {
+        auth: 'required',
+        params: {
+            conversationID  : { type: 'string' },
+            messageID       : { type: 'string' },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.scoreStatistics({
+                    conversationID, messageID, userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: MinhVH
+     * Func: Thống kê khảo sát NPS
+     * Date: 07/06/2022
+     */
+    surveyStatistics: {
+        auth: 'required',
+        params: {
+            conversationID  : { type: 'string' },
+            messageID       : { type: 'string' },
+            select          : { type: 'string', optional: true },
+            populates       : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID, select, populates } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.surveyStatistics({
+                    conversationID, messageID, select, populates, userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
 }

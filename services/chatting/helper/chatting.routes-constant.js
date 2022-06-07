@@ -89,6 +89,7 @@ const CF_ROUTINGS_CHATTING = {
     UPDATE_MESSAGE_NPS_CONVERSATION            	    : `${BASE_ROUTE}${CONVERSATION}/update-message-nps-conversation`,
     CLOSE_MESSAGE_NPS_CONVERSATION            		: `${BASE_ROUTE}${CONVERSATION}/close-message-nps-conversation`,
     GET_LIST_MESSAGE_NPS_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/list-message-nps-conversation`,
+    GET_SCORE_STATISTICS_NPS            	        : `${BASE_ROUTE}${CONVERSATION}/get-score-statistics-nps`,
 
     /**
      * OTHER
