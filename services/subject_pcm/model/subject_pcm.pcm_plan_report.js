@@ -452,7 +452,6 @@ class Model extends BaseModel {
                     unlimited: true,
                     userID
                 })
-                console.log({ dataTaskByCondition })
 
                 if(!dataTaskByCondition || !dataTaskByCondition?.data) {
                     return resolve({

@@ -301,7 +301,7 @@ class Model extends BaseModel {
 					conversation: conversationID,
 					receivers: infoConversation.members,
 					nps: nps._id,
-					type: isVoted ? 120 : 121
+					type: !isVoted ? 120 : 121
 				})
 
 				// UPDATE LAST MESSAGE & UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
