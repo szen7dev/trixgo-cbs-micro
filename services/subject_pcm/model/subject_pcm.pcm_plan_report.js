@@ -452,8 +452,9 @@ class Model extends BaseModel {
                     unlimited: true,
                     userID
                 })
+                console.log({ dataTaskByCondition })
 
-                if(!dataTaskByCondition || !dataTaskByCondition.data) {
+                if(!dataTaskByCondition || !dataTaskByCondition?.data) {
                     return resolve({
                         error: true,
                         message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
@@ -462,7 +463,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                const listTaskPin = dataTaskByCondition.data;
+                const listTaskPin = dataTaskByCondition?.data || [];
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_13_TaskPin.xlsm')))
                     .then(async workbook => {
