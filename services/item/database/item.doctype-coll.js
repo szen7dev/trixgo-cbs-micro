@@ -29,7 +29,6 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
         19-Chung các lỗi hay gặp
         20- Công việc, Đánh giá chất lượng
         21-NPS Dịch vụ (áp dụng cho message nps)
-        22-NPS điểm số (áp dụng cho message nps)
     */
     type: { type: Number, default: 1 },
     //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)

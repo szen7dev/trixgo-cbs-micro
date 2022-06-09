@@ -32,7 +32,7 @@ class Model extends BaseModel {
      * Func: Insert doctype
      * Date: 22/02/2022
      */
-    insert({ type, name, description, companyID, parent, userID }) {
+    insert({ type, name, description, companyID, parent, level, userID }) {
         return new Promise(async resolve => {
             try {
                 const dataInsert = { name, type, description, company: companyID, userCreate: userID };
@@ -80,6 +80,10 @@ class Model extends BaseModel {
                     }
 
                     dataInsert.parent = parent;
+                }
+
+                if(level) {
+                    dataInsert.level = level;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);

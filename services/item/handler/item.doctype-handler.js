@@ -20,6 +20,7 @@ module.exports = {
             name        : { type: "string" },
             description : { type: "string" },
             type        : { type: "number" },
+            level       : { type: "number", optional: true },
             companyID   : { type: "string", optional: true },
             parent      : { type: "string", optional: true },
         },
@@ -27,14 +28,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { type, name, description, companyID, parent } = ctx.params;
+                let { type, name, description, companyID, parent, level } = ctx.params;
 
                 if(!companyID){
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.insert({
-                    type, name, description, companyID, parent, userID
+                    type, name, description, companyID, parent, level, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

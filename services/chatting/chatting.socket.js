@@ -542,7 +542,11 @@ exports.CHATTING_SOCKET = {
 					.populate({
 						path: 'nps',
 						populate: {
-							path: 'service usersVote.reasons'
+							path: 'service',
+							populate: {
+								path: 'childs',
+								select: 'name description type'
+							}
 						}
 					})
 					.populate({

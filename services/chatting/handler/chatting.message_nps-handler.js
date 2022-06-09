@@ -169,7 +169,7 @@ module.exports = {
      * Func: Thống kê khảo sát NPS
      * Date: 07/06/2022
      */
-    surveyStatistics: {
+    reasonStatistics: {
         auth: 'required',
         params: {
             conversationID  : { type: 'string' },
@@ -183,7 +183,7 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
                 const { conversationID, messageID, select, populates } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.surveyStatistics({
+                const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.reasonStatistics({
                     conversationID, messageID, select, populates, userID
                 })
 

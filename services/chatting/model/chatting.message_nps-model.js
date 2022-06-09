@@ -301,7 +301,7 @@ class Model extends BaseModel {
 					conversation: conversationID,
 					receivers: infoConversation.members,
 					nps: nps._id,
-					type: isVoted ? 120 : 121
+					type: !isVoted ? 120 : 121
 				})
 
 				// UPDATE LAST MESSAGE & UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
@@ -569,7 +569,7 @@ class Model extends BaseModel {
 
 	/**
      * Dev: MinhVH
-     * Func: Điểm thống kê
+     * Func: Thống kê theo điểm NPS
      * Date: 07/06/2022
      */
 	scoreStatistics({ conversationID, messageID, userID }) {
@@ -600,6 +600,7 @@ class Model extends BaseModel {
                     {
                         $match: {
                             _id: ObjectID(infoMessage.nps),
+							type: 1
                         }
                     },
 					{
@@ -670,61 +671,22 @@ class Model extends BaseModel {
 
 	/**
      * Dev: MinhVH
-     * Func: Thống kê khảo sát NPS
+     * Func: Thống kê theo lý do NPS
      * Date: 07/06/2022
      */
-	surveyStatistics({ conversationID, messageID, select, populates, userID }) {
+	reasonStatistics({ conversationID, messageID, userID }) {
 		return new Promise(async resolve => {
 			try {
-				const conditionObj = {};
-				const scores = [1,2,3,4,5,6,7,8,9,10];
-
-				if(!checkObjectIDs([userID])) {
-					return resolve({
-						error: true,
-						message: "Tham số userID không hợp lệ",
-						keyError: "params_userID_invalid",
-						status: 400,
-					})
-				}
-
-				if(!checkObjectIDs([conversationID, messageID])) {
-					return resolve({
-						error: true,
-						message: "Tham số conversationID hoặc messageID không hợp lệ",
-						keyError: "params_conversationID__or_messageID_invalid",
-						status: 400,
-					})
-				}
-
-				if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				} else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-				const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
-					_id: conversationID,
-					members: { $in: [userID] }
-                }).lean();
-
-                if(!infoConversation) {
-					return resolve({
-						error: true,
-						message: "Bạn không phải thành viên của cuộc hội thoại",
-						keyEror: 'you_are_not_member_of_conversation',
-						status: 403
-					});
-				}
+				const validation = validateParamsObjectID({
+                    conversationID,
+                    messageID,
+                    userID
+                })
+                if(validation.error) return resolve(validation);
 
 				const infoMessage = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
+					.select('nps')
 					.lean();
 
 				if(!infoMessage) {
@@ -736,29 +698,77 @@ class Model extends BaseModel {
 					});
 				}
 
-				const { nps } = infoMessage;
-
-				const groupScore = await CHATTING__MESSAGE_NPS_COLL.aggregate([
+				const dataStatistics = await CHATTING__MESSAGE_NPS_COLL.aggregate([
                     {
                         $match: {
-                            _id: ObjectID(messageNPSID)
+                            _id: ObjectID(infoMessage.nps),
+							type: {
+								$in: [2,3]
+							}
                         }
                     },
+					{
+						$unwind: {
+							path: "$usersVote",
+							preserveNullAndEmptyArrays: true
+						},
+					},
                     {
                         $group: {
-                            _id: "$usersVote.score",
-                            amount: { $sum: 1 },
+                            _id: { reason: "$usersVote.reason" },
+                            reason: { $first: "$usersVote.reason" },
+                            users: { $push: "$usersVote.user" },
+                            total: { $sum: 1 },
                         }
-                    }
+                    },
+					{
+						$project: {
+							_id: 0,
+							reason: 1,
+							users: 1,
+							total: 1
+						}
+					},
+					{
+						$sort: {
+							total: -1
+						}
+					},
                 ]);
-				console.log({ groupScore })
 
-				return resolve({ error: false, status: 200 });
-			} catch (error) {
+				if(!dataStatistics || !dataStatistics.length) {
+					return resolve({
+						error: true,
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+						keyError: 'error_occurred',
+						status: 422
+					});
+				}
+
+				await CHATTING__MESSAGE_NPS_COLL.populate(dataStatistics, [
+					{
+						path: "users",
+						select: "_id bizfullname image",
+						model: 'user'
+					},
+					{
+						path: "reason",
+						select: "name description",
+						model: 'doctype'
+					}
+				])
+
+				return resolve({
+					error: false,
+					status: 200,
+					data: dataStatistics
+				})
+			} catch(error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
 	}
+
 
 }
 
