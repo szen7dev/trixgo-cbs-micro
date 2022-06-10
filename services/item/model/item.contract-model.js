@@ -2087,7 +2087,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let conditionObj = { ontime: {$exists: true}, onbudget: {$exists: true} };
-
+                
                 if(!checkObjectIDs(projectID)){
                     return resolve({ error: true, message: "projectID không hợp lệ" });
                 }else{

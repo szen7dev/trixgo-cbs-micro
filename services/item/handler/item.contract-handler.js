@@ -617,15 +617,14 @@ module.exports = {
     statisticalStatusByOntimeOnbudget: {
         auth: "required",
         params: {
-            projectID           : { type: "string", optional: true },
+            projectID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { projectID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-
-                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.statisticalStatusByOntimeOnbudget({
+                let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.statisticalStatusByOntimeOnbudget({
                     projectID
                 });
 

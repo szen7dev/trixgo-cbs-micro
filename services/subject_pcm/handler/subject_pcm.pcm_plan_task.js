@@ -366,13 +366,15 @@ module.exports = {
         auth: "required",
         params: {
             projectID: { type: "string" },
+            keyword: { type: "string", optional: true },
+            subtype: { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-                let { projectID } = ctx.params;
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, ctx });
+                let { projectID, keyword, subtype } = ctx.params;
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

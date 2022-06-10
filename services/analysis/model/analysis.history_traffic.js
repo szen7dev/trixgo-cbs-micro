@@ -111,8 +111,7 @@ class Model extends BaseModel {
         })
     }
 
-
-     /**
+    /**
 	 * Dev: Depv
 	 * Func: Thống kê thiết bị truy cập
 	 * Date: 13/12/2021
@@ -385,7 +384,7 @@ class Model extends BaseModel {
                 let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
                     {
                         $match: {
-                            createdAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                            createAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                         }
                     },
                     { 
@@ -394,34 +393,25 @@ class Model extends BaseModel {
                                   company:  "$companyOfAuthor",
                             }, 
                             amountAccesses: { $sum: 1 },
-                          } 
-                    },
-                    { 
-                        $lookup: {
-                            from: "companies",
-                            localField:"_id.company",
-                            foreignField: "_id",
-                            as: "company"
                         } 
                     },
-                    {
-                        $unwind: "$company"
+                    { 
+                        $sort: {
+                            "amountAccesses": -1
+                        } 
                     },
-                    {
-                        $project: {
-                            "company.name": 1,
-                            "amountAccesses": 1,
-                            _id: 0
-                        }
-                    }
                 ])
+                await ANALYSIS__HISTORY_TRAFFIC_COLL.populate(infoData, {  
+                    path: '_id.company',
+                    select: 'name',
+                    model: 'company' 
+                })
             return resolve({ error: false, data: infoData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         })
     }
-  
 }
 
 exports.MODEL = new Model;
