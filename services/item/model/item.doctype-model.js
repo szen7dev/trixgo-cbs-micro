@@ -12,7 +12,7 @@
  * TOOLS
  */
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { DOCTYPE_TYPE }                  = require('../helper/item.keys-constant');
 
@@ -162,6 +162,37 @@ class Model extends BaseModel {
      * Func: Remove doctype => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Date: 22/02/2022
      */
+    remove({ doctypesID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({
+                    doctypesID,
+                    userID
+                })
+                if(validation.error) return resolve(validation);
+
+                const result = await ITEM__DOCTYPE_COLL.deleteMany({
+                    _id: {
+                        $in: doctypesID
+                    },
+                    type: 21 // Message NPS
+                });
+
+                if(!result) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                return resolve({ error: false, status: 200, data: result })
+            } catch(error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Name: get Hợp đồng

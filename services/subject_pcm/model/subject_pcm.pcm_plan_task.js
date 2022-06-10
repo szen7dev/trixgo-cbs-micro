@@ -474,7 +474,7 @@ class Model extends BaseModel {
     update({ typeUpdate,
         taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
-        links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature,
+        links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature, isOpenBidding,
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, ctx
     }){
         return new Promise(async (resolve) => {
@@ -503,6 +503,19 @@ class Model extends BaseModel {
 
                 if(!infoTask)
                     return resolve({ error: true, message: 'task_not_exists', status: 400 });
+
+                /**
+                 * Công việc phân loại "LỰA CHỌN NHÀ THẦU"
+                 * -> Không được cập nhật task khi hồ sơ thầu đã mở
+                 */
+                if(infoTask.subtype === 4 && infoTask.openedStatus === 1) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
 
                 /**
                  * LOGIC STEP (3)
@@ -759,6 +772,21 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(isOpenBidding) {
+                    dataAddToset = { ...dataAddToset, openedUsers: userID }
+
+                    const { openedStatus, openedUsers, related } = infoTask;
+
+                    if(openedStatus === 0) {
+                        const usersOpened = [...openedUsers, userID].map(item => item.toString());
+                        const allUsersIsOpened = related.every(item => usersOpened.includes(item.toString()));
+
+                        if(allUsersIsOpened) {
+                            dataUpdate.openedStatus = 1;
+                        }
+                    }
+                }
+
                 //_________File của người tạo việc-cân nhắc bỏ do không linh hoạt phiên bản
                 //  if(checkObjectIDs(authorAttachs)){
                 //     dataAddToset = { ...dataAddToset, authorAttachs }
@@ -872,6 +900,28 @@ class Model extends BaseModel {
                         contract: contract?.toString(),
                         path: `/pcm/detail/${taskID}`,
                         languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        mainColl: {
+                            kind: "pcm_plan_task",
+                            item: taskID
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+                }
+
+                if(isOpenBidding) {
+                    const { project, contract, related, author } = infoAfterUpdate;
+                    const relatedUsers = related.map(item => item.toString());
+                    const listReceivers = [...relatedUsers, author.toString()];
+                    const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
+
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content: `đã mở thầu`,
+                        receivers,
+                        project: project.toString(),
+                        contract: contract?.toString(),
+                        path: `/pcm/detail/${taskID}`,
+                        languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
                         app: APP_KEYS.PCM_PLAN_TASK,
                         mainColl: {
                             kind: "pcm_plan_task",

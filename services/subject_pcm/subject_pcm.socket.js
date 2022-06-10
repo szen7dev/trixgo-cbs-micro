@@ -262,4 +262,76 @@ exports.SUBJECT_SOCKET = {
 			});
 		}
 	},
+
+	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_OPEN_BIDDING]: async function(data) {
+		let socket                     		= this;
+		let broker							= socket.$service.broker;
+		let listUserActive             		= socket.$service.listUserConnected;
+		let userID             				= socket.client.user;
+		let io                         		= socket.$service.io;
+
+        try {
+			let { taskID, bizfullname } = data;
+
+			if(!taskID){
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, message: "Tham số taskID không hợp lệ" },
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_OPEN_BIDDING], io
+				});
+			}
+
+			const infoTask = await PCM_PLAN_TASK_COLL
+				.findById(taskID)
+				.select('_id name sign author related')
+				.lean();
+
+			if(!infoTask) {
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, message: "Task không tồn tại" },
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_OPEN_BIDDING], io
+				});
+			}
+
+			let { author, related } = infoTask;
+			related = related.map(userID => userID.toString());
+
+			const listReceivers = [...new Set([author.toString(), ...related])];
+			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
+				arrReceiver: receivers,
+				data: { error: false, data: { taskID, userID } },
+				event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_OPEN_BIDDING], io
+			});
+
+			// SEND CLOUD-MSG
+			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+				users: receivers,
+				title: infoTask.name,
+				description: `${bizfullname} đã mở thầu`,
+				dataSend: {
+					app: APP_KEYS.PCM_PLAN_TASK,
+					languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
+					mainColl: {
+						kind: 'pcm_plan_task',
+						item: { _id: taskID }
+					}
+				},
+				web_url: `/pcm/detail/${taskID}`,
+				env: ENV_DEVICE_WEB_CBS
+			});
+		} catch (error) {
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
+				arrReceiver: [userID],
+				data: { error: true, message: error.message },
+				event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_OPEN_BIDDING], io
+			});
+		}
+	},
 }
