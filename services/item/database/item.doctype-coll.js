@@ -61,6 +61,11 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     name: String,
     //_________Mô tả
     description: String,
+
+    amountChilds:  {
+        type: Number,
+        default : 0
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

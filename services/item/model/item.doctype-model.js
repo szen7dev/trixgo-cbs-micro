@@ -101,7 +101,8 @@ class Model extends BaseModel {
                     await ITEM__DOCTYPE_COLL.findByIdAndUpdate(parent, {
                         $addToSet: {
                             childs: infoAfterInsert._id
-                        }
+                        },
+                        $inc: { amountChilds: 1 }
                     });
                 }
 
@@ -253,7 +254,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, projectID, parentID, type, keyword, limit = 10, lastestID, select, populates }) {
+    getList({ companyID, projectID, parentID, type, keyword, limit = 10, lastestID, select, populates, isShowParentAndChild }) {
         return new Promise(async (resolve) => {
             try {
                 if(isNaN(limit) || +limit > 20) {
@@ -261,7 +262,6 @@ class Model extends BaseModel {
 				} else{
 					limit = +limit;
 				}
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -308,6 +308,10 @@ class Model extends BaseModel {
                     conditionObj.parent = parentID;
                 } else{
                     conditionObj.parent = { $exists: false };
+                }
+
+                if(isShowParentAndChild == 1){
+                    delete conditionObj.parent;
                 }
 
                 //____________Loại doctype

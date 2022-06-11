@@ -118,11 +118,12 @@ module.exports = {
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
+            isShowParentAndChild: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, doctypeID, projectID, parentID, type, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, doctypeID, projectID, parentID, type, keyword, limit, lastestID, select, populates, isShowParentAndChild } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -136,7 +137,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getList({
-                        companyID, projectID, parentID, lastestID, userID, type, keyword, limit, select, populates
+                        companyID, projectID, parentID, lastestID, userID, type, keyword, limit, select, populates, isShowParentAndChild
                     });
                 }
 
