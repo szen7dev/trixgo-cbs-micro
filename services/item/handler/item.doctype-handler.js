@@ -129,7 +129,6 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id;
                 }
-
                 let resultAfterCallHandler;
                 if(doctypeID){
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getInfo({

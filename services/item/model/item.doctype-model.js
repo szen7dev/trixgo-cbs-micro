@@ -307,11 +307,13 @@ class Model extends BaseModel {
                 if(checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
                 } else{
-                    conditionObj.parent = { $exists: false };
+                    conditionObj.$or = [{
+                        parent: { $exists: false },
+                    }, { parent: null }]
                 }
 
                 if(isShowParentAndChild == 1){
-                    delete conditionObj.parent;
+                    delete conditionObj.$or;
                 }
 
                 //____________Loại doctype
