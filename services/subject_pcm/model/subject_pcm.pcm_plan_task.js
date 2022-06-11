@@ -1993,6 +1993,146 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án V2
+     * Author: Depv
+     * Code:
+     */
+    getAmountTaskOfCompanyOfAuthor({ projectID, keyword, subtype, ctx }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'projectID_invalid' });
+                let objectSearch = {
+                    project: ObjectID(projectID), companyOfAuthor: { $exists: true },
+                }
+
+                if(subtype){
+                    objectSearch.subtype = +subtype;
+                }
+
+                let listCompanyOfAuthor = await PCM_PLAN_TASK_COLL.aggregate([
+                    { $match: objectSearch },
+                    { $group: { _id: "$companyOfAuthor" } },
+                    { $sort: { _id: -1} }
+                ]);
+
+                let conditionObjCompany = {};
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObjCompany.name = new RegExp(keyword, 'i');
+                }
+                let conditionPopulate = {
+                    path: '_id',
+                    select: '_id name sign image',
+                    model: 'company',
+                    match: conditionObjCompany
+                }
+
+                await PCM_PLAN_TASK_COLL.populate(listCompanyOfAuthor, conditionPopulate);
+                let listCompany = listCompanyOfAuthor.map(item => item._id).filter(Boolean);
+                let start = new Date();
+                start.setHours(0,0,0,0);
+                let conditionSearchTask = {
+                    project: ObjectID(projectID),
+                    companyOfAssignee: { $exists: true },
+                }
+
+                if(subtype){
+                    conditionSearchTask.subtype = +subtype;
+                }
+                let listCompanyAndTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $lt: start,
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$companyOfAuthor",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listCompanyAndTaskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $gte: start,
+                                $lt: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$companyOfAuthor",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listCompanyAndTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $gte: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$companyOfAuthor",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listCompanyAndTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            status: 3
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$companyOfAuthor",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+                
+                return resolve({ error: false, data: { 
+                    listCompany,
+                    listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
+                    listCompanyAndTaskFinish
+                    } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Lấy số lượng công việc theo milestone
      * Author: Depv
      * Code:
