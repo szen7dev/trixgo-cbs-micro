@@ -204,6 +204,16 @@ class Model extends BaseModel {
                     dataInsert.expiredTime = new Date();
                     dataInsert.actualFinishTime = new Date();
                 }
+
+                if(expiredHour && expiredTime) {
+                    const [month, day, year] = expiredTime.split('/');
+                    const date = `${year}-${month}-${day}`;
+                    const formatDate = new Date(`${date} ${expiredHour}`);
+
+                    dataInsert.expiredTime = formatDate;
+                    dataInsert.actualFinishTime = formatDate;
+                }
+
                 // precalculated
                 // companyOfAuthor
                 // companyOfAssignee
@@ -472,7 +482,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ typeUpdate,
-        taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
+        taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature, isOpenBidding,
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, ctx
@@ -748,6 +758,14 @@ class Model extends BaseModel {
                     dataUpdate.milestone = milestone;
                 }
 
+                if(expiredHour) {
+                    const [month, day, year] = actualFinishTime.split('/');
+                    const date = `${year}-${month}-${day}`;
+                    const formatDate = new Date(`${date} ${expiredHour}`);
+
+                    dataUpdate.actualFinishTime = formatDate;
+                }
+
                 if(isAddSignature) {
                     const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
                         companyID: infoTask.company?.toString(),
@@ -842,6 +860,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Thêm người liên quan
                 if(related && related.length) {
                     const relatedCurrent = infoTask.related.map(item => item.toString());
                     const newRelated = related.filter(item => !relatedCurrent.includes(item));
@@ -887,6 +906,7 @@ class Model extends BaseModel {
                     });
                 }
 
+                // Đồng ý phê duyệt
                 if(isAddSignature) {
                     const { project, contract, related, assignee, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
@@ -909,6 +929,7 @@ class Model extends BaseModel {
                     })
                 }
 
+                // Mở thầu
                 if(isOpenBidding) {
                     const { project, contract, related, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
@@ -924,6 +945,50 @@ class Model extends BaseModel {
                         languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
                         app: APP_KEYS.PCM_PLAN_TASK,
                         mainColl: {
+                            kind: "pcm_plan_task",
+                            item: taskID
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+                }
+
+                // Cập nhật checklist thành công
+                if(infoTask.type === 2 && status === 3) {
+                    const { name: taskName, project, contract, related, assignee, author, parent } = infoAfterUpdate;
+                    const relatedUsers = related.map(item => item.toString());
+                    const listReceivers = [...relatedUsers, author.toString(), assignee.toString()];
+                    const receivers = listReceivers.filter(item => item !== userID.toString());
+                    const webUrl = `/pcm/detail/${parent}#checklist_${taskID}`;
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receivers,
+                        title: taskName,
+                        description: `${bizfullname} đã hoàn thành 1 checklist`,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
+                        },
+                        web_url: webUrl,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content: `đã hoàn thành 1 checklist`,
+                        receivers,
+                        project: project?.toString(),
+                        contract: contract?.toString(),
+                        path: webUrl,
+                        languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        mainColl: {
+                            kind: "pcm_plan_task",
+                            item: parent
+                        },
+                        subColl: {
                             kind: "pcm_plan_task",
                             item: taskID
                         },

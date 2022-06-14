@@ -18,6 +18,9 @@ const PCM_PLAN_TASK_COLL                		= require('./database/subject_pcm.pcm_
 
 exports.SUBJECT_SOCKET = {
 
+	/**
+	 * Tạo mới checklist
+	 */
     [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_CHECKLIST]: async function(data) {
         try {
 			let socket                     		= this;
@@ -80,6 +83,9 @@ exports.SUBJECT_SOCKET = {
 		}
 	},
 
+	/**
+	 * Tạo mới việc con
+	 */
 	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_CHILD_TASK]: async function(data) {
         try {
 			let socket                     		= this;
@@ -142,6 +148,9 @@ exports.SUBJECT_SOCKET = {
 		}
 	},
 
+	/**
+	 * Thêm người liên quan
+	 */
 	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_RELATION_USER]: async function(data) {
         try {
 			let socket                     		= this;
@@ -198,6 +207,9 @@ exports.SUBJECT_SOCKET = {
 		}
 	},
 
+	/**
+	 * Đồng ý phê duyệt
+	 */
 	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_SIGNATURE]: async function(data) {
 		let socket                     		= this;
 		let broker							= socket.$service.broker;
@@ -263,6 +275,9 @@ exports.SUBJECT_SOCKET = {
 		}
 	},
 
+	/**
+	 * Mở thầu
+	 */
 	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_OPEN_BIDDING]: async function(data) {
 		let socket                     		= this;
 		let broker							= socket.$service.broker;

@@ -79,6 +79,7 @@ module.exports = {
             description    : { type: "string", optional: true },
             actualStartTime: { type: "string", optional: true },
             actualFinishTime: { type: "string", optional: true },
+            expiredHour      : { type: "string", optional: true },
             amountoftime   : { type: "string", optional: true },
             amountPerHour  : { type: "string", optional: true },
             assigneeID     : { type: "string", optional: true },
@@ -105,7 +106,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const {
                     typeUpdate,
-                    taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID,
+                    taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone
@@ -114,7 +115,7 @@ module.exports = {
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
-                    taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
+                    taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding,
