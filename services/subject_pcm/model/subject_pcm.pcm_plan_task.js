@@ -1126,7 +1126,7 @@ class Model extends BaseModel {
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 10, lastestID, select, populates = {}
+        keyword, limit = 10, unlimit, lastestID, select, populates = {}
     }) {
         return new Promise(async (resolve) => {
             try {
@@ -1421,6 +1421,13 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
 
+                // Tổng số việc tìm thấy
+                let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
+
+                if(unlimit == 1){
+                    limit = totalRecord;
+                }
+
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
                     .limit(limit+1)
@@ -1441,8 +1448,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-                // Tổng số việc tìm thấy
-                let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
+               
 
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
