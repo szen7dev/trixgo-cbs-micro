@@ -1124,7 +1124,7 @@ class Model extends BaseModel {
      */
     getList({
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey,
+        subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 10, unlimit, lastestID, select, populates = {}
     }) {
@@ -1366,6 +1366,11 @@ class Model extends BaseModel {
                         conditionObj.type = 1;
                         delete conditionObj.status;
                     }
+                }
+
+                // Chỉ lấy task cha
+                if(isParent == 1){
+                    conditionObj.parent = { $exists: false };
                 }
 
                 // Công ty của người tạo việc
@@ -2074,7 +2079,9 @@ class Model extends BaseModel {
                 if (!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID_invalid' });
                 let objectSearch = {
-                    project: ObjectID(projectID), companyOfAuthor: { $exists: true },
+                    project: ObjectID(projectID), 
+                    companyOfAuthor: { $exists: true },
+                    parent: { $exists: false },
                 }
 
                 if(subtype){
@@ -2104,14 +2111,17 @@ class Model extends BaseModel {
                 let listCompany = listCompanyOfAuthor.map(item => item._id).filter(Boolean);
                 let start = new Date();
                 start.setHours(0,0,0,0);
+
                 let conditionSearchTask = {
                     project: ObjectID(projectID),
-                    companyOfAssignee: { $exists: true },
+                    companyOfAuthor: { $exists: true },
+                    parent: { $exists: false },
                 }
 
                 if(subtype){
                     conditionSearchTask.subtype = +subtype;
                 }
+
                 let listCompanyAndTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
                     {
                         $match: {
