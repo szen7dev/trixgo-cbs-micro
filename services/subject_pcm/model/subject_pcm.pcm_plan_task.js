@@ -517,11 +517,12 @@ class Model extends BaseModel {
                 /**
                  * Công việc phân loại "LỰA CHỌN NHÀ THẦU"
                  * -> Không được cập nhật task khi hồ sơ thầu đã mở
+                 * -> Chỉ được cập nhật thêm người liên quan
                  */
-                if(infoTask.subtype === 4 && infoTask.openedStatus === 1) {
+                if(infoTask.subtype === 4 && infoTask.openedStatus === 1 && (!related && !related.length)) {
                     return resolve({
                         error: true,
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        message: 'Không thể cập nhật công việc khi hồ sơ thầu đã mở',
                         keyError: 'error_occurred',
                         status: 422
                     });

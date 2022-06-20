@@ -108,8 +108,8 @@ module.exports = {
 
     /**
      * Name: Remove
-     * Author: Hiepnh
-     * Date: 9/4/2022
+     * Author: MinhVH
+     * Date: 20/06/2022
      */
     remove: {
         auth: "required",

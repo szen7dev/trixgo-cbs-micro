@@ -1,6 +1,7 @@
 "use strict";
+
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
@@ -318,6 +319,43 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Remove
+     * Author: MinhVH
+     * Date: 20/06/2022
+     */
+    remove({ cashFlowsID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({
+                    cashFlowsID,
+                    userID
+                })
+                if(validation.error) return resolve(validation);
+
+                const result = await FIN__CASH_FLOW_PLAN_COLL.deleteMany({
+                    _id: {
+                        $in: cashFlowsID
+                    },
+                    userCreate: userID
+                });
+
+                if(!result) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                return resolve({ error: false, status: 200, data: result })
+            } catch(error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
