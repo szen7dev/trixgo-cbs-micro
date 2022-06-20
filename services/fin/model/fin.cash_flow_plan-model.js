@@ -468,7 +468,7 @@ class Model extends BaseModel {
                     if(!isNaN(priority)){
                         conditionObj.priority = Number(priority);
                     }
-                    
+
                     conditionObj.members = { $in: [userID] }
                     conditionObj.parent = { $exists: false }
 
