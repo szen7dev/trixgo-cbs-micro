@@ -8,7 +8,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
-const { removeHtmlTag }                 = require('../../../tools/utils/string_utils');
+// const { removeHtmlTag }                 = require('../../../tools/utils/string_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const { PCM_STATUS_TASK }			    = require('../../../tools/constants');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
@@ -425,12 +425,7 @@ class Model extends BaseModel {
                 }
 
                 const infoReport = await PCM_PLAN_REPORT_COLL
-                    .findOne({
-                        _id: reportID,
-                        // members: {
-                        //     $in: [userID]
-                        // }
-                    })
+                    .findById(reportID)
                     .lean();
 
                 if(!infoReport) {

@@ -142,7 +142,7 @@ module.exports = {
 
     /**
      * Dev: MinhVH
-     * Func: Demo Download Excel
+     * Func: Download Excel
      * Date: 27/05/2022
      */
     exportTaskReport: {
