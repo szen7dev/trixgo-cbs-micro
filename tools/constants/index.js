@@ -6,3 +6,9 @@ exports.PCM_STATUS_TASK = [
     { value: 5, text: 'Chờ người khác giải quyết', class: 'tajic-status-btn-waiting', backgroud: '4d4dff', key: 'waiting_on_someone_else' },
     { value: 6, text: 'Tiếp tục theo dõi', class: 'tajic-status-btn-follow-up', backgroud: '5bc0de', key: 'follow_up' },
 ]
+
+exports.INSURANCE_STATUS = [
+    { value: 1, text: 'Chưa nộp' },
+    { value: 2, text: 'Đã nộp' },
+    { value: 3, text: 'Thêm mới' },
+]

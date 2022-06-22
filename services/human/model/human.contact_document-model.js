@@ -1,13 +1,10 @@
 "use strict";
 
-const XlsxPopulate                      = require('xlsx-populate');
-const fs                                = require('fs');
-const path                              = require('path');
-const moment                            = require('moment');
+
 const _isValid                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, validateParamsObjectID }
+const { checkObjectIDs, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
@@ -21,7 +18,6 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
  * COLLECTIONS
@@ -613,99 +609,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "can't_get", status: 403 });
 
                 return resolve({ error: false, data: infoData, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Dev: MinhVH
-     * Func: Download Excel Human in Company
-     * Date: 21/06/2022
-     */
-    exportHuman({ companyID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                const validation = validateParamsObjectID({ userID, companyID });
-                if(validation.error) return resolve(validation);
-
-                const listHuman = await HUMAN__CONTACT_DOCUMENT_COLL
-                    .find({
-                        company: companyID
-                    })
-                    .populate({
-                        path: 'position2 project contact certificateName',
-                        // select: 'name position birthday workingStatus workStartDate educationalBackground graduationYear contractType contractExpire insuranceNumber taxid phone identity insuranceStatus note',
-                        populate: {
-                            path: 'position workingStatus educationalBackground contractType department',
-                            // select: 'name'
-                        }
-                    })
-                    .lean();
-
-                if(!listHuman) {
-                    return resolve({
-                        error: true,
-                        message: 'Không tìm thấy nhân sự trong công ty',
-                        keyError: 'humans_not_exists',
-                        status: 400
-                    });
-                }
-
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/human_1_HumanInCompany.xlsm')))
-                    .then(async workbook => {
-
-                        workbook.sheet("DanhSachNhanSu").row(1).cell(1).value(`DANH SÁCH CÁN BỘ CÔNG TY`);
-
-                        let indexExcel = 4;
-                        const currentYear = new Date().getFullYear();
-
-                        listHuman.map((human, index) => {
-                            const {
-                                name, position, department, workingStatus, birthday, workStartDate,
-                                educationalBackground, graduationYear, contractType, contractExpire,
-                                insuranceNumber, taxid, phone, identity, insuranceStatus, note
-                            } = human.contact;
-
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(1).value(index+1);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(2).value(name);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(3).value(position?.name);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(4).value(department?.name);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(5).value(workingStatus?.name);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(6).value(moment(birthday).format('DD/MM/YYYY'));
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(7).value(workStartDate ? moment(workStartDate).format('DD/MM/YYYY') : '');
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(8).value(educationalBackground?.name);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(9).value('');
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(10).value(graduationYear);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(11).value(currentYear - graduationYear);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(12).value(human.certificateName?.description);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(13).value(human.certificateGrade);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(14).value('');
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(15).value(contractType?.name || '');
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(16).value(moment(contractExpire).format('DD/MM/YYYY'));
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(17).value(insuranceNumber);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(18).value(taxid);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(19).value(phone);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(20).value(identity);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(21).value(insuranceStatus);
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(22).value(note || human.note);
-
-                            indexExcel++;
-                        })
-
-                        const now = new Date();
-                        const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `human_1_HumanInCompany${now.getTime()}.xlsm`;
-                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                        await workbook.toFileAsync(pathWriteFile);
-
-                        const result = await uploadFileS3(pathWriteFile, fileName);
-                        fs.unlinkSync(pathWriteFile);
-
-                        return resolve({ error: false, data: result?.Location, status: 200 });
-                    });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

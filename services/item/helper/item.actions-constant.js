@@ -60,6 +60,7 @@ const CF_ACTIONS_ITEM = {
     CONTACT_REMOVE                              : `${BASE_ACTIONS}_${CONTACT}_REMOVE`,
     CONTACT_GET_INFO_AND_GET_LIST               : `${BASE_ACTIONS}_${CONTACT}_GET_INFO_AND_GET_LIST`,
     CONTACT_GET_LIST_OF_SYSTEM                  : `${BASE_ACTIONS}_${CONTACT}_GET_LIST_OF_SYSTEM`,
+    CONTACT_EXPORT                              : `${BASE_ACTIONS}_${CONTACT}_EXPORT`,
 
     /**
      * WAREHOUSE

@@ -1,21 +1,22 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const moment                            = require('moment');
 const _isValid                          = require('mongoose').Types.ObjectId;
 
+const BaseModel                         = require('../../../tools/db/base_model');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
+const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 
 /**
  * TOOLS
  */
+const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+const { INSURANCE_STATUS }              = require('../../../tools/constants');
 
 /**
  * COLLECTIONS
@@ -860,6 +861,146 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Download Excel Contact
+     * Date: 21/06/2022
+     */
+    exportHuman({ companyID, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({ userID, companyID });
+                if(validation.error) return resolve(validation);
+
+                const listHuman = await ITEM__CONTACT_COLL
+                    .find({
+                        company: companyID
+                    })
+                    .populate({
+                        path: 'position workingStatus educationalBackground contractType department documents certificateName',
+                        populate: {
+                            path: 'documents.educationalBackground2',
+                            select: 'name'
+                        }
+                    })
+                    .lean();
+
+                if(!listHuman) {
+                    return resolve({
+                        error: true,
+                        message: 'Không tìm thấy nhân sự trong công ty',
+                        keyError: 'humans_not_exists',
+                        status: 400
+                    });
+                }
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/human_1_HumanInCompany.xlsm')))
+                    .then(async workbook => {
+
+                        const { data: infoCompany, error } = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
+                            companyID,
+                            select: '_id name'
+                        });
+
+                        if(error) {
+                            return resolve({
+                                error: true,
+                                message: 'Không tìm thấy công ty',
+                                keyError: 'company_not_exists',
+                                status: 400
+                            });
+                        }
+
+                        let indexExcel = 4;
+                        const currentYear = new Date().getFullYear();
+
+                        workbook.sheet("DanhSachNhanSu").row(1).cell(1).value(`DANH SÁCH CÁN BỘ ${infoCompany?.name}`);
+
+                        listHuman.map((human, index) => {
+                            const {
+                                name, position, department, workingStatus, birthday, workStartDate,
+                                graduationYear, contractType, contractExpire, certificateName,
+                                insuranceNumber, taxid, phone, identity, note,
+                            } = human;
+
+                            // const educationalBackground = documents.map(({ educationalBackground2 }) => educationalBackground2?.name || '').join(', ');
+                            const educationalBackground = human.educationalBackground?.map(item => item.name).join(', ');
+
+                            let humanInsuranceStatus = human.insuranceStatus || 1;
+                            const insuranceStatus = `${INSURANCE_STATUS[--humanInsuranceStatus].text}`;
+
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(1).value(index+1);
+                            // Họ và tên
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(2).value(name);
+                            // Chức vụ
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(3).value(position?.name);
+                            // Phòng ban
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(4).value(department?.name);
+                            // Tình trạng làm việc
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(5).value(workingStatus?.name);
+                            // Ngày tháng năm sinh
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(6).value(birthday ? moment(birthday).format('DD/MM/YYYY') : '');
+                            // Thời gian tuyển dụng
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(7).value(workStartDate ? moment(workStartDate).format('DD/MM/YYYY') : '');
+                            // Chuyên môn/Trình độ học vấn
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(8).value(educationalBackground);
+                            // Nơi đào tạo
+                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(9).value('Nơi đào tạo');
+                            // Năm tốt nghiệp
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(10).value(graduationYear);
+                            // Năm kinh nghiệm
+                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(11).value(graduationYear ? currentYear - graduationYear : 0);
+                            // Lĩnh vực chứng chỉ
+                            if(certificateName?.description) {
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(12).value(certificateName.description);
+                            }
+                            // Hạng chứng chỉ
+                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(13).value('Hạng chứng chỉ');
+                            // Ngày hết hạn chứng chỉ
+                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(14).value('Ngày hết hạn chứng chỉ');
+                            // Loại hợp đồng
+                            if(contractType?.name) {
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(15).value(contractType.name);
+                            }
+                            // Thời hạn hợp đồng
+                            if(contractExpire) {
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(16).value(moment(contractExpire).format('DD/MM/YYYY'));
+                            }
+
+                            // Số sổ BHXH
+                            insuranceNumber && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(17).value(insuranceNumber);
+                            // Mã số thuế
+                            taxid && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(18).value(taxid);
+                            // Số điện thoại
+                            phone && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(19).value(phone);
+                            // Số CCCD
+                            identity && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(20).value(identity);
+                            // Tình trạng sổ BHXH
+                            insuranceStatus && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(21).value(insuranceStatus);
+                            // Ghi chú
+                            note && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(22).value(note);
+
+                            indexExcel++;
+                        })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `human_1_HumanInCompany${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

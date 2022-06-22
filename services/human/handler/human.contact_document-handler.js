@@ -209,35 +209,4 @@ module.exports = {
             }
         }
     },
-
-    /**
-     * Dev: MinhVH
-     * Func: Download Excel Human in Company
-     * Date: 21/06/2022
-     */
-    exportHuman: {
-        auth: 'required',
-        params: {
-            companyID: { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID } = ctx.params;
-
-                if(!companyID) {
-                    companyID = company._id;
-                }
-
-                const resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.exportHuman({
-                    userID, companyID
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
 }
