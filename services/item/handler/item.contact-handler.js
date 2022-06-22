@@ -190,6 +190,8 @@ module.exports = {
             contractTypeID      : { type: "string", optional: true },
             workingStatusID     : { type: "string", optional: true },
             gender              : { type: "string", optional: true },
+            realStatus          : { type: "string", optional: true },
+            familyPolicy        : { type: "string", optional: true },
             insuranceStatus     : { type: "string", optional: true },
             companyID           : { type: "string", optional: true },
             isBirthday          : { type: "string", optional: true },
@@ -208,9 +210,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, contactID, type, departmentID, positionID, contractTypeID,
-                    workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID,
-                    keyword, limit, lastestID, select, populates } = ctx.params;
+                let {
+                    companyID, contactID, type, departmentID, positionID, contractTypeID,
+                    workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
+                    isMember, parentID, realStatus, familyPolicy,
+                    keyword, limit, lastestID, select, populates
+                } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -225,7 +230,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
                         companyID, type, departmentID, positionID, contractTypeID,
-                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID,
+                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID, realStatus, familyPolicy,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }
@@ -278,14 +283,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID } = ctx.params;
+                let { companyID, filterParams } = ctx.params;
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportHuman({
-                    userID, companyID, ctx
+                    userID, companyID, filterParams, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

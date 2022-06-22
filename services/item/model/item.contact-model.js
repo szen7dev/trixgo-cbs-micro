@@ -563,15 +563,17 @@ class Model extends BaseModel {
      */
     getList({
         userID, companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
-        insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
+        isExportExcel,
+        keyword, limit = 10, lastestID, select, populates = {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
                     limit = 20
-                }else{
+                } else{
                     limit = +limit
                 }
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -642,7 +644,7 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(departmentID)){
                     conditionObj.department = departmentID,
-                    delete  conditionObj.company;
+                    delete conditionObj.company;
                 }
 
                 if(checkObjectIDs(positionID)){
@@ -663,6 +665,14 @@ class Model extends BaseModel {
 
                 if(insuranceStatus){
                     conditionObj.insuranceStatus = insuranceStatus
+                }
+
+                if(realStatus) {
+                    conditionObj.realStatus = realStatus
+                }
+
+                if(familyPolicy) {
+                    conditionObj.familyPolicy = familyPolicy
                 }
 
                 // Lấy những danh bạ có sinh nhật vào hôm nay
@@ -692,13 +702,13 @@ class Model extends BaseModel {
                     let regSearch = new RegExp(keyword, 'i');
                     let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
                     conditionObj.$and = [
-                        { 
+                        {
                             $or: [
                                 { name: regSearch },
                                 { sign: regSearch },
                                 { taxid: regSearch },
                                 { phone: regSearch },
-                            ] 
+                            ]
                         },
                         {
                             $or: [
@@ -708,6 +718,15 @@ class Model extends BaseModel {
                         }
                     ]
                 }
+
+                /**
+                 * Purpose: Sử dụng trong export excel nhân sự (theo bộ lọc)
+                 * Function: exportHuman (model)
+                 */
+                if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
+                }
+
                 let conditionObjOrg = { ...conditionObj };
 
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -726,7 +745,8 @@ class Model extends BaseModel {
 					sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
+                let infoDataAfterGet = await ITEM__CONTACT_COLL
+                    .find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -872,16 +892,27 @@ class Model extends BaseModel {
      * Func: Download Excel Contact
      * Date: 21/06/2022
      */
-    exportHuman({ companyID, userID, ctx }) {
+    exportHuman({ companyID, userID, filterParams, ctx }) {
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({ userID, companyID });
                 if(validation.error) return resolve(validation);
 
+                let conditionObj = {};
+                const { data, error } = await this.getList({
+                    ...filterParams,
+                    userID,
+                    companyID,
+                    isMember: 1,
+                    isExportExcel: true
+                });
+
+                if(!error) {
+                    conditionObj = { ...data };
+                }
+
                 const listHuman = await ITEM__CONTACT_COLL
-                    .find({
-                        company: companyID
-                    })
+                    .find(conditionObj)
                     .populate({
                         path: 'position workingStatus educationalBackground contractType department documents certificateName',
                         populate: {
@@ -925,9 +956,14 @@ class Model extends BaseModel {
                         listHuman.map((human, index) => {
                             const {
                                 name, position, department, workingStatus, birthday, workStartDate,
-                                graduationYear, contractType, contractExpire, certificateName,
+                                contractType, contractExpire, certificateName,
                                 insuranceNumber, taxid, phone, identity, note,
                             } = human;
+
+                            let graduationYear = 0;
+                            if(human.graduationYear) {
+                                graduationYear = new Date(human.graduationYear).getFullYear();
+                            }
 
                             // const educationalBackground = documents.map(({ educationalBackground2 }) => educationalBackground2?.name || '').join(', ');
                             const educationalBackground = human.educationalBackground?.map(item => item.name).join(', ');
@@ -952,10 +988,14 @@ class Model extends BaseModel {
                             workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(8).value(educationalBackground);
                             // Nơi đào tạo
                             // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(9).value('Nơi đào tạo');
-                            // Năm tốt nghiệp
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(10).value(graduationYear);
-                            // Năm kinh nghiệm
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(11).value(graduationYear ? currentYear - graduationYear : 0);
+
+                            if(graduationYear) {
+                                // Năm tốt nghiệp
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(10).value(graduationYear);
+                                // Năm kinh nghiệm
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(11).value(currentYear - graduationYear);
+                            }
+
                             // Lĩnh vực chứng chỉ
                             if(certificateName?.description) {
                                 workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(12).value(certificateName.description);
