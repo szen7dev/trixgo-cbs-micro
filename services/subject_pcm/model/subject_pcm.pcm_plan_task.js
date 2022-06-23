@@ -482,6 +482,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ typeUpdate,
+        
         taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature, isOpenBidding,
@@ -936,7 +937,6 @@ class Model extends BaseModel {
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString()];
                     const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
-
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: `đã mở thầu`,
                         receivers,
@@ -1136,7 +1136,6 @@ class Model extends BaseModel {
                 } else{
                     limit = +limit;
                 }
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -1429,7 +1428,6 @@ class Model extends BaseModel {
 
                 // Tổng số việc tìm thấy
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
-
                 if(unlimit == 1){
                     limit = totalRecord;
                 }
@@ -1455,10 +1453,8 @@ class Model extends BaseModel {
                     }
                 }
                
-
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
