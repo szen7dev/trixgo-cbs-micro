@@ -520,7 +520,7 @@ class Model extends BaseModel {
                  * -> Không được cập nhật task khi hồ sơ thầu đã mở
                  * -> Chỉ được cập nhật thêm người liên quan
                  */
-                if(infoTask.subtype === 4 && infoTask.openedStatus === 1 && (!related && !related.length)) {
+                if(infoTask.subtype === 4 && infoTask.openedStatus === 1 && (!related || !related?.length)) {
                     return resolve({
                         error: true,
                         message: 'Không thể cập nhật công việc khi hồ sơ thầu đã mở',

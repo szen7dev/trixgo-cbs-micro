@@ -957,7 +957,7 @@ class Model extends BaseModel {
                             const {
                                 name, position, department, workingStatus, birthday, workStartDate,
                                 contractType, contractExpire, certificateName,
-                                insuranceNumber, taxid, phone, identity, note,
+                                insuranceNumber, taxid, phone, identity, dateProvice, place, note,
                             } = human;
 
                             let graduationYear = 0;
@@ -965,7 +965,6 @@ class Model extends BaseModel {
                                 graduationYear = new Date(human.graduationYear).getFullYear();
                             }
 
-                            // const educationalBackground = documents.map(({ educationalBackground2 }) => educationalBackground2?.name || '').join(', ');
                             const educationalBackground = human.educationalBackground?.map(item => item.name).join(', ');
 
                             let humanInsuranceStatus = human.insuranceStatus || 1;
@@ -1021,10 +1020,16 @@ class Model extends BaseModel {
                             phone && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(19).value(phone);
                             // Số CCCD
                             identity && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(20).value(identity);
+                            // Ngày cấp CCCD
+                            if(dateProvice) {
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(21).value(moment(dateProvice).format('DD/MM/YYYY'));
+                            }
+                            // Nơi cấp CCCD
+                            place && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(22).value(place);
                             // Tình trạng sổ BHXH
-                            insuranceStatus && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(21).value(insuranceStatus);
+                            insuranceStatus && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(23).value(insuranceStatus);
                             // Ghi chú
-                            note && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(22).value(note);
+                            note && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(24).value(note);
 
                             indexExcel++;
                         })
