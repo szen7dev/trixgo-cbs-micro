@@ -1869,10 +1869,10 @@ class Model extends BaseModel {
                 let mailsUser = [];
 
                 if(receivers && receivers.length) {
-                    let users = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
-                        { arrayID: JSON.stringify([...receivers, userID]), select: "_id email" }
+                    const { data: users } = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
+                        { arrayID: JSON.stringify([...receivers, userID]), select: "_id email", isLoadAll: true }
                     );
-                    users = users?.data?.listRecords || [];
+                    console.log({ users, emails })
 
                     if(users.length) {
                         mailsUser = users.map(item => item.email);

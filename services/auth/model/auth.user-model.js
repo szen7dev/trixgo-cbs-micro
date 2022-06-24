@@ -1568,7 +1568,7 @@ class Model extends BaseModel {
      */
     getListV2({
         companyID, projectID, arrayID,
-        keyword, limit = 10, lastestID, select, populates= {}, ctx, isLoadAll }) { 
+        keyword, limit = 10, lastestID, select, populates= {}, ctx, isLoadAll,  }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -1583,6 +1583,12 @@ class Model extends BaseModel {
                 let keys	 = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
+                // Lấy user theo mảng id
+                if(arrayID && arrayID.length){
+                    arrayID = JSON.parse(arrayID);
+                    conditionObj._id = { $in: arrayID }
+                }
+
                 // Cờ dùng để call service, không truyền qua api
                 if(isLoadAll) {
                     let infoDataAfterGet = [];
@@ -1590,29 +1596,23 @@ class Model extends BaseModel {
                     if(companyID && checkObjectIDs([companyID])) {
                         infoDataAfterGet = await AUTH__USER_COLL
                             .find({ company: companyID })
-                            .select('_id')
+                            .select(select + ' _id')
                             .lean();
                     } else{
                         infoDataAfterGet = await AUTH__USER_COLL
-                            .find({})
-                            .select('_id')
+                            .find(conditionObj)
+                            .select(select + ' _id')
                             .lean()
                     }
 
                     return resolve({ error: false, data: infoDataAfterGet, status: 200 });
                 }
-                // Lấy user theo mảng id
-                if(arrayID && arrayID.length){
-                    arrayID = JSON.parse(arrayID);
-                    conditionObj._id = { $in: arrayID }
-                }
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-               
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -1671,7 +1671,7 @@ class Model extends BaseModel {
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
-                    // .populate(populates)
+                    .populate(populates)
                     .lean(); 
 
                 if(!infoDataAfterGet)
