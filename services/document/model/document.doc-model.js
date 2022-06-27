@@ -4,6 +4,9 @@
  * EXTERNAL PACKAGE
  */
 const ObjectID                                  	= require('mongoose').Types.ObjectId;
+const XlsxPopulate                                  = require('xlsx-populate');
+const fs                                            = require('fs');
+const path                                          = require('path');
 const moment                                  	    = require('moment');
 const ISOdate                                  	    = require('isodate');
 
@@ -17,15 +20,16 @@ const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-const
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
-const stringUtils									= require('../../../tools/utils/string_utils');
 const timeUtils									    = require('../../../tools/utils/time_utils');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
 const { DOC_DIRECTION_TYPE, DOC_TYPE }              = require('../helper/document.keys-constant');
 const {
     checkObjectIDs,
     IsJsonString,
-    checkNumberIsValidWithRange
+    checkNumberIsValidWithRange,
+    validateParamsObjectID
 } = require('../../../tools/utils/utils');
+const { uploadFileS3 } = require('../../../tools/s3');
 
 /**
  * COLLECTIONS
@@ -40,7 +44,7 @@ class Model extends BaseModel {
     constructor() {
         super(DOCUMENT__DOC_COLL);
     }
-    
+
 	/**
 	 * Dev: Depv
 	 * Func: Tạo mới văn bản
@@ -54,65 +58,65 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(departmentID)) {
-					return resolve({  
-                        error: true, 
-                        message: 'Request params departmentID invalid', 
+					return resolve({
+                        error: true,
+                        message: 'Request params departmentID invalid',
                         keyError: 'params_invalid',
                     });
                 }
 
                 if (!checkObjectIDs(packageID)) {
-					return resolve({  
-                        error: true, 
-                        message: 'Request params packageID invalid', 
+					return resolve({
+                        error: true,
+                        message: 'Request params packageID invalid',
                         keyError: 'params_invalid',
                     });
                 }
 
                 if (!checkObjectIDs(senderID)) {
-					return resolve({  
-                        error: true, 
-                        message: 'Request params senderID invalid', 
+					return resolve({
+                        error: true,
+                        message: 'Request params senderID invalid',
                         keyError: 'params_invalid',
                     });
                 }
 
                 if (!checkObjectIDs(propertyID)) {
-					return resolve({  
-                        error: true, 
-                        message: 'Request params propertyID invalid', 
+					return resolve({
+                        error: true,
+                        message: 'Request params propertyID invalid',
                         keyError: 'params_invalid',
                     });
                 }
 
                 // if (!checkObjectIDs(datahubContactID)) {
-				// 	return resolve({  
-                //         error: true, 
-                //         message: 'Request params datahubContactID invalid', 
+				// 	return resolve({
+                //         error: true,
+                //         message: 'Request params datahubContactID invalid',
                 //         keyError: 'params_invalid',
                 //     });
                 // }
-                
+
                 if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
                     return resolve({
-                        error: true, 
-                        message: 'Request params direction invalid', 
+                        error: true,
+                        message: 'Request params direction invalid',
                         keyError: 'params_direction_invalid',
                     });
                 }
 
                 if (!checkNumberIsValidWithRange({ arrValid: DOC_TYPE, val: type })) {
                     return resolve({
-                        error: true, 
-                        message: 'Request params type invalid', 
+                        error: true,
+                        message: 'Request params type invalid',
                         keyError: 'params_type_invalid',
                     });
                 }
-                
+
                 // if (!sign) {
                 //     return resolve({
-                //         error: true, 
-                //         message: 'Request params sign invalid', 
+                //         error: true,
+                //         message: 'Request params sign invalid',
                 //         keyError: 'params_type_invalid',
                 //     });
                 // }
@@ -122,7 +126,7 @@ class Model extends BaseModel {
                 })
                 let companyID = infoDepartment.data.company;
                 if(!companyID)
-                    return res.json({ error: true, message: "company_invalid" }); 
+                    return res.json({ error: true, message: "company_invalid" });
 
                 let dataInsert = {
                     type,
@@ -163,7 +167,7 @@ class Model extends BaseModel {
                     let infoParent = await DOCUMENT__DOC_COLL.findById(parentID).select('level');
                     if(!infoParent)
                     return resolve({
-                        error: true, 
+                        error: true,
                         message: "parentID invalid",
                         keyError: "parentID_invalid",
                         status: 422
@@ -175,8 +179,8 @@ class Model extends BaseModel {
 				let infoAfterInsert = await this.insertData(dataInsert);
 
 				if (!infoAfterInsert) {
-                    return resolve({ 
-                        error: true, 
+                    return resolve({
+                        error: true,
                         message: "Can't create document",
                         keyError: "create_document_failed",
                         status: 422
@@ -198,7 +202,7 @@ class Model extends BaseModel {
                     await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
                         departmentID, numberOfDocs: 1
                     })
-                    
+
                     // Cập nhật số lượng document cho gói thầu
                     if(packageID && checkObjectIDs(packageID)){
                         await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
@@ -233,29 +237,29 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(documentID, packageID, senderID, propertyID, userID)) {
-					return resolve({ 
-                        error: true, 
-                        message: 'Request params departmentID|packageID|senderID|propertyID invalid', 
+					return resolve({
+                        error: true,
+                        message: 'Request params departmentID|packageID|senderID|propertyID invalid',
                         keyError: 'params_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
-                
+
                 if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params direction invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Request params direction invalid',
                         keyError: 'params_direction_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
                 if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse })) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params requestResponse invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Request params requestResponse invalid',
                         keyError: 'paramas_requestResponse_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
@@ -266,14 +270,14 @@ class Model extends BaseModel {
                 // }).lean()
 
                 // if(!checkPermission) {
-                //     return resolve({ 
-                //         error: true, 
-                //         message: "Permission denined", 
+                //     return resolve({
+                //         error: true,
+                //         message: "Permission denined",
                 //         keyError: "permission_denined_document",
                 //         status: 403
                 //     });
                 // }
-                
+
                 let dataUpdate = {
                     userUpdate: userID,
                     modifyAt: Date.now()
@@ -354,13 +358,13 @@ class Model extends BaseModel {
                 (storageID  && checkObjectIDs(storageID))   && (dataUpdate.storage  = storageID);
 
 				let infoAfterUpdate = await this.updateWhereClause({ _id: documentID }, dataUpdate);
-                
+
 				if (!infoAfterUpdate) {
-                    return resolve({ 
-                        error: true, 
-                        message: "Can't update document", 
+                    return resolve({
+                        error: true,
+                        message: "Can't update document",
                         keyError: "update_document_failed",
-                        status: 422 
+                        status: 422
                     });
                 }
 
@@ -380,11 +384,11 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs([documentID, userID])) {
-                    return resolve({ 
+                    return resolve({
                         error: true,
-                        message: 'Request params documentID or userID invalid', 
+                        message: 'Request params documentID or userID invalid',
                         keyError: 'params_documentID_or_userID_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
@@ -395,22 +399,22 @@ class Model extends BaseModel {
                 }).lean()
 
                 if(!checkPermission) {
-                    return resolve({ 
-                        error: true, 
-                        message: "Permission denined", 
+                    return resolve({
+                        error: true,
+                        message: "Permission denined",
                         keyError: "permission_denined_document",
-                        status: 403 
+                        status: 403
                     });
                 }
 
                 const infoAfterDelete = await DOCUMENT__DOC_COLL.findByIdAndDelete(documentID);
 
                 if(!infoAfterDelete) {
-                    return resolve({ 
-                        error: true, 
-                        message: "Can't delete document", 
+                    return resolve({
+                        error: true,
+                        message: "Can't delete document",
                         keyError: "delete_document_failed",
-                        status: 422 
+                        status: 422
                     });
                 }
 
@@ -422,24 +426,24 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: get văn bản 
+     * Name: get văn bản
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ documentID, select, populates }) { 
+    getInfo({ documentID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(documentID))
                     return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
-                
+
                  // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -462,7 +466,7 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -471,12 +475,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách văn bản 
+     * Name  : Danh sách văn bản
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({
-        parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID,
+        parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
@@ -487,14 +491,15 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(limit > 20){
                     limit = 20;
-                }else{
+                } else{
                     limit = +limit;
                 }
 
@@ -503,7 +508,7 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -525,17 +530,17 @@ class Model extends BaseModel {
                         conditionObj.receivedDate = { $gte: new Date(fromDate), $lte: moment(new Date(toDate)).endOf('day')._d }
                     }
                 }
-                
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 // User phải nằm trong member của gói thầu.
                 let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
                 if(listPackageAccess.length){
                     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
-                }else{
+                } else{
                     return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
                 }
 
@@ -594,10 +599,10 @@ class Model extends BaseModel {
                 if(checkObjectIDs(departmentID)){
                     conditionObj.project = departmentID
                 }
-                
+
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
-                }else{
+                } else{
                     conditionObj.parent = { $exists: false }
                 }
 
@@ -608,12 +613,22 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+
                     conditionObj.$or = [
                         { name: regSearch },
                         { sign: regSearch },
                     ]
                 }
+
+                /**
+                 * Purpose: Sử dụng trong export excel document (hoặc theo bộ lọc)
+                 * Function: exportDocument (model)
+                 */
+                if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
+                }
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
@@ -632,10 +647,10 @@ class Model extends BaseModel {
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
-                    .select(select || {})
-                    .populate(populates || {})
-                    .lean(); 
-                
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -656,7 +671,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -672,29 +687,29 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([userID])) {
-                    return resolve({ 
-                        error: true, 
+                    return resolve({
+                        error: true,
                         message: 'Request params userID invalid',
                         keyError: 'params_userID_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
                 if(departmentID && !checkObjectIDs([departmentID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params departmentID invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Request params departmentID invalid',
                         keyError: 'params_departmentID_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
                 if(packageID && !checkObjectIDs([packageID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params packageID invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Request params packageID invalid',
                         keyError: 'params_packageID_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
@@ -723,7 +738,7 @@ class Model extends BaseModel {
                         $sort: { _id: 1 }
                     }
                 ])
-                
+
                 let	listDoctypeGroupByWeek = await DOCUMENT__DOC_COLL.aggregate([
                     {
                         $match: {
@@ -757,11 +772,11 @@ class Model extends BaseModel {
                 }
 
                 if(!listDoctype) {
-                    return resolve({ 
-                        error: true, 
-                        message: "Can't get list doctype", 
+                    return resolve({
+                        error: true,
+                        message: "Can't get list doctype",
                         keyError: "get_list_doctype_failed",
-                        status: 403 
+                        status: 403
                     });
                 }
 
@@ -787,20 +802,20 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(departmentID && !checkObjectIDs([departmentID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params departmentID invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Request params departmentID invalid',
                         keyError: 'params_departmentID_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
                 if(packageID && !checkObjectIDs([packageID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params packageID invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Request params packageID invalid',
                         keyError: 'params_packageID_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
@@ -811,7 +826,7 @@ class Model extends BaseModel {
                 if(!departmentID){
                     companyID && (conditionObj.company = ObjectID(companyID));
                 }
-                
+
                 // User phải nằm trong members của gói thầu.
                 // let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
                 // if(listPackageAccess.length){
@@ -833,7 +848,7 @@ class Model extends BaseModel {
                         $sort: { _id: 1 }
                     }
                 ])
-                
+
                 let	listDoctypeGroupByWeek = await DOCUMENT__DOC_COLL.aggregate([
                     {
                         $match: {
@@ -873,11 +888,11 @@ class Model extends BaseModel {
                 })
 
                 if(!listDoctype) {
-                    return resolve({ 
-                        error: true, 
-                        message: "Can't get list doctype", 
+                    return resolve({
+                        error: true,
+                        message: "Can't get list doctype",
                         keyError: "get_list_doctype_failed",
-                        status: 403 
+                        status: 403
                     });
                 }
 
@@ -899,7 +914,7 @@ class Model extends BaseModel {
  	 * Func: Chia sẻ văn bản
  	 * Date: 05/11/2021
  	 */
- 	updateShareDocument({ authorID, documentID, usersID, isShare }) { 
+ 	updateShareDocument({ authorID, documentID, usersID, isShare }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([authorID]))
@@ -951,7 +966,7 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
  	 * Dev: MinhVH
  	 * Func: Cập nhật quyền người được chia sẻ văn bản
@@ -1106,7 +1121,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: Thêm file đính kèm trong hồ sơ
 	 * Date: 13/11/2021
-	 */  
+	 */
     addFileAttachment({ authorID, documentID, filesID }) {
         return new Promise(async (resolve) => {
             try {
@@ -1150,17 +1165,17 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: Đánh dấu hồ sơ
 	 * Date: 30/12/2021
-	 */   
+	 */
     updateMarkDocument({ userID, documentID, isMark }) {
         return new Promise(async (resolve) => {
             try {
 
                 if(!checkObjectIDs(documentID)) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params documentID invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Request params documentID invalid',
                         keyError: 'params_documentID_invalid',
-                        status: 400 
+                        status: 400
                     });
                 }
 
@@ -1170,9 +1185,9 @@ class Model extends BaseModel {
                 // }).lean()
 
                 // if(!checkPermission) {
-                //     return resolve({ 
-                //         error: true, 
-                //         message: 'Permission denined document', 
+                //     return resolve({
+                //         error: true,
+                //         message: 'Permission denined document',
                 //         keyError: 'permission_denined_document',
                 //         status: 403
                 //     });
@@ -1195,9 +1210,9 @@ class Model extends BaseModel {
                 }
 
                 if(!infoAfterUpdate) {
-                    return resolve({ 
-                        error: true, 
-                        message: "Can't highlight document", 
+                    return resolve({
+                        error: true,
+                        message: "Can't highlight document",
                         keyError: 'highlight_document_failed',
                         status: 422
                     });
@@ -1214,12 +1229,11 @@ class Model extends BaseModel {
         })
     }
 
-
     /**
      * Name: Lấy số lượng công việc của tất cả project mà user là members
      * Author: Depv
      */
-     getAmountDocumentByProjects({ userID, fromDate, toDate, ctx }){
+    getAmountDocumentByProjects({ userID, fromDate, toDate, ctx }){
         return new Promise(async resolve => {
             try {
                 // Call service list project
@@ -1234,11 +1248,11 @@ class Model extends BaseModel {
                 if(fromDate && toDate){
                     conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                 }
-                
+
                 // Số lượng công việc trong mỗi dự án
                 let listAmountDocument = await DOCUMENT__DOC_COLL.aggregate([
                     { $match: conditionObj },
-                    { $group: { 
+                    { $group: {
                         _id: "$project",
                         amount: { $sum: 1 }
                     }},
@@ -1252,6 +1266,185 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Dev: MinhVH
+     * Func: Download Excel Document
+     * Date: 27/06/2022
+     */
+    exportDocument({ userID, filterParams = {}, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({ userID });
+                if(validation.error) return resolve(validation);
+
+                const dataDepartment = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                    unLimit: true, select: "_id"
+                });
+                if(dataDepartment.error) return resolve(dataDepartment);
+
+                const listDepartmentID = (dataDepartment.data || []).map(project => ObjectID(project._id));
+
+                let conditionObj = {
+                    project: {
+                        $in: listDepartmentID
+                    }
+                };
+
+                const { data, error } = await this.getList({
+                    ...filterParams,
+                    userID,
+                    isExportExcel: true
+                });
+
+                if(!error) {
+                    conditionObj = { ...data, ...conditionObj };
+                }
+
+                console.log({ conditionObj })
+
+                const listDocument = await DOCUMENT__DOC_COLL
+                    .find(conditionObj)
+                    .populate({
+                        path: 'author package sender receiver datahubContact field property storage',
+                        select: '_id bizfullname name',
+                    })
+                    .lean();
+
+                if(!listDocument) {
+                    return resolve({
+                        error: true,
+                        message: 'Không tìm thấy hồ sơ văn bản',
+                        keyError: 'documents_not_exists',
+                        status: 400
+                    });
+                }
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/document_2_ListDocument.xlsm')))
+                    .then(async workbook => {
+
+                        let indexExcel = 3;
+
+                        listDocument.map((document, index) => {
+                            const {
+                                name, sign, storeSign, date, receivedDate, style, author,
+                                amountDelivery, status, amount, modifyAt, note, direction,
+                                sender, receiver, datahubContact, field, property, storage, package: packageInfo
+                            } = document;
+
+                            workbook.sheet("Data").row(indexExcel).cell(1).value(index+1);
+
+                            // Người tạo văn bản
+                            workbook.sheet("Data").row(indexExcel).cell(2).value(author?.bizfullname);
+
+                            // Ngày chỉnh sửa
+                            if(modifyAt) {
+                                workbook.sheet("Data").row(indexExcel).cell(3).value(moment(modifyAt).format('DD/MM/YYYY'));
+                            }
+
+                            // Tiêu đề hồ sơ
+                            name && workbook.sheet("Data").row(indexExcel).cell(4).value(name);
+
+                            // Mã hiệu
+                            sign && workbook.sheet("Data").row(indexExcel).cell(5).value(sign);
+
+                            // Mã hiệu hồ sơ lưu
+                            storeSign && workbook.sheet("Data").row(indexExcel).cell(6).value(storeSign);
+
+                            // Ngày văn bản
+                            if(date) {
+                                workbook.sheet("Data").row(indexExcel).cell(7).value(moment(date).format('DD/MM/YYYY'));
+                            }
+
+                            // Ngày nhận thực tế
+                            if(receivedDate) {
+                                workbook.sheet("Data").row(indexExcel).cell(8).value(moment(receivedDate).format('DD/MM/YYYY'));
+                            }
+
+                            // Định dạng văn bản (nhận dạng)
+                            style && workbook.sheet("Data").row(indexExcel).cell(9).value(style);
+
+                            // Tình trạng
+                            status && workbook.sheet("Data").row(indexExcel).cell(10).value(status);
+
+                            // SL nhận
+                            amount && workbook.sheet("Data").row(indexExcel).cell(11).value(amount);
+
+                            // SL giao
+                            amountDelivery && workbook.sheet("Data").row(indexExcel).cell(12).value(amountDelivery);
+
+                            // Ghi chú
+                            note && workbook.sheet("Data").row(indexExcel).cell(13).value(note);
+
+                            // Hướng hồ sơ
+                            switch (direction) {
+                                case 1:
+                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Đến');
+                                    break;
+                                case 2:
+                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Đi');
+                                    break;
+                                case 3:
+                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Nội bộ');
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            // Gói thầu
+                            if(packageInfo) {
+                                workbook.sheet("Data").row(indexExcel).cell(15).value(packageInfo.name);
+                            }
+
+                            // Chủ thế ban hành
+                            if(sender) {
+                                workbook.sheet("Data").row(indexExcel).cell(16).value(sender.name);
+                            }
+
+                            // Chủ thể nhận
+                            if(receiver) {
+                                workbook.sheet("Data").row(indexExcel).cell(17).value(receiver.name);
+                            }
+
+                            // Cơ quan tổ chức
+                            if(datahubContact) {
+                                workbook.sheet("Data").row(indexExcel).cell(18).value(datahubContact.name);
+                            }
+
+                            // Lĩnh vực
+                            if(field) {
+                                workbook.sheet("Data").row(indexExcel).cell(19).value(field.name);
+                            }
+
+                            // Tính chất
+                            if(property) {
+                                workbook.sheet("Data").row(indexExcel).cell(20).value(property.name);
+                            }
+
+                            // Lưu trữ
+                            if(storage) {
+                                workbook.sheet("Data").row(indexExcel).cell(21).value(storage.name);
+                            }
+
+                            indexExcel++;
+                        })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `document_2_ListDocument${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

@@ -884,6 +884,16 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Sử dụng UnLimit để lấy mảng toàn bộ các phần tử, sử dụng cho phương thức $in tại các ứng dụng
+                if(unLimit) {
+                    const dataUnlimit = await ITEM__DEPARTMENT_COLL
+                        .find(conditionObj)
+                        .select(select)
+                        .lean();
+
+                    return resolve({ error: false, data: dataUnlimit, status: 200 });
+                }
+
                 let conditionObjOrg = { ...conditionObj }
 
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -900,17 +910,6 @@ class Model extends BaseModel {
                 }else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy        = dataPagingAndSort?.data?.sort;
-                }
-
-                // Sử dụng UnLimit để lấy mảng toàn bộ các phần tử, sử dụng cho phương thức $in tại các ứng dụng
-                if(unLimit) {
-                    // console.log({ conditionObj, select })
-                    const dataUnlimit = await ITEM__DEPARTMENT_COLL
-                        .find(conditionObj)
-                        .select(select)
-                        .lean();
-
-                    return resolve({ error: false, data: dataUnlimit, status: 200 });
                 }
 
                 const infoDataAfterGet = await ITEM__DEPARTMENT_COLL
