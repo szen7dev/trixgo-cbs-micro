@@ -122,7 +122,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     lastVersion: {
         type    :  Number,
         default : 0
-    }, 
+    },
     //_________Số lượng document con
     amountDocumentChild: {
         type    :  Number,

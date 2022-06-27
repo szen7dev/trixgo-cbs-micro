@@ -14,3 +14,4 @@ api.http
 .DS_Store
 
 Dockerfile
+files/temporary_uploads/*

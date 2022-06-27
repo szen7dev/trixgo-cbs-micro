@@ -71,8 +71,8 @@ module.exports = {
                 // console.log({   parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                 //     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                 //     fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID })
-                    
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({   
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus,contractID, datahubContactID, ctx
@@ -129,14 +129,14 @@ module.exports = {
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID, datahubContactID
                 } = ctx.params;
-                
+
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.update({
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, userID: userUpdate, value, completeStatus, contractID, datahubContactID, ctx
 				});
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });   
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
@@ -225,28 +225,27 @@ module.exports = {
         async handler(ctx) {
             try {
                 // Call traffic
-                const infoTraffic = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
                     appID: `${APP_ID.DOCUMENT.id}`, menuID: `${APP_ID.DOCUMENT.menuDocumentApp.dashboard.id}`, type: 1
                 })
-                // console.log(infoTraffic)
 
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { 
+                let {
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, datahubContactID,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
-                
+
                 // if(!companyID){
                 //     companyID = company._id
                 // }
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
-                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, datahubContactID, userID, keyword, 
+                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, datahubContactID, userID, keyword,
                     limit, lastestID, select, populates
                 });
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx }); 
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
@@ -316,7 +315,7 @@ module.exports = {
 	 * Dev: MinhVH
 	 * Func: Đánh dấu hồ sơ
 	 * Date: 30/12/2021
-	 */  
+	 */
     updateMarkDocument: {
         params: {
 			documentID: { type: "string" },
@@ -428,7 +427,7 @@ module.exports = {
 	 * Dev: MinhVH
 	 * Func: Thêm file đính kèm trong hồ sơ
 	 * Date: 13/11/2021
-	 */  
+	 */
     addFileAttachment: {
         params: {
 			documentID: { type: "string" }
@@ -455,7 +454,7 @@ module.exports = {
 	 * Dev: Depv
 	 * Func: Thống kê theo type
 	 * Date: 13/11/2021
-	 */  
+	 */
     statisticalByType: {
         params: {
 			departmentID        : { type: "string", optional: true },
@@ -489,8 +488,8 @@ module.exports = {
 	 * Dev: Depv
 	 * Func: Lấy số lượng công việc của tất cả project mà user là members
 	 * Date: 13/11/2021
-	 */  
-     getAmountDocumentByProjects: {
+	 */
+    getAmountDocumentByProjects: {
         params: {
 			fromDate : { type: "string", optional: true },
 			toDate   : { type: "string", optional: true }
@@ -504,7 +503,7 @@ module.exports = {
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getAmountDocumentByProjects({
                     userID, fromDate, toDate, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -512,4 +511,28 @@ module.exports = {
         }
     },
 
+    /**
+     * Dev: MinhVH
+     * Func: Download Excel Document
+     * Date: 27/06/2022
+     */
+    exportDocument: {
+        auth: 'required',
+        params: {},
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { filterParams } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocument({
+                    userID, filterParams, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }
