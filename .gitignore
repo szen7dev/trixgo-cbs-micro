@@ -71,3 +71,5 @@ temp/cbs_query.mongodb
 
 temp/test.js
 temp/.gitlab-ci_demo.yml
+
+ops/db/*
