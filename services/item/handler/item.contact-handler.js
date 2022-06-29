@@ -199,7 +199,11 @@ module.exports = {
             isListParentOrListChilds: { type: "string", optional: true },
             isMember            : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
-
+            educationalBackground2: { type: "string", optional: true },
+            field2              : { type: "string", optional: true },
+            typeCertificate     : { type: "string", optional: true },
+            certificateName     : { type: "string", optional: true },
+            certificateGrade    : { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -213,7 +217,7 @@ module.exports = {
                 let {
                     companyID, contactID, type, departmentID, positionID, contractTypeID,
                     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
-                    isMember, parentID, realStatus, familyPolicy,
+                    isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
@@ -230,7 +234,8 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
                         companyID, type, departmentID, positionID, contractTypeID,
-                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID, realStatus, familyPolicy,
+                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
+                        parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }

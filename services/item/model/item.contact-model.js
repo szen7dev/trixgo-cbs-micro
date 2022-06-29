@@ -23,6 +23,7 @@ const { INSURANCE_STATUS }              = require('../../../tools/constants');
  */
 const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll');
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
+const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll')
 
 class Model extends BaseModel {
 
@@ -564,7 +565,7 @@ class Model extends BaseModel {
     getList({
         userID, companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
         insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
-        isExportExcel,
+        isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade,
         keyword, limit = 10, lastestID, select, populates = {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -719,6 +720,85 @@ class Model extends BaseModel {
                     ]
                 }
 
+                // Trình độ học vấn
+                if(educationalBackground2){
+                    // Call service sau
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, educationalBackground2 });
+                    let arrContactIDForEducationBG2 = arrContact.map(item => {
+                        return item._id.toString()
+                    })
+                    conditionObj.documents = { $in : arrContactIDForEducationBG2 }
+                }
+
+                let arrContactID = [];
+                // Chuyên ngành
+                if(field2 && field2 != 0){
+                    // Call service sau
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, field2 }, { contact: 1 , _id: 0});
+                    let arrContactIDForField2 = arrContact.map(item => {
+                        return item.contact.toString()
+                    })
+                    let dataUnique = [...new Set(arrContactIDForField2)];
+                    if(!arrContactID.length){
+                        arrContactID = dataUnique;
+                    }else{
+                        arrContactID = arrContactID.filter(item => dataUnique.includes(item));
+                    }
+                }
+
+                // Loại chứng chỉ
+                if(typeCertificate){
+                    // conditionObj.educationalBackground = educationalBackground
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, certificateType: typeCertificate });
+                
+                    let arrContactIDForTypeCertificate = arrContact.map(item => {
+                        return item.contact.toString();
+                    })
+
+                    let dataUnique = [...new Set(arrContactIDForTypeCertificate)];
+
+                    if(!arrContactID.length){
+                        arrContactID = dataUnique;
+                    }else{
+                        arrContactID = arrContactID.filter(item => dataUnique.includes(item));
+                    }
+                }
+                
+                // lĩnh vực chính chỉ
+                if(certificateName){
+                    // conditionObj.educationalBackground = educationalBackground
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, certificateName }, { contact: 1 , _id: 0});
+                    let arrContactIDForCertificateName = arrContact.map(item => {
+                        return item.contact.toString()
+                    })
+                    let dataUnique = [...new Set([...arrContactIDForCertificateName])];
+
+                    if(!arrContactID.length){
+                        arrContactID = dataUnique;
+                    }else{
+                        arrContactID = arrContactID.filter(item => arrContactIDForCertificateName.includes(item));
+                    }
+                }
+
+                // Hạng chứng chỉ (1/2/3/4-Nếu)
+                if(certificateGrade){
+                    // conditionObj.educationalBackground = educationalBackground
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, certificateGrade: Number(certificateGrade) }, { contact: 1, _id: 0});
+                    let arrContactIDForCertificateGrade = arrContact.map(item => {
+                        return item.contact.toString();
+                    })
+                    let dataUnique = [...new Set([...arrContactIDForCertificateGrade])];
+
+                    if(!arrContactID.length){
+                        arrContactID = dataUnique;
+                    }else{
+                        arrContactID = arrContactID.filter(item => arrContactIDForCertificateGrade.includes(item));
+                    }
+                }
+
+                if(arrContactID.length){
+                    conditionObj._id = { $in: [...new Set([...arrContactID])] }
+                }
                 /**
                  * Purpose: Sử dụng trong export excel nhân sự (theo bộ lọc)
                  * Function: exportHuman (model)
@@ -1040,13 +1120,14 @@ class Model extends BaseModel {
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                         await workbook.toFileAsync(pathWriteFile);
-
                         const result = await uploadFileS3(pathWriteFile, fileName);
                         fs.unlinkSync(pathWriteFile);
+                        console.log({ result })
 
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     });
             } catch (error) {
+                console.error(error)
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
