@@ -1,17 +1,17 @@
 // calculate AVG
 // FOR -> large
 /**
- * 
+ *
  * @param {*} n -> length
  * @param {*} cbHeavyCalculate -> CallBack when out-box process
  */
-function heavyCalulateAvg(n, cbHeavyCalculate) {    
+function heavyCalulateAvg(n, cbHeavyCalculate) {
     let total = 0;
     function help(i, cbHelp) {
         total += i;
         if (i == n)
             process.nextTick(_ => cbHelp(total))
-        
+
         setImmediate(help.bind(null, i+1, cbHelp)); // split => next tick - for receive other external_events
     }
 

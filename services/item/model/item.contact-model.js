@@ -914,11 +914,7 @@ class Model extends BaseModel {
                 const listHuman = await ITEM__CONTACT_COLL
                     .find(conditionObj)
                     .populate({
-                        path: 'position workingStatus educationalBackground contractType department documents certificateName',
-                        populate: {
-                            path: 'documents.educationalBackground2',
-                            select: 'name'
-                        }
+                        path: 'position workingStatus educationalBackground contractType department documents'
                     })
                     .lean();
 
@@ -930,6 +926,10 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
+
+                await ITEM__CONTACT_COLL.populate(listHuman, {
+                    path: 'documents.certificateName'
+                })
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/human_1_HumanInCompany.xlsm')))
                     .then(async workbook => {
@@ -949,6 +949,7 @@ class Model extends BaseModel {
                         }
 
                         let indexExcel = 4;
+                        const DATE_FORMAT = 'DD/MM/YYYY';
                         const currentYear = new Date().getFullYear();
 
                         workbook.sheet("DanhSachNhanSu").row(1).cell(1).value(`DANH SÁCH CÁN BỘ ${infoCompany?.name}`);
@@ -956,13 +957,34 @@ class Model extends BaseModel {
                         listHuman.map((human, index) => {
                             const {
                                 name, position, department, workingStatus, birthday, workStartDate,
-                                contractType, contractExpire, certificateName,
+                                contractType, contractExpire, documents,
                                 insuranceNumber, taxid, phone, identity, dateProvice, place, note,
                             } = human;
 
                             let graduationYear = 0;
+                            let trainingPlace = '';
+                            let certificateGrade = '';
+                            let certificateName = '';
+                            let certificatePeriod = '';
+
                             if(human.graduationYear) {
                                 graduationYear = new Date(human.graduationYear).getFullYear();
+                            }
+
+                            if(documents && documents.length) {
+                                documents.map(doc => {
+                                    // Trình độ học vấn
+                                    if(doc.type === 4) {
+                                        trainingPlace = doc.workplace;
+                                    }
+
+                                    // Bằng cấp chứng chỉ
+                                    if(doc.type === 5) {
+                                        certificateGrade = doc.certificateGrade;
+                                        certificateName = doc.certificateName?.name;
+                                        certificatePeriod = doc.toDate;
+                                    }
+                                })
                             }
 
                             const educationalBackground = human.educationalBackground?.map(item => item.name).join(', ');
@@ -980,13 +1002,17 @@ class Model extends BaseModel {
                             // Tình trạng làm việc
                             workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(5).value(workingStatus?.name);
                             // Ngày tháng năm sinh
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(6).value(birthday ? moment(birthday).format('DD/MM/YYYY') : '');
+                            if(birthday) {
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(6).value(moment(birthday).format(DATE_FORMAT));
+                            }
                             // Thời gian tuyển dụng
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(7).value(workStartDate ? moment(workStartDate).format('DD/MM/YYYY') : '');
+                            if(workStartDate) {
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(7).value(moment(workStartDate).format(DATE_FORMAT));
+                            }
                             // Chuyên môn/Trình độ học vấn
                             workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(8).value(educationalBackground);
                             // Nơi đào tạo
-                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(9).value('Nơi đào tạo');
+                            trainingPlace && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(9).value(trainingPlace);
 
                             if(graduationYear) {
                                 // Năm tốt nghiệp
@@ -996,20 +1022,22 @@ class Model extends BaseModel {
                             }
 
                             // Lĩnh vực chứng chỉ
-                            if(certificateName?.description) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(12).value(certificateName.description);
-                            }
+                            certificateName && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(12).value(certificateName);
                             // Hạng chứng chỉ
-                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(13).value('Hạng chứng chỉ');
+                            certificateGrade && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(13).value(`Hạng ${certificateGrade}`);
+
                             // Ngày hết hạn chứng chỉ
-                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(14).value('Ngày hết hạn chứng chỉ');
+                            if(certificatePeriod) {
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(14).value(moment(certificatePeriod).format(DATE_FORMAT));
+                            }
+
                             // Loại hợp đồng
                             if(contractType?.name) {
                                 workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(15).value(contractType.name);
                             }
                             // Thời hạn hợp đồng
                             if(contractExpire) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(16).value(moment(contractExpire).format('DD/MM/YYYY'));
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(16).value(moment(contractExpire).format(DATE_FORMAT));
                             }
 
                             // Số sổ BHXH
@@ -1022,7 +1050,7 @@ class Model extends BaseModel {
                             identity && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(20).value(identity);
                             // Ngày cấp CCCD
                             if(dateProvice) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(21).value(moment(dateProvice).format('DD/MM/YYYY'));
+                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(21).value(moment(dateProvice).format(DATE_FORMAT));
                             }
                             // Nơi cấp CCCD
                             place && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(22).value(place);
