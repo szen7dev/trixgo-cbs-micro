@@ -27,7 +27,7 @@ module.exports = function(collection) {
 	}else{
 		if (MONGODB_URL) {
 			// Mongo adapter
-	
+
 			return {
 				mixins: [DbService],
 				adapter: new MongoAdapter(MONGODB_URL, {
@@ -44,16 +44,16 @@ module.exports = function(collection) {
 				}
 			};
 		}
-	
+
 		// --- NeDB fallback DB adapter
-	
+
 		// Create data folder
 		mkdir(path.resolve("../data"));
-	
+
 		return {
 			mixins: [DbService],
 			adapter: new DbService.MemoryAdapter({ filename: `../data/${collection}.db` }),
-	
+
 			methods: {
 				entityChanged(type, json, ctx) {
 					return this.clearCache().then(() => {
