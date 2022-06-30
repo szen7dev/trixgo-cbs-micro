@@ -204,6 +204,7 @@ module.exports = {
             typeCertificate     : { type: "string", optional: true },
             certificateName     : { type: "string", optional: true },
             certificateGrade    : { type: "string", optional: true },
+            isPartner           : { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -217,7 +218,7 @@ module.exports = {
                 let {
                     companyID, contactID, type, departmentID, positionID, contractTypeID,
                     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
-                    isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade,
+                    isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
@@ -225,7 +226,7 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id
                 }
-
+                
                 let resultAfterCallHandler;
                 if(contactID){
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getInfo({
@@ -235,7 +236,7 @@ module.exports = {
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
                         companyID, type, departmentID, positionID, contractTypeID,
                         workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
-                        parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade,
+                        parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }

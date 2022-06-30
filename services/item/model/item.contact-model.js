@@ -565,7 +565,7 @@ class Model extends BaseModel {
     getList({
         userID, companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
         insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
-        isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade,
+        isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner,
         keyword, limit = 10, lastestID, select, populates = {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -606,36 +606,29 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
                 //
+                // Lấy tất cả
                 if(isMember){
-                    // // Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
+                    // Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
                     let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
-                    // // console.log(listDepartment)
-                    // // console.log(listDepartment.map(item=>item._id))
-
-                    // // conditionObj.department = {$in: listDepartment.map(item=>item._id) }
-
-                    // // Hoặc lấy theo công ty của userID, hoặc Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
                     conditionObj.$or = [
                         { company: companyID },
                         { department: {$in: listDepartment.map(item=>item._id) } },
                     ]
-                    // // console.log(conditionObj)
-
-                    // if(companyID){
-                    //     conditionObj.company = companyID
-                    // }
-
-                    // if(checkObjectIDs(departmentID)){
-                    //     conditionObj.department = departmentID
-                    // }
                 }else{
-                    // Lấy nhân sự theo công ty
-                    if(checkObjectIDs(companyID)){
-                        conditionObj.company = companyID
-                    }
+                    if(isPartner == 1){
+                        // Lấy nhân sự theo đối tác
+                        let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
+                        conditionObj.department = { $in: listDepartment.map(item=>item._id) };
+                        conditionObj.company = { $ne: companyID }
+                    }else{
+                        // Lấy nhân sự theo công ty
+                        if(checkObjectIDs(companyID)){
+                            conditionObj.company = companyID
+                        }
 
-                    if(checkObjectIDs(departmentID)){
-                        conditionObj.department = departmentID
+                        if(checkObjectIDs(departmentID)){
+                            conditionObj.department = departmentID
+                        }
                     }
                 }
 
@@ -806,7 +799,7 @@ class Model extends BaseModel {
                 if(isExportExcel) {
                     return resolve({ data: conditionObj, error: false });
                 }
-
+                console.log({ conditionObj })
                 let conditionObjOrg = { ...conditionObj };
 
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -824,7 +817,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy                = dataPagingAndSort.data.sort;
                 }
-
                 let infoDataAfterGet = await ITEM__CONTACT_COLL
                     .find(conditionObj)
                     .limit(+limit+1)
