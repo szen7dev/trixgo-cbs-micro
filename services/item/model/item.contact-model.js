@@ -799,6 +799,7 @@ class Model extends BaseModel {
                 if(isExportExcel) {
                     return resolve({ data: conditionObj, error: false });
                 }
+
                 console.log({ conditionObj })
                 let conditionObjOrg = { ...conditionObj };
 

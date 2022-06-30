@@ -141,12 +141,21 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
+            // Thông tin contact
+            keywordContact          : { type: "string", optional: true },
+            gender                  : { type: "string", optional: true },
+
             contactDocumentID : { type: "string", optional: true },
             type              : { type: "string", optional: true },
             contactID         : { type: "string", optional: true },
             companyID         : { type: "string", optional: true },
             isDuration3Month  : { type: "string", optional: true },
-
+            educationalBackground2  : { type: "string", optional: true },
+            field2              : { type: "string", optional: true },
+            certificateType     : { type: "string", optional: true },
+            certificateName     : { type: "string", optional: true },
+            certificateGrade    : { type: "string", optional: true },
+            
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -157,7 +166,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contactDocumentID, type, contactID, isDuration3Month, companyID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { contactDocumentID, type, contactID, isDuration3Month, companyID, educationalBackground2, field2, certificateType, certificateName, certificateGrade,
+                    keyword, limit, lastestID, select, populates } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
                 if(!companyID){
                     companyID = company._id;
@@ -169,7 +179,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getList({
-                        companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit: +limit, populates
+                        companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit, populates, educationalBackground2, field2, certificateType, certificateName, certificateGrade,
                     });
                 }
 

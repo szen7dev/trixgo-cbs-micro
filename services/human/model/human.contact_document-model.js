@@ -390,10 +390,16 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, type, contactID, isDuration3Month,
+        companyID, type, contactID, isDuration3Month, educationalBackground2, field2, certificateType, certificateName, certificateGrade,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
+
+                if(limit > 20){
+                    limit = 20
+                } else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -438,20 +444,37 @@ class Model extends BaseModel {
                     conditionObj.toDate = { $lte: today }
                 }
 
+                if(checkObjectIDs(educationalBackground2)){
+                    conditionObj.educationalBackground2 = educationalBackground2;
+                }
+
+                if(checkObjectIDs(field2)){
+                    conditionObj.field2 = field2;
+                }
+
+                if(checkObjectIDs(certificateType)){
+                    conditionObj.certificateType = certificateType;
+                }
+
+                if(checkObjectIDs(certificateName)){
+                    conditionObj.certificateName = certificateName;
+                }
+
+                if(certificateGrade){
+                    conditionObj.certificateGrade = certificateGrade;
+                }
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-
                 let conditionObjOrg = { ...conditionObj };
-                console.log({ conditionObjOrg });
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await HUMAN__CONTACT_DOCUMENT_COLL.findById(lastestID);
