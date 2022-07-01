@@ -1025,7 +1025,7 @@ class Model extends BaseModel {
                         }
 
                         let indexExcel = 4;
-                        const DATE_FORMAT = 'DD/MM';
+                        const DATE_FORMAT = 'DD/MM/YYYY';
                         const currentYear = new Date().getFullYear();
 
                         workbook.sheet("DanhSachNhanSu").row(1).cell(1).value(`DANH SÁCH CÁN BỘ ${infoCompany?.name}`);

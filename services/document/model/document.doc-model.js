@@ -1323,7 +1323,7 @@ class Model extends BaseModel {
                     .then(async workbook => {
 
                         let indexExcel = 3;
-                        const DATE_FORMAT = 'DD/MM';
+                        const DATE_FORMAT = 'DD/MM/YYYY';
 
                         listDocument.map((document, index) => {
                             const {
