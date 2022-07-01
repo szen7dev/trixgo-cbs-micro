@@ -1271,24 +1271,26 @@ class Model extends BaseModel {
      * Func: Download Excel Document
      * Date: 27/06/2022
      */
-    exportDocument({ userID, filterParams = {}, ctx }) {
+    exportDocument({ userID, filterParams = {} }) {
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({ userID });
                 if(validation.error) return resolve(validation);
 
-                const dataDepartment = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
-                    unLimit: true, select: "_id"
-                });
-                if(dataDepartment.error) return resolve(dataDepartment);
+                // const dataDepartment = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                //     unLimit: true, select: "_id"
+                // });
+                // if(dataDepartment.error) return resolve(dataDepartment);
 
-                const listDepartmentID = (dataDepartment.data || []).map(project => ObjectID(project._id));
+                // const listDepartmentID = (dataDepartment.data || []).map(project => ObjectID(project._id));
 
-                let conditionObj = {
-                    project: {
-                        $in: listDepartmentID
-                    }
-                };
+                // let conditionObj = {
+                //     project: {
+                //         $in: listDepartmentID
+                //     }
+                // };
+
+                let conditionObj = {};
 
                 const { data, error } = await this.getList({
                     ...filterParams,
@@ -1297,10 +1299,8 @@ class Model extends BaseModel {
                 });
 
                 if(!error) {
-                    conditionObj = { ...data, ...conditionObj };
+                    conditionObj = { ...data };
                 }
-
-                console.log({ conditionObj })
 
                 const listDocument = await DOCUMENT__DOC_COLL
                     .find(conditionObj)
@@ -1323,6 +1323,7 @@ class Model extends BaseModel {
                     .then(async workbook => {
 
                         let indexExcel = 3;
+                        const DATE_FORMAT = 'DD/MM';
 
                         listDocument.map((document, index) => {
                             const {
@@ -1331,60 +1332,62 @@ class Model extends BaseModel {
                                 sender, receiver, datahubContact, field, property, storage, package: packageInfo
                             } = document;
 
-                            workbook.sheet("Data").row(indexExcel).cell(1).value(index+1);
+                            const currRow = workbook.sheet("Data").row(indexExcel);
+
+                            currRow.cell(1).value(index+1);
 
                             // Người tạo văn bản
-                            workbook.sheet("Data").row(indexExcel).cell(2).value(author?.bizfullname);
+                            currRow.cell(2).value(author?.bizfullname);
 
                             // Ngày chỉnh sửa
                             if(modifyAt) {
-                                workbook.sheet("Data").row(indexExcel).cell(3).value(moment(modifyAt).format('DD/MM/YYYY'));
+                                currRow.cell(3).value(moment(modifyAt).format(DATE_FORMAT));
                             }
 
                             // Tiêu đề hồ sơ
-                            name && workbook.sheet("Data").row(indexExcel).cell(4).value(name);
+                            name && currRow.cell(4).value(name);
 
                             // Mã hiệu
-                            sign && workbook.sheet("Data").row(indexExcel).cell(5).value(sign);
+                            sign && currRow.cell(5).value(sign);
 
                             // Mã hiệu hồ sơ lưu
-                            storeSign && workbook.sheet("Data").row(indexExcel).cell(6).value(storeSign);
+                            storeSign && currRow.cell(6).value(storeSign);
 
                             // Ngày văn bản
                             if(date) {
-                                workbook.sheet("Data").row(indexExcel).cell(7).value(moment(date).format('DD/MM/YYYY'));
+                                currRow.cell(7).value(moment(date).format(DATE_FORMAT));
                             }
 
                             // Ngày nhận thực tế
                             if(receivedDate) {
-                                workbook.sheet("Data").row(indexExcel).cell(8).value(moment(receivedDate).format('DD/MM/YYYY'));
+                                currRow.cell(8).value(moment(receivedDate).format(DATE_FORMAT));
                             }
 
                             // Định dạng văn bản (nhận dạng)
-                            style && workbook.sheet("Data").row(indexExcel).cell(9).value(style);
+                            style && currRow.cell(9).value(style);
 
                             // Tình trạng
-                            status && workbook.sheet("Data").row(indexExcel).cell(10).value(status);
+                            status && currRow.cell(10).value(status);
 
                             // SL nhận
-                            amount && workbook.sheet("Data").row(indexExcel).cell(11).value(amount);
+                            amount && currRow.cell(11).value(amount);
 
                             // SL giao
-                            amountDelivery && workbook.sheet("Data").row(indexExcel).cell(12).value(amountDelivery);
+                            amountDelivery && currRow.cell(12).value(amountDelivery);
 
                             // Ghi chú
-                            note && workbook.sheet("Data").row(indexExcel).cell(13).value(note);
+                            note && currRow.cell(13).value(note);
 
                             // Hướng hồ sơ
                             switch (direction) {
                                 case 1:
-                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Đến');
+                                    currRow.cell(14).value('Đến');
                                     break;
                                 case 2:
-                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Đi');
+                                    currRow.cell(14).value('Đi');
                                     break;
                                 case 3:
-                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Nội bộ');
+                                    currRow.cell(14).value('Nội bộ');
                                     break;
                                 default:
                                     break;
@@ -1392,40 +1395,54 @@ class Model extends BaseModel {
 
                             // Gói thầu
                             if(packageInfo) {
-                                workbook.sheet("Data").row(indexExcel).cell(15).value(packageInfo.name);
+                                currRow.cell(15).value(packageInfo.name);
                             }
 
                             // Chủ thế ban hành
                             if(sender) {
-                                workbook.sheet("Data").row(indexExcel).cell(16).value(sender.name);
+                                currRow.cell(16).value(sender.name);
                             }
 
                             // Chủ thể nhận
                             if(receiver) {
-                                workbook.sheet("Data").row(indexExcel).cell(17).value(receiver.name);
+                                currRow.cell(17).value(receiver.name);
                             }
 
                             // Cơ quan tổ chức
                             if(datahubContact) {
-                                workbook.sheet("Data").row(indexExcel).cell(18).value(datahubContact.name);
+                                currRow.cell(18).value(datahubContact.name);
                             }
 
                             // Lĩnh vực
                             if(field) {
-                                workbook.sheet("Data").row(indexExcel).cell(19).value(field.name);
+                                currRow.cell(19).value(field.name);
                             }
 
                             // Tính chất
                             if(property) {
-                                workbook.sheet("Data").row(indexExcel).cell(20).value(property.name);
+                                currRow.cell(20).value(property.name);
                             }
 
                             // Lưu trữ
                             if(storage) {
-                                workbook.sheet("Data").row(indexExcel).cell(21).value(storage.name);
+                                currRow.cell(21).value(storage.name);
                             }
 
                             indexExcel++;
+                        })
+
+                        // const rangeUsed = workbook.sheet("Data").usedRange();
+                        const range = workbook.sheet('Data').range(`A3:U${listDocument.length + 2}`);
+
+                        range.style({
+                            fontFamily: 'Times New Roman',
+                            fontColor: 'black',
+                            fontSize: 13,
+                            bold: false,
+                            horizontalAlignment: 'center',
+                            border: true,
+                            borderColor: 'black',
+                            wrapText: true,
                         })
 
                         const now = new Date();

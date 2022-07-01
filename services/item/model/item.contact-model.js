@@ -1025,7 +1025,7 @@ class Model extends BaseModel {
                         }
 
                         let indexExcel = 4;
-                        const DATE_FORMAT = 'DD/MM/YYYY';
+                        const DATE_FORMAT = 'DD/MM';
                         const currentYear = new Date().getFullYear();
 
                         workbook.sheet("DanhSachNhanSu").row(1).cell(1).value(`DANH SÁCH CÁN BỘ ${infoCompany?.name}`);
@@ -1068,74 +1068,90 @@ class Model extends BaseModel {
                             let humanInsuranceStatus = human.insuranceStatus || 1;
                             const insuranceStatus = `${INSURANCE_STATUS[--humanInsuranceStatus].text}`;
 
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(1).value(index+1);
+                            const currRow = workbook.sheet("DanhSachNhanSu").row(indexExcel);
+
+                            currRow.cell(1).value(index+1);
                             // Họ và tên
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(2).value(name);
+                            currRow.cell(2).value(name);
                             // Chức vụ
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(3).value(position?.name);
+                            currRow.cell(3).value(position?.name);
                             // Phòng ban
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(4).value(department?.name);
+                            currRow.cell(4).value(department?.name);
                             // Tình trạng làm việc
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(5).value(workingStatus?.name);
+                            currRow.cell(5).value(workingStatus?.name);
                             // Ngày tháng năm sinh
                             if(birthday) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(6).value(moment(birthday).format(DATE_FORMAT));
+                                currRow.cell(6).value(moment(birthday).format(DATE_FORMAT));
                             }
                             // Thời gian tuyển dụng
                             if(workStartDate) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(7).value(moment(workStartDate).format(DATE_FORMAT));
+                                currRow.cell(7).value(moment(workStartDate).format(DATE_FORMAT));
                             }
                             // Chuyên môn/Trình độ học vấn
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(8).value(educationalBackground);
+                            currRow.cell(8).value(educationalBackground);
                             // Nơi đào tạo
-                            trainingPlace && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(9).value(trainingPlace);
+                            trainingPlace && currRow.cell(9).value(trainingPlace);
 
                             if(graduationYear) {
                                 // Năm tốt nghiệp
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(10).value(graduationYear);
+                                currRow.cell(10).value(graduationYear);
                                 // Năm kinh nghiệm
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(11).value(currentYear - graduationYear);
+                                currRow.cell(11).value(currentYear - graduationYear);
                             }
 
                             // Lĩnh vực chứng chỉ
-                            certificateName && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(12).value(certificateName);
+                            certificateName && currRow.cell(12).value(certificateName);
                             // Hạng chứng chỉ
-                            certificateGrade && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(13).value(`Hạng ${certificateGrade}`);
+                            certificateGrade && currRow.cell(13).value(`Hạng ${certificateGrade}`);
 
                             // Ngày hết hạn chứng chỉ
                             if(certificatePeriod) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(14).value(moment(certificatePeriod).format(DATE_FORMAT));
+                                currRow.cell(14).value(moment(certificatePeriod).format(DATE_FORMAT));
                             }
 
                             // Loại hợp đồng
                             if(contractType?.name) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(15).value(contractType.name);
+                                currRow.cell(15).value(contractType.name);
                             }
                             // Thời hạn hợp đồng
                             if(contractExpire) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(16).value(moment(contractExpire).format(DATE_FORMAT));
+                                currRow.cell(16).value(moment(contractExpire).format(DATE_FORMAT));
                             }
 
                             // Số sổ BHXH
-                            insuranceNumber && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(17).value(insuranceNumber);
+                            insuranceNumber && currRow.cell(17).value(insuranceNumber);
                             // Mã số thuế
-                            taxid && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(18).value(taxid);
+                            taxid && currRow.cell(18).value(taxid);
                             // Số điện thoại
-                            phone && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(19).value(phone);
+                            phone && currRow.cell(19).value(phone);
                             // Số CCCD
-                            identity && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(20).value(identity);
+                            identity && currRow.cell(20).value(identity);
                             // Ngày cấp CCCD
                             if(dateProvice) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(21).value(moment(dateProvice).format(DATE_FORMAT));
+                                currRow.cell(21).value(moment(dateProvice).format(DATE_FORMAT));
                             }
                             // Nơi cấp CCCD
-                            place && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(22).value(place);
+                            place && currRow.cell(22).value(place);
                             // Tình trạng sổ BHXH
-                            insuranceStatus && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(23).value(insuranceStatus);
+                            insuranceStatus && currRow.cell(23).value(insuranceStatus);
                             // Ghi chú
-                            note && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(24).value(note);
+                            note && currRow.cell(24).value(note);
 
                             indexExcel++;
+                        })
+
+                        // const rangeUsed = workbook.sheet("DanhSachNhanSu").usedRange();
+                        const range = workbook.sheet('DanhSachNhanSu').range(`A4:X${listHuman.length + 3}`);
+
+                        range.style({
+                            fontFamily: 'Times New Roman',
+                            fontColor: 'black',
+                            fontSize: 13,
+                            bold: false,
+                            horizontalAlignment: 'center',
+                            border: true,
+                            borderColor: 'black',
+                            wrapText: true,
                         })
 
                         const now = new Date();
@@ -1146,7 +1162,6 @@ class Model extends BaseModel {
                         await workbook.toFileAsync(pathWriteFile);
                         const result = await uploadFileS3(pathWriteFile, fileName);
                         fs.unlinkSync(pathWriteFile);
-                        console.log({ result })
 
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     });
