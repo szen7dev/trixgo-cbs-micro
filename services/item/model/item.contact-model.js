@@ -605,7 +605,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                //
+
                 // Lấy tất cả
                 if(isMember){
                     // Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
@@ -743,7 +743,7 @@ class Model extends BaseModel {
                 if(typeCertificate){
                     // conditionObj.educationalBackground = educationalBackground
                     let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, certificateType: typeCertificate });
-                
+
                     let arrContactIDForTypeCertificate = arrContact.map(item => {
                         return item.contact.toString();
                     })
@@ -756,7 +756,7 @@ class Model extends BaseModel {
                         arrContactID = arrContactID.filter(item => dataUnique.includes(item));
                     }
                 }
-                
+
                 // lĩnh vực chính chỉ
                 if(certificateName){
                     // conditionObj.educationalBackground = educationalBackground
@@ -970,19 +970,22 @@ class Model extends BaseModel {
             try {
                 const validation = validateParamsObjectID({ userID, companyID });
                 if(validation.error) return resolve(validation);
+                // console.log({ filterParams })
 
                 let conditionObj = {};
                 const { data, error } = await this.getList({
                     ...filterParams,
                     userID,
                     companyID,
-                    isMember: 1,
+                    type: 1,
+                    // isMember: 1,
                     isExportExcel: true
                 });
 
                 if(!error) {
                     conditionObj = { ...data };
                 }
+                // console.log({ conditionObj, companyID })
 
                 const listHuman = await ITEM__CONTACT_COLL
                     .find(conditionObj)
