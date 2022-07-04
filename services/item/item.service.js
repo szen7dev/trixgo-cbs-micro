@@ -66,7 +66,7 @@ module.exports = {
 	* Service dependencies
 	*/
 	dependencies: [],
-	
+
 	/**
 	* Actions
 	*/
@@ -90,6 +90,8 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTRACT_GET_RETAIN_PRODUCE]			: ITEM__CONTRACT_HANDLER.getRetainProduce,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_INVENTORY]				: ITEM__CONTRACT_HANDLER.getInventory,
 		[CF_ACTIONS_ITEM.CONTRACT_STATISTICAL_STATUS_BY_ONTIME_ON_BUDGET]: ITEM__CONTRACT_HANDLER.statisticalStatusByOntimeOnbudget,
+		[CF_ACTIONS_ITEM.CONTRACT_EXPORT]						: ITEM__CONTRACT_HANDLER.exportContract,
+
 		//==========================================  DOCTYPE  ===================================
 		[CF_ACTIONS_ITEM.DOCTYPE_INSERT] 						: ITEM__DOCTYPE_HANDLER.insert,
 		[CF_ACTIONS_ITEM.DOCTYPE_UPDATE] 						: ITEM__DOCTYPE_HANDLER.update,

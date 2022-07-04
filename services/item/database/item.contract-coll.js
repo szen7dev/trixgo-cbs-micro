@@ -9,7 +9,7 @@ const Schema    = require('mongoose').Schema;
  * NGÂN SÁCH HỢP ĐỒNG/THẦU PHỤ => VỚI NHÀ THẦU (HỢP ĐỒNG BÁN RA)
  */
 module.exports  = DATABASE_MIDDLEWARE("contract", {
-    //_________Công ty 
+    //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -162,7 +162,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     advancePayment: { type: Number, default: 0 },
 
     /**
-     * SẢN LƯỢNG 
+     * SẢN LƯỢNG
      */
     //_________(6)Sản lượng trước VAT
     produce: { type: Number, default: 0 },
@@ -174,7 +174,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     vatPlusProduce: { type: Number, default: 0 },
     //_________Sản lượng còn lại chưa thực hiện
     remainingProduce: { type: Number, default: 0 },
-    
+
     /**
      * NGHIỆM THU HOÀN THÀNH
     */
@@ -206,7 +206,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     finalValue: { type: Number, default: 0 },
     //_________Thuế VAT (%)
     vat: { type: Number, default: 10 },
-    
+
     /**
      * CHI PHÍ
      */
@@ -221,7 +221,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
 
     /**
      * USD-NGOẠI TỆ
-     */ 
+     */
     //_________Tỷ giá hối đoái
     fcuExRate: { type: Number, default: 0 },
     /**
@@ -246,7 +246,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     forecastVatBudget: {
         type: Number,
         default : 0
-    },    
+    },
     //______Ngân sách thực tế
     finalBudget: {
         type: Number,
