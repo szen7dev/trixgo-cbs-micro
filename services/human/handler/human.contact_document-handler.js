@@ -155,6 +155,7 @@ module.exports = {
             certificateType     : { type: "string", optional: true },
             certificateName     : { type: "string", optional: true },
             certificateGrade    : { type: "string", optional: true },
+            isCertificate       : { type: "string", optional: true },
             
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -166,8 +167,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contactDocumentID, type, contactID, isDuration3Month, companyID, educationalBackground2, field2, certificateType, certificateName, certificateGrade,
-                    keyword, limit, lastestID, select, populates } = ctx.params;
+                let { contactDocumentID, type, contactID, isDuration3Month, companyID, gender, keywordContact, educationalBackground2, field2, certificateType, certificateName, certificateGrade,
+                    keyword, limit, lastestID, select, populates, isCertificate } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
                 if(!companyID){
                     companyID = company._id;
@@ -179,10 +180,11 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getList({
-                        companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit, populates, educationalBackground2, field2, certificateType, certificateName, certificateGrade,
+                        companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit, populates, gender, 
+                        keywordContact, educationalBackground2, field2, certificateType, certificateName, certificateGrade, isCertificate, userID
                     });
                 }
-
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

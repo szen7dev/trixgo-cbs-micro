@@ -800,7 +800,6 @@ class Model extends BaseModel {
                     return resolve({ data: conditionObj, error: false });
                 }
 
-                console.log({ conditionObj })
                 let conditionObjOrg = { ...conditionObj };
 
 				if(lastestID && checkObjectIDs(lastestID)){
