@@ -634,4 +634,32 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: MinhVH
+     * Func: Download Excel Contract
+     * Date: 04/07/2022
+     */
+    exportContract: {
+        auth: 'required',
+        params: {
+            type: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                const { filterParams, type } = ctx.params;
+                const companyID = company._id;
+
+                const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.exportContract({
+                    userID, companyID, filterParams, type, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }

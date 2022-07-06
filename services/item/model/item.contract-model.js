@@ -1,12 +1,12 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const moment                            = require('moment');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
+const BaseModel                         = require('../../../tools/db/base_model');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
 const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-constant');
@@ -14,6 +14,10 @@ const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-co
 /**
  * TOOLS
  */
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }
+                                        = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
  * COLLECTIONS
@@ -39,7 +43,7 @@ class Model extends BaseModel {
 	 * Func: Tạo hợp đồng
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, 
+	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
@@ -49,20 +53,20 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo)|| !checkObjectIDs(dependentUnit) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
                     return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|dependentUnit|chair|personInCharge|field invalid', status: 400 });
-                
+
                 let dataInsert = {
-                    project: projectID, 
-                    buyerInfo: buyerInfo, 
-                    sellerInfo: sellerInfo, 
+                    project: projectID,
+                    buyerInfo: buyerInfo,
+                    sellerInfo: sellerInfo,
                     dependentUnit: dependentUnit,
-                    personInCharge: personInCharge, 
-                    chair: chair, 
-                    field: field, 
-                    userCreate: userID, 
-                    members: [userID], 
+                    personInCharge: personInCharge,
+                    chair: chair,
+                    field: field,
+                    userCreate: userID,
+                    members: [userID],
                     admins: [userID],
-                    name, 
-                    sign, 
+                    name,
+                    sign,
                     date
                 }
 
@@ -292,7 +296,7 @@ class Model extends BaseModel {
                     dataInsert.cgValue = cgValue;
                 }
 
-                if(expiredCg != ""){      
+                if(expiredCg != ""){
                     dataInsert.expiredCg = expiredCg;
                 }
 
@@ -300,7 +304,7 @@ class Model extends BaseModel {
                     dataInsert.agValue = agValue;
                 }
 
-                if(expiredAg != ""){      
+                if(expiredAg != ""){
                     dataInsert.expiredAg = expiredAg;
                 }
 
@@ -518,133 +522,133 @@ class Model extends BaseModel {
                     dataUpdate.lock = lock;
                 }
 
-                if(!isNaN(value) && Number(value) >= 0){  
+                if(!isNaN(value) && Number(value) >= 0){
                     dataUpdate.value = value;
                 }
 
-                if(!isNaN(plus) && Number(plus) >= 0){      
+                if(!isNaN(plus) && Number(plus) >= 0){
                     dataUpdate.plus = plus;
                 }
 
-                if(!isNaN(vatValue) && Number(vatValue) >= 0){      
+                if(!isNaN(vatValue) && Number(vatValue) >= 0){
                     dataUpdate.vatValue = vatValue;
                 }
 
-                if(!isNaN(advancePayment) && Number(advancePayment) >= 0){      
+                if(!isNaN(advancePayment) && Number(advancePayment) >= 0){
                     dataUpdate.advancePayment = advancePayment;
                 }
 
-                if(!isNaN(produce) && Number(produce) >= 0){      
+                if(!isNaN(produce) && Number(produce) >= 0){
                     dataUpdate.produce = produce;
                 }
 
-                if(!isNaN(plusProduce) && Number(plusProduce) >= 0){      
+                if(!isNaN(plusProduce) && Number(plusProduce) >= 0){
                     dataUpdate.plusProduce = plusProduce;
                 }
 
-                if(!isNaN(vatProduce) && Number(vatProduce) >= 0){      
+                if(!isNaN(vatProduce) && Number(vatProduce) >= 0){
                     dataUpdate.vatProduce = vatProduce;
                 }
 
-                if(!isNaN(acceptance) && Number(acceptance) >= 0){      
+                if(!isNaN(acceptance) && Number(acceptance) >= 0){
                     dataUpdate.acceptance = acceptance;
                 }
 
-                if(!isNaN(vatAcceptance) && Number(vatAcceptance) >= 0){      
+                if(!isNaN(vatAcceptance) && Number(vatAcceptance) >= 0){
                     dataUpdate.vatAcceptance = vatAcceptance;
                 }
 
-                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){    
+                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){
                     dataUpdate.plusAcceptance = plusAcceptance;
                 }
 
-                // if(!isNaN(vatPlusAcceptance) && Number(vatPlusAcceptance) >= 0){    
+                // if(!isNaN(vatPlusAcceptance) && Number(vatPlusAcceptance) >= 0){
                 //     dataUpdate.vatPlusAcceptance = vatPlusAcceptance;
                 // }
 
-                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){      
+                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){
                     dataUpdate.retainedValue = retainedValue;
                 }
 
-                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){      
+                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){
                     dataUpdate.advancePaymentDeduction = advancePaymentDeduction;
                 }
 
-                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){      
+                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){
                     dataUpdate.otherDeduction = otherDeduction;
                 }
 
-                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){      
+                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){
                     dataUpdate.recommendedPayment = recommendedPayment;
                 }
 
-                if(!isNaN(advancePaymentPaid) && Number(advancePaymentPaid) >= 0){      
+                if(!isNaN(advancePaymentPaid) && Number(advancePaymentPaid) >= 0){
                     dataUpdate.advancePaymentPaid = advancePaymentPaid;
                 }
 
-                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){      
+                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){
                     dataUpdate.amountPaid = amountPaid;
                 }
 
-                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){      
+                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){
                     dataUpdate.remainingPayment = remainingPayment;
                 }
 
-                if(!isNaN(advancePaymentOverage) && Number(advancePaymentOverage) >= 0){      
+                if(!isNaN(advancePaymentOverage) && Number(advancePaymentOverage) >= 0){
                     dataUpdate.advancePaymentOverage = advancePaymentOverage;
                 }
 
-                if(!isNaN(finalValue) && Number(finalValue) >= 0){      
+                if(!isNaN(finalValue) && Number(finalValue) >= 0){
                     dataUpdate.finalValue = finalValue;
                 }
 
-                if(!isNaN(budget) && Number(budget) >= 0){      
+                if(!isNaN(budget) && Number(budget) >= 0){
                     dataUpdate.budget = budget;
                 }
 
-                if(!isNaN(budgetVAT) && Number(budgetVAT) >= 0){      
+                if(!isNaN(budgetVAT) && Number(budgetVAT) >= 0){
                     dataUpdate.budgetVAT = budgetVAT;
                 }
 
-                if(!isNaN(forecastBudget) && Number(forecastBudget) >= 0){      
+                if(!isNaN(forecastBudget) && Number(forecastBudget) >= 0){
                     dataUpdate.forecastBudget = forecastBudget;
                 }
 
-                if(!isNaN(forecastBudgetVAT) && Number(forecastBudgetVAT) >= 0){      
+                if(!isNaN(forecastBudgetVAT) && Number(forecastBudgetVAT) >= 0){
                     dataUpdate.forecastBudgetVAT = forecastBudgetVAT;
                 }
 
-                if(!isNaN(managementFee) && Number(managementFee) >= 0){      
+                if(!isNaN(managementFee) && Number(managementFee) >= 0){
                     dataUpdate.managementFee = managementFee;
                 }
 
-                if(!isNaN(subcontractFee) && Number(subcontractFee) >= 0){      
+                if(!isNaN(subcontractFee) && Number(subcontractFee) >= 0){
                     dataUpdate.subcontractFee = subcontractFee;
                 }
 
-                if(!isNaN(expenses) && Number(expenses) >= 0){      
+                if(!isNaN(expenses) && Number(expenses) >= 0){
                     dataUpdate.expenses = expenses;
                 }
 
-                if(!isNaN(profit) && Number(profit) >= 0){      
+                if(!isNaN(profit) && Number(profit) >= 0){
                     dataUpdate.profit = profit;
                 }
 
-                if(!isNaN(cgValue) && Number(cgValue) >= 0){      
+                if(!isNaN(cgValue) && Number(cgValue) >= 0){
                     dataUpdate.cgValue = cgValue;
                 }
 
-                if(expiredCg != ""){      
+                if(expiredCg != ""){
                     dataUpdate.expiredCg = expiredCg;
                 }else{
                     dataUpdate.expiredCg = null
                 }
 
-                if(!isNaN(agValue) && Number(agValue) >= 0){      
+                if(!isNaN(agValue) && Number(agValue) >= 0){
                     dataUpdate.agValue = agValue;
                 }
 
-                if(expiredAg != ""){      
+                if(expiredAg != ""){
                     dataUpdate.expiredAg = expiredAg;
                 }else{
                     dataUpdate.expiredAg = null
@@ -696,7 +700,7 @@ class Model extends BaseModel {
                 if(onbudget){
                     dataUpdate.onbudget = onbudget;
                 }
-                
+
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cannot update contract", status: 422 });
@@ -712,18 +716,18 @@ class Model extends BaseModel {
                  * - buyerInfo
                  * - sellerInfo
                  */
-                let { 
-                    project: projectAfterUpdate , 
-                    field: fieldAfterUpdate, 
+                let {
+                    project: projectAfterUpdate ,
+                    field: fieldAfterUpdate,
                     dependentUnit: dependentUnitAfterUpdate,
-                    personInCharge: personInChargeAfterUpdate, 
-                    chair: chairAfterUpdate, 
-                    buyerInfo: buyerInfoAfterUpdate, 
-                    sellerInfo: sellerInfoAfterUpdate, 
-                    type: typeAfterUpdate, 
-                    outin: outinAfterUpdate, 
+                    personInCharge: personInChargeAfterUpdate,
+                    chair: chairAfterUpdate,
+                    buyerInfo: buyerInfoAfterUpdate,
+                    sellerInfo: sellerInfoAfterUpdate,
+                    type: typeAfterUpdate,
+                    outin: outinAfterUpdate,
                     real: realAfterUpdate } = infoAfterInsert;
-                
+
                 let fieldUpdate = {
                     "project" : ObjectID(projectAfterUpdate),
                     "field" : ObjectID(fieldAfterUpdate),
@@ -736,7 +740,7 @@ class Model extends BaseModel {
                     "outin": Number(outinAfterUpdate),
                     "real" : Number(realAfterUpdate)
                 }
-                
+
                 // HiepNH: Dùng tạm theo cách này, sau bổ theo call Service
                 await CMCS__CONTRACT_PRODUCTION_COLL.updateMany(
                     { contract: ObjectID(contractID) },
@@ -752,7 +756,7 @@ class Model extends BaseModel {
                     { contract: ObjectID(contractID) },
                     { $set: fieldUpdate }
                  );
-                
+
                 await CMCS__CONTRACT_EXPENSE_COLL.updateMany(
                     { contract: ObjectID(contractID) },
                     { $set: fieldUpdate }
@@ -772,7 +776,7 @@ class Model extends BaseModel {
      */
 
     /**
-     * Name: get Hợp đồng 
+     * Name: get Hợp đồng
      * Author: Depv
      * Code:
      */
@@ -823,13 +827,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách hợp đồng 
+     * Name  : Danh sách hợp đồng
      * Author: Depv
      * Code  :
      */
     getList({
-        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
-        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isExpiredCg, isMember,
+        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel = false,
+        startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isMember,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -842,22 +846,22 @@ class Model extends BaseModel {
 
                 if(limit > 20){
                     limit = 20
-                }else{
+                } else{
                     limit = +limit
                 }
+
                 /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -871,13 +875,11 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 if (checkObjectIDs(projectID)) {
                     conditionObj.project = projectID
-                } else {
-                    if (checkObjectIDs(companyID)) {
-                        conditionObj.company = companyID
-                    }
+                } else if (checkObjectIDs(companyID)) {
+                    conditionObj.company = companyID
                 }
 
                 if(parentID){
@@ -975,12 +977,21 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+
                     conditionObj.$or = [
                         { name: regSearch },
                         { sign: regSearch },
                         { storeSign: regSearch },
                     ]
+                }
+
+                /**
+                 * Purpose: Sử dụng trong export excel (hoặc theo bộ lọc)
+                 * Function: exportContract (model)
+                 */
+                 if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
                 }
 
                 let conditionObjOrg = { ...conditionObj };
@@ -1038,13 +1049,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách hợp đồng mà user là members 
+     * Name  : Danh sách hợp đồng mà user là members
      * Author: Depv
      * Code  :
      */
     getListIsMembers({
-        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isMember,
-        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isExpiredCg,
+        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isMember, isExportExcel = false,
+        startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -1193,6 +1204,14 @@ class Model extends BaseModel {
                     ]
                 }
 
+                /**
+                 * Purpose: Sử dụng trong export excel (hoặc theo bộ lọc)
+                 * Function: exportContract (model)
+                 */
+                if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
+                }
+
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
@@ -1246,7 +1265,7 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
      * Name: Gom nhóm theo tháng trong năm
      * Author: Hiepnh
@@ -1291,13 +1310,13 @@ class Model extends BaseModel {
                         "year": Number(year),
                     }
                 }
-                
+
                 let listData = await ITEM__CONTRACT_COLL.aggregate([
                     {
                         $match: conditionObj
-                    }, 
+                    },
                     {
-                        $project : { 
+                        $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             amount: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
@@ -1305,7 +1324,7 @@ class Model extends BaseModel {
                     },
                     {
                         $match: conditionObjYear
-                    }, 
+                    },
                     {
                         $group: conditionGroup
                     },
@@ -1314,7 +1333,7 @@ class Model extends BaseModel {
                             "_id.year": 1,
                             "_id.month": 1,
                         }
-                    } 
+                    }
                 ])
 
                 return resolve({ error: false, data: listData });
@@ -1325,7 +1344,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo thuộc tính 
+     * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
      * Date: 17/04/2022
      */
@@ -1614,7 +1633,7 @@ class Model extends BaseModel {
                         }
                     }
                 }
-                
+
                 console.log('===================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
                 console.log(conditionObj)
                 console.log(conditionObjYear)
@@ -1623,9 +1642,9 @@ class Model extends BaseModel {
                 let listData = await ITEM__CONTRACT_COLL.aggregate([
                     {
                         $match: conditionObj
-                    }, 
+                    },
                     {
-                        $project : { 
+                        $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             amount: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
@@ -1641,13 +1660,13 @@ class Model extends BaseModel {
                     },
                     {
                         $match: conditionObjYear
-                    }, 
+                    },
                     {
                         $group: conditionGroup
-                    }, 
+                    },
                     {
                         $sort: sortBy
-                    } 
+                    }
                 ])
 
                 if(!isNaN(optionProperty) && Number(optionProperty) > 0){
@@ -1835,16 +1854,16 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message });
             }
         })
-    } 
+    }
 
     /**
-     * Name  : Cập nhật giá trị 
+     * Name  : Cập nhật giá trị
      * Author: Hiepnh
-     * Date  : 16/4/2022 
+     * Date  : 16/4/2022
      */
-    updateValue({ 
+    updateValue({
         contractID, userID, option, ctx
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1856,27 +1875,27 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "contractID_invalid" });
-                
+
                 let infoContract = await ITEM__CONTRACT_COLL.findById(contractID)
                 // console.log({infoContract})
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-             
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                
+
                 //1-Cập nhật Sản lượng
                 if(option && Number(option) === 1){
                     console.log('1-Cập nhật Sản lượng')
@@ -1941,7 +1960,7 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
-                
+
                 console.log(infoAfterUpdate)
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -1985,13 +2004,13 @@ class Model extends BaseModel {
                         }
                     }
                 }
-                
+
                 let listData = await ITEM__CONTRACT_COLL.aggregate([
                     {
                         $match: conditionObj
-                    }, 
+                    },
                     {
-                        $project : { 
+                        $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             remainingProduce : "$remainingProduce",
@@ -2020,7 +2039,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 16/5/2022
      */
-     getInventory({ userID, outin, companyID, projectID, contractID, ctx }){
+    getInventory({ userID, outin, companyID, projectID, contractID, ctx }){
         // console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {
@@ -2048,13 +2067,13 @@ class Model extends BaseModel {
                         }
                     }
                 }
-                
+
                 let listData = await ITEM__CONTRACT_COLL.aggregate([
                     {
                         $match: conditionObj
                     },
                     {
-                        $project : { 
+                        $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             produce: { $sum: ["$produce", "$vatProduce", "$plusProduce", "$vatPlusProduce"] },
@@ -2087,7 +2106,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let conditionObj = { ontime: {$exists: true}, onbudget: {$exists: true} };
-                
+
                 if(!checkObjectIDs(projectID)){
                     return resolve({ error: true, message: "projectID không hợp lệ" });
                 }else{
@@ -2097,7 +2116,7 @@ class Model extends BaseModel {
                 let listData = await ITEM__CONTRACT_COLL.aggregate([
                     {
                         $match: conditionObj
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { ontime: "$ontime" , onbudget: "$onbudget" }, // Phân loại trạng thái
@@ -2116,6 +2135,224 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Dev: MinhVH
+     * Func: Download Excel Contract
+     * Date: 04/07/2022
+     */
+    exportContract({ userID, companyID, type, filterParams = {} }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({ userID });
+                if(validation.error) return resolve(validation);
+
+                let conditionObj = {};
+                let resultGetList = { error: true };
+
+                switch (type) {
+                    case 'out':
+                        resultGetList = await this.getList({
+                            ...filterParams,
+                            outin: 1,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
+                    case 'in':
+                        resultGetList = await this.getList({
+                            ...filterParams,
+                            outin: 2,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
+                    case 'partner':
+                        resultGetList = await this.getListIsMembers({
+                            ...filterParams,
+                            userID,
+                            isExportExcel: true
+                        });
+                        break;
+                    default:
+                        break;
+                }
+
+                if(!resultGetList.error) {
+                    conditionObj = resultGetList.data;
+                }
+
+                const listContract = await ITEM__CONTRACT_COLL
+                    .find(conditionObj)
+                    .populate({
+                        path: 'project field buyerInfo dependentUnit chair personInCharge debtStatus',
+                        select: 'name phone address',
+                    })
+                    .lean();
+
+                if(!listContract) {
+                    return resolve({
+                        error: true,
+                        message: 'Không tìm thấy hợp đồng',
+                        keyError: 'contracts_not_exists',
+                        status: 400
+                    });
+                }
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contract_1.xlsm')))
+                    .then(async workbook => {
+
+                        let indexExcel = 3;
+                        const DATE_FORMAT = 'DD/MM/YYYY';
+
+                        listContract.map((contract, index) => {
+                            const {
+                                packageName, project, date, field, buyerInfo, value, finalValue,
+                                startTime, endTime, status, outin, note,
+                                chair, personInCharge, dependentUnit, debtStatus
+                            } = contract;
+
+                            // console.log({ contract, buyerInfo })
+
+                            const row = workbook.sheet("Data").row(indexExcel);
+
+                            row.cell(1).style('horizontalAlignment', 'center').value(index+1);
+
+                            // Tên hợp đồng (gói thầu)
+                            packageName && row.cell(2).value(packageName);
+
+                            // Dự án
+                            if(project) {
+                                row.cell(3).value(project.name);
+                            }
+
+                            // Số hợp đồng
+                            // row.cell(4).value();
+
+                            // Ngày ký hợp đồng
+                            if(date) {
+                                row.cell(5).value(moment(date).format(DATE_FORMAT));
+                            }
+
+                            // Lĩnh vực hợp đồng
+                            if(field) {
+                                row.cell(6).value(field.name);
+                            }
+
+                            // Tên CDT (khách hàng)
+                            if(buyerInfo) {
+                                row.cell(7).value(buyerInfo.name);
+                                row.cell(8).value(buyerInfo.phone);
+                                row.cell(9).value(buyerInfo.address);
+                            }
+
+                            // Giá trị hợp đồng
+                            value && row.cell(10).value(value);
+
+                            // Giá trị quyết toán
+                            finalValue && row.cell(11).value(finalValue);
+
+                            // Đơn vị tiền tệ
+                            // if(dependentUnit) {
+                            //     row.cell(12).value(dependentUnit.name);
+                            // }
+
+                            // Bắt đầu thực hiện
+                            if(startTime) {
+                                row.cell(13).value(moment(startTime).format(DATE_FORMAT));
+                            }
+
+                            // Kết thúc thực hiện
+                            if(endTime) {
+                                row.cell(14).value(moment(endTime).format(DATE_FORMAT));
+                            }
+
+                            // Đợt/GĐ nghiệm thu
+                            // value && row.cell(15).value();
+
+                            // Ngày ký BBNT
+                            // value && row.cell(16).value();
+
+                            // Ngày thanh lý HĐ
+                            // value && row.cell(17).value();
+
+                            // Tình trạng triển khai
+                            switch (status) {
+                                case 1:
+                                    row.cell(18).value('Đang triển khai');
+                                    break;
+                                case 2:
+                                    row.cell(18).value('Đang bàn giao');
+                                    break;
+                                case 3:
+                                    row.cell(18).value('Hoàn thành');
+                                    break;
+                                case 4:
+                                    row.cell(18).value('Tạm dừng');
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            // Phân loại vào ra
+                            outin && row.cell(19).value(outin === 1 ? 'Bán ra' : 'Mua vào');
+
+                            // Phân loại theo đơn vị
+                            if(dependentUnit) {
+                                row.cell(20).value(dependentUnit.name);
+                            }
+
+                            // Phân loại theo chủ trì
+                            if(chair) {
+                                row.cell(21).value(chair.name);
+                            }
+
+                            // Phân loại theo phụ trách
+                            if(personInCharge) {
+                                row.cell(22).value(personInCharge.name);
+                            }
+
+                            // Phân loại theo công nợ
+                            if(debtStatus) {
+                                row.cell(23).value(debtStatus.name || debtStatus.description);
+                            }
+
+                            // Ghi chú
+                            note && row.cell(24).value(note);
+
+                            indexExcel++;
+                        })
+
+                        const range = workbook.sheet('Data').range(`A3:X${listContract.length + 2}`);
+
+                        range.style({
+                            fontFamily: 'Times New Roman',
+                            fontColor: 'black',
+                            fontSize: 13,
+                            bold: false,
+                            border: true,
+                            borderColor: 'black',
+                            wrapText: true,
+                            // horizontalAlignment: 'center',
+                        })
+
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `contracts_${Date.now()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
