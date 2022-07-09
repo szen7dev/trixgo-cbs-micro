@@ -331,11 +331,11 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
-                if(value){
+                if(!isNaN(value)){
                     dataUpdate.value = value;
                 }
 
-                if(completeStatus){
+                if(!isNaN(completeStatus)){
                     dataUpdate.completeStatus = completeStatus;
                 }
 
