@@ -205,6 +205,8 @@ module.exports = {
             certificateName     : { type: "string", optional: true },
             certificateGrade    : { type: "string", optional: true },
             isPartner           : { type: "string", optional: true },
+            isContractExpire4month: { type: "string", optional: true },
+            
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -218,7 +220,8 @@ module.exports = {
                 let {
                     companyID, contactID, type, departmentID, positionID, contractTypeID,
                     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
-                    isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner,
+                    isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate,
+                    certificateName, certificateGrade, isPartner, isContractExpire4month,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
@@ -236,7 +239,7 @@ module.exports = {
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
                         companyID, type, departmentID, positionID, contractTypeID,
                         workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
-                        parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner,
+                        parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }

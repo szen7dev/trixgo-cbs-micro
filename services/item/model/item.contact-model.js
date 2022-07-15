@@ -565,7 +565,7 @@ class Model extends BaseModel {
     getList({
         userID, companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
         insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
-        isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner,
+        isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
         keyword, limit = 10, lastestID, select, populates = {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -786,6 +786,17 @@ class Model extends BaseModel {
                         arrContactID = dataUnique;
                     }else{
                         arrContactID = arrContactID.filter(item => arrContactIDForCertificateGrade.includes(item));
+                    }
+                }
+
+                //  Check thời hạng hợp đồng còn 4 tháng là hết hạn
+                if(isContractExpire4month == 1){
+                    var monthAdd4 = new Date();
+                    monthAdd4.setMonth(monthAdd4.getMonth() + 4);   
+     
+                    conditionObj.contractExpire = {
+                        $gte: new Date(),
+                        $lte: monthAdd4
                     }
                 }
 

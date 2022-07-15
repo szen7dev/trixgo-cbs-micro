@@ -393,7 +393,7 @@ class Model extends BaseModel {
      */
     getList({
         companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
-        certificateType, certificateName, certificateGrade,
+        certificateType, certificateName, certificateGrade, isToDate5Month,
         keyword, limit = 10, lastestID, select, populates= {}, userID }) {
         return new Promise(async (resolve) => {
             try {
@@ -500,6 +500,16 @@ class Model extends BaseModel {
                     let arrayContactID = listContact.map(contact => contact._id);
                     conditionObj.contact = { $in: arrayContactID };
                     delete conditionObj.company;
+                }
+
+                // Check thời hạng chứng chỉ còn 5 tháng là hết hạn
+                if(isToDate5Month == 1){
+                    var monthAdd5 = new Date();
+                    monthAdd5.setMonth(monthAdd5.getMonth() + 5);   
+                    conditionObj.toDate = {
+                        $gte: new Date(),
+                        $lte: monthAdd5
+                    }
                 }
                 /**
                  * LOGIC STEP (3)

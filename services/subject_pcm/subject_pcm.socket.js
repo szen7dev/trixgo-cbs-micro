@@ -17,7 +17,7 @@ const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
 const PCM_PLAN_TASK_COLL                		= require('./database/subject_pcm.pcm_plan_task-coll');
 
 exports.SUBJECT_SOCKET = {
-
+	
 	/**
 	 * Tạo mới checklist
 	 */
