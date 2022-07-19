@@ -157,6 +157,12 @@ class Model extends BaseModel {
 
                 if(unitprice){
                     dataUpdate.unitprice = unitprice;
+
+                    if(infoTimeSheetID.parent){
+                        let unitPriceCurrent = infoTimeSheetID.unitprice;
+                        let unitPriceAfter   = unitprice - unitPriceCurrent;
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { unitprice: unitPriceAfter }})
+                    }
                 }
 
                 if(hours && unitprice){

@@ -77,6 +77,9 @@ module.exports = {
 
 		// Document file
 		[CF_ACTIONS_DOCUMENT.DOCUMENT_FILE_GET_INFO_AND_GET_LIST] : DOCUMENT__FILE_HANDLER.getInfoAndGetList,
+
+		// Remove Document file
+		[CF_ACTIONS_DOCUMENT.DOCUMENT_FILE_REMOVE] : DOCUMENT__FILE_HANDLER.remove,
 	},
 	/**
 	* Events
