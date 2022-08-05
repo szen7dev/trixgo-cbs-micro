@@ -137,22 +137,14 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     }],
     /**
      * Cấu hình hiển thị view mặc định ở trang chủ
-     * 1: Văn hoá doanh nghiệp
-     * 2: Báo cáo quản trị theo phân quyền truy cập
+     * 1: Giao diện Gmail (chung cho cấp nhân viên)
+     * 2: Giao diện cho cấp Quản lý
+     * 3: Giao diện cho cấp Lãnh đạo
      */
-    // displayHomeConfig: {
-    //     type   : Number,
-    //     default: 1
-    // },
-    /**
-     * Cấu hình giao diện chi tiết công việc
-     * 1: Giao diện đơn giản
-     * 2: Giao diện đầy đủ
-     */
-    // displayPcmConfig: {
-    //     type   : Number,
-    //     default: 1
-    // },
+    displayHomeConfig: {
+        type   : Number,
+        default: 1
+    },
     //_______Ngôn ngữ hiển thị (đồng bộ với moment.js)
     lang: {
         type   : String,
@@ -173,27 +165,14 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     }],
-    //_______Bạn bè liên lạc gần đây
-    // recentlyFriends: [{ 
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
-    /**
-     * Số lượng app user được dùng
-     * khi record user_app insert -> amountAppUse ++ (increment)
-     */
-    // amountAppUse: {
-    //     type: Number,
-    //     default: 0
-    // },
     /**
      * Dung lượng sử dụng trong tất cả các ứng dụng
      * khi record của các ứng dụng insert file thì sẽ ++ (increment)
      */
-    // storageUse: {
-    //     type: Number,
-    //     default: 0
-    // }, 
+    storageUse: {
+        type: Number,
+        default: 0
+    }, 
     //_______Code reset mật khẩu
     codeReset: String,
     /**
