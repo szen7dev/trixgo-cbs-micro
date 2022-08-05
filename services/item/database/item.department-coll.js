@@ -32,6 +32,25 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
+    /**
+     * Phiên bản cao cấp/trả phí
+     * cho phép add thành viên ngoài phân vùng vào dự án
+     * 0-Không cho phép, chỉ cho phép nội bộ phân vùng
+     * 1-Cho phép ngoài phân vùng (phải trả phí)     * 
+     */
+    premium: {
+        type: Number,
+        default: 0 
+    },
+    /**
+     * Số thành viên tối đa được phép add vào dự án
+     * - Bản miễn phí => 50
+     * - Bản trả phí => 1000
+     */
+    maxMembers: {
+        type   : Number,
+        default: 0
+    },
     /** 
      * Phân loại
      * 1-Phòng ban
