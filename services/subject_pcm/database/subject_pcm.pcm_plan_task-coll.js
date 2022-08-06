@@ -63,6 +63,18 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         ref: "user"
     }],
     /**
+     * Tổng hợp người nhận thông báo
+     * 1-author
+     * 2-assignee
+     * 3-related
+     * Người là members của group thì không nhận được thông báo
+     * Nhưng được tìm thấy công việc
+     */
+    cc: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    /**
      * PHÂN LOẠI PHỤC VỤ BÁO CÁO
      */
     /**
