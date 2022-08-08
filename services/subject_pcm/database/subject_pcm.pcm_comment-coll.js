@@ -4,8 +4,17 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
-    //_________Nội dung
-    content: String,
+    //_________Người tạo comment
+    author: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
+    },
+
+    //_________Công ty của người tạo comment
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
 
     //________Dự án/phòng ban
     project: {
@@ -42,6 +51,9 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_comment'
     },
+
+    //_________Nội dung
+    content: String,
 
     /**
      * Phân loại
@@ -82,12 +94,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     amountReaction: {
         type    :  Number,
         default : 0
-    },
-
-    //_________Người tạo comment
-    author: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'user'
     },
 
     //_________Người cập nhật comment
