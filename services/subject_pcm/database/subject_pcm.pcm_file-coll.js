@@ -70,6 +70,12 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
     //_____image/jpeg
     mimeType: { type: String },
 
+    //_________Công ty của người tạo file
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
+
     //_________Author(Đưa qua bảng phụ để truy vấn)
     author: {
         type: Schema.Types.ObjectId,
