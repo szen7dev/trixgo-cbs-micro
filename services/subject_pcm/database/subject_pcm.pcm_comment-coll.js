@@ -4,17 +4,23 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
+    //_________Công ty của người tạo comment
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
+
     //_________Người tạo comment
     author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
 
-    //_________Công ty của người tạo comment
-    companyOfAuthor: {
+    //_________Người nhận
+    receiver: [{
         type: Schema.Types.ObjectId,
-        ref: 'company'
-    },
+        ref : "user"
+    }],
 
     //________Dự án/phòng ban
     project: {
