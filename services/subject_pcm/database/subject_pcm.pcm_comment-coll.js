@@ -61,6 +61,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
      * 2-Phản hồi liên quan (task, project)
      * 3-Hiện trạng (task)
      * 4-Giải pháp (task)
+     * 5-Mặc định tạo kèm khi tạo việc/mô tả công việc
      */
     type: { type: Number, default: 1 },
 
