@@ -74,13 +74,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         ref: "user"
     }],
     /**
-     * Những người chưa xem task (hiển thị là new task)
+     * Những người được quyền truy cập
      * 1-author (khi tạo việc xong thì add vào)
      * 2-assignee (khi tạo việc xong thì add vào)
      * 3-related (khi thêm người liên quan thì add vào)
      * 4-người được gửi tới khi tạo phản hồi liên quan của chủ đề
      */
-    news: [{
+    accessUsers: [{
         type: Schema.Types.ObjectId,
         ref: "user"
     }],  
