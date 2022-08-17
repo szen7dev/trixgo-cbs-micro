@@ -231,7 +231,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         ref: "file"
     }],
     //_________Bình luận cuối cùng
-    lastLog: {
+    lastComment: {
         type   : Schema.Types.ObjectId,
         ref: 'pcm_comment'
     },
