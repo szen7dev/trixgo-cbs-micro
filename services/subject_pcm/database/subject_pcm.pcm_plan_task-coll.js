@@ -193,9 +193,9 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     /**
      * THÔNG TIN CĂN BẢN
      */
-    //_________Tên công việc
+    //_________Tên công việc (Báo cáo đánh giá)
     name: String,
-    //_______Tên sau khi convert-chữ thường, không dấu
+    //_______Tên sau khi convert-chữ thường, không dấu (bao cao danh gia)
     namecv: String,
     //_________Mã hiệu do người dùng tự đặt
     sign: String,
