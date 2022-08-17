@@ -74,16 +74,24 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         ref: "user"
     }],
     /**
-     * Tổng hợp người nhận thông báo
+     * Những người chưa xem task (hiển thị là new task)
      * 1-author (khi tạo việc xong thì add vào)
      * 2-assignee (khi tạo việc xong thì add vào)
      * 3-related (khi thêm người liên quan thì add vào)
      * 4-người được gửi tới khi tạo phản hồi liên quan của chủ đề
      */
-    usersGetNotice: [{
+    news: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    }],
+    }],  
+    /**
+     * Những người đã xem
+     * - Khi bấm vào chi tiết task => đồng nghĩa đã xem
+     */
+    viewedUsers: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],  
     /**
      * PHÂN LOẠI PHỤC VỤ BÁO CÁO
      */
@@ -134,7 +142,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     status: { type: Number, default: 1 },    
     //_________Phân loại mức độ quan trọng (cao, bình thường, thấp)
     priority: { type: Number, default: 2 },
-    //_________Phân loại mức độ quan trọng (cao, bình thường, thấp)
+    //_________Phân loại mức độ rủi ro (cao, bình thường, thấp)
     risk: { type: Number, default: 2 },    
     //_________Dự án/phòng ban
     project: {
@@ -253,14 +261,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      */
     //_________% hoàn thành (max = 100)
     percentage: { type: Number, default: 0, max: 100 },
-    // //_________Nhận xét
-    // judgement: String,
-    // //_________Tiến độ
-    // overdue: { type: Number, default: 1 },
-    // //_________Chất lượng
-    // score: { type: Number, default: 1, max: 5 },
-    // //_________Kết thúc thực tế
-    // finishTime: { type: Date, default: null },
     /**
      * THÔNG TIN ĐỆ TRÌNH/PHÊ DUYỆT
      * http://thongtindauthau.com/17116/thuat-ngu-tieng-anh-trong-dau-thau-va-hop-dong/
@@ -301,16 +301,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         content : {
             type : String
         }
-    }],
-    //_________Những người đã xem
-    viewedUsers: [{
-        type: Schema.Types.ObjectId,
-        ref: "user"
-    }],
-    //_______Những người chưa xem task (hiển thị là new task)
-    news: [{
-        type: Schema.Types.ObjectId,
-        ref: "user"
     }],
     //_________Những user đánh dấu quan tâm/start/bookmark
     flags: [{
