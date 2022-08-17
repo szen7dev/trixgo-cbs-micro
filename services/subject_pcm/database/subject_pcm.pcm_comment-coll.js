@@ -10,18 +10,16 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         require:  true,
         unique : true
     },
-    //_________Công ty của người tạo comment
-    companyOfAuthor: {
-        type: Schema.Types.ObjectId,
-        ref: 'company'
-    },
-
     //_________Người tạo comment
     author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
-
+    //_________Công ty của người tạo comment
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
     //_________Người nhận
     receiver: [{
         type: Schema.Types.ObjectId,
@@ -58,7 +56,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         ref     : 'pcm_comment'
     },
 
-    //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
+    //_________ID reply của comment reply cuối (Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_comment'
@@ -66,6 +64,9 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
 
     //_________Nội dung
     content: String,
+
+    //_________Nội dung convert
+    contentcv: String,
 
     /**
      * Phân loại
@@ -82,7 +83,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
      */
     subType:{ type: Number, default: 0 },
 
-    //_________Đánh dấu
+    //_________Đánh dấu chính thức
     official: { type: Boolean, default: false },
 
     //_________File đính kèm
