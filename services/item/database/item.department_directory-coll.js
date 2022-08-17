@@ -34,6 +34,8 @@ module.exports  = DATABASE_MIDDLEWARE("department_directory", {
     description: String,
     //_________Thứ tự hiển thị
     order: { type: Number, default: 1 },
+    //_________Khóa user (0-Bình thường, 1-Khóa)
+    lock: { type: Number, default: 0 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT => Khi Admin dự án Add user vào làm thành viên dự án
      */

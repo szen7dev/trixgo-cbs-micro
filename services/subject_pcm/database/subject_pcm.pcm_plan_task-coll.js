@@ -112,11 +112,18 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     },
     /**
      * Phân loại trạng thái (gồm cả trạng thái Lock)
+     * 1-Khởi tạo
+     * 2-Đang triển khai
+     * 3-Hoàn thành
+     * 4-Treo lại
+     * 5-Chờ người khác giải quyết
+     * 6-Tiếp tục theo dõi
+     * 7-Khóa
      */
     status: { type: Number, default: 1 },    
-    //_________Phân loại mức độ quan trọng (cao, bình thường, thấp, siêu cao)
+    //_________Phân loại mức độ quan trọng (cao, bình thường, thấp)
     priority: { type: Number, default: 2 },
-    //_________Phân loại mức độ quan trọng (cao, bình thường, thấp, siêu cao)
+    //_________Phân loại mức độ quan trọng (cao, bình thường, thấp)
     risk: { type: Number, default: 2 },    
     //_________Dự án/phòng ban
     project: {
@@ -241,25 +248,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     // overdue: { type: Number, default: 1 },
     // //_________Chất lượng
     // score: { type: Number, default: 1, max: 5 },
-    // //_________Mức độ cấp bách
-    // urgent: { type: Number, default: 1 },
-    // //_________Mức độ phức tạp
-    // difficult: { type: Number, default: 1 },
     // //_________Kết thúc thực tế
     // finishTime: { type: Date, default: null },
-    // //_________Giá trị bị phạt
-    // punish: { type: Number, default: 0 },
-    // //_________Dự kiến thời lượng (h)
-    // amountoftime: { type: Number, default: 0 },
-    // //________Thực tế thời lượng (h)
-    // executiontime: { type: Number, default: 0 },
-    // //_________Đơn giá cho 1 giờ làm
-    // amountPerHour: { type: Number, default: 0 },
-    // //_________Khác
-    // quality: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : "doctype"
-    // },
     /**
      * THÔNG TIN ĐỆ TRÌNH/PHÊ DUYỆT
      * http://thongtindauthau.com/17116/thuat-ngu-tieng-anh-trong-dau-thau-va-hop-dong/
