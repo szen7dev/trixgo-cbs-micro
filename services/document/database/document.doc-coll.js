@@ -86,8 +86,12 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     type: { type: Number, default: 1 },
     //_________Nội dung văn bản (Tiêu đề)
     name: String,
+    //_________Nội dung văn bản (Tiêu đề)
+    namecv: String,
     //_________Mô tả
     description: String,
+    //_________Mô tả
+    descriptioncv: String,    
     //_________Số hiệu văn bản
     sign: String,
     //_________Số hiệu hồ sơ lưu (Mã hiệu lưu)
