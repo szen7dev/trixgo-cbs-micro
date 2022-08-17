@@ -20,7 +20,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
-    //_________Người nhận
+    /**
+     * Người nhận
+     * 1-author (khi tạo việc xong thì add vào)
+     * 2-assignee (khi tạo việc xong thì add vào)
+     * 3-related (khi thêm người liên quan thì add vào)
+     * 4-người được gửi tới khi tạo phản hồi liên quan của chủ đề
+     */
     receiver: [{
         type: Schema.Types.ObjectId,
         ref : "user"
