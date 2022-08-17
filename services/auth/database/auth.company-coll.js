@@ -11,6 +11,8 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
     },
     //_________Tên công ty
     name: String,
+    //_______Tên sau khi convert-chữ thường, không dấu
+    namecv: String,
     //_________Mã hiệu
     sign: {
         type: String,

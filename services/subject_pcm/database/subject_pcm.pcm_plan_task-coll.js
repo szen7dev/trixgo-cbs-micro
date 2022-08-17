@@ -16,26 +16,15 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         require:  true,
         unique : true
     },
-    //_________Công ty
+    //_________Công ty phân vùng chứa task
     company: {
-        type: Schema.Types.ObjectId,
-        ref: 'company'
-    },
-    //_________Công ty của người tạo việc
-    companyOfAuthor: {
-        type: Schema.Types.ObjectId,
-        ref: 'company'
-    },
-
-    //_________Công ty của người thực hiện
-    companyOfAssignee: {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
     /**
      * CẤU TRÚC ĐỆ QUY
      */
-    //_________Công việc cha | Công việc chứa checklist
+    //_________Công việc cha
     parent: {
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
@@ -52,11 +41,21 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
+    //_________Công ty của người tạo việc
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },  
     //_________Người thực hiện
     assignee: {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
+    //_________Công ty của người thực hiện
+    companyOfAssignee: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },  
     //_________Những người liên quan
     related: [{
         type: Schema.Types.ObjectId,
@@ -78,11 +77,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * PHÂN LOẠI PHỤC VỤ BÁO CÁO
      */
     /**
-     * Phân loại công việc mẫu/thông thường
-     * 0-Việc thông thường
-     * 1-Việc mẫu
-     */
-    template: { type: Number, default: 0 },
     /**
      * Phân loại việc Nháp hay Chính thức
      * 0-Chính thức
@@ -90,13 +84,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      */
     draft: { type: Number, default: 0 },
     /**
-     * Phân loại checklist và công việc/việc con
+     * Phân loại checklist và công việc/việc con (!!! CÂN NHẮC CÓ THỂ BỎ)
      * 1-Công việc
      * 2-Checklist
      */
     type: { type: Number, default: 1 },
     /**
-     * Phân loại tính chất công việc
+     * TÍNH CHẤT
      * 0-Việc thông thường
      * 1-Yêu cầu thông tin
      * 2-Yêu cầu phê duyệt
@@ -111,23 +105,19 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 11-Biên bản họp
      */
     subtype: { type: Number, default: 0 },
+    //_________PHÂN LOẠI
+    field: {
+        type: Schema.Types.ObjectId,
+        ref : "doctype"
+    },
     /**
-     * Phân loại tiến độ
-     * 0-Việc thông thường
-     * 1-Tiến độ thông thường
-     * 2-Mốc tiến độ
-     * 3-Tiến độ gói/nhóm
+     * Phân loại trạng thái (gồm cả trạng thái Lock)
      */
-    progressType: Number,
+    status: { type: Number, default: 1 },    
     //_________Phân loại mức độ quan trọng (cao, bình thường, thấp, siêu cao)
     priority: { type: Number, default: 2 },
-    //_________Phân loại trạng thái (6 trạng thái)
-    status: { type: Number, default: 1 },
-    //_________Khoá/Mở
-    lock: { type: Number, default: 0 },
-    /**
-     * PHÂN LOẠI KHÁC
-     */
+    //_________Phân loại mức độ quan trọng (cao, bình thường, thấp, siêu cao)
+    risk: { type: Number, default: 2 },    
     //_________Dự án/phòng ban
     project: {
         type: Schema.Types.ObjectId,
@@ -143,52 +133,45 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
-    //_________Xử lý việc cho văn bản tài liệu nào
-    document: {
-        type: Schema.Types.ObjectId,
-        ref : "document_doc"
-    },
-    //_________Tính chất (Phân loại khác TYPE = 2)
-    field: {
-        type: Schema.Types.ObjectId,
-        ref : "doctype"
-    },
-    //_________Kanban
-    board: {
-        type: Schema.Types.ObjectId,
-        ref : "pcm_plan_board"
-    },
-    //_________Link template (WORKFLOW)
-    linkTemplate: {
-        type: Schema.Types.ObjectId,
-        ref : "pcm_plan_task"
-    },
-    //_________Loại template sử dụng (IN ẤN)
-    templateApply: {
-        type: Schema.Types.ObjectId,
-        ref : "template"
-    },
+    /**
+     * Mốc tiến độ
+     * 0-Việc thông thường
+     * 1-Pháp lý
+     * 2-Thiết kế
+     * 3-Dự toán, ngân sách
+     * 4-Lựa chọn nhà thầu
+     * 5-Thi công
+     * 5-Bàn giao
+     * 6-Quyết toán
+     */
+    milestone: { type: Number },
+    // //_________Link template (WORKFLOW)
+    // linkTemplate: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "pcm_plan_task"
+    // },
+    // //_________Loại template sử dụng (IN ẤN)
+    // templateApply: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "template"
+    // },
     /**
      * THÔNG TIN CĂN BẢN
      */
     //_________Tên công việc
     name: String,
+    //_______Tên sau khi convert-chữ thường, không dấu
+    namecv: String,
     //_________Mã hiệu do người dùng tự đặt
     sign: String,
     //_________Mô tả
     description: String,
+    //_______Mô tả convert-chữ thường, không dấu
+    descriptioncv: String,    
     //_________Ghi chú
     note: String,
-    //_________Thứ tự của công việc
-    order: { type: Number, default: 1 },
-    //_________Tổng số lượng check list
-    amountChecklist: {
-        type: Number, default: 0
-    },
-    //_________Tổng số lượng check list đã hoàn thành
-    amountFinishedChecklist: {
-        type: Number, default: 0
-    },
+    //_______Ghi chú convert-chữ thường, không dấu
+    notecv: String,   
     //_________Tổng số lượng việc con
     amountSubtask: {
         type: Number, default: 0
@@ -219,20 +202,20 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
     }], 
-    //_________File của người tạo việc
+    //_________File của người tạo việc (!!! Cân nhắc bỏ => đưa sang phản hồi liên quan)
     authorAttachs: [{
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
-    //_________File của người thực hiện
+    //_________File của người thực hiện (!!! Cân nhắc bỏ => đưa sang phản hồi liên quan)
     assigneeAttachs: [{
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
-    //_________Hoạt động cuối cùng(bỏ thay bằng history_log)
+    //_________Bình luận cuối cùng
     lastLog: {
         type   : Schema.Types.ObjectId,
-        ref: 'history_log'
+        ref: 'pcm_comment'
     },
     /**
      * THÔNG TIN VỀ THỜI HẠN
@@ -245,76 +228,57 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     actualStartTime: { type: Date, default: new Date() },
     //_________Kế hoạch thực tế
     actualFinishTime: { type: Date, default: new Date() },
-    //_________Hẹn gửi theo lịch biểu (chuyển việc nháp thành chính thức)
-    schedule: { type: Date, default: null },
     //_________Thông báo trước thời hạn (h)
     alert: { type: Number, default: 0 },
-    //_________Thời hạn được phép thêm người liên quan (!!!)
-    addRelatedExpired: { type: Date, default: null },
     /**
      * ĐÁNH GIÁ CÔNG VIỆC
      */
     //_________% hoàn thành (max = 100)
     percentage: { type: Number, default: 0, max: 100 },
-    //_________Nhận xét
-    judgement: String,
-    //_________Tiến độ
-    overdue: { type: Number, default: 1 },
-    //_________Chất lượng
-    score: { type: Number, default: 1, max: 5 },
-    //_________Mức độ cấp bách
-    urgent: { type: Number, default: 1 },
-    //_________Mức độ phức tạp
-    difficult: { type: Number, default: 1 },
-    //_________Kết thúc thực tế
-    finishTime: { type: Date, default: null },
-    //_________Giá trị bị phạt
-    punish: { type: Number, default: 0 },
-    //_________Dự kiến thời lượng (h)
-    amountoftime: { type: Number, default: 0 },
-    //________Thực tế thời lượng (h)
-    executiontime: { type: Number, default: 0 },
-    //_________Đơn giá cho 1 giờ làm
-    amountPerHour: { type: Number, default: 0 },
-    //_________Khác
-    quality: {
-        type: Schema.Types.ObjectId,
-        ref : "doctype"
-    },
-    /**
-     * Mốc tiến độ
-     * 0-Việc thông thường
-     * 1-Pháp lý
-     * 2-Thiết kế
-     * 3-Dự toán, ngân sách
-     * 4-Lựa chọn nhà thầu
-     * 5-Thi công
-     * 5-Bàn giao
-     * 6-Quyết toán
-     */
-    milestone: { type: Number },
+    // //_________Nhận xét
+    // judgement: String,
+    // //_________Tiến độ
+    // overdue: { type: Number, default: 1 },
+    // //_________Chất lượng
+    // score: { type: Number, default: 1, max: 5 },
+    // //_________Mức độ cấp bách
+    // urgent: { type: Number, default: 1 },
+    // //_________Mức độ phức tạp
+    // difficult: { type: Number, default: 1 },
+    // //_________Kết thúc thực tế
+    // finishTime: { type: Date, default: null },
+    // //_________Giá trị bị phạt
+    // punish: { type: Number, default: 0 },
+    // //_________Dự kiến thời lượng (h)
+    // amountoftime: { type: Number, default: 0 },
+    // //________Thực tế thời lượng (h)
+    // executiontime: { type: Number, default: 0 },
+    // //_________Đơn giá cho 1 giờ làm
+    // amountPerHour: { type: Number, default: 0 },
+    // //_________Khác
+    // quality: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "doctype"
+    // },
     /**
      * THÔNG TIN ĐỆ TRÌNH/PHÊ DUYỆT
      * http://thongtindauthau.com/17116/thuat-ngu-tieng-anh-trong-dau-thau-va-hop-dong/
      */
-    //_________Người phê duyệt
-    approver:{
-        type: Schema.Types.ObjectId,
-        ref: "user"
-    },
-    //_________Thời điểm phê duyệt
-    timeApproved: { type: Date, default: null },
-    //_________Giá trị phê duyệt/Giá phê duyệt trúng thầu
-    valueApproved: { type: Number, default: 0 },
-    /**
-     * THÔNG TIN DỰ THẦU
-     */
-    //_________Giá dự thầu
-    bidPrice: { type: Number, default: 0 },
-    //_________Giảm giá dự thầu
-    bidPriceDiscount: { type: Number, default: 0 },
-    //_________Giá dự thầu thừa/thiếu
-    bidPriceAdjustment: { type: Number, default: 0 },
+    // //_________Người phê duyệt
+    // approver:{
+    //     type: Schema.Types.ObjectId,
+    //     ref: "user"
+    // },
+    // //_________Thời điểm phê duyệt
+    // timeApproved: { type: Date, default: null },
+    // //_________Giá trị phê duyệt/Giá phê duyệt trúng thầu
+    // valueApproved: { type: Number, default: 0 },
+    // //_________Giá dự thầu
+    // bidPrice: { type: Number, default: 0 },
+    // //_________Giảm giá dự thầu
+    // bidPriceDiscount: { type: Number, default: 0 },
+    // //_________Giá dự thầu thừa/thiếu
+    // bidPriceAdjustment: { type: Number, default: 0 },
     //_________User đồng ý mở thầu
     openedUsers: [{
         type: Schema.Types.ObjectId,

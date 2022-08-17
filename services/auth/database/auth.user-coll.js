@@ -38,10 +38,8 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     lastname: String,
     //_______Họ và tên (vd: Nguyễn Văn Nam)
     fullname: String,
-    //_______Tên trong doanh nghiệp (vd: Nam-TRX)
-    bizfirstname: String,
-    //_______Họ và tên trong doanh nghiệp (vd: Nguyễn Văn Nam-TRX)
-    bizfullname: String,
+    //_______Họ và tên sau khi convert-chữ thường, không dấu (vd: nguyen van nam-trx)
+    fullnamecv: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,
@@ -103,37 +101,12 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : Date,
         default: null
     },
-    /**
-     * Cấu hình nhận email thông báo
-     * 1: Nhận email
-     * 0: Không nhận email
-     */
-    emailConfig: {
-        type   : Number,
-        default: 1
-    },
-    /**
-     * Cấu hình nhận thông báo trên hệ thống
-     * 1: Nhận thông báo.
-     * 0: Không nhận thông báo.
-     */
-    noticeConfig: {
-        type   : Number,
-        default: 1
-    },
 	/**
      * Danh sách pin cuộc hội thoại
     */
 	conversationsPin: [{
         type: Schema.Types.ObjectId,
         ref: 'message_conversation'
-    }],
-    /**
-     * Danh sách pin bài viết
-    */
-	mediasPin: [{
-        type: Schema.Types.ObjectId,
-        ref: 'media'
     }],
     /**
      * Cấu hình hiển thị view mặc định ở trang chủ
