@@ -21,7 +21,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         ref: 'company'
     },
     /**
-     * Người nhận
+     * Người nhận (cải thiện năng suất)
      * 1-author (khi tạo việc xong thì add vào)
      * 2-assignee (khi tạo việc xong thì add vào)
      * 3-related (khi thêm người liên quan thì add vào)
