@@ -86,6 +86,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     }],  
     /**
      * Những user chưa xem công việc
+     * - Sẽ xóa user khi bấm xem
+     * - Sẽ thêm user khi có thông báo mới
      */
     news: [{
         type: Schema.Types.ObjectId,
@@ -93,6 +95,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     }],     
     /**
      * Những người đã xem: dùng để theo dõi những ai đã truy cập vào Task
+     * - Không được xóa phần tử đã thêm
      */
     viewedUsers: [{
         type: Schema.Types.ObjectId,
