@@ -43,9 +43,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         default: 0 
     },
     /**
-     * Số thành viên tối đa được phép add vào dự án
-     * - Bản miễn phí => 50
-     * - Bản trả phí => 1000
+     * Số thành viên tối đa bên ngoài phân vùng được phép add vào (Hệ thống cấu hình)
      */
     maxMembers: {
         type   : Number,
