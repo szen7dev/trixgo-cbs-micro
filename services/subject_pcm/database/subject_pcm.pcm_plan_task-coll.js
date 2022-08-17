@@ -85,8 +85,14 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         ref: "user"
     }],  
     /**
-     * Những người đã xem
-     * - Khi bấm vào chi tiết task => đồng nghĩa đã xem
+     * Những user chưa xem công việc
+     */
+    news: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],     
+    /**
+     * Những người đã xem: dùng để theo dõi những ai đã truy cập vào Task
      */
     viewedUsers: [{
         type: Schema.Types.ObjectId,
