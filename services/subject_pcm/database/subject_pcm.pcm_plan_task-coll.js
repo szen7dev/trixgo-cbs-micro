@@ -45,7 +45,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     companyOfAuthor: {
         type: Schema.Types.ObjectId,
         ref: 'company'
-    },  
+    },
     //_________Người thực hiện
     assignee: {
         type: Schema.Types.ObjectId,
@@ -55,7 +55,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     companyOfAssignee: {
         type: Schema.Types.ObjectId,
         ref: 'company'
-    },  
+    },
     //_________Những người liên quan
     related: [{
         type: Schema.Types.ObjectId,
@@ -83,7 +83,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     accessUsers: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    }],  
+    }],
     /**
      * Những user chưa xem công việc
      * - Sẽ xóa user khi bấm xem
@@ -92,7 +92,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     news: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    }],     
+    }],
     /**
      * Những người đã xem: dùng để theo dõi những ai đã truy cập vào Task
      * - Không được xóa phần tử đã thêm
@@ -100,7 +100,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     viewedUsers: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    }],  
+    }],
     /**
      * PHÂN LOẠI PHỤC VỤ BÁO CÁO
      */
@@ -148,11 +148,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 6-Tiếp tục theo dõi
      * 7-Khóa
      */
-    status: { type: Number, default: 1 },    
+    status: { type: Number, default: 1 },
     //_________Phân loại mức độ quan trọng (cao, bình thường, thấp)
     priority: { type: Number, default: 2 },
     //_________Phân loại mức độ rủi ro (cao, bình thường, thấp)
-    risk: { type: Number, default: 2 },    
+    risk: { type: Number, default: 2 },
     //_________Dự án/phòng ban
     project: {
         type: Schema.Types.ObjectId,
@@ -202,11 +202,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     //_________Mô tả
     description: String,
     //_______Mô tả convert-chữ thường, không dấu
-    descriptioncv: String,    
+    descriptioncv: String,
     //_________Ghi chú
     note: String,
     //_______Ghi chú convert-chữ thường, không dấu
-    notecv: String,   
+    notecv: String,
     //_________Tổng số lượng việc con
     amountSubtask: {
         type: Number, default: 0
@@ -239,7 +239,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     links: [{
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
-    }], 
+    }],
     //_________File của người tạo việc (!!! Cân nhắc bỏ => đưa sang phản hồi liên quan)
     authorAttachs: [{
         type: Schema.Types.ObjectId,

@@ -115,6 +115,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = {};
+                let accessUsers = [authorID, assigneeID];
                 let infoGroup = null;
                 let companyID = null;
                 let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
@@ -187,12 +188,14 @@ class Model extends BaseModel {
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
                 dataInsert = {
                     name,
+                    namecv: stringUtilsr.removeAccents(name),
                     company : companyID,
                     project : projectID,
                     group   : groupID,
                     assignee: assigneeID,
                     author  : authorID,
                     suid,
+                    accessUsers,
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type,
                 }
@@ -258,10 +261,12 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "relatedIDs_invalid", status: 400 });
                     }
                     dataInsert.related = relatedIDs;
+                    accessUsers.push(...relatedIDs);
                 }
 
                 if(description){
                     dataInsert.description = description;
+                    dataInsert.descriptioncv = stringUtilsr.removeAccents(description);
                 }
 
                 if(sign){
@@ -270,6 +275,7 @@ class Model extends BaseModel {
 
                 if(note){
                     dataInsert.note = note;
+                    dataInsert.notecv = stringUtilsr.removeAccents(note);
                 }
 
                 if(progressType && !isNaN(Number(progressType)) && Number(progressType) > 0){
@@ -341,6 +347,13 @@ class Model extends BaseModel {
                 if(template && !isNaN(template)){
                     dataInsert.template = Number(template);
                 }
+
+                /**
+                 * Những user chưa xem công việc
+                 * - Sẽ xóa user khi bấm xem
+                 * - Sẽ thêm user khi có thông báo mới
+                 */
+                dataInsert.news = accessUsers;
 
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -483,7 +496,7 @@ class Model extends BaseModel {
      */
     update({ typeUpdate,
         taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
-        contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+        contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature, isOpenBidding,
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, ctx
     }){
@@ -754,6 +767,10 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, flags }
                 }
 
+                if(checkObjectIDs(tasksLink)){
+                    dataAddToset = { ...dataAddToset, links: tasksLink }
+                }
+
                 //_________Cột mốc
                 if(!isNaN(milestone)){
                     dataUpdate.milestone = milestone;
@@ -849,6 +866,17 @@ class Model extends BaseModel {
 
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+
+                // Khi link việc A vào việc B thì ở trong việc B, links cũng chứa A
+                if(checkObjectIDs(tasksLink)){
+                    await PCM_PLAN_TASK_COLL.updateMany({
+                        _id: { $in: tasksLink }
+                    }, {
+                        $addToSet: {
+                            links: taskID
+                        }
+                    });
+                }
 
                 // Cập nhật amountFinishedChecklist hoặc amountFinishedSubtask cho việc cha
                 if(infoAfterUpdate.parent && status == 3){

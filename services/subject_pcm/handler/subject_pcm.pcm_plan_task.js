@@ -95,11 +95,12 @@ module.exports = {
             relatedRemoves : { type: "array", optional: true },
             lastLogID      : { type: "string", optional: true },
             isAddSignature : { type: "boolean", optional: true },
-            isOpenBidding : { type: "boolean", optional: true },
-            authorAttachs  : { type: "array", optional: true },
-            assigneeAttachs: { type: "array", optional: true },
-            milestone      : { type: "number", optional: true },
-            subType          : { type: "number", optional: true },
+            isOpenBidding   : { type: "boolean", optional: true },
+            authorAttachs   : { type: "array", optional: true },
+            tasksLink       : { type: "array", optional: true },
+            assigneeAttachs : { type: "array", optional: true },
+            milestone       : { type: "number", optional: true },
+            subType         : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -107,7 +108,7 @@ module.exports = {
                 const {
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone
                  } = ctx.params;
@@ -116,7 +117,7 @@ module.exports = {
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding,
                     companyOfUser: company._id, milestone, ctx
