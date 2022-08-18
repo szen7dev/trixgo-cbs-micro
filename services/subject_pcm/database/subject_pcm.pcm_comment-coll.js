@@ -67,8 +67,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     contentcv: String,
     /**
      * Phân loại
-     * 1-Comment thông thường (task, project, document,...)
-     * 2-Phản hồi liên quan (task, project)
+     * 1-Phản hồi thông thường (task, project, document,...)
      * 3-Hiện trạng (task)
      * 4-Giải pháp (task)
      * 5-Mặc định tạo kèm khi tạo việc/mô tả công việc

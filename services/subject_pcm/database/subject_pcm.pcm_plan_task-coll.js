@@ -232,7 +232,10 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "signature"
     }],
-    //_________Các việc có liên quan kèm theo
+    /**
+     * Các việc có liên quan kèm theo
+     * Khi link việc A vào việc B thì ở trong việc B, links cũng chứa A
+     */
     links: [{
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
