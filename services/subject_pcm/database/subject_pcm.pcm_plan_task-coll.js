@@ -112,9 +112,9 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      */
     draft: { type: Number, default: 0 },
     /**
-     * Phân loại checklist và công việc/việc con (!!! CÂN NHẮC CÓ THỂ BỎ)
+     * Phân loại công việc và công việc con
      * 1-Công việc
-     * 2-Checklist
+     * 2-Checklist/Công việc con
      */
     type: { type: Number, default: 1 },
     /**
@@ -324,7 +324,10 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
-    //_______Mảng user xoá vĩnh viễn công việc
+    /**
+     * Mảng user xoá vĩnh viễn công việc
+     * Đồng nghĩa với việc giảm dung lượng sử dụng
+     */
     usersPermanentDelete: [{
         type: Schema.Types.ObjectId,
         ref: "user"

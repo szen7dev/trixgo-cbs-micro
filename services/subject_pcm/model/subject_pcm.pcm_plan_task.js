@@ -1496,6 +1496,148 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name  : Danh sách chủ đề (thông báo đến)
+     * Author: Hiepnh
+     * Code  : 19/8/2022
+     */
+    getListSubject({
+        draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {}
+    }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(limit > 50){
+                    limit = 50;
+                } else{
+                    limit = +limit;
+                }
+
+                // Các việc chưa xóa
+                let conditionObj = {}
+
+                // Chỉ lấy task cha
+                if(isParent == 1){
+                    conditionObj.parent = { $exists: false };
+                }
+
+                if(isActive && isActive == 1){
+                    conditionObj.usersDelete = { $nin: [userID] }
+                }else{
+                    conditionObj.usersDelete = { $in: [userID] }
+                }
+
+                let sortBy;
+                let keys	 = ['modifyAt__-1', '_id__-1'];
+
+                // Chưa rõ cái này để làm gì?
+                // if (sortKey && typeof sortKey === 'string') {
+                //     if (!IsJsonString(sortKey))
+                //         return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                //     keys = JSON.parse(sortKey);
+                // }
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(isGroup && isGroup == 1){
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // Lấy công việc mà mình được quyền truy cập
+                    conditionObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
+                    ]
+                }else{
+                    conditionObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                    ]
+                }
+
+                // Kiểm tra điều kiện populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                // Lấy những việc nháp hoặc không phải việc nháp
+                if(draft && [0,1].includes(draft)){
+                    conditionObj.draft = draft;
+                }
+
+                let conditionObjOrg = {...conditionObj};
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                // Tổng số việc tìm thấy
+                let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
+                if(unlimit == 1){
+                    limit = totalRecord;
+                }
+
+                // Bắt đầu query trong db
+                let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .select(select)
+                    .populate(populates)
+                    .sort(sortBy)
+                    .lean();
+
+                // Kiểm tra nếu không có dữ liệu
+                if(!infoDataAfterGet)
+                   return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
+
+                // NextCursor phần tử cuối cùng khi phân trang
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+               
+                // Tổng số trang
+                let totalPage   = Math.ceil(totalRecord/limit);
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Dev: MinhVH
      * Func: Search Task
      * Date: 11/05/2022

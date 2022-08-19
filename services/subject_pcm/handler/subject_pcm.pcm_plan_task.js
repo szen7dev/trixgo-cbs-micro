@@ -227,12 +227,53 @@ module.exports = {
                         taskID, userID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
+                    resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListNew({
                         userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                         keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent
                     });
                 }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Danh sách chủ đề
+     * Date: 19/8/2022
+     */
+     getListSubject: {
+        auth: 'required',
+        params: {
+            draft               : { type: 'string', optional: true },
+            sortKey             : { type: 'string', optional: true },
+            isParent            : { type: 'string', optional: true },
+            isActive            : { type: 'string', optional: true },
+            isGroup            : { type: 'string', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "number", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    draft, sortKey, isParent, isActive, isGroup, keyword,
+                    limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListSubject({
+                    draft, sortKey, isParent, isActive, isGroup, keyword,
+                    limit, lastestID, select, populates, userID
+                })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
