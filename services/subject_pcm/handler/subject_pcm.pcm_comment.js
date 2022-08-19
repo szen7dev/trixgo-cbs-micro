@@ -221,4 +221,35 @@ module.exports = {
             }
         }
     },
+
+    /**
+	 * Dev: HiepNH
+	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
+	 * Date: 19/8/2022
+	 */
+    searchCommentBySubject: {
+        params: {
+            commentID   : { type: "string" },
+            taskID      : { type: "string", optional: true },
+            projectID   : { type: "string", optional: true },
+            switchType  : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { taskID, commentID, projectID, switchType, select, populates } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentById({
+                    taskID, commentID, projectID, switchType, select, populates, authorID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },   
 }
