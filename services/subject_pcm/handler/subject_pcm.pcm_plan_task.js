@@ -227,7 +227,7 @@ module.exports = {
                         taskID, userID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListNew({
+                    resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                         keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent
