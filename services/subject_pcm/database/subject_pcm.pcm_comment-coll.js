@@ -76,8 +76,16 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
      * 3-Hiện trạng (task)
      * 4-Giải pháp (task)
      * 5-Mặc định tạo kèm khi tạo việc/mô tả công việc
+     * 6-Cho các loại hành động khác
      */
     type: { type: Number, default: 1 },
+    /**
+     * Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
+     * Tham khảo Notification
+     */
+    languageKey: {
+        type: String 
+    },
     /**
      * Phân loại công việc(ispropsal) PCM_PROPOSAL_TASK trong cf_constant
      */

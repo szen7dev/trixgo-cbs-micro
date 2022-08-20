@@ -235,8 +235,15 @@ module.exports = {
             isActive            : { type: 'string', optional: true },
             isGroup             : { type: 'string', optional: true },
 
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            authorsID           : { type: 'string', optional: true },
+            companyOfAuthorsID  : { type: 'string', optional: true },
+            projectsID          : { type: 'string', optional: true },
+            official            : { type: 'boolean', optional: true },
+
             keyword             : { type: "string", optional: true },
-            limit               : { type: "number", optional: true },
+            limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
@@ -245,16 +252,19 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                console.log({userID})
+                // console.log({userID})
 
                 const {
-                    draft, sortKey, isParent, isActive, isGroup, keyword,
-                    limit, lastestID, select, populates
+                    draft, sortKey, isParent, isActive, isGroup, 
+                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official,
+                    keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentBySubject({
-                    draft, sortKey, isParent, isActive, isGroup, keyword,
-                    limit, lastestID, select, populates, userID
+                    draft, sortKey, isParent, isActive, isGroup, 
+                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official,
+                    keyword, limit, lastestID, select, populates, 
+                    userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -141,17 +141,18 @@ module.exports = {
             taskIDs         : { type: "array" },
             parentID        : { type: "string" },
             type            : { type: "number" }, // 1 việc con / 2 checklist
+            option          : { type: "number" }, // 0-Update status, 1-Update user đã xem
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    taskIDs, parentID, type
+                    taskIDs, parentID, type, option
                  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                // Bước check quyền
+
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
-                    parentID, taskIDs, type, userID
+                    parentID, taskIDs, type, option, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -254,9 +255,10 @@ module.exports = {
             isParent            : { type: 'string', optional: true },
             isActive            : { type: 'string', optional: true },
             isGroup             : { type: 'string', optional: true },
+            read                : { type: 'string', optional: true },
 
             keyword             : { type: "string", optional: true },
-            limit               : { type: "number", optional: true },
+            limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
@@ -266,13 +268,13 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
                 const {
-                    draft, sortKey, isParent, isActive, isGroup, keyword,
+                    draft, sortKey, isParent, isActive, isGroup, read, keyword,
                     limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListSubject({
-                    draft, sortKey, isParent, isActive, isGroup, keyword,
-                    limit, lastestID, select, populates, userID
+                    draft, sortKey, isParent, isActive, isGroup, read, 
+                    keyword, limit, lastestID, select, populates, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
