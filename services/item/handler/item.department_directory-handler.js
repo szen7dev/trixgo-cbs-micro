@@ -26,7 +26,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const { member, type, name, description, lock } = ctx.params;
-                const resultAfterCallHandler = await ITEM__DEPARTMENT_DERECTORY_MODEL.insert({ companyID: company._id, member, type, name, description, lock, userID });
+                const resultAfterCallHandler = await ITEM__DEPARTMENT_DERECTORY_MODEL.insert({ companyID: company._id, member, type, name, description, lock, userID, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -66,8 +66,8 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
-            departmentDirectoryID   : { type: "string", optional: true },
-            
+            companyID            : { type: "string" },
+            departmentDirectoryID: { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -78,8 +78,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { departmentDirectoryID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { departmentDirectoryID, keyword, limit, lastestID, select, populates, companyID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
+                if(!companyID){
+                    companyID = company._id;
+                }
                 
                 let resultAfterCallHandler;
                 if(departmentDirectoryID){
@@ -88,10 +91,10 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__DEPARTMENT_DERECTORY_MODEL.getList({
-                        companyID: company._id, keyword, limit, lastestID, select, populates
+                        companyID, keyword, limit, lastestID, select, populates
                     });
                 }
-
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message }; 

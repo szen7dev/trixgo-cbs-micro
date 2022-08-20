@@ -11,6 +11,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
  */
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
+const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
 
 /**
  * TOOLS
@@ -34,16 +35,21 @@ class Model extends BaseModel {
 	 * Func: Tạo danh bạ dự án phòng ban
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, member, type, name, description, lock, userID }){
+	insert({ member, type, name, description, lock, userID, ctx }){
         return new Promise(async resolve => {
             try {
                 let dataInsert = {
                     userCreate: userID,
-                    company: companyID
                 }
 
                 if(member){
                     dataInsert.member = member;
+                    let infoMember = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                        userID: member, select: "_id company"
+                    })
+
+                    console.log({ infoMember });
+                    dataInsert.company = infoMember.data.company;
                 }
 
                 if(type){
