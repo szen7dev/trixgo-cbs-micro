@@ -33,6 +33,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor
 const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
+const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -108,7 +109,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, select, populates, ctx }) {
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired,hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -188,7 +189,7 @@ class Model extends BaseModel {
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
                 dataInsert = {
                     name,
-                    namecv: stringUtilsr.removeAccents(name),
+                    namecv: stringUtils.removeAccents(name),
                     company : companyID,
                     project : projectID,
                     group   : groupID,
@@ -199,6 +200,8 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type,
                 }
+
+                console.log({ expiredTime })
 
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
@@ -266,7 +269,7 @@ class Model extends BaseModel {
 
                 if(description){
                     dataInsert.description = description;
-                    dataInsert.descriptioncv = stringUtilsr.removeAccents(description);
+                    dataInsert.descriptioncv = stringUtils.removeAccents(description);
                 }
 
                 if(sign){
@@ -275,7 +278,7 @@ class Model extends BaseModel {
 
                 if(note){
                     dataInsert.note = note;
-                    dataInsert.notecv = stringUtilsr.removeAccents(note);
+                    dataInsert.notecv = stringUtils.removeAccents(note);
                 }
 
                 if(progressType && !isNaN(Number(progressType)) && Number(progressType) > 0){
@@ -353,29 +356,32 @@ class Model extends BaseModel {
                  * - Sẽ xóa user khi bấm xem
                  * - Sẽ thêm user khi có thông báo mới
                  */
-                dataInsert.news = accessUsers;
+                dataInsert.news = accessUsers.filter(userId => userId !== authorID);
 
-                //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAfterInsert = await this.insertData(dataInsert);
-                if(!infoAfterInsert)
+                if(!infoAfterInsert) {
                     return resolve({ error: true, message: "can't_insert_task", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
-
-                // Cập nhật amountChecklist hoặc amountSubtask cho việc cha
-                if(parentID && checkObjectIDs(parentID)){
-                    // Việc con
-                    if(type == 1){
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountSubtask: 1 }})
-                    } else{ // checklist
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChecklist: 1 }})
-                    }
                 }
 
-                // if(Object.keys(dataAdditional).length) {
-                //     infoAfterInsert = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterInsert._id, dataAdditional, { new: true });
+                // Thêm record vào bảng pcm_comment phục vụ search
+                await PCM_COMMENT_MODEL.insertCommentTask({
+                    taskID: infoAfterInsert._id,
+                    authorID,
+                    type: 5,
+                    content: infoAfterInsert.name,
+                    description: infoAfterInsert.description,
+                });
 
-                //     if(!infoAfterInsert)
-                //         return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-                // }
+                if(parentID && checkObjectIDs(parentID)){
+                    // Việc con
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
+                        $inc: { amountSubtask: 1 },
+                        $addToSet: { news: authorID },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+                }
 
                 /**
                  * Tạo checklist hoặc việc con mới
@@ -495,7 +501,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ typeUpdate,
-        taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
+        taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature, isOpenBidding,
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, ctx
@@ -553,14 +559,17 @@ class Model extends BaseModel {
                 //_________Tên công việc
                 if(name){
                     dataUpdate.name = name;
+                    dataUpdate.namecv = stringUtils.removeAccents(name);
                 }
                 //_________Mô tả
                 if(description){
                     dataUpdate.description = description;
+                    dataUpdate.descriptioncv = stringUtils.removeAccents(description);
                 }
                 //_________Ghi chú
                 if(note){
                     dataUpdate.note = note;
+                    dataUpdate.notecv = stringUtils.removeAccents(note);
                 }
 
                 if(actualStartTime){
@@ -621,12 +630,22 @@ class Model extends BaseModel {
 
                 //_________Thêm người liên quan
                 if(checkObjectIDs(related)){
-                    dataAddToset = { ...dataAddToset, related }
+                    dataAddToset = {
+                        ...dataAddToset,
+                        related,
+                        accessUsers: related,
+                        news: related
+                    }
                 }
 
                 //_________Xoá người liên quan
                 if(checkObjectIDs(relatedRemoves)){
-                    dataPullAll = { ...dataPullAll, related: relatedRemoves }
+                    dataPullAll = {
+                        ...dataPullAll,
+                        related: relatedRemoves,
+                        accessUsers: relatedRemoves,
+                        news: relatedRemoves
+                    }
                 }
 
                 if(checkObjectIDs(flagsRemoves)) {
@@ -851,6 +870,11 @@ class Model extends BaseModel {
                     if(result.error) return resolve(result);
 
                     dataAddToset = { ...dataAddToset, assigneeAttachs };
+                }
+
+                if(isUpdateNews) {
+                    dataAddToset = { ...dataAddToset, news: userID };
+                    dataUpdate.modifyAt = new Date();
                 }
 
                 //_________Trường hợp cập nhật nhiều dữ liệu addToSet cùng 1 lúc
@@ -1176,6 +1200,8 @@ class Model extends BaseModel {
 
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
+                let totalTaskDone = 0;
+
                 if(isSortChecklist == 1 || isSortChildTask == 1){
                     keys = ['createAt__-1', '_id__-1'];
                 }
@@ -1381,18 +1407,21 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                     delete conditionObj.$or
-                    // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
-                    if(isChecklist == 1){
-                        conditionObj.type = 2;
-                        delete conditionObj.status;
-                    } else{
-                        conditionObj.type = 1;
-                    }
 
-                    if(isChildTask == 1){
-                        conditionObj.type = 1;
-                        delete conditionObj.status;
-                    }
+                    conditionObj.type = 2;
+                    delete conditionObj.status;
+                    // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
+                    // if(isChecklist == 1){
+                    //     conditionObj.type = 2;
+                    //     delete conditionObj.status;
+                    // } else{
+                    //     conditionObj.type = 1;
+                    // }
+
+                    // if(isChildTask == 1){
+                    //     conditionObj.type = 1;
+                    //     delete conditionObj.status;
+                    // }
                 }
 
                 // Chỉ lấy task cha
@@ -1480,11 +1509,21 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(parentID && checkObjectIDs(parentID)){
+                    totalTaskDone = await PCM_PLAN_TASK_COLL.count({
+                        parent: parentID,
+                        type: 2,
+                        status: 3
+                    });
+                }
+
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
+                    totalTaskDone,
                     totalRecord,
                     totalPage,
                     nextCursor,

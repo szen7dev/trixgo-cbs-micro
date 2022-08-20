@@ -43,7 +43,6 @@ module.exports = {
             amountoftime     : { type: "string", optional: true },
             amountPerHour    : { type: "string", optional: true },
             fieldID          : { type: "string", optional: true },
-            subType          : { type: "number", optional: true },
             select           : { type: "string", optional: true },
             populates        : { type: "string", optional: true },
         },
@@ -101,6 +100,7 @@ module.exports = {
             assigneeAttachs : { type: "array", optional: true },
             milestone       : { type: "number", optional: true },
             subType         : { type: "number", optional: true },
+            isUpdateNews    : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
@@ -109,7 +109,7 @@ module.exports = {
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
-                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
+                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone
                  } = ctx.params;
 				const { _id: userID, bizfullname, company } = ctx.meta.infoUser;
@@ -118,7 +118,7 @@ module.exports = {
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
-                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
+                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding,
                     companyOfUser: company._id, milestone, ctx
                 });
@@ -199,7 +199,7 @@ module.exports = {
             milestone           : { type: "string", optional: true },
             sortKey             : { type: "string", optional: true },
             isParent            : { type: "string", optional: true },
-            
+
             // Field mặc định
             keyword             : { type: "string", optional: true },
             limit               : { type: "string", optional: true },

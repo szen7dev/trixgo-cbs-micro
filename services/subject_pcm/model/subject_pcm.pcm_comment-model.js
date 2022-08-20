@@ -19,6 +19,7 @@ const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.ac
 
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
+const stringUtils					            = require('../../../tools/utils/string_utils');
 
 /**
  * import inter-coll, exter-coll
@@ -37,6 +38,8 @@ class Model extends BaseModel {
 
         this.COMMENT_PCM = 1;
         this.RESPONSE_PCM = 2;
+        this.RECORD_TASK_FOR_SEARCH = 5;
+
         this.SWITCH_TYPE = {
             TASK: 'TASK',
             PROJECT: 'PROJECT',
@@ -177,14 +180,13 @@ class Model extends BaseModel {
 	 * Func: Thêm comment (task)
 	 * Date: 22/02/2022
 	 */
-    insertCommentTask({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) {
+    insertCommentTask({ taskID, parentID, authorID, type, content, description, files, images, select, populates, bizfullname, ctx }) {
         return new Promise(async resolve => {
             try {
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                const TYPE_COMMENT  = [this.COMMENT_PCM, this.RESPONSE_PCM];
+                const TYPE_COMMENT  = [this.COMMENT_PCM, this.RESPONSE_PCM, this.RECORD_TASK_FOR_SEARCH];
                 const dataInsert    = { type, task: taskID, author: authorID };
                 const dataUpdate    = {};
                 let dataSend        = {};
@@ -279,6 +281,12 @@ class Model extends BaseModel {
 
                 if(content) {
                     dataInsert.content = content;
+                    dataInsert.contentcv = stringUtils.removeAccents(content);
+                }
+
+                if(description) {
+                    dataInsert.description = description;
+                    dataInsert.descriptioncv = stringUtils.removeAccents(description);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -290,6 +298,10 @@ class Model extends BaseModel {
                         keyError: "error_occurred",
                         status: 422
                     })
+                }
+
+                if(type === this.RECORD_TASK_FOR_SEARCH) {
+                    return resolve({ error: false, data: infoAfterInsert, status: 200 });
                 }
 
                 if(files && files.length) {
