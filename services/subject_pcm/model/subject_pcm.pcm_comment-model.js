@@ -9,7 +9,7 @@ const PromisePool							    = require('@supercharge/promise-pool');
  * import internal
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
 
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
@@ -1774,7 +1774,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
 	 * Date: 19/8/2022
 	 */
-	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {} }){
+	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {} }){
         console.log({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
 			try {
@@ -1844,6 +1844,37 @@ class Model extends BaseModel {
                     task: { $in: listSubject.map(item => item._id) }
                 }
 
+                /**
+                 * VALIDATION (1)
+                 */
+                const validation = validateParamsObjectID({
+                    authorsID               : { value: authorsID, isRequire: false },
+                    companyOfAuthorsID      : { value: companyOfAuthorsID, isRequire: false },
+                    projectsID              : { value: projectsID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
+                // Điều kiện bộ lọc
+                projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
+                authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
+                companyOfAuthorsID && companyOfAuthorsID.length     && (conditionObj.companyOfAuthor = { $in: companyOfAuthorsID });
+
+                // Thời gian khởi tạo từ ngày->ngày
+                if(fromDate && toDate){
+                    conditionObj.createAt = {
+                        $exists: true,
+                        $ne: null,
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+				}
+
+                // Phản hồi chính thức hay không
+                if(official){
+                    conditionObj.official = official;
+                }
+
+                // Lọc và sắp xếp
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1'];
 

@@ -1501,7 +1501,7 @@ class Model extends BaseModel {
      * Code  : 19/8/2022
      */
     getListSubject({
-        draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {}
+        draft, sortKey, isParent, isActive, isGroup, read, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {}
     }) {
         return new Promise(async (resolve) => {
             try {
@@ -1519,22 +1519,33 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false };
                 }
 
+                // Lấy việc đang hoạt động (user chưa xoá vào thùng rác)
                 if(isActive && isActive == 1){
                     conditionObj.usersDelete = { $nin: [userID] }
                 }else{
                     conditionObj.usersDelete = { $in: [userID] }
                 }
 
+                // Chưa xem (user nắm trong mảng new)
+                if(read && read == 0){
+                    conditionObj.news = { $in: [userID] }
+                }
+
+                // Đã xem (user bị xoá ra khỏi mảng news)
+                if(read && read == 1){
+                    conditionObj.news = { $nin: [userID] }
+                }
+
                 let sortBy;
                 let keys	 = ['modifyAt__-1', '_id__-1'];
 
                 // Chưa rõ cái này để làm gì?
-                // if (sortKey && typeof sortKey === 'string') {
-                //     if (!IsJsonString(sortKey))
-                //         return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
 
-                //     keys = JSON.parse(sortKey);
-                // }
+                    keys = JSON.parse(sortKey);
+                }
 
                 /**
                  * VALIDATION STEP (2)

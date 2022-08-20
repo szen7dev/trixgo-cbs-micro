@@ -142,6 +142,8 @@ class Model extends BaseModel {
     getList({
         userID, arrayID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
+            console.log({userID, arrayID,
+                keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
 
