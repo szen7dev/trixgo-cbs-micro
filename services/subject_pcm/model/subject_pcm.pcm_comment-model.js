@@ -1844,6 +1844,15 @@ class Model extends BaseModel {
                     task: { $in: listSubject.map(item => item._id) }
                 }
 
+                if(authorsID){
+                    authorsID = JSON.parse(authorsID);
+                }
+                if(companyOfAuthorsID){
+                    companyOfAuthorsID  = JSON.parse(companyOfAuthorsID);
+                }
+                if(projectsID){
+                    projectsID = JSON.parse(projectsID);
+                }
                 /**
                  * VALIDATION (1)
                  */

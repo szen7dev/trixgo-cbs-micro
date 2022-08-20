@@ -237,9 +237,9 @@ module.exports = {
 
             fromDate            : { type: 'string', optional: true },
             toDate              : { type: 'string', optional: true },
-            authorsID           : { type: 'array', optional: true },
-            companyOfAuthorsID  : { type: 'array', optional: true },
-            projectsID          : { type: 'array', optional: true },
+            authorsID           : { type: 'string', optional: true },
+            companyOfAuthorsID  : { type: 'string', optional: true },
+            projectsID          : { type: 'string', optional: true },
             official            : { type: 'boolean', optional: true },
 
             keyword             : { type: "string", optional: true },
