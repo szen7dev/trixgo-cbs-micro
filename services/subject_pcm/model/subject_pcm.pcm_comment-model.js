@@ -1775,7 +1775,7 @@ class Model extends BaseModel {
 	 * Date: 19/8/2022
 	 */
 	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {} }){
-        console.log({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit, unlimit, lastestID, select, populates })
+        // console.log({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
 			try {
                 /**
@@ -1785,10 +1785,10 @@ class Model extends BaseModel {
                  * 3-Populate tới chủ đề (task) chứa phản hồi để hiển thị ra ngoài trang chủ
                  */
 
-                 if(limit > 50){
+                 if(Number(limit) > 50){
                     limit = 50;
                 } else{
-                    limit = +limit;
+                    limit = +Number(limit);
                 }
 
                 /**
