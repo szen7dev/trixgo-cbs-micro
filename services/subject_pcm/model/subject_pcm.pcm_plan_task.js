@@ -1418,7 +1418,7 @@ class Model extends BaseModel {
                 if(fieldID && checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID;
                 }
-                
+
                 // Tìm kiếm theo keyword
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -1431,7 +1431,7 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false }
                     delete conditionObj.$or;
                 }
-                
+
                 if(!isNaN(milestone)){
                     conditionObj.milestone = milestone;
                 }
@@ -1479,7 +1479,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-               
+
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
                 return resolve({ error: false, data: {
@@ -1621,7 +1621,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-               
+
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
                 return resolve({ error: false, data: {
@@ -2222,8 +2222,8 @@ class Model extends BaseModel {
                     },
                     { $sort: { _id: -1 }},
                 ]);
-                
-                return resolve({ error: false, data: { 
+
+                return resolve({ error: false, data: {
                     listCompany,
                     listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
@@ -2245,7 +2245,7 @@ class Model extends BaseModel {
                 if (!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID_invalid' });
                 let objectSearch = {
-                    project: ObjectID(projectID), 
+                    project: ObjectID(projectID),
                     companyOfAuthor: { $exists: true },
                     parent: { $exists: false },
                 }
@@ -2367,8 +2367,8 @@ class Model extends BaseModel {
                     },
                     { $sort: { _id: -1 }},
                 ]);
-                
-                return resolve({ error: false, data: { 
+
+                return resolve({ error: false, data: {
                     listCompany,
                     listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
