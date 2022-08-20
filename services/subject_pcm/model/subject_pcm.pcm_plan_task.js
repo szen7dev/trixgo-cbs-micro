@@ -1578,12 +1578,12 @@ class Model extends BaseModel {
                 }
 
                 // Chưa xem (user nắm trong mảng new)
-                if(read && read == 0){
+                if(read && read == 1){
                     conditionObj.news = { $in: [userID] }
                 }
 
                 // Đã xem (user bị xoá ra khỏi mảng news)
-                if(read && read == 1){
+                if(read && read == 2){
                     conditionObj.news = { $nin: [userID] }
                 }
 
