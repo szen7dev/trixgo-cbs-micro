@@ -32,7 +32,7 @@ module.exports  = DATABASE_MIDDLEWARE("department_directory", {
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
-    },   
+    },
     //_________Tên chức vụ (trưởng ban, cán bộ,...)
     name: String,
     //_________Mô tả/Ghi chú
