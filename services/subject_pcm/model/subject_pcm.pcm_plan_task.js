@@ -1172,7 +1172,8 @@ class Model extends BaseModel {
     /**
      * Name  : Danh sách pcm_plan_task
      * Author: Depv
-     * Code  :
+     * Update: HiepNH
+     * Code  : 20/8/2022
      */
     getList({
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
@@ -1180,30 +1181,45 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 20, unlimit, lastestID, select, populates = {}
     }) {
+        // console.log({projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+        //     keyword, limit, unlimit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
+                /**
+                 * BA
+                 * Hiển thị và lọc các Task theo các thẻ trong từng màn hình
+                 */
+
+                if(Number(limit) > 20){
                     limit = 20;
                 } else{
-                    limit = +limit;
+                    limit = +Number(limit);
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+                
+                // Các việc user đang active
                 let conditionObj = {
                     usersDelete: { $nin: [userID] },
                 };
 
+                // Các việc chưa hoàn thành
                 if(statusNe){
                     conditionObj.status = { $ne: statusNe };
+                }else{
+                    conditionObj.status = 3 // Việc đã hoàn thành
                 }
 
                 let sortBy;
-                let keys	 = ['actualFinishTime__-1', '_id__-1'];
-                if(isSortChecklist == 1 || isSortChildTask == 1){
-                    keys = ['createAt__-1', '_id__-1'];
-                }
+                // let keys	 = ['actualFinishTime__-1', '_id__-1'];
+                let keys	 = ['actualFinishTime__1', '_id__1'];
 
+                // Làm rõ mục đích để làm gì?
+                // if(isSortChecklist == 1 || isSortChildTask == 1){
+                //     keys = ['createAt__-1', '_id__-1'];
+                // }
+
+                // Làm rõ mục đích để làm gì?
                 if (sortKey && typeof sortKey === 'string') {
                     if (!IsJsonString(sortKey))
                         return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
@@ -1213,52 +1229,28 @@ class Model extends BaseModel {
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
-
                 let end = new Date();
                 end.setHours(23,59,59,999);
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                //__________Danh sách các nhóm dữ liệu mà userID là members
+                // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
-
-                // Lấy công việc mà mình được quyền truy cập
+                // Lấy công việc mà user được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
                     { assignee: userID },
                     { related: { $in: [userID] }},
-                    { group: { $in: listGroups.map(item => item._id) }},
+                    // { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
                 ]
-
-                // Kiểm tra điều kiện populates
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
 
                 // Tìm kiếm nếu có trạng thái công việc
                 if(status){
                     conditionObj.status = { $in: [status] }
                 }
 
-                // Tìm kiếm điều kiên công việc nhanh chậm
+                /**
+                 * Tìm kiếm công việc theo điều kiện nhanh, chậm
+                 */
                 if(isExpired && isExpired == 1){
                     //Việc bình thường
                     conditionObj.actualFinishTime = {
@@ -1269,7 +1261,7 @@ class Model extends BaseModel {
                 }
 
                 if(isExpired && isExpired == 2){
-                    //Việc chậm
+                    //Việc chậm: chưa hoàn thành và quá hạn
                     conditionObj.status = { $ne: 3 }
                     conditionObj.actualFinishTime = {
                         $lt: new Date(),
@@ -1296,6 +1288,19 @@ class Model extends BaseModel {
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
                 }
+
+                // Lấy việc trong group
+                if(groupID && checkObjectIDs(groupID)){
+                    conditionObj.group = groupID
+                    conditionObj.parent = { $exists: false } // Chỉ lấy các việc cha
+                    delete conditionObj.$or;
+                }
+                
+                // Việc theo cột mốc
+                if(!isNaN(milestone)){
+                    conditionObj.milestone = milestone;
+                }
+                
                 /**
                 * Phân loại chủ đề
                 * 1-Công việc
@@ -1305,10 +1310,11 @@ class Model extends BaseModel {
                     conditionObj.type = collection;
                 }
 
-                //Phân loại công việc
+                // Phân loại công việc
                 if(!isNaN(subtype)){
                     conditionObj.subtype = +subtype;
                 }
+
                 /**
                  * Type = 0 Việc của tôi + Giao + Liên quan(All)
                  * Type = 1 Việc của tôi
@@ -1325,45 +1331,53 @@ class Model extends BaseModel {
                     ]
                 }
 
+                // Việc của tôi
                 if(type == 1){
                     conditionObj.assignee = userID;
                     delete conditionObj.$or
                 }
 
+                // Việc giao người khác
                 if(type == 2){
                     conditionObj.author = userID;
                     delete conditionObj.$or
                 }
 
+                // Việc đánh dấu quan tâm
                 if(type == 3){
                     conditionObj.flags = { $in: [userID]};
                     delete conditionObj.$or
                     delete conditionObj.status
                 }
 
+                 // Việc nháp
                 if(type == 4){
                     // conditionObj.author = userID;
                     conditionObj.$or = [
-                        { author: userID },
-                        { related: { $in: [userID] } },
+                        { author: userID }, // Người tạo việc được xem
+                        { related: { $in: [userID] } }, // Người liên quan được xem
                     ],
-                    conditionObj.draft = 1;
+                    conditionObj.draft = 1; // Gồm cả việc nháp
                     delete conditionObj.status
                 }
 
+                // Việc liên quan
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
+                    delete conditionObj.$or
                 }
 
                 if(level){
                     conditionObj.level = level;
                 }
 
-                // typeStatus
-                // 1 Quá hạn
-                // 2 Tới hạn tuần tới
-                // 3 Tới hạn + 7 ngày tới
-                // Lấy việc quá hạn
+                /**
+                 * Lấy việc quá hạn
+                 * 1-Quá hạn
+                 * 2-Tuần tới
+                 * 3->7 ngày tới
+                 * 4-Hoàn thành
+                 */
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
                         $lt: start,
@@ -1389,6 +1403,11 @@ class Model extends BaseModel {
                         $exists: true,
                         $ne: null
                     }
+                }
+
+                // Hoàn thành
+                if(typeStatus && typeStatus == 4){
+                    conditionObj.status = 3
                 }
 
                 // Lấy việc của người thực hiện
@@ -1442,6 +1461,22 @@ class Model extends BaseModel {
                 if(fieldID && checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID;
                 }
+
+                // Kiểm tra điều kiện populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                console.log('===============>>>>>>>>>>>>>>>>>')
+                console.log(conditionObj)
                 
                 // Tìm kiếm theo keyword
 				if(keyword){
@@ -1450,17 +1485,9 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
-                if(groupID && checkObjectIDs(groupID)){
-                    conditionObj.group = groupID
-                    conditionObj.parent = { $exists: false }
-                    delete conditionObj.$or;
-                }
-                
-                if(!isNaN(milestone)){
-                    conditionObj.milestone = milestone;
-                }
-
                 let conditionObjOrg = {...conditionObj};
+                // console.log(conditionObjOrg)
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
 					if(!infoData)

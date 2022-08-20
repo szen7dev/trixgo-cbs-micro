@@ -1785,7 +1785,7 @@ class Model extends BaseModel {
                  * 3-Populate tới chủ đề (task) chứa phản hồi để hiển thị ra ngoài trang chủ
                  */
 
-                 if(Number(limit) > 50){
+                if(Number(limit) > 50){
                     limit = 50;
                 } else{
                     limit = +Number(limit);
@@ -1871,8 +1871,8 @@ class Model extends BaseModel {
                 // Thời gian khởi tạo từ ngày->ngày
                 if(fromDate && toDate){
                     conditionObj.createAt = {
-                        $exists: true,
-                        $ne: null,
+                        // $exists: true,
+                        // $ne: null,
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
                     }
