@@ -221,4 +221,46 @@ module.exports = {
             }
         }
     },
+
+    /**
+	 * Dev: HiepNH
+	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
+	 * Date: 19/8/2022  
+	 */
+    searchCommentBySubject: {
+        params: {
+            draft               : { type: 'string', optional: true },
+            sortKey             : { type: 'string', optional: true },
+            isParent            : { type: 'string', optional: true },
+            isActive            : { type: 'string', optional: true },
+            isGroup             : { type: 'string', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "number", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                console.log({userID})
+
+                const {
+                    draft, sortKey, isParent, isActive, isGroup, keyword,
+                    limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentBySubject({
+                    draft, sortKey, isParent, isActive, isGroup, keyword,
+                    limit, lastestID, select, populates, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },   
 }

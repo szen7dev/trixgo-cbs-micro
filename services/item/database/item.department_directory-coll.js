@@ -28,6 +28,11 @@ module.exports  = DATABASE_MIDDLEWARE("department_directory", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
+    //_________Công ty chứa member (được tạo tự động theo member)
+    company: {
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    },   
     //_________Tên chức vụ (trưởng ban, cán bộ,...)
     name: String,
     //_________Mô tả/Ghi chú

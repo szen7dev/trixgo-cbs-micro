@@ -23,6 +23,7 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
 /**
  * import inter-coll, exter-coll
  */
+const PCM_PLAN_GROUP_COLL                       = require('../database/subject_pcm.pcm_plan_group-coll');
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
@@ -1767,6 +1768,173 @@ class Model extends BaseModel {
 			}
 		})
 	}
+
+    /**
+	 * Dev: HiepNH
+	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
+	 * Date: 19/8/2022
+	 */
+	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {} }){
+        console.log({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit, unlimit, lastestID, select, populates })
+		return new Promise(async resolve => {
+			try {
+                /**
+                 * BA
+                 * 1-Tìm kiếm các chủ đề mà user được quyền truy cập
+                 * 2-Tìm kiếm các phản hồi trong chủ đề
+                 * 3-Populate tới chủ đề (task) chứa phản hồi để hiển thị ra ngoài trang chủ
+                 */
+
+                 if(limit > 50){
+                    limit = 50;
+                } else{
+                    limit = +limit;
+                }
+
+                /**
+                 * 1-Tìm kiếm các chủ đề mà user được quyền truy cập
+                 */
+                let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
+
+                // Chỉ lấy task cha
+                if(isParent == 1){
+                    conditionSubjectObj.parent = { $exists: false };
+                }
+
+                if(isActive && isActive == 1){
+                    conditionSubjectObj.usersDelete = { $nin: [userID] }
+                }else{
+                    conditionSubjectObj.usersDelete = { $in: [userID] }
+                }
+
+                // Lấy các chủ đề mà user được quyền truy cập (members của group)
+                if(isGroup && isGroup == 1){
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // Lấy công việc mà mình được quyền truy cập
+                    conditionSubjectObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
+                    ]
+                }else{
+                    conditionSubjectObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                    ]
+                }
+
+                // Lấy những việc nháp hoặc không phải việc nháp
+                if(draft && [0,1].includes(draft)){
+                    conditionSubjectObj.draft = draft;
+                }
+
+
+                let listSubject = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name')
+                // console.log(listSubject)
+                // console.log(listSubject.map(item => item._id))
+
+                /**
+                 * 2-Tìm kiếm các phản hồi trong chủ đề
+                 */
+                let conditionObj = {
+                    task: { $in: listSubject.map(item => item._id) }
+                }
+
+                let sortBy;
+                let keys	 = ['createAt__-1', '_id__-1'];
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                // Kiểm tra điều kiện populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                // Tìm kiếm theo keyword
+				if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.content = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = {...conditionObj};
+                
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await PCM_COMMENT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                // Tổng số việc tìm thấy
+                let totalRecord = await PCM_COMMENT_COLL.count(conditionObjOrg);
+                if(unlimit == 1){
+                    limit = totalRecord;
+                }
+
+                // Bắt đầu query trong db
+                let infoDataAfterGet = await PCM_COMMENT_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .select(select)
+                    .populate(populates)
+                    .sort(sortBy)
+                    .lean();
+
+                // Kiểm tra nếu không có dữ liệu
+                if(!infoDataAfterGet)
+                   return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
+
+                // NextCursor phần tử cuối cùng khi phân trang
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+               
+                // Tổng số trang
+                let totalPage   = Math.ceil(totalRecord/limit);
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
 }
 
 exports.MODEL = new Model;

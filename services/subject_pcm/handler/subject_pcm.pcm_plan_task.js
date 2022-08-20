@@ -253,7 +253,7 @@ module.exports = {
             sortKey             : { type: 'string', optional: true },
             isParent            : { type: 'string', optional: true },
             isActive            : { type: 'string', optional: true },
-            isGroup            : { type: 'string', optional: true },
+            isGroup             : { type: 'string', optional: true },
 
             keyword             : { type: "string", optional: true },
             limit               : { type: "number", optional: true },
