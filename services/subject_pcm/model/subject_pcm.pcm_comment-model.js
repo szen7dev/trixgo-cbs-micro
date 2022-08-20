@@ -1820,10 +1820,21 @@ class Model extends BaseModel {
                         { group: { $in: listGroups.map(item => item._id) }},
                     ]
                 }else{
+                    // conditionSubjectObj.$or = [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    //     { related: { $in: [userID] }},
+                    // ]
+
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // Lấy công việc mà mình được quyền truy cập
                     conditionSubjectObj.$or = [
                         { author: userID },
                         { assignee: userID },
                         { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
                     ]
                 }
 
