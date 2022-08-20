@@ -23,6 +23,7 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
 /**
  * import inter-coll, exter-coll
  */
+const PCM_PLAN_GROUP_COLL                       = require('../database/subject_pcm.pcm_plan_group-coll');
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
@@ -1774,12 +1775,14 @@ class Model extends BaseModel {
 	 * Date: 19/8/2022
 	 */
 	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {} }){
+        console.log({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
 			try {
                 /**
                  * BA
-                 * 1-Tìm kiếm các phản hồi
-                 * 2-Populate tới chủ đề (task) chứa phản hồi để hiển thị ra ngoài trang chủ
+                 * 1-Tìm kiếm các chủ đề mà user được quyền truy cập
+                 * 2-Tìm kiếm các phản hồi trong chủ đề
+                 * 3-Populate tới chủ đề (task) chứa phản hồi để hiển thị ra ngoài trang chủ
                  */
 
                  if(limit > 50){
@@ -1788,22 +1791,21 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                // Các việc chưa xóa
-                let conditionObj = {}
+                /**
+                 * 1-Tìm kiếm các chủ đề mà user được quyền truy cập
+                 */
+                let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
 
                 // Chỉ lấy task cha
                 if(isParent == 1){
-                    conditionObj.parent = { $exists: false };
+                    conditionSubjectObj.parent = { $exists: false };
                 }
 
                 if(isActive && isActive == 1){
-                    conditionObj.usersDelete = { $nin: [userID] }
+                    conditionSubjectObj.usersDelete = { $nin: [userID] }
                 }else{
-                    conditionObj.usersDelete = { $in: [userID] }
+                    conditionSubjectObj.usersDelete = { $in: [userID] }
                 }
-
-                let sortBy;
-                let keys	 = ['modifyAt__-1', '_id__-1'];
 
                 // Lấy các chủ đề mà user được quyền truy cập (members của group)
                 if(isGroup && isGroup == 1){
@@ -1811,18 +1813,45 @@ class Model extends BaseModel {
                     let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
                     // Lấy công việc mà mình được quyền truy cập
-                    conditionObj.$or = [
+                    conditionSubjectObj.$or = [
                         { author: userID },
                         { assignee: userID },
                         { related: { $in: [userID] }},
                         { group: { $in: listGroups.map(item => item._id) }},
                     ]
                 }else{
-                    conditionObj.$or = [
+                    conditionSubjectObj.$or = [
                         { author: userID },
                         { assignee: userID },
                         { related: { $in: [userID] }},
                     ]
+                }
+
+                // Lấy những việc nháp hoặc không phải việc nháp
+                if(draft && [0,1].includes(draft)){
+                    conditionSubjectObj.draft = draft;
+                }
+
+
+                let listSubject = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name')
+                // console.log(listSubject)
+                // console.log(listSubject.map(item => item._id))
+
+                /**
+                 * 2-Tìm kiếm các phản hồi trong chủ đề
+                 */
+                let conditionObj = {
+                    task: { $in: listSubject.map(item => item._id) }
+                }
+
+                let sortBy;
+                let keys	 = ['createAt__-1', '_id__-1'];
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
                 }
 
                 // Kiểm tra điều kiện populates
@@ -1838,17 +1867,17 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Lấy những việc nháp hoặc không phải việc nháp
-                if(draft && [0,1].includes(draft)){
-                    conditionObj.draft = draft;
+                // Tìm kiếm theo keyword
+				if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.content = new RegExp(keyword, 'i');
                 }
 
                 let conditionObjOrg = {...conditionObj};
-
-
                 
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
+					let infoData = await PCM_COMMENT_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
@@ -1864,13 +1893,13 @@ class Model extends BaseModel {
                 }
 
                 // Tổng số việc tìm thấy
-                let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
+                let totalRecord = await PCM_COMMENT_COLL.count(conditionObjOrg);
                 if(unlimit == 1){
                     limit = totalRecord;
                 }
 
                 // Bắt đầu query trong db
-                let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
+                let infoDataAfterGet = await PCM_COMMENT_COLL.find(conditionObj)
                     .limit(limit+1)
                     .select(select)
                     .populate(populates)
