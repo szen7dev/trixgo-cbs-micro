@@ -1032,43 +1032,67 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update status mutiple
+     * Name: Cập nhật trạng thái, tình trạng xem công việc
      * Author: Depv
-     * Code:
+     * Update: HiepNH
+     * Code: 20/8/2022
      */
-    updateStatusMutiple({ taskIDs, parentID, type, userID }){
+    updateStatusMutiple({ taskIDs, parentID, type, option, userID }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(taskIDs, parentID))
-                    return resolve({ error: true, message: 'param_invalid' });
+                /**
+                 * 1-Cập nhật trạng thái
+                 * 2-Cập nhật user đã xem công việc
+                 */
+                if(!option || option == 0){
+                    if (!checkObjectIDs(taskIDs, parentID))
+                        return resolve({ error: true, message: 'param_invalid' });
 
-                // Kiểm tra user update có phải là là người thực hiện checklist hoặc người thực hiện việc con ko
-                let listTasks = await PCM_PLAN_TASK_COLL.find({ _id: { $in: taskIDs }});
-                let isAssignee = true;
-                listTasks.forEach(task => {
-                    if(task.assignee.toString() != userID.toString()){
-                        isAssignee = false;
+                    // Kiểm tra user update có phải là là người thực hiện checklist hoặc người thực hiện việc con ko
+                    let listTasks = await PCM_PLAN_TASK_COLL.find({ _id: { $in: taskIDs }});
+                    let isAssignee = true;
+                    listTasks.forEach(task => {
+                        if(task.assignee.toString() != userID.toString()){
+                            isAssignee = false;
+                        }
+                    });
+
+                    if(!isAssignee)
+                        return resolve({ error: true, message: 'Bạn không phải là người thực hiện, nên không được phép cập nhật hoàn thành', keyError: "user_not_assignee" });
+
+                    
+                    let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
+                    if (!infoTaskAfterUpdate)
+                        return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                    let amountTaskAndChecklist = taskIDs.length;
+                    // Việc con
+                    if (type == 1) {
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,  { $inc : { amountFinishedSubtask: amountTaskAndChecklist }}, { new: true })
                     }
-                });
 
-                if(!isAssignee)
-                    return resolve({ error: true, message: 'Bạn không phải là người thực hiện, nên không được phép cập nhật hoàn thành', keyError: "user_not_assignee" });
+                    // Checklist
+                    if (type == 2) {
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc : { amountFinishedChecklist: amountTaskAndChecklist }}, { new: true })
+                    }
 
-                let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
-				if (!infoTaskAfterUpdate)
-                    return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
-                let amountTaskAndChecklist = taskIDs.length;
-                // Việc con
-                if (type == 1) {
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,  { $inc : { amountFinishedSubtask: amountTaskAndChecklist }}, { new: true })
+                    return resolve({ error: false, message: "update_success" })
+                }
+                
+                //2. CẬP NHẬT USER ĐÃ XEM CÔNG VIỆC
+                else{
+                    let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany(
+                        { _id: { $in: taskIDs }},
+                        { $pull: { news: userID } }, 
+                        { new: true}
+                    );
+
+                    if (!infoTaskAfterUpdate)
+                        return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                    return resolve({ error: false, message: "update_success" })
                 }
 
-                // Checklist
-                if (type == 2) {
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc : { amountFinishedChecklist: amountTaskAndChecklist }}, { new: true })
-                }
-
-                return resolve({ error: false, message: "update_success" });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

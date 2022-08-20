@@ -141,17 +141,18 @@ module.exports = {
             taskIDs         : { type: "array" },
             parentID        : { type: "string" },
             type            : { type: "number" }, // 1 việc con / 2 checklist
+            option          : { type: "number" }, // 0-Update status, 1-Update user đã xem
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    taskIDs, parentID, type
+                    taskIDs, parentID, type, option
                  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                // Bước check quyền
+
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
-                    parentID, taskIDs, type, userID
+                    parentID, taskIDs, type, option, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
