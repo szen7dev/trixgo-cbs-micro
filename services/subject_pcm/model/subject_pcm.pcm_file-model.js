@@ -104,14 +104,14 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Func: Lấy danh sách file
+	 * Func: Danh sách file
      * Dev: MinhVH
      * Update: Hiepnh
-	 * Date: 26/4/2022
+	 * Date: 21/8/2022
 	 */
     getList({
         companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-        limit = 10, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
+        limit = 20, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
     }) {
         return new Promise(async (resolve) => {
             try {
@@ -176,10 +176,12 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Lấy file theo người tạo
                 if(checkObjectIDs(authorID)) {
                     conditionObj.author = ObjectID(authorID)
                 }
 
+                // Phân loại file
                 if(type){
                     conditionObj.type = type;
                 }
@@ -195,7 +197,14 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.nameOrg = new RegExp(keyword, 'i');
+                    conditionObj = {
+                        ...conditionObj,
+                        $or: [
+                            { nameOrg  :  new RegExp(keyword, 'i') },
+                            { description  :  new RegExp(keyword, 'i') },
+                        ]
+                    }
+                    // conditionObj.nameOrg = new RegExp(keyword, 'i');
                 }
 
                 /**
@@ -219,12 +228,16 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Tìm kiếm file (VIAS)
+                // Tìm kiếm file
                 if(isSearchFile) {
                     console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')
 
-                    // Danh sách các Group mà user là members hoặc amdins
+                    /**
+                     * Danh sách các Group mà user là members hoặc amdins
+                     */
+                    // Nếu chọn dự án
                     if(projectID && checkObjectIDs(projectID)){
+
                         // Điều kiện tìm kiếm task
                         conditionObjTask.project = ObjectID(projectID)
 
@@ -234,7 +247,10 @@ class Model extends BaseModel {
                             { admins: { $in: [userID] } },
                             { members: { $in: [userID] } },
                         ]
-                    }else{
+                    }
+
+                    // Nếu không chọn dự án
+                    else{
                         conditionObjGroup.$or = [
                             { admins: { $in: [userID] } },
                             { members: { $in: [userID] } },
@@ -285,6 +301,7 @@ class Model extends BaseModel {
                 // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_FILE__COLL.findById(lastestID);
 					if(!infoData)
