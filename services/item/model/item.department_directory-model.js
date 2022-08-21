@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo danh bạ dự án phòng ban
 	 * Date: 13/12/2021
 	 */
-	insert({ member, type, name, description, lock, userID, ctx }){
+	insert({ member, type, name, description, lock, userID, order, ctx }){
         return new Promise(async resolve => {
             try {
                 let dataInsert = {
@@ -48,7 +48,6 @@ class Model extends BaseModel {
                         userID: member, select: "_id company"
                     })
 
-                    console.log({ infoMember });
                     dataInsert.company = infoMember.data.company;
                 }
 
@@ -66,6 +65,10 @@ class Model extends BaseModel {
 
                 if(lock){
                     dataInsert.lock = lock;
+                }
+
+                if(order){
+                    dataInsert.order = order;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);

@@ -11,22 +11,23 @@ const ITEM__DEPARTMENT_DERECTORY_MODEL           = require('../model/item.depart
 module.exports = {
     /**
      * Dev: Depv ✅
-     * Func: Thêm funda
+     * Func: Thêm department directory
      */
     insert:{
         params: {
             member      : { type: "string" },
-            type        : { type: "string" },
+            type        : { type: "number" },
             name        : { type: "string" },
             description : { type: "string" },
-            lock        : { type: "string" },
+            lock        : { type: "number" },
+            order       : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { member, type, name, description, lock } = ctx.params;
-                const resultAfterCallHandler = await ITEM__DEPARTMENT_DERECTORY_MODEL.insert({ companyID: company._id, member, type, name, description, lock, userID, ctx });
+                const { member, type, name, description, lock, order } = ctx.params;
+                const resultAfterCallHandler = await ITEM__DEPARTMENT_DERECTORY_MODEL.insert({ member, type, name, description, lock, order, userID, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -36,7 +37,7 @@ module.exports = {
 
     /**
      * Dev: Depv ✅
-     * Func: Cập nhật funda
+     * Func: Cập nhật department directory
      */
     update:{  
         params: {
@@ -62,7 +63,7 @@ module.exports = {
 
     /**
 	 * Dev: Depv 
-	 * Func: Danh sách funda
+	 * Func: Danh sách department directory
 	 */
     getInfoAndGetList: {
         params: {
