@@ -1502,6 +1502,8 @@ class Model extends BaseModel {
                     }
                 }
 
+                console.log(conditionObj)
+
                 // Tìm kiếm theo keyword
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -1749,11 +1751,12 @@ class Model extends BaseModel {
                  * VALIDATION (1)
                  */
                 const validation = validateParamsObjectID({
+                    companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
                     assigneesID         : { value: assigneesID, isRequire: false },
                     authorsID           : { value: authorsID, isRequire: false },
                     projectsID          : { value: projectsID, isRequire: false },
                     fieldsID            : { value: fieldsID, isRequire: false },
-                    companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
+                    
                 });
                 if(validation.error) return resolve(validation);
 
@@ -1779,12 +1782,6 @@ class Model extends BaseModel {
                 let sortBy      = null;
                 let keys	    = ['actualFinishTime__-1', '_id__-1'];
 
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
                 /**
                  * LOGIC CODE (3)
                  */
@@ -1794,6 +1791,9 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
+                /**
+                 * Kiểm soát quyền truy cập Task
+                 */
                 // Lấy danh sách các nhóm dữ liệu mà userID là members
                 const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
@@ -1805,7 +1805,9 @@ class Model extends BaseModel {
                     { group: { $in: listGroups.map(item => item._id) }},
                 ]
 
-                // Điều kiện bộ lọc
+                /**
+                 * Bộ lọc với nhiều lựa chọn
+                 */
                 status && status.length                             && (conditionObj.status = { $in: status });
                 projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
                 subtypes && subtypes.length                         && (conditionObj.subtype = { $in: subtypes });
@@ -1814,6 +1816,9 @@ class Model extends BaseModel {
                 fieldsID && fieldsID.length                         && (conditionObj.field = { $in: fieldsID });
                 companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
 
+                /**
+                 * Bộ lọc với 1 lựa chọn
+                 */
                 if(isExpired){
                     // Việc bình thường
                     if(isExpired == 1) {
@@ -1826,7 +1831,7 @@ class Model extends BaseModel {
 
                     // Việc chậm
                     if(isExpired == 2) {
-                        conditionObj.status = { $ne: 3 };
+                        conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
                         conditionObj.actualFinishTime = {
                             $lt: new Date(),
                             $exists: true,
