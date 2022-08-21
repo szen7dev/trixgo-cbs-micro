@@ -180,7 +180,7 @@ class Model extends BaseModel {
 	 * Func: Thêm comment (task)
 	 * Date: 22/02/2022
 	 */
-    insertCommentTask({ taskID, parentID, authorID, type, content, description, files, images, select, populates, bizfullname, ctx }) {
+    insertCommentTask({ taskID, parentID, authorID, type, content, description, files, images, receiversID, select, populates, bizfullname, ctx }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -279,6 +279,10 @@ class Model extends BaseModel {
                     dataInsert.group = infoTask.group;
                 }
 
+                if(checkObjectIDs(receiversID)) {
+                    dataInsert.receivers = receiversID;
+                }
+
                 if(content) {
                     dataInsert.content = content;
                     dataInsert.contentcv = stringUtils.removeAccents(content);
@@ -300,6 +304,7 @@ class Model extends BaseModel {
                     })
                 }
 
+                // Loại comment được tạo mục đích cho việc tìm kiếm
                 if(type === this.RECORD_TASK_FOR_SEARCH) {
                     return resolve({ error: false, data: infoAfterInsert, status: 200 });
                 }
@@ -439,16 +444,19 @@ class Model extends BaseModel {
                     }
                 }
 
-                switch (type) {
-                    case 1: // Pre-calculate comment
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountComment: 1 } });
-                        break;
-                    case 2: // Pre-calculate related response
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
-                        break;
-                    default:
-                        break;
-                }
+                // Pre-calculate response comment
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
+
+                // switch (type) {
+                //     case 1: // Pre-calculate comment
+                //         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountComment: 1 } });
+                //         break;
+                //     case 2: // Pre-calculate related response
+                //         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
+                //         break;
+                //     default:
+                //         break;
+                // }
 
                 /**
                  * Insert notification and cloud messaging
@@ -517,24 +525,24 @@ class Model extends BaseModel {
                         env: ENV_DEVICE_WEB_CBS
                     });
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content,
-                        receivers: arrReceiver,
-                        project: project?._id?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey: dataSend.languageKey,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        subColl: {
-                            kind: "pcm_comment",
-                            item: infoAfterInsert._id
-                        },
-                        type: 1 // InApp (Socket)
-                    })
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content,
+                    //     receivers: arrReceiver,
+                    //     project: project?._id?.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: webUrl,
+                    //     languageKey: dataSend.languageKey,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     subColl: {
+                    //         kind: "pcm_comment",
+                    //         item: infoAfterInsert._id
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 infoAfterInsert = await PCM_COMMENT_COLL
@@ -543,7 +551,7 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                infoAfterInsert.receivers = arrReceiver;
+                infoAfterInsert.receiversNoti = arrReceiver;
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -844,14 +852,14 @@ class Model extends BaseModel {
 	 * Date: 18/05/2022
 	 */
     insert({
-        taskID, projectID, parentID, authorID, type, content, files, images,
+        taskID, projectID, parentID, authorID, type, content, files, images, receiversID,
         select, populates, bizfullname, switchType = this.SWITCH_TYPE.TASK, ctx
     }) {
         return new Promise(async (resolve) => {
             switch (switchType) {
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.insertCommentTask({
-                        taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx
+                        taskID, parentID, authorID, type, content, files, images, receiversID, select, populates, bizfullname, ctx
                     }))
                     break;
                 case this.SWITCH_TYPE.PROJECT:
@@ -870,7 +878,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment (task)
 	 * Date: 22/02/2022
 	 */
-    updateCommentTask({ taskID, commentID, authorID, content, files, images, select, populates, ctx }) {
+    updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -930,6 +938,15 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(infoComment.official) {
+                    return resolve({
+                        error: true,
+                        message: "Comment không thể cập nhật",
+                        keyError: "comment_can_not_update",
+                        status: 403
+                    })
+                }
+
                 let infoTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
                     .populate('project', '_id name sign')
@@ -945,20 +962,25 @@ class Model extends BaseModel {
                     })
                 }
 
-                if(infoComment.type === 1) {
-                    content && (dataUpdate.content = content);
+                // Chỉ cập nhật "chính thức" và thêm file (không cập nhật content)
+                // if(infoComment.type === 1) {
+                //     content && (dataUpdate.content = content);
 
-                    const expireTime = new Date(infoComment.createAt).addHours(1);
-                    const now 		 = new Date(Date.now());
+                //     const expireTime = new Date(infoComment.createAt).addHours(1);
+                //     const now 		 = new Date(Date.now());
 
-                    if(expireTime < now){
-                        return resolve({
-                            error: true,
-                            message: "Bình luận đã hết hạn cập nhật (1 tiếng)",
-                            keyError: "time_to_delete_comment_has_expired",
-                            status: 403
-                        })
-                    }
+                //     if(expireTime < now){
+                //         return resolve({
+                //             error: true,
+                //             message: "Bình luận đã hết hạn cập nhật (1 tiếng)",
+                //             keyError: "time_to_delete_comment_has_expired",
+                //             status: 403
+                //         })
+                //     }
+                // }
+
+                if(isOfficial) {
+                    dataUpdate.official = true;
                 }
 
                 let infoAfterUpdate = await PCM_COMMENT_COLL.findOneAndUpdate({
@@ -974,6 +996,12 @@ class Model extends BaseModel {
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
                         keyError: "error_occurred",
                         status: 422
+                    })
+                }
+
+                if(isOfficial) {
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $inc: { amountMarkedResponse: 1 }
                     })
                 }
 
@@ -1231,12 +1259,12 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment (middle)
 	 * Date: 18/05/2022
 	 */
-    update({ taskID, projectID, commentID, authorID, content, files, images, select, populates, switchType = this.SWITCH_TYPE.TASK, ctx }) {
+    update({ taskID, projectID, commentID, authorID, content, files, images, isOfficial, select, populates, switchType = this.SWITCH_TYPE.TASK, ctx }) {
         return new Promise(async resolve => {
             switch (switchType) {
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.updateCommentTask({
-                        taskID, commentID, authorID, content, files, images, select, populates, ctx
+                        taskID, commentID, authorID, content, files, images, isOfficial, select, populates, ctx
                     }))
                     break;
                 case this.SWITCH_TYPE.PROJECT:

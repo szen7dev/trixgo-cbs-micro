@@ -1084,7 +1084,7 @@ class Model extends BaseModel {
                     if(!isAssignee)
                         return resolve({ error: true, message: 'Bạn không phải là người thực hiện, nên không được phép cập nhật hoàn thành', keyError: "user_not_assignee" });
 
-                    
+
                     let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
                     if (!infoTaskAfterUpdate)
                         return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
@@ -1102,12 +1102,12 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, message: "update_success" })
                 }
-                
+
                 //2. CẬP NHẬT USER ĐÃ XEM CÔNG VIỆC
                 else{
                     let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany(
                         { _id: { $in: taskIDs }},
-                        { $pull: { news: userID } }, 
+                        { $pull: { news: userID } },
                         { new: true}
                     );
 
@@ -1319,12 +1319,12 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false } // Chỉ lấy các việc cha
                     delete conditionObj.$or;
                 }
-                
+
                 // Việc theo cột mốc
                 if(!isNaN(milestone)){
                     conditionObj.milestone = milestone;
                 }
-                
+
                 /**
                 * Phân loại chủ đề
                 * 1-Công việc
@@ -1756,7 +1756,7 @@ class Model extends BaseModel {
                     authorsID           : { value: authorsID, isRequire: false },
                     projectsID          : { value: projectsID, isRequire: false },
                     fieldsID            : { value: fieldsID, isRequire: false },
-                    
+
                 });
                 if(validation.error) return resolve(validation);
 

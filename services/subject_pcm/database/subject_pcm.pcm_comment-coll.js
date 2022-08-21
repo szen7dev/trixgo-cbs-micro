@@ -27,7 +27,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
      * 3-related (khi thêm người liên quan thì add vào)
      * 4-người được gửi tới khi tạo phản hồi liên quan của chủ đề
      */
-    receiver: [{
+    receivers: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],

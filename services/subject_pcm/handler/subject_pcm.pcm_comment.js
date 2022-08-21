@@ -22,6 +22,7 @@ module.exports = {
             taskID     : { type: "string", optional: true },
             type       : { type: "number", optional: true },
             switchType : { type: "string", optional: true },
+            receiversID: { type: "array", optional: true },
             projectID  : { type: "string", optional: true },
             parentID   : { type: "string", optional: true },
             files      : { type: "array", optional: true },
@@ -33,10 +34,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { content, taskID, projectID, type, parentID, files, images, switchType, select, populates } = ctx.params;
+                const { content, taskID, projectID, type, parentID, files, images, switchType, receiversID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, projectID, parentID, authorID, type, content, files, images, switchType, select, populates, bizfullname, ctx
+					taskID, projectID, parentID, authorID, type, content, files, images, switchType, receiversID, select, populates, bizfullname, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -60,6 +61,7 @@ module.exports = {
 			content             : { type: "string", optional: true },
             files               : { type: "array", optional: true },
             images              : { type: "array", optional: true },
+            isOfficial          : { type: "boolean", optional: true },
             switchType          : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
@@ -68,10 +70,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { taskID, commentID, projectID, switchType, content, files, images, select, populates } = ctx.params;
+                const { taskID, commentID, projectID, switchType, content, files, images, isOfficial, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
-					taskID, commentID, projectID, switchType, authorID, content, files, images, select, populates, ctx
+					taskID, commentID, projectID, switchType, authorID, content, files, images, isOfficial, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
