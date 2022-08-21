@@ -113,11 +113,7 @@ class Model extends BaseModel {
                 if(description){
                     dataUpdate.description = description;
                 }
-
-                if(lock){
-                    dataUpdate.lock = lock;
-                }
-
+                dataUpdate.lock = lock;
                 let infoAfterUpdate = await ITEM__DEPARTMENT_DIRECTORY_COLL.findByIdAndUpdate(departmentDirectoryID, dataUpdate, { new: true });
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
