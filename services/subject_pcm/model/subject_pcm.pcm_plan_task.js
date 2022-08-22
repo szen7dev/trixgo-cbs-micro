@@ -1640,15 +1640,21 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(isGroup && isGroup == 1){
-                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    // //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                    // Lấy công việc mà mình được quyền truy cập
+                    // // Lấy công việc mà mình được quyền truy cập
+                    // conditionObj.$or = [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    //     { related: { $in: [userID] }},
+                    //     { group: { $in: listGroups.map(item => item._id) }},
+                    // ]
+
                     conditionObj.$or = [
                         { author: userID },
                         { assignee: userID },
                         { related: { $in: [userID] }},
-                        { group: { $in: listGroups.map(item => item._id) }},
                     ]
                 }else{
                     conditionObj.$or = [
@@ -1795,14 +1801,14 @@ class Model extends BaseModel {
                  * Kiểm soát quyền truy cập Task
                  */
                 // Lấy danh sách các nhóm dữ liệu mà userID là members
-                const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
                 // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
                     { assignee: userID },
                     { related: { $in: [userID] }},
-                    { group: { $in: listGroups.map(item => item._id) }},
+                    // { group: { $in: listGroups.map(item => item._id) }},
                 ]
 
                 /**
