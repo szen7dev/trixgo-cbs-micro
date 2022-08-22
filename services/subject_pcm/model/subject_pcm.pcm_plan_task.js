@@ -1241,7 +1241,7 @@ class Model extends BaseModel {
                 let totalTaskDone = 0;
 
                 if(isSortChecklist == 1 || isSortChildTask == 1){
-                    keys = ['createAt__-1', '_id__-1'];
+                    keys = ['actualFinishTime__1', '_id__1'];
                 }
 
                 // Làm rõ mục đích để làm gì?
