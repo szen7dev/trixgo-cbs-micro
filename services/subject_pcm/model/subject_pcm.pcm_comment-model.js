@@ -444,8 +444,14 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Pre-calculate response comment
-                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
+                // Update task of response comment
+                const usersUnRead = infoTask.accessUsers?.filter(item => item.toString() !== authorID.toString());
+
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                    $inc: { amountResponse: 1 },
+                    $addToSet: { news: usersUnRead },
+                    $set: { modifyAt: new Date() }
+                });
 
                 // switch (type) {
                 //     case 1: // Pre-calculate comment
@@ -462,7 +468,7 @@ class Model extends BaseModel {
                  * Insert notification and cloud messaging
                  */
 
-                let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
+                let { name: taskName, sign: taskSign, author, assignee, related, project } = infoTask;
                 related = related.map(userID => userID.toString());
 
                 let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
@@ -938,15 +944,6 @@ class Model extends BaseModel {
                     })
                 }
 
-                if(infoComment.official) {
-                    return resolve({
-                        error: true,
-                        message: "Comment không thể cập nhật",
-                        keyError: "comment_can_not_update",
-                        status: 403
-                    })
-                }
-
                 let infoTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
                     .populate('project', '_id name sign')
@@ -1006,8 +1003,9 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật bổ sung
+                // Gộp comment và response thành 1 (type === 1)
                 switch (infoComment.type) {
-                    case 1: { // Bình luận
+                    case 2: { // Bình luận
                         dataAdditional = {
                             $set: {}
                         };
@@ -1049,7 +1047,7 @@ class Model extends BaseModel {
                         }
                         break;
                     }
-                    case 2: { // Phản hồi liên quan
+                    case 1: { // Phản hồi liên quan
                         dataAdditional = {
                             $addToSet: {}
                         };
@@ -1084,12 +1082,12 @@ class Model extends BaseModel {
                     }, dataAdditional);
                 }
 
-                if(filesRemove.length) {
-                    await PCM_FILE_COLL.deleteMany({
-                        _id: { $in: filesRemove },
-                        comment: commentID,
-                    })
-                }
+                // if(filesRemove.length) {
+                //     await PCM_FILE_COLL.deleteMany({
+                //         _id: { $in: filesRemove },
+                //         comment: commentID,
+                //     })
+                // }
 
                 infoAfterUpdate = await PCM_COMMENT_COLL
                     .findById(commentID)

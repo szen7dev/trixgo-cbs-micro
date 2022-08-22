@@ -873,7 +873,8 @@ class Model extends BaseModel {
                 }
 
                 if(isUpdateNews) {
-                    dataAddToset = { ...dataAddToset, news: userID };
+                    const usersUnRead = infoTask.accessUsers?.filter(item => item.toString() !== userID.toString());
+                    dataAddToset = { ...dataAddToset, news: usersUnRead };
                     dataUpdate.modifyAt = new Date();
                 }
 
@@ -1104,11 +1105,11 @@ class Model extends BaseModel {
                 }
 
                 //2. CẬP NHẬT USER ĐÃ XEM CÔNG VIỆC
-                else{
+                else {
                     let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany(
-                        { _id: { $in: taskIDs }},
+                        { _id: { $in: taskIDs } },
                         { $pull: { news: userID } },
-                        { new: true}
+                        { new: true }
                     );
 
                     if (!infoTaskAfterUpdate)

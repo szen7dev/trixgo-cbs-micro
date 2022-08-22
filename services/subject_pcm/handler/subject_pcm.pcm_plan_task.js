@@ -139,9 +139,9 @@ module.exports = {
         auth: "required",
         params: {
             taskIDs         : { type: "array" },
-            parentID        : { type: "string" },
-            type            : { type: "number" }, // 1 việc con / 2 checklist
-            option          : { type: "number" }, // 0-Update status, 1-Update user đã xem
+            parentID        : { type: "string", optional: true },
+            type            : { type: "number", optional: true }, // 1 việc con / 2 checklist
+            option          : { type: "number", optional: true }, // 0-Update status, 1-Update user đã xem
         },
         async handler(ctx) {
             try {
@@ -157,7 +157,7 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
