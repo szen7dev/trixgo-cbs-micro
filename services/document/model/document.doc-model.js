@@ -482,7 +482,7 @@ class Model extends BaseModel {
     getList({
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 30, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -497,8 +497,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(limit > 20){
-                    limit = 20;
+                if(limit > 30){
+                    limit = 30;
                 } else{
                     limit = +limit;
                 }
