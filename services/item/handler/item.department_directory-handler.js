@@ -21,13 +21,14 @@ module.exports = {
             description : { type: "string" },
             lock        : { type: "number" },
             order       : { type: "number" },
+            projectID   : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { member, type, name, description, lock, order } = ctx.params;
-                const resultAfterCallHandler = await ITEM__DEPARTMENT_DERECTORY_MODEL.insert({ member, type, name, description, lock, order, userID, ctx });
+                const { member, type, name, description, lock, order, projectID } = ctx.params;
+                const resultAfterCallHandler = await ITEM__DEPARTMENT_DERECTORY_MODEL.insert({ projectID, member, type, name, description, lock, order, userID, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -69,6 +70,7 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             companyID            : { type: "string", optional: true },
+            projectID            : { type: "string", optional: true },
             departmentDirectoryID: { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -80,11 +82,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { departmentDirectoryID, keyword, limit, lastestID, select, populates, companyID } = ctx.params;
+                let { departmentDirectoryID, keyword, limit, lastestID, select, populates, companyID, projectID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
-                if(!companyID){
-                    companyID = company._id;
-                }
                 
                 let resultAfterCallHandler;
                 if(departmentDirectoryID){
@@ -93,7 +92,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__DEPARTMENT_DERECTORY_MODEL.getList({
-                        companyID, keyword, limit, lastestID, select, populates
+                        companyID, projectID, keyword, limit, lastestID, select, populates
                     });
                 }
                 

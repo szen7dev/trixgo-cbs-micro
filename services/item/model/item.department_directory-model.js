@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo danh bạ dự án phòng ban
 	 * Date: 13/12/2021
 	 */
-	insert({ member, type, name, description, lock, userID, order, ctx }){
+	insert({ projectID, member, type, name, description, lock, userID, order, ctx }){
         return new Promise(async resolve => {
             try {
                 let dataInsert = {
@@ -49,6 +49,10 @@ class Model extends BaseModel {
                     })
 
                     dataInsert.company = infoMember.data.company;
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    dataInsert.department = projectID;
                 }
 
                 if(type){
@@ -178,7 +182,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
+        companyID, projectID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -208,6 +212,10 @@ class Model extends BaseModel {
 
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.department = projectID;
                 }
 
                 if(keyword){
