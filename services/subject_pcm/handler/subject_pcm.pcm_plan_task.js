@@ -334,6 +334,32 @@ module.exports = {
 
     /**
 	 * Dev: Depv
+	 * Func: Lấy thông báo công việc (chưa đọc)
+	 */
+     getAmountNotification: {
+        auth: "required",
+        params: {
+            option            : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const {
+                    option
+                } = ctx.params;
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID, option });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv
 	 * Func: Lấy số lượng công việc của bạn để hiển thị ngoài trang chủ
 	 */
     getAmountTask: {

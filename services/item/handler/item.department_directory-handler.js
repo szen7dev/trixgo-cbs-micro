@@ -18,7 +18,7 @@ module.exports = {
             member      : { type: "string" },
             type        : { type: "number" },
             name        : { type: "string" },
-            description : { type: "string" },
+            description : { type: "string", optional: true },
             lock        : { type: "number" },
             order       : { type: "number" },
             projectID   : { type: "string" },
@@ -70,9 +70,9 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             companyID            : { type: "string", optional: true },
-            projectID            : { type: "string" },
+            projectID            : { type: "string", optional: true },
             departmentDirectoryID: { type: "string", optional: true },
-            
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },

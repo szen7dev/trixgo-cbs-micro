@@ -36,8 +36,14 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	insert({ projectID, member, type, name, description, lock, userID, order, ctx }){
+        // console.log({projectID, member, type, name, description, lock, userID, order})
         return new Promise(async resolve => {
             try {
+                let infoData = await ITEM__DEPARTMENT_DIRECTORY_COLL.findOne({department: projectID, member: member})
+                // console.log(infoData)
+                if(infoData)
+                    return resolve({ error: true, message: "member_exists_in_project" });
+
                 let dataInsert = {
                     userCreate: userID,
                 }
@@ -102,9 +108,9 @@ class Model extends BaseModel {
                     userUpdate: userID, modifyAt: new Date()
                 }
 
-                if(member){
-                    dataUpdate.member = member;
-                }
+                // if(member){
+                //     dataUpdate.member = member;
+                // }
 
                 if(type){
                     dataUpdate.type = type;
