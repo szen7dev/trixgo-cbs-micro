@@ -1501,7 +1501,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {};
+                let conditionObj = { type: { $in: [1, 2] } };
                 let keys = ['createAt__-1', '_id__-1'];
                 let sortBy = {};
 
