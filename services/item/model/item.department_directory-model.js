@@ -186,6 +186,10 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * Kiểm tra findone
+                 */
 
                 if(limit > 20){
                     limit = 20

@@ -70,8 +70,9 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             companyID            : { type: "string", optional: true },
-            projectID            : { type: "string", optional: true },
+            projectID            : { type: "string" },
             departmentDirectoryID: { type: "string", optional: true },
+            
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
