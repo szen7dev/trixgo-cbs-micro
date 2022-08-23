@@ -17,6 +17,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     PCM__PCM_PLAN_TASK_GET_LIST_SUBJECT                         : `${BASE_ROUTE}${PCM_PLAN_TASK}/subject`,
     PCM__PCM_PLAN_TASK_GET_LIST_BY_FILTER                       : `${BASE_ROUTE}${PCM_PLAN_TASK}/filter`,
     PCM__PCM_PLAN_TASK_UPDATE_STATUS_MUTIPLE                    : `${BASE_ROUTE}${PCM_PLAN_TASK}/update-status-mutiple`,
+    PCM__PCM_PLAN_TASK_GET_AMOUNT_NOTIFICATION                  : `${BASE_ROUTE}${PCM_PLAN_TASK}/notification`,
     PCM__PCM_PLAN_TASK_GET_BADGE                                : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge`,
     PCM__PCM_PLAN_TASK_GET_BADGE_BIDDING                        : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge-bidding`,
     PCM__PCM_PLAN_TASK_SEND_EMAIL_TO_MEMBER_IN_TASK             : `${BASE_ROUTE}${PCM_PLAN_TASK}/send-email-to-member-in-task`,

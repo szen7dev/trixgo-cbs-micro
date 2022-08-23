@@ -1636,9 +1636,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 * KIỂM TRA QUYỀN TRUY CẬP VÀO TASK HỢP LÝ
                  */
                 if(isGroup && isGroup == 1){
                     // //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
@@ -1942,6 +1940,80 @@ class Model extends BaseModel {
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Lấy thông báo công việc (chưa đọc)
+     * Author: HiepNH
+     */
+    getAmountNotification({ userID, option }){
+        console.log({ userID, option })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * Không truyền option => lấy cả 3 loại cùng lúc
+                 * option = 1: Số công việc chưa xem
+                 * option = 2: Số công việc của tôi
+                 * option = 3: Số công việc nháp
+                 */
+                let amountUnreadTask =0, amountMyTask=0, amountDraftTask=0
+
+                if(!option){
+                    // Số công việc chưa xem
+                    amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
+                        news: { $in: [userID] },
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    // Số công việc của tôi (mà chưa hoàn thành)
+                    amountMyTask = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    // Số lượng công việc nháp
+                    amountDraftTask = await PCM_PLAN_TASK_COLL.count({
+                        author: userID,
+                        draft: 1,
+                        usersDelete: { $nin: [userID] }
+                    })
+                }else{
+                    if(option == 1){
+                        // Số công việc chưa xem
+                        amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
+                            news: { $in: [userID] },
+                            usersDelete: { $nin: [userID] }
+                        })
+                    }
+
+                    if(option == 2){
+                        // Số công việc của tôi (mà chưa hoàn thành)
+                        amountMyTask = await PCM_PLAN_TASK_COLL.count({
+                            assignee: userID,
+                            status: { $ne: 3 },
+                            usersDelete: { $nin: [userID] }
+                        })
+                    }
+
+                    if(option == 3){
+                        // Số lượng công việc nháp
+                        amountDraftTask = await PCM_PLAN_TASK_COLL.count({
+                            author: userID,
+                            draft: 1,
+                            usersDelete: { $nin: [userID] }
+                        })
+                    }
+                }
+
+                return resolve({ error: false, data: {
+                    amountUnreadTask, amountMyTask, amountDraftTask
+                }});
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }
