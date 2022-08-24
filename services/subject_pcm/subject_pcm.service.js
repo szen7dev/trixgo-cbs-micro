@@ -95,6 +95,7 @@ module.exports = {
 
 		//========================================== PCM_FILE =======================================
 		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GET_INFO_AND_GET_LIST]					: PCM_FILE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GET_LIST_BY_FILTER]					: PCM_FILE_HANDLER.getListByFilter,
 		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GROUP_BY_DATE]							: PCM_FILE_HANDLER.getListFilesGroupByDate,
 		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GROUP_BY_CONTRACT]						: PCM_FILE_HANDLER.getListFilesGroupByContract,
 	},

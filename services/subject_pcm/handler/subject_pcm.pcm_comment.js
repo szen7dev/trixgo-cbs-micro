@@ -239,10 +239,10 @@ module.exports = {
 
             fromDate            : { type: 'string', optional: true },
             toDate              : { type: 'string', optional: true },
-            authorsID           : { type: 'string', optional: true },
-            companyOfAuthorsID  : { type: 'string', optional: true },
-            projectsID          : { type: 'string', optional: true },
-            official            : { type: 'boolean', optional: true },
+            authorsID           : { type: 'array', optional: true },
+            companyOfAuthorsID  : { type: 'array', optional: true },
+            projectsID          : { type: 'array', optional: true },
+            // official            : { type: 'boolean', optional: true },
 
             keyword             : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
@@ -258,13 +258,17 @@ module.exports = {
 
                 const {
                     draft, sortKey, isParent, isActive, isGroup, 
-                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official,
+                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
+                // console.log({draft, sortKey, isParent, isActive, isGroup, 
+                //     fromDate, toDate, authorsID, companyOfAuthorsID, projectsID,
+                //     keyword, limit, lastestID, select, populates})
+
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentBySubject({
                     draft, sortKey, isParent, isActive, isGroup, 
-                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official,
+                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID,
                     keyword, limit, lastestID, select, populates, 
                     userID
                 });

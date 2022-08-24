@@ -49,6 +49,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
 
     // pcm_file
     PCM_FILE                                            : `${BASE_ROUTE}${PCM_FILE}`,
+    PCM_FILE_GET_LIST_BY_FILTER                         : `${BASE_ROUTE}${PCM_FILE}/filter`,
     PCM_FILE_GROUP_BY_DATE                              : `${BASE_ROUTE}${PCM_FILE}/group-by-date`,
     PCM_FILE_GROUP_BY_CONTRACT                          : `${BASE_ROUTE}${PCM_FILE}/group-by-contract`,
 }

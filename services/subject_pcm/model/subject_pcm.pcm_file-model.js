@@ -10,7 +10,7 @@ const moment                            = require('moment');
  * Tools
  */
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
@@ -106,7 +106,7 @@ class Model extends BaseModel {
     /**
 	 * Func: Danh sách file
      * Dev: MinhVH
-     * Update: Hiepnh
+     * Update: HiepNH
 	 * Date: 21/8/2022
 	 */
     getList({
@@ -358,6 +358,155 @@ class Model extends BaseModel {
                     },
                     status: 200
                 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Func: Tìm kiếm file
+     * Dev: HiepNH
+	 * Date: 24/8/2022
+	 */
+    getListByFilter({
+        companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
+        limit = 20, lastestID, select, populates, userID, ctx
+    }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * VALIDATION (1)
+                 */
+                const validation = validateParamsObjectID({
+                    companyOfAuthorsID : { value: companyOfAuthorsID, isRequire: false },
+                    authorsID           : { value: authorsID, isRequire: false },
+                    projectsID          : { value: projectsID, isRequire: false },
+
+                });
+                if(validation.error) return resolve(validation);
+
+                if(limit > 20){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
+
+                let sortBy;
+
+                let conditionObj = {}
+                let conditionObjTask = {} // Tìm kiếm task
+                let conditionObjGroup = {} // Tìm kiếm group
+
+                let keys	     = ['createAt__-1', '_id__-1'];
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                // Danh sách Task mà user được quyền truy cập
+                conditionObjTask.$or = [
+                    { author: userID },
+                    { assignee: userID },
+                    { related: { $in: [userID] } }
+                ]
+
+                const listTask = await PCM_PLAN_TASK__COLL
+                    .find(conditionObjTask)
+                    .select('_id project')
+                    .lean()
+                // console.log(listTask.length)
+
+                // Lấy các công việc thuộc Task
+                conditionObj.task = { $in:  listTask.map(item => item._id) }
+
+                // Điều kiện bộ lọc
+                companyOfAuthorsID && companyOfAuthorsID.length     && (conditionObj.companyOfAuthor = { $in: companyOfAuthorsID });
+                authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
+                projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
+
+                if(fromDate && toDate) {
+                    conditionObj.createAt = {
+                        $gte: moment(fromDate).startOf('days').toDate(),
+                        $lte: moment(toDate).endOf('days').toDate()
+                    }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.$or = [
+                        { nameOrg  :  new RegExp(keyword, 'i') },
+                        { description  :  new RegExp(keyword, 'i') },
+                    ]
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await PCM_FILE__COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await PCM_FILE__COLL
+                    .find(conditionObj)
+                    .select(select)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                let nextCursor	= null;
+
+                if(infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await PCM_FILE__COLL.countDocuments(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({
+                    error: false,
+                    data: {
+                        listRecords: infoDataAfterGet,
+                        limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    },
+                    status: 200
+                });
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

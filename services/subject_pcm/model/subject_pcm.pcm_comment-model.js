@@ -1813,7 +1813,7 @@ class Model extends BaseModel {
 	 * Date: 19/8/2022
 	 */
 	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 20, unlimit, lastestID, select, populates = {} }){
-        // console.log({ draft, sortKey, isParent, isActive, isGroup, userID, keyword, limit, unlimit, lastestID, select, populates })
+        // console.log({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
 			try {
                 /**
@@ -1839,11 +1839,12 @@ class Model extends BaseModel {
                     conditionSubjectObj.parent = { $exists: false };
                 }
 
-                if(isActive && isActive == 1){
-                    conditionSubjectObj.usersDelete = { $nin: [userID] }
-                }else{
-                    conditionSubjectObj.usersDelete = { $in: [userID] }
-                }
+                // if(isActive && isActive == 1){
+                //     conditionSubjectObj.usersDelete = { $nin: [userID] }
+                // }else{
+                //     conditionSubjectObj.usersDelete = { $in: [userID] }
+                // }
+                conditionSubjectObj.usersDelete = { $nin: [userID] }
 
                 // Lấy các chủ đề mà user được quyền truy cập (members của group)
                 if(isGroup && isGroup == 1){
@@ -1887,8 +1888,7 @@ class Model extends BaseModel {
                     conditionSubjectObj.draft = draft;
                 }
 
-
-                let listSubject = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name')
+                let listSubject = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name draft usersDelete')
                 // console.log(listSubject)
                 // console.log(listSubject.map(item => item._id))
 
@@ -1899,15 +1899,6 @@ class Model extends BaseModel {
                     task: { $in: listSubject.map(item => item._id) }
                 }
 
-                if(authorsID){
-                    authorsID = JSON.parse(authorsID);
-                }
-                if(companyOfAuthorsID){
-                    companyOfAuthorsID  = JSON.parse(companyOfAuthorsID);
-                }
-                if(projectsID){
-                    projectsID = JSON.parse(projectsID);
-                }
                 /**
                  * VALIDATION (1)
                  */

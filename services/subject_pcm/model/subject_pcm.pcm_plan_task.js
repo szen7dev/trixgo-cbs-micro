@@ -1106,14 +1106,29 @@ class Model extends BaseModel {
 
                 //2. CẬP NHẬT USER ĐÃ XEM CÔNG VIỆC
                 else {
-                    let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany(
-                        { _id: { $in: taskIDs } },
-                        { $pull: { news: userID } },
-                        { new: true }
-                    );
+                    // Cập nhật các Task được lựa chọn
+                    if(option == 1){
+                        let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany(
+                            { _id: { $in: taskIDs } },
+                            { $pull: { news: userID } },
+                            { new: true }
+                        );
+    
+                        if (!infoTaskAfterUpdate)
+                            return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+                    }
 
-                    if (!infoTaskAfterUpdate)
-                        return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+                    // Cập nhật tất cả các Task của user chưa đọc
+                    if(option == 2){
+                        let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany(
+                            { news: { $in: userID } },
+                            { $pull: { news: userID } },
+                            { new: true }
+                        );
+    
+                        if (!infoTaskAfterUpdate)
+                            return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+                    }
 
                     return resolve({ error: false, message: "update_success" })
                 }
@@ -1742,7 +1757,7 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Search Task
+     * Func: Tìm kiếm Task
      * Date: 11/05/2022
      */
     getListByFilter({
