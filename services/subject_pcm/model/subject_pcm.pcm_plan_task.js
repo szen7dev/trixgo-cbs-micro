@@ -1606,7 +1606,7 @@ class Model extends BaseModel {
     getListSubject({
         draft, sortKey, isParent, isActive, isGroup, read, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {}
     }) {
-        console.log({draft, sortKey, isParent, isActive, isGroup, read, userID, keyword, limit, unlimit, lastestID, select, populates })
+        // console.log({draft, sortKey, isParent, isActive, isGroup, read, userID, keyword, limit, unlimit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
@@ -1763,14 +1763,26 @@ class Model extends BaseModel {
      */
     getListByFilter({
         fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        projectsID, subtypes, status, fieldsID, isExpired, read, keyword, unlimited,
+        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID
     }) {
-        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, unlimited,
-            limit, lastestID, select, populates, userID})
+        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, unlimited,
+        //     limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * Thầu và mua sắm (http://localhost:3000/pcm/bidding)
+                 * assigneesID = [userID], subtypes = [4] (userID là người thực hiện)
+                 * 
+                 * Báo cáo, giao nộp (http://localhost:3000/pcm/delivery)
+                 * authorsID = [userID], subtypes = [9] (userID là người tạo việc)
+                 * 
+                 * Thanh toán (http://localhost:3000/pcm/payment)
+                 * authorsID = [userID], subtypes = [3] (userID là người tạo việc)
+                 */
+
                 /**
                  * VALIDATION (1)
                  */
@@ -1841,7 +1853,10 @@ class Model extends BaseModel {
                 fieldsID && fieldsID.length                         && (conditionObj.field = { $in: fieldsID });
                 companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
 
-                // conditionObj.parent = { $exists: false };
+                // Chỉ lấy task cha hoặc lấy tất cả
+                if(isParent && isParent == 1){
+                    conditionObj.parent = { $exists: false };
+                }
 
                 // Chưa xem (user nắm trong mảng new)
                 if(read && read == 1){

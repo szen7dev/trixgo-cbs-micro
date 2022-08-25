@@ -303,6 +303,7 @@ module.exports = {
             fieldsID            : { type: 'array', optional: true },
             isExpired           : { type: 'number', optional: true },
             read                : { type: 'number', optional: true },
+            isParent            : { type: 'number', optional: true },
 
             keyword             : { type: "string", optional: true },
             limit               : { type: "number", optional: true },
@@ -316,13 +317,13 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
                 const {
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-                    projectsID, subtypes, status, fieldsID, isExpired, read, keyword,
+                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword,
                     limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-                    projectsID, subtypes, status, fieldsID, isExpired, read, keyword,
+                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword,
                     limit, lastestID, select, populates, userID
                 })
 
