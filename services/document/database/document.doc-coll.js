@@ -10,12 +10,14 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
-        ref: 'company'
+        ref: 'company',
+        require:  true,
     },
     //_________Phòng ban/dự án
     project: {
         type: Schema.Types.ObjectId,
-        ref : "department"
+        ref : "department",
+        require:  true,
     },
     //_________Hợp đồng
     contract: {
@@ -25,7 +27,8 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     //_________Gói/Hạng mục (đã link với contact)
     package: {
         type: Schema.Types.ObjectId,
-        ref : "document_package"
+        ref : "document_package",
+        require:  true,
     },
     /**
      * THÔNG TIN CĂN BẢN
@@ -37,7 +40,15 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
      * 3: Nội bộ
      */
     direction: { type: Number, default: 1 },
-    //_________Nơi ban hành(Chủ thể ban hành)
+    //_________Tính chất hồ sơ
+    type: { type: Number, default: 1 },
+    //_________Cơ quan banh ành
+    datahubContact: {
+        type: Schema.Types.ObjectId,
+        require:  true,
+        ref : "datahub_contact"
+    },
+    //_________Người ban hành
     sender: {
         type: Schema.Types.ObjectId,
         ref : "contact"
@@ -47,18 +58,13 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
-    //_________Phân loại theo lĩnh vực (type=1)
-    field: {
+    //_________Phân loại 1
+    property: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    //_________Danh bạ hệ thống(Cơ quan, tổ chức)
-    datahubContact: {
-        type: Schema.Types.ObjectId,
-        ref : "datahub_contact"
-    },
-    //_________Phân loại theo tính chất (type=2)
-    property: {
+    //_________Phân loại 2
+    field: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
@@ -82,8 +88,6 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Date,
         default: null
     },
-    //_________Loại văn bản theo hệ thống quy định
-    type: { type: Number, default: 1 },
     //_________Nội dung văn bản (Tiêu đề)
     name: String,
     //_________Nội dung văn bản (Tiêu đề)

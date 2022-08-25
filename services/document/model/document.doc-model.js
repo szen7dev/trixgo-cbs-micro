@@ -475,9 +475,10 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách văn bản
+     * Name  : Danh sách văn bản + Tìm kiếm văn bản
      * Author: Depv
-     * Code  :
+     * Update: HiepNH
+     * Code  : 25/8/2022
      */
     getList({
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
@@ -515,6 +516,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Ngày nhận văn bản
                 if(receivedDate && typeof receivedDate === 'string'){
 					if(!IsJsonString(receivedDate))
 						return resolve({ error: true, message: 'Request params receivedDate invalid', status: 400 });
