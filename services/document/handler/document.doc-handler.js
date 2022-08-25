@@ -204,23 +204,25 @@ module.exports = {
 	 */
     getListDocument: {
         params: {
-			parentID        : { type: "string", optional: true },
-			companyID       : { type: "string", optional: true },
-			departmentID    : { type: "string", optional: true },
-            packageID	    : { type: "string", optional: true },
-			doctypeID	    : { type: "string", optional: true },
-			senderID	    : { type: "string", optional: true },
-            contractID	    : { type: "string", optional: true },
-			requestResponse : { type: "string", optional: true },
-			type            : { type: "string", optional: true },
-			direction       : { type: "string", optional: true },
-			datahubContactID: { type: "string", optional: true },
-			marked          : { type: "string", optional: true },
+            datahubContactID: { type: "string", optional: true }, // Chủ thể ban hành
+            senderID	    : { type: "string", optional: true }, // Người ban hành
+            type            : { type: "string", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
+            propertyID      : { type: "string", optional: true }, // Phân loại hồ sơ (người dùng quy định)
+            departmentID    : { type: "string", optional: true }, // Dự án
+            direction       : { type: "string", optional: true }, // Hướng hồ sơ
+            contractID	    : { type: "string", optional: true }, // Thuộc hợp đồng
+            packageID	    : { type: "string", optional: true }, // Gói thầu
+            
+            receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
+            requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
+			parentID        : { type: "string", optional: true }, // Phần tử cha
+			companyID       : { type: "string", optional: true }, // Thuộc công ty
+            marked          : { type: "string", optional: true }, // Được đánh dấu
+            keyword         : { type: "string", optional: true }, // Keyword
+
             lastestID       : { type: "string", optional: true },
-            keyword         : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
-			receivedDate    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -236,9 +238,6 @@ module.exports = {
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
-                // if(!companyID){
-                //     companyID = company._id
-                // }
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, datahubContactID, userID, keyword,
@@ -448,7 +447,6 @@ module.exports = {
             }
         }
     },
-
 
     /**
 	 * Dev: Depv

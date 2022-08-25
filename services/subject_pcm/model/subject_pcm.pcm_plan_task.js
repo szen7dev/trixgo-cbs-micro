@@ -1606,6 +1606,7 @@ class Model extends BaseModel {
     getListSubject({
         draft, sortKey, isParent, isActive, isGroup, read, userID, keyword, limit = 50, unlimit, lastestID, select, populates = {}
     }) {
+        console.log({draft, sortKey, isParent, isActive, isGroup, read, userID, keyword, limit, unlimit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
