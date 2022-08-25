@@ -425,10 +425,12 @@ class Model extends BaseModel {
                     .lean()
                 // console.log(listTask.length)
 
-                // Lấy các công việc thuộc Task
+                // Lấy các File thuộc Task mà user được quyền truy cập
                 conditionObj.task = { $in:  listTask.map(item => item._id) }
 
-                // Điều kiện bộ lọc
+                /**
+                 * Lọc theo các điều kiện
+                 */
                 companyOfAuthorsID && companyOfAuthorsID.length     && (conditionObj.companyOfAuthor = { $in: companyOfAuthorsID });
                 authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
                 projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
