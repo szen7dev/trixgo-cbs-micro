@@ -1767,7 +1767,7 @@ class Model extends BaseModel {
         limit = 20, lastestID, select, populates, userID
     }) {
         // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, unlimited,
+        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
         //     limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
@@ -1854,9 +1854,9 @@ class Model extends BaseModel {
                 companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
 
                 // Chỉ lấy task cha hoặc lấy tất cả
-                if(isParent && isParent == 1){
-                    conditionObj.parent = { $exists: false };
-                }
+                // if(isParent && isParent == 1){
+                //     conditionObj.parent = { $exists: false };
+                // }
 
                 // Chưa xem (user nắm trong mảng new)
                 if(read && read == 1){

@@ -303,7 +303,7 @@ module.exports = {
             fieldsID            : { type: 'array', optional: true },
             isExpired           : { type: 'number', optional: true },
             read                : { type: 'number', optional: true },
-            isParent            : { type: 'number', optional: true },
+            // isParent            : { type: 'number', optional: true },
 
             keyword             : { type: "string", optional: true },
             limit               : { type: "number", optional: true },
