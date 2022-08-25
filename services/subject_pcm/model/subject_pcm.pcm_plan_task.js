@@ -1763,9 +1763,12 @@ class Model extends BaseModel {
      */
     getListByFilter({
         fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        projectsID, subtypes, status, fieldsID, isExpired, keyword, unlimited,
+        projectsID, subtypes, status, fieldsID, isExpired, read, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID
     }) {
+        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, unlimited,
+            limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1801,13 +1804,14 @@ class Model extends BaseModel {
                 };
                 let nextCursor  = null;
                 let sortBy      = null;
-                let keys	    = ['actualFinishTime__-1', '_id__-1'];
+                let keys	 = ['modifyAt__-1', '_id__-1'];
+                // let keys	    = ['actualFinishTime__-1', '_id__-1'];
 
                 /**
                  * LOGIC CODE (3)
                  */
-                if(limit > 20 && isNaN(limit)){
-                    limit = 20;
+                if(limit > 50 && isNaN(limit)){
+                    limit = 50;
                 } else{
                     limit = +limit;
                 }
@@ -1836,6 +1840,18 @@ class Model extends BaseModel {
                 authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
                 fieldsID && fieldsID.length                         && (conditionObj.field = { $in: fieldsID });
                 companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
+
+                // conditionObj.parent = { $exists: false };
+
+                // Chưa xem (user nắm trong mảng new)
+                if(read && read == 1){
+                    conditionObj.news = { $in: [userID] }
+                }
+
+                // Đã xem (user bị xoá ra khỏi mảng news)
+                if(read && read == 2){
+                    conditionObj.news = { $nin: [userID] }
+                }
 
                 /**
                  * Bộ lọc với 1 lựa chọn
