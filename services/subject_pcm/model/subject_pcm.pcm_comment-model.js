@@ -1961,7 +1961,7 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = {...conditionObj};
-                
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_COMMENT_COLL.findById(lastestID);
 					if(!infoData)
@@ -2004,7 +2004,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-               
+
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
                 return resolve({ error: false, data: {

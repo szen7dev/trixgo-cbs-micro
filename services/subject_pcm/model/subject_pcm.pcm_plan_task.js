@@ -1776,7 +1776,6 @@ class Model extends BaseModel {
                     authorsID           : { value: authorsID, isRequire: false },
                     projectsID          : { value: projectsID, isRequire: false },
                     fieldsID            : { value: fieldsID, isRequire: false },
-
                 });
                 if(validation.error) return resolve(validation);
 
