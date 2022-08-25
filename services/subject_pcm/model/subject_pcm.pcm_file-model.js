@@ -37,7 +37,7 @@ class Model extends BaseModel {
 	 */
     insert({
         companyID, projectID, groupID, contractID, taskID, commentID, fileID,
-        type, nameOrg, name, description, path, size, mimeType, authorID
+        type, nameOrg, name, description, path, size, mimeType, authorID, companyOfAuthor
     }) {
         return new Promise(async (resolve) => {
             try {
@@ -48,7 +48,8 @@ class Model extends BaseModel {
                     size,
                     type,
                     mimeType,
-                    author: authorID
+                    author: authorID,
+                    companyOfAuthor
                 };
 
                 if(!nameOrg || !name || !path || !mimeType) {

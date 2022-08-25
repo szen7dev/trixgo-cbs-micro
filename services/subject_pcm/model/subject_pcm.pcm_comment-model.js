@@ -52,7 +52,7 @@ class Model extends BaseModel {
      * Date: 06/04/2022
      * Updated: 18/05/2022
      */
-    handleAddFiles({ infoTask, infoComment, infoProject, files, fileType, authorID, switchType = this.SWITCH_TYPE.TASK, ctx }) {
+    handleAddFiles({ infoTask, infoComment, infoProject, files, fileType, authorID, switchType = this.SWITCH_TYPE.TASK, companyOfAuthor, ctx }) {
         return new Promise(async resolve => {
             try {
                 let { results, errors } = await PromisePool
@@ -88,6 +88,7 @@ class Model extends BaseModel {
                                 fileID: fileID,
                                 commentID: infoComment._id,
                                 authorID: author,
+                                companyOfAuthor,
                                 name, nameOrg, path, size, mimeType, description, type
                             };
 
@@ -180,14 +181,22 @@ class Model extends BaseModel {
 	 * Func: Thêm comment (task)
 	 * Date: 22/02/2022
 	 */
-    insertCommentTask({ taskID, parentID, authorID, type, content, description, files, images, receiversID, select, populates, bizfullname, ctx }) {
+    insertCommentTask({
+        taskID, parentID, authorID, type, content, description, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
+    }) {
         return new Promise(async resolve => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 const TYPE_COMMENT  = [this.COMMENT_PCM, this.RESPONSE_PCM, this.RECORD_TASK_FOR_SEARCH];
-                const dataInsert    = { type, task: taskID, author: authorID };
+                const dataInsert    = {
+                    type,
+                    task: taskID,
+                    author: authorID,
+                    companyOfAuthor,
+                    official: isOfficial
+                };
                 const dataUpdate    = {};
                 let dataSend        = {};
                 let webUrl          = '';
@@ -281,6 +290,20 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(receiversID)) {
                     dataInsert.receivers = receiversID;
+                } else{
+                    if(!checkObjectIDs([parentID])) {
+                        const receivers = infoTask.accessUsers?.filter(user =>
+                            user.toString() !== authorID.toString()
+                        );
+                        dataInsert.receivers = receivers;
+                    } else {
+                        const commentParent = await PCM_COMMENT_COLL
+                            .findById(parentID)
+                            .select('author')
+                            .lean();
+
+                        dataInsert.receivers = [commentParent?.author];
+                    }
                 }
 
                 if(content) {
@@ -448,43 +471,32 @@ class Model extends BaseModel {
                 const usersUnRead = infoTask.accessUsers?.filter(item => item.toString() !== authorID.toString());
 
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                    $inc: { amountResponse: 1 },
+                    $inc: { amountResponse: 1, amountMarkedResponse: isOfficial ? 1 : 0 },
                     $addToSet: { news: usersUnRead },
-                    $set: { modifyAt: new Date() }
+                    $set: { lastComment: infoAfterInsert._id, modifyAt: new Date() }
                 });
-
-                // switch (type) {
-                //     case 1: // Pre-calculate comment
-                //         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountComment: 1 } });
-                //         break;
-                //     case 2: // Pre-calculate related response
-                //         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
-                //         break;
-                //     default:
-                //         break;
-                // }
 
                 /**
                  * Insert notification and cloud messaging
                  */
+                let { name: taskName, sign: taskSign, author, project } = infoTask;
+                let arrReceiver = dataInsert.receivers;
 
-                let { name: taskName, sign: taskSign, author, assignee, related, project } = infoTask;
-                related = related.map(userID => userID.toString());
-
-                let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
-                let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                // related = related.map(userID => userID.toString());
+                // let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
+                // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                 switch (infoAfterInsert.type) {
                     case 1:
                         languageKey     = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi`;
                         webUrl          = `/pcm/detail/${taskID}#comment_${infoAfterInsert._id}`;
                         break;
-                    case 2:
-                        languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi liên quan`;
-                        webUrl          = `/pcm/detail/${taskID}#response_${infoAfterInsert._id}`;
-                        break;
+                    // case 2:
+                    //     languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
+                    //     descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi liên quan`;
+                    //     webUrl          = `/pcm/detail/${taskID}#response_${infoAfterInsert._id}`;
+                    //     break;
                     default:
                         break;
                 }
@@ -859,13 +871,13 @@ class Model extends BaseModel {
 	 */
     insert({
         taskID, projectID, parentID, authorID, type, content, files, images, receiversID,
-        select, populates, bizfullname, switchType = this.SWITCH_TYPE.TASK, ctx
+        select, populates, bizfullname, isOfficial, companyOfAuthor, switchType = this.SWITCH_TYPE.TASK, ctx
     }) {
         return new Promise(async (resolve) => {
             switch (switchType) {
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.insertCommentTask({
-                        taskID, parentID, authorID, type, content, files, images, receiversID, select, populates, bizfullname, ctx
+                        taskID, parentID, authorID, type, content, files, images, receiversID, select, populates, bizfullname, isOfficial, companyOfAuthor, ctx
                     }))
                     break;
                 case this.SWITCH_TYPE.PROJECT:
@@ -884,7 +896,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment (task)
 	 * Date: 22/02/2022
 	 */
-    updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, ctx }) {
+    updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, ctx }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -1047,14 +1059,14 @@ class Model extends BaseModel {
                         }
                         break;
                     }
-                    case 1: { // Phản hồi liên quan
+                    case 1: { // Phản hồi liên quan (Hiện tại chỉ dùng case này)
                         dataAdditional = {
                             $addToSet: {}
                         };
 
                         if(checkObjectIDs(files)){
                             const result = await this.handleAddFiles({
-                                infoTask, infoComment, files, fileType: 'file', authorID, ctx
+                                infoTask, infoComment, files, fileType: 'file', authorID, companyOfAuthor, ctx
                             })
 
                             if(result.error) return resolve(result);
@@ -1063,7 +1075,7 @@ class Model extends BaseModel {
 
                         if(checkObjectIDs(images)){
                             const result = await this.handleAddFiles({
-                                infoTask, infoComment, files: images, fileType: 'image', authorID, ctx
+                                infoTask, infoComment, files: images, fileType: 'image', authorID, companyOfAuthor, ctx
                             })
 
                             if(result.error) return resolve(result);
@@ -1257,12 +1269,12 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment (middle)
 	 * Date: 18/05/2022
 	 */
-    update({ taskID, projectID, commentID, authorID, content, files, images, isOfficial, select, populates, switchType = this.SWITCH_TYPE.TASK, ctx }) {
+    update({ taskID, projectID, commentID, authorID, content, files, images, isOfficial, select, populates, switchType = this.SWITCH_TYPE.TASK, companyOfAuthor, ctx }) {
         return new Promise(async resolve => {
             switch (switchType) {
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.updateCommentTask({
-                        taskID, commentID, authorID, content, files, images, isOfficial, select, populates, ctx
+                        taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, ctx
                     }))
                     break;
                 case this.SWITCH_TYPE.PROJECT:
@@ -1542,6 +1554,10 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
+                if(official === 'true') {
+                    conditionObj.official = true;
+                }
+
                 if(taskID){
                     if(!checkObjectIDs([taskID])) {
                         return resolve({
@@ -1550,6 +1566,17 @@ class Model extends BaseModel {
                             keyError: "params_taskID_invalid",
                             status: 400
                         });
+                    }
+
+                    let infoTask = await PCM_PLAN_TASK_COLL
+                        .findById(taskID)
+                        .select('openedStatus assignee')
+                        .lean();
+
+                    // Áp dụng cho bidding task, không lấy response official khi chưa đủ người mở thầu
+                    // Không áp dụng đối với người được giao việc
+                    if(infoTask?.openedStatus === 0 && authorID !== infoTask.assignee?.toString()) {
+                        conditionObj.official = false;
                     }
 
 					conditionObj.task = taskID;
@@ -1578,10 +1605,6 @@ class Model extends BaseModel {
                         ]
                     }
                     // conditionObj['images.1'] = { $exists: true };
-                }
-
-                if(official === 'true') {
-                    conditionObj.official = true;
                 }
 
                 if(type) {

@@ -27,17 +27,18 @@ module.exports = {
             parentID   : { type: "string", optional: true },
             files      : { type: "array", optional: true },
             images     : { type: "array", optional: true },
+            isOfficial : { type: "boolean", optional: true },
             select     : { type: "string", optional: true },
             populates  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { content, taskID, projectID, type, parentID, files, images, switchType, receiversID, select, populates } = ctx.params;
+				const { _id: authorID, bizfullname, company } = ctx.meta.infoUser;
+                const { content, taskID, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, projectID, parentID, authorID, type, content, files, images, switchType, receiversID, select, populates, bizfullname, ctx
+					taskID, projectID, parentID, authorID, type, content, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname, companyOfAuthor: company._id, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -69,11 +70,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: authorID, company } = ctx.meta.infoUser;
                 const { taskID, commentID, projectID, switchType, content, files, images, isOfficial, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
-					taskID, commentID, projectID, switchType, authorID, content, files, images, isOfficial, select, populates, ctx
+					taskID, commentID, projectID, switchType, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor: company._id, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
