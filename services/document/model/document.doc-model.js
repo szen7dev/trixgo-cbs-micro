@@ -380,50 +380,50 @@ class Model extends BaseModel {
 	 * Func: Xóa văn bản
 	 * Date: 30/10/2021
 	 */
-    remove({ documentID, userID }){
-        return new Promise(async resolve => {
-            try {
-                if (!checkObjectIDs([documentID, userID])) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params documentID or userID invalid',
-                        keyError: 'params_documentID_or_userID_invalid',
-                        status: 400
-                    });
-                }
+    // remove({ documentID, userID }){
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!checkObjectIDs([documentID, userID])) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: 'Request params documentID or userID invalid',
+    //                     keyError: 'params_documentID_or_userID_invalid',
+    //                     status: 400
+    //                 });
+    //             }
 
-                let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: userID,
-                    permission: 1
-                }).lean()
+    //             let checkPermission = await DOCUMENT__USER_COLL.findOne({
+    //                 document: documentID,
+    //                 user: userID,
+    //                 permission: 1
+    //             }).lean()
 
-                if(!checkPermission) {
-                    return resolve({
-                        error: true,
-                        message: "Permission denined",
-                        keyError: "permission_denined_document",
-                        status: 403
-                    });
-                }
+    //             if(!checkPermission) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Permission denined",
+    //                     keyError: "permission_denined_document",
+    //                     status: 403
+    //                 });
+    //             }
 
-                const infoAfterDelete = await DOCUMENT__DOC_COLL.findByIdAndDelete(documentID);
+    //             const infoAfterDelete = await DOCUMENT__DOC_COLL.findByIdAndDelete(documentID);
 
-                if(!infoAfterDelete) {
-                    return resolve({
-                        error: true,
-                        message: "Can't delete document",
-                        keyError: "delete_document_failed",
-                        status: 422
-                    });
-                }
+    //             if(!infoAfterDelete) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Can't delete document",
+    //                     keyError: "delete_document_failed",
+    //                     status: 422
+    //                 });
+    //             }
 
-                return resolve({ error: false, message: "Remove Success", status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, keyError: "server_error", status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, message: "Remove Success", status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, keyError: "server_error", status: 500 });
+    //         }
+    //     })
+    // }
 
      /**
      * Name: get văn bản
@@ -484,6 +484,10 @@ class Model extends BaseModel {
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 30, lastestID, select, populates= {} }) {
+            // console.log({
+            //     parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel,
+            //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate,
+            //     keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
