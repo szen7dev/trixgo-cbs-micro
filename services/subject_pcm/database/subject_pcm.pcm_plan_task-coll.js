@@ -227,6 +227,18 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     amountMarkedResponse: {
         type: Number, default: 0
     },
+    //_________Tổng số lượng hiện trạng
+    amountCurrentStatus: {
+        type: Number, default: 0
+    },
+    //_________Tổng số lượng giải pháp
+    amountSolution: {
+        type: Number, default: 0
+    },
+    //_________Tổng số lượng phản hồi khác
+    amountResponseOther: {
+        type: Number, default: 0
+    },
     //_________Ký duyệt xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,

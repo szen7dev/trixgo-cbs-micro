@@ -470,8 +470,26 @@ class Model extends BaseModel {
                 // Update task of response comment
                 const usersUnRead = infoTask.accessUsers?.filter(item => item.toString() !== authorID.toString());
 
+                let incPreCalculate = {};
+
+                switch(type) {
+                    case 1:
+                        incPreCalculate = { amountResponse: 1 };
+                        break;
+                    case 3:
+                        incPreCalculate = { amountCurrentStatus: 1 };
+                        break;
+                    case 4:
+                        incPreCalculate = { amountSolution: 1 };
+                        break;
+                    case 5:
+                    case 6:
+                        incPreCalculate = { amountResponseOther: 1 };
+                        break;
+                }
+
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                    $inc: { amountResponse: 1, amountMarkedResponse: isOfficial ? 1 : 0 },
+                    $inc: { ...incPreCalculate, amountMarkedResponse: isOfficial ? 1 : 0 },
                     $addToSet: { news: usersUnRead },
                     $set: { lastComment: infoAfterInsert._id, modifyAt: new Date() }
                 });
