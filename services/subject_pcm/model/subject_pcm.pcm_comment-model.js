@@ -38,6 +38,8 @@ class Model extends BaseModel {
 
         this.COMMENT_PCM = 1;
         this.RESPONSE_PCM = 2;
+        this.RESPONSE_CURRENT_STATUS = 3;
+        this.RESPONSE_SOLUTION = 4;
         this.RECORD_TASK_FOR_SEARCH = 5;
 
         this.SWITCH_TYPE = {
@@ -189,8 +191,14 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                const TYPE_COMMENT  = [this.COMMENT_PCM, this.RESPONSE_PCM, this.RECORD_TASK_FOR_SEARCH];
-                const dataInsert    = {
+                const TYPE_COMMENT = [
+                    this.COMMENT_PCM,
+                    this.RESPONSE_PCM,
+                    this.RESPONSE_CURRENT_STATUS,
+                    this.RESPONSE_SOLUTION,
+                    this.RECORD_TASK_FOR_SEARCH
+                ];
+                const dataInsert = {
                     type,
                     task: taskID,
                     author: authorID,
@@ -1588,12 +1596,15 @@ class Model extends BaseModel {
 
                     let infoTask = await PCM_PLAN_TASK_COLL
                         .findById(taskID)
-                        .select('openedStatus assignee')
+                        .select('subtype openedStatus assignee')
                         .lean();
 
                     // Áp dụng cho bidding task, không lấy response official khi chưa đủ người mở thầu
                     // Không áp dụng đối với người được giao việc
-                    if(infoTask?.openedStatus === 0 && authorID !== infoTask.assignee?.toString()) {
+                    if(infoTask.subtype === 4 &&
+                        infoTask?.openedStatus === 0 &&
+                        authorID !== infoTask.assignee?.toString()
+                    ) {
                         conditionObj.official = false;
                     }
 
@@ -1625,13 +1636,14 @@ class Model extends BaseModel {
                     // conditionObj['images.1'] = { $exists: true };
                 }
 
-                if(type) {
+                if(+type > 2) {
                     conditionObj.type = type;
                 }
 
                 if(switchType === this.SWITCH_TYPE.PROJECT) {
                     conditionObj.task = { $exists: false };
                 }
+                console.log({ conditionObj, type })
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){

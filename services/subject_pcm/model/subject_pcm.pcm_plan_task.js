@@ -1162,6 +1162,10 @@ class Model extends BaseModel {
                 }
                 // Bắt đầu kiểm tra quyền
                 let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
+                if(!infoTaskToCheckPermission) {
+                    return resolve({ error: true, message: 'Not found task', status: 404 });
+                }
+
                 let { author, assignee, related, group } = infoTaskToCheckPermission;
 
                 let isAuthor = false;

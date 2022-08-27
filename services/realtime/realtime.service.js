@@ -52,9 +52,9 @@ module.exports = {
     settings: {
         io: {
             options: {
-                adapter: redisAdapter({   
+                adapter: redisAdapter({
                     pubClient: pub,
-                    subClient: sub 
+                    subClient: sub
                 })
             },
             namespaces: {
@@ -106,26 +106,26 @@ module.exports = {
                         ...MEDIA_SOCKET,
                         ...SUBJECT_SOCKET,
 
-                        'CLIENT_SEND_CHATTING_TEST': async function(data) { 
+                        'CLIENT_SEND_CHATTING_TEST': async function(data) {
                             let socket                      = this;
                             let userID                      = socket.client.user;
                             let listUserActive              = socket.$service.listUserConnected;
                             let io                          = socket.$service.io;
-                    
+
                             const allUsers = await USER_COLL.find({}).select('_id').lean();
                             const listUserID = allUsers.map(user => user._id);
                             console.log({ data })
-                    
+
                             // this.emit('HELLO_WORLD', data);
-                            sendDataToMultilSocketsOfListUser({ 
-                                listUserConnected: listUserActive, 
-                                arrReceiver: listUserID, 
+                            sendDataToMultilSocketsOfListUser({
+                                listUserConnected: listUserActive,
+                                arrReceiver: listUserID,
                                 data: {
                                     data,
                                     message: "Hi Client!! I'm server...",
                                     userID,
                                     listUserActive
-                                }, 
+                                },
                                 event: 'SERVER_SEND_CHATTING_TEST', io
                             })
                         },
@@ -243,13 +243,13 @@ module.exports = {
                 }
             });
 
-            // Gửi tín hiệu kết nối cho những người bạn 
-            sendDataToMultilSocketsOfListUser({ 
+            // Gửi tín hiệu kết nối cho những người bạn
+            sendDataToMultilSocketsOfListUser({
 				io,
 				event: 'SSC_ONLINE_USER',
 				arrReceiver: [_infoUser._id],
 				listUserConnected: listUserActive,
-				data: { 
+				data: {
 					friendOnline: listFriendOnline,
 					disconnect: false,
 					isFirstTime: false
@@ -277,12 +277,12 @@ module.exports = {
                     }
                 });
 
-                sendDataToMultilSocketsOfListUser({ 
+                sendDataToMultilSocketsOfListUser({
 					io,
 					event: 'SSC_OFFLINE_USER',
-					arrReceiver: listFriendOnline, 
-					listUserConnected: listUserActive, 
-					data: { 
+					arrReceiver: listFriendOnline,
+					listUserConnected: listUserActive,
+					data: {
 						friendOffline: _infoUser._id,
 						disconnect: true,
 						isFirstTime: false
@@ -306,7 +306,7 @@ module.exports = {
                 }
             });
 
-            // console.log({ 
+            // console.log({
             //     event: 'SSC_USER_ONLINE',
             //     arrReceiver: listFriendOnline,
             //     listUserConnected: listUserActive,
@@ -317,8 +317,8 @@ module.exports = {
             //     }
             // })
 
-            // Gửi tín hiệu kết nối cho những người bạn 
-            sendDataToMultilSocketsOfListUser({ 
+            // Gửi tín hiệu kết nối cho những người bạn
+            sendDataToMultilSocketsOfListUser({
 				io,
 				event: 'SSC_USER_ONLINE',
 				arrReceiver: listFriendOnline,
