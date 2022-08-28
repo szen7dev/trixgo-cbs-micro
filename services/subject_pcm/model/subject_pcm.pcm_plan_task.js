@@ -1113,7 +1113,7 @@ class Model extends BaseModel {
                             { $pull: { news: userID } },
                             { new: true }
                         );
-    
+
                         if (!infoTaskAfterUpdate)
                             return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
                     }
@@ -1125,7 +1125,7 @@ class Model extends BaseModel {
                             { $pull: { news: userID } },
                             { new: true }
                         );
-    
+
                         if (!infoTaskAfterUpdate)
                             return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
                     }
@@ -1779,10 +1779,10 @@ class Model extends BaseModel {
                  * BA
                  * Thầu và mua sắm (http://localhost:3000/pcm/bidding)
                  * assigneesID = [userID], subtypes = [4] (userID là người thực hiện)
-                 * 
+                 *
                  * Báo cáo, giao nộp (http://localhost:3000/pcm/delivery)
                  * authorsID = [userID], subtypes = [9] (userID là người tạo việc)
-                 * 
+                 *
                  * Thanh toán (http://localhost:3000/pcm/payment)
                  * authorsID = [userID], subtypes = [3] (userID là người tạo việc)
                  */
