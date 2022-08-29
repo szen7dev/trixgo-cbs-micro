@@ -484,10 +484,214 @@ class Model extends BaseModel {
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 30, lastestID, select, populates= {} }) {
-            // console.log({
-            //     parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel,
-            //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate,
-            //     keyword, limit, lastestID, select, populates })
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(limit > 30){
+                    limit = 30;
+                } else{
+                    limit = +limit;
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                // Ngày nhận văn bản
+                if(receivedDate && typeof receivedDate === 'string'){
+					if(!IsJsonString(receivedDate))
+						return resolve({ error: true, message: 'Request params receivedDate invalid', status: 400 });
+
+					receivedDate = JSON.parse(receivedDate);
+				}
+
+                if(receivedDate){
+                    let fromDate = receivedDate.from;
+                    let toDate   = receivedDate.to;
+                    // Lấy những văn bản từ ngày đến ngày
+                    if(fromDate && toDate){
+                        conditionObj.receivedDate = { $gte: new Date(fromDate), $lte: moment(new Date(toDate)).endOf('day')._d }
+                    }
+                }
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+                // User phải nằm trong member của gói thầu.
+                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
+                if(listPackageAccess.length){
+                    conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                } else{
+                    return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
+                }
+
+                if(companyID){
+                    conditionObj.company = companyID
+                }
+
+                if(datahubContactID){
+                    conditionObj.datahubContact = datahubContactID
+                }
+
+                if(type){
+                    conditionObj.type = type
+                }
+
+                if(fromDate && toDate){
+                    conditionObj.date = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
+
+                if(packageID){
+                    conditionObj.package = packageID
+                }
+
+                if(direction){
+                    conditionObj.direction = direction
+                }
+
+                if(checkObjectIDs(senderID)){
+                    conditionObj.sender = senderID
+                }
+
+                if(checkObjectIDs(receiverID)){
+                    conditionObj.receiver = receiverID
+                }
+
+                if(checkObjectIDs(propertyID)){
+                    conditionObj.property = propertyID
+                }
+
+                if(checkObjectIDs(contractID)){
+                    conditionObj.contract = contractID
+                }
+
+                if(checkObjectIDs(storageID)){
+                    conditionObj.storage = storageID
+                }
+
+                if(requestResponse){
+                    conditionObj.requestResponse = requestResponse
+                }
+
+                if(checkObjectIDs(fieldID)){
+                    conditionObj.field = fieldID
+                }
+
+                if(checkObjectIDs(departmentID)){
+                    conditionObj.project = departmentID
+                }
+
+                if(checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID
+                } else{
+                    conditionObj.parent = { $exists: false }
+                }
+
+                if(marked){
+                    conditionObj.usersMarked = { $in: [userID] }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
+
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
+
+                /**
+                 * Purpose: Sử dụng trong export excel document (hoặc theo bộ lọc)
+                 * Function: exportDocument (model)
+                 */
+                if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
+                }
+
+                console.log({ conditionObj });
+                let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Danh sách văn bản + Tìm kiếm văn bản
+     * Author: Depv
+     * Update: HiepNH
+     * Code  : 25/8/2022
+     */
+    getListByFilter({
+        parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storageID, datahubContactsID, isExportExcel = false,
+        requestResponse, fieldID, fromDate, toDate, marked, userID, departmentsID, receivedDate = {},
+        keyword, limit = 30, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**

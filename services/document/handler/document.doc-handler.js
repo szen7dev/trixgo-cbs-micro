@@ -251,6 +251,55 @@ module.exports = {
         }
     },
 
+    getListByFilter: {
+        params: {
+            datahubContactsID: { type: "array", optional: true }, // Chủ thể ban hành
+            sendersID	    : { type: "array", optional: true }, // Người ban hành
+            types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
+            propertysID      : { type: "array", optional: true }, // Phân loại hồ sơ (người dùng quy định)
+            departmentsID    : { type: "array", optional: true }, // Dự án
+            directions       : { type: "array", optional: true }, // Hướng hồ sơ
+            contractsID	    : { type: "array", optional: true }, // Thuộc hợp đồng
+            packagesID	    : { type: "array", optional: true }, // Gói thầu
+            
+            receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
+            requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
+			parentID        : { type: "string", optional: true }, // Phần tử cha
+			companyID       : { type: "string", optional: true }, // Thuộc công ty
+            marked          : { type: "string", optional: true }, // Được đánh dấu
+            keyword         : { type: "string", optional: true }, // Keyword
+
+            lastestID       : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+			select          : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                // Call traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
+                    appID: `${APP_ID.DOCUMENT.id}`, menuID: `${APP_ID.DOCUMENT.menuDocumentApp.dashboard.id}`, type: 1
+                })
+
+				await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let {
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, receivedDate, datahubContactsID,
+                    types, contractsID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListByFilter({
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, receivedDate,
+                    types, contractsID, storageID, requestResponse, fieldID, fromDate, toDate, marked, datahubContactsID, userID, keyword,
+                    limit, lastestID, select, populates
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
     /**
 	 * Dev: MinhVH
 	 * Func: Danh sách nhóm phân loại hồ sơ

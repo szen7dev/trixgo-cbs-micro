@@ -1225,10 +1225,6 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 20, unlimit, lastestID, select, populates = {}
     }) {
-        // console.log({projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        //     keyword, limit, unlimit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
                 /**
