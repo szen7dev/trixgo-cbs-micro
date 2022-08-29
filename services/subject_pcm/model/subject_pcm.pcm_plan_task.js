@@ -1465,7 +1465,7 @@ class Model extends BaseModel {
                     conditionObj.parent = parentID;
                     delete conditionObj.$or
 
-                    conditionObj.type = 2;
+                    // conditionObj.type = 2;
                     delete conditionObj.status;
                     // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
                     // if(isChecklist == 1){
