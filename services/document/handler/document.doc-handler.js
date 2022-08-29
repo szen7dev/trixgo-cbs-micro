@@ -251,16 +251,23 @@ module.exports = {
         }
     },
 
+    /**
+     * Name  : Tìm kiếm văn bản
+     * Author: HiepNH
+     * Code  : 29/8/2022
+     */
     getListByFilter: {
         params: {
             datahubContactsID: { type: "array", optional: true }, // Chủ thể ban hành
             sendersID	    : { type: "array", optional: true }, // Người ban hành
             types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
             propertysID      : { type: "array", optional: true }, // Phân loại hồ sơ (người dùng quy định)
+            fieldsID	    : { type: "array", optional: true }, // Phân loại khác
             departmentsID    : { type: "array", optional: true }, // Dự án
             directions       : { type: "array", optional: true }, // Hướng hồ sơ
             contractsID	    : { type: "array", optional: true }, // Thuộc hợp đồng
             packagesID	    : { type: "array", optional: true }, // Gói thầu
+            storagesID	    : { type: "array", optional: true }, // Địa chỉ lưu trữ
             
             receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
             requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
@@ -275,21 +282,17 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                // Call traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
-                    appID: `${APP_ID.DOCUMENT.id}`, menuID: `${APP_ID.DOCUMENT.menuDocumentApp.dashboard.id}`, type: 1
-                })
-
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
+
                 let {
-                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, receivedDate, datahubContactsID,
-                    types, contractsID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListByFilter({
-                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, receivedDate,
-                    types, contractsID, storageID, requestResponse, fieldID, fromDate, toDate, marked, datahubContactsID, userID, keyword,
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, datahubContactsID, userID, keyword,
                     limit, lastestID, select, populates
                 });
 

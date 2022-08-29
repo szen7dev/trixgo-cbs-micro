@@ -683,34 +683,34 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách văn bản + Tìm kiếm văn bản
-     * Author: Depv
-     * Update: HiepNH
-     * Code  : 25/8/2022
+     * Name  : Tìm kiếm văn bản
+     * Author: HiepNH
+     * Code  : 29/8/2022
      */
     getListByFilter({
-        parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storageID, datahubContactsID, isExportExcel = false,
-        requestResponse, fieldID, fromDate, toDate, marked, userID, departmentsID, receivedDate = {},
-        keyword, limit = 30, lastestID, select, populates= {} }) {
+        parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel = false,
+        requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
+        keyword, limit = 20, lastestID, select, populates= {} }) {
+            console.log({
+                parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel,
+                requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
+                keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * VALIDATION (1)
                  */
-                let conditionObj = {};
-                let sortBy;
-                let keys	     = ['createAt__-1', '_id__-1'];
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(limit > 30){
-                    limit = 30;
-                } else{
-                    limit = +limit;
-                }
+                const validation = validateParamsObjectID({
+                    packagesID              : { value: packagesID, isRequire: false },
+                    sendersID               : { value: sendersID, isRequire: false },
+                    propertysID             : { value: propertysID, isRequire: false },
+                    fieldsID                : { value: fieldsID, isRequire: false },
+                    contractsID             : { value: contractsID, isRequire: false },
+                    datahubContactsID       : { value: datahubContactsID, isRequire: false },
+                    departmentsID           : { value: departmentsID, isRequire: false },
+                    storagesID              : { value: storagesID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -724,29 +724,25 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Ngày nhận văn bản
-                if(receivedDate && typeof receivedDate === 'string'){
-					if(!IsJsonString(receivedDate))
-						return resolve({ error: true, message: 'Request params receivedDate invalid', status: 400 });
+                /**
+                 * DECALARTION VARIABLE (2)
+                 */
+                let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
 
-					receivedDate = JSON.parse(receivedDate);
-				}
-
-                if(receivedDate){
-                    let fromDate = receivedDate.from;
-                    let toDate   = receivedDate.to;
-                    // Lấy những văn bản từ ngày đến ngày
-                    if(fromDate && toDate){
-                        conditionObj.receivedDate = { $gte: new Date(fromDate), $lte: moment(new Date(toDate)).endOf('day')._d }
-                    }
+                /**
+                 * LOGIC CODE (3)
+                 */
+                if(limit > 50){
+                    limit = 50;
+                } else{
+                    limit = +limit;
                 }
 
                 /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                // User phải nằm trong member của gói thầu.
+                * User phải nằm trong member của gói thầu
+                */
                 let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
                 if(listPackageAccess.length){
                     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
@@ -754,60 +750,35 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
                 }
 
+                /**
+                 * Bộ lọc với nhiều lựa chọn
+                 */
+                directions && directions.length                 && (conditionObj.direction = { $in: directions });
+                types && types.length                           && (conditionObj.type = { $in: types });
+                propertysID && propertysID.length               && (conditionObj.property = { $in: propertysID });
+                fieldsID && fieldsID.length                     && (conditionObj.field = { $in: fieldsID });
+                packagesID && packagesID.length                 && (conditionObj.package = { $in: packagesID });
+                sendersID && sendersID.length                   && (conditionObj.sender = { $in: sendersID });
+                contractsID && contractsID.length               && (conditionObj.contract = { $in: contractsID });
+                datahubContactsID && datahubContactsID.length   && (conditionObj.datahubContact = { $in: datahubContactsID });
+                departmentsID && departmentsID.length           && (conditionObj.project = { $in: departmentsID });
+                storagesID && storagesID.length                 && (conditionObj.storage = { $in: storagesID });
+
+                // Ngày nhận văn bản
+                if(fromDate && toDate){
+                    conditionObj.receivedDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
+
                 if(companyID){
                     conditionObj.company = companyID
-                }
-
-                if(datahubContactID){
-                    conditionObj.datahubContact = datahubContactID
-                }
-
-                if(type){
-                    conditionObj.type = type
-                }
-
-                if(fromDate && toDate){
-                    conditionObj.date = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
-                }
-
-                if(packageID){
-                    conditionObj.package = packageID
-                }
-
-                if(direction){
-                    conditionObj.direction = direction
-                }
-
-                if(checkObjectIDs(senderID)){
-                    conditionObj.sender = senderID
                 }
 
                 if(checkObjectIDs(receiverID)){
                     conditionObj.receiver = receiverID
                 }
 
-                if(checkObjectIDs(propertyID)){
-                    conditionObj.property = propertyID
-                }
-
-                if(checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID
-                }
-
-                if(checkObjectIDs(storageID)){
-                    conditionObj.storage = storageID
-                }
-
                 if(requestResponse){
                     conditionObj.requestResponse = requestResponse
-                }
-
-                if(checkObjectIDs(fieldID)){
-                    conditionObj.field = fieldID
-                }
-
-                if(checkObjectIDs(departmentID)){
-                    conditionObj.project = departmentID
                 }
 
                 if(checkObjectIDs(parentID)){
