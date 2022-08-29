@@ -138,7 +138,7 @@ module.exports = {
     updateStatusMutiple: {
         auth: "required",
         params: {
-            taskIDs         : { type: "array" },
+            taskIDs         : { type: "array", optional: true },
             parentID        : { type: "string", optional: true },
             type            : { type: "number", optional: true }, // 1 việc con / 2 checklist
             option          : { type: "number", optional: true }, // 0-Update status, 1-Update user đã xem
