@@ -691,10 +691,10 @@ class Model extends BaseModel {
         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {} }) {
-            console.log({
-                parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel,
-                requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-                keyword, limit, lastestID, select, populates })
+            // console.log({
+            //     parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel,
+            //     requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
+            //     keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -799,6 +799,7 @@ class Model extends BaseModel {
                     conditionObj.$or = [
                         { name: regSearch },
                         { sign: regSearch },
+                        { storeSign: regSearch },
                     ]
                 }
 
@@ -826,7 +827,8 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                console.log({ conditionObj });
+                // console.log({ conditionObj });
+
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
