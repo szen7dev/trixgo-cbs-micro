@@ -1296,35 +1296,35 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Tìm kiếm công việc theo điều kiện nhanh, chậm
+                 * Quá hạn
                  */
-                if(isExpired && isExpired == 1){
-                    //Việc bình thường
-                    conditionObj.actualFinishTime = {
-                        $gt: new Date(),
-                        $exists: true,
-                        $ne: null
+                if(isExpired){
+                    // Đã quá hạn
+                    if(isExpired == 1) {
+                        conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
+                        conditionObj.actualFinishTime = {
+                            $lt: new Date()
+                        }
+                    }
+
+                    // Chưa quá hạn
+                    if(isExpired == 2) {
+                        conditionObj.actualFinishTime = {
+                            $gt: new Date()
+                        }
+                    }
+                }else{
+                    /**
+                     * Lấy những công việc từ ngày đến ngày
+                     * - Sẽ không cùng diễn ra với Lọc quá hạn
+                     */
+                    if(fromDate && toDate){
+                        conditionObj.actualFinishTime = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
                     }
                 }
-
-                if(isExpired && isExpired == 2){
-                    //Việc chậm: chưa hoàn thành và quá hạn
-                    conditionObj.status = { $ne: 3 }
-                    conditionObj.actualFinishTime = {
-                        $lt: new Date(),
-                        $exists: true,
-                        $ne: null
-                    }
-				}
-
-                // Lấy những công việc từ ngày đến ngày
-                if(fromDate && toDate){
-                    conditionObj.actualFinishTime = {
-                        $gte: new Date(fromDate), $lte: new Date(toDate),
-                        $exists: true,
-                        $ne: null
-                    }
-				}
 
                 // Lấy những việc nháp hoặc không phải việc nháp
                 if(draft && [0,1].includes(draft)){
@@ -1426,9 +1426,7 @@ class Model extends BaseModel {
                  */
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $lt: start,
-                        $exists: true,
-                        $ne: null
+                        $lt: start
                     }
                 }
 
@@ -1436,18 +1434,14 @@ class Model extends BaseModel {
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
                         $gte:  moment(start).startOf('day')._d,
-                        $lt: moment(addDate(7)).endOf('day')._d,
-                        $exists: true,
-                        $ne: null
+                        $lt: moment(addDate(7)).endOf('day')._d
                     }
                 }
 
                 // Tới hạn + 7 ngày tới
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
-                        $gte: addDate(7),
-                        $exists: true,
-                        $ne: null
+                        $gte: addDate(7)
                     }
                 }
 
@@ -1603,9 +1597,9 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID
     }) {
-        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
-        //     limit, lastestID, select, populates, userID})
+        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
+            limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1705,38 +1699,35 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Bộ lọc với 1 lựa chọn
+                 * Quá hạn
                  */
                 if(isExpired){
-                    // Việc bình thường
+                    // Đã quá hạn
                     if(isExpired == 1) {
+                        conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
                         conditionObj.actualFinishTime = {
-                            $gt: new Date(),
-                            $exists: true,
-                            $ne: null
+                            $lt: new Date()
                         }
                     }
 
-                    // Việc chậm
+                    // Chưa quá hạn
                     if(isExpired == 2) {
-                        conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
                         conditionObj.actualFinishTime = {
-                            $lt: new Date(),
-                            $exists: true,
-                            $ne: null
+                            $gt: new Date()
+                        }
+                    }
+                }else{
+                    /**
+                     * Lấy những công việc từ ngày đến ngày
+                     * - Sẽ không cùng diễn ra với Lọc quá hạn
+                     */
+                    if(fromDate && toDate){
+                        conditionObj.actualFinishTime = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
                         }
                     }
                 }
-
-                // Lấy những công việc từ ngày đến ngày
-                if(fromDate && toDate){
-                    conditionObj.actualFinishTime = {
-                        $exists: true,
-                        $ne: null,
-                        $gte: new Date(fromDate),
-                        $lte: new Date(toDate),
-                    }
-				}
 
                 // Tìm kiếm theo keyword
 				if(keyword){
@@ -1748,6 +1739,7 @@ class Model extends BaseModel {
                     //     { description  :  new RegExp(keyword, 'i') }
                     // ]
                 }
+                console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -1836,7 +1828,6 @@ class Model extends BaseModel {
      * Author: HiepNH
      */
     getAmountNotification({ userID, option }){
-        console.log({ userID, option })
         return new Promise(async resolve => {
             try {
                 /**
