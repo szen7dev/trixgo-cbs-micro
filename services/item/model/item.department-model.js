@@ -140,6 +140,20 @@ class Model extends BaseModel {
         receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
         numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
     }) {
+        console.log('++++++++++++++++++++++++++++++++++++')
+        console.log('======================Update thông tin')
+        console.log({
+            departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+            description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
+            pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
+            images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
+            realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
+            contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
+            contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
+            closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
+            receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
+            numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
+        })
         return new Promise(async resolve => {
             try {
                 let dataUpdate   = {};
@@ -151,6 +165,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Request params departmentID invalid" });
 
                 const infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
+                console.log(infoDepartment.members.length)
 
                 // KIỂM TRA SIGN VÀ NAME CÓ TỒN TẠI Ở 1 DỰ ÁN KHÁC CHƯA
                 if(sign || name){
@@ -175,7 +190,13 @@ class Model extends BaseModel {
                     dataUpdate.type = type;
                 }
 
+                /**
+                 * Thêm admin dự án
+                 */
                 if(checkObjectIDs(admins)){
+                    // if(Number(Number(infoDepartment.members.length) + Number(infoDepartment.admins.length)) > Number(infoDepartment.maxMembers))
+                    //     return resolve({ error: true, message: `Số lượng thành viên đã vượt ngưỡng hệ thống quy định` });
+
                     dataAddToSet.admins = admins;
                 }
 
@@ -183,7 +204,13 @@ class Model extends BaseModel {
                     dataPull.admins = adminsRemove;
                 }
 
+                /**
+                 * Thêm thành viên dự án
+                 */
                 if(checkObjectIDs(members)){
+                    // if(Number(Number(infoDepartment.members.length) + Number(infoDepartment.admins.length)) > Number(infoDepartment.maxMembers))
+                    //     return resolve({ error: true, message: `Số lượng thành viên đã vượt ngưỡng hệ thống quy định` });
+                        
                     dataAddToSet.members = members;
                 }
 
@@ -629,7 +656,6 @@ class Model extends BaseModel {
      * Code: F00401
      */
 
-
     /**
      * Name: Lấy thông tin dự án/phòng ban 
      * Author: Depv
@@ -692,15 +718,21 @@ class Model extends BaseModel {
      * Author: DePV 
      * Code  : F00402
      */
-    getList({ companyID, keyword, type, userID, isMember, isBudget, limit = 10, lastestID, select, populates={} }) {
+    getList({ companyID, keyword, type, userID, isMember, isBudget, limit = 20, lastestID, select, populates={} }) {
+        // console.log('==============Danh mục dự án=>dùng chung')
+        // console.log({ companyID, keyword, type, userID, isMember, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+                
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
                 let conditionObj  = {};
                 let sortBy;
-                let keys	      = ['createAt__-1', '_id__-1'];
+                let keys	      = ['modifyAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20
@@ -712,26 +744,21 @@ class Model extends BaseModel {
                     conditionObj.members = { $in: [userID] }
                 }
 
-                if(isBudget == 1){
+                // Lấy các dự án mà có budget > 0
+                if(isBudget && Number(isBudget) > 0){
                     conditionObj.budget = { $gt: 0 }
                 }
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                // Lấy các dự án của companyID
                 if(companyID && !checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
                 companyID && (conditionObj.company = companyID);
 
+                // Phân loại dự án, phòng ban
                 if(type){
                     conditionObj.type = +type;
                 }
-
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
                 //_____populate
                 if(populates && typeof populates === 'string'){
@@ -815,12 +842,25 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách dự án mà user được quyền truy cập (là member)
-     * Author: DePV 
-     * Code  : F00403
+     * Author: HiepNH 
+     * Code  : 1/9/2022
      */
-    getListByMembers({ companyID, keyword, type, userID, limit = 10, isBudget, unLimit, lastestID, select, populates={} }) {
+    getListByMembers({ companyID, keyword, type, userID, limit = 20, isBudget, unLimit, lastestID, select, populates={} }) {
+        console.log('==============Danh mục dự án mà user là member')
+        console.log({ companyID, keyword, type, userID, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * 1-Với dự án trong phân vùng => được quyền truy cập
+                 * 2-Với dự án ngoài phân vùng => phải là dự án trả phí
+                 * +++Nếu CĐT không trả phí => Ngắt kết nối Nhà thầu với dự án
+                 * +++Nhà thầu nào không trả phí => Ngắt nhà thầu đó ra khỏi dự án (Hệ thống xóa thành viên, giảm số lượng thành viên xuống)
+                 */
+
+                if(!checkObjectIDs(userID))
+                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -829,33 +869,30 @@ class Model extends BaseModel {
                 }
 
                 let sortBy;
-                let keys = ['createAt__-1', '_id__-1'];
+                let keys = ['modifyAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20;
                 }else{
                     limit = +limit
                 }
-
-                if(isBudget == 1){
+                
+                // Lấy các dự án mà có budget > 0
+                if(isBudget && Number(isBudget) > 0){
                     conditionObj.budget = { $gt: 0 }
                 }
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                // Lấy các dự án của companyID
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID
                 }
 
-                if(type && [1,2].includes(type)){
-                    conditionObj.type = type;
+                // console.log(type)
+                // console.log(+type)
+                // Phân loại dự án, phòng ban
+                if(type && [1,2].includes(Number(type))){
+                    conditionObj.type = +type;
                 }
-
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
                 //_____populate
                 if(populates && typeof populates === 'string'){
@@ -884,7 +921,12 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Sử dụng UnLimit để lấy mảng toàn bộ các phần tử, sử dụng cho phương thức $in tại các ứng dụng
+                console.log('===========>>>>>>>>>>>>>')
+                console.log(conditionObj)
+
+                /**
+                 * Sử dụng UnLimit để lấy mảng toàn bộ các phần tử, sử dụng cho phương thức $in tại các ứng dụng
+                 */
                 if(unLimit) {
                     const dataUnlimit = await ITEM__DEPARTMENT_COLL
                         .find(conditionObj)
