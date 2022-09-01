@@ -21,7 +21,7 @@ const {
 } = require('../../../tools/utils/utils');
 
 const stringUtils					            = require('../../../tools/utils/string_utils');
-const { addDate }					            = require('../../../tools/utils/time_utils');
+const { addDate, calculateExpireTime }          = require('../../../tools/utils/time_utils');
 const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { sendNoticeToMember }                    = require('../../../tools/mailer/module/notice_pcm_task');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
@@ -109,7 +109,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired,hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, select, populates, ctx }) {
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired,hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, isCloneTask, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -237,6 +237,7 @@ class Model extends BaseModel {
                 let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     userID: assigneeID, select: "_id company"
                 })
+
                 // companyOfAuthor
                 if(!infoAuthor.error){
                     dataInsert.companyOfAuthor = infoAuthor.data.company;
@@ -373,7 +374,7 @@ class Model extends BaseModel {
                 });
 
                 if(parentID && checkObjectIDs(parentID)){
-                    // Việc con
+                    // Cập nhật việc cha
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
                         $inc: { amountSubtask: 1 },
                         $addToSet: { news: authorID },
@@ -394,24 +395,34 @@ class Model extends BaseModel {
                     let languageKey         = '';
                     let dataSend 		    = { app: APP_KEYS.PCM_PLAN_TASK };
                     let taskID              = parentID;
-                    let isChecklist         = type === 2;
 
                     if(!parentID) {
                         taskID = infoAfterInsert._id;
                         webUrl = `/pcm/detail/${taskID}`;
                         languageKey = LANGUAGE_KEYS.CREATE_NEW_TASK;
                     } else {
-                        webUrl = `/pcm/detail/${taskID}#${isChecklist ? 'checklist' : 'childtask'}_${infoAfterInsert._id}`;
-                        languageKey = isChecklist ? LANGUAGE_KEYS.CREATE_CHECKLIST_PCM : LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
+                        webUrl = `/pcm/detail/${taskID}#${'childtask'}_${infoAfterInsert._id}`;
+                        languageKey = LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
                     }
 
                     let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+                    let { name: taskName, author, assignee, related, accessUsers } = infoTask;
+                    let arrReceiver = [];
 
-                    let { name: taskName, author, assignee, related, project, contract } = infoTask;
-                    related = related.map(userID => userID.toString());
+                     /**
+                     * 0: chính thức
+                     * 1: việc nháp
+                     */
+                    if(draft == 0) {
+                        if(!accessUsers || !accessUsers.length) {
+                            arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
+                        } else{
+                            related = related.map(userID => userID.toString());
 
-                    let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-                    let arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                            let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+                            arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                        }
+                    }
 
                     if(arrReceiver && arrReceiver.length) {
                         // CLOUD MSS
@@ -449,24 +460,24 @@ class Model extends BaseModel {
                         }
 
                         // INSERT NOTIFICATION
-                        await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                            content: name,
-                            receivers: arrReceiver,
-                            project: project?.toString(),
-                            contract: contract?.toString(),
-                            path: webUrl,
-                            languageKey,
-                            app: APP_KEYS.PCM_PLAN_TASK,
-                            mainColl: {
-                                kind: "pcm_plan_task",
-                                item: taskID
-                            },
-                            subColl: {
-                                kind: "pcm_plan_task",
-                                item: infoAfterInsert._id
-                            },
-                            type: 1 // InApp (Socket)
-                        })
+                        // await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        //     content: name,
+                        //     receivers: arrReceiver,
+                        //     project: project?.toString(),
+                        //     contract: contract?.toString(),
+                        //     path: webUrl,
+                        //     languageKey,
+                        //     app: APP_KEYS.PCM_PLAN_TASK,
+                        //     mainColl: {
+                        //         kind: "pcm_plan_task",
+                        //         item: taskID
+                        //     },
+                        //     subColl: {
+                        //         kind: "pcm_plan_task",
+                        //         item: infoAfterInsert._id
+                        //     },
+                        //     type: 1 // InApp (Socket)
+                        // })
 
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                             users: arrReceiver,
@@ -2814,22 +2825,98 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
+     * Func: Copy child task
+     * Date: 01/09/2022
+     */
+    cloneChildTask({ parentTask, listTasks, isDraftTask, callback = null }) {
+        return new Promise(async resolve => {
+            try {
+                if(!listTasks || !listTasks.length) {
+                    return resolve({
+                        results: [],
+                        errors: ['not found tasks']
+                    })
+                }
+
+                const { results, errors } = await PromisePool
+                    .for(listTasks)
+                    .withConcurrency(4)
+                    .process(async childTask => {
+                        delete childTask._id;
+
+                        // Thời gian bắt đầu task cha (1)
+                        let startTime = childTask.parent?.startTime;
+
+                        // Deadline task con (2)
+                        let expiredTime = childTask.expiredTime;
+
+                        // Tổng ngày từ startTime task cha -> deadline task con (3)
+                        let totalDayStartTimeToExpiredTime = calculateExpireTime(startTime, expiredTime, 'days');
+
+                        /**
+                         * Lấy startTime của task cha (new) + thêm (3)
+                         * => Deadline mới cho task con (new)
+                         */
+                        let newExpiredTime = moment(parentTask.startTime, "DD-MM-YYYY")
+                            .add(totalDayStartTimeToExpiredTime, 'days');
+
+                        const newChildTask = await PCM_PLAN_TASK_COLL.create({
+                            ...childTask,
+                            parent: parentTask._id,
+                            startTime: new Date(),
+                            actualStartTime: new Date(),
+                            expiredTime: new Date(newExpiredTime),
+                            actualFinishTime: new Date(newExpiredTime),
+                            draft: isDraftTask ? 1 : 0,
+                        })
+
+                        if(callback) {
+                            await callback(childTask, newChildTask);
+                        }
+
+                        return newChildTask;
+                    })
+
+                console.log({ results, errors })
+
+                return resolve({ results, errors });
+            } catch(error) {
+                return resolve({
+                    results: [],
+                    errors: [error.message]
+                });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
      * Func: Copy task
      * Date: 22/04/2022
+     * Updated: 01/09/2022 - MinhVH
      */
-    copyTask({ taskID, userID, companyOfUser }) {
+    copyTask({
+        taskID, name, projectID, groupID, assigneeID, relatedIDs,
+        authorAttachs, type, subtype, description, startTime, expiredHour,
+        expiredTime, contractID, isDraftTask, isCloneChildTask,
+        userID, bizfullname, ctx
+    }) {
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
-                    taskID: { value: taskID, isRequire: true },
-                    userID: { value: userID, isRequire: true },
-                    companyOfUser: { value: companyOfUser, isRequire: true },
+                    taskID          : { value: taskID, isRequire: true },
+                    projectID       : { value: projectID, isRequire: true },
+                    groupID         : { value: groupID, isRequire: true },
+                    assigneeID      : { value: assigneeID, isRequire: true },
+                    relatedIDs      : { value: relatedIDs, isRequire: false },
+                    contractID      : { value: contractID, isRequire: false },
+                    authorAttachs   : { value: authorAttachs, isRequire: false },
+                    userID          : { value: userID, isRequire: true },
                 });
                 if(validation.error) return resolve(validation);
 
                 const infoOldTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
-                    .select('company project group parent name related assignee companyOfAssignee')
                     .lean();
 
                 if(!infoOldTask) {
@@ -2841,25 +2928,61 @@ class Model extends BaseModel {
                     });
                 }
 
-                const { company, project, group, parent, name, related, assignee, companyOfAssignee } = infoOldTask;
+                const { amountoftime, parent } = infoOldTask;
 
-                const suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
-                const result = await this.insertData({
-                    suid,
-                    name: `Copy of ${name}`,
-                    draft: 1, // Việc nháp
-                    companyOfAuthor: companyOfUser,
-                    companyOfAssignee,
-                    author: userID,
-                    assignee,
-                    related,
-                    company,
-                    project,
-                    group,
-                    parent
-                });
+                // Clone task
+                const infoAfterCloneTask = await this.insert({
+                    name,
+                    description,
+                    projectID,
+                    groupID,
+                    contractID,
+                    authorID: userID,
+                    assigneeID,
+                    relatedIDs,
+                    parentID: parent,
+                    authorAttachs,
+                    type,
+                    subType: subtype,
+                    startTime,
+                    expiredHour,
+                    expiredTime,
+                    draft: isDraftTask ? 1 : 0,
+                    amountoftime,
+                    bizfullname,
+                    ctx
+                })
+                if(infoAfterCloneTask.error) return resolve(infoAfterCloneTask);
 
-                if(!result) {
+                if(isCloneChildTask) {
+                    const listChildsOfTask = await PCM_PLAN_TASK_COLL
+                        .find({ parent: taskID })
+                        .populate('parent', 'startTime expiredTime')
+                        .lean();
+
+                    // Clone child task (level 2)
+                    await cloneChildTask({
+                        parentTask: infoAfterCloneTask.data,
+                        listTasks: listChildsOfTask,
+                        isDraftTask,
+                        callback: async (childTask, newChildTask) => {
+
+                            // Clone grand child task (level 3)
+                            const listGrandChildOfTask = await PCM_PLAN_TASK_COLL
+                                .find({ parent: childTask._id })
+                                .populate('parent', 'startTime expiredTime')
+                                .lean();
+
+                            await cloneChildTask({
+                                parentTask: newChildTask,
+                                listTasks: listGrandChildOfTask,
+                                isDraftTask
+                            })
+                        }
+                    })
+                }
+
+                if(!infoAfterCloneTask) {
                     return resolve({
                         error: true,
                         message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
@@ -2868,7 +2991,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                return resolve({ error: false, data: result, status: 200 });
+                return resolve({ error: false, data: infoAfterCloneTask, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

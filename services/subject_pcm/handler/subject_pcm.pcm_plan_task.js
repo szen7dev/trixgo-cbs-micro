@@ -591,16 +591,38 @@ module.exports = {
     copyTask: {
         auth: 'required',
         params: {
-            taskID: { type: 'string' }
+            taskID           : { type: "string" },
+            name             : { type: "string" },
+            projectID        : { type: "string" },
+            groupID          : { type: "string" },
+            assigneeID       : { type: "string" },
+            relatedIDs       : { type: "array", optional: true },
+            authorAttachs    : { type: "array", optional: true },
+            type             : { type: "number", optional: true },
+            subtype          : { type: "number", optional: true },
+            description      : { type: "string", optional: true },
+            startTime        : { type: "string", optional: true },
+            expiredHour      : { type: "string", optional: true },
+            expiredTime      : { type: "string", optional: true },
+            contractID       : { type: "string", optional: true },
+            isDraftTask      : { type: "boolean", optional: true },
+            isCloneChildTask : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID, company } = ctx.meta.infoUser;
-                const { taskID } = ctx.params;
+                const { _id: userID, company, bizfullname } = ctx.meta.infoUser;
+                const {
+                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
+                    authorAttachs, type, subtype, description, startTime, expiredHour,
+                    expiredTime, contractID, isDraftTask, isCloneChildTask
+                } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.copyTask({
-                    taskID, userID, companyOfUser: company._id
+                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
+                    authorAttachs, type, subtype, description, startTime, expiredHour,
+                    expiredTime, contractID, isDraftTask, isCloneChildTask,
+                    userID, companyOfUser: company._id, bizfullname, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

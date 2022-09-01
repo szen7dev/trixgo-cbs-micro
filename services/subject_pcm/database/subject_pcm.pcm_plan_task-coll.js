@@ -317,15 +317,15 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * THÔNG TIN TƯƠNG TÁC
      */
     // Lưu lại tin nhắn đang soạn
-    responsesTyping : [{
-        user:  {
-            type: Schema.Types.ObjectId,
-            ref: 'user'
-        },
-        content : {
-            type : String
-        }
-    }],
+    // responsesTyping : [{
+    //     user:  {
+    //         type: Schema.Types.ObjectId,
+    //         ref: 'user'
+    //     },
+    //     content : {
+    //         type : String
+    //     }
+    // }],
     //_________Những user đánh dấu quan tâm/start/bookmark
     flags: [{
         type: Schema.Types.ObjectId,
