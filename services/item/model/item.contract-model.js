@@ -986,6 +986,9 @@ class Model extends BaseModel {
                     ]
                 }
 
+                // console.log('==============>>>>>>>>>>>>>')
+                // console.log(conditionObj)
+
                 /**
                  * Purpose: Sử dụng trong export excel (hoặc theo bộ lọc)
                  * Function: exportContract (model)

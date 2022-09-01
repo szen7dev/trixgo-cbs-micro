@@ -1225,6 +1225,12 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 20, unlimit, lastestID, select, populates = {}
     }) {
+        // console.log({
+        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+        //     keyword, limit, unlimit, lastestID, select, populates
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1327,7 +1333,7 @@ class Model extends BaseModel {
                 }
 
                 // Lấy những việc nháp hoặc không phải việc nháp
-                if(draft && [0,1].includes(draft)){
+                if(draft){
                     conditionObj.draft = draft;
                 }
 
@@ -1504,7 +1510,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 // Tìm kiếm theo keyword
 				if(keyword){
@@ -1597,9 +1603,9 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID
     }) {
-        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
-            limit, lastestID, select, populates, userID})
+        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
+        //     limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1739,7 +1745,7 @@ class Model extends BaseModel {
                     //     { description  :  new RegExp(keyword, 'i') }
                     // ]
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 				if(lastestID && checkObjectIDs(lastestID)){
