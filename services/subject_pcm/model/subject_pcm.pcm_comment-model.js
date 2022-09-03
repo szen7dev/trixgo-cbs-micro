@@ -184,7 +184,7 @@ class Model extends BaseModel {
 	 * Date: 22/02/2022
 	 */
     insertCommentTask({
-        taskID, parentID, authorID, type, content, description, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
+        taskID, parentID, authorID, type, content, rawContent, description, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
     }) {
         return new Promise(async resolve => {
             try {
@@ -316,7 +316,7 @@ class Model extends BaseModel {
 
                 if(content) {
                     dataInsert.content = content;
-                    dataInsert.contentcv = stringUtils.removeAccents(content);
+                    dataInsert.contentcv = stringUtils.removeAccents(rawContent);
                 }
 
                 if(description) {
@@ -904,14 +904,14 @@ class Model extends BaseModel {
 	 * Date: 18/05/2022
 	 */
     insert({
-        taskID, projectID, parentID, authorID, type, content, files, images, receiversID,
+        taskID, projectID, parentID, authorID, type, content, rawContent, files, images, receiversID,
         select, populates, bizfullname, isOfficial, companyOfAuthor, switchType = this.SWITCH_TYPE.TASK, ctx
     }) {
         return new Promise(async (resolve) => {
             switch (switchType) {
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.insertCommentTask({
-                        taskID, parentID, authorID, type, content, files, images, receiversID, select, populates, bizfullname, isOfficial, companyOfAuthor, ctx
+                        taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, isOfficial, companyOfAuthor, ctx
                     }))
                     break;
                 case this.SWITCH_TYPE.PROJECT:

@@ -19,6 +19,7 @@ module.exports = {
         auth: "required",
         params: {
 			content    : { type: "string", optional: true },
+			rawContent : { type: "string", optional: true },
             taskID     : { type: "string", optional: true },
             type       : { type: "number", optional: true },
             switchType : { type: "string", optional: true },
@@ -35,10 +36,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname, company } = ctx.meta.infoUser;
-                const { content, taskID, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params;
+                const { content, rawContent, taskID, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, projectID, parentID, authorID, type, content, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname, companyOfAuthor: company._id, ctx
+					taskID, projectID, parentID, authorID, type, content, rawContent, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname, companyOfAuthor: company._id, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

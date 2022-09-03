@@ -622,3 +622,75 @@ const convertAsync = filesPcm.map(f => {
 })
 
 Promise.all(convertAsync)
+
+
+/**
+* ============================ ************************* ==============================
+* ============================ 	 UPDATE ACCESS_USERS  	 ==============================
+* ============================ ************************* ==============================
+*/
+const listTasks = db.pcm_plan_tasks.find({}).projection({}).toArray()
+
+const arrPromise = listTasks.map(task => {
+    const { _id: taskId, related, author, assignee, accessUsers } = task;
+
+    if(!accessUsers || !accessUsers.length) {
+        const accessUsers = [author, assignee, ...related];
+
+        db.pcm_plan_tasks.updateOne({ _id: ObjectId(taskId) }, {
+            $set: {
+                accessUsers
+            }
+        })
+    }
+})
+
+Promise.all(arrPromise)
+
+
+/**
+* ================ ******************************************* ====================
+* ================ 	 UPDATE COMPANY_OF_AUTHOR FOR PCM_COMMENT  ====================
+* ================ ******************************************* ====================
+*/
+const listComments = db.pcm_comments.find({}).projection({}).toArray()
+
+const arrPromise = listComments.map(comment => {
+    const { companyOfAuthor } = comment;
+
+    const infoAuthor = db.users.findOne({ _id: ObjectId(comment.author) });
+
+    if(infoAuthor && !companyOfAuthor) {
+        db.pcm_comments.updateOne({ _id: ObjectId(comment._id) }, {
+            $set: {
+                companyOfAuthor: infoAuthor.company
+            }
+        })
+    }
+})
+
+Promise.all(arrPromise)
+
+
+/**
+* ================ **************************************** ====================
+* ================ 	 UPDATE COMPANY_OF_AUTHOR FOR PCM_FILE  ====================
+* ================ **************************************** ====================
+*/
+const listFile = db.pcm_files.find({}).projection({}).toArray()
+
+const arrPromise = listFile.map(file => {
+    const { companyOfAuthor } = file;
+
+    const infoAuthor = db.users.findOne({ _id: ObjectId(file.author) });
+
+    if(infoAuthor && !companyOfAuthor) {
+        db.pcm_files.updateOne({ _id: ObjectId(file._id) }, {
+            $set: {
+                companyOfAuthor: infoAuthor.company
+            }
+        })
+    }
+})
+
+Promise.all(arrPromise)

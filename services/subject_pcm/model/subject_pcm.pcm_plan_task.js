@@ -2967,7 +2967,7 @@ class Model extends BaseModel {
                         .lean();
 
                     // Clone child task (level 2)
-                    await cloneChildTask({
+                    await this.cloneChildTask({
                         parentTask: infoAfterCloneTask.data,
                         listTasks: listChildsOfTask,
                         isDraftTask,
@@ -2979,7 +2979,7 @@ class Model extends BaseModel {
                                 .populate('parent', 'startTime expiredTime')
                                 .lean();
 
-                            await cloneChildTask({
+                            await this.cloneChildTask({
                                 parentTask: newChildTask,
                                 listTasks: listGrandChildOfTask,
                                 isDraftTask
