@@ -653,44 +653,55 @@ Promise.all(arrPromise)
 * ================ 	 UPDATE COMPANY_OF_AUTHOR FOR PCM_COMMENT  ====================
 * ================ ******************************************* ====================
 */
-const listComments = db.pcm_comments.find({}).projection({}).toArray()
+const listAuthors = db.pcm_comments.aggregate([
+    {
+        $group: {
+            _id: "$author"
+        }
+    },
+])
 
-const arrPromise = listComments.map(comment => {
-    const { companyOfAuthor } = comment;
+const arrPromise = listAuthors.map(({ _id: userId }) => {
+    const infoUser = db.users.findOne({ _id: userId }, { company: 1 })
 
-    const infoAuthor = db.users.findOne({ _id: ObjectId(comment.author) });
-
-    if(infoAuthor && !companyOfAuthor) {
-        db.pcm_comments.updateOne({ _id: ObjectId(comment._id) }, {
+    if(infoUser) {
+        db.pcm_comments.updateMany({
+            author: userId
+        }, {
             $set: {
-                companyOfAuthor: infoAuthor.company
+                companyOfAuthor: infoUser.company
             }
         })
     }
 })
 
-Promise.all(arrPromise)
-
+Promise.all(arrPromise);
 
 /**
 * ================ **************************************** ====================
 * ================ 	 UPDATE COMPANY_OF_AUTHOR FOR PCM_FILE  ====================
 * ================ **************************************** ====================
 */
-const listFile = db.pcm_files.find({}).projection({}).toArray()
+const listAuthors = db.pcm_files.aggregate([
+    {
+        $group: {
+            _id: "$author"
+        }
+    },
+])
 
-const arrPromise = listFile.map(file => {
-    const { companyOfAuthor } = file;
+const arrPromise = listAuthors.map(({ _id: userId }) => {
+    const infoUser = db.users.findOne({ _id: userId }, { company: 1 })
 
-    const infoAuthor = db.users.findOne({ _id: ObjectId(file.author) });
-
-    if(infoAuthor && !companyOfAuthor) {
-        db.pcm_files.updateOne({ _id: ObjectId(file._id) }, {
+    if(infoUser) {
+        db.pcm_files.updateMany({
+            author: userId
+        }, {
             $set: {
-                companyOfAuthor: infoAuthor.company
+                companyOfAuthor: infoUser.company
             }
         })
     }
 })
 
-Promise.all(arrPromise)
+Promise.all(arrPromise);

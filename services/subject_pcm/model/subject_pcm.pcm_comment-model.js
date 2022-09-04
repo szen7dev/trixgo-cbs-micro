@@ -562,9 +562,9 @@ class Model extends BaseModel {
                 }
 
                 if(taskSign) {
-                    titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
+                    titleMSS = `${taskSign}.${taskName}`;
                 } else{
-                    titleMSS = `CÔNG VIỆC: ${taskName}`;
+                    titleMSS = `${taskName}`;
                 }
 
                 if(arrReceiver && arrReceiver.length) {

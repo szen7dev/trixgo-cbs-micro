@@ -414,7 +414,7 @@ class Model extends BaseModel {
                      * 1: việc nháp
                      */
                     if(draft == 0) {
-                        if(!accessUsers || !accessUsers.length) {
+                        if(accessUsers && accessUsers.length) {
                             arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
                         } else{
                             related = related.map(userID => userID.toString());
