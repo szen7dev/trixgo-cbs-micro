@@ -114,6 +114,10 @@ class Model extends BaseModel {
         companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
         limit = 20, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
     }) {
+        // console.log({
+        //     companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
+        //     limit, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**

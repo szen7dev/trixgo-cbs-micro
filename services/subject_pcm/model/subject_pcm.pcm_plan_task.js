@@ -1236,24 +1236,17 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 20, unlimit, lastestID, select, populates = {}
     }) {
-        // console.log({
-        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        //     keyword, limit, unlimit, lastestID, select, populates
-        // })
+        console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
+        console.log({
+            projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+            subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+            userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+            keyword, limit, unlimit, lastestID, select, populates
+        })
         return new Promise(async (resolve) => {
             try {
                 /**
                  * BA
-                 * Thầu và mua sắm (http://localhost:3000/pcm/bidding)
-                 * assigneeID = userID, subtype = 4 (userID là người thực hiện)
-                 *
-                 * Báo cáo, giao nộp (http://localhost:3000/pcm/delivery)
-                 * authorID = userID, subtype = 9 (userID là người tạo việc)
-                 *
-                 * Thanh toán (http://subtype:3000/pcm/payment)
-                 * authorID = userID, subtype = 3 (userID là người tạo việc)
                  */
 
                 if(Number(limit) > 50){
@@ -1270,8 +1263,6 @@ class Model extends BaseModel {
                 // Các việc chưa hoàn thành
                 if(statusNe){
                     conditionObj.status = { $ne: statusNe };
-                }else{
-                    conditionObj.status = 3 // Việc đã hoàn thành
                 }
 
                 let sortBy;
@@ -1621,14 +1612,6 @@ class Model extends BaseModel {
             try {
                 /**
                  * BA
-                 * Thầu và mua sắm (http://localhost:3000/pcm/bidding)
-                 * assigneesID = [userID], subtypes = [4] (userID là người thực hiện)
-                 *
-                 * Báo cáo, giao nộp (http://localhost:3000/pcm/delivery)
-                 * authorsID = [userID], subtypes = [9] (userID là người tạo việc)
-                 *
-                 * Thanh toán (http://localhost:3000/pcm/payment)
-                 * authorsID = [userID], subtypes = [3] (userID là người tạo việc)
                  */
 
                 /**
