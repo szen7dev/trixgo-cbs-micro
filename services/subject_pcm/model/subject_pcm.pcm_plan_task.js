@@ -109,7 +109,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired,hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, isCloneTask, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, select, populates, ctx }) {
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired,hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, isCloneTask, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -488,6 +488,20 @@ class Model extends BaseModel {
                             env: ENV_DEVICE_WEB_CBS
                         });
                     }
+                }
+
+                /**
+                 * Gửi mail
+                 */
+                if(isNotiEmail) {
+                    await this.sendEmailToMembersInTask({
+                        taskID: infoAfterInsert._id,
+                        title: 'CREATE_TASK',
+                        notice: '',
+                        sender: senderMail,
+                        receivers: [infoAfterInsert.assignee, ...infoAfterInsert.related],
+                        ctx
+                    })
                 }
 
                 // Update amountTasks cho group;
@@ -2099,7 +2113,7 @@ class Model extends BaseModel {
                     const { data: users } = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
                         { arrayID: JSON.stringify([...receivers, userID]), select: "_id email", isLoadAll: true }
                     );
-                    console.log({ users, emails })
+                    // console.log({ users, emails })
 
                     if(users.length) {
                         mailsUser = users.map(item => item.email);
