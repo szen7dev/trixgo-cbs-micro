@@ -1619,9 +1619,10 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID
     }) {
-        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
-        //     limit, lastestID, select, populates, userID})
+        console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
+        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
+            limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1753,7 +1754,8 @@ class Model extends BaseModel {
                     //     { description  :  new RegExp(keyword, 'i') }
                     // ]
                 }
-                // console.log(conditionObj)
+                console.log('========================')
+                console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 				if(lastestID && checkObjectIDs(lastestID)){
