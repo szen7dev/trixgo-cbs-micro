@@ -1250,13 +1250,13 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 20, unlimit, lastestID, select, populates = {}
     }) {
-        console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
-        console.log({
-            projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-            subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-            userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-            keyword, limit, unlimit, lastestID, select, populates
-        })
+        // console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
+        // console.log({
+        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+        //     keyword, limit, unlimit, lastestID, select, populates
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1302,14 +1302,14 @@ class Model extends BaseModel {
                 end.setHours(23,59,59,999);
 
                 //__________Danh sách các nhóm dữ liệu mà userID là members
-                // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
                 // Lấy công việc mà user được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
                     { assignee: userID },
                     { related: { $in: [userID] }},
-                    // { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
+                    { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
                 ]
 
                 // Tìm kiếm nếu có trạng thái công việc
@@ -1526,7 +1526,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // Tìm kiếm theo keyword
 				if(keyword){
@@ -1619,10 +1619,10 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID
     }) {
-        console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
-        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
-            limit, lastestID, select, populates, userID})
+        // console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
+        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
+        //     limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1677,14 +1677,14 @@ class Model extends BaseModel {
                  * Kiểm soát quyền truy cập Task
                  */
                 // Lấy danh sách các nhóm dữ liệu mà userID là members
-                // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
                 // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
                     { assignee: userID },
                     { related: { $in: [userID] }},
-                    // { group: { $in: listGroups.map(item => item._id) }},
+                    { group: { $in: listGroups.map(item => item._id) }},
                 ]
 
                 /**
@@ -1754,8 +1754,8 @@ class Model extends BaseModel {
                     //     { description  :  new RegExp(keyword, 'i') }
                     // ]
                 }
-                console.log('========================')
-                console.log(conditionObj)
+                // console.log('========================')
+                // console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 				if(lastestID && checkObjectIDs(lastestID)){
