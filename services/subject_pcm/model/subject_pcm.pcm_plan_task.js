@@ -201,7 +201,7 @@ class Model extends BaseModel {
                     type,
                 }
 
-                console.log({ expiredTime })
+                // console.log({ expiredTime, expiredHour })
 
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
@@ -445,7 +445,7 @@ class Model extends BaseModel {
                                 },
                             };
                             titleMSS        = taskName;
-                            descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
+                            descriptionMSS  = `${bizfullname} đã tạo 1 việc con cho bạn`;
                         } else {
                             dataSend = {
                                 ...dataSend,
@@ -1250,13 +1250,13 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 20, unlimit, lastestID, select, populates = {}
     }) {
-        console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
-        console.log({
-            projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-            subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-            userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-            keyword, limit, unlimit, lastestID, select, populates
-        })
+        // console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
+        // console.log({
+        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+        //     keyword, limit, unlimit, lastestID, select, populates
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1526,7 +1526,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // Tìm kiếm theo keyword
 				if(keyword){
@@ -2845,7 +2845,7 @@ class Model extends BaseModel {
                     .for(listTasks)
                     .withConcurrency(4)
                     .process(async childTask => {
-                        delete childTask._id;
+                        const childTaskID = childTask._id;
 
                         // Thời gian bắt đầu task cha (1)
                         let startTime = childTask.parent?.startTime;
@@ -2863,8 +2863,12 @@ class Model extends BaseModel {
                         let newExpiredTime = moment(parentTask.startTime, "DD-MM-YYYY")
                             .add(totalDayStartTimeToExpiredTime, 'days');
 
+                        let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+
+                        delete childTask._id;
                         const newChildTask = await PCM_PLAN_TASK_COLL.create({
                             ...childTask,
+                            suid,
                             parent: parentTask._id,
                             startTime: new Date(),
                             actualStartTime: new Date(),
@@ -2874,13 +2878,11 @@ class Model extends BaseModel {
                         })
 
                         if(callback) {
-                            await callback(childTask, newChildTask);
+                            await callback(childTaskID, newChildTask);
                         }
 
                         return newChildTask;
                     })
-
-                console.log({ results, errors })
 
                 return resolve({ results, errors });
             } catch(error) {
@@ -2968,11 +2970,11 @@ class Model extends BaseModel {
                         parentTask: infoAfterCloneTask.data,
                         listTasks: listChildsOfTask,
                         isDraftTask,
-                        callback: async (childTask, newChildTask) => {
+                        callback: async (childTaskID, newChildTask) => {
 
                             // Clone grand child task (level 3)
                             const listGrandChildOfTask = await PCM_PLAN_TASK_COLL
-                                .find({ parent: childTask._id })
+                                .find({ parent: childTaskID })
                                 .populate('parent', 'startTime expiredTime')
                                 .lean();
 
@@ -2985,16 +2987,7 @@ class Model extends BaseModel {
                     })
                 }
 
-                if(!infoAfterCloneTask) {
-                    return resolve({
-                        error: true,
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
-                        keyError: 'error_occurred',
-                        status: 422
-                    });
-                }
-
-                return resolve({ error: false, data: infoAfterCloneTask, status: 200 });
+                return resolve({ error: false, data: infoAfterCloneTask?.data, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
