@@ -1248,7 +1248,7 @@ class Model extends BaseModel {
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 20, unlimit, lastestID, select, populates = {}
+        keyword, limit = 50, unlimit, lastestID, select, populates = {}
     }) {
         // console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
         // console.log({
@@ -1617,12 +1617,12 @@ class Model extends BaseModel {
     getListByFilter({
         fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword, unlimited,
-        limit = 20, lastestID, select, populates, userID
+        limit = 50, lastestID, select, populates, userID
     }) {
-        // console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
-        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
-        //     limit, lastestID, select, populates, userID})
+        console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
+        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
+            limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**

@@ -2018,8 +2018,11 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.content = new RegExp(keyword, 'i');
+                    conditionObj.
+                    content = new RegExp(keyword, 'i');
                 }
+
+                // console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 
