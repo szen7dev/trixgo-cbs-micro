@@ -370,7 +370,7 @@ module.exports = {
      * Author: HiepNH
      * Code  : 7/9/2022
      */
-     getListByFilter: {
+    getListByFilter: {
         auth: 'required',
         params: {
             fromDate            : { type: 'string', optional: true },

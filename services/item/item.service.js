@@ -107,6 +107,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTACT_UPDATE] 						: ITEM__CONTACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_OF_SYSTEM] 			: ITEM__CONTACT_HANDLER.getListOfSystem,
+		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_ACCESS_BY_CONTRACT] 	: ITEM__CONTACT_HANDLER.getListAccessByContract,
 		[CF_ACTIONS_ITEM.CONTACT_EXPORT] 						: ITEM__CONTACT_HANDLER.exportHuman,
 
 		//==========================================  WAREHOUSE  =================================

@@ -43,6 +43,7 @@ const CF_ROUTINGS_ITEM = {
     // ================================CONTACT==========================================//
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,
     CONTACTS_GET_LIST_OF_SYSTEM                : `${BASE_ROUTE}${CONTACT}/contact-of-system`,
+    CONTACTS_GET_LIST_ACCESS_BY_CONTRACT       : `${BASE_ROUTE}${CONTACT}/list-access-by-contract`,
     CONTACTS_EXPORT                            : `${BASE_ROUTE}${CONTACT}/export-contact`,
 
     // ================================WAREHOUSE=======================================//
