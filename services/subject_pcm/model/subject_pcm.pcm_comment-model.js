@@ -1874,7 +1874,7 @@ class Model extends BaseModel {
 	 * Date: 19/8/2022
 	 */
 	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 20, unlimit, lastestID, select, populates = {} }){
-        // console.log({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
+        console.log({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
 			try {
                 /**
@@ -1909,22 +1909,22 @@ class Model extends BaseModel {
 
                 // Lấy các chủ đề mà user được quyền truy cập (members của group)
                 if(isGroup && isGroup == 1){
-                    // //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                    // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                    // // Lấy công việc mà mình được quyền truy cập
-                    // conditionSubjectObj.$or = [
-                    //     { author: userID },
-                    //     { assignee: userID },
-                    //     { related: { $in: [userID] }},
-                    //     { group: { $in: listGroups.map(item => item._id) }},
-                    // ]
-
+                    // Lấy công việc mà mình được quyền truy cập
                     conditionSubjectObj.$or = [
                         { author: userID },
                         { assignee: userID },
                         { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
                     ]
+
+                    // conditionSubjectObj.$or = [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    //     { related: { $in: [userID] }},
+                    // ]
                 }else{
                     conditionSubjectObj.$or = [
                         { author: userID },
