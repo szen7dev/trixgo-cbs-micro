@@ -1542,11 +1542,11 @@ class Model extends BaseModel {
         taskID, contractID, projectID, parentID, isHaveImage, type, official,
         limit = 10, lastestID, sortKey, select, populates, authorID, isGetReaction = 'true', switchType
     }) {
-        console.log('==============********************')
-        console.log({
-            taskID, contractID, projectID, parentID, isHaveImage, type, official,
-            limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
-        })
+        // console.log('==============********************')
+        // console.log({
+        //     taskID, contractID, projectID, parentID, isHaveImage, type, official,
+        //     limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1588,14 +1588,11 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+                //______Lấy phản hồi chính thức
                 if(official === 'true') {
                     conditionObj.official = true;
                 }
+                // console.log(conditionObj)
 
                 if(taskID){
                     if(!checkObjectIDs([taskID])) {
@@ -1609,16 +1606,26 @@ class Model extends BaseModel {
 
                     let infoTask = await PCM_PLAN_TASK_COLL
                         .findById(taskID)
-                        .select('subtype openedStatus assignee')
+                        .select('subtype openedStatus assignee related')
                         .lean();
 
-                    // Áp dụng cho bidding task, không lấy response official khi chưa đủ người mở thầu
-                    // Không áp dụng đối với người được giao việc
-                    if(infoTask.subtype === 4 &&
-                        infoTask?.openedStatus === 0 &&
-                        authorID !== infoTask.assignee?.toString()
-                    ) {
-                        conditionObj.official = false;
+                    /**
+                     * Xét riêng với công việc Thầu và mua sắm infoTask.subtype === 4
+                     * - Không lấy response official khi chưa đủ người mở thầu
+                     * - Không áp dụng đối với người Tạo việc và Người liên quan
+                     */
+                    if(infoTask.subtype === 4 && infoTask?.openedStatus === 0) {
+                        let relatedArr = infoTask.related.map(item => item.toString());
+                        // console.log(relatedArr)
+
+                        // console.log(authorID !== infoTask.assignee?.toString())
+                        // console.log(relatedArr.includes(authorID))
+
+                        if(authorID !== infoTask.assignee?.toString() || relatedArr.includes(authorID)){
+                            conditionObj.official = false;
+                        }
+
+                        // console.log(conditionObj)
                     }
 
 					conditionObj.task = taskID;
@@ -1656,7 +1663,7 @@ class Model extends BaseModel {
                 if(switchType === this.SWITCH_TYPE.PROJECT) {
                     conditionObj.task = { $exists: false };
                 }
-                console.log({ conditionObj, type })
+                // console.log({ conditionObj, type })
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){

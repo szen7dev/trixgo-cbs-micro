@@ -418,7 +418,7 @@ class Model extends BaseModel {
                 }
 
                 //__________Danh sách các nhóm dữ liệu mà userID là members
-                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                let listGroups = await PCM_PLAN_GROUP__COLL.find({ members: { $in: [userID]} })
 
                 // Danh sách Task mà user được quyền truy cập
                 conditionObjTask.$or = [

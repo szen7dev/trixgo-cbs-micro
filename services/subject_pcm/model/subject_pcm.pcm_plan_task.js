@@ -200,7 +200,6 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type,
                 }
-
                 console.log({ expiredTime })
 
                 if(expiredTime) {
