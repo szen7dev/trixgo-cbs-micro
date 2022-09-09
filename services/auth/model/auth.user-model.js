@@ -104,7 +104,7 @@ class Model extends BaseModel {
                 }
                 if(fullname) {
                     dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
-                    // dataInsert.bizfullname = `${fullname}-${infoCompany.sign}`;
+                    dataInsert.bizfullname = `${fullname}-${infoCompany.sign}`;
                     // dataInsert.fullnamecv = ham(`${fullname}-${infoCompany.sign}`); // Viết trong utils
                 }
 
