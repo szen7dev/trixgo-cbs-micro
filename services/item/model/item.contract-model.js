@@ -1325,6 +1325,13 @@ class Model extends BaseModel {
                 ontimes && ontimes.length                   && (conditionObj.ontime = { $in: ontimes });
                 onbudgets && onbudgets.length               && (conditionObj.onbudget = { $in: onbudgets });
 
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+                }
+
                 /**
                  * Hợp đồng của công ty hoặc theo dự án
                  */

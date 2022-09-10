@@ -1225,13 +1225,13 @@ class Model extends BaseModel {
                 }
 
                 if(option && option == 1){
-                    console.log('===========Bên mua================')
+                    // console.log('===========Bên mua================')
                     conditionObj._id = {$in: listContractAccess.map(item=>item.buyerInfo)}
                 }
 
                 if(option && option == 2){
                     console.log('===========Bên bán================')
-                    conditionObj._id = {$in: listContractAccess.map(item=>item.sellerInfo)}
+                    // conditionObj._id = {$in: listContractAccess.map(item=>item.sellerInfo)}
                 }
 
                 if(keyword){
@@ -1243,7 +1243,7 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
                 
                 let conditionObjOrg = { ...conditionObj };
 
