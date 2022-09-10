@@ -43,6 +43,8 @@ class Model extends BaseModel {
     
     // implement by: KHANHNEY 
     register({ email, fullname, level, department, position, companyID, platform }) {
+        console.log('=================Dang Ky Tai Khoan')
+        console.log({ email, fullname, level, department, position, companyID, platform })
         return new Promise(async resolve => {
             try {
                 /**
@@ -697,7 +699,6 @@ class Model extends BaseModel {
         })
     }
 
-
 	// implement by: MINHVH  
 	getListUserWithCondition({ condition, select, filter = {} }) {
         return new Promise(async (resolve) => {
@@ -1018,6 +1019,8 @@ class Model extends BaseModel {
 	 * Date: 03/03/2022
 	 */
     insert({ email, fullname, level, departmentID, positionID, companyID }) {
+        console.log('====================>>>>>>>>>>>>>>>>>>>>')
+        console.log({ email, fullname, level, departmentID, positionID, companyID })
         return new Promise(async resolve => {
             try {
                 if(!email || !fullname) {
