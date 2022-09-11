@@ -45,6 +45,7 @@ const CF_ROUTINGS_CMCS = {
 
     // ================================CONTRACT BILL ITEM============================================//
     CONTRACT_BILL_ITEM                                      : `${BASE_ROUTE}${CONTRACT_BILL_ITEM}`,
+    CONTRACT_BILL_ITEM_UPDATE_VALUE                         : `${BASE_ROUTE}${CONTRACT_BILL_ITEM}/update-value`,
 
     // ================================CONTRACT BILL ITEM============================================//
     CONTRACT_BILL_GROUP                                     : `${BASE_ROUTE}${CONTRACT_BILL_GROUP}`,

@@ -70,6 +70,7 @@ const CF_ACTIONS_CMCS = {
     CONTRACT_BILL_ITEM_UPDATE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_ITEM}_UPDATE`,
     CONTRACT_BILL_ITEM_REMOVE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_ITEM}_REMOVE`,
     CONTRACT_BILL_ITEM_GET_INFO_AND_GET_LIST                          : `${BASE_ACTIONS}_${CONTRACT_BILL_ITEM}_GET_INFO_AND_GET_LIST`,
+    CONTRACT_BILL_ITEM_UPDATE_VALUE                                   : `${BASE_ACTIONS}_${CONTRACT_BILL_ITEM}_UPDATE_VALUE`,
 
     /**
     * CONTRACT_BILL_GROUP
