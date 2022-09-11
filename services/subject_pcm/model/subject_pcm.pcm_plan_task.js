@@ -1728,9 +1728,12 @@ class Model extends BaseModel {
                 companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
 
                 // Chỉ lấy task cha hoặc lấy tất cả
-                // if(isParent && isParent == 1){
-                //     conditionObj.parent = { $exists: false };
-                // }
+                if(isParent && isParent == 1){
+                    conditionObj.parent = { $exists: false };
+                }
+                if(isParent && isParent == 2){
+                    conditionObj.parent = { $exists: true };
+                }
 
                 // Chưa xem (user nắm trong mảng new)
                 if(read && read == 1){
