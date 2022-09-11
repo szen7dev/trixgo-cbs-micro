@@ -7,7 +7,13 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 /**
  * import inter-coll, exter-coll
  */
-const CMCS__CONTRACT_BILL_JOB_COLL           = require('../database/cmcs.contract_bill_job-coll');
+ const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_production-coll');
+ const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
+ const CMCS__CONTRACT_BILL_ITEM_COLL     = require('../database/cmcs.contract_bill_item-coll');
+ const CMCS__CONTRACT_BILL_GROUP_COLL    = require('../database/cmcs.contract_bill_group-coll');
+ const CMCS__CONTRACT_BILL_JOB_COLL      = require('../database/cmcs.contract_bill_job-coll');
+ const CMCS__CONTRACT_IPC_DETAIL_COLL    = require('../database/cmcs.contract_ipc_detail-coll');
+
 const { RANGE_BASE_PAGINATION } 		     = require('../../../tools/cursor_base/playground/index');
 
 /**

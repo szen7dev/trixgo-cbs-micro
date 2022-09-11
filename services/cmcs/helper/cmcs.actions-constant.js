@@ -3,18 +3,16 @@ const BASE_ACTIONS = 'ACT_CMCS';
 /**
  * CASE_1, CASE_2 tương ứng trong phần AUTH SERVICE, có 2 coll: user, company
  */
-const CONTRACT_BILL_JOB          = 'CONTRACT_BILL_JOB';
-const CONTRACT_IPC               = 'CONTRACT_IPC';
-const CONTRACT_PRODUCTION        = 'CONTRACT_PRODUCT';
-const CONTRACT_PAYMENT           = 'CONTRACT_PAYMENT';
-const CONTRACT_EXPENSE           = 'CONTRACT_EXPENSE';
+const CONTRACT_IPC              = 'CONTRACT_IPC';
+const CONTRACT_PRODUCTION       = 'CONTRACT_PRODUCT';
+const CONTRACT_PAYMENT          = 'CONTRACT_PAYMENT';
+const CONTRACT_EXPENSE          = 'CONTRACT_EXPENSE';
+const CONTRACT_BILL_ITEM        = 'CONTRACT_BILL_ITEM';
+const CONTRACT_BILL_GROUP       = 'CONTRACT_BILL_GROUP';
+const CONTRACT_BILL_JOB         = 'CONTRACT_BILL_JOB';
+const CONTRACT_IPC_DETAIL       = 'CONTRACT_IPC_DETAIL';
 
 const CF_ACTIONS_CMCS = {
-    /**
-    * CONTRACT BILL JOB
-    */
-    CONTRACT_BILL_JOB_GET_LIST                                      : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_GET_LIST`,
-
     /**
     * CONTRACT PRODUCTION
     */
@@ -63,6 +61,39 @@ const CF_ACTIONS_CMCS = {
     CONTRACT_EXPENSE_GET_AMOUNT_BY_MONTH                            : `${BASE_ACTIONS}_${CONTRACT_EXPENSE}_GET_AMOUNT_BY_MONTH`,
     CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT                           : `${BASE_ACTIONS}_${CONTRACT_EXPENSE}_GET_AMOUNT_BY_OBJECT`,
     CONTRACT_EXPENSE_GET_AMOUNT_BY_PROPERTY                         : `${BASE_ACTIONS}_${CONTRACT_EXPENSE}_GET_AMOUNT_BY_PROPERTY`,
+
+
+    /**
+    * CONTRACT_BILL_ITEM
+    */
+    CONTRACT_BILL_ITEM_INSERT                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_ITEM}_INSERT`,
+    CONTRACT_BILL_ITEM_UPDATE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_ITEM}_UPDATE`,
+    CONTRACT_BILL_ITEM_REMOVE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_ITEM}_REMOVE`,
+    CONTRACT_BILL_ITEM_GET_INFO_AND_GET_LIST                          : `${BASE_ACTIONS}_${CONTRACT_BILL_ITEM}_GET_INFO_AND_GET_LIST`,
+
+    /**
+    * CONTRACT_BILL_GROUP
+    */
+    CONTRACT_BILL_GROUP_INSERT                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_GROUP}_INSERT`,
+    CONTRACT_BILL_GROUP_UPDATE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_GROUP}_UPDATE`,
+    CONTRACT_BILL_GROUP_REMOVE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_GROUP}_REMOVE`,
+    CONTRACT_BILL_GROUP_GET_INFO_AND_GET_LIST                          : `${BASE_ACTIONS}_${CONTRACT_BILL_GROUP}_GET_INFO_AND_GET_LIST`,
+
+    /**
+    * CONTRACT_BILL_JOB
+    */
+    CONTRACT_BILL_JOB_INSERT                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_INSERT`,
+    CONTRACT_BILL_JOB_UPDATE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_UPDATE`,
+    CONTRACT_BILL_JOB_REMOVE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_REMOVE`,
+    CONTRACT_BILL_JOB_GET_INFO_AND_GET_LIST                          : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_GET_INFO_AND_GET_LIST`,
+
+    /**
+    * CONTRACT_IPC_DETAIL
+    */
+    CONTRACT_IPC_DETAIL_INSERT                                         : `${BASE_ACTIONS}_${CONTRACT_IPC_DETAIL}_INSERT`,
+    CONTRACT_IPC_DETAIL_UPDATE                                         : `${BASE_ACTIONS}_${CONTRACT_IPC_DETAIL}_UPDATE`,
+    CONTRACT_IPC_DETAIL_REMOVE                                         : `${BASE_ACTIONS}_${CONTRACT_IPC_DETAIL}_REMOVE`,
+    CONTRACT_IPC_DETAIL_GET_INFO_AND_GET_LIST                          : `${BASE_ACTIONS}_${CONTRACT_IPC_DETAIL}_GET_INFO_AND_GET_LIST`,    
 }
 
 exports.CF_ACTIONS_CMCS = CF_ACTIONS_CMCS;
