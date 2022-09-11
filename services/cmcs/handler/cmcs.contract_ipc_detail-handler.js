@@ -123,6 +123,32 @@ module.exports = {
     },
 
     /**
+     * Name: Remove
+     * Author: HiepNH
+     * Date: 11/9/2022 
+     */
+    remove: {
+        auth: "required",
+        params: {
+            contractIpcID       : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { contractIpcID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                let resultAfterCallHandler = await CMCS__CONTRACT_IPC_DETAIL_MODEL.remove({
+                    contractIpcID
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Name: Get info and Get list
      * Author: HiepNH
      * Date: 11/9/2022 

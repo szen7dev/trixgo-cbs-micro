@@ -51,6 +51,9 @@ const CF_ROUTINGS_CMCS = {
 
     // ================================CONTRACT BILL JOB=======================================//
     CONTRACT_BILL_JOB                                       : `${BASE_ROUTE}${CONTRACT_BILL_JOB}`,
+    
+    // ================================CONTRACT IPC DETAIL=======================================//
+    CONTRACT_IPC_DETAIL                                     : `${BASE_ROUTE}${CONTRACT_IPC_DETAIL}`,
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;
