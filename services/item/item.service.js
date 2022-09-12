@@ -24,6 +24,7 @@ const ITEM__ACCOUNT_HANDLER          	= require('./handler/item.account-handler'
 const ITEM__FUNDA_HANDLER          		= require('./handler/item.funda-handler');
 const ITEM__GOOD_HANDLER          		= require('./handler/item.good-handler');
 const ITEM__SIGNATURE_HANDLER          	= require('./handler/item.signature-handler');
+const ITEM__DEPARTMENT_DIRECTORY_HANDLER= require('./handler/item.department_directory-handler');
 
 /**
  * COLLECTIONS
@@ -38,6 +39,7 @@ const ITEM__POSITION_COLL				= require('./database/item.position-coll');
 const ITEM__STORAGE_COLL				= require('./database/item.storage-coll');
 const ITEM__SIGNATURE_COLL				= require('./database/item.signature-coll');
 const ITEM__ACCOUNT_COLL				= require('./database/item.account-coll');
+const ITEM__DEPARTMENT_DIRECTORY_COLL	= require('./database/item.department_directory-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ITEM,
@@ -52,6 +54,7 @@ module.exports = {
 		DbService(ITEM__STORAGE_COLL),
 		DbService(ITEM__SIGNATURE_COLL),
 		DbService(ITEM__ACCOUNT_COLL),
+		DbService(ITEM__DEPARTMENT_DIRECTORY_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.ITEM])
     ],
 
@@ -83,6 +86,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTRACT_UPDATE] 						: ITEM__CONTRACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTRACT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST_CONTRACT_IS_MEMBERS]	: ITEM__CONTRACT_HANDLER.getListIsMembers,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST_BY_FILTER]			: ITEM__CONTRACT_HANDLER.getListByFilter,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_AMOUNT_BY_MONTH]			: ITEM__CONTRACT_HANDLER.getAmountByMonth,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST_BY_MONTH]			: ITEM__CONTRACT_HANDLER.getListByMonth,
 		[CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE]					: ITEM__CONTRACT_HANDLER.updateValue,
@@ -103,6 +107,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTACT_UPDATE] 						: ITEM__CONTACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_OF_SYSTEM] 			: ITEM__CONTACT_HANDLER.getListOfSystem,
+		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_ACCESS_BY_CONTRACT] 	: ITEM__CONTACT_HANDLER.getListAccessByContract,
 		[CF_ACTIONS_ITEM.CONTACT_EXPORT] 						: ITEM__CONTACT_HANDLER.exportHuman,
 
 		//==========================================  WAREHOUSE  =================================
@@ -145,6 +150,11 @@ module.exports = {
 		//==========================================  SIGNATURE  ======================================
 		[CF_ACTIONS_ITEM.SIGNATURE_INSERT] 						: ITEM__SIGNATURE_HANDLER.insert,
 		[CF_ACTIONS_ITEM.SIGNATURE_GET_INFO_AND_GET_LIST]		: ITEM__SIGNATURE_HANDLER.getInfoAndGetList,
+
+		//==========================================  DEPARTMENT DIRECTORY  ======================================
+		[CF_ACTIONS_ITEM.DEPARTMENT_DIRECTORY_INSERT] 				: ITEM__DEPARTMENT_DIRECTORY_HANDLER.insert,
+		[CF_ACTIONS_ITEM.DEPARTMENT_DIRECTORY_UPDATE] 				: ITEM__DEPARTMENT_DIRECTORY_HANDLER.update,
+		[CF_ACTIONS_ITEM.DEPARTMENT_DIRECTORY_GET_INFO_AND_GET_LIST]: ITEM__DEPARTMENT_DIRECTORY_HANDLER.getInfoAndGetList,
 	},
 
 	/**

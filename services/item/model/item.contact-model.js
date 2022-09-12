@@ -22,6 +22,7 @@ const { INSURANCE_STATUS }              = require('../../../tools/constants');
  * COLLECTIONS
  */
 const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll');
+const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
 const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll')
 
@@ -1177,6 +1178,122 @@ class Model extends BaseModel {
                     });
             } catch (error) {
                 console.error(error)
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Danh bạ (bên mua, bên bán) mà user được quyền truy cập theo hợp đồng
+     * Author: HiepNH
+     * Code  : 7/9/2022
+     */
+    getListAccessByContract({
+        userID, option,
+        keyword, limit = 10, lastestID, select, populates = {} }) {
+            console.log({option,keyword,populates})
+        return new Promise(async (resolve) => {
+            try {
+                if(limit > 20){
+                    limit = 20
+                } else{
+                    limit = +limit
+                }
+
+                // Danh sách hợp đồng mà user là members
+                let listContractAccess = await ITEM__CONTRACT_COLL.find({members: {$in: [userID]}}).select('name sign buyerInfo sellerInfo')
+                // console.log(listContractAccess)
+
+                /**
+                 * DECALARTION VARIABLE
+                 */
+                let conditionObj = { };
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(option && option == 1){
+                    // console.log('===========Bên mua================')
+                    conditionObj._id = {$in: listContractAccess.map(item=>item.buyerInfo)}
+                }
+
+                if(option && option == 2){
+                    console.log('===========Bên bán================')
+                    // conditionObj._id = {$in: listContractAccess.map(item=>item.sellerInfo)}
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
+                // console.log(conditionObj)
+                
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj = dataPagingAndSort?.data?.find;
+					sortBy       = dataPagingAndSort?.data?.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy                = dataPagingAndSort?.data?.sort;
+                }
+
+                let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	    = null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor
+                }, status: 200 });
+
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

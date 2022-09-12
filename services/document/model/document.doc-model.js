@@ -55,6 +55,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
         name, description, note, fieldID, value, completeStatus, ctx
 	}) {
+        // console.log({
+        //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
+        //     name, description, note, fieldID, value, completeStatus
+        // })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(departmentID)) {
@@ -234,6 +239,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
         name, description, note, fieldID, value, completeStatus, otherID, ctx
 	}) {
+        // console.log({
+        //     documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
+        //     name, description, note, fieldID, value, completeStatus, otherID
+        // })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(documentID, packageID, senderID, propertyID, userID)) {
@@ -380,50 +390,50 @@ class Model extends BaseModel {
 	 * Func: Xóa văn bản
 	 * Date: 30/10/2021
 	 */
-    remove({ documentID, userID }){
-        return new Promise(async resolve => {
-            try {
-                if (!checkObjectIDs([documentID, userID])) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params documentID or userID invalid',
-                        keyError: 'params_documentID_or_userID_invalid',
-                        status: 400
-                    });
-                }
+    // remove({ documentID, userID }){
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!checkObjectIDs([documentID, userID])) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: 'Request params documentID or userID invalid',
+    //                     keyError: 'params_documentID_or_userID_invalid',
+    //                     status: 400
+    //                 });
+    //             }
 
-                let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: userID,
-                    permission: 1
-                }).lean()
+    //             let checkPermission = await DOCUMENT__USER_COLL.findOne({
+    //                 document: documentID,
+    //                 user: userID,
+    //                 permission: 1
+    //             }).lean()
 
-                if(!checkPermission) {
-                    return resolve({
-                        error: true,
-                        message: "Permission denined",
-                        keyError: "permission_denined_document",
-                        status: 403
-                    });
-                }
+    //             if(!checkPermission) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Permission denined",
+    //                     keyError: "permission_denined_document",
+    //                     status: 403
+    //                 });
+    //             }
 
-                const infoAfterDelete = await DOCUMENT__DOC_COLL.findByIdAndDelete(documentID);
+    //             const infoAfterDelete = await DOCUMENT__DOC_COLL.findByIdAndDelete(documentID);
 
-                if(!infoAfterDelete) {
-                    return resolve({
-                        error: true,
-                        message: "Can't delete document",
-                        keyError: "delete_document_failed",
-                        status: 422
-                    });
-                }
+    //             if(!infoAfterDelete) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Can't delete document",
+    //                     keyError: "delete_document_failed",
+    //                     status: 422
+    //                 });
+    //             }
 
-                return resolve({ error: false, message: "Remove Success", status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, keyError: "server_error", status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, message: "Remove Success", status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, keyError: "server_error", status: 500 });
+    //         }
+    //     })
+    // }
 
      /**
      * Name: get văn bản
@@ -475,14 +485,15 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách văn bản
+     * Name  : Danh sách văn bản + Tìm kiếm văn bản
      * Author: Depv
-     * Code  :
+     * Update: HiepNH
+     * Code  : 25/8/2022
      */
     getList({
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 30, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -497,8 +508,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(limit > 20){
-                    limit = 20;
+                if(limit > 30){
+                    limit = 30;
                 } else{
                     limit = +limit;
                 }
@@ -515,6 +526,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Ngày nhận văn bản
                 if(receivedDate && typeof receivedDate === 'string'){
 					if(!IsJsonString(receivedDate))
 						return resolve({ error: true, message: 'Request params receivedDate invalid', status: 400 });
@@ -644,6 +656,189 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
+
+                console.log({ conditionObj });
+                let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Tìm kiếm văn bản
+     * Author: HiepNH
+     * Code  : 29/8/2022
+     */
+    getListByFilter({
+        parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel = false,
+        requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
+        keyword, limit = 20, lastestID, select, populates= {} }) {
+            // console.log({
+            //     parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel,
+            //     requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
+            //     keyword, limit, lastestID, select, populates })
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * VALIDATION (1)
+                 */
+                const validation = validateParamsObjectID({
+                    packagesID              : { value: packagesID, isRequire: false },
+                    sendersID               : { value: sendersID, isRequire: false },
+                    propertysID             : { value: propertysID, isRequire: false },
+                    fieldsID                : { value: fieldsID, isRequire: false },
+                    contractsID             : { value: contractsID, isRequire: false },
+                    datahubContactsID       : { value: datahubContactsID, isRequire: false },
+                    departmentsID           : { value: departmentsID, isRequire: false },
+                    storagesID              : { value: storagesID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                /**
+                 * DECALARTION VARIABLE (2)
+                 */
+                let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
+
+                /**
+                 * LOGIC CODE (3)
+                 */
+                if(limit > 50){
+                    limit = 50;
+                } else{
+                    limit = +limit;
+                }
+
+                /**
+                * User phải nằm trong member của gói thầu
+                */
+                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
+                if(listPackageAccess.length){
+                    conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                } else{
+                    return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
+                }
+
+                /**
+                 * Bộ lọc với nhiều lựa chọn
+                 */
+                directions && directions.length                 && (conditionObj.direction = { $in: directions });
+                types && types.length                           && (conditionObj.type = { $in: types });
+                propertysID && propertysID.length               && (conditionObj.property = { $in: propertysID });
+                fieldsID && fieldsID.length                     && (conditionObj.field = { $in: fieldsID });
+                packagesID && packagesID.length                 && (conditionObj.package = { $in: packagesID });
+                sendersID && sendersID.length                   && (conditionObj.sender = { $in: sendersID });
+                contractsID && contractsID.length               && (conditionObj.contract = { $in: contractsID });
+                datahubContactsID && datahubContactsID.length   && (conditionObj.datahubContact = { $in: datahubContactsID });
+                departmentsID && departmentsID.length           && (conditionObj.project = { $in: departmentsID });
+                storagesID && storagesID.length                 && (conditionObj.storage = { $in: storagesID });
+
+                // Ngày nhận văn bản
+                if(fromDate && toDate){
+                    conditionObj.receivedDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
+
+                if(companyID){
+                    conditionObj.company = companyID
+                }
+
+                if(checkObjectIDs(receiverID)){
+                    conditionObj.receiver = receiverID
+                }
+
+                if(requestResponse){
+                    conditionObj.requestResponse = requestResponse
+                }
+
+                if(checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID
+                } else{
+                    conditionObj.parent = { $exists: false }
+                }
+
+                if(marked){
+                    conditionObj.usersMarked = { $in: [userID] }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
+
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                        { storeSign: regSearch },
+                    ]
+                }
+
+                /**
+                 * Purpose: Sử dụng trong export excel document (hoặc theo bộ lọc)
+                 * Function: exportDocument (model)
+                 */
+                if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
+                }
+
+                // console.log({ conditionObj });
+
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)

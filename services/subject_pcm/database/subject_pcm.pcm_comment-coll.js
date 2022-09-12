@@ -27,7 +27,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
      * 3-related (khi thêm người liên quan thì add vào)
      * 4-người được gửi tới khi tạo phản hồi liên quan của chủ đề
      */
-    receiver: [{
+    receivers: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
@@ -63,16 +63,29 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     },
     //_________Nội dung
     content: String,
-    //_________Nội dung convert
+    //_________Nội dung convert-chữ thường, không dấu (bao cao danh gia)
     contentcv: String,
+
+    //_________Mô tả
+    description: String,
+    //_________Mô tả convert-chữ thường, không dấu (bao cao danh gia)
+    descriptioncv: String,
     /**
      * Phân loại
      * 1-Phản hồi thông thường (task, project, document,...)
      * 3-Hiện trạng (task)
      * 4-Giải pháp (task)
      * 5-Mặc định tạo kèm khi tạo việc/mô tả công việc
+     * 6-Cho các loại hành động khác
      */
     type: { type: Number, default: 1 },
+    /**
+     * Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
+     * Tham khảo Notification
+     */
+    languageKey: {
+        type: String 
+    },
     /**
      * Phân loại công việc(ispropsal) PCM_PROPOSAL_TASK trong cf_constant
      */

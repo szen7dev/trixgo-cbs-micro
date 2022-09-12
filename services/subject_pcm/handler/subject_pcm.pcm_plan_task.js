@@ -42,8 +42,8 @@ module.exports = {
             workflowTemplate : { type: "string", optional: true },
             amountoftime     : { type: "string", optional: true },
             amountPerHour    : { type: "string", optional: true },
+            isNotiEmail      : { type: "boolean", optional: true },
             fieldID          : { type: "string", optional: true },
-            subType          : { type: "number", optional: true },
             select           : { type: "string", optional: true },
             populates        : { type: "string", optional: true },
         },
@@ -51,11 +51,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, select, populates } = ctx.params;
+				const { _id: authorID, bizfullname, email, fullname } = ctx.meta.infoUser;
+                const { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, bizfullname, select, populates, ctx
+                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, select, populates, senderMail: { email, fullname }, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -95,11 +95,13 @@ module.exports = {
             relatedRemoves : { type: "array", optional: true },
             lastLogID      : { type: "string", optional: true },
             isAddSignature : { type: "boolean", optional: true },
-            isOpenBidding : { type: "boolean", optional: true },
-            authorAttachs  : { type: "array", optional: true },
-            assigneeAttachs: { type: "array", optional: true },
-            milestone      : { type: "number", optional: true },
-            subType          : { type: "number", optional: true },
+            isOpenBidding   : { type: "boolean", optional: true },
+            authorAttachs   : { type: "array", optional: true },
+            tasksLink       : { type: "array", optional: true },
+            assigneeAttachs : { type: "array", optional: true },
+            milestone       : { type: "number", optional: true },
+            subType         : { type: "number", optional: true },
+            isUpdateNews    : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
@@ -107,8 +109,8 @@ module.exports = {
                 const {
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
-                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
+                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone
                  } = ctx.params;
 				const { _id: userID, bizfullname, company } = ctx.meta.infoUser;
@@ -116,8 +118,8 @@ module.exports = {
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
-                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
+                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding,
                     companyOfUser: company._id, milestone, ctx
                 });
@@ -137,25 +139,26 @@ module.exports = {
     updateStatusMutiple: {
         auth: "required",
         params: {
-            taskIDs         : { type: "array" },
-            parentID        : { type: "string" },
-            type            : { type: "number" }, // 1 việc con / 2 checklist
+            taskIDs         : { type: "array", optional: true },
+            parentID        : { type: "string", optional: true },
+            type            : { type: "number", optional: true }, // 1 việc con / 2 checklist
+            option          : { type: "number", optional: true }, // 0-Update status, 1-Update user đã xem
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    taskIDs, parentID, type
+                    taskIDs, parentID, type, option
                  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                // Bước check quyền
+
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
-                    parentID, taskIDs, type, userID
+                    parentID, taskIDs, type, option, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -198,7 +201,7 @@ module.exports = {
             milestone           : { type: "string", optional: true },
             sortKey             : { type: "string", optional: true },
             isParent            : { type: "string", optional: true },
-            
+
             // Field mặc định
             keyword             : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
@@ -241,6 +244,48 @@ module.exports = {
     },
 
     /**
+     * Dev: HiepNH
+     * Func: Danh sách chủ đề
+     * Date: 19/8/2022
+     */
+     getListSubject: {
+        auth: 'required',
+        params: {
+            draft               : { type: 'string', optional: true },
+            sortKey             : { type: 'string', optional: true },
+            isParent            : { type: 'string', optional: true },
+            isActive            : { type: 'string', optional: true },
+            isGroup             : { type: 'string', optional: true },
+            read                : { type: 'string', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    draft, sortKey, isParent, isActive, isGroup, read, keyword,
+                    limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListSubject({
+                    draft, sortKey, isParent, isActive, isGroup, read, 
+                    keyword, limit, lastestID, select, populates, userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Dev: MinhVH
      * Func: Search Task
      * Date: 11/05/2022
@@ -257,10 +302,12 @@ module.exports = {
             subtypes            : { type: 'array', optional: true },
             status              : { type: 'array', optional: true },
             fieldsID            : { type: 'array', optional: true },
-            isExpired           : { type: 'number', optional: true },
+            isExpired           : { type: 'string', optional: true },
+            read                : { type: 'string', optional: true },
+            isParent            : { type: 'string', optional: true },
 
             keyword             : { type: "string", optional: true },
-            limit               : { type: "number", optional: true },
+            limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
@@ -271,19 +318,45 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
                 const {
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-                    projectsID, subtypes, status, fieldsID, isExpired, keyword,
+                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword,
                     limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-                    projectsID, subtypes, status, fieldsID, isExpired, keyword,
+                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword,
                     limit, lastestID, select, populates, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv
+	 * Func: Lấy thông báo công việc (chưa đọc)
+	 */
+     getAmountNotification: {
+        auth: "required",
+        params: {
+            option            : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const {
+                    option
+                } = ctx.params;
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID, option });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
             }
         }
     },
@@ -519,16 +592,38 @@ module.exports = {
     copyTask: {
         auth: 'required',
         params: {
-            taskID: { type: 'string' }
+            taskID           : { type: "string" },
+            name             : { type: "string" },
+            projectID        : { type: "string" },
+            groupID          : { type: "string" },
+            assigneeID       : { type: "string" },
+            relatedIDs       : { type: "array", optional: true },
+            authorAttachs    : { type: "array", optional: true },
+            type             : { type: "number", optional: true },
+            subtype          : { type: "number", optional: true },
+            description      : { type: "string", optional: true },
+            startTime        : { type: "string", optional: true },
+            expiredHour      : { type: "string", optional: true },
+            expiredTime      : { type: "string", optional: true },
+            contractID       : { type: "string", optional: true },
+            isDraftTask      : { type: "boolean", optional: true },
+            isCloneChildTask : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID, company } = ctx.meta.infoUser;
-                const { taskID } = ctx.params;
+                const { _id: userID, company, bizfullname } = ctx.meta.infoUser;
+                const {
+                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
+                    authorAttachs, type, subtype, description, startTime, expiredHour,
+                    expiredTime, contractID, isDraftTask, isCloneChildTask
+                } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.copyTask({
-                    taskID, userID, companyOfUser: company._id
+                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
+                    authorAttachs, type, subtype, description, startTime, expiredHour,
+                    expiredTime, contractID, isDraftTask, isCloneChildTask,
+                    userID, companyOfUser: company._id, bizfullname, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

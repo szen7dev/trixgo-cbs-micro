@@ -83,6 +83,45 @@ module.exports = {
     },
 
     /**
+     * Dev: HiepNH
+     * Func: Tìm kiếm file
+     * Date: 24/8/2022
+     */
+    getListByFilter: {
+        auth: "required",
+        params: {
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            authorsID           : { type: 'array', optional: true },
+            companyOfAuthorsID  : { type: 'array', optional: true },
+            projectsID          : { type: 'array', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const { fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates } = ctx.params;
+                console.log({ fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates })
+
+                const resultAfterCallHandler = await PCM_FILE_MODEL.getListByFilter({
+                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Dev: MinhVH
      * Func: Lấy danh sách file, group theo hợp đồng
      * Date: 02/04/2022

@@ -9,15 +9,20 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_group", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "project"
+    },    
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
     //_________Hạng mục
-    parent: {
+    item: {
         type: Schema.Types.ObjectId,
-        ref : "contract_bill_group"
+        ref : "contract_bill_item"
     },
     /**
      * THÔNG TIN CĂN BẢN
@@ -34,6 +39,9 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_group", {
     note: String,
     /**
      * THÔNG TIN VỀ GIÁ TRỊ (PRE-CALCULATE FORM JOB)
+     * - Giá trị theo hợp đồng
+     * - Sản lượng
+     * - Nghiệm thu hoàn thành
      */
     //_________Giá trị trước thuế
     amount: { type: Number, default: 0 }, 

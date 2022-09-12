@@ -14,6 +14,7 @@ const ACCOUNT    = '/accounts';
 const GOODS      = '/goods';
 const FUNDA      = '/fundas';
 const SIGNATURE  = '/signatures';
+const DEPARTMENT_DIRECTORIES = "/department_directories";
 
 const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
@@ -26,6 +27,7 @@ const CF_ROUTINGS_ITEM = {
     // ================================CONTRACT=========================================//
     CONTRACTS                                  : `${BASE_ROUTE}${CONTRACT}`,
     LIST_CONTRACT_IS_MEMBERS                   : `${BASE_ROUTE}/list-contract-is-members`,
+    CONTRACT_GET_LIST_BY_FILTER                : `${BASE_ROUTE}/list-contract-by-filter`,
     CONTRACT_GET_AMOUNT_BY_MONTH               : `${BASE_ROUTE}${CONTRACT}/get-amount-by-month`,
     CONTRACT_GET_LIST_BY_MONTH                 : `${BASE_ROUTE}${CONTRACT}/get-list-by-month`,
     CONTRACT_UPDATE_VALUE                      : `${BASE_ROUTE}${CONTRACT}/update-value`,
@@ -41,6 +43,7 @@ const CF_ROUTINGS_ITEM = {
     // ================================CONTACT==========================================//
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,
     CONTACTS_GET_LIST_OF_SYSTEM                : `${BASE_ROUTE}${CONTACT}/contact-of-system`,
+    CONTACTS_GET_LIST_ACCESS_BY_CONTRACT       : `${BASE_ROUTE}${CONTACT}/list-access-by-contract`,
     CONTACTS_EXPORT                            : `${BASE_ROUTE}${CONTACT}/export-contact`,
 
     // ================================WAREHOUSE=======================================//
@@ -67,6 +70,9 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================SIGNATURE===========================================//
     SIGNATURE                                  : `${BASE_ROUTE}${SIGNATURE}`,
+
+    // ================================SIGNATURE===========================================//
+    DEPARTMENT_DIRECTORIES                      : `${BASE_ROUTE}${DEPARTMENT_DIRECTORIES}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;

@@ -9,7 +9,7 @@ const PromisePool							    = require('@supercharge/promise-pool');
  * import internal
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
 
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
@@ -19,10 +19,12 @@ const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.ac
 
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
+const stringUtils					            = require('../../../tools/utils/string_utils');
 
 /**
  * import inter-coll, exter-coll
  */
+const PCM_PLAN_GROUP_COLL                       = require('../database/subject_pcm.pcm_plan_group-coll');
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
@@ -36,6 +38,10 @@ class Model extends BaseModel {
 
         this.COMMENT_PCM = 1;
         this.RESPONSE_PCM = 2;
+        this.RESPONSE_CURRENT_STATUS = 3;
+        this.RESPONSE_SOLUTION = 4;
+        this.RECORD_TASK_FOR_SEARCH = 5;
+
         this.SWITCH_TYPE = {
             TASK: 'TASK',
             PROJECT: 'PROJECT',
@@ -48,7 +54,7 @@ class Model extends BaseModel {
      * Date: 06/04/2022
      * Updated: 18/05/2022
      */
-    handleAddFiles({ infoTask, infoComment, infoProject, files, fileType, authorID, switchType = this.SWITCH_TYPE.TASK, ctx }) {
+    handleAddFiles({ infoTask, infoComment, infoProject, files, fileType, authorID, switchType = this.SWITCH_TYPE.TASK, companyOfAuthor, ctx }) {
         return new Promise(async resolve => {
             try {
                 let { results, errors } = await PromisePool
@@ -84,6 +90,7 @@ class Model extends BaseModel {
                                 fileID: fileID,
                                 commentID: infoComment._id,
                                 authorID: author,
+                                companyOfAuthor,
                                 name, nameOrg, path, size, mimeType, description, type
                             };
 
@@ -176,15 +183,28 @@ class Model extends BaseModel {
 	 * Func: Thêm comment (task)
 	 * Date: 22/02/2022
 	 */
-    insertCommentTask({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) {
+    insertCommentTask({
+        taskID, parentID, authorID, type, content, rawContent, description, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
+    }) {
         return new Promise(async resolve => {
             try {
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                const TYPE_COMMENT  = [this.COMMENT_PCM, this.RESPONSE_PCM];
-                const dataInsert    = { type, task: taskID, author: authorID };
+                const TYPE_COMMENT = [
+                    this.COMMENT_PCM,
+                    this.RESPONSE_PCM,
+                    this.RESPONSE_CURRENT_STATUS,
+                    this.RESPONSE_SOLUTION,
+                    this.RECORD_TASK_FOR_SEARCH
+                ];
+                const dataInsert = {
+                    type,
+                    task: taskID,
+                    author: authorID,
+                    companyOfAuthor,
+                    official: isOfficial
+                };
                 const dataUpdate    = {};
                 let dataSend        = {};
                 let webUrl          = '';
@@ -276,8 +296,32 @@ class Model extends BaseModel {
                     dataInsert.group = infoTask.group;
                 }
 
+                if(checkObjectIDs(receiversID)) {
+                    dataInsert.receivers = receiversID;
+                } else{
+                    if(!checkObjectIDs([parentID])) {
+                        const receivers = infoTask.accessUsers?.filter(user =>
+                            user.toString() !== authorID.toString()
+                        );
+                        dataInsert.receivers = receivers;
+                    } else {
+                        const commentParent = await PCM_COMMENT_COLL
+                            .findById(parentID)
+                            .select('author')
+                            .lean();
+
+                        dataInsert.receivers = [commentParent?.author];
+                    }
+                }
+
                 if(content) {
                     dataInsert.content = content;
+                    dataInsert.contentcv = stringUtils.removeAccents(rawContent);
+                }
+
+                if(description) {
+                    dataInsert.description = description;
+                    dataInsert.descriptioncv = stringUtils.removeAccents(description);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -289,6 +333,11 @@ class Model extends BaseModel {
                         keyError: "error_occurred",
                         status: 422
                     })
+                }
+
+                // Loại comment được tạo mục đích cho việc tìm kiếm
+                if(type === this.RECORD_TASK_FOR_SEARCH) {
+                    return resolve({ error: false, data: infoAfterInsert, status: 200 });
                 }
 
                 if(files && files.length) {
@@ -426,38 +475,62 @@ class Model extends BaseModel {
                     }
                 }
 
-                switch (type) {
-                    case 1: // Pre-calculate comment
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountComment: 1 } });
+                // Update task of response comment
+                const usersUnRead = dataInsert.receivers?.filter(item => item.toString() !== authorID.toString());
+
+                let incPreCalculate = {};
+
+                switch(type) {
+                    case 1:
+                        incPreCalculate = { amountResponse: 1 };
                         break;
-                    case 2: // Pre-calculate related response
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
+                    case 3:
+                        incPreCalculate = { amountCurrentStatus: 1 };
                         break;
-                    default:
+                    case 4:
+                        incPreCalculate = { amountSolution: 1 };
+                        break;
+                    case 5:
+                    case 6:
+                        incPreCalculate = { amountResponseOther: 1 };
                         break;
                 }
+
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                    $inc: {
+                        ...incPreCalculate,
+                        amountMarkedResponse: isOfficial ? 1 : 0
+                    },
+                    $addToSet: {
+                        news: usersUnRead
+                    },
+                    $set: {
+                        lastComment: infoAfterInsert._id,
+                        modifyAt: new Date()
+                    }
+                });
 
                 /**
                  * Insert notification and cloud messaging
                  */
+                let { name: taskName, sign: taskSign, author, project } = infoTask;
+                let arrReceiver = dataInsert.receivers;
 
-                let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
-                related = related.map(userID => userID.toString());
-
-                let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
-                let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                // related = related.map(userID => userID.toString());
+                // let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
+                // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                 switch (infoAfterInsert.type) {
                     case 1:
                         languageKey     = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi`;
                         webUrl          = `/pcm/detail/${taskID}#comment_${infoAfterInsert._id}`;
                         break;
-                    case 2:
-                        languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi liên quan`;
-                        webUrl          = `/pcm/detail/${taskID}#response_${infoAfterInsert._id}`;
-                        break;
+                    // case 2:
+                    //     languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
+                    //     descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi liên quan`;
+                    //     webUrl          = `/pcm/detail/${taskID}#response_${infoAfterInsert._id}`;
+                    //     break;
                     default:
                         break;
                 }
@@ -489,9 +562,9 @@ class Model extends BaseModel {
                 }
 
                 if(taskSign) {
-                    titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
+                    titleMSS = `${taskSign}.${taskName}`;
                 } else{
-                    titleMSS = `CÔNG VIỆC: ${taskName}`;
+                    titleMSS = `${taskName}`;
                 }
 
                 if(arrReceiver && arrReceiver.length) {
@@ -504,24 +577,24 @@ class Model extends BaseModel {
                         env: ENV_DEVICE_WEB_CBS
                     });
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content,
-                        receivers: arrReceiver,
-                        project: project?._id?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey: dataSend.languageKey,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        subColl: {
-                            kind: "pcm_comment",
-                            item: infoAfterInsert._id
-                        },
-                        type: 1 // InApp (Socket)
-                    })
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content,
+                    //     receivers: arrReceiver,
+                    //     project: project?._id?.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: webUrl,
+                    //     languageKey: dataSend.languageKey,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     subColl: {
+                    //         kind: "pcm_comment",
+                    //         item: infoAfterInsert._id
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 infoAfterInsert = await PCM_COMMENT_COLL
@@ -530,7 +603,7 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                infoAfterInsert.receivers = arrReceiver;
+                infoAfterInsert.receiversNoti = arrReceiver;
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -831,14 +904,14 @@ class Model extends BaseModel {
 	 * Date: 18/05/2022
 	 */
     insert({
-        taskID, projectID, parentID, authorID, type, content, files, images,
-        select, populates, bizfullname, switchType = this.SWITCH_TYPE.TASK, ctx
+        taskID, projectID, parentID, authorID, type, content, rawContent, files, images, receiversID,
+        select, populates, bizfullname, isOfficial, companyOfAuthor, switchType = this.SWITCH_TYPE.TASK, ctx
     }) {
         return new Promise(async (resolve) => {
             switch (switchType) {
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.insertCommentTask({
-                        taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx
+                        taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, isOfficial, companyOfAuthor, ctx
                     }))
                     break;
                 case this.SWITCH_TYPE.PROJECT:
@@ -857,7 +930,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment (task)
 	 * Date: 22/02/2022
 	 */
-    updateCommentTask({ taskID, commentID, authorID, content, files, images, select, populates, ctx }) {
+    updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, ctx }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -932,20 +1005,25 @@ class Model extends BaseModel {
                     })
                 }
 
-                if(infoComment.type === 1) {
-                    content && (dataUpdate.content = content);
+                // Chỉ cập nhật "chính thức" và thêm file (không cập nhật content)
+                // if(infoComment.type === 1) {
+                //     content && (dataUpdate.content = content);
 
-                    const expireTime = new Date(infoComment.createAt).addHours(1);
-                    const now 		 = new Date(Date.now());
+                //     const expireTime = new Date(infoComment.createAt).addHours(1);
+                //     const now 		 = new Date(Date.now());
 
-                    if(expireTime < now){
-                        return resolve({
-                            error: true,
-                            message: "Bình luận đã hết hạn cập nhật (1 tiếng)",
-                            keyError: "time_to_delete_comment_has_expired",
-                            status: 403
-                        })
-                    }
+                //     if(expireTime < now){
+                //         return resolve({
+                //             error: true,
+                //             message: "Bình luận đã hết hạn cập nhật (1 tiếng)",
+                //             keyError: "time_to_delete_comment_has_expired",
+                //             status: 403
+                //         })
+                //     }
+                // }
+
+                if(isOfficial) {
+                    dataUpdate.official = true;
                 }
 
                 let infoAfterUpdate = await PCM_COMMENT_COLL.findOneAndUpdate({
@@ -964,9 +1042,16 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(isOfficial) {
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $inc: { amountMarkedResponse: 1 }
+                    })
+                }
+
                 // Cập nhật bổ sung
+                // Gộp comment và response thành 1 (type === 1)
                 switch (infoComment.type) {
-                    case 1: { // Bình luận
+                    case 2: { // Bình luận
                         dataAdditional = {
                             $set: {}
                         };
@@ -1008,14 +1093,14 @@ class Model extends BaseModel {
                         }
                         break;
                     }
-                    case 2: { // Phản hồi liên quan
+                    case 1: { // Phản hồi liên quan (Hiện tại chỉ dùng case này)
                         dataAdditional = {
                             $addToSet: {}
                         };
 
                         if(checkObjectIDs(files)){
                             const result = await this.handleAddFiles({
-                                infoTask, infoComment, files, fileType: 'file', authorID, ctx
+                                infoTask, infoComment, files, fileType: 'file', authorID, companyOfAuthor, ctx
                             })
 
                             if(result.error) return resolve(result);
@@ -1024,7 +1109,7 @@ class Model extends BaseModel {
 
                         if(checkObjectIDs(images)){
                             const result = await this.handleAddFiles({
-                                infoTask, infoComment, files: images, fileType: 'image', authorID, ctx
+                                infoTask, infoComment, files: images, fileType: 'image', authorID, companyOfAuthor, ctx
                             })
 
                             if(result.error) return resolve(result);
@@ -1043,12 +1128,12 @@ class Model extends BaseModel {
                     }, dataAdditional);
                 }
 
-                if(filesRemove.length) {
-                    await PCM_FILE_COLL.deleteMany({
-                        _id: { $in: filesRemove },
-                        comment: commentID,
-                    })
-                }
+                // if(filesRemove.length) {
+                //     await PCM_FILE_COLL.deleteMany({
+                //         _id: { $in: filesRemove },
+                //         comment: commentID,
+                //     })
+                // }
 
                 infoAfterUpdate = await PCM_COMMENT_COLL
                     .findById(commentID)
@@ -1218,12 +1303,12 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment (middle)
 	 * Date: 18/05/2022
 	 */
-    update({ taskID, projectID, commentID, authorID, content, files, images, select, populates, switchType = this.SWITCH_TYPE.TASK, ctx }) {
+    update({ taskID, projectID, commentID, authorID, content, files, images, isOfficial, select, populates, switchType = this.SWITCH_TYPE.TASK, companyOfAuthor, ctx }) {
         return new Promise(async resolve => {
             switch (switchType) {
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.updateCommentTask({
-                        taskID, commentID, authorID, content, files, images, select, populates, ctx
+                        taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, ctx
                     }))
                     break;
                 case this.SWITCH_TYPE.PROJECT:
@@ -1299,103 +1384,103 @@ class Model extends BaseModel {
 	 * Func: Xóa comment
 	 * Date: 22/02/2022
 	 */
-    delete({ commentID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs([commentID])) {
-                    return resolve({
-                        error: true,
-                        message: 'Tham số commentID không hợp lệ',
-                        keyError: 'params_commentID_invalid',
-                        status: 400
-                    });
-                }
+    // delete({ commentID, authorID }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             /**
+    //              * VALIDATION STEP (2)
+    //              *  - Kiểm tra valid từ các input
+    //              *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+    //              */
+    //             if(!checkObjectIDs([commentID])) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: 'Tham số commentID không hợp lệ',
+    //                     keyError: 'params_commentID_invalid',
+    //                     status: 400
+    //                 });
+    //             }
 
-                if(!checkObjectIDs([authorID])) {
-                    return resolve({
-                        error: true,
-                        message: 'Tham số authorID không hợp lệ',
-                        keyError: 'params_authorID_invalid',
-                        status: 400
-                    });
-                }
+    //             if(!checkObjectIDs([authorID])) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: 'Tham số authorID không hợp lệ',
+    //                     keyError: 'params_authorID_invalid',
+    //                     status: 400
+    //                 });
+    //             }
 
-                const infoComment = await PCM_COMMENT_COLL
-                    .findById(commentID)
-                    .lean();
+    //             const infoComment = await PCM_COMMENT_COLL
+    //                 .findById(commentID)
+    //                 .lean();
 
-                if(!infoComment) {
-                    return resolve({
-                        error: true,
-                        message: "Bình luận không tồn tại",
-                        keyError: "comment_not_exists_or_comment_is_response",
-                        status: 400
-                    })
-                }
+    //             if(!infoComment) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Bình luận không tồn tại",
+    //                     keyError: "comment_not_exists_or_comment_is_response",
+    //                     status: 400
+    //                 })
+    //             }
 
-                if(infoComment.type === 2) {
-                    return resolve({
-                        error: true,
-                        message: "Phản hồi liên quan không thể xóa",
-                        keyError: "response_cannot_delete",
-                        status: 403
-                    })
-                }
+    //             if(infoComment.type === 2) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Phản hồi liên quan không thể xóa",
+    //                     keyError: "response_cannot_delete",
+    //                     status: 403
+    //                 })
+    //             }
 
-                const expireTime = new Date(infoComment.createAt).addHours(1);
-                const now 		 = new Date(Date.now());
+    //             const expireTime = new Date(infoComment.createAt).addHours(1);
+    //             const now 		 = new Date(Date.now());
 
-                if(expireTime < now){
-                    return resolve({
-                        error: true,
-                        message: "Bình luận đã hết hạn xóa (1 tiếng)",
-                        keyError: "time_to_delete_comment_has_expired",
-                        status: 403
-                    })
-                }
+    //             if(expireTime < now){
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Bình luận đã hết hạn xóa (1 tiếng)",
+    //                     keyError: "time_to_delete_comment_has_expired",
+    //                     status: 403
+    //                 })
+    //             }
 
-                let infoDataAfterDelete = await PCM_COMMENT_COLL.findOneAndDelete({
-                    _id: commentID,
-                    author: authorID
-                });
+    //             let infoDataAfterDelete = await PCM_COMMENT_COLL.findOneAndDelete({
+    //                 _id: commentID,
+    //                 author: authorID
+    //             });
 
-                if(!infoDataAfterDelete) {
-                    return resolve({
-                        error: true,
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
-                        keyError: 'error_occurred',
-                        status: 422
-                    });
-                }
+    //             if(!infoDataAfterDelete) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+    //                     keyError: 'error_occurred',
+    //                     status: 422
+    //                 });
+    //             }
 
-                if(infoComment.task) {
-                    switch (infoComment.type) {
-                        case 1: // Pre-calculate comment
-                            await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountComment: -1 } });
-                            break;
-                        case 2: // Pre-calculate related response
-                            await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountResponse: -1 } });
-                            break;
-                        default:
-                            break;
-                    }
-                }
+    //             if(infoComment.task) {
+    //                 switch (infoComment.type) {
+    //                     case 1: // Pre-calculate comment
+    //                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountComment: -1 } });
+    //                         break;
+    //                     case 2: // Pre-calculate related response
+    //                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountResponse: -1 } });
+    //                         break;
+    //                     default:
+    //                         break;
+    //                 }
+    //             }
 
-                await PCM_FILE_COLL.deleteMany({
-                    comment: commentID
-                });
+    //             await PCM_FILE_COLL.deleteMany({
+    //                 comment: commentID
+    //             });
 
-                return resolve({ error: false, data: infoDataAfterDelete, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoDataAfterDelete, status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
     /**
 	 * Dev: MinhVH
@@ -1457,12 +1542,17 @@ class Model extends BaseModel {
         taskID, contractID, projectID, parentID, isHaveImage, type, official,
         limit = 10, lastestID, sortKey, select, populates, authorID, isGetReaction = 'true', switchType
     }) {
+        // console.log('==============********************')
+        // console.log({
+        //     taskID, contractID, projectID, parentID, isHaveImage, type, official,
+        //     limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {};
+                let conditionObj = { type: { $in: [1, 2] } };
                 let keys = ['createAt__-1', '_id__-1'];
                 let sortBy = {};
 
@@ -1498,11 +1588,12 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+                //______Lấy phản hồi chính thức
+                if(official === 'true') {
+                    conditionObj.official = true;
+                }
+                // console.log(conditionObj)
+
                 if(taskID){
                     if(!checkObjectIDs([taskID])) {
                         return resolve({
@@ -1511,6 +1602,30 @@ class Model extends BaseModel {
                             keyError: "params_taskID_invalid",
                             status: 400
                         });
+                    }
+
+                    let infoTask = await PCM_PLAN_TASK_COLL
+                        .findById(taskID)
+                        .select('subtype openedStatus assignee related')
+                        .lean();
+
+                    /**
+                     * Xét riêng với công việc Thầu và mua sắm infoTask.subtype === 4
+                     * - Không lấy response official khi chưa đủ người mở thầu
+                     * - Không áp dụng đối với người Tạo việc và Người liên quan
+                     */
+                    if(infoTask.subtype === 4 && infoTask?.openedStatus === 0) {
+                        let relatedArr = infoTask.related.map(item => item.toString());
+                        // console.log(relatedArr)
+
+                        // console.log(authorID !== infoTask.assignee?.toString())
+                        // console.log(relatedArr.includes(authorID))
+
+                        if(authorID !== infoTask.assignee?.toString() || relatedArr.includes(authorID)){
+                            conditionObj.official = false;
+                        }
+
+                        // console.log(conditionObj)
                     }
 
 					conditionObj.task = taskID;
@@ -1541,17 +1656,14 @@ class Model extends BaseModel {
                     // conditionObj['images.1'] = { $exists: true };
                 }
 
-                if(official === 'true') {
-                    conditionObj.official = true;
-                }
-
-                if(type) {
+                if(+type > 2) {
                     conditionObj.type = type;
                 }
 
                 if(switchType === this.SWITCH_TYPE.PROJECT) {
                     conditionObj.task = { $exists: false };
                 }
+                // console.log({ conditionObj, type })
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -1637,6 +1749,8 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                console.log(dataResponse)
 
                 return resolve({ error: false, data: {
                     listRecords: dataResponse.length ? dataResponse : infoDataAfterGet,
@@ -1767,6 +1881,224 @@ class Model extends BaseModel {
 			}
 		})
 	}
+
+    /**
+	 * Dev: HiepNH
+	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
+	 * Date: 19/8/2022
+	 */
+	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 20, unlimit, lastestID, select, populates = {} }){
+        // console.log({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
+		return new Promise(async resolve => {
+			try {
+                /**
+                 * BA
+                 * 1-Tìm kiếm các chủ đề mà user được quyền truy cập
+                 * 2-Tìm kiếm các phản hồi trong chủ đề
+                 * 3-Populate tới chủ đề (task) chứa phản hồi để hiển thị ra ngoài trang chủ
+                 */
+
+                if(Number(limit) > 20){
+                    limit = 20;
+                } else{
+                    limit = +Number(limit);
+                }
+
+                /**
+                 * 1-Tìm kiếm các chủ đề mà user được quyền truy cập
+                 */
+                let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
+
+                // Chỉ lấy task cha
+                if(isParent == 1){
+                    conditionSubjectObj.parent = { $exists: false };
+                }
+
+                // if(isActive && isActive == 1){
+                //     conditionSubjectObj.usersDelete = { $nin: [userID] }
+                // }else{
+                //     conditionSubjectObj.usersDelete = { $in: [userID] }
+                // }
+                conditionSubjectObj.usersDelete = { $nin: [userID] }
+
+                // Lấy các chủ đề mà user được quyền truy cập (members của group)
+                if(isGroup && isGroup == 1){
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // Lấy công việc mà mình được quyền truy cập
+                    conditionSubjectObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
+                    ]
+
+                    // conditionSubjectObj.$or = [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    //     { related: { $in: [userID] }},
+                    // ]
+                }else{
+                    conditionSubjectObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                    ]
+
+                    // //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // // Lấy công việc mà mình được quyền truy cập
+                    // conditionSubjectObj.$or = [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    //     { related: { $in: [userID] }},
+                    //     { group: { $in: listGroups.map(item => item._id) }},
+                    // ]
+                }
+
+                // Lấy những việc nháp hoặc không phải việc nháp
+                if(draft && [0,1].includes(draft)){
+                    conditionSubjectObj.draft = draft;
+                }
+
+                let listSubject = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name draft usersDelete')
+                // console.log(listSubject)
+                // console.log(listSubject.map(item => item._id))
+
+                /**
+                 * 2-Tìm kiếm các phản hồi trong chủ đề
+                 */
+                let conditionObj = {
+                    task: { $in: listSubject.map(item => item._id) }
+                }
+
+                /**
+                 * VALIDATION (1)
+                 */
+                const validation = validateParamsObjectID({
+                    authorsID               : { value: authorsID, isRequire: false },
+                    companyOfAuthorsID      : { value: companyOfAuthorsID, isRequire: false },
+                    projectsID              : { value: projectsID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
+                // Điều kiện bộ lọc
+                projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
+                authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
+                companyOfAuthorsID && companyOfAuthorsID.length     && (conditionObj.companyOfAuthor = { $in: companyOfAuthorsID });
+
+                // Thời gian khởi tạo từ ngày->ngày
+                if(fromDate && toDate){
+                    conditionObj.createAt = {
+                        // $exists: true,
+                        // $ne: null,
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+				}
+
+                // Phản hồi chính thức hay không
+                if(official){
+                    conditionObj.official = official;
+                }
+
+                // Lọc và sắp xếp
+                let sortBy;
+                let keys	 = ['createAt__-1', '_id__-1'];
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                // Kiểm tra điều kiện populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                // Tìm kiếm theo keyword
+				if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.
+                    content = new RegExp(keyword, 'i');
+                }
+
+                // console.log(conditionObj)
+
+                let conditionObjOrg = {...conditionObj};
+
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await PCM_COMMENT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                // Tổng số việc tìm thấy
+                let totalRecord = await PCM_COMMENT_COLL.count(conditionObjOrg);
+                if(unlimit == 1){
+                    limit = totalRecord;
+                }
+
+                // Bắt đầu query trong db
+                let infoDataAfterGet = await PCM_COMMENT_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .select(select)
+                    .populate(populates)
+                    .sort(sortBy)
+                    .lean();
+
+                // Kiểm tra nếu không có dữ liệu
+                if(!infoDataAfterGet)
+                   return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
+
+                // NextCursor phần tử cuối cùng khi phân trang
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                // Tổng số trang
+                let totalPage   = Math.ceil(totalRecord/limit);
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
 }
 
 exports.MODEL = new Model;

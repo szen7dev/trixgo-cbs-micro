@@ -9,6 +9,7 @@ const CF_ROUTINGS_DOCUMENT = {
     DELETE_DOCUMENT                     		: `${BASE_ROUTE}/delete-document`,
     GET_INFO_DOCUMENT                     		: `${BASE_ROUTE}/info-document`,
     GET_LIST_DOCUMENT                     		: `${BASE_ROUTE}/list-document`,
+    FILTER_DOCUMENT                     		: `${BASE_ROUTE}/filter-document`,
     EXPORT_DOCUMENT                     		: `${BASE_ROUTE}/export-document`,
 
     GET_LIST_STORAGE                     		: `${BASE_ROUTE}/list-storage`,

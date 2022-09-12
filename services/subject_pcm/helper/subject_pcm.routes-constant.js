@@ -14,8 +14,10 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     ORIGIN_APP: BASE_ROUTE,
     // ================================PCM_PLAN_TASK=======================================//
     PCM__PCM_PLAN_TASK                                          : `${BASE_ROUTE}${PCM_PLAN_TASK}`,
+    PCM__PCM_PLAN_TASK_GET_LIST_SUBJECT                         : `${BASE_ROUTE}${PCM_PLAN_TASK}/subject`,
     PCM__PCM_PLAN_TASK_GET_LIST_BY_FILTER                       : `${BASE_ROUTE}${PCM_PLAN_TASK}/filter`,
     PCM__PCM_PLAN_TASK_UPDATE_STATUS_MUTIPLE                    : `${BASE_ROUTE}${PCM_PLAN_TASK}/update-status-mutiple`,
+    PCM__PCM_PLAN_TASK_GET_AMOUNT_NOTIFICATION                  : `${BASE_ROUTE}${PCM_PLAN_TASK}/notification`,
     PCM__PCM_PLAN_TASK_GET_BADGE                                : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge`,
     PCM__PCM_PLAN_TASK_GET_BADGE_BIDDING                        : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge-bidding`,
     PCM__PCM_PLAN_TASK_SEND_EMAIL_TO_MEMBER_IN_TASK             : `${BASE_ROUTE}${PCM_PLAN_TASK}/send-email-to-member-in-task`,
@@ -40,12 +42,14 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     SUBJECT_PCM__PCM_PLAN_TASK_COMMENT                  : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}`,
     SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_UPDATE_MARK      : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/mark`,
     SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_SEARCH_BY_ID     : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/search-by-id`,
+    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_SEARCH_BY_SUBJECT     : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/search-by-subject`,
 
     // Reaction_comment
     SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_REACTION         : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/reactions`,
 
     // pcm_file
     PCM_FILE                                            : `${BASE_ROUTE}${PCM_FILE}`,
+    PCM_FILE_GET_LIST_BY_FILTER                         : `${BASE_ROUTE}${PCM_FILE}/filter`,
     PCM_FILE_GROUP_BY_DATE                              : `${BASE_ROUTE}${PCM_FILE}/group-by-date`,
     PCM_FILE_GROUP_BY_CONTRACT                          : `${BASE_ROUTE}${PCM_FILE}/group-by-contract`,
 }

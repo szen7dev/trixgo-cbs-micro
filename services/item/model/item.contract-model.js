@@ -986,6 +986,9 @@ class Model extends BaseModel {
                     ]
                 }
 
+                // console.log('==============>>>>>>>>>>>>>')
+                // console.log(conditionObj)
+
                 /**
                  * Purpose: Sử dụng trong export excel (hoặc theo bộ lọc)
                  * Function: exportContract (model)
@@ -1089,9 +1092,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
+                 * Hợp đồng của công ty hoặc theo dự án
                  */
                 if (checkObjectIDs(projectID)) {
                     conditionObj.project = projectID
@@ -1201,6 +1202,160 @@ class Model extends BaseModel {
                         { name: regSearch },
                         { sign: regSearch },
                         { storeSign: regSearch },
+                    ]
+                }
+
+                /**
+                 * Purpose: Sử dụng trong export excel (hoặc theo bộ lọc)
+                 * Function: exportContract (model)
+                 */
+                if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj = dataPagingAndSort?.data?.find;
+					sortBy       = dataPagingAndSort?.data?.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy                = dataPagingAndSort?.data?.sort;
+                }
+
+                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	    = null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Danh sách hợp đồng (mẫu chuẩn sử dụng cho các tình huống)
+     * Author: HiepNH
+     * Code  : 7/9/2022
+     */
+    getListByFilter({
+        fromDate, toDate, companysID, projectsID, buyerInfosID, sellerInfosID, statuss, ontimes, onbudgets, isExportExcel = false,
+        keyword, limit = 10, lastestID, select, populates= {}, userID }) {
+        console.log({
+            fromDate, toDate, companysID, projectsID, buyerInfosID, sellerInfosID, statuss, ontimes, onbudgets, isExportExcel,
+            keyword, limit, lastestID, select, populates, userID })
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { members: { $in: [userID] } };
+                let keys	     = ['date__-1', '_id__-1'];
+                let sortBy;
+
+                if(limit > 20){
+                    limit = 20
+                }
+                /**
+                 * VALIDATION
+                 */
+                const validation = validateParamsObjectID({
+                    companysID         : { value: companysID, isRequire: false },
+                    projectsID         : { value: projectsID, isRequire: false },
+                    buyerInfosID       : { value: buyerInfosID, isRequire: false },
+                    sellerInfosID      : { value: sellerInfosID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                /**
+                 * Bộ lọc với nhiều lựa chọn
+                 */
+                companysID && companysID.length             && (conditionObj.company = { $in: companysID });
+                projectsID && projectsID.length             && (conditionObj.project = { $in: projectsID });
+                buyerInfosID && buyerInfosID.length         && (conditionObj.buyerInfo = { $in: buyerInfosID });
+                sellerInfosID && sellerInfosID.length       && (conditionObj.sellerInfo = { $in: sellerInfosID });
+                statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
+                ontimes && ontimes.length                   && (conditionObj.ontime = { $in: ontimes });
+                onbudgets && onbudgets.length               && (conditionObj.onbudget = { $in: onbudgets });
+
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+                }
+
+                /**
+                 * Hợp đồng của công ty hoặc theo dự án
+                 */
+                // if (checkObjectIDs(projectID)) {
+                //     conditionObj.project = projectID
+                // }else{
+                //     if(companyID){
+                //         conditionObj.company = companyID
+                //     }
+                // }
+                // if(checkObjectIDs(parentID)){
+                //     conditionObj.parent = parentID
+                // }
+                // if(isMember == 1){
+                //     conditionObj.members = { $in: [userID] }
+                // }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
                     ]
                 }
 

@@ -9,6 +9,11 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "project"
+    },    
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
@@ -17,17 +22,12 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
     //_________Hạng mục
     item: {
         type: Schema.Types.ObjectId,
-        ref : "contract_bill_group"
+        ref : "contract_bill_item"
     },
     //_________Nhóm dữ liệu
     group: {
         type: Schema.Types.ObjectId,
         ref : "contract_bill_group"
-    },
-    //_________Mã công tác trong datahub
-    datahubJob: {
-        type: Schema.Types.ObjectId,
-        ref : "datahub_job"
     },
     /**
      * THÔNG TIN CĂN BẢN
@@ -86,11 +86,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
     //_________Đơn giá ước tính còn lại (chưa gồm VAT)
     fcuEstimateUnitPrice: Number,
     fcuEstimateVatValue: Number, 
-    //_________Link với công việc của ngân sách (BỎ)
-    // linkBudget: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : "budget_job"
-    // }, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

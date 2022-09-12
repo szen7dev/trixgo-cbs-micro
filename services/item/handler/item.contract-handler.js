@@ -366,6 +366,54 @@ module.exports = {
     },
 
     /**
+     * Name  : Danh sách hợp đồng (mẫu chuẩn sử dụng cho các tình huống)
+     * Author: HiepNH
+     * Code  : 7/9/2022
+     */
+    getListByFilter: {
+        auth: 'required',
+        params: {
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            companysID          : { type: 'array', optional: true },
+            projectsID          : { type: 'array', optional: true },
+            buyerInfosID        : { type: 'array', optional: true },
+            sellerInfosID       : { type: 'array', optional: true },
+            statuss             : { type: 'array', optional: true },
+            ontimes             : { type: 'array', optional: true },
+            onbudgets           : { type: 'array', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    fromDate, toDate, companysID, projectsID, buyerInfosID,
+                    sellerInfosID, statuss, ontimes, onbudgets, 
+                    keyword, limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListByFilter({
+                    fromDate, toDate, companysID, projectsID, buyerInfosID,
+                    sellerInfosID, statuss, ontimes, onbudgets, 
+                    keyword, limit, lastestID, select, populates, 
+                    userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Dev: Hiepnh
      * Func: get amount by month
      */

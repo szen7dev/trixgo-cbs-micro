@@ -204,23 +204,25 @@ module.exports = {
 	 */
     getListDocument: {
         params: {
-			parentID        : { type: "string", optional: true },
-			companyID       : { type: "string", optional: true },
-			departmentID    : { type: "string", optional: true },
-            packageID	    : { type: "string", optional: true },
-			doctypeID	    : { type: "string", optional: true },
-			senderID	    : { type: "string", optional: true },
-            contractID	    : { type: "string", optional: true },
-			requestResponse : { type: "string", optional: true },
-			type            : { type: "string", optional: true },
-			direction       : { type: "string", optional: true },
-			datahubContactID: { type: "string", optional: true },
-			marked          : { type: "string", optional: true },
+            datahubContactID: { type: "string", optional: true }, // Chủ thể ban hành
+            senderID	    : { type: "string", optional: true }, // Người ban hành
+            type            : { type: "string", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
+            propertyID      : { type: "string", optional: true }, // Phân loại hồ sơ (người dùng quy định)
+            departmentID    : { type: "string", optional: true }, // Dự án
+            direction       : { type: "string", optional: true }, // Hướng hồ sơ
+            contractID	    : { type: "string", optional: true }, // Thuộc hợp đồng
+            packageID	    : { type: "string", optional: true }, // Gói thầu
+            
+            receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
+            requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
+			parentID        : { type: "string", optional: true }, // Phần tử cha
+			companyID       : { type: "string", optional: true }, // Thuộc công ty
+            marked          : { type: "string", optional: true }, // Được đánh dấu
+            keyword         : { type: "string", optional: true }, // Keyword
+
             lastestID       : { type: "string", optional: true },
-            keyword         : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
-			receivedDate    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -235,13 +237,62 @@ module.exports = {
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, datahubContactID,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
-
-                // if(!companyID){
-                //     companyID = company._id
-                // }
+                console.log({ contractID })
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, datahubContactID, userID, keyword,
+                    limit, lastestID, select, populates
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+     * Name  : Tìm kiếm văn bản
+     * Author: HiepNH
+     * Code  : 29/8/2022
+     */
+    getListByFilter: {
+        params: {
+            datahubContactsID: { type: "array", optional: true }, // Chủ thể ban hành
+            sendersID	    : { type: "array", optional: true }, // Người ban hành
+            types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
+            propertysID      : { type: "array", optional: true }, // Phân loại hồ sơ (người dùng quy định)
+            fieldsID	    : { type: "array", optional: true }, // Phân loại khác
+            departmentsID    : { type: "array", optional: true }, // Dự án
+            directions       : { type: "array", optional: true }, // Hướng hồ sơ
+            contractsID	    : { type: "array", optional: true }, // Thuộc hợp đồng
+            packagesID	    : { type: "array", optional: true }, // Gói thầu
+            storagesID	    : { type: "array", optional: true }, // Địa chỉ lưu trữ
+            
+            receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
+            requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
+			parentID        : { type: "string", optional: true }, // Phần tử cha
+			companyID       : { type: "string", optional: true }, // Thuộc công ty
+            marked          : { type: "string", optional: true }, // Được đánh dấu
+            keyword         : { type: "string", optional: true }, // Keyword
+
+            lastestID       : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+			select          : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let {
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListByFilter({
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, datahubContactsID, userID, keyword,
                     limit, lastestID, select, populates
                 });
 
@@ -448,7 +499,6 @@ module.exports = {
             }
         }
     },
-
 
     /**
 	 * Dev: Depv

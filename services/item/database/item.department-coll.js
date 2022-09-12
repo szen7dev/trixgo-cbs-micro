@@ -33,10 +33,9 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         ref : "user"
     }],
     /**
-     * Phiên bản cao cấp/trả phí
-     * cho phép add thành viên ngoài phân vùng vào dự án
-     * 0-Không cho phép, chỉ cho phép nội bộ phân vùng
-     * 1-Cho phép ngoài phân vùng (phải trả phí)     * 
+     * Phiên bản cao cấp/trả phí: Cho phép add thành viên ngoài phân vùng vào dự án (Hệ thống cấu hình)
+     * 0-Không cho phép, chỉ cho phép add user trong nội bộ phân vùng
+     * 1-Cho phép ngoài phân vùng (phải trả phí)
      */
     premium: {
         type: Number,

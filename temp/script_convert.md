@@ -622,3 +622,86 @@ const convertAsync = filesPcm.map(f => {
 })
 
 Promise.all(convertAsync)
+
+
+/**
+* ============================ ************************* ==============================
+* ============================ 	 UPDATE ACCESS_USERS  	 ==============================
+* ============================ ************************* ==============================
+*/
+const listTasks = db.pcm_plan_tasks.find({}).projection({}).toArray()
+
+const arrPromise = listTasks.map(task => {
+    const { _id: taskId, related, author, assignee, accessUsers } = task;
+
+    if(!accessUsers || !accessUsers.length) {
+        const accessUsers = [author, assignee, ...related];
+
+        db.pcm_plan_tasks.updateOne({ _id: ObjectId(taskId) }, {
+            $set: {
+                accessUsers
+            }
+        })
+    }
+})
+
+Promise.all(arrPromise)
+
+
+/**
+* ================ ******************************************* ====================
+* ================ 	 UPDATE COMPANY_OF_AUTHOR FOR PCM_COMMENT  ====================
+* ================ ******************************************* ====================
+*/
+const listAuthors = db.pcm_comments.aggregate([
+    {
+        $group: {
+            _id: "$author"
+        }
+    },
+])
+
+const arrPromise = listAuthors.map(({ _id: userId }) => {
+    const infoUser = db.users.findOne({ _id: userId }, { company: 1 })
+
+    if(infoUser) {
+        db.pcm_comments.updateMany({
+            author: userId
+        }, {
+            $set: {
+                companyOfAuthor: infoUser.company
+            }
+        })
+    }
+})
+
+Promise.all(arrPromise);
+
+/**
+* ================ **************************************** ====================
+* ================ 	 UPDATE COMPANY_OF_AUTHOR FOR PCM_FILE  ====================
+* ================ **************************************** ====================
+*/
+const listAuthors = db.pcm_files.aggregate([
+    {
+        $group: {
+            _id: "$author"
+        }
+    },
+])
+
+const arrPromise = listAuthors.map(({ _id: userId }) => {
+    const infoUser = db.users.findOne({ _id: userId }, { company: 1 })
+
+    if(infoUser) {
+        db.pcm_files.updateMany({
+            author: userId
+        }, {
+            $set: {
+                companyOfAuthor: infoUser.company
+            }
+        })
+    }
+})
+
+Promise.all(arrPromise);

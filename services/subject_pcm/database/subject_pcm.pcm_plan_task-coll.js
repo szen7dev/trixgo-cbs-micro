@@ -45,7 +45,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     companyOfAuthor: {
         type: Schema.Types.ObjectId,
         ref: 'company'
-    },  
+    },
     //_________Người thực hiện
     assignee: {
         type: Schema.Types.ObjectId,
@@ -55,7 +55,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     companyOfAssignee: {
         type: Schema.Types.ObjectId,
         ref: 'company'
-    },  
+    },
     //_________Những người liên quan
     related: [{
         type: Schema.Types.ObjectId,
@@ -83,7 +83,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     accessUsers: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    }],  
+    }],
     /**
      * Những user chưa xem công việc
      * - Sẽ xóa user khi bấm xem
@@ -92,7 +92,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     news: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    }],     
+    }],
     /**
      * Những người đã xem: dùng để theo dõi những ai đã truy cập vào Task
      * - Không được xóa phần tử đã thêm
@@ -100,7 +100,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     viewedUsers: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    }],  
+    }],
     /**
      * PHÂN LOẠI PHỤC VỤ BÁO CÁO
      */
@@ -112,9 +112,9 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      */
     draft: { type: Number, default: 0 },
     /**
-     * Phân loại checklist và công việc/việc con (!!! CÂN NHẮC CÓ THỂ BỎ)
+     * Phân loại công việc và công việc con
      * 1-Công việc
-     * 2-Checklist
+     * 2-Checklist/Công việc con
      */
     type: { type: Number, default: 1 },
     /**
@@ -148,11 +148,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 6-Tiếp tục theo dõi
      * 7-Khóa
      */
-    status: { type: Number, default: 1 },    
+    status: { type: Number, default: 1 },
     //_________Phân loại mức độ quan trọng (cao, bình thường, thấp)
     priority: { type: Number, default: 2 },
     //_________Phân loại mức độ rủi ro (cao, bình thường, thấp)
-    risk: { type: Number, default: 2 },    
+    risk: { type: Number, default: 2 },
     //_________Dự án/phòng ban
     project: {
         type: Schema.Types.ObjectId,
@@ -202,11 +202,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     //_________Mô tả
     description: String,
     //_______Mô tả convert-chữ thường, không dấu
-    descriptioncv: String,    
+    descriptioncv: String,
     //_________Ghi chú
     note: String,
     //_______Ghi chú convert-chữ thường, không dấu
-    notecv: String,   
+    notecv: String,
     //_________Tổng số lượng việc con
     amountSubtask: {
         type: Number, default: 0
@@ -227,6 +227,18 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     amountMarkedResponse: {
         type: Number, default: 0
     },
+    //_________Tổng số lượng hiện trạng
+    amountCurrentStatus: {
+        type: Number, default: 0
+    },
+    //_________Tổng số lượng giải pháp
+    amountSolution: {
+        type: Number, default: 0
+    },
+    //_________Tổng số lượng phản hồi khác
+    amountResponseOther: {
+        type: Number, default: 0
+    },
     //_________Ký duyệt xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,
@@ -239,7 +251,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     links: [{
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
-    }], 
+    }],
     //_________File của người tạo việc (!!! Cân nhắc bỏ => đưa sang phản hồi liên quan)
     authorAttachs: [{
         type: Schema.Types.ObjectId,
@@ -305,15 +317,15 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * THÔNG TIN TƯƠNG TÁC
      */
     // Lưu lại tin nhắn đang soạn
-    responsesTyping : [{
-        user:  {
-            type: Schema.Types.ObjectId,
-            ref: 'user'
-        },
-        content : {
-            type : String
-        }
-    }],
+    // responsesTyping : [{
+    //     user:  {
+    //         type: Schema.Types.ObjectId,
+    //         ref: 'user'
+    //     },
+    //     content : {
+    //         type : String
+    //     }
+    // }],
     //_________Những user đánh dấu quan tâm/start/bookmark
     flags: [{
         type: Schema.Types.ObjectId,
@@ -324,7 +336,10 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
-    //_______Mảng user xoá vĩnh viễn công việc
+    /**
+     * Mảng user xoá vĩnh viễn công việc
+     * Đồng nghĩa với việc giảm dung lượng sử dụng
+     */
     usersPermanentDelete: [{
         type: Schema.Types.ObjectId,
         ref: "user"

@@ -279,6 +279,44 @@ module.exports = {
     },
 
     /**
+     * Name  : Danh bạ (bên mua, bên bán) mà user được quyền truy cập theo hợp đồng
+     * Author: HiepNH
+     * Code  : 7/9/2022
+     */
+    getListAccessByContract: {
+        auth: 'required',
+        params: {
+            option              : { type: 'string', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    option, 
+                    keyword, limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListAccessByContract({
+                    option, 
+                    keyword, limit, lastestID, select, populates, 
+                    userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Dev: MinhVH
      * Func: Download Excel Contact
      * Date: 21/06/2022
