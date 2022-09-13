@@ -205,67 +205,67 @@ class Model extends BaseModel {
     /**
      * Name: Update value
      * Author: HiepNH
-     * Code: 12/9/2022
+     * Code: 13/9/2022
      */
-    // updateValue({ 
-    //     option, jobID, userID
-    // }){ 
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             /**
-    //              * BA
-    //              * 1-Cập nhật giá trị hợp đồng
-    //              * 2-Cập nhật giá trị nghiệm thu (tổng lũy kế)
-    //              */
+    updateValue({ 
+        option, jobID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị hợp đồng
+                 * 2-Cập nhật giá trị nghiệm thu (tổng lũy kế)
+                 */
 
-    //             if(!checkObjectIDs(jobID))
-    //                 return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "id_invalid" })
+                if(!checkObjectIDs(jobID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "id_invalid" })
 
-    //             let info = await CMCS__CONTRACT_BILL_JOB_COLL.findById(jobID)
-    //             // let amount = 0
-    //             // if(info.amount){
-    //             //     amount = info.amount + 1000000
-    //             // }
-    //             console.log(info)
+                let info = await CMCS__CONTRACT_BILL_JOB_COLL.findById(jobID)
+                // let amount = 0
+                // if(info.amount){
+                //     amount = info.amount + 1000000
+                // }
+                console.log(info)
 
-    //             let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
-    //             //_____CẬP NHẬT GIÁ TRỊ HỢP ĐỒNG CỦA GROUP
-    //             if(option && Number(option) === 1){
-    //                 let listData = await CMCS__CONTRACT_BILL_JOB_COLL.aggregate([
-    //                     {
-    //                         $match: {
-    //                             group: ObjectID(groupID),
-    //                         }
-    //                     }, 
-    //                     {
-    //                         $group: {
-    //                             _id: { },
-    //                             // amount: { $sum: "$value" },
-    //                             totalAmount: { $sum: { $multiply: [ "$planQuantity", "$planUnitPrice" ] } },
-    //                         }
-    //                     }, 
-    //                 ])
+                //_____CẬP NHẬT GIÁ TRỊ NGHIỆM THU HOÀN THÀNH CỦA CÔNG VIỆC
+                if(option && Number(option) === 1){
+                    let listData = await CMCS__CONTRACT_IPC_DETAIL_COLL.aggregate([
+                        {
+                            $match: {
+                                job: ObjectID(jobID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                // amount: { $sum: "$value" },
+                                totalAmount: { $sum: { $multiply: [ "$planQuantity", "$planUnitPrice" ] } },
+                            }
+                        }, 
+                    ])
 
-    //                 console.log(listData)
+                    console.log(listData)
 
-    //                 if(listData && listData.length){
-    //                     dataUpdate.amount = Number(listData[0].totalAmount)
-    //                 }
-    //             }
-    //             console.log("dataUpdate====================>>>>>>>>>>>>>>")
+                    if(listData && listData.length){
+                        dataUpdate.amount = Number(listData[0].totalAmount)
+                    }
+                }
+                console.log("dataUpdate====================>>>>>>>>>>>>>>")
                 
 
-    //             let infoAfterUpdate = await CMCS__CONTRACT_BILL_JOB_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true });
-    //             if(!infoAfterUpdate)
-    //                 return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update", status: 403 });
+                let infoAfterUpdate = await CMCS__CONTRACT_BILL_JOB_COLL.findByIdAndUpdate(jobID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update", status: 403 });
 
-    //             return resolve({ error: false, data: infoAfterUpdate, status: 200 });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Name: Remove
