@@ -79,6 +79,7 @@ const CF_ACTIONS_CMCS = {
     CONTRACT_BILL_GROUP_UPDATE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_GROUP}_UPDATE`,
     CONTRACT_BILL_GROUP_REMOVE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_GROUP}_REMOVE`,
     CONTRACT_BILL_GROUP_GET_INFO_AND_GET_LIST                          : `${BASE_ACTIONS}_${CONTRACT_BILL_GROUP}_GET_INFO_AND_GET_LIST`,
+    CONTRACT_BILL_GROUP_UPDATE_VALUE                                   : `${BASE_ACTIONS}_${CONTRACT_BILL_GROUP}_UPDATE_VALUE`,
 
     /**
     * CONTRACT_BILL_JOB
@@ -87,6 +88,7 @@ const CF_ACTIONS_CMCS = {
     CONTRACT_BILL_JOB_UPDATE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_UPDATE`,
     CONTRACT_BILL_JOB_REMOVE                                         : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_REMOVE`,
     CONTRACT_BILL_JOB_GET_INFO_AND_GET_LIST                          : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_GET_INFO_AND_GET_LIST`,
+    CONTRACT_BILL_JOB_UPDATE_VALUE                                   : `${BASE_ACTIONS}_${CONTRACT_BILL_JOB}_UPDATE_VALUE`,
 
     /**
     * CONTRACT_IPC_DETAIL
