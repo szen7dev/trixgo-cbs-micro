@@ -1384,103 +1384,103 @@ class Model extends BaseModel {
 	 * Func: Xóa comment
 	 * Date: 22/02/2022
 	 */
-    delete({ commentID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs([commentID])) {
-                    return resolve({
-                        error: true,
-                        message: 'Tham số commentID không hợp lệ',
-                        keyError: 'params_commentID_invalid',
-                        status: 400
-                    });
-                }
+    // delete({ commentID, authorID }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             /**
+    //              * VALIDATION STEP (2)
+    //              *  - Kiểm tra valid từ các input
+    //              *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+    //              */
+    //             if(!checkObjectIDs([commentID])) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: 'Tham số commentID không hợp lệ',
+    //                     keyError: 'params_commentID_invalid',
+    //                     status: 400
+    //                 });
+    //             }
 
-                if(!checkObjectIDs([authorID])) {
-                    return resolve({
-                        error: true,
-                        message: 'Tham số authorID không hợp lệ',
-                        keyError: 'params_authorID_invalid',
-                        status: 400
-                    });
-                }
+    //             if(!checkObjectIDs([authorID])) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: 'Tham số authorID không hợp lệ',
+    //                     keyError: 'params_authorID_invalid',
+    //                     status: 400
+    //                 });
+    //             }
 
-                const infoComment = await PCM_COMMENT_COLL
-                    .findById(commentID)
-                    .lean();
+    //             const infoComment = await PCM_COMMENT_COLL
+    //                 .findById(commentID)
+    //                 .lean();
 
-                if(!infoComment) {
-                    return resolve({
-                        error: true,
-                        message: "Bình luận không tồn tại",
-                        keyError: "comment_not_exists_or_comment_is_response",
-                        status: 400
-                    })
-                }
+    //             if(!infoComment) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Bình luận không tồn tại",
+    //                     keyError: "comment_not_exists_or_comment_is_response",
+    //                     status: 400
+    //                 })
+    //             }
 
-                if(infoComment.type === 2) {
-                    return resolve({
-                        error: true,
-                        message: "Phản hồi liên quan không thể xóa",
-                        keyError: "response_cannot_delete",
-                        status: 403
-                    })
-                }
+    //             if(infoComment.type === 2) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Phản hồi liên quan không thể xóa",
+    //                     keyError: "response_cannot_delete",
+    //                     status: 403
+    //                 })
+    //             }
 
-                const expireTime = new Date(infoComment.createAt).addHours(1);
-                const now 		 = new Date(Date.now());
+    //             const expireTime = new Date(infoComment.createAt).addHours(1);
+    //             const now 		 = new Date(Date.now());
 
-                if(expireTime < now){
-                    return resolve({
-                        error: true,
-                        message: "Bình luận đã hết hạn xóa (1 tiếng)",
-                        keyError: "time_to_delete_comment_has_expired",
-                        status: 403
-                    })
-                }
+    //             if(expireTime < now){
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Bình luận đã hết hạn xóa (1 tiếng)",
+    //                     keyError: "time_to_delete_comment_has_expired",
+    //                     status: 403
+    //                 })
+    //             }
 
-                let infoDataAfterDelete = await PCM_COMMENT_COLL.findOneAndDelete({
-                    _id: commentID,
-                    author: authorID
-                });
+    //             let infoDataAfterDelete = await PCM_COMMENT_COLL.findOneAndDelete({
+    //                 _id: commentID,
+    //                 author: authorID
+    //             });
 
-                if(!infoDataAfterDelete) {
-                    return resolve({
-                        error: true,
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
-                        keyError: 'error_occurred',
-                        status: 422
-                    });
-                }
+    //             if(!infoDataAfterDelete) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+    //                     keyError: 'error_occurred',
+    //                     status: 422
+    //                 });
+    //             }
 
-                if(infoComment.task) {
-                    switch (infoComment.type) {
-                        case 1: // Pre-calculate comment
-                            await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountComment: -1 } });
-                            break;
-                        case 2: // Pre-calculate related response
-                            await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountResponse: -1 } });
-                            break;
-                        default:
-                            break;
-                    }
-                }
+    //             if(infoComment.task) {
+    //                 switch (infoComment.type) {
+    //                     case 1: // Pre-calculate comment
+    //                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountComment: -1 } });
+    //                         break;
+    //                     case 2: // Pre-calculate related response
+    //                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountResponse: -1 } });
+    //                         break;
+    //                     default:
+    //                         break;
+    //                 }
+    //             }
 
-                await PCM_FILE_COLL.deleteMany({
-                    comment: commentID
-                });
+    //             await PCM_FILE_COLL.deleteMany({
+    //                 comment: commentID
+    //             });
 
-                return resolve({ error: false, data: infoDataAfterDelete, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoDataAfterDelete, status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
     /**
 	 * Dev: MinhVH
@@ -1542,6 +1542,11 @@ class Model extends BaseModel {
         taskID, contractID, projectID, parentID, isHaveImage, type, official,
         limit = 10, lastestID, sortKey, select, populates, authorID, isGetReaction = 'true', switchType
     }) {
+        // console.log('==============********************')
+        // console.log({
+        //     taskID, contractID, projectID, parentID, isHaveImage, type, official,
+        //     limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1583,14 +1588,11 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+                //______Lấy phản hồi chính thức
                 if(official === 'true') {
                     conditionObj.official = true;
                 }
+                // console.log(conditionObj)
 
                 if(taskID){
                     if(!checkObjectIDs([taskID])) {
@@ -1604,16 +1606,26 @@ class Model extends BaseModel {
 
                     let infoTask = await PCM_PLAN_TASK_COLL
                         .findById(taskID)
-                        .select('subtype openedStatus assignee')
+                        .select('subtype openedStatus assignee related')
                         .lean();
 
-                    // Áp dụng cho bidding task, không lấy response official khi chưa đủ người mở thầu
-                    // Không áp dụng đối với người được giao việc
-                    if(infoTask.subtype === 4 &&
-                        infoTask?.openedStatus === 0 &&
-                        authorID !== infoTask.assignee?.toString()
-                    ) {
-                        conditionObj.official = false;
+                    /**
+                     * Xét riêng với công việc Thầu và mua sắm infoTask.subtype === 4
+                     * - Không lấy response official khi chưa đủ người mở thầu
+                     * - Không áp dụng đối với người Tạo việc và Người liên quan
+                     */
+                    if(infoTask.subtype === 4 && infoTask?.openedStatus === 0) {
+                        let relatedArr = infoTask.related.map(item => item.toString());
+                        // console.log(relatedArr)
+
+                        // console.log(authorID !== infoTask.assignee?.toString())
+                        // console.log(relatedArr.includes(authorID))
+
+                        if(authorID !== infoTask.assignee?.toString() || relatedArr.includes(authorID)){
+                            conditionObj.official = false;
+                        }
+
+                        // console.log(conditionObj)
                     }
 
 					conditionObj.task = taskID;
@@ -1651,7 +1663,7 @@ class Model extends BaseModel {
                 if(switchType === this.SWITCH_TYPE.PROJECT) {
                     conditionObj.task = { $exists: false };
                 }
-                console.log({ conditionObj, type })
+                // console.log({ conditionObj, type })
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -1737,6 +1749,8 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                console.log(dataResponse)
 
                 return resolve({ error: false, data: {
                     listRecords: dataResponse.length ? dataResponse : infoDataAfterGet,
@@ -1909,22 +1923,22 @@ class Model extends BaseModel {
 
                 // Lấy các chủ đề mà user được quyền truy cập (members của group)
                 if(isGroup && isGroup == 1){
-                    // //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                    // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                    // // Lấy công việc mà mình được quyền truy cập
-                    // conditionSubjectObj.$or = [
-                    //     { author: userID },
-                    //     { assignee: userID },
-                    //     { related: { $in: [userID] }},
-                    //     { group: { $in: listGroups.map(item => item._id) }},
-                    // ]
-
+                    // Lấy công việc mà mình được quyền truy cập
                     conditionSubjectObj.$or = [
                         { author: userID },
                         { assignee: userID },
                         { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
                     ]
+
+                    // conditionSubjectObj.$or = [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    //     { related: { $in: [userID] }},
+                    // ]
                 }else{
                     conditionSubjectObj.$or = [
                         { author: userID },
@@ -2018,8 +2032,11 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.content = new RegExp(keyword, 'i');
+                    conditionObj.
+                    content = new RegExp(keyword, 'i');
                 }
+
+                // console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 

@@ -9,15 +9,20 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_group", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "project"
+    },    
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
     //_________Hạng mục
-    parent: {
+    item: {
         type: Schema.Types.ObjectId,
-        ref : "contract_bill_group"
+        ref : "contract_bill_item"
     },
     /**
      * THÔNG TIN CĂN BẢN
@@ -34,11 +39,29 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_group", {
     note: String,
     /**
      * THÔNG TIN VỀ GIÁ TRỊ (PRE-CALCULATE FORM JOB)
+     * - Giá trị theo hợp đồng
+     * - Sản lượng
+     * - Nghiệm thu hoàn thành
      */
-    //_________Giá trị trước thuế
-    amount: { type: Number, default: 0 }, 
-    //_________Giá trị thuế
-    vat: { type: Number, default: 0 }, 
+    /**
+     * KHỐI LƯỢNG
+     */
+    //_________Khối lượng
+    quantity: { type: Number, default: 0 }, 
+    /**
+     * ĐƠN GIÁ (KHÔNG GỒM VAT)
+     */
+    /**
+     * GIÁ TRỊ (KHÔNG GỒM VAT)
+     */
+    //_________Giá trị ban đầu (chưa gồm VAT)
+    orgAmount: { type: Number, default: 0 },
+    //_________Giá trị  cập nhật triển khai (chưa gồm VAT)
+    currentAmount: { type: Number, default: 0 },
+    //_________Giá trị ước tính còn lại (chưa gồm VAT)
+    estimateAmount: { type: Number, default: 0 },
+    //_________Giá trị đã nghiệm thu hoàn thành
+    inspecAmount: { type: Number, default: 0 },   
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

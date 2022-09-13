@@ -55,6 +55,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
         name, description, note, fieldID, value, completeStatus, ctx
 	}) {
+        // console.log({
+        //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
+        //     name, description, note, fieldID, value, completeStatus
+        // })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(departmentID)) {
@@ -234,6 +239,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
         name, description, note, fieldID, value, completeStatus, otherID, ctx
 	}) {
+        // console.log({
+        //     documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
+        //     name, description, note, fieldID, value, completeStatus, otherID
+        // })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(documentID, packageID, senderID, propertyID, userID)) {

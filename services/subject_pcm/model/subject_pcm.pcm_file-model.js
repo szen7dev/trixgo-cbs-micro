@@ -414,13 +414,18 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                    
                 }
+
+                //__________Danh sách các nhóm dữ liệu mà userID là members
+                let listGroups = await PCM_PLAN_GROUP__COLL.find({ members: { $in: [userID]} })
 
                 // Danh sách Task mà user được quyền truy cập
                 conditionObjTask.$or = [
                     { author: userID },
                     { assignee: userID },
-                    { related: { $in: [userID] } }
+                    { related: { $in: [userID] } },
+                    { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
                 ]
 
                 const listTask = await PCM_PLAN_TASK__COLL
