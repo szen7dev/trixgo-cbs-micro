@@ -58,6 +58,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc_detail", {
     unitPrice: { type: Number, default: 0 },
     //_________Giá trị nghiệm thu (chưa gồm VAT)
     amount: { type: Number, default: 0 },
+    //_________Ghi chú
+    note: String,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

@@ -221,17 +221,10 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(jobID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "id_invalid" })
 
-                let info = await CMCS__CONTRACT_BILL_JOB_COLL.findById(jobID)
-                // let amount = 0
-                // if(info.amount){
-                //     amount = info.amount + 1000000
-                // }
-                console.log(info)
-
                 let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
-                //_____CẬP NHẬT GIÁ TRỊ NGHIỆM THU HOÀN THÀNH CỦA CÔNG VIỆC
-                if(option && Number(option) === 1){
+                //_____CẬP NHẬT GIÁ TRỊ NGHIỆM THU HOÀN THÀNH
+                if(option && Number(option) === 2){
                     let listData = await CMCS__CONTRACT_IPC_DETAIL_COLL.aggregate([
                         {
                             $match: {
@@ -247,15 +240,13 @@ class Model extends BaseModel {
                             }
                         }, 
                     ])
-
-                    console.log(listData)
+                    // console.log(listData)
 
                     if(listData && listData.length){
                         dataUpdate.inspecQuantity = Number(listData[0].totalQuantity)
                         dataUpdate.inspecAmount = Number(listData[0].totalAmount)
                     }
                 }
-                console.log("dataUpdate====================>>>>>>>>>>>>>>")
 
                 let infoAfterUpdate = await CMCS__CONTRACT_BILL_JOB_COLL.findByIdAndUpdate(jobID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)

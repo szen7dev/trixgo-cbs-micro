@@ -166,13 +166,6 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(itemID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "id_invalid" })
 
-                let info = await CMCS__CONTRACT_BILL_ITEM_COLL.findById(itemID)
-                // let amount = 0
-                // if(info.amount){
-                //     amount = info.amount + 1000000
-                // }
-                // console.log(info)
-
                 let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
                 //_____CẬP NHẬT GIÁ TRỊ HỢP ĐỒNG CỦA ITEM
@@ -198,8 +191,30 @@ class Model extends BaseModel {
                         dataUpdate.currentAmount = Number(listData[0].totalAmount)
                     }
                 }
-                console.log("update giá trị Hạng mục====================>>>>>>>>>>>>>>")
-                
+                // console.log("update giá trị Hạng mục====================>>>>>>>>>>>>>>")
+
+                //_____CẬP NHẬT GIÁ TRỊ NGHIỆM THU HOÀN THÀNH
+                if(option && Number(option) === 2){
+                    let listData = await CMCS__CONTRACT_IPC_DETAIL_COLL.aggregate([
+                        {
+                            $match: {
+                                item: ObjectID(itemID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                totalAmount: { $sum: "$amount" },
+                                // totalAmount: { $sum: { $multiply: [ "$planQuantity", "$planUnitPrice" ] } },
+                            }
+                        }, 
+                    ])
+                    // console.log(listData)
+
+                    if(listData && listData.length){
+                        dataUpdate.inspecAmount = Number(listData[0].totalAmount)
+                    }
+                }                
 
                 let infoAfterUpdate = await CMCS__CONTRACT_BILL_ITEM_COLL.findByIdAndUpdate(itemID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
