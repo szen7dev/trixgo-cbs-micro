@@ -58,6 +58,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
     currentQuantity: { type: Number, default: 0 },
     //_________Khối lượng dự kiến còn lại
     estimateQuantity: { type: Number, default: 0 },
+    //_________Khối lượng đã nghiệm thu hoàn thành
+    inspecQuantity: { type: Number, default: 0 },
 
     /**
      * ĐƠN GIÁ (KHÔNG GỒM VAT)
@@ -78,6 +80,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
     currentAmount: { type: Number, default: 0 },
     //_________Giá trị ước tính còn lại (chưa gồm VAT)
     estimateAmount: { type: Number, default: 0 },
+    //_________Giá trị đã nghiệm thu hoàn thành
+    inspecAmount: { type: Number, default: 0 },
 
     /**
      * USD-NGOẠI TỆ

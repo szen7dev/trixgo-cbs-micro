@@ -60,6 +60,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_group", {
     currentAmount: { type: Number, default: 0 },
     //_________Giá trị ước tính còn lại (chưa gồm VAT)
     estimateAmount: { type: Number, default: 0 },
+    //_________Giá trị đã nghiệm thu hoàn thành
+    inspecAmount: { type: Number, default: 0 },   
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

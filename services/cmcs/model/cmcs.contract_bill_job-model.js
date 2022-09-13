@@ -241,8 +241,9 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { },
-                                // amount: { $sum: "$value" },
-                                totalAmount: { $sum: { $multiply: [ "$planQuantity", "$planUnitPrice" ] } },
+                                totalQuantity: { $sum: "$quantity" },
+                                totalAmount: { $sum: "$amount" },
+                                // totalAmount: { $sum: { $multiply: [ "$planQuantity", "$planUnitPrice" ] } },
                             }
                         }, 
                     ])
@@ -250,11 +251,11 @@ class Model extends BaseModel {
                     console.log(listData)
 
                     if(listData && listData.length){
-                        dataUpdate.amount = Number(listData[0].totalAmount)
+                        dataUpdate.inspecQuantity = Number(listData[0].totalQuantity)
+                        dataUpdate.inspecAmount = Number(listData[0].totalAmount)
                     }
                 }
                 console.log("dataUpdate====================>>>>>>>>>>>>>>")
-                
 
                 let infoAfterUpdate = await CMCS__CONTRACT_BILL_JOB_COLL.findByIdAndUpdate(jobID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)

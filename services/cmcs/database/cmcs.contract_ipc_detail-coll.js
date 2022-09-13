@@ -52,11 +52,11 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc_detail", {
      * 2 - PS không được thanh toán
      */
     plus: { type: Number, default: 0},    
-    //_________Khối lượng
+    //_________Khối lượng nghiệm thu
     quantity: { type: Number, default: 0 },
-    //_________Đơn giá (chưa gồm VAT)
+    //_________Đơn giá nghiệm thu (chưa gồm VAT)
     unitPrice: { type: Number, default: 0 },
-    //_________Giá trị (chưa gồm VAT)
+    //_________Giá trị nghiệm thu (chưa gồm VAT)
     amount: { type: Number, default: 0 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
