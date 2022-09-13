@@ -55,23 +55,34 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
     //_________Khối lượng ban đầu
     orgQuantity: { type: Number, default: 0 },
     //_________Khối lượng cập nhật triển khai
-    planQuantity: { type: Number, default: 0 },
+    currentQuantity: { type: Number, default: 0 },
     //_________Khối lượng dự kiến còn lại
     estimateQuantity: { type: Number, default: 0 },
+    //_________Khối lượng đã nghiệm thu hoàn thành
+    inspecQuantity: { type: Number, default: 0 },
+
     /**
-     * ĐƠN GIÁ
+     * ĐƠN GIÁ (KHÔNG GỒM VAT)
      */
     //_________Đơn giá ban đầu (chưa gồm VAT)
     orgUnitPrice: { type: Number, default: 0 },
-    orgVatValue: { type: Number, default: 0 }, 
     //_________Đơn giá cập nhật triển khai (chưa gồm VAT)
-    planUnitPrice: { type: Number, default: 0 },
-    planVatValue: { type: Number, default: 0 }, 
+    currentUnitPrice: { type: Number, default: 0 },
     //_________Đơn giá ước tính còn lại (chưa gồm VAT)
     estimateUnitPrice: { type: Number, default: 0 },
-    estimateVatValue: { type: Number, default: 0 }, 
-    //_________Đơn giá Thuế giá trị gia tăng (%)
-    vat: { type: Number, default: 10 },
+
+    /**
+     * GIÁ TRỊ (KHÔNG GỒM VAT)
+     */
+    //_________Giá trị ban đầu (chưa gồm VAT)
+    orgAmount: { type: Number, default: 0 },
+    //_________Giá trị  cập nhật triển khai (chưa gồm VAT)
+    currentAmount: { type: Number, default: 0 },
+    //_________Giá trị ước tính còn lại (chưa gồm VAT)
+    estimateAmount: { type: Number, default: 0 },
+    //_________Giá trị đã nghiệm thu hoàn thành
+    inspecAmount: { type: Number, default: 0 },
+
     /**
      * USD-NGOẠI TỆ
      */ 
@@ -79,13 +90,10 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
     fcuExRate: Number,
     //_________Đơn giá ban đầu (chưa gồm VAT)
     fcuOrgUnitPrice: Number,
-    fcuOrgVatValue: Number, 
     //_________Đơn giá cập nhật triển khai (chưa gồm VAT)
-    fcuPlanUnitPrice: Number,
-    fcuPlanVatValue: Number, 
+    fcuCurrentUnitPrice: Number,
     //_________Đơn giá ước tính còn lại (chưa gồm VAT)
     fcuEstimateUnitPrice: Number,
-    fcuEstimateVatValue: Number, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

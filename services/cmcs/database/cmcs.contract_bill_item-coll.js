@@ -38,10 +38,26 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_item", {
      * - Sản lượng
      * - Nghiệm thu hoàn thành
      */
-    //_________Giá trị trước thuế
-    amount: { type: Number, default: 0 }, 
-    //_________Giá trị thuế
-    vat: { type: Number, default: 0 }, 
+    /**
+     * KHỐI LƯỢNG
+     */
+    //_________Khối lượng
+    quantity: { type: Number, default: 0 }, 
+    /**
+     * ĐƠN GIÁ (KHÔNG GỒM VAT)
+     */
+    /**
+     * GIÁ TRỊ (KHÔNG GỒM VAT)
+     */
+    //_________Giá trị ban đầu (chưa gồm VAT)
+    orgAmount: { type: Number, default: 0 },
+    //_________Giá trị  cập nhật triển khai (chưa gồm VAT)
+    currentAmount: { type: Number, default: 0 },
+    //_________Giá trị ước tính còn lại (chưa gồm VAT)
+    estimateAmount: { type: Number, default: 0 },
+    //_________Giá trị đã nghiệm thu hoàn thành
+    inspecAmount: { type: Number, default: 0 },
+    
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

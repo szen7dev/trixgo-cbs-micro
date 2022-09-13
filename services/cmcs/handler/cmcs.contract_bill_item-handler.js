@@ -22,16 +22,17 @@ module.exports = {
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
             unit                : { type: "string", optional: true },
-            note                : { type: "string", optional: true }
+            quantity            : { type: "number", optional: true },
+            note                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractID, name, sign, description, unit, note } = ctx.params;
+                let { contractID, name, sign, description, unit, quantity, note } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_BILL_ITEM_MODEL.insert({
-                    contractID, name, sign, description, unit, note, userID, ctx
+                    contractID, name, sign, description, unit, quantity, note, userID, ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -53,16 +54,17 @@ module.exports = {
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
             unit                : { type: "string", optional: true },
+            quantity            : { type: "number", optional: true },
             note                : { type: "string", optional: true }
         },
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                let { itemID, name, sign, description, unit, note } = ctx.params;
+                let { itemID, name, sign, description, unit, quantity, note } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_BILL_ITEM_MODEL.update({
-                    itemID, name, sign, description, unit, note, userID, ctx
+                    itemID, name, sign, description, unit, quantity, note, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

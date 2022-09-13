@@ -2,7 +2,14 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
+const stringUtils					    = require('../../../tools/utils/string_utils');
+const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const ObjectID                          = require('mongoose').Types.ObjectId;
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { KEY_ERROR }                     = require('../../../tools/keys/index')
 
 /**
  * import inter-coll, exter-coll
@@ -14,54 +21,94 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  const CMCS__CONTRACT_BILL_JOB_COLL      = require('../database/cmcs.contract_bill_job-coll');
  const CMCS__CONTRACT_IPC_DETAIL_COLL    = require('../database/cmcs.contract_ipc_detail-coll');
 
-const { RANGE_BASE_PAGINATION } 		     = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { template }                      = require('lodash');
+const { ResumeToken }                   = require('mongodb');
 
 /**
  * import inter-model, exter-model
  */
+const CMCS__CONTRACT_BILL_ITEM_MODEL            = require('./cmcs.contract_bill_item-model').MODEL;
+const CMCS__CONTRACT_BILL_GROUP_MODEL           = require('./cmcs.contract_bill_group-model').MODEL;
 
-/**
- * import util files
- */
-
-class Model extends BaseModel {
-
+class Model extends BaseModel {               
     constructor() {
         super(CMCS__CONTRACT_BILL_JOB_COLL);
     }
-
+    
     /**
-     * Name: Lấy thông tin contract bill job 
-     * Author: Depv 
+     * Name: Insert
+     * Author: HiepNH
+     * Code: 12/9/2022
      */
-    getInfo({ contractBillJobID, select }) { 
+    insert({ groupID, plus, name, sign, description, unit, orgQuantity, orgUnitPrice, note, userID, ctx  }) { 
+        const that = this
         return new Promise(async (resolve) => {
-            try {   
-
+            try {
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * BA
                  */
+
+                if(!name || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'param_not_valid' })
+
+                const infoGroup = await CMCS__CONTRACT_BILL_GROUP_COLL.findById(groupID)
+                // console.log(infoGroup)
+
+                if(!infoGroup)
+                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
+
+                const { company, project, contract, item } = infoGroup;
+
+                let dataInsert = { userCreate: userID, company, project, contract, item, group: groupID, name };
+
+                if(!isNaN(plus)){
+                    dataInsert.plus = Number(plus);
+                }                
                 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(contractBillJobID))
-                    return resolve({ error: true, message: 'Request params contractBillJobID invalid', status: 400 });
+                if(sign){
+                    dataInsert.sign = sign;
+                }
+
+                if(description){
+                    dataInsert.description = description;
+                }
+
+                if(unit){
+                    dataInsert.unit = unit;
+                }
+
+                if(note){
+                    dataInsert.note = note;
+                }
+
+                if(!isNaN(orgQuantity) && !isNaN(orgUnitPrice)){
+                    dataInsert.orgQuantity = Number(orgQuantity);
+                    dataInsert.currentQuantity = Number(orgQuantity);
+                    dataInsert.estimateQuantity = Number(orgQuantity);
+
+                    dataInsert.orgUnitPrice = Number(orgUnitPrice);
+                    dataInsert.currentUnitPrice = Number(orgUnitPrice);
+                    dataInsert.estimateUnitPrice = Number(orgUnitPrice);
+
+                    dataInsert.orgAmount = Number(orgQuantity*orgUnitPrice).toFixed(0);
+                    dataInsert.currentAmount = Number(orgQuantity*orgUnitPrice).toFixed(0);
+                    dataInsert.estimateAmount = Number(orgQuantity*orgUnitPrice).toFixed(0);
+                }
+                
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "Không thể thêm mẩu tin" ,keyError: "can't_insert" });
 
                 /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
+                 * CẬP NHẬT GIÁ TRỊ HỢP ĐỒNG CỦA ITEM, GROUP
                  */
+                let infoItemNew = await CMCS__CONTRACT_BILL_ITEM_MODEL.updateValue({option: 1, itemID: item, userID})
+                // console.log(infoItemNew)
+                let infoGroupNew = await CMCS__CONTRACT_BILL_GROUP_MODEL.updateValue({option: 1, groupID, userID})
+                // console.log(infoGroupNew)
 
-                let infoContractBillJobID = await CMCS__CONTRACT_BILL_JOB_COLL.findById(contractBillJobID).select(select)
-
-                if(!infoContractBillJobID)
-                    return resolve({ error: true, message: "Can't get infoContractBillJob", status: 403 });
-
-                return resolve({ error: false, data: infoContractBillJobID, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -69,103 +116,291 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách contract bill job
-     * Author: Depv 
+     * Name: Update
+     * Author: HiepNH
+     * Code: 12/9/2022
      */
-    getList({ keyword, limit = 10, lastestID, contractID, filter = {}, select = {} }) { 
+    update({ 
+        jobID, plus, name, sign, description, unit, currentQuantity, estimateQuantity, currentAmount, currentUnitPrice, estimateUnitPrice, estimateAmount, note, userID, ctx
+    }){
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * BA
                  */
-                let conditionObj = {};
-                if(checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID;
+                const infoJob = await CMCS__CONTRACT_BILL_JOB_COLL.findById(jobID)
+                if(!infoJob)
+                    return resolve({ error: true, message: "Mã không hợp kệ", keyError: "id_invalid" })
+                    console.log(infoJob)
+
+                const { item, group } = infoJob;
+
+                if(!name || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'param_not_valid' })
+
+                let dataUpdate = { userUpdate: userID, name, modifyAt: Date.now() };
+
+                if(!isNaN(plus)){
+                    dataUpdate.plus = Number(plus);
                 }
 
-                let conditionFind = {};
-                let sortBy = { createAt: -1 };
-				let objSort 	 	= {};
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
 
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+                if(description){
+                    dataUpdate.description = description;
+                }
 
-					filter = JSON.parse(filter);
-				}
+                if(unit){
+                    dataUpdate.unit = unit;
+                }
 
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+                if(note){
+                    dataUpdate.note = note;
+                }
 
-					select = JSON.parse(select);
-				}
+                if(!isNaN(currentQuantity)){
+                    dataUpdate.currentQuantity = Number(currentQuantity);
+                }
+                if(!isNaN(estimateQuantity)){
+                    dataUpdate.estimateQuantity = Number(estimateQuantity);
+                }
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                if(!isNaN(currentUnitPrice)){
+                    dataUpdate.currentUnitPrice = Number(currentUnitPrice);
+                }
+                if(!isNaN(estimateUnitPrice)){
+                    dataUpdate.estimateUnitPrice = Number(estimateUnitPrice);
+                }
+
+                if(!isNaN(currentAmount)){
+                    dataUpdate.currentAmount = Number(currentAmount);
+                }
+                if(!isNaN(estimateAmount)){
+                    dataUpdate.estimateAmount = Number(estimateAmount);
+                }
+
+                let infoAfterUpdate = await CMCS__CONTRACT_BILL_JOB_COLL.findByIdAndUpdate(jobID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại" ,keyError: "can't_update", status: 403 });
 
                 /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
-                // GET CONDITION PAGINATION
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoContractBillJob = await CMCS__CONTRACT_BILL_JOB_COLL.findById(lastestID);
-					if(!infoContractBillJob)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+                 * CẬP NHẬT GIÁ TRỊ HỢP ĐỒNG CỦA ITEM, GROUP
+                 */
+                let infoItemNew = await CMCS__CONTRACT_BILL_ITEM_MODEL.updateValue({option: 1, itemID: item, userID})
+                // console.log(infoItemNew)
+                let infoGroupNew = await CMCS__CONTRACT_BILL_GROUP_MODEL.updateValue({option: 1, groupID: group, userID})
+                // console.log(infoGroupNew)
 
-					let nextInfo = `${infoContractBillJob.createAt}_${infoContractBillJob._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                console.log(error)   
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Update value
+     * Author: HiepNH
+     * Code: 13/9/2022
+     */
+    updateValue({ 
+        option, jobID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị hợp đồng
+                 * 2-Cập nhật giá trị nghiệm thu (tổng lũy kế)
+                 */
+
+                if(!checkObjectIDs(jobID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "id_invalid" })
+
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
+
+                //_____CẬP NHẬT GIÁ TRỊ NGHIỆM THU HOÀN THÀNH
+                if(option && Number(option) === 2){
+                    let listData = await CMCS__CONTRACT_IPC_DETAIL_COLL.aggregate([
+                        {
+                            $match: {
+                                job: ObjectID(jobID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                totalQuantity: { $sum: "$quantity" },
+                                totalAmount: { $sum: "$amount" },
+                                // totalAmount: { $sum: { $multiply: [ "$planQuantity", "$planUnitPrice" ] } },
+                            }
+                        }, 
+                    ])
+                    // console.log(listData)
+
+                    if(listData && listData.length){
+                        dataUpdate.inspecQuantity = Number(listData[0].totalQuantity)
+                        dataUpdate.inspecAmount = Number(listData[0].totalAmount)
+                    }
+                }
+
+                let infoAfterUpdate = await CMCS__CONTRACT_BILL_JOB_COLL.findByIdAndUpdate(jobID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Remove
+     * Author: HiepNH
+     * Code: 13/9/2022
+     */
+    
+    /**
+     * Name: Getinfo
+     * Author: HiepNH
+     * Code: 13/9/2022
+     */
+    getInfo({ jobID, 
+        select, populates }){
+            console.log('===========>>>>>>>>>>>>>>')
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(jobID))
+                    return resolve({ error: true, message: 'param_invalid' });
+
+                // populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let infoContractIPC = await CMCS__CONTRACT_BILL_JOB_COLL.findById(jobID)
+                                .select(select)
+                                .populate(populates)
+
+				if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+
+                return resolve({ error: false, data: infoContractIPC });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name  : Getlist
+     * Author: HiepNH
+     * Code: 13/9/2022
+     */
+    getList({ groupID, plus, userID,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
+            console.log({groupID, userID,
+                keyword, limit, lastestID, select, populates})
+        return new Promise(async (resolve) => {
+            try {
+
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                 let sortBy;
+                 let conditionObj = {};
+                 let keys	     = ['createAt__-1', '_id__-1'];
+				
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(groupID && checkObjectIDs(groupID)){
+                    conditionObj.group = ObjectID(groupID)
+                }else{
+                    if(itemID && checkObjectIDs(itemID)){
+                        conditionObj.item = ObjectID(itemID)
+                    }else{
+                        conditionObj.contract = ObjectID(contractID)
+                    }
+                }
+
+                if(!isNaN(plus)){
+                    conditionObj.plus = Number(plus);
+                }   
+              
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regExpSearch = RegExp(keyword, 'i');
+                    conditionObj.name = regExpSearch;
+                }
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+                if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await CMCS__CONTRACT_BILL_JOB_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
 
-                // SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
-
-                let infoDataAfterGet = await CMCS__CONTRACT_BILL_JOB_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
-                    .populate({
-                        path: "contract",
-                        select: select.contract
-                    })
-                    .limit(+limit+1)
-                    .sort(sortBy) 
-                    .lean(); 
-
-                // GET TOTAL RECORD
-				// let totalRecord = await CMCS__CONTRACT_BILL_JOB_COLL.count(conditionObj);
-                let totalCurrentPage = await CMCS__CONTRACT_BILL_JOB_COLL.count(conditionFind);
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get template docs", status: 403 });
-                
-
-                let totalRecord = await CMCS__CONTRACT_BILL_JOB_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
-                let totalPage = Math.ceil(totalRecord/limit);
-
-				if(infoDataAfterGet && infoDataAfterGet.length){
-					if(infoDataAfterGet.length > limit){
-						nextCursor = infoDataAfterGet[limit - 1]._id;
-						infoDataAfterGet.length = limit;
-					}
-				}
-
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage =  1
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
                 }
+                
+                let infoDataAfterGet = await CMCS__CONTRACT_BILL_JOB_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean(); 
+                
+                // GET TOTAL RECORD
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await CMCS__CONTRACT_BILL_JOB_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -173,7 +408,6 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
                 
             } catch (error) {
@@ -181,6 +415,6 @@ class Model extends BaseModel {
             }
         })
     }
- }
+}
 
 exports.MODEL = new Model;

@@ -9,6 +9,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { KEY_ERROR }                     = require('../../../tools/keys/index')
 
 /**
  * import inter-coll, exter-coll
@@ -37,7 +38,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 12/9/2022
      */
-    insert({ contractID, name, sign, description, unit, note, userID, ctx  }) { 
+    insert({ contractID, name, sign, description, unit, quantity, note, userID, ctx  }) { 
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -53,7 +54,7 @@ class Model extends BaseModel {
                 })
 
                 if(infoContract.error)
-                    return resolve({ error: true, message: "Hợp đồng không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
+                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 const { company, project } = infoContract.data;
 
@@ -69,6 +70,10 @@ class Model extends BaseModel {
 
                 if(unit){
                     dataInsert.unit = unit;
+                }
+
+                if(quantity && !isNaN(quantity)){
+                    dataInsert.quantity = Number(quantity);
                 }
 
                 if(note){
@@ -92,8 +97,9 @@ class Model extends BaseModel {
      * Code: 12/9/2022
      */
     update({ 
-        itemID, name, sign, description, unit, note, userID, ctx
+        itemID, name, sign, description, unit, quantity, note, userID, ctx
     }){
+        console.log({itemID, name, sign, description, unit, quantity, note, userID})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -119,6 +125,10 @@ class Model extends BaseModel {
 
                 if(unit){
                     dataUpdate.unit = unit;
+                }
+
+                if(quantity && !isNaN(quantity)){
+                    dataUpdate.quantity = Number(quantity);
                 }
 
                 if(note){
@@ -156,16 +166,9 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(itemID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "id_invalid" })
 
-                let info = await CMCS__CONTRACT_BILL_ITEM_COLL.findById(itemID)
-                // let amount = 0
-                // if(info.amount){
-                //     amount = info.amount + 1000000
-                // }
-                console.log(info)
-
                 let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
-                //_____CẬP NHẬT GIÁ TRỊ HỢP ĐỒNG
+                //_____CẬP NHẬT GIÁ TRỊ HỢP ĐỒNG CỦA ITEM
                 if(option && Number(option) === 1){
                     let listData = await CMCS__CONTRACT_BILL_JOB_COLL.aggregate([
                         {
@@ -176,8 +179,8 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { },
-                                // amount: { $sum: "$value" },
-                                totalAmount: { $sum: { $multiply: [ "$planQuantity", "$planUnitPrice" ] } },
+                                // totalAmount: { $sum: "$currentUnitPrice" },
+                                totalAmount: { $sum: { $multiply: [ "$currentQuantity", "$currentUnitPrice" ] } },
                             }
                         }, 
                     ])
@@ -185,11 +188,33 @@ class Model extends BaseModel {
                     console.log(listData)
 
                     if(listData && listData.length){
-                        dataUpdate.amount = Number(listData[0].totalAmount)
+                        dataUpdate.currentAmount = Number(listData[0].totalAmount)
                     }
                 }
-                console.log("dataUpdate====================>>>>>>>>>>>>>>")
-                
+                // console.log("update giá trị Hạng mục====================>>>>>>>>>>>>>>")
+
+                //_____CẬP NHẬT GIÁ TRỊ NGHIỆM THU HOÀN THÀNH
+                if(option && Number(option) === 2){
+                    let listData = await CMCS__CONTRACT_IPC_DETAIL_COLL.aggregate([
+                        {
+                            $match: {
+                                item: ObjectID(itemID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                totalAmount: { $sum: "$amount" },
+                                // totalAmount: { $sum: { $multiply: [ "$planQuantity", "$planUnitPrice" ] } },
+                            }
+                        }, 
+                    ])
+                    // console.log(listData)
+
+                    if(listData && listData.length){
+                        dataUpdate.inspecAmount = Number(listData[0].totalAmount)
+                    }
+                }                
 
                 let infoAfterUpdate = await CMCS__CONTRACT_BILL_ITEM_COLL.findByIdAndUpdate(itemID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
@@ -203,15 +228,15 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove contract ipc 
-     * Author: Depv
-     * Code: 
+     * Name: Remove
+     * Author: HiepNH
+     * Code: 13/9/2022
      */
     
     /**
-     * Name: get info contract ipc 
-     * Author: Depv
-     * Code: 
+     * Name: Getinfo
+     * Author: HiepNH
+     * Code: 13/9/2022
      */
     getInfo({ itemID, 
         select, populates }){
@@ -247,9 +272,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách contract ipc 
-     * Author: Depv
-     * Code  : 
+     * Name  : Getlist
+     * Author: HiepNH
+     * Code: 13/9/2022
      */
     getList({ contractID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
