@@ -13,6 +13,8 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_profile", {
     },
     //_________Tên
     name: String,
+    //_________Ghi chú
+    note: String,
     //_________Tài liệu đính kèm
     files: [{
         type: Schema.Types.ObjectId,

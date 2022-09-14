@@ -3,8 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
- * DATAHUB KHU VỰC-LĨNH VỰC-NHÀ THẦU
- * - Mỗi contractorID chỉ ứng với 1 fieldID
+ * DATAHUB KHU VỰC-LĨNH VỰC-NHÀ THẦU (Bỏ => Sử dụng datahub_package)
  */
 module.exports  = DATABASE_MIDDLEWARE("datahub_contractor", {
     //_________Lĩnh vực(*)

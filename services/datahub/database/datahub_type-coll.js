@@ -35,11 +35,6 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_type", {
     numberOfViews: { type: Number, default: 0 },
     //_________Số lượng đơn vị tham gia
     numberOfContractors: { type: Number, default: 0 },
-    //_________Số nhà thầu hoạt động
-    contractors: [{
-        type: Schema.Types.ObjectId,
-        ref : "company"
-    }], 
     //_________Ảnh đại diện
     image: {
         type: Schema.Types.ObjectId,
