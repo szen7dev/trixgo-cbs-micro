@@ -574,7 +574,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { filterParams } = ctx.params;
-
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocument({
                     userID, filterParams, ctx
                 })

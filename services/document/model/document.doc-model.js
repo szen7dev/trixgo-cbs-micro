@@ -1471,23 +1471,11 @@ class Model extends BaseModel {
             try {
                 const validation = validateParamsObjectID({ userID });
                 if(validation.error) return resolve(validation);
-
-                // const dataDepartment = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
-                //     unLimit: true, select: "_id"
-                // });
-                // if(dataDepartment.error) return resolve(dataDepartment);
-
-                // const listDepartmentID = (dataDepartment.data || []).map(project => ObjectID(project._id));
-
-                // let conditionObj = {
-                //     project: {
-                //         $in: listDepartmentID
-                //     }
-                // };
-
                 let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
 
-                const { data, error } = await this.getList({
+                const { data, error } = await this.getListByFilter({
                     ...filterParams,
                     userID,
                     isExportExcel: true
@@ -1497,12 +1485,16 @@ class Model extends BaseModel {
                     conditionObj = { ...data };
                 }
 
+                let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
+                sortBy                = dataPagingAndSort.data.sort;
+
                 const listDocument = await DOCUMENT__DOC_COLL
                     .find(conditionObj)
                     .populate({
                         path: 'author package sender receiver datahubContact field property storage',
                         select: '_id bizfullname name',
                     })
+                    .sort(sortBy)
                     .lean();
 
                 if(!listDocument) {
