@@ -23,6 +23,7 @@ const {
 /**
  * COLLECTIONS
  */
+const AUTH__COMPANY_COLL                           = require('../../auth/database/auth.company-coll');
 const DATAHUB_PACKAGE_COLL           				= require('../database/datahub_package-coll');
 const DATAHUB_PROJECT_COLL           				= require('../database/datahub_project-coll');
 
@@ -35,7 +36,7 @@ class Model extends BaseModel {
     /**
 	 * Name: insert datahub package
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
     insert({ contractor, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID }) {
         return new Promise(async resolve => {
@@ -93,7 +94,7 @@ class Model extends BaseModel {
     /**
 	 * Name: update datahub package
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
     update({ datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
         return new Promise(async resolve => {
@@ -163,7 +164,7 @@ class Model extends BaseModel {
     /**
 	 * Name: Remove datahub package 
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
 	remove({ datahubPackageID }) { 
         return new Promise(async (resolve) => {
@@ -185,7 +186,7 @@ class Model extends BaseModel {
 	/**
 	 * Name: get info datahub package 
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
 	getInfo({ datahubPackageID, select, populates }) { 
         return new Promise(async (resolve) => {
@@ -323,6 +324,80 @@ class Model extends BaseModel {
             }
         })
     }
+
+        /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 17/04/2022
+     */
+    getListByProperty({ userID, fieldID, areaID, level, ctx }){
+        console.log({ userID, fieldID, areaID, level })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1-Tìm kiếm Lĩnh vực
+                 * 2-Tìm kiếm Khu vực (Tỉnh/Huyện/Xã)
+                 * 3-Gom nhóm, tính tổng và sắp xếp theo số lượng hợp đồng lớn lên trên
+                 */
+                let conditionObj = {}, conditionGroup = {}, conditionPopulate = {}, sortBy = {"amount": -1}
+
+                if(fieldID && checkObjectIDs(fieldID)){
+                    conditionObj.field = ObjectID(fieldID)
+                }
+                if(areaID && checkObjectIDs(areaID)){
+                    if(level == 1){
+                        conditionObj.area1 = ObjectID(areaID)
+                    }
+                    if(level == 2){
+                        conditionObj.area2 = ObjectID(areaID)
+                    }
+                    if(level == 3){
+                        conditionObj.area3 = ObjectID(areaID)
+                    }
+                }
+                // console.log(conditionObj)
+
+                conditionGroup = {
+                    _id: { contractor: '$contractor' },
+                    amount: { $sum: 1 },
+                }
+
+                conditionPopulate = {
+                    path: '_id.contractor',
+                    select: '_id name sign image address',
+                    model: 'company'
+                }
+
+                // console.log('===================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+                // console.log(conditionObj)
+                // console.log(conditionGroup)
+
+                let listData = await DATAHUB_PACKAGE_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                // console.log(listData)
+
+                if(listData.length){
+                    await AUTH__COMPANY_COLL.populate(listData, conditionPopulate)
+                }
+                // console.log(listData)
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

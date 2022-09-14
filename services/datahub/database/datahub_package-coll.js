@@ -79,7 +79,7 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
      * 1-Chính
      * 2-Phụ
      */
-    type: { type: Number, default: 1 },
+    property: { type: Number, default: 1 },
     //_________Tình trạng hợp đồng
     status: { type: Number, default: 1 },
     //_________Tài liệu đính kèm
