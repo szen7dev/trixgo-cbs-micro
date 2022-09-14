@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  /**
   * MODELS
   */
-const INSPECTION__CHECKLIST_MODEL      = require('../model/inspection.doc_checklist-model').MODEL;
+const INSPECTION__CHECKLIST_MODEL      = require('../model/inspection.checklist-model').MODEL;
 
 module.exports = {
     /**

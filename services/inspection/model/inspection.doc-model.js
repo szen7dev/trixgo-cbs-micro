@@ -10,10 +10,9 @@ const moment                            =  require("moment");
  */
 const INSPECTION__DOC_COLL                 = require('../database/inspection.doc-coll');
 const ITEM__CONTRACT_COLL                  = require('../../item/database/item.contract-coll');
-const INSPECTION__TEMPLATE_CHECKLIST_COLL  = require('../database/inspection.template_checklist-coll');
 
 const { RANGE_BASE_PAGINATION } 		   = require('../../../tools/cursor_base/playground/index');
-const INSPECTION__CHECKLIST_MODEL          = require('./inspection.doc_checklist-model').MODEL;
+const INSPECTION__CHECKLIST_MODEL          = require('./inspection.checklist-model').MODEL;
 
 /**
  * import inter-model, exter-model
