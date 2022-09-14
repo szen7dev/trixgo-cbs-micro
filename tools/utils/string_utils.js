@@ -148,6 +148,8 @@ exports.nonAccentVietnamese = (str) => {
 }
 
 exports.removeAccents = (str, toUpperCase = false) => {
+    if(!str || typeof str !== 'string') return '';
+
     str = str.toLowerCase();
     // .replace(/(<([^>]+)>)/gi, "");
     str = str.replace(/<[^>]*>?/gm, '');
