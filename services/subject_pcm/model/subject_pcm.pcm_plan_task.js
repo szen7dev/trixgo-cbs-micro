@@ -13,6 +13,7 @@ const { CF_ACTIONS_FILE } 				        = require('../../file/helper/file.actions-
 const { CF_ACTIONS_AUTH }                       = require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_NOTIFICATION }               = require('../../notification/helper/notification.actions-constant');
+const { CF_ACTIONS_REMINDER }                   = require('../../reminder/helper/reminder.actions-constant');
 
 const {
     checkObjectIDs,
@@ -363,6 +364,21 @@ class Model extends BaseModel {
                 if(!infoAfterInsert) {
                     return resolve({ error: true, message: "can't_insert_task", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
                 }
+
+                // Thêm reminder nhắc công việc đến hạn
+                await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                    taskID: infoAfterInsert._id?.toString(),
+                    userID: infoAfterInsert.author?.toString(),
+                    actualFinishTime: dataInsert.actualFinishTime,
+                })
+
+                const infoTaskTemp = await PCM_PLAN_TASK_COLL
+                    .findById(infoAfterInsert._id)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                return resolve({ error: false, data: infoTaskTemp, status: 200 });
 
                 // Thêm record vào bảng pcm_comment phục vụ search
                 await PCM_COMMENT_MODEL.insertCommentTask({

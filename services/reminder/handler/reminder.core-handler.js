@@ -9,16 +9,16 @@ let agenda;
 
 	const connectionOpts = {
 		db: {
-			address: MONGODB_URL, 
+			address: MONGODB_URL,
 			collection: process.env.AGENDA_COLLECTION || "agenda_jobs",
 			options: { useNewUrlParser: true }
 		},
 	};
     agenda = new Agenda(connectionOpts)
-  
+
 	await new Promise(resolve => agenda.once('ready', resolve));
 })(); //IIFE func - run now
-  
+
 module.exports = {
     addJob: {
         params: {},
@@ -29,7 +29,7 @@ module.exports = {
                     agenda.schedule(timeScheduler, 'reminder_birthday');
                     console.log(`agenda: ${i} added`)
                 }
-                return { 
+                return {
                     error: false, ctx
                 }
             } catch (error) {
@@ -140,7 +140,7 @@ module.exports = {
 
 				if(humanTime){
 					const reminder = agenda.create('add_reminder_conversation', {
-						conversationID, messageID, userID 
+						conversationID, messageID, userID
 					});
 					await agenda.start();
 					await reminder.repeatEvery(humanTime, {
@@ -154,7 +154,7 @@ module.exports = {
 					let timeScheduler = new Date(remindTime).getTime();
 
 					agenda.schedule(timeScheduler, 'add_reminder_conversation', {
-						conversationID, messageID, userID 
+						conversationID, messageID, userID
 					});
 					console.log(`agenda: add_reminder_conversation added - ${new Date(remindTime)} - ${remindTime} - ${repeat} - ${notifyFor}`);
 				}
@@ -225,7 +225,7 @@ module.exports = {
 				if(!timeScheduler)
 					throw new Error("timeScheduler is empty");
 
-				agenda.schedule(timeScheduler, 'auto_delete_message_conversation', { 
+				agenda.schedule(timeScheduler, 'auto_delete_message_conversation', {
 					conversationID,
 					messageID,
 					userID,
@@ -265,6 +265,57 @@ module.exports = {
                 return { error: false, message: 'success' };
             } catch (error) {
 				throw new Error(error.message);
+            }
+        }
+    },
+
+	addJobReminderExpiredTask: {
+        params: {
+            // alert				: { type: "string", optional: true },
+            // actualFinishTime	: { type: "string" },
+            // taskID				: { type: "string" },
+            // userID				: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let { alert, actualFinishTime, taskID, userID } = ctx.params;
+                let timeScheduler = '1 minutes';
+
+				// switch (+alert) {
+				// 	case 15:
+				// 		timeScheduler = "15 minutes";
+				// 		break;
+				// 	case 1:
+				// 		timeScheduler = "1 hours";
+				// 		break;
+				// 	case 2:
+				// 		timeScheduler = "2 hours";
+				// 		break;
+				// 	case 24:
+				// 		timeScheduler = "1 days";
+				// 		break;
+				// 	case 48:
+				// 		timeScheduler = "2 days";
+				// 		break;
+				// 	default:
+				// 		break;
+				// }
+
+				if(!timeScheduler)
+					throw new Error("timeScheduler is empty");
+
+				agenda.schedule(timeScheduler, 'add_reminder_expired_task', {
+					taskID,
+					userID,
+					alert,
+					actualFinishTime,
+					timeScheduler,
+				});
+				console.log(`agenda: add_reminder_expired_task added - ${timeScheduler}`);
+
+                return { error: false, message: 'success' }
+            } catch (error) {
+                throw new Error(error.message);
             }
         }
     },
