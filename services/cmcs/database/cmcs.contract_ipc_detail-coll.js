@@ -15,7 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc_detail", {
     //_________Dự án
     project: {
         type: Schema.Types.ObjectId,
-        ref : "project"
+        ref : "department"
     },    
     //_________Hợp đồng
     contract: {

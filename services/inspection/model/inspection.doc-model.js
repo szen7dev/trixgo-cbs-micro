@@ -77,6 +77,7 @@ class Model extends BaseModel {
                 let checkSign = await INSPECTION__DOC_COLL.findOne({ sign, contract: contractID, state: 1 });
                 if(checkSign)
                     return resolve({ error: true, message: 'Sign existed', status: 400 });
+                    
                 /** 
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
