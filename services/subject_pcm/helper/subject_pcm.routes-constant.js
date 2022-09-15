@@ -28,6 +28,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     PCM__PCM_PLAN_MOVE_TASK_TO_PARENT                           : `${BASE_ROUTE}${PCM_PLAN_TASK}/move-task-to-parent`,
     PCM__PCM_PLAN_MOVE_TASK_TO_GROUP                            : `${BASE_ROUTE}${PCM_PLAN_TASK}/move-task-to-group`,
     PCM__PCM_PLAN_COPY_TASK                                     : `${BASE_ROUTE}${PCM_PLAN_TASK}/copy-task`,
+    PCM__PCM_PLAN_TASK_DOWNLOAD_EXCEL                           : `${BASE_ROUTE}${PCM_PLAN_TASK}/download-excel`,
 
     // Report
     SUBJECT__PCM_PLAN_REPORT                            : `${BASE_ROUTE}${PCM_PLAN_REPORT}`,

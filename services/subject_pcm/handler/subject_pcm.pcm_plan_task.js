@@ -248,7 +248,7 @@ module.exports = {
      * Func: Danh sách chủ đề
      * Date: 19/8/2022
      */
-     getListSubject: {
+    getListSubject: {
         auth: 'required',
         params: {
             draft               : { type: 'string', optional: true },
@@ -339,7 +339,7 @@ module.exports = {
 	 * Dev: Depv
 	 * Func: Lấy thông báo công việc (chưa đọc)
 	 */
-     getAmountNotification: {
+    getAmountNotification: {
         auth: "required",
         params: {
             option            : { type: 'string', optional: true },
@@ -624,6 +624,34 @@ module.exports = {
                     authorAttachs, type, subtype, description, startTime, expiredHour,
                     expiredTime, contractID, isDraftTask, isCloneChildTask,
                     userID, companyOfUser: company._id, bizfullname, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+
+    /**
+     * Dev: Depv
+     * Func: Download Excel
+     * Date: 15/09/2022
+     */
+    downloadExcelTask: {
+        auth: 'required',
+        params: {
+            conditionDownload: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { conditionDownload } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadExcelTask({
+                    conditionDownload, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

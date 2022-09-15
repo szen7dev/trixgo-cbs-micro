@@ -4,6 +4,9 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const PromisePool				        = require('@supercharge/promise-pool');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment')
+const XlsxPopulate                      = require('xlsx-populate');
+const path                              = require('path');
+const fs                                = require('fs');
 
 /**
  * Import utils, constants
@@ -26,6 +29,8 @@ const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys')
 const { sendNoticeToMember }                    = require('../../../tools/mailer/module/notice_pcm_task');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
+const { PCM_STATUS_TASK }			            = require('../../../tools/constants');
+const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
  * import inter-coll, exter-coll
@@ -1219,7 +1224,7 @@ class Model extends BaseModel {
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 50, unlimit, lastestID, select, populates = {}
+        keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
         // console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
         // console.log({
@@ -1531,6 +1536,23 @@ class Model extends BaseModel {
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
                 if(unlimit == 1){
                     limit = totalRecord;
+                }
+                /**
+                 * Dùng để lấy all data, Chỉ:
+                 * - Dùng internal services
+                 * - Không cho client truyền qua API
+                 */
+                if(unlimited) {
+                    const infoDataAfterGet = await PCM_PLAN_TASK_COLL
+                        .find({ ...conditionObj, draft: 0 })
+                        .select(select)
+                        .populate(populates)
+                        .sort(sortBy)
+                        .lean();
+
+                    return resolve({
+                        data: infoDataAfterGet
+                    });
                 }
 
                 // Bắt đầu query trong db
@@ -2965,6 +2987,103 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAfterCloneTask?.data, status: 200 });
             } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+
+    /**
+     * Dev: Depv
+     * Func: Download excel task
+     * Date: 15/09/2022
+     */
+    downloadExcelTask({ conditionDownload, userID }) {
+        return new Promise(async resolve => {
+            try {
+
+                const getPercentageCompletion = (startTimeX, expiredTimeX) => {
+                    let startTime  = moment(startTimeX);
+                    let endTime    = moment(expiredTimeX);
+                    let toDateTime = moment();
+
+                    let percentageCompletion = Math.round(100*(toDateTime - startTime)/(endTime - startTime));
+                    if(percentageCompletion > 100){
+                        percentageCompletion = 100;
+                    }
+
+                    if(!percentageCompletion){
+                        percentageCompletion = 0;
+                    }
+
+                    if(percentageCompletion == "-Infinity"){
+                        percentageCompletion = 0;
+                    }
+
+                    return percentageCompletion;
+                }
+                conditionDownload = JSON.parse(conditionDownload);
+                const dataTaskByCondition = await this.getList({
+                    ...conditionDownload,
+                    select: 'name expiredTime startTime percentage assignee note status',
+                    populates: JSON.stringify({
+                        path: 'assignee',
+                        select: 'bizfullname'
+                    }),
+                    unlimited: true,
+                    userID
+                })
+
+                if(!dataTaskByCondition || !dataTaskByCondition?.data) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                const listTaskPin = dataTaskByCondition?.data || [];
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_13_TaskPin.xlsm')))
+                    .then(async workbook => {
+                        
+
+                        let indexExcel = 4;
+
+                        listTaskPin.map((infoTask, index) => {
+                            workbook.sheet("Data").row(indexExcel).cell(1).value(index+1);
+                            workbook.sheet("Data").row(indexExcel).cell(2).value(infoTask.name);
+                            workbook.sheet("Data").row(indexExcel).cell(3).value(infoTask.expiredTime);
+
+                            workbook.sheet("Data").row(indexExcel).cell(4).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
+
+                            workbook.sheet("Data").row(indexExcel).cell(5).value(infoTask.assignee?.bizfullname);
+
+                            if (infoTask.note) {
+                                // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.note));
+                                workbook.sheet("Data").row(indexExcel).cell(8).value(infoTask.note);
+                            }
+
+                            workbook.sheet("Data").row(indexExcel).cell(9).value(PCM_STATUS_TASK[infoTask.status - 1].text);
+
+                            indexExcel++;
+                        })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `List-task-${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+            } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
