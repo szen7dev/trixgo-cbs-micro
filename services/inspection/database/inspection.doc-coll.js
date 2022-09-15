@@ -4,20 +4,25 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
     
 module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
-    //_________Template/Loại hồ sơ
+    //_________Mẫu hồ sơ
     template: {
         type    : Schema.Types.ObjectId,
-        ref     : 'inspection_template_doc'
+        ref     : 'datahub_inspection_doc'
     },
-    //_________Thuộc dự án/Công trình 
+    //_________ Công ty
+    company: {
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    },
+    //_________Dự án
     project: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'department' 
-    },
-    //_________Thuộc hợp đồng/Gói thầu
+        type: Schema.Types.ObjectId,
+        ref : "department"
+    },    
+    //_________Hợp đồng
     contract: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'contract'
+        type: Schema.Types.ObjectId,
+        ref : "contract"
     },
     //_________Nội dung
     name: String,
@@ -25,6 +30,10 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     sign: String,
     //_________Mô tả hồ sơ/Vị trí
     description: String,
+    //_________Hạng mục
+    item: String,
+    //_________Vị trí
+    position: String,
     //_________Số lượng tương tác
     numLike: {
         type: Number,
@@ -46,15 +55,9 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         default: 0
     },   
     //_________Kế hoạch hoàn thành
-    expiredTime: { type: Date, default: null },
+    expiredTime: Date,
     //_________Ngày hồ sơ hoàn thành thực tế
-    date: {
-        type : Date  
-    },
-    //_________Ngày hồ sơ đã điều chỉnh
-    modifiedDate: {
-        type : Date 
-    },
+    date: Date,
     /**
     * Trạng thái   
     * 1-Đang triển khai
@@ -64,21 +67,6 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type: Number,
         default: 1
     },
-    //_________Công tác trong biểu khối lượng hợp đồng/gói thầu
-    job: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'contract_bill_job'
-    },
-    //_________Khu vực (Khu vực cấu kiện)
-    areas: [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'inspection_area'
-    }],
-    //_________Bình luận cuối cùng của hồ sơ
-    lastComment: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'inspection_doc_comment'   
-    }, 
     //_________Người thực hiện (Thành viên dự án)
     assignee: {
         type    : Schema.Types.ObjectId,
@@ -94,6 +82,11 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type    : Schema.Types.ObjectId,
         ref     : 'signature'
     }],
+    //_________Bình luận cuối cùng của hồ sơ
+    lastComment: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'inspection_doc_comment'   
+    },     
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

@@ -33,9 +33,9 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: insert datahub inspection doc 
+	 * Name:Insert
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
     insert({ type, name, sign, description, userID }) {
         return new Promise(async resolve => {
@@ -71,9 +71,9 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: update datahub inspection doc
+	 * Name: Update
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
     update({ inspectionDocID, name, sign, description, userID }) {
         return new Promise(async resolve => {
@@ -108,31 +108,31 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub inspection doc
+	 * Name: Remove
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
-	remove({ inspectionDocID }) { 
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(inspectionDocID))
-                    return resolve({ error: true, message: 'Mã datahub không hợp lệ', keyError: "inspectionDocID_invalid", status: 400 });
+	// remove({ inspectionDocID }) { 
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!checkObjectIDs(inspectionDocID))
+    //                 return resolve({ error: true, message: 'Mã datahub không hợp lệ', keyError: "inspectionDocID_invalid", status: 400 });
                 
-                let infoAterRemove = await DATAHUB_INSPECTION_DOC_COLL.findByIdAndDelete(inspectionDocID)
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
+    //             let infoAterRemove = await DATAHUB_INSPECTION_DOC_COLL.findByIdAndDelete(inspectionDocID)
+    //             if(!infoAterRemove)
+    //                 return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
  
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {               
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoAterRemove, status: 200 });
+    //         } catch (error) {               
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
 	/**
-	 * Name: get info datahub 
+	 * Name: GetInfo 
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
 	getInfo({ inspectionDocID, select, populates }) { 
         return new Promise(async (resolve) => {
@@ -180,7 +180,7 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: Depv
-	 * Func: Lấy danh sách gói thầu
+	 * Func: Getlist
 	 * Date: 26/10/2021
 	 */
     getList({ type, userID, lastestID, keyword, limit = 10, select, populates = {}}){
