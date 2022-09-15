@@ -33,9 +33,9 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: insert datahub inspection checklist 
+	 * Name: Insert
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
     insert({ inspectionDocID, name, sign, description, userID }) {
         return new Promise(async resolve => {
@@ -71,9 +71,9 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: update datahub inspection checklist
+	 * Name: Update
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
     update({ inspectionChecklistID, name, sign, description, userID }) {
         return new Promise(async resolve => {
@@ -108,9 +108,9 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub inspection checklist
+	 * Name: Remove
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
 	remove({ inspectionChecklistID }) { 
         return new Promise(async (resolve) => {
@@ -130,9 +130,9 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: get info datahub inspection checklist
+	 * Name: Getinfo
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
 	getInfo({ inspectionChecklistID, select, populates }) { 
         return new Promise(async (resolve) => {
@@ -180,7 +180,7 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: Depv
-	 * Func: Lấy danh sách inspection checklist
+	 * Func: Getlist
 	 * Date: 26/10/2021
 	 */
     getList({ inspectionID, userID, lastestID, keyword, limit = 10, select, populates = {}}){

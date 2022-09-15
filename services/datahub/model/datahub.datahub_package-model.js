@@ -23,8 +23,10 @@ const {
 /**
  * COLLECTIONS
  */
+const AUTH__COMPANY_COLL                            = require('../../auth/database/auth.company-coll');
 const DATAHUB_PACKAGE_COLL           				= require('../database/datahub_package-coll');
 const DATAHUB_PROJECT_COLL           				= require('../database/datahub_project-coll');
+const DATAHUB_TYPE_COLL           				    = require('../database/datahub_type-coll');
 
 class Model extends BaseModel {
 
@@ -35,7 +37,7 @@ class Model extends BaseModel {
     /**
 	 * Name: insert datahub package
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
     insert({ contractor, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID }) {
         return new Promise(async resolve => {
@@ -93,7 +95,7 @@ class Model extends BaseModel {
     /**
 	 * Name: update datahub package
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
     update({ datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
         return new Promise(async resolve => {
@@ -163,7 +165,7 @@ class Model extends BaseModel {
     /**
 	 * Name: Remove datahub package 
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
 	remove({ datahubPackageID }) { 
         return new Promise(async (resolve) => {
@@ -185,7 +187,7 @@ class Model extends BaseModel {
 	/**
 	 * Name: get info datahub package 
 	 * Author: Depv
-	 * Code: 
+	 * Code: 26/10/2021
 	 */
 	getInfo({ datahubPackageID, select, populates }) { 
         return new Promise(async (resolve) => {
@@ -320,6 +322,194 @@ class Model extends BaseModel {
 				});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 17/04/2022
+     */
+    getListByProperty({ userID, option, contractorID, fieldID, areaID, level, ctx }){
+        console.log({ userID, fieldID, areaID, contractorID, option, level })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1-Tìm kiếm Lĩnh vực
+                 * 2-Tìm kiếm Khu vực (Tỉnh/Huyện/Xã)
+                 * 3-Gom nhóm, tính tổng và sắp xếp theo số lượng hợp đồng lớn lên trên
+                 */
+                if(option == 1){
+                    let conditionObj = {}, conditionGroup = {}, conditionPopulate = {}, sortBy = {"amount": -1}
+
+                    if(fieldID && checkObjectIDs(fieldID)){
+                        conditionObj.field = ObjectID(fieldID)
+                    }
+    
+                    if(areaID && checkObjectIDs(areaID)){
+                        if(level == 1){
+                            conditionObj.area1 = ObjectID(areaID)
+                        }
+                        if(level == 2){
+                            conditionObj.area2 = ObjectID(areaID)
+                        }
+                        if(level == 3){
+                            conditionObj.area3 = ObjectID(areaID)
+                        }
+                    }
+                    // console.log(conditionObj)
+    
+                    conditionGroup = {
+                        _id: { contractor: '$contractor' },
+                        amount: { $sum: 1 },
+                    }
+    
+                    conditionPopulate = {
+                        path: '_id.contractor',
+                        select: '_id name sign image address',
+                        model: 'company'
+                    }
+    
+                    // console.log('===================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+                    // console.log(conditionObj)
+                    // console.log(conditionGroup)
+    
+                    let listData = await DATAHUB_PACKAGE_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: sortBy
+                        }
+                    ])
+                    // console.log(listData)
+    
+                    if(listData.length){
+                        await AUTH__COMPANY_COLL.populate(listData, conditionPopulate)
+                    }
+                    // console.log(listData)
+    
+                    return resolve({ error: false, data: listData });
+                }
+
+                // Tính tổng số lượng
+                if(option == 2){
+                    let listData1 = await DATAHUB_PACKAGE_COLL.aggregate([
+                        {
+                            $match: {
+                                contractor: ObjectID(contractorID)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { field: '$field' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let listData2 = await DATAHUB_PACKAGE_COLL.aggregate([
+                        {
+                            $match: {
+                                contractor: ObjectID(contractorID)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let listData3 = await DATAHUB_PACKAGE_COLL.aggregate([
+                        {
+                            $match: {
+                                contractor: ObjectID(contractorID)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let listData4 = await DATAHUB_PACKAGE_COLL.aggregate([
+                        {
+                            $match: {
+                                contractor: ObjectID(contractorID)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { client: '$client' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let number1 = 0, number2 = 0, number3 = 0, number4 = 0
+                    if(listData1.length){
+                        number1 = listData1[0].amount
+                    }
+                    if(listData2.length){
+                        number2 = listData2[0].amount
+                    }
+                    if(listData3.length){
+                        number3 = listData3[0].amount
+                    }
+                    if(listData4.length){
+                        number4 = listData4[0].amount
+                    }
+                    // console.log(listData1)
+
+                    // console.log(number1)
+                    // console.log(number2)
+                    // console.log(number3)
+                    // console.log(number4)
+
+                    return resolve({ error: false, data: {number1, number2, number3, number4} });
+                }
+
+                // Danh sách dịch vụ
+                if(option == 3){
+                    let listData = await DATAHUB_PACKAGE_COLL.aggregate([
+                        {
+                            $match: {
+                                contractor: ObjectID(contractorID)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { field: '$field' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulate = {
+                        path: '_id.field',
+                        select: '_id name sign description',
+                        model: 'datahub_type'
+                    }
+
+                    if(listData.length){
+                        await DATAHUB_TYPE_COLL.populate(listData, conditionPopulate)
+                    }
+                    console.log(listData)
+    
+                    return resolve({ error: false, data: listData });
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }

@@ -1999,6 +1999,8 @@ class Model extends BaseModel {
                     }
 				}
 
+                // console.log(conditionObj)
+
                 // Phản hồi chính thức hay không
                 if(official){
                     conditionObj.official = official;

@@ -110,7 +110,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired,hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, isCloneTask, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
+        console.log({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -151,43 +152,17 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                if(!parentID){
-                    // call service department để lấy thông tin
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
-                    /**
-                     * Company lấy theo company của project
-                     * Chứ không phải lấy theo company của user tạo task
-                     */
-                    companyID = infoProject?.data?.company;
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID
+                })
 
-                    if(!companyID)
-                        return resolve({ error: true, message: "company_invalid", status: 400 });
-                } else{
-                    // Lấy thông tin công ty theo công việc cha
-                    let infoTaskParent = await this.getInfo({
-                        taskID: parentID,
-                        userID: authorID,
-                        populates: JSON.stringify({
-                            path: 'author assignee',
-                            select: '_id'
-                        })
-                    });
+                companyID = infoProject?.data?.company
 
-                    let { author, assignee, company, subtype } = infoTaskParent.data;
-                    /**
-                     * Check quyền nếu user là author hoặc assignee của công việc cha thì mới cho tạo
-                     * Hiepnh: Cần bổ sung cả người liên quan cũng được tạo => đối với RFI
-                     */
-                    if(Number(subtype) != 1){
-                        if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
-                            return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED, status: 403 })
-                    }
-                    companyID = company._id;
-                }
+                if(!companyID)
+                    return resolve({ error: true, message: "company_invalid", status: 400 })
 
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
+
                 dataInsert = {
                     name,
                     namecv: stringUtils.removeAccents(name),
@@ -199,10 +174,16 @@ class Model extends BaseModel {
                     suid,
                     accessUsers,
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
-                    type,
+                    type
                 }
-
                 // console.log({ expiredTime, expiredHour })
+
+                if(parentID){
+                    let infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID)
+                    dataInsert.subtype = infoTaskParent.subtype
+                }else{
+                    dataInsert.subtype = subType
+                }
 
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
@@ -221,16 +202,9 @@ class Model extends BaseModel {
                     dataInsert.actualFinishTime = formatDate;
                 }
 
-                // precalculated
-                // companyOfAuthor
-                // companyOfAssignee
-                // subtype (Xử lý sau)
-                // amountChecklist
-                // amountFinishedChecklist
-                // amountSubtask
-                // amountFinishedSubtask
-                // amountResponse
-                // amountMarkedResponse
+                /**
+                 * Precalculated
+                 */
                 let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     userID: authorID, select: "_id company"
                 })
@@ -295,17 +269,7 @@ class Model extends BaseModel {
                     dataInsert.actualStartTime = new Date();
                 }
 
-                //_________B2.1 Kiểm tra có docreID hay không (nếu tạo từ tài liệu)
-                if(docreID && ObjectID.isValid(docreID)){
-                    dataInsert.docre = docreID;
-                }
-
-                //_________B2.2 Kiểm tra có messageID có hay không (nếu tạo từ tin nhắn)
-                if(messageID && ObjectID.isValid(messageID)){
-                    dataInsert.message = messageID;
-                }
-
-                //_________B2.3 Kiểm tra có contractID có hay không (nếu tạo từ ngân sách hợp đồng)
+                //_________B2.3 Kiểm tra có contractID
                 if(contractID && ObjectID.isValid(contractID)){
                     dataInsert.contract = contractID;
                 }else{
@@ -314,33 +278,10 @@ class Model extends BaseModel {
                         dataInsert.contract = infoGroup.contract
                     }
                 }
-                //_________B2.4 Kiểm tra có contractID có hay không (nếu tạo từ văn bản)
-                if(documentID && ObjectID.isValid(documentID)){
-                    dataInsert.document = documentID;
-                }
-
-                if(fieldID && ObjectID.isValid(fieldID)){
-                    dataInsert.field = fieldID;
-                }
-
-                //_________B2.5 Kiểm tra có boardID có hay không (nếu tạo từ board)
-                if(boardID && ObjectID.isValid(boardID)){
-                    dataInsert.board = boardID;
-                }
-
-                //_________Trường hợp tạo Đệ trình phê duyệt
-                if(subType && !isNaN(subType)){
-                    dataInsert.subtype = +subType;
-                } else{
-                    // Lấy theo group
-                    if(infoGroup.type){
-                        dataInsert.subtype = infoGroup.type;
-                    }
-                }
 
                 //_________Phân loại khác
-                if(infoGroup && infoGroup.property){
-                    dataInsert.field = infoGroup.property;
+                if(fieldID && ObjectID.isValid(fieldID)){
+                    dataInsert.field = fieldID;
                 }
 
                 //_________Việc nháp/chính thức
@@ -1745,12 +1686,12 @@ class Model extends BaseModel {
                 companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
 
                 // Chỉ lấy task cha hoặc lấy tất cả
-                // if(isParent && isParent == 1){
-                //     conditionObj.parent = { $exists: false };
-                // }
-                // if(isParent && isParent == 2){
-                //     conditionObj.parent = { $exists: true };
-                // }
+                if(isParent && isParent == 1){
+                    conditionObj.parent = { $exists: false };
+                }
+                if(isParent && isParent == 2){
+                    conditionObj.parent = { $exists: true };
+                }
 
                 // Chưa xem (user nắm trong mảng new)
                 if(read && read == 1){

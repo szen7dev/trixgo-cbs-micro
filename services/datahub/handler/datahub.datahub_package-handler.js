@@ -144,4 +144,41 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: Depv 
+     * Func: get info and get list datahub package
+     */
+     getListByProperty: {
+        params: {
+            fieldID  : { type: "string", optional: true },
+            areaID  : { type: "string", optional: true  },
+            level   : { type: "string", optional: true  },
+            option   : { type: "string", optional: true  },
+            contractorID   : { type: "string", optional: true  },
+
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                console.log('========================12322222222222222')
+                await this.validateEntity(ctx.params);
+                let { fieldID, areaID, level, option, contractorID, lastestID, keyword, limit, select, populates } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.getListByProperty({
+                    fieldID, areaID, level, option, contractorID, userID, lastestID, keyword, limit, select, populates
+                 });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }
