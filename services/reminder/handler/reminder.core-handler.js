@@ -1,6 +1,8 @@
 const Agenda            = require('agenda');
 const ObjectID 			= require('mongodb').ObjectID;
 const { MONGODB_URL } 	= require('../../../tools/db/utils');
+const { CF_DOMAIN_SERVICES } 		= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_SUBJECT_PCM }	= require('../../subject_pcm/helper/subject_pcm.actions-constant');
 let agenda;
 
 (async function run() {
@@ -280,6 +282,11 @@ module.exports = {
             try {
                 let { alert, actualFinishTime, taskID, userID } = ctx.params;
                 let timeScheduler = '1 minutes';
+
+				const infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
+					taskID
+				});
+				console.log({ infoTask })
 
 				// switch (+alert) {
 				// 	case 15:

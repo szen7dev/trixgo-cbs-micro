@@ -2823,9 +2823,14 @@ class Model extends BaseModel {
      * Func: Copy child task
      * Date: 01/09/2022
      */
-    cloneChildTask({ parentTask, listTasks, isDraftTask, callback = null }) {
+    cloneChildTask({ parentId, parentTask, isDraftTask, callback = null }) {
         return new Promise(async resolve => {
             try {
+                const listTasks = await PCM_PLAN_TASK_COLL
+                    .find({ parent: parentId })
+                    .populate('parent', 'startTime expiredTime')
+                    .lean();
+
                 if(!listTasks || !listTasks.length) {
                     return resolve({
                         results: [],
@@ -2856,6 +2861,16 @@ class Model extends BaseModel {
                             .add(totalDayStartTimeToExpiredTime, 'days');
 
                         let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+
+                        console.log({
+                            startTimeParentTask: parentTask.startTime,
+                            oldStartTimeParentTask: startTime,
+                            expiredTime,
+                            totalDayStartTimeToExpiredTime,
+                            newExpiredTime,
+                            childID: childTask._id,
+                            parentID: parentTask._id,
+                        })
 
                         delete childTask._id;
                         const newChildTask = await PCM_PLAN_TASK_COLL.create({
@@ -2952,27 +2967,17 @@ class Model extends BaseModel {
                 if(infoAfterCloneTask.error) return resolve(infoAfterCloneTask);
 
                 if(isCloneChildTask) {
-                    const listChildsOfTask = await PCM_PLAN_TASK_COLL
-                        .find({ parent: taskID })
-                        .populate('parent', 'startTime expiredTime')
-                        .lean();
-
                     // Clone child task (level 2)
                     await this.cloneChildTask({
+                        parentId: taskID,
                         parentTask: infoAfterCloneTask.data,
-                        listTasks: listChildsOfTask,
                         isDraftTask,
                         callback: async (childTaskID, newChildTask) => {
 
                             // Clone grand child task (level 3)
-                            const listGrandChildOfTask = await PCM_PLAN_TASK_COLL
-                                .find({ parent: childTaskID })
-                                .populate('parent', 'startTime expiredTime')
-                                .lean();
-
                             await this.cloneChildTask({
+                                parentId: childTaskID,
                                 parentTask: newChildTask,
-                                listTasks: listGrandChildOfTask,
                                 isDraftTask
                             })
                         }
