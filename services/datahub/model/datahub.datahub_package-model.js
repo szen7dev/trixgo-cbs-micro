@@ -348,7 +348,7 @@ class Model extends BaseModel {
                         conditionObj.field = ObjectID(fieldID)
                     }
     
-                    if(areaID && checkObjectIDs(areaID)){
+                    if(areaID && checkObjectIDs(areaID) && level){
                         if(level == 1){
                             conditionObj.area1 = ObjectID(areaID)
                         }
