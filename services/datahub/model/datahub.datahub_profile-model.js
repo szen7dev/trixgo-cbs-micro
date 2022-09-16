@@ -163,19 +163,20 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách datahub profile
 	 * Date: 26/10/2021
 	 */
-    getList({ userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getList({ contractorID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
-                let conditionObj = {};
+                if(!checkObjectIDs(userID) || !checkObjectIDs(contractorID))
+                    return resolve({ error: true, message: 'Request params userID|contractorID invalid', status: 400 });
+
+
+                let conditionObj = {company: contractorID};
                 let sortBy; 
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20;
                 }
-
-				if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))

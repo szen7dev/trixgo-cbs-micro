@@ -53,6 +53,11 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
     intro: String,
     //_________Website
     website: String,
+    //_________Thành lập
+    birthDay: {
+        type   : Date,
+        default: null
+    },
     //_________Ảnh bìa (xem xét bỏ => Datahub)
     cover: {
         type: String,

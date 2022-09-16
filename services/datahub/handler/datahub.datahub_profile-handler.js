@@ -95,18 +95,20 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            datahubProfileID : { type: "string", optional: true },
+            datahubProfileID    : { type: "string", optional: true },
+            contractorID        : { type: "string", optional: true },
+
             // Field mặc định
-            keyword     : { type: "string", optional: true },
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
-            populates   : { type: "string", optional: true },
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubProfileID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { datahubProfileID, contractorID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -116,7 +118,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_PROFILE_MODEL.getList({
-                        userID, lastestID, keyword, limit: +limit, select, populates
+                        contractorID, userID, lastestID, keyword, limit: +limit, select, populates
                     });
                 }
                 
