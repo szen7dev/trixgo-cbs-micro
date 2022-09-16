@@ -33,6 +33,11 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_type", {
     numberOfPosts: { type: Number, default: 0 },
     //_________Số lượng view
     numberOfViews: { type: Number, default: 0 },
+    //_________Cha
+    contractors: [{
+        type: Schema.Types.ObjectId,
+        ref: "company"
+    }],
     //_________Ảnh đại diện
     image: {
         type: Schema.Types.ObjectId,

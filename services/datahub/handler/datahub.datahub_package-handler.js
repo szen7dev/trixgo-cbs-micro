@@ -166,7 +166,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                console.log('========================12322222222222222')
+                // console.log('========================12322222222222222')
                 await this.validateEntity(ctx.params);
                 let { fieldID, areaID, level, option, contractorID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;

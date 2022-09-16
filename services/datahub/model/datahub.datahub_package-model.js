@@ -84,6 +84,21 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert) 
                     return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_insert' });
+
+                /**
+                 * Cập nhật số lượng đơn vị vào trong phân loại
+                 */
+                let infoType = await DATAHUB_TYPE_COLL.findByIdAndUpdate(field, {
+                    $addToSet: {
+                        contractors: contractor
+                    }
+                }, { new: true });
+
+                console.log(infoType)
+
+                await DATAHUB_TYPE_COLL.findByIdAndUpdate(field, {
+                    numberOfContractors: infoType.contractors.length | 0
+                }, { new: true });
                 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
