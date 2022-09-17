@@ -53,7 +53,7 @@ class Model extends BaseModel {
         })
     }
 
-    update({ companyID, name, sign, taxid, address, area, phone, email, userID }) {
+    update({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, userID }) {
         return new Promise(async (resolve) => {
             try {
                 let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);
@@ -72,12 +72,48 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "company_existed" })
 
                 let dataUpdate = {
-                    name, sign, taxid,  address, phone, email, userUpdate: userID, modifyAt: new Date()
+                    userUpdate: userID, modifyAt: new Date()
                 }
+
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(taxid){
+                    dataUpdate.taxid = taxid;
+                }
+
+                if(address){
+                    dataUpdate.address = address;
+                }
+
+                if(phone){
+                    dataUpdate.phone = phone;
+                }
+
+                if(email){
+                    dataUpdate.email = email;
+                }
+
                 if(area && _isValid(area)){
                     dataUpdate.area = area;
                 }
 
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(birthDay){
+                    dataUpdate.birthDay = birthDay;
+                }
+
+                if(image){
+                    dataUpdate.image = image;
+                }
                 let infoCompanyAfterUpdate = await AUTH__COMPANY_COLL.findByIdAndUpdate(companyID, dataUpdate, { new: true })
 
                 if(!infoCompanyAfterUpdate)
