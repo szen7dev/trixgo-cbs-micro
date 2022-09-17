@@ -85,8 +85,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+            keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -99,7 +98,8 @@ class Model extends BaseModel {
                 }
 
                 let sortBy;
-                let conditionObj = { level: 3 };
+                // let conditionObj = { level: 3 };
+                let conditionObj = { };
                 let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
