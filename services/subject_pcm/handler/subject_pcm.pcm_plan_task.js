@@ -660,4 +660,32 @@ module.exports = {
             }
         }
     },
+
+
+     /**
+     * Dev: Depv
+     * Func: Download Excel
+     * Date: 15/09/2022
+     */
+    downloadTemplateImportExcel: {
+        auth: 'required',
+        params: {
+            projectID: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { projectID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                console.log({ projectID })
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadTemplateImportExcel({
+                    projectID 
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }
