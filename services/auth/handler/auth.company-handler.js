@@ -19,15 +19,17 @@ module.exports = {
             area            : { type: "string" },
             phone           : { type: "string", optional: true },
             email           : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            birthDay        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  name, sign, taxid, address, area, phone, email } = ctx.params;
+                let {  name, sign, taxid, address, area, phone, email, description, birthDay } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await AUTH__COMPANY_MODEL.insert({
-                    name, sign, taxid, address, area, phone, email, userID 
+                    name, sign, taxid, address, area, phone, email, description, birthDay, userID 
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

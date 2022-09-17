@@ -25,7 +25,7 @@ class Model extends BaseModel {
         super(require('../database/auth.company-coll'));
     }
 
-    insert({ name, sign, taxid, address, area, phone, email, userID }) {
+    insert({ name, sign, taxid, address, area, phone, email, description, birthDay, userID }) {
         return new Promise(async (resolve) => {
             try {
                 let info = await AUTH__COMPANY_COLL.findOne({
@@ -39,7 +39,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${info.name}` });
 
                 let dataInsert = {
-                    name, sign, taxid, address, area, phone, email, userCreate: userID, userUpdate: userID,
+                    name, sign, taxid, address, area, phone, email, description, birthDay, userCreate: userID, userUpdate: userID,
                 }
 
                 let infoCompanyAfterSave = await this.insertData(dataInsert);
