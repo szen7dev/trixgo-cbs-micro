@@ -431,14 +431,16 @@ module.exports = {
             departmentID    : { type: "string" },
             positionID      : { type: "string" },
             companyID       : { type: "string" },
+            phone           : { type: "string", optional: true },
+            storageUse      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { email, fullname, level, departmentID, positionID, companyID } = ctx.params;
+                const { email, fullname, level, departmentID, positionID, companyID, phone, storageUse } = ctx.params;
 
                 const resultAfterCallHandler = await AUTH__USER_MODEL.insert({
-                    email, fullname, level, departmentID, positionID, companyID
+                    email, fullname, level, departmentID, positionID, companyID, phone, storageUse
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -476,7 +478,8 @@ module.exports = {
             sendRequestToFriendID   : { type: "string", optional: true },
             acceptFriendRequestID   : { type: "string", optional: true },
             removeFriendRequestID   : { type: "string", optional: true },
-            unFriendID              : { type: "string", optional: true },
+            unFriendID      : { type: "string", optional: true },
+            storageUse      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -484,7 +487,7 @@ module.exports = {
                 let {
                     userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
-                    companyID, departmentID, positionID, level, status
+                    companyID, departmentID, positionID, level, status, storageUse, 
                 } = ctx.params;
 				let { _id: currentUserID, company } = ctx.meta.infoUser;
 
@@ -495,7 +498,7 @@ module.exports = {
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
                     userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
-                    companyID, departmentID, positionID, level, status, company, ctx
+                    companyID, departmentID, positionID, level, status, company, storageUse, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

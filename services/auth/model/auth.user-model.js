@@ -1018,7 +1018,7 @@ class Model extends BaseModel {
 	 * Func: Hàm tạo mới user
 	 * Date: 03/03/2022
 	 */
-    insert({ email, fullname, level, departmentID, positionID, companyID }) {
+    insert({ email, fullname, level, departmentID, positionID, companyID, phone, storageUse }) {
         console.log('====================>>>>>>>>>>>>>>>>>>>>')
         console.log({ email, fullname, level, departmentID, positionID, companyID })
         return new Promise(async resolve => {
@@ -1089,6 +1089,14 @@ class Model extends BaseModel {
                     dataInsert.position = positionID;
                 }
 
+                if(phone){
+                    dataInsert.phone = phone;
+                }
+
+                if(storageUse){
+                    dataInsert.storageUse = storageUse;
+                }
+
                 if(Number(level) === 0 || Number(level) === 1){
                     dataInsert.level = +level;
                 }
@@ -1135,7 +1143,7 @@ class Model extends BaseModel {
 	 * Date: 14/01/2022
 	 */
     update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault,
-        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, company, ctx }) {
+        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, company, storageUse, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID)) {
@@ -1214,6 +1222,10 @@ class Model extends BaseModel {
                 
                 if(checkObjectIDs(groupDefault)){
                     dataUpdate.groupDefault = groupDefault;
+                }
+                
+                if(storageUse){                    
+                    dataUpdate.storageUse = storageUse;
                 }
 
                 // Gửi yêu cầu kết bạn tới người khác
