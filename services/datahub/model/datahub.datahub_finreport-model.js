@@ -32,16 +32,16 @@ class Model extends BaseModel {
     constructor() {
         super(DATAHUB_FINDREPORT_COLL);
     }
- 
+
     /**
 	 * Name: insert datahub finreport
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
     insert({ contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID }) {
         return new Promise(async resolve => {
-            try { 
-                
+            try {
+
                 if(!checkObjectIDs(contractor))
                     return resolve({ error: true, message: "contractor Không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
@@ -87,25 +87,25 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert) 
+                if (!infoAfterInsert)
                     return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_insert' });
-                
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         })
     }
-    
+
     /**
 	 * Name: update datahub finreport
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
-    update({ datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID  }) {
+    update({ datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, files, userID  }) {
         return new Promise(async resolve => {
             try {
-                
+
                 let dataUpdate = { userUpdate: userID };
                 if(fiscalYear){
                     dataUpdate.fiscalYear = fiscalYear;
@@ -150,10 +150,15 @@ class Model extends BaseModel {
                 if(grossProfitAfterTax){
                     dataUpdate.grossProfitAfterTax = grossProfitAfterTax;
                 }
+
+                if(files && checkObjectIDs(files)) {
+                    dataUpdate.$addToSet = { files };
+                }
+
                 let infoAfterUpdate = await DATAHUB_FINDREPORT_COLL.findByIdAndUpdate(datahubFinreportID, dataUpdate, { new: true });
-                if (!infoAfterUpdate) 
+                if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
-                
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -162,46 +167,46 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub finreport 
+	 * Name: Remove datahub finreport
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
-	remove({ datahubFinreportID }) { 
+	remove({ datahubFinreportID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(datahubFinreportID))
                     return resolve({ error: true, message: 'Mã datahubFinreportID không hợp lệ', keyError: "datahubFinreportID_invalid", status: 400 });
-                
+
                 let infoAterRemove = await DATAHUB_FINDREPORT_COLL.findByIdAndDelete(datahubFinreportID)
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {               
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
 	/**
-	 * Name: get info datahub finreport 
+	 * Name: get info datahub finreport
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
-	getInfo({ datahubFinreportID, select, populates }) { 
+	getInfo({ datahubFinreportID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(datahubFinreportID))
                     return resolve({ error: true, message: 'Request params datahubFinreportID invalid', status: 400 });
-                
+
                  // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -224,14 +229,14 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /**
 	 * Dev: Depv
 	 * Func: Lấy danh sách datahub finreport
@@ -241,7 +246,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let conditionObj = { contractor: contractorID };
-                let sortBy; 
+                let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
@@ -249,7 +254,7 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
- 
+
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 

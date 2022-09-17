@@ -175,7 +175,7 @@ exports.calculateExpireTime = (currentTimestamp, expireTimestamp, type = 'minute
     const current = moment([yearCurrent, monthCurrent, dateCurrent, hoursCurrent, minutesCurrent]);
     const expire = moment([yearCurrent, monthCurrent, dateCurrent, hoursExpire, minutesExpire]);
 
-    console.log({ current, expire, type })
+    // console.log({ current, expire, type })
 
     return expire.diff(current, type);
 }

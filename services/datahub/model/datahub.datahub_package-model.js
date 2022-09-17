@@ -472,18 +472,21 @@ class Model extends BaseModel {
 
                     let number1 = 0, number2 = 0, number3 = 0, number4 = 0
                     if(listData1.length){
-                        number1 = listData1[0].amount
+                        number1 = listData1.length
                     }
                     if(listData2.length){
-                        number2 = listData2[0].amount
+                        number2 = listData2.length
                     }
                     if(listData3.length){
                         number3 = listData3[0].amount
                     }
                     if(listData4.length){
-                        number4 = listData4[0].amount
+                        number4 = listData4.length
                     }
                     // console.log(listData1)
+                    // console.log(listData2)
+                    // console.log(listData3)
+                    // console.log(listData4)
 
                     // console.log(number1)
                     // console.log(number2)

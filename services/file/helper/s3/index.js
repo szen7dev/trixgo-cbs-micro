@@ -109,6 +109,7 @@ const getPathByApp = (params) => {
         APP_KEYS.PCM_PLAN_TASK,
         APP_KEYS.DOCUMENT,
         APP_KEYS.HUMAN,
+        APP_KEYS.DATAHUB,
     ];
     const PROJECTS = [APP_KEYS.PCM_PLAN_TASK, APP_KEYS.DOCUMENT];
     const GROUPS   = [APP_KEYS.PCM_PLAN_TASK];
@@ -156,6 +157,10 @@ const getPathByApp = (params) => {
             break;
         case APP_KEYS.HUMAN:
             appName = 'HUMAN';
+            pathS3 += `/${companyID}`;
+            break;
+        case APP_KEYS.DATAHUB:
+            appName = 'DATAHUB';
             pathS3 += `/${companyID}`;
             break;
         default:
