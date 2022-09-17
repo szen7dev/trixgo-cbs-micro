@@ -25,7 +25,7 @@ class Model extends BaseModel {
         super(require('../database/auth.company-coll'));
     }
 
-    insert({ name, sign, taxid, address, area, phone, email, description, birthDay, userID }) {
+    insert({ name, sign, taxid, address, area, phone, email, description, birthDay, website, userID }) {
         return new Promise(async (resolve) => {
             try {
                 let info = await AUTH__COMPANY_COLL.findOne({
@@ -39,7 +39,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${info.name}` });
 
                 let dataInsert = {
-                    name, sign, taxid, address, area, phone, email, description, birthDay, userCreate: userID, userUpdate: userID,
+                    name, sign, taxid, address, area, phone, email, description, birthDay, website, userCreate: userID, userUpdate: userID,
                 }
 
                 let infoCompanyAfterSave = await this.insertData(dataInsert);
@@ -53,13 +53,12 @@ class Model extends BaseModel {
         })
     }
 
-    update({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, userID }) {
+    update({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID }) {
         return new Promise(async (resolve) => {
             try {
                 let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);
                 if(!infoCompany)
                     return resolve({ error: true, message: "company_not_exist" });
-
                 // Kiểm tra tên công ty mới thay đổi đã tồn tại mã hiệu hay không ngoại trừ chính nó.
                 let info = await AUTH__COMPANY_COLL.findOne({
                     _id: { $ne: companyID },
@@ -113,6 +112,10 @@ class Model extends BaseModel {
 
                 if(image){
                     dataUpdate.image = image;
+                }
+
+                if(website){
+                    dataUpdate.website = website;
                 }
                 let infoCompanyAfterUpdate = await AUTH__COMPANY_COLL.findByIdAndUpdate(companyID, dataUpdate, { new: true })
 
