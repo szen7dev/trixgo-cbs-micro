@@ -33,7 +33,7 @@ class Model extends BaseModel {
     constructor() {
         super(DATAHUB_PACKAGE_COLL);
     }
- 
+
     /**
 	 * Name: insert datahub package
 	 * Author: Depv
@@ -41,16 +41,16 @@ class Model extends BaseModel {
 	 */
     insert({ contractor, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID }) {
         return new Promise(async resolve => {
-            try { 
+            try {
                 if(!name)
                     return resolve({ error: true, message: "Tên datahub không hợp lệ", keyError: 'params_invalid' });
 
                 if(!checkObjectIDs(project, field, contractor))
                     return resolve({ error: true, message: "contractor || project || field invalid", keyError: 'params_invalid' });
 
-                let { client, area1, area2, area3, projectType, buildingType, 
+                let { client, area1, area2, area3, projectType, buildingType,
                     buildingGrade, basementNumber, basementArea, floorNumber, floorArea } = await DATAHUB_PROJECT_COLL.findById(project)
-                    
+
                 let dataInsert = {
                     contractor, project, field, name, value, vatValue, userCreate: userID,
                     client, area1, area2, area3, projectType, buildingType,
@@ -82,7 +82,7 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert) 
+                if (!infoAfterInsert)
                     return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_insert' });
 
                 /**
@@ -99,7 +99,7 @@ class Model extends BaseModel {
                 await DATAHUB_TYPE_COLL.findByIdAndUpdate(field, {
                     numberOfContractors: infoType.contractors.length | 0
                 }, { new: true });
-                
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -112,17 +112,17 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 26/10/2021
 	 */
-    update({ datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
+    update({ datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, files, userID  }) {
         return new Promise(async resolve => {
             try {
-                
+
                 let dataUpdate = { userUpdate: userID };
                 if(project){
-                    let { client, area1, area2, area3, projectType, buildingType, 
+                    let { client, area1, area2, area3, projectType, buildingType,
                         buildingGrade, basementNumber, basementArea, floorNumber, floorArea } = await DATAHUB_PROJECT_COLL.findById(project)
-                    dataUpdate = { 
-                        ...dataUpdate, project, client, area1, area2, area3, projectType, buildingType, 
-                        buildingGrade, basementNumber, basementArea, floorNumber, floorArea 
+                    dataUpdate = {
+                        ...dataUpdate, project, client, area1, area2, area3, projectType, buildingType,
+                        buildingGrade, basementNumber, basementArea, floorNumber, floorArea
                     }
                 }
 
@@ -165,11 +165,15 @@ class Model extends BaseModel {
                 if(status){
                     dataUpdate.status = status;
                 }
-                console.log({ datahubPackageID, dataUpdate });
+
+                if(files && checkObjectIDs(files)) {
+                    dataUpdate.$addToSet = { files };
+                }
+
                 let infoAfterUpdate = await DATAHUB_PACKAGE_COLL.findByIdAndUpdate(datahubPackageID, dataUpdate, { new: true });
-                if (!infoAfterUpdate) 
+                if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
-                
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -178,46 +182,46 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub package 
+	 * Name: Remove datahub package
 	 * Author: Depv
 	 * Code: 26/10/2021
 	 */
-	remove({ datahubPackageID }) { 
+	remove({ datahubPackageID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(datahubPackageID))
                     return resolve({ error: true, message: 'Mã datahubPackageID không hợp lệ', keyError: "datahubPackageID_invalid", status: 400 });
-                
+
                 let infoAterRemove = await DATAHUB_PACKAGE_COLL.findByIdAndDelete(datahubPackageID)
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {               
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
 	/**
-	 * Name: get info datahub package 
+	 * Name: get info datahub package
 	 * Author: Depv
 	 * Code: 26/10/2021
 	 */
-	getInfo({ datahubPackageID, select, populates }) { 
+	getInfo({ datahubPackageID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(datahubPackageID))
                     return resolve({ error: true, message: 'Request params datahubPackageID invalid', status: 400 });
-                
+
                  // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -240,14 +244,14 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /**
 	 * Dev: Depv
 	 * Func: Lấy danh sách datahub package
@@ -257,7 +261,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let conditionObj = { contractor: contractorID };
-                let sortBy; 
+                let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
@@ -362,7 +366,7 @@ class Model extends BaseModel {
                     if(fieldID && checkObjectIDs(fieldID)){
                         conditionObj.field = ObjectID(fieldID)
                     }
-    
+
                     if(areaID && checkObjectIDs(areaID) && level){
                         if(level == 1){
                             conditionObj.area1 = ObjectID(areaID)
@@ -375,22 +379,22 @@ class Model extends BaseModel {
                         }
                     }
                     // console.log(conditionObj)
-    
+
                     conditionGroup = {
                         _id: { contractor: '$contractor' },
                         amount: { $sum: 1 },
                     }
-    
+
                     conditionPopulate = {
                         path: '_id.contractor',
                         select: '_id name sign image address',
                         model: 'company'
                     }
-    
+
                     // console.log('===================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
-    
+
                     let listData = await DATAHUB_PACKAGE_COLL.aggregate([
                         {
                             $match: conditionObj
@@ -403,12 +407,12 @@ class Model extends BaseModel {
                         }
                     ])
                     // console.log(listData)
-    
+
                     if(listData.length){
                         await AUTH__COMPANY_COLL.populate(listData, conditionPopulate)
                     }
                     // console.log(listData)
-    
+
                     return resolve({ error: false, data: listData });
                 }
 
@@ -522,7 +526,7 @@ class Model extends BaseModel {
                         await DATAHUB_TYPE_COLL.populate(listData, conditionPopulate)
                     }
                     console.log(listData)
-    
+
                     return resolve({ error: false, data: listData });
                 }
 
