@@ -3181,6 +3181,8 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================')
+                // console.log(dataImportJSON)
                 let index = 0;
                 let errorNumber = 0
                 for (const data of dataImportJSON) {

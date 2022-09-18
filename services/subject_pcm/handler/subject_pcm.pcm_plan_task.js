@@ -706,11 +706,12 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { taskID, dataImport } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.importTaskFromExcel({
                     taskID, dataImport, userID, ctx
                 })
-                console.log({ resultAfterCallHandler });
+                // console.log({ resultAfterCallHandler });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
