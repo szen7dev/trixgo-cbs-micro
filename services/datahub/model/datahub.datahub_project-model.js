@@ -24,7 +24,9 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * COLLECTIONS
  */
-const DATAHUB_PROJECT_COLL           				= require('../database/datahub_project-coll');
+const DATAHUB_PROJECT_COLL           	= require('../database/datahub_project-coll');
+const AREA_COLL                         = require('../../item/database/item.area-coll');
+const COMPANY_COLL                      = require('../../auth/database/auth.company-coll');
 
 class Model extends BaseModel {
 
@@ -380,6 +382,69 @@ class Model extends BaseModel {
             }
         })
     }
+
+
+     /**
+     * Dev: HiepNH
+     * Func: Download template import excel
+     * Date: 18/09/2022
+     */
+    downloadTemplateImportExcel({ userID }) {
+        return new Promise(async resolve => {
+            try {
+
+                // let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
+                // if(infoProject.error)
+                //     return res.json(infoProject);
+
+                // let memberInProject     = infoProject.members;
+
+                let listArea  = await AREA_COLL.find({ }).select("name sign");
+                let listCompany = await COMPANY_COLL.find({ }).select('_id name sign').sort({_id: 1})
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/datahub_project_list.xlsx')))
+                .then(async workbook => {
+                    var i = 2;
+                    listArea?.forEach((item, index) => {
+                        workbook.sheet("3-KhuVuc").row(i).cell(1).value(`${item._id}`);
+                        workbook.sheet("3-KhuVuc").row(i).cell(2).value(`${item.sign}-${item.name}`); 
+                        i++
+                    });
+
+                    var i = 2;
+                    listCompany.forEach((item, index) => {
+                        workbook.sheet("2-ChuDauTu").row(i).cell(7).value(`${item._id}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(8).value(`${item.sign}-${item.name}`);
+                        i++
+                    });
+
+                    // var i = 2;
+                    // memberInProject.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
+                    //     workbook.sheet("Export").row(i).cell(5).value(item.fullname);
+                    //     i++
+                    // });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_project_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+                    fs.unlinkSync(pathWriteFile);
+                    console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });                         
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

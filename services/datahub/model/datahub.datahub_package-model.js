@@ -86,15 +86,19 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_insert' });
 
                 /**
-                 * Cập nhật số lượng đơn vị vào trong phân loại
+                 * Cập nhật vào lĩnh vực
+                 * - Số lượng đơn vị vào trong phân loại
+                 * - Số hợp đồng
                  */
                 let infoType = await DATAHUB_TYPE_COLL.findByIdAndUpdate(field, {
                     $addToSet: {
                         contractors: contractor
+                    },
+                    $inc: {
+                        numberOfContracts: 1,
                     }
                 }, { new: true });
-
-                console.log(infoType)
+                // console.log(infoType)
 
                 await DATAHUB_TYPE_COLL.findByIdAndUpdate(field, {
                     numberOfContractors: infoType.contractors.length | 0
@@ -365,6 +369,13 @@ class Model extends BaseModel {
 
                     if(fieldID && checkObjectIDs(fieldID)){
                         conditionObj.field = ObjectID(fieldID)
+
+                        // Cập nhật số lượt xem 
+                        let infoType = await DATAHUB_TYPE_COLL.findByIdAndUpdate(fieldID, {
+                            $inc: {
+                                numberOfViews: 1,
+                            }
+                        }, { new: true });
                     }
 
                     if(areaID && checkObjectIDs(areaID) && level){

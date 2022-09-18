@@ -29,6 +29,8 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_type", {
     popular: { type: Number, default: 1 },
     //_________Số lượng đơn vị tham gia
     numberOfContractors: { type: Number, default: 0 },
+    //_________Số lượng hợp đồng
+    numberOfContracts: { type: Number, default: 0 },
     //_________Số lượng bài viết
     numberOfPosts: { type: Number, default: 0 },
     //_________Số lượng view
