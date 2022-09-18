@@ -688,4 +688,33 @@ module.exports = {
             }
         }
     },
+
+
+     /**
+     * Dev: Depv
+     * Func: Tạo task từ dữ liệu excel
+     * Date: 15/09/2022
+     */
+    importTaskFromExcel: {
+        auth: 'required',
+        params: {
+            taskID    : { type: 'string', optional: true },
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { taskID, dataImport } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.importTaskFromExcel({
+                    taskID, dataImport, userID, ctx
+                })
+                console.log({ resultAfterCallHandler });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }

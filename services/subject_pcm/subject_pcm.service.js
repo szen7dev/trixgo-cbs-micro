@@ -74,6 +74,7 @@ module.exports = {
 		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COPY_TASK]  						: PCM_PLAN_TASK_HANDLER.copyTask,
 		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_DOWNLOAD_EXCEL]  					: PCM_PLAN_TASK_HANDLER.downloadExcelTask,
 		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_DOWNLOAD_TEMPLATE_IMPORT_EXCEL]   : PCM_PLAN_TASK_HANDLER.downloadTemplateImportExcel,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_IMPORT_TASK_FROM_EXCEL]   		: PCM_PLAN_TASK_HANDLER.importTaskFromExcel,
 
 		//========================================== PCM_PLAN_GROUP ==============================================
 		[CF_ACTIONS_SUBJECT_PCM.GROUP_INSERT]									: PCM_PLAN_GROUP_HANDLER.insert,

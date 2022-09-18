@@ -3172,6 +3172,62 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Dev: Depv
+     * Func: Tạo task từ dữ liệu excel
+     * Date: 15/09/2022
+     */
+    importTaskFromExcel({ taskID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        let dataInsert = {
+                            name: data?.__EMPTY_1,
+                            groupID: data?.__EMPTY_12,
+                            authorID: userID,
+                            sign: data?.__EMPTY_8,
+                            type: data?.__EMPTY_9,
+                            note: data?.__EMPTY_10,
+                            startTime:  data?.__EMPTY_14,
+                            expiredTime:  data?.__EMPTY_15,
+                            assigneeID: data?.__EMPTY_13,
+                            draft: data?.__EMPTY_17,
+                            subType: data?.__EMPTY_9,
+                            ctx,
+                        }
+
+                        if(checkObjectIDs(taskID)){
+                            dataInsert.parentID = taskID;
+                        }
+
+                        let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
+                        if(!infoGroup){
+                            errorNumber++;
+                            return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
+                        }
+
+                        dataInsert.projectID = `${infoGroup.project}`;
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+                    }
+                    index ++;
+                }
+
+                if(errorNumber != 0)
+                    return resolve({ error: false, message: "Tạo mới thất bại" })
+                return resolve({ error: false, data: dataImportJSON });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
