@@ -48,10 +48,26 @@ class Model extends BaseModel {
          basementArea, floorNumber, floorArea, status, userID, ctx }) {
         return new Promise(async resolve => {
             try { 
-                if(!name)
-                    return resolve({ error: true, message: "Tên datahub project không hợp lệ", keyError: 'name_invalid' });
+                if(!name || !checkObjectIDs(area3))
+                    return resolve({ error: true, message: "name|area3 không hợp lệ", keyError: 'name_invalid' });
 
-                let dataInsert = { name, userCreate: userID, userUpdate: userID };
+                let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
+                    areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
+                })
+
+                if(infoArea3?.data?.level != 3)
+                    return resolve({ error: true, message: "Khu vực chọn phải là phường/xã, không được chọn quận/huyện, tỉnh/thành phố", keyError: 'name_invalid' });
+
+                let dataInsert = { name, area3, userCreate: userID, userUpdate: userID };
+
+                let area2 = infoArea3?.data?.parent?._id;
+                let area1 = infoArea3?.data?.parent?.parent?._id;
+                if(checkObjectIDs(area2)){
+                    dataInsert.area2 = area2;
+                }
+                if(checkObjectIDs(area1)){
+                    dataInsert.area1 = area1;
+                }
 
                 if(client){
                     dataInsert.client = client;
@@ -59,22 +75,6 @@ class Model extends BaseModel {
 
                 if(address){
                     dataInsert.address = address;
-                }
-
-                if(area3){
-                    dataInsert.area3 = area3;
-                    // Call service area để lấy area1 và area2 => Xử lý sau
-                    let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
-                        areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
-                    })
-                    let area2 = infoArea3?.data?.parent?._id;
-                    let area1 = infoArea3?.data?.parent?.parent?._id;
-                    if(checkObjectIDs(area2)){
-                        dataInsert.area2 = area2;
-                    }
-                    if(checkObjectIDs(area1)){
-                        dataInsert.area1 = area1;
-                    }
                 }
                 
                 if(location){
@@ -141,13 +141,35 @@ class Model extends BaseModel {
         basementNumber, basementArea, floorNumber, floorArea, status, userID, ctx }) {
         return new Promise(async resolve => {
             try {
-                
-                let dataUpdate = { userUpdate: userID };
-                let area1, area2;
+                if(!name || !checkObjectIDs(area3))
+                    return resolve({ error: true, message: "name|area3 không hợp lệ", keyError: 'name_invalid' });
+
+                let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
+                    areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
+                })
+
+                // console.log(infoArea3?.data)
+                // console.log(infoArea3?.data?.level)
+
+                if(infoArea3?.data?.level != 3)
+                    return resolve({ error: true, message: "Khu vực chọn phải là phường/xã, không được chọn quận/huyện, tỉnh/thành phố", keyError: 'name_invalid' });
+
+                let dataUpdate = {name, area3, userUpdate: userID, modifyAt: Date.now() };
                 let objectUpdatePackage = {}
 
-                if(name){
-                    dataUpdate.name = name;
+                dataUpdate.area3 = area3;
+                objectUpdatePackage.area3 = area3;
+
+                let area2 = infoArea3?.data?.parent?._id;
+                let area1 = infoArea3?.data?.parent?.parent?._id;
+
+                if(checkObjectIDs(area2)){
+                    dataUpdate.area2 = area2;
+                    objectUpdatePackage.area2 = area2;
+                }
+                if(checkObjectIDs(area1)){
+                    dataUpdate.area1 = area1;
+                    objectUpdatePackage.area1 = area1;
                 }
 
                 if(client){
@@ -156,28 +178,6 @@ class Model extends BaseModel {
 
                 if(address){
                     dataUpdate.address = address;
-                }
-
-                if(area3){
-                    dataUpdate.area3 = area3;
-                    objectUpdatePackage.area3 = area3;
-
-                    // Call service area để lấy area1 và area2 => Xử lý sau
-                    let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
-                        areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
-                    })
-
-                    area2 = infoArea3?.data?.parent?._id;
-                    area1 = infoArea3?.data?.parent?.parent?._id;
-
-                    if(checkObjectIDs(area2)){
-                        dataUpdate.area2 = area2;
-                        objectUpdatePackage.area2 = area2;
-                    }
-                    if(checkObjectIDs(area1)){
-                        dataUpdate.area1 = area1;
-                        objectUpdatePackage.area1 = area1;
-                    }
                 }
 
                 if(location){
@@ -428,24 +428,52 @@ class Model extends BaseModel {
 
                 // let memberInProject     = infoProject.members;
 
-                let listArea  = await AREA_COLL.find({ }).select("name sign");
-                let listCompany = await COMPANY_COLL.find({ }).select('_id name sign').sort({_id: 1})
+                let listArea  = await AREA_COLL.find({ }).populate({
+                    path: "parent",
+                    populate: {
+                        path: "parent"
+                    },
+                }).sort({_id: 1})
+                let listCompany = await COMPANY_COLL.find({ }).sort({_id: 1})
+                let listProject  = await DATAHUB_PROJECT_COLL.find({ }).populate({
+                    path: "client area3",
+                    select: "name sign",
+                    populate: {
+                        path: "parent"
+                    },
+                }).sort({_id: 1})
+
+                
+                // console.log(listArea)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/datahub_project_list.xlsx')))
                 .then(async workbook => {
                     var i = 3;
                     listArea?.forEach((item, index) => {
+                        let nameFull = ''
+                        if(item.parent){
+                            nameFull = `${item.name}, ${item.parent.name}`
+
+                            if(item.parent.parent){
+                                nameFull = `${item.name}, ${item.parent.name}, ${item.parent.parent.name}`
+                            }
+                        }
                         workbook.sheet("3-KhuVuc").row(i).cell(2).value(`${item._id}`);
-                        workbook.sheet("3-KhuVuc").row(i).cell(3).value(`${item.name}`); 
+                        workbook.sheet("3-KhuVuc").row(i).cell(3).value(nameFull); 
                         workbook.sheet("3-KhuVuc").row(i).cell(4).value(`${item.sign}`); 
+                        workbook.sheet("3-KhuVuc").row(i).cell(5).value(Number(1)); 
                         i++
                     });
 
-                    var i = 2;
+                    var i = 3;
                     listCompany.forEach((item, index) => {
-                        workbook.sheet("2-ChuDauTu").row(i).cell(7).value(`${item._id}`);
-                        workbook.sheet("2-ChuDauTu").row(i).cell(8).value(`${item.sign}-${item.name}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(2).value(`${item._id}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(3).value(`${item.name}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(4).value(`${item.sign}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(5).value(`${item.address}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(6).value(`${item.taxid}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(15).value(Number(1));
                         i++
                     });
 
