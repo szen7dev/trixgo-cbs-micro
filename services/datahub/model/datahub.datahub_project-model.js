@@ -3,14 +3,15 @@
 /**
  * EXTERNAL PACKAGE
  */
-const stringUtils						 = require('../../../tools/utils/string_utils');
-const ObjectID                           = require('mongoose').Types.ObjectId;
-const BaseModel                                 	= require('../../../tools/db/base_model');
-const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
+const stringUtils						= require('../../../tools/utils/string_utils');
+const ObjectID                          = require('mongoose').Types.ObjectId;
+const BaseModel                         = require('../../../tools/db/base_model');
+const { RANGE_BASE_PAGINATION_V2 } 		= require('../../../tools/cursor_base/playground/index');
 const {
     checkObjectIDs,
     IsJsonString,
 } = require('../../../tools/utils/utils');
+const moment                            = require('moment')
 const XlsxPopulate                      = require('xlsx-populate');
 const path                              = require('path');
 const fs                                = require('fs');
@@ -421,33 +422,38 @@ class Model extends BaseModel {
     downloadTemplateImportExcel({ userID }) {
         return new Promise(async resolve => {
             try {
-
-                // let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
-                // if(infoProject.error)
-                //     return res.json(infoProject);
-
-                // let memberInProject     = infoProject.members;
-
                 let listArea  = await AREA_COLL.find({ }).populate({
                     path: "parent",
                     populate: {
                         path: "parent"
                     },
                 }).sort({_id: 1})
-                let listCompany = await COMPANY_COLL.find({ }).sort({_id: 1})
+                let listCompany = await COMPANY_COLL.find({ }).populate({
+                    path: "area",
+                    select: "name sign",
+                    populate: {
+                        path: "parent",
+                        select: "name sign",
+                        populate: {
+                            path: "parent",
+                            select: "name sign",
+                        },
+                    },
+                })
+                .sort({_id: 1})
                 let listProject  = await DATAHUB_PROJECT_COLL.find({ }).populate({
                     path: "client area3",
                     select: "name sign",
                     populate: {
-                        path: "parent"
+                        path: "parent",
+                        populate: {
+                            path: "parent"
+                        },
                     },
                 }).sort({_id: 1})
 
-                
-                // console.log(listArea)
-
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/datahub_project_list.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/datahub_tem_1_list_project.xlsx')))
                 .then(async workbook => {
                     var i = 3;
                     listArea?.forEach((item, index) => {
@@ -468,25 +474,58 @@ class Model extends BaseModel {
 
                     var i = 3;
                     listCompany.forEach((item, index) => {
+                        // console.log(item.area)
+                        // console.log(item.birthDay)
+                        let nameFull = ''
+                        if(item.area && item.area.parent){
+                            nameFull = `${item.area.name}, ${item.area.parent.name}`
+
+                            if(item.area.parent.parent){
+                                nameFull = `${item.area.name}, ${item.area.parent.name}, ${item.area.parent.parent.name}`
+                            }
+                        }
                         workbook.sheet("2-ChuDauTu").row(i).cell(2).value(`${item._id}`);
                         workbook.sheet("2-ChuDauTu").row(i).cell(3).value(`${item.name}`);
                         workbook.sheet("2-ChuDauTu").row(i).cell(4).value(`${item.sign}`);
                         workbook.sheet("2-ChuDauTu").row(i).cell(5).value(`${item.address}`);
                         workbook.sheet("2-ChuDauTu").row(i).cell(6).value(`${item.taxid}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(7).value(`${item.phone}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(8).value(`${item.email}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(9).value(`${item.description}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(10).value(item.birthDay);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(11).value(`${item.scale}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(12).value(nameFull);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(13).value(`${item.website}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(14).value(`${item.show}`);
                         workbook.sheet("2-ChuDauTu").row(i).cell(15).value(Number(1));
                         i++
                     });
 
-                    // var i = 2;
-                    // memberInProject.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
-                    //     workbook.sheet("Export").row(i).cell(5).value(item.fullname);
-                    //     i++
-                    // });
+                    var i = 3;
+                    listProject.forEach((item, index) => {
+                        workbook.sheet("1-DuAn").row(i).cell(2).value(`${item._id}`);
+                        workbook.sheet("1-DuAn").row(i).cell(3).value(`${item.name}`);
+                        workbook.sheet("1-DuAn").row(i).cell(4).value(`${item.sign}`);
+                        workbook.sheet("1-DuAn").row(i).cell(5).value(`${item.client.name}`);
+                        workbook.sheet("1-DuAn").row(i).cell(6).value(`${item.address}`);
+                        workbook.sheet("1-DuAn").row(i).cell(7).value(`${item.area3.name}, ${item.area3.parent.name}, ${item.area3.parent.parent.name}`);
+                        workbook.sheet("1-DuAn").row(i).cell(8).value(`${item.location}`);
+                        workbook.sheet("1-DuAn").row(i).cell(9).value(`${item.note}`);
+                        workbook.sheet("1-DuAn").row(i).cell(10).value(`${item.projectType}`);
+                        workbook.sheet("1-DuAn").row(i).cell(11).value(`${item.buildingType}`);
+                        workbook.sheet("1-DuAn").row(i).cell(12).value(`${item.buildingGrade}`);
+                        workbook.sheet("1-DuAn").row(i).cell(13).value(`${item.basementNumber}`);
+                        workbook.sheet("1-DuAn").row(i).cell(14).value(`${item.basementArea}`);
+                        workbook.sheet("1-DuAn").row(i).cell(15).value(`${item.floorNumber}`);
+                        workbook.sheet("1-DuAn").row(i).cell(16).value(`${item.floorArea}`);
+                        workbook.sheet("1-DuAn").row(i).cell(17).value(`${item.status}`);
+                        workbook.sheet("1-DuAn").row(i).cell(18).value(Number(1));
+                        i++
+                    });
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `Template_import_project_${now.getTime()}.xlsx`;
+                    const fileName = `temp_import_datahub_project_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
