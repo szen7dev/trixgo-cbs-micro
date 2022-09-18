@@ -11,6 +11,11 @@ const {
     checkObjectIDs,
     IsJsonString,
 } = require('../../../tools/utils/utils');
+const XlsxPopulate                      = require('xlsx-populate');
+const path                              = require('path');
+const fs                                = require('fs');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**
  * CONSTANTS
  */
@@ -405,10 +410,11 @@ class Model extends BaseModel {
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/datahub_project_list.xlsx')))
                 .then(async workbook => {
-                    var i = 2;
+                    var i = 3;
                     listArea?.forEach((item, index) => {
-                        workbook.sheet("3-KhuVuc").row(i).cell(1).value(`${item._id}`);
-                        workbook.sheet("3-KhuVuc").row(i).cell(2).value(`${item.sign}-${item.name}`); 
+                        workbook.sheet("3-KhuVuc").row(i).cell(2).value(`${item._id}`);
+                        workbook.sheet("3-KhuVuc").row(i).cell(3).value(`${item.name}`); 
+                        workbook.sheet("3-KhuVuc").row(i).cell(4).value(`${item.sign}`); 
                         i++
                     });
 

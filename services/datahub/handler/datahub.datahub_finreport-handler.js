@@ -26,15 +26,16 @@ module.exports = {
             grossConstructionRevenue : { type: "number", optional: true  },
             grossProfit              : { type: "number", optional: true  },
             grossProfitAfterTax      : { type: "number", optional: true  },
+            shortTermLiabilitiy      : { type: "number", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax } = ctx.params;
+                let { contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, shortTermLiabilitiy } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await DATAHUB_FINREPORT_MODEL.insert({
-                    contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID
+                    contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, shortTermLiabilitiy, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -62,15 +63,16 @@ module.exports = {
             grossConstructionRevenue : { type: "number", optional: true  },
             grossProfit              : { type: "number", optional: true  },
             grossProfitAfterTax      : { type: "number", optional: true  },
+            shortTermLiabilitiy      : { type: "number", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, files } = ctx.params;
+                let {  datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, shortTermLiabilitiy, files } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await DATAHUB_FINREPORT_MODEL.update({
-                    datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, files, userID
+                    datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, shortTermLiabilitiy, files, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

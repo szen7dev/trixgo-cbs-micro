@@ -39,6 +39,7 @@ class Model extends BaseModel {
 	 * Code:
 	 */
     insert({ contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID }) {
+        console.log({ contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID })
         return new Promise(async resolve => {
             try {
 
@@ -103,6 +104,7 @@ class Model extends BaseModel {
 	 * Code:
 	 */
     update({ datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, files, userID  }) {
+        console.log({ fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID })
         return new Promise(async resolve => {
             try {
 
@@ -128,7 +130,7 @@ class Model extends BaseModel {
                 }
 
                 if(shortTermLiabilitiy){
-                    dataInsert.shortTermLiabilitiy = shortTermLiabilitiy;
+                    dataUpdate.shortTermLiabilitiy = shortTermLiabilitiy;
                 }
 
                 if(workingCapital){
