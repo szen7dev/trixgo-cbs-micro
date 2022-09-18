@@ -143,6 +143,9 @@ class Model extends BaseModel {
             try {
                 
                 let dataUpdate = { userUpdate: userID };
+                let area1, area2;
+                let objectUpdatePackage = {}
+
                 if(name){
                     dataUpdate.name = name;
                 }
@@ -157,27 +160,24 @@ class Model extends BaseModel {
 
                 if(area3){
                     dataUpdate.area3 = area3;
-                     // Call service area để lấy area1 và area2 => Xử lý sau
-                     let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
+                    objectUpdatePackage.area3 = area3;
+
+                    // Call service area để lấy area1 và area2 => Xử lý sau
+                    let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
                         areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
                     })
-                    let area2 = infoArea3?.data?.parent?._id;
-                    let area1 = infoArea3?.data?.parent?.parent?._id;
+
+                    area2 = infoArea3?.data?.parent?._id;
+                    area1 = infoArea3?.data?.parent?.parent?._id;
 
                     if(checkObjectIDs(area2)){
                         dataUpdate.area2 = area2;
+                        objectUpdatePackage.area2 = area2;
                     }
                     if(checkObjectIDs(area1)){
                         dataUpdate.area1 = area1;
+                        objectUpdatePackage.area1 = area1;
                     }
-
-                    /**
-                     * CẬP NHẬT KHU VỰC CHO CÁC GÓI THẦU CỦA DỰ ÁN
-                     */
-                    await DATAHUB_PACKAGE_COLL.updateMany(
-                        {project: datahubProjectID},
-                        {$set: {area1: area1, area2: area2, area3: area3}},
-                    )
                 }
 
                 if(location){
@@ -194,30 +194,37 @@ class Model extends BaseModel {
 
                 if(projectType){
                     dataUpdate.projectType = projectType;
+                    objectUpdatePackage.projectType = projectType;
                 }
 
                 if(buildingType){
                     dataUpdate.buildingType = buildingType;
+                    objectUpdatePackage.buildingType = buildingType;
                 }
 
                 if(buildingGrade){
                     dataUpdate.buildingGrade = buildingGrade;
+                    objectUpdatePackage.buildingGrade = buildingGrade;
                 }
 
                 if(basementNumber){
                     dataUpdate.basementNumber = basementNumber;
+                    objectUpdatePackage.basementNumber = basementNumber;
                 }
 
                 if(basementArea){
                     dataUpdate.basementArea = basementArea;
+                    objectUpdatePackage.basementArea = basementArea;
                 }
 
                 if(floorNumber){
                     dataUpdate.floorNumber = floorNumber;
+                    objectUpdatePackage.floorNumber = floorNumber;
                 }
 
                 if(floorArea){
                     dataUpdate.floorArea = floorArea;
+                    objectUpdatePackage.floorArea = floorArea;
                 }
 
                 if(status){
@@ -227,6 +234,14 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await DATAHUB_PROJECT_COLL.findByIdAndUpdate(datahubProjectID, dataUpdate, { new: true });
                 if (!infoAfterUpdate) 
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
+
+                /**
+                 * CẬP NHẬT KHU VỰC CHO CÁC GÓI THẦU CỦA DỰ ÁN
+                 */
+                await DATAHUB_PACKAGE_COLL.updateMany(
+                    {project: datahubProjectID},
+                    {$set: objectUpdatePackage},
+                )    
                 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
