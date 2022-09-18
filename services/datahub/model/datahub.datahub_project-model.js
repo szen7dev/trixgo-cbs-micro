@@ -29,10 +29,10 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * COLLECTIONS
  */
-const DATAHUB_PROJECT_COLL           	= require('../database/datahub_project-coll');
 const AREA_COLL                         = require('../../item/database/item.area-coll');
 const COMPANY_COLL                      = require('../../auth/database/auth.company-coll');
-
+const DATAHUB_PROJECT_COLL           	= require('../database/datahub_project-coll');
+const DATAHUB_PACKAGE_COLL           	= require('../database/datahub_package-coll');
 class Model extends BaseModel {
 
     constructor() {
@@ -69,10 +69,10 @@ class Model extends BaseModel {
                     })
                     let area2 = infoArea3?.data?.parent?._id;
                     let area1 = infoArea3?.data?.parent?.parent?._id;
-                    if(area2){
+                    if(checkObjectIDs(area2)){
                         dataInsert.area2 = area2;
                     }
-                    if(area1){
+                    if(checkObjectIDs(area1)){
                         dataInsert.area1 = area1;
                     }
                 }
@@ -163,12 +163,21 @@ class Model extends BaseModel {
                     })
                     let area2 = infoArea3?.data?.parent?._id;
                     let area1 = infoArea3?.data?.parent?.parent?._id;
-                    if(area2){
+
+                    if(checkObjectIDs(area2)){
                         dataUpdate.area2 = area2;
                     }
-                    if(area1){
+                    if(checkObjectIDs(area1)){
                         dataUpdate.area1 = area1;
                     }
+
+                    /**
+                     * CẬP NHẬT KHU VỰC CHO CÁC GÓI THẦU CỦA DỰ ÁN
+                     */
+                    await DATAHUB_PACKAGE_COLL.updateMany(
+                        {project: datahubProjectID},
+                        {$set: {area1: area1, area2: area2, area3: area3}},
+                    )
                 }
 
                 if(location){
