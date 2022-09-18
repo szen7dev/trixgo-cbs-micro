@@ -3220,8 +3220,8 @@ class Model extends BaseModel {
                 }
 
                 if(errorNumber != 0)
-                    return resolve({ error: false, message: "Tạo mới thất bại" })
-                return resolve({ error: false, data: dataImportJSON });
+                    return resolve({ error: false, message: "Tạo mới thất bại" });
+                return resolve({ error: false, message: "Tạo mới thành công" });
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
