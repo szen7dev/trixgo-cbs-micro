@@ -78,6 +78,8 @@ const CF_ACTIONS_ITEM = {
     /**
      * AREA
      */
+    AREA_INSERT                                 : `${BASE_ACTIONS}_${AREA}_INSERT`,
+    AREA_UPDATE                                 : `${BASE_ACTIONS}_${AREA}_UPDATE`,
     AREA_GET_INFO_AND_GET_LIST                  : `${BASE_ACTIONS}_${AREA}_GET_INFO_AND_GET_LIST`,
 
     /**

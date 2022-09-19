@@ -30,6 +30,74 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Insert
+     * Author: HiepNH
+     * Code: 19/9/2022
+     */
+    insert({ name, sign, userID, parentID }) {
+        console.log({ name, sign, userID, parentID })
+        return new Promise(async resolve => {
+            try {
+                if(!name || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                let dataInsert = {
+                    userCreate: userID,
+                    name, 
+                    sign, 
+                }
+
+                if(parentID && checkObjectIDs(parentID)){
+                    let infoMenuParent = await ITEM__AREA_COLL.findById(parentID);
+                    dataInsert.parent = parentID;
+                    dataInsert.level = infoMenuParent.level + 1;
+                }
+
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(parentID) {
+                    await ITEM__AREA_COLL.findByIdAndUpdate(parentID, {
+                        $addToSet: { childs: infoAfterInsert._id } 
+                    }, { new: true });
+                }
+                
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Update
+     * Author: HiepNH
+     * Code: 19/9/2022
+     */
+    update({ areaID, name, sign, userID }){
+        console.log({ areaID, name, sign, userID })
+        return new Promise(async (resolve) => {
+            try {
+                if(!name || !checkObjectIDs(userID) || !checkObjectIDs(areaID) )
+                    return resolve({ error: true, message: 'param_not_valid' });
+                    
+                let dataUpdate = {
+                    name, 
+                    sign,
+                    userUpdate: userID,
+                    modifyAt: Date.now()
+                }
+
+                let infoAfterUpdate = await ITEM__AREA_COLL.findByIdAndUpdate(areaID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: get info area 
      * Author: Depv
      * Code: 

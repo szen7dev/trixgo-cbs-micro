@@ -116,6 +116,8 @@ module.exports = {
 		[CF_ACTIONS_ITEM.WAREHOUSE_GET_INFO_AND_GET_LIST] 		: ITEM__WAREHOUSE_HANDLER.getInfoAndGetList,
 
 		//==========================================  AREA  ======================================
+		[CF_ACTIONS_ITEM.AREA_INSERT] 							: ITEM__AREA_HANDLER.insert,
+		[CF_ACTIONS_ITEM.AREA_UPDATE] 							: ITEM__AREA_HANDLER.update,
 		[CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST] 		    : ITEM__AREA_HANDLER.getInfoAndGetList,
 
 		//==========================================  POSITION  ==================================
