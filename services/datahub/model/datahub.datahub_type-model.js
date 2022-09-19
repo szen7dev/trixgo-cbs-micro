@@ -108,23 +108,7 @@ class Model extends BaseModel {
 	 * Name: Remove datahub 
 	 * Author: Depv
 	 * Code: 
-	//  */
-	// remove({ datahubID }) { 
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(!checkObjectIDs(datahubID))
-    //                 return resolve({ error: true, message: 'Mã datahub không hợp lệ', keyError: "datahubID_invalid", status: 400 });
-                
-    //             let infoAterRemove = await DATAHUB_TYPE_COLL.findByIdAndDelete(datahubID)
-    //             if(!infoAterRemove)
-    //                 return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
- 
-    //             return resolve({ error: false, data: infoAterRemove, status: 200 });
-    //         } catch (error) {               
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+	 */
 
 	/**
 	 * Name: get info datahub 

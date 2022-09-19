@@ -24,6 +24,7 @@ const {
  * COLLECTIONS
  */
 const AUTH__COMPANY_COLL                            = require('../../auth/database/auth.company-coll');
+const AUTH__USER_COLL                               = require('../../auth/database/auth.user-coll');
 const DATAHUB_PACKAGE_COLL           				= require('../database/datahub_package-coll');
 const DATAHUB_PROJECT_COLL           				= require('../database/datahub_project-coll');
 const DATAHUB_TYPE_COLL           				    = require('../database/datahub_type-coll');
@@ -370,10 +371,17 @@ class Model extends BaseModel {
                     if(fieldID && checkObjectIDs(fieldID)){
                         conditionObj.field = ObjectID(fieldID)
 
-                        // Cập nhật số lượt xem 
+                        /**
+                         * Cập nhật số lượt xem, user đã xem, công ty đã xem
+                         */
+                        let infoUser = await AUTH__USER_COLL.findById(userID).select('company')
                         let infoType = await DATAHUB_TYPE_COLL.findByIdAndUpdate(fieldID, {
                             $inc: {
                                 numberOfViews: 1,
+                            },
+                            $addToSet: {
+                                companyViews: infoUser.company,
+                                userViews: userID,
                             }
                         }, { new: true });
                     }
@@ -427,7 +435,9 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData });
                 }
 
-                // Tính tổng số lượng
+                /**
+                 * Tính tổng số lượng theo các phân loại của Nhà thầu
+                 */
                 if(option == 2){
                     let listData1 = await DATAHUB_PACKAGE_COLL.aggregate([
                         {
@@ -511,7 +521,9 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: {number1, number2, number3, number4} });
                 }
 
-                // Danh sách dịch vụ
+                /**
+                 * Danh sách dịch vụ của Nhà thầu
+                 */
                 if(option == 3){
                     let listData = await DATAHUB_PACKAGE_COLL.aggregate([
                         {
@@ -536,7 +548,7 @@ class Model extends BaseModel {
                     if(listData.length){
                         await DATAHUB_TYPE_COLL.populate(listData, conditionPopulate)
                     }
-                    console.log(listData)
+                    // console.log(listData)
 
                     return resolve({ error: false, data: listData });
                 }

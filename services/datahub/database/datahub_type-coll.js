@@ -35,7 +35,17 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_type", {
     numberOfPosts: { type: Number, default: 0 },
     //_________Số lượng view
     numberOfViews: { type: Number, default: 0 },
-    //_________Cha
+    //_________Chi tiết các công ty đã view
+    companyViews: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],     
+    //_________Chi tiết các user đã view
+    userViews: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],    
+    //_________Số lượng nhà thầu thuộc lĩnh vực
     contractors: [{
         type: Schema.Types.ObjectId,
         ref: "company"
