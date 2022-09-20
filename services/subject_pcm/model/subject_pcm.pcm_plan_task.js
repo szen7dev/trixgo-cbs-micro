@@ -129,6 +129,7 @@ class Model extends BaseModel {
                 let accessUsers = [authorID, assigneeID];
                 let infoGroup = null;
                 let companyID = null;
+                let infoTaskParent = null;
                 let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
 
                 if(!name)
@@ -187,10 +188,10 @@ class Model extends BaseModel {
                 // console.log({ expiredTime, expiredHour })
 
                 if(parentID){
-                    let infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID)
-                    dataInsert.subtype = infoTaskParent.subtype
+                    infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
+                    dataInsert.subtype = infoTaskParent.subtype;
                 }else{
-                    dataInsert.subtype = subType
+                    dataInsert.subtype = subType;
                 }
 
                 if(expiredTime) {
@@ -315,19 +316,19 @@ class Model extends BaseModel {
                 }
 
                 // Thêm reminder nhắc công việc đến hạn
-                await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
-                    taskID: infoAfterInsert._id?.toString(),
-                    userID: infoAfterInsert.author?.toString(),
-                    actualFinishTime: dataInsert.actualFinishTime,
-                })
+                // await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                //     taskID: infoAfterInsert._id?.toString(),
+                //     userID: infoAfterInsert.author?.toString(),
+                //     actualFinishTime: dataInsert.actualFinishTime,
+                // })
 
-                const infoTaskTemp = await PCM_PLAN_TASK_COLL
-                    .findById(infoAfterInsert._id)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
+                // const infoTaskTemp = await PCM_PLAN_TASK_COLL
+                //     .findById(infoAfterInsert._id)
+                //     .select(select)
+                //     .populate(populates)
+                //     .lean();
 
-                return resolve({ error: false, data: infoTaskTemp, status: 200 });
+                // return resolve({ error: false, data: infoTaskTemp, status: 200 });
 
                 // Thêm record vào bảng pcm_comment phục vụ search
                 await PCM_COMMENT_MODEL.insertCommentTask({
@@ -350,7 +351,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Tạo checklist hoặc việc con mới
+                 * Tạo việc con mới
                  * + Insert thông báo vào DB và bắn Cloud MSS
                  */
                 if([1,2].includes(type)) {
@@ -392,14 +393,19 @@ class Model extends BaseModel {
                     if(arrReceiver && arrReceiver.length) {
                         // CLOUD MSS
                         if(parentID) {
-                            const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-                                userID: assigneeID,
-                                select: '_id'
-                            });
+                            // const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+                            //     userID: assigneeID,
+                            //     select: '_id'
+                            // });
 
-                            if(!infoAssignee.error) {
-                                arrReceiver = [infoAssignee?.data?._id];
-                            }
+                            // if(!infoAssignee.error) {
+                            //     arrReceiver = [infoAssignee?.data?._id];
+                            // }
+                            let { assignee, related } = infoTaskParent;
+                            related = related.map(userID => userID.toString());
+
+                            let listReceivers = [...new Set([assignee.toString(), ...related])];
+                            arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                             dataSend = {
                                 ...dataSend,
@@ -420,7 +426,7 @@ class Model extends BaseModel {
                                     item: { _id: taskID }
                                 }
                             };
-                            titleMSS        = `THÔNG BÁO`;
+                            titleMSS        = taskName;
                             descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                         }
 

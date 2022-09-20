@@ -1128,12 +1128,50 @@ class Model extends BaseModel {
                     }, dataAdditional);
                 }
 
-                // if(filesRemove.length) {
-                //     await PCM_FILE_COLL.deleteMany({
-                //         _id: { $in: filesRemove },
-                //         comment: commentID,
-                //     })
-                // }
+                let { name: taskName, author, assignee, related, accessUsers } = infoTask;
+                let arrReceiver = [];
+
+                if(accessUsers && accessUsers.length) {
+                    arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
+                } else{
+                    related = related.map(userID => userID.toString());
+
+                    let listReceivers = [...new Set([author._id?.toString(), assignee.toString(), ...related])];
+                    arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                }
+
+                if(arrReceiver && arrReceiver.length) {
+                    // CLOUD MSS
+                    const dataSend = {
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        languageKey: LANGUAGE_KEYS.ADD_FILE_TO_RESPONSE,
+                        mainColl: {
+                            kind: 'pcm_plan_task',
+                            item: { _id: taskID }
+                        },
+                        subColl: {
+                            kind: 'pcm_comment',
+                            item: { _id: commentID }
+                        }
+                    };
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: arrReceiver,
+                        title: taskName,
+                        description: `${bizfullname} đã thêm 1 file đính kèm vào phản hồi`,
+                        dataSend,
+                        web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+                }
+
+                // Cập nhật công việc
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                    $addToSet: { news: arrReceiver },
+                    $set: {
+                        modifyAt: new Date()
+                    }
+                });
 
                 infoAfterUpdate = await PCM_COMMENT_COLL
                     .findById(commentID)
