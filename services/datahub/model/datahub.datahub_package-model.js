@@ -353,10 +353,10 @@ class Model extends BaseModel {
     /**
      * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
-     * Date: 17/04/2022
+     * Date: 17/9/2022
      */
     getListByProperty({ userID, option, contractorID, fieldID, areaID, level, ctx }){
-        console.log({ userID, fieldID, areaID, contractorID, option, level })
+        // console.log({ userID, fieldID, areaID, contractorID, option, level })
         return new Promise(async resolve => {
             try {
                 /**

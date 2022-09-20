@@ -10,27 +10,36 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         require:  true,
         unique : true
     },
-    //_________Người tạo comment
-    author: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'user'
-    },
-    //_________Công ty của người tạo comment
-    companyOfAuthor: {
-        type: Schema.Types.ObjectId,
-        ref: 'company'
-    },
     /**
      * Người nhận (cải thiện năng suất)
      * 1-author (khi tạo việc xong thì add vào)
      * 2-assignee (khi tạo việc xong thì add vào)
      * 3-related (khi thêm người liên quan thì add vào)
-     * 4-người được gửi tới khi tạo phản hồi liên quan của chủ đề
+     * 4-Người được gửi tới khi tạo phản hồi liên quan của chủ đề
      */
     receivers: [{
         type: Schema.Types.ObjectId,
         ref : "user"
-    }],
+    }], 
+    /**
+     * Những user chưa xem comment
+     * - Sẽ xóa user khi bấm xem công việc
+     * - Sẽ thêm user khi có thông báo mới
+     */
+    news: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],   
+    //_________Công ty của người tạo comment
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
+    //_________Người tạo comment
+    author: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
+    },    
     //________Dự án/phòng ban
     project: {
         type: Schema.Types.ObjectId,
