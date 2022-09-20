@@ -3124,59 +3124,59 @@ class Model extends BaseModel {
      * Func: Download template import excel
      * Date: 15/09/2022
      */
-    // downloadTemplateImportExcel({ projectID }) {
-    //     return new Promise(async resolve => {
-    //         try {
+    downloadTemplateImportExcel({ projectID }) {
+        return new Promise(async resolve => {
+            try {
 
-    //             let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
-    //             if(infoProject.error)
-    //                 return res.json(infoProject);
+                let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
+                if(infoProject.error)
+                    return res.json(infoProject);
 
-    //             let memberInProject     = infoProject.members;
-    //             let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID }).select("name sign");
-    //             let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
-    //             // Modify the workbook.
-    //             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
-    //             .then(async workbook => {
-    //                 var i = 2;
-    //                 planGroupInProject?.forEach((item, index) => {
-    //                     workbook.sheet("Export").row(i).cell(1).value(`${item._id}`);
-    //                     workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`); 
-    //                     i++
-    //                 });
+                let memberInProject     = infoProject.members;
+                let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID }).select("name sign");
+                let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
+                .then(async workbook => {
+                    var i = 2;
+                    planGroupInProject?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`); 
+                        i++
+                    });
 
-    //                 var i = 2;
-    //                 memberInProject.forEach((item, index) => {
-    //                     workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
-    //                     workbook.sheet("Export").row(i).cell(5).value(item.fullname);
-    //                     i++
-    //                 });
+                    var i = 2;
+                    memberInProject.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(5).value(item.fullname);
+                        i++
+                    });
 
-    //                 var i = 2;
-    //                 listContracts.forEach((item, index) => {
-    //                     workbook.sheet("Export").row(i).cell(7).value(`${item._id}`);
-    //                     workbook.sheet("Export").row(i).cell(8).value(`${item.sign}-${item.name}`);
-    //                     i++
-    //                 });
+                    var i = 2;
+                    listContracts.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(7).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(8).value(`${item.sign}-${item.name}`);
+                        i++
+                    });
 
-    //                 const now = new Date();
-    //                 const filePath = '../../../files/temporary_uploads/';
-    //                 const fileName = `Template_import_task_${now.getTime()}.xlsm`;
-    //                 const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_task_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-    //                 await workbook.toFileAsync(pathWriteFile);
-    //                 const result = await uploadFileS3(pathWriteFile, fileName);
-    //                 fs.unlinkSync(pathWriteFile);
-    //                 console.log({ result })
-    //                 return resolve({ error: false, data: result?.Location, status: 200 });                         
-    //             });
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+                    fs.unlinkSync(pathWriteFile);
+                    console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });                         
+                });
 
-    //         } catch (error) {
-    //             console.log({ error })
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Dev: Depv
