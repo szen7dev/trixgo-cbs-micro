@@ -3118,118 +3118,119 @@ class Model extends BaseModel {
      * Func: Download template import excel
      * Date: 15/09/2022
      */
-    // downloadTemplateImportExcel({ projectID }) {
-    //     return new Promise(async resolve => {
-    //         try {
+    downloadTemplateImportExcel({ projectID }) {
+        return new Promise(async resolve => {
+            try {
 
-    //             let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
-    //             if(infoProject.error)
-    //                 return res.json(infoProject);
+                let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
+                if(infoProject.error)
+                    return res.json(infoProject);
 
-    //             let memberInProject     = infoProject.members;
-    //             let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID }).select("name sign");
-    //             let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
-    //             // Modify the workbook.
-    //             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
-    //             .then(async workbook => {
-    //                 var i = 2;
-    //                 planGroupInProject?.forEach((item, index) => {
-    //                     workbook.sheet("Export").row(i).cell(1).value(`${item._id}`);
-    //                     workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`); 
-    //                     i++
-    //                 });
+                let memberInProject     = infoProject.members;
+                let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID }).select("name sign");
+                let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
+                .then(async workbook => {
+                    var i = 2;
+                    planGroupInProject?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`); 
+                        i++
+                    });
 
-    //                 var i = 2;
-    //                 memberInProject.forEach((item, index) => {
-    //                     workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
-    //                     workbook.sheet("Export").row(i).cell(5).value(item.fullname);
-    //                     i++
-    //                 });
+                    var i = 2;
+                    memberInProject.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(5).value(item.fullname);
+                        i++
+                    });
 
-    //                 var i = 2;
-    //                 listContracts.forEach((item, index) => {
-    //                     workbook.sheet("Export").row(i).cell(7).value(`${item._id}`);
-    //                     workbook.sheet("Export").row(i).cell(8).value(`${item.sign}-${item.name}`);
-    //                     i++
-    //                 });
+                    var i = 2;
+                    listContracts.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(7).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(8).value(`${item.sign}-${item.name}`);
+                        i++
+                    });
 
-    //                 const now = new Date();
-    //                 const filePath = '../../../files/temporary_uploads/';
-    //                 const fileName = `Template_import_task_${now.getTime()}.xlsm`;
-    //                 const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_task_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-    //                 await workbook.toFileAsync(pathWriteFile);
-    //                 const result = await uploadFileS3(pathWriteFile, fileName);
-    //                 fs.unlinkSync(pathWriteFile);
-    //                 console.log({ result })
-    //                 return resolve({ error: false, data: result?.Location, status: 200 });                         
-    //             });
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+                    fs.unlinkSync(pathWriteFile);
+                    console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });                         
+                });
 
-    //         } catch (error) {
-    //             console.log({ error })
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Dev: Depv
      * Func: Tạo task từ dữ liệu excel
      * Date: 15/09/2022
      */
-    // importTaskFromExcel({ taskID, dataImport, userID, ctx }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             const dataImportJSON = JSON.parse(dataImport);
-    //             // console.log('=============Log data===================')
-    //             // console.log(dataImportJSON)
-    //             let index = 0;
-    //             let errorNumber = 0
-    //             for (const data of dataImportJSON) {
-    //                 if(index > 0){
-    //                     let dataInsert = {
-    //                         name: data?.__EMPTY_1,
-    //                         groupID: data?.__EMPTY_12,
-    //                         authorID: userID,
-    //                         sign: data?.__EMPTY_8,
-    //                         type: data?.__EMPTY_9,
-    //                         note: data?.__EMPTY_10,
-    //                         startTime:  data?.__EMPTY_14,
-    //                         expiredTime:  data?.__EMPTY_15,
-    //                         assigneeID: data?.__EMPTY_13,
-    //                         draft: data?.__EMPTY_17,
-    //                         subType: data?.__EMPTY_9,
-    //                         ctx,
-    //                     }
+    importTaskFromExcel({ taskID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================')
+                // console.log(dataImportJSON)
+                let index = 0;
+                let errorNumber = 0
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        let dataInsert = {
+                            name: data?.__EMPTY_1,
+                            groupID: data?.__EMPTY_12,
+                            authorID: userID,
+                            sign: data?.__EMPTY_8,
+                            type: data?.__EMPTY_9,
+                            note: data?.__EMPTY_10,
+                            startTime:  data?.__EMPTY_14,
+                            expiredTime:  data?.__EMPTY_15,
+                            assigneeID: data?.__EMPTY_13,
+                            draft: data?.__EMPTY_17,
+                            subType: data?.__EMPTY_9,
+                            ctx,
+                        }
 
-    //                     if(checkObjectIDs(taskID)){
-    //                         dataInsert.parentID = taskID;
-    //                     }
+                        if(checkObjectIDs(taskID)){
+                            dataInsert.parentID = taskID;
+                        }
 
-    //                     let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
-    //                     if(!infoGroup){
-    //                         errorNumber++;
-    //                         return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
-    //                     }
+                        let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
+                        if(!infoGroup){
+                            errorNumber++;
+                            return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
+                        }
 
-    //                     dataInsert.projectID = `${infoGroup.project}`;
-    //                     let infoAfterInsert = await this.insert(dataInsert);
-    //                     if(infoAfterInsert.error){
-    //                         errorNumber++;
-    //                     }
-    //                 }
-    //                 index ++;
-    //             }
+                        dataInsert.projectID = `${infoGroup.project}`;
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+                    }
+                    index ++;
+                }
 
-    //             if(errorNumber != 0)
-    //                 return resolve({ error: false, message: "Tạo mới thất bại" });
-    //             return resolve({ error: false, message: "Tạo mới thành công" });
-    //         } catch (error) {
-    //             console.log({ error })
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+                if(errorNumber != 0)
+                    return resolve({ error: false, message: "import field" });
+                    
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
