@@ -949,95 +949,148 @@ class Model extends BaseModel {
                      * Thêm người liên quan trong công việc
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
-                    const webUrl = `/pcm/detail/${taskID}`;
-                    let { name: taskName, project, contract } = infoAfterUpdate;
-
-                    const dataSend = {
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
-                        mainColl: {
-                            kind: 'pcm_plan_task',
-                            item: { _id: taskID }
-                        }
-                    };
-
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã thêm bạn làm người liên quan`,
-                        receivers: newRelated,
-                        project: project?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey: LANGUAGE_KEYS.ADD_RELATION_USER,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        type: 1 // InApp (Socket)
-                    })
+                    let { name: taskName } = infoAfterUpdate;
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: newRelated,
                         title: taskName,
                         description: `${bizfullname} đã thêm bạn làm người liên quan`,
-                        dataSend,
-                        web_url: webUrl,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
+                        },
+                        web_url: `/pcm/detail/${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
+
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: `đã thêm bạn làm người liên quan`,
+                    //     receivers: newRelated,
+                    //     project: project?.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: webUrl,
+                    //     languageKey: LANGUAGE_KEYS.ADD_RELATION_USER,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 //2. Đồng ý phê duyệt
                 if(isAddSignature) {
-                    const { project, contract, related, assignee, author } = infoAfterUpdate;
+                    const { name: taskName, related, assignee, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, assignee.toString(), author.toString()];
                     const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã phê duyệt 1 công việc`,
-                        receivers,
-                        project: project.toString(),
-                        contract: contract?.toString(),
-                        path: `/pcm/detail/${taskID}`,
-                        languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receivers,
+                        title: taskName,
+                        description: `${bizfullname} đã ký xác nhận`,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
                         },
-                        type: 1 // InApp (Socket)
-                    })
+                        web_url: `/pcm/detail/${taskID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: `đã phê duyệt 1 công việc`,
+                    //     receivers,
+                    //     project: project.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: `/pcm/detail/${taskID}`,
+                    //     languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 //3. Mở thầu
                 if(isOpenBidding) {
-                    const { project, contract, related, author } = infoAfterUpdate;
+                    const { name: taskName, related, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString()];
                     const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã mở thầu`,
-                        receivers,
-                        project: project.toString(),
-                        contract: contract?.toString(),
-                        path: `/pcm/detail/${taskID}`,
-                        languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
+
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receivers,
+                        title: taskName,
+                        description: `${bizfullname} đã mở thầu`,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
                         },
-                        type: 1 // InApp (Socket)
-                    })
+                        web_url: `/pcm/detail/${taskID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: `đã mở thầu`,
+                    //     receivers,
+                    //     project: project.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: `/pcm/detail/${taskID}`,
+                    //     languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 //4. Cập nhật checklist thành công
                 if(infoTask.type === 2 && status === 3) {
-                    const { name: taskName, project, contract, related, assignee, author, parent } = infoAfterUpdate;
+                    const { name: taskName, related, assignee, author, parent } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString(), assignee.toString()];
                     const receivers = listReceivers.filter(item => item !== userID.toString());
-                    const webUrl = `/pcm/detail/${parent}#checklist_${taskID}`;
+
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receivers,
@@ -1051,28 +1104,28 @@ class Model extends BaseModel {
                                 item: { _id: taskID }
                             }
                         },
-                        web_url: webUrl,
+                        web_url: `/pcm/detail/${parent}#checklist_${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã hoàn thành 1 checklist`,
-                        receivers,
-                        project: project?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: parent
-                        },
-                        subColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        type: 1 // InApp (Socket)
-                    })
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: `đã hoàn thành 1 checklist`,
+                    //     receivers,
+                    //     project: project?.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: webUrl,
+                    //     languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: parent
+                    //     },
+                    //     subColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
