@@ -119,6 +119,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
+        console.log({ contractPaymentID, ipc, date, name, sign, description, value, userID })
         return new Promise(async (resolve) => {
             try {
                 /**
