@@ -149,6 +149,16 @@ class Model extends BaseModel {
                     userID
                 })
 
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */    
+                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 2,
+                    projectID: `${project}`,
+                    userID
+                }) 
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
