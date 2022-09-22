@@ -561,7 +561,7 @@ class Model extends BaseModel {
                      * Các trường thông tin quan trọng/hay gặp
                      */
                     //_________Việc nháp sang việc chính thức
-                    if(draft === 0){
+                    if(+draft === 0){
                         dataUpdate.draft = 0;
                         dataUpdate.companyOfAuthor = companyOfUser;
                         dataUpdate.author = userID;
@@ -580,7 +580,7 @@ class Model extends BaseModel {
                             accessUsers: relatedRemoves,
                             news: relatedRemoves
                         }
-                    }                    
+                    }
 
                     //_________Mã công việc
                     if(sign){
@@ -633,12 +633,15 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Ngày bắt đầu, ngày kết thúc
+                 * Ngày bắt đầu
                  */
                 if(actualStartTime){
-                    dataUpdate.actualStartTime = actualStartTime;
+                    dataUpdate.actualStartTime = new Date(actualStartTime);
                 }
 
+                /**
+                 * Ngày kết thúc
+                 */
                 if(actualFinishTime){
                     dataUpdate.actualFinishTime = new Date(actualFinishTime);
                 }
@@ -1283,7 +1286,7 @@ class Model extends BaseModel {
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
                                 .populate(populates).lean();
-                
+
 				if (!infoTask)
                     return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
@@ -3090,7 +3093,7 @@ class Model extends BaseModel {
                  * BA
                  * 1-Lấy danh sách các công việc
                  * 2-Gom nhóm dữ liệu
-                 */   
+                 */
                 let conditionObj = {}
                 //__________Danh sách các nhóm dữ liệu mà userID là members
                 // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
@@ -3110,7 +3113,7 @@ class Model extends BaseModel {
                     let listTasks = await PCM_PLAN_TASK_COLL.find(conditionObj).select('_id')
                     // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
                     // console.log(listTasks)
-    
+
                     let objectGroup, conditionPopulateProject, conditionPopulateCompany
 
                     if(option == 1){
@@ -3119,13 +3122,13 @@ class Model extends BaseModel {
                             select: '_id name sign image',
                             model: 'department'
                         }
-    
+
                         conditionPopulateCompany = {
                             path: '_id.companyOfAuthor',
                             select: '_id name sign image',
                             model: 'company'
                         }
-    
+
                         objectGroup = { project: '$project', companyOfAuthor: '$companyOfAuthor' }
                     }
 
@@ -3136,13 +3139,13 @@ class Model extends BaseModel {
                             select: '_id name sign image',
                             model: 'department'
                         }
-    
+
                         conditionPopulateCompany = {
                             path: '_id.companyOfAssignee',
                             select: '_id name sign image',
                             model: 'company'
                         }
-    
+
                         objectGroup = { project: '$project', companyOfAssignee: '$companyOfAssignee' }
                     }
 
@@ -3159,7 +3162,7 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-    
+
                     let listDataProjectCompany = await PCM_PLAN_TASK_COLL.aggregate([
                         {
                             $match: {
@@ -3173,17 +3176,17 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-    
+
                     if(listDataProject.length){
                         await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
                     }
                     // console.log(listDataProject)
-    
+
                     if(listDataProjectCompany.length){
                         await DEPARTMENT_COLL.populate(listDataProjectCompany, conditionPopulateCompany)
                     }
                     // console.log(listDataProjectCompany)
-    
+
                     return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
                 }
 
@@ -3285,7 +3288,7 @@ class Model extends BaseModel {
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_13_TaskPin.xlsm')))
                     .then(async workbook => {
-                        
+
 
                         let indexExcel = 4;
 
@@ -3349,7 +3352,7 @@ class Model extends BaseModel {
                     var i = 2;
                     planGroupInProject?.forEach((item, index) => {
                         workbook.sheet("Export").row(i).cell(1).value(`${item._id}`);
-                        workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`); 
+                        workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`);
                         i++
                     });
 
@@ -3376,7 +3379,7 @@ class Model extends BaseModel {
                     const result = await uploadFileS3(pathWriteFile, fileName);
                     fs.unlinkSync(pathWriteFile);
                     console.log({ result })
-                    return resolve({ error: false, data: result?.Location, status: 200 });                         
+                    return resolve({ error: false, data: result?.Location, status: 200 });
                 });
 
             } catch (error) {
@@ -3445,7 +3448,7 @@ class Model extends BaseModel {
 
                 if(errorNumber != 0)
                     return resolve({ error: false, message: "import field" });
-                    
+
                 return resolve({ error: false, message: "import success" });
             } catch (error) {
                 console.log({ error })
