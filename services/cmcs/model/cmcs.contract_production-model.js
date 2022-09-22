@@ -71,19 +71,19 @@ class Model extends BaseModel {
                     dataInsert.date = date
                 }
 
-                if(produce){
+                if(!isNaN(produce)){
                     dataInsert.produce = produce
                 }
 
-                if(vatProduce){
+                if(!isNaN(vatProduce)){    
                     dataInsert.vatProduce = vatProduce
                 }
 
-                if(plusProduce){
+                if(!isNaN(plusProduce)){
                     dataInsert.plusProduce = plusProduce
                 }
                 
-                if(vatPlusProduce){
+                if(!isNaN(vatPlusProduce)){
                     dataInsert.vatPlusProduce = vatPlusProduce
                 }
 
@@ -158,19 +158,19 @@ class Model extends BaseModel {
                     dataUpdate.date = date
                 }
 
-                if(produce){
+                if(!isNaN(produce)){
                     dataUpdate.produce = produce
                 }
 
-                if(vatProduce){
+                if(!isNaN(vatProduce)){
                     dataUpdate.vatProduce = vatProduce
                 }
 
-                if(plusProduce){
+                if(!isNaN(plusProduce)){    
                     dataUpdate.plusProduce = plusProduce
                 }
                 
-                if(vatPlusProduce){
+                if(!isNaN(vatPlusProduce)){    
                     dataUpdate.vatPlusProduce = vatPlusProduce
                 }
 
@@ -196,7 +196,7 @@ class Model extends BaseModel {
                     projectID: `${projectID}`,
                     userID
                 })
-                console.log(infoProject) 
+                // console.log(infoProject) 
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
