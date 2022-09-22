@@ -75,7 +75,7 @@ class Model extends BaseModel {
                     dataInsert.description = description;
                 }
 
-                if(value){
+                if(!isNaN(value)){
                     dataInsert.value = value;
                 }
 
@@ -155,7 +155,7 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật giá trị cho IPC, Hợp đồng và Dự án
-                if(value){
+                if(!isNaN(value)){
                     dataUpdate.value = value;
                 }
 
