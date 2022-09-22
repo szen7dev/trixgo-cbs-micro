@@ -2,10 +2,13 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 const _isValid                          = require("mongoose").Types.ObjectId;
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
+
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
+const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -140,20 +143,20 @@ class Model extends BaseModel {
         receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
         numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
     }) {
-        console.log('++++++++++++++++++++++++++++++++++++')
-        console.log('======================Update thông tin')
-        console.log({
-            departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
-            description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
-            pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
-            images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-            realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
-            contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
-            contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
-            closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
-            receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-            numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
-        })
+        // console.log('++++++++++++++++++++++++++++++++++++')
+        // console.log('======================Update thông tin')
+        // console.log({
+        //     departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+        //     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
+        //     pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
+        //     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
+        //     realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
+        //     contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
+        //     contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
+        //     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
+        //     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
+        //     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
+        // })
         return new Promise(async resolve => {
             try {
                 let dataUpdate   = {};
@@ -642,6 +645,110 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(departmentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Update department faild", status: 422 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá trị
+     * Author: HiepNH
+     * Date  : 22/9/2022
+     */
+    updateValue({
+        projectID, userID, option, ctx
+    }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị ngân sách
+                 * 2-Cập nhật dự báo ngân sách
+                 * 3-Cập nhật thực hiện ngân sách
+                 */
+
+                if(!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "projectID_invalid" });
+
+                let infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID)
+                // console.log({infoProject})
+
+                let dataUpdate = { userUpdate: userID };
+
+                //1-Cập nhật Sản lượng
+                // if(option && Number(option) === 1){
+                //     console.log('1-Cập nhật Sản lượng')
+                //     let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
+                //         userID, contractID
+                //     })
+
+                //     // Sản lượng còn lại chưa thực hiện
+                //     let totalValue = 0, remainingProduce = 0
+                //     totalValue = Number(infoContract.value | 0)+Number(infoContract.vatValue | 0)+Number(infoContract.plus | 0)+Number(infoContract.vatPlus | 0)
+
+                //     remainingProduce = Number(totalValue)-Number(infoIpcContract.data.produce)-Number(infoIpcContract.data.vatProduce)-Number(infoIpcContract.data.plusProduce)-Number(infoIpcContract.data.vatPlusProduce)
+                //     // console.log({totalValue})
+                //     // console.log({remainingProduce})
+
+                //     // console.log(infoIpcContract)
+                //     if(infoIpcContract){
+                //         dataUpdate.produce = Number(infoIpcContract.data.produce)
+                //         dataUpdate.vatProduce = Number(infoIpcContract.data.vatProduce)
+                //         dataUpdate.plusProduce = Number(infoIpcContract.data.plusProduce)
+                //         dataUpdate.vatPlusProduce = Number(infoIpcContract.data.vatPlusProduce)
+                //         dataUpdate.remainingProduce = Number(remainingProduce)
+                //     }
+                // }
+
+                //2-Cập nhật Doanh thu, tiền về
+                if(option && Number(option) === 2){
+                    console.log('=============2-Cập nhật Doanh thu, tiền về DỰ ÁN===========>>>>>>>>>>>>')
+                    
+                    let info = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
+                        userID, projectID
+                    })
+                    // console.log(info)
+                    if(info){
+                        dataUpdate.contractAcceptance = Number(info.data.acceptance);
+                        dataUpdate.contractVatAcceptance = Number(info.data.vatAcceptance);
+                        dataUpdate.contractPlusAcceptance = Number(info.data.plusAcceptance);
+                        dataUpdate.contractVatPlusAcceptance = Number(info.data.vatPlusAcceptance);
+                        dataUpdate.contractRetainedValue = Number(info.data.retainedValue);
+                        dataUpdate.contractAdvancePaymentDeduction = Number(info.data.advancePaymentDeduction);
+                        dataUpdate.contractOtherDeduction = Number(info.data.otherDeduction);
+                        dataUpdate.contractRecommendedPayment = Number(info.data.recommendedPayment);
+                        dataUpdate.contractAdvancePaymentPaid = Number(info.data.advancePaymentPaid);
+                        dataUpdate.contractAmountPaid = Number(info.data.amountPaid);
+                        dataUpdate.contractRemainingPayment = Number(info.data.recommendedPayment) - Number(info.data.advancePaymentPaid) - Number(info.data.amountPaid)
+                    }
+
+                    // console.log(dataUpdate)
+                }
+
+                //3-Cập nhật Chi phí
+                if(option && Number(option) === 3){
+                    console.log('3-Cập nhật Chi phí')
+                    let info = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT}`, {
+                        userID, projectID
+                    })
+                    // console.log(info)
+                    if(info){
+                        dataUpdate.expense = Number(info.data.value);
+                    }
+                }
+
+                //4-Cập nhật Ngân sách
+
+               
+
+                let infoAfterUpdate = await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(projectID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_project", status: 403 });
+
+                // console.log(infoAfterUpdate)
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {

@@ -644,15 +644,17 @@ module.exports = {
             option              : { type: "string", optional: true  },
             fromDate            : { type: 'string', optional: true },
             toDate              : { type: 'string', optional: true },
+            projectID              : { type: "string", optional: true  },
+            companyID              : { type: "string", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, fromDate, toDate } = ctx.params;
+                let { option, fromDate, toDate, projectID, companyID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByProperty({
-                    option, fromDate, toDate, userID
+                    option, fromDate, toDate, projectID, companyID, userID
                  });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

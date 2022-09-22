@@ -22,7 +22,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**
  * COLLECTIONS
  */
-const AUTH__USER_COLL                              = require('../../auth/database/auth.user-coll');
+const AUTH__USER_COLL                               = require('../../auth/database/auth.user-coll');
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
 
 /**
@@ -766,6 +766,122 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá trị
+     * Author: Hiepnh
+     * Date  : 16/4/2022
+     */
+    updateValue({
+        contractID, userID, option, ctx
+    }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị ngân sách
+                 * 2-Cập nhật dự báo ngân sách
+                 * 3-Cập nhật thực hiện ngân sách
+                 */
+
+                if(!checkObjectIDs(contractID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "contractID_invalid" });
+
+                let infoContract = await ITEM__CONTRACT_COLL.findById(contractID)
+                // console.log({infoContract})
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+
+                //1-Cập nhật Sản lượng
+                if(option && Number(option) === 1){
+                    console.log('1-Cập nhật Sản lượng')
+                    let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
+                        userID, contractID
+                    })
+
+                    // Sản lượng còn lại chưa thực hiện
+                    let totalValue = 0, remainingProduce = 0
+                    totalValue = Number(infoContract.value | 0)+Number(infoContract.vatValue | 0)+Number(infoContract.plus | 0)+Number(infoContract.vatPlus | 0)
+
+                    remainingProduce = Number(totalValue)-Number(infoIpcContract.data.produce)-Number(infoIpcContract.data.vatProduce)-Number(infoIpcContract.data.plusProduce)-Number(infoIpcContract.data.vatPlusProduce)
+                    // console.log({totalValue})
+                    // console.log({remainingProduce})
+
+                    // console.log(infoIpcContract)
+                    if(infoIpcContract){
+                        dataUpdate.produce = Number(infoIpcContract.data.produce)
+                        dataUpdate.vatProduce = Number(infoIpcContract.data.vatProduce)
+                        dataUpdate.plusProduce = Number(infoIpcContract.data.plusProduce)
+                        dataUpdate.vatPlusProduce = Number(infoIpcContract.data.vatPlusProduce)
+                        dataUpdate.remainingProduce = Number(remainingProduce)
+                    }
+                }
+
+                //2-Cập nhật Doanh thu, tiền về
+                if(option && Number(option) === 2){
+                    console.log('2-Cập nhật Doanh thu, tiền về HỢP ĐỒNG=====>>>>>')
+                    let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
+                        userID, contractID
+                    })
+                    // console.log(infoIpcContract)
+                    if(infoIpcContract){
+                        dataUpdate.acceptance = Number(infoIpcContract.data.acceptance);
+                        dataUpdate.vatAcceptance = Number(infoIpcContract.data.vatAcceptance);
+                        dataUpdate.plusAcceptance = Number(infoIpcContract.data.plusAcceptance);
+                        dataUpdate.vatPlusAcceptance = Number(infoIpcContract.data.vatPlusAcceptance);
+                        dataUpdate.retainedValue = Number(infoIpcContract.data.retainedValue);
+                        dataUpdate.advancePaymentDeduction = Number(infoIpcContract.data.advancePaymentDeduction);
+                        dataUpdate.otherDeduction = Number(infoIpcContract.data.otherDeduction);
+                        dataUpdate.recommendedPayment = Number(infoIpcContract.data.recommendedPayment);
+                        dataUpdate.advancePaymentPaid = Number(infoIpcContract.data.advancePaymentPaid);
+                        dataUpdate.amountPaid = Number(infoIpcContract.data.amountPaid);
+                        dataUpdate.remainingPayment = Number(infoIpcContract.data.recommendedPayment) - Number(infoIpcContract.data.advancePaymentPaid) - Number(infoIpcContract.data.amountPaid)
+                    }
+
+                    console.log(dataUpdate)
+                }
+
+                //3-Cập nhật Chi phí
+                if(option && Number(option) === 3){
+                    console.log('3-Cập nhật Chi phí')
+                    let infoExpenseContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT}`, {
+                        userID, contractID
+                    })
+                    // console.log(infoExpenseContract)
+                    if(infoExpenseContract){
+                        dataUpdate.expense = Number(infoExpenseContract.data.value);
+                    }
+                }
+
+                //4-Cập nhật Ngân sách
+
+                let infoAfterUpdate = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+
+                // console.log(infoAfterUpdate)
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -2022,120 +2138,6 @@ class Model extends BaseModel {
 
             } catch (error) {
                 return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
-     * Name  : Cập nhật giá trị
-     * Author: Hiepnh
-     * Date  : 16/4/2022
-     */
-    updateValue({
-        contractID, userID, option, ctx
-    }){
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * BA
-                 * 1-Cập nhật giá trị ngân sách
-                 * 2-Cập nhật dự báo ngân sách
-                 * 3-Cập nhật thực hiện ngân sách
-                 */
-
-                if(!checkObjectIDs(contractID))
-                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "contractID_invalid" });
-
-                let infoContract = await ITEM__CONTRACT_COLL.findById(contractID)
-                // console.log({infoContract})
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataUpdate = { userUpdate: userID };
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-
-                //1-Cập nhật Sản lượng
-                if(option && Number(option) === 1){
-                    console.log('1-Cập nhật Sản lượng')
-                    let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
-                        userID, contractID
-                    })
-
-                    // Sản lượng còn lại chưa thực hiện
-                    let totalValue = 0, remainingProduce = 0
-                    totalValue = Number(infoContract.value | 0)+Number(infoContract.vatValue | 0)+Number(infoContract.plus | 0)+Number(infoContract.vatPlus | 0)
-
-                    remainingProduce = Number(totalValue)-Number(infoIpcContract.data.produce)-Number(infoIpcContract.data.vatProduce)-Number(infoIpcContract.data.plusProduce)-Number(infoIpcContract.data.vatPlusProduce)
-                    // console.log({totalValue})
-                    // console.log({remainingProduce})
-
-                    // console.log(infoIpcContract)
-                    if(infoIpcContract){
-                        dataUpdate.produce = Number(infoIpcContract.data.produce)
-                        dataUpdate.vatProduce = Number(infoIpcContract.data.vatProduce)
-                        dataUpdate.plusProduce = Number(infoIpcContract.data.plusProduce)
-                        dataUpdate.vatPlusProduce = Number(infoIpcContract.data.vatPlusProduce)
-                        dataUpdate.remainingProduce = Number(remainingProduce)
-                    }
-                }
-
-                //2-Cập nhật Doanh thu, tiền về
-                if(option && Number(option) === 2){
-                    console.log('2-Cập nhật Doanh thu, tiền về')
-                    let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
-                        userID, contractID
-                    })
-                    // console.log(infoIpcContract)
-                    if(infoIpcContract){
-                        dataUpdate.acceptance = Number(infoIpcContract.data.acceptance);
-                        dataUpdate.vatAcceptance = Number(infoIpcContract.data.vatAcceptance);
-                        dataUpdate.plusAcceptance = Number(infoIpcContract.data.plusAcceptance);
-                        dataUpdate.vatPlusAcceptance = Number(infoIpcContract.data.vatPlusAcceptance);
-                        dataUpdate.retainedValue = Number(infoIpcContract.data.retainedValue);
-                        dataUpdate.advancePaymentDeduction = Number(infoIpcContract.data.advancePaymentDeduction);
-                        dataUpdate.otherDeduction = Number(infoIpcContract.data.otherDeduction);
-                        dataUpdate.recommendedPayment = Number(infoIpcContract.data.recommendedPayment);
-                        dataUpdate.advancePaymentPaid = Number(infoIpcContract.data.advancePaymentPaid);
-                        dataUpdate.amountPaid = Number(infoIpcContract.data.amountPaid);
-                        dataUpdate.remainingPayment = Number(infoIpcContract.data.recommendedPayment) - Number(infoIpcContract.data.advancePaymentPaid) - Number(infoIpcContract.data.amountPaid)
-                    }
-                }
-
-                //3-Cập nhật Chi phí
-                if(option && Number(option) === 3){
-                    console.log('3-Cập nhật Chi phí')
-                    let infoExpenseContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT}`, {
-                        userID, contractID
-                    })
-                    // console.log(infoExpenseContract)
-                    if(infoExpenseContract){
-                        dataUpdate.expense = Number(infoExpenseContract.data.value);
-                    }
-                }
-
-                //4-Cập nhật Ngân sách
-
-                let infoAfterUpdate = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
-
-                console.log(infoAfterUpdate)
-
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

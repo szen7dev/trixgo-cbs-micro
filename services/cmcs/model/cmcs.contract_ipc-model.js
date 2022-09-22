@@ -170,7 +170,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
                 if(!checkObjectIDs(contractIpcID))
                     return resolve({ error: true, message: "Mã IPC không hợp kệ", keyError: "contract_ipc_invalid" })
@@ -312,7 +312,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -356,7 +356,6 @@ class Model extends BaseModel {
                 // console.log("dataUpdate====================>>>>>>>>>>>>>>")
                 // console.log(dataUpdate)
                 
-
                 let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipcID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
