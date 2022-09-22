@@ -679,29 +679,29 @@ class Model extends BaseModel {
                 let dataUpdate = { userUpdate: userID };
 
                 //1-Cập nhật Sản lượng
-                // if(option && Number(option) === 1){
-                //     console.log('1-Cập nhật Sản lượng')
-                //     let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
-                //         userID, contractID
-                //     })
+                if(option && Number(option) === 1){
+                    console.log('1-Cập nhật Sản lượng DỰ ÁN===========>>>>>>>>>>>>')
+                    let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
+                        userID, projectID
+                    })
 
-                //     // Sản lượng còn lại chưa thực hiện
-                //     let totalValue = 0, remainingProduce = 0
-                //     totalValue = Number(infoContract.value | 0)+Number(infoContract.vatValue | 0)+Number(infoContract.plus | 0)+Number(infoContract.vatPlus | 0)
+                    // Sản lượng còn lại chưa thực hiện
+                    let totalValue = 0, remainingProduce = 0
+                    totalValue = Number(infoProject.contractValue | 0)+Number(infoProject.contractVatValue | 0)+Number(infoProject.contractPlus | 0)+Number(infoProject.contractVatPlus | 0)
 
-                //     remainingProduce = Number(totalValue)-Number(infoIpcContract.data.produce)-Number(infoIpcContract.data.vatProduce)-Number(infoIpcContract.data.plusProduce)-Number(infoIpcContract.data.vatPlusProduce)
-                //     // console.log({totalValue})
-                //     // console.log({remainingProduce})
+                    remainingProduce = Number(totalValue)-Number(infoIpcContract.data.produce)-Number(infoIpcContract.data.vatProduce)-Number(infoIpcContract.data.plusProduce)-Number(infoIpcContract.data.vatPlusProduce)
+                    // console.log({totalValue})
+                    // console.log({remainingProduce})
 
-                //     // console.log(infoIpcContract)
-                //     if(infoIpcContract){
-                //         dataUpdate.produce = Number(infoIpcContract.data.produce)
-                //         dataUpdate.vatProduce = Number(infoIpcContract.data.vatProduce)
-                //         dataUpdate.plusProduce = Number(infoIpcContract.data.plusProduce)
-                //         dataUpdate.vatPlusProduce = Number(infoIpcContract.data.vatPlusProduce)
-                //         dataUpdate.remainingProduce = Number(remainingProduce)
-                //     }
-                // }
+                    // console.log(infoIpcContract)
+                    if(infoIpcContract){
+                        dataUpdate.contractProduce = Number(infoIpcContract.data.produce)
+                        dataUpdate.contractVatProduce = Number(infoIpcContract.data.vatProduce)
+                        dataUpdate.contractPlusProduce = Number(infoIpcContract.data.plusProduce)
+                        dataUpdate.contractVatPlusProduce = Number(infoIpcContract.data.vatPlusProduce)
+                        dataUpdate.contractRemainingProduce = Number(remainingProduce)
+                    }
+                }
 
                 //2-Cập nhật Doanh thu, tiền về
                 if(option && Number(option) === 2){
@@ -729,20 +729,18 @@ class Model extends BaseModel {
                 }
 
                 //3-Cập nhật Chi phí
-                if(option && Number(option) === 3){
-                    console.log('3-Cập nhật Chi phí')
-                    let info = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT}`, {
-                        userID, projectID
-                    })
-                    // console.log(info)
-                    if(info){
-                        dataUpdate.expense = Number(info.data.value);
-                    }
-                }
+                // if(option && Number(option) === 3){
+                //     console.log('3-Cập nhật Chi phí')
+                //     let info = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT}`, {
+                //         userID, projectID
+                //     })
+                //     // console.log(info)
+                //     if(info){
+                //         dataUpdate.expense = Number(info.data.value);
+                //     }
+                // }
 
                 //4-Cập nhật Ngân sách
-
-               
 
                 let infoAfterUpdate = await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(projectID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)

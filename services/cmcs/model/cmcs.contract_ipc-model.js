@@ -264,12 +264,22 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
+                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
                 let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 2,
                     contractID: `${contractID}`,
                     userID
                 })
+
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */    
+                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 2,
+                    projectID: `${projectID}`,
+                    userID
+                }) 
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
