@@ -40,6 +40,8 @@ const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_p
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
 const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll');
 const CONTRACT_COLL                     = require('../../item/database/item.contract-coll');
+const USER_COLL                         = require('../../auth/database/auth.user-coll');
+const { email } = require('../../../tools/mailer/config/cf_mailer');
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
@@ -3182,7 +3184,7 @@ class Model extends BaseModel {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
                 // console.log('=============Log data===================')
-                // console.log(dataImportJSON)
+                // return console.log(dataImportJSON)
                 let index = 0;
                 let errorNumber = 0
                 for (const data of dataImportJSON) {
@@ -3202,6 +3204,13 @@ class Model extends BaseModel {
                             ctx,
                         }
 
+                        let listEmailRelates = data?.__EMPTY_5?.split(",");
+                        let related = await USER_COLL.find({ email: { $in: listEmailRelates.map(email => email.trim()) }}).select("_id")
+
+                        if(related && related.length){
+                            dataInsert.relatedIDs = related.map(item => ObjectID(item._id));
+                        }
+
                         if(checkObjectIDs(taskID)){
                             dataInsert.parentID = taskID;
                         }
@@ -3211,6 +3220,7 @@ class Model extends BaseModel {
                             errorNumber++;
                             return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
                         }
+
 
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
