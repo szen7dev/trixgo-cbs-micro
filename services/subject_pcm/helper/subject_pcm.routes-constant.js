@@ -28,6 +28,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     PCM__PCM_PLAN_MOVE_TASK_TO_PARENT                           : `${BASE_ROUTE}${PCM_PLAN_TASK}/move-task-to-parent`,
     PCM__PCM_PLAN_MOVE_TASK_TO_GROUP                            : `${BASE_ROUTE}${PCM_PLAN_TASK}/move-task-to-group`,
     PCM__PCM_PLAN_COPY_TASK                                     : `${BASE_ROUTE}${PCM_PLAN_TASK}/copy-task`,
+    PCM__PCM_PLAN_TASK_GET_LIST_BY_PROPERTY                     : `${BASE_ROUTE}${PCM_PLAN_TASK}/get-list-by-property`,
     PCM__PCM_PLAN_TASK_DOWNLOAD_EXCEL                           : `${BASE_ROUTE}${PCM_PLAN_TASK}/download-excel`,
     PCM__PCM_PLAN_TASK_DOWNLOAD_TEMPLATE_IMPORT_EXCEL           : `${BASE_ROUTE}${PCM_PLAN_TASK}/download-template-import-excel`,
     PCM__PCM_PLAN_TASK_IMPORT_TASK_FROM_EXCEL                   : `${BASE_ROUTE}${PCM_PLAN_TASK}/import-task-from-excel`,
@@ -42,10 +43,11 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     SUBJECT__PCM_PLAN_GROUP_REMOVE_MANY                 : `${BASE_ROUTE}${PCM_PLAN_GROUP}/remove-many`,
 
     //Comment
-    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT                  : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}`,
-    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_UPDATE_MARK      : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/mark`,
-    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_SEARCH_BY_ID     : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/search-by-id`,
-    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_SEARCH_BY_SUBJECT     : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/search-by-subject`,
+    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT                              : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}`,
+    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_UPDATE_MARK                  : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/mark`,
+    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_SEARCH_BY_ID                 : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/search-by-id`,
+    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_SEARCH_BY_SUBJECT            : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/search-by-subject`,
+    SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_GET_LIST_BY_PROPERTY         : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/get-list-by-property`,
 
     // Reaction_comment
     SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_REACTION         : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/reactions`,

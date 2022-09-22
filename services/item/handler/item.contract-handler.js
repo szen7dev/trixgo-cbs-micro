@@ -292,7 +292,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(contractID){
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getInfo({
-                        contractID, select, populates
+                        contractID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({

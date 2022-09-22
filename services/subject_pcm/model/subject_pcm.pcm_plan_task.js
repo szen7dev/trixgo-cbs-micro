@@ -131,6 +131,7 @@ class Model extends BaseModel {
                 let accessUsers = [authorID, assigneeID];
                 let infoGroup = null;
                 let companyID = null;
+                let infoTaskParent = null;
                 let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
 
                 if(!name)
@@ -189,10 +190,10 @@ class Model extends BaseModel {
                 // console.log({ expiredTime, expiredHour })
 
                 if(parentID){
-                    let infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID)
-                    dataInsert.subtype = infoTaskParent.subtype
+                    infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
+                    dataInsert.subtype = infoTaskParent.subtype;
                 }else{
-                    dataInsert.subtype = subType
+                    dataInsert.subtype = subType;
                 }
 
                 if(expiredTime) {
@@ -317,19 +318,19 @@ class Model extends BaseModel {
                 }
 
                 // Thêm reminder nhắc công việc đến hạn
-                await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
-                    taskID: infoAfterInsert._id?.toString(),
-                    userID: infoAfterInsert.author?.toString(),
-                    actualFinishTime: dataInsert.actualFinishTime,
-                })
+                // await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                //     taskID: infoAfterInsert._id?.toString(),
+                //     userID: infoAfterInsert.author?.toString(),
+                //     actualFinishTime: dataInsert.actualFinishTime,
+                // })
 
-                const infoTaskTemp = await PCM_PLAN_TASK_COLL
-                    .findById(infoAfterInsert._id)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
+                // const infoTaskTemp = await PCM_PLAN_TASK_COLL
+                //     .findById(infoAfterInsert._id)
+                //     .select(select)
+                //     .populate(populates)
+                //     .lean();
 
-                return resolve({ error: false, data: infoTaskTemp, status: 200 });
+                // return resolve({ error: false, data: infoTaskTemp, status: 200 });
 
                 // Thêm record vào bảng pcm_comment phục vụ search
                 await PCM_COMMENT_MODEL.insertCommentTask({
@@ -352,7 +353,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Tạo checklist hoặc việc con mới
+                 * Tạo việc con mới
                  * + Insert thông báo vào DB và bắn Cloud MSS
                  */
                 if([1,2].includes(type)) {
@@ -394,14 +395,19 @@ class Model extends BaseModel {
                     if(arrReceiver && arrReceiver.length) {
                         // CLOUD MSS
                         if(parentID) {
-                            const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-                                userID: assigneeID,
-                                select: '_id'
-                            });
+                            // const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+                            //     userID: assigneeID,
+                            //     select: '_id'
+                            // });
 
-                            if(!infoAssignee.error) {
-                                arrReceiver = [infoAssignee?.data?._id];
-                            }
+                            // if(!infoAssignee.error) {
+                            //     arrReceiver = [infoAssignee?.data?._id];
+                            // }
+                            let { assignee, related } = infoTaskParent;
+                            related = related.map(userID => userID.toString());
+
+                            let listReceivers = [...new Set([assignee.toString(), ...related])];
+                            arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                             dataSend = {
                                 ...dataSend,
@@ -422,7 +428,7 @@ class Model extends BaseModel {
                                     item: { _id: taskID }
                                 }
                             };
-                            titleMSS        = `THÔNG BÁO`;
+                            titleMSS        = taskName;
                             descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                         }
 
@@ -945,95 +951,148 @@ class Model extends BaseModel {
                      * Thêm người liên quan trong công việc
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
-                    const webUrl = `/pcm/detail/${taskID}`;
-                    let { name: taskName, project, contract } = infoAfterUpdate;
-
-                    const dataSend = {
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
-                        mainColl: {
-                            kind: 'pcm_plan_task',
-                            item: { _id: taskID }
-                        }
-                    };
-
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã thêm bạn làm người liên quan`,
-                        receivers: newRelated,
-                        project: project?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey: LANGUAGE_KEYS.ADD_RELATION_USER,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        type: 1 // InApp (Socket)
-                    })
+                    let { name: taskName } = infoAfterUpdate;
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: newRelated,
                         title: taskName,
                         description: `${bizfullname} đã thêm bạn làm người liên quan`,
-                        dataSend,
-                        web_url: webUrl,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
+                        },
+                        web_url: `/pcm/detail/${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
+
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: `đã thêm bạn làm người liên quan`,
+                    //     receivers: newRelated,
+                    //     project: project?.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: webUrl,
+                    //     languageKey: LANGUAGE_KEYS.ADD_RELATION_USER,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 //2. Đồng ý phê duyệt
                 if(isAddSignature) {
-                    const { project, contract, related, assignee, author } = infoAfterUpdate;
+                    const { name: taskName, related, assignee, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, assignee.toString(), author.toString()];
                     const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã phê duyệt 1 công việc`,
-                        receivers,
-                        project: project.toString(),
-                        contract: contract?.toString(),
-                        path: `/pcm/detail/${taskID}`,
-                        languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receivers,
+                        title: taskName,
+                        description: `${bizfullname} đã ký xác nhận`,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
                         },
-                        type: 1 // InApp (Socket)
-                    })
+                        web_url: `/pcm/detail/${taskID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: `đã phê duyệt 1 công việc`,
+                    //     receivers,
+                    //     project: project.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: `/pcm/detail/${taskID}`,
+                    //     languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 //3. Mở thầu
                 if(isOpenBidding) {
-                    const { project, contract, related, author } = infoAfterUpdate;
+                    const { name: taskName, related, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString()];
                     const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã mở thầu`,
-                        receivers,
-                        project: project.toString(),
-                        contract: contract?.toString(),
-                        path: `/pcm/detail/${taskID}`,
-                        languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
+
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receivers,
+                        title: taskName,
+                        description: `${bizfullname} đã mở thầu`,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
                         },
-                        type: 1 // InApp (Socket)
-                    })
+                        web_url: `/pcm/detail/${taskID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: `đã mở thầu`,
+                    //     receivers,
+                    //     project: project.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: `/pcm/detail/${taskID}`,
+                    //     languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 //4. Cập nhật checklist thành công
                 if(infoTask.type === 2 && status === 3) {
-                    const { name: taskName, project, contract, related, assignee, author, parent } = infoAfterUpdate;
+                    const { name: taskName, related, assignee, author, parent } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString(), assignee.toString()];
                     const receivers = listReceivers.filter(item => item !== userID.toString());
-                    const webUrl = `/pcm/detail/${parent}#checklist_${taskID}`;
+
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receivers,
@@ -1047,28 +1106,28 @@ class Model extends BaseModel {
                                 item: { _id: taskID }
                             }
                         },
-                        web_url: webUrl,
+                        web_url: `/pcm/detail/${parent}#checklist_${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã hoàn thành 1 checklist`,
-                        receivers,
-                        project: project?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: parent
-                        },
-                        subColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        type: 1 // InApp (Socket)
-                    })
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: `đã hoàn thành 1 checklist`,
+                    //     receivers,
+                    //     project: project?.toString(),
+                    //     contract: contract?.toString(),
+                    //     path: webUrl,
+                    //     languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: parent
+                    //     },
+                    //     subColl: {
+                    //         kind: "pcm_plan_task",
+                    //         item: taskID
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -2326,7 +2385,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án V2
+     * Name: Lấy số lượng công việc của companyOfAuthor trong dự án V2
      * Author: Depv
      * Code:
      */
@@ -2889,15 +2948,15 @@ class Model extends BaseModel {
 
                         let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
 
-                        console.log({
-                            startTimeParentTask: parentTask.startTime,
-                            oldStartTimeParentTask: startTime,
-                            expiredTime,
-                            totalDayStartTimeToExpiredTime,
-                            newExpiredTime,
-                            childID: childTask._id,
-                            parentID: parentTask._id,
-                        })
+                        // console.log({
+                        //     startTimeParentTask: parentTask.startTime,
+                        //     oldStartTimeParentTask: startTime,
+                        //     expiredTime,
+                        //     totalDayStartTimeToExpiredTime,
+                        //     newExpiredTime,
+                        //     childID: childTask._id,
+                        //     parentID: parentTask._id,
+                        // })
 
                         delete childTask._id;
                         const newChildTask = await PCM_PLAN_TASK_COLL.create({
@@ -3018,6 +3077,137 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 21/9/2022
+     */
+    getListByProperty({ userID, option, fromDate, toDate }){
+        // console.log({ userID, option, fromDate, toDate })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1-Lấy danh sách các công việc
+                 * 2-Gom nhóm dữ liệu
+                 */   
+                let conditionObj = {}
+                //__________Danh sách các nhóm dữ liệu mà userID là members
+                // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                // Lấy công việc mà user được quyền truy cập
+                conditionObj.$or = [
+                    { author: ObjectID(userID) },
+                    { assignee: ObjectID(userID) },
+                    { related: { $in: [ObjectID(userID)] }},
+                    // { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
+                ]
+
+                /**
+                 * Tính tổng số lượng theo các phân loại của Nhà thầu
+                 */
+                if(option == 1 || option == 2){
+                    let listTasks = await PCM_PLAN_TASK_COLL.find(conditionObj).select('_id')
+                    // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
+                    // console.log(listTasks)
+    
+                    let objectGroup, conditionPopulateProject, conditionPopulateCompany
+
+                    if(option == 1){
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+    
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAuthor',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+    
+                        objectGroup = { project: '$project', companyOfAuthor: '$companyOfAuthor' }
+                    }
+
+                    if(option == 2){
+
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+    
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAssignee',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+    
+                        objectGroup = { project: '$project', companyOfAssignee: '$companyOfAssignee' }
+                    }
+
+                    let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listTasks.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+    
+                    let listDataProjectCompany = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listTasks.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: objectGroup,
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+    
+                    if(listDataProject.length){
+                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
+                    }
+                    // console.log(listDataProject)
+    
+                    if(listDataProjectCompany.length){
+                        await DEPARTMENT_COLL.populate(listDataProjectCompany, conditionPopulateCompany)
+                    }
+                    // console.log(listDataProjectCompany)
+    
+                    return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
+                }
+
+                if(option == 3){
+                    console.log(conditionObj)
+                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: '$subtype' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listDataTasks });
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 
     /**
      * Dev: Depv

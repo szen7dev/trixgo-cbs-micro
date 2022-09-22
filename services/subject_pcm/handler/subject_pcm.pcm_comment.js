@@ -148,6 +148,7 @@ module.exports = {
 	 * Update: 22/02/2022
 	 */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             taskID              : { type: "string", optional: true },
             type                : { type: "string", optional: true },
@@ -202,6 +203,7 @@ module.exports = {
 	 * Update: 22/02/2022
 	 */
     searchCommentById: {
+        auth: "required",
         params: {
             commentID   : { type: "string" },
             taskID      : { type: "string", optional: true },
@@ -233,6 +235,7 @@ module.exports = {
 	 * Date: 19/8/2022  
 	 */
     searchCommentBySubject: {
+        auth: "required",
         params: {
             draft               : { type: 'string', optional: true },
             sortKey             : { type: 'string', optional: true },
@@ -282,4 +285,33 @@ module.exports = {
             }
         }
     },   
+
+    /**
+     * Dev: HiepNH
+     * Func: Gom nhóm theo tính chất
+     * Date: 17/9/2022
+     */
+    getListByProperty: {
+        auth: "required",
+        params: {
+            option              : { type: "string", optional: true  },
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, fromDate, toDate } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await PCM_COMMENT_MODEL.getListByProperty({
+                    option, fromDate, toDate, userID
+                 });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }

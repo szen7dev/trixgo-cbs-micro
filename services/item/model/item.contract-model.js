@@ -22,6 +22,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**
  * COLLECTIONS
  */
+const AUTH__USER_COLL                              = require('../../auth/database/auth.user-coll');
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
 
 /**
@@ -777,10 +778,10 @@ class Model extends BaseModel {
 
     /**
      * Name: get Hợp đồng
-     * Author: Depv
-     * Code:
+     * Author: Depv/HiepNH
+     * Code: 22/9/2022
      */
-    getInfo({ contractID, select, populates }) {
+    getInfo({ contractID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -809,17 +810,31 @@ class Model extends BaseModel {
                 }
 
                 /**
+                 * CẬP NHẬT THÔNG TIN TRUY CẬP
+                 */
+                let infoUser = await AUTH__USER_COLL.findById(userID).select('company')
+                await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, {
+                    $inc: {
+                        numberOfViews: 1,
+                    },
+                    $addToSet: {
+                        companyViews: infoUser.company,
+                        userViews: userID,
+                    }
+                }, { new: true });
+                /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterRemove = await ITEM__CONTRACT_COLL.findById(contractID)
+                let info = await ITEM__CONTRACT_COLL.findById(contractID)
                                     .select(select)
                                     .populate(populates)
-                if(!infoAterRemove)
+                if(!info)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
+                console.log(info)
 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
+                return resolve({ error: false, data: info, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

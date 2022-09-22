@@ -24,6 +24,8 @@ const stringUtils					            = require('../../../tools/utils/string_utils')
 /**
  * import inter-coll, exter-coll
  */
+const AUTH__COMPANY_COLL                        = require('../../auth/database/auth.company-coll');
+const DEPARTMENT_COLL                           = require('../../item/database/item.department-coll');
 const PCM_PLAN_GROUP_COLL                       = require('../database/subject_pcm.pcm_plan_group-coll');
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
@@ -1128,12 +1130,50 @@ class Model extends BaseModel {
                     }, dataAdditional);
                 }
 
-                // if(filesRemove.length) {
-                //     await PCM_FILE_COLL.deleteMany({
-                //         _id: { $in: filesRemove },
-                //         comment: commentID,
-                //     })
-                // }
+                let { name: taskName, author, assignee, related, accessUsers } = infoTask;
+                let arrReceiver = [];
+
+                if(accessUsers && accessUsers.length) {
+                    arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
+                } else{
+                    related = related.map(userID => userID.toString());
+
+                    let listReceivers = [...new Set([author._id?.toString(), assignee.toString(), ...related])];
+                    arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                }
+
+                if(arrReceiver && arrReceiver.length) {
+                    // CLOUD MSS
+                    const dataSend = {
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        languageKey: LANGUAGE_KEYS.ADD_FILE_TO_RESPONSE,
+                        mainColl: {
+                            kind: 'pcm_plan_task',
+                            item: { _id: taskID }
+                        },
+                        subColl: {
+                            kind: 'pcm_comment',
+                            item: { _id: commentID }
+                        }
+                    };
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: arrReceiver,
+                        title: taskName,
+                        description: `${bizfullname} đã thêm 1 file đính kèm vào phản hồi`,
+                        dataSend,
+                        web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+                }
+
+                // Cập nhật công việc
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                    $addToSet: { news: arrReceiver },
+                    $set: {
+                        modifyAt: new Date()
+                    }
+                });
 
                 infoAfterUpdate = await PCM_COMMENT_COLL
                     .findById(commentID)
@@ -2100,6 +2140,93 @@ class Model extends BaseModel {
 			}
 		})
 	}
+
+    /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 17/04/2022
+     */
+    getListByProperty({ userID, option, fromDate, toDate }){
+        // console.log({ userID, option, fromDate, toDate })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1-Lấy danh sách các comment mà user được quyền truy cập receivers/thông qua Task
+                 * 2-Gom nhóm dữ liệu
+                 */
+                let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
+                // console.log(listComments)
+                
+                /**
+                 * Tính tổng số lượng theo các phân loại của Nhà thầu
+                 */
+                if(option == 1){
+                    let conditionPopulateProject = {
+                        path: '_id.project',
+                        select: '_id name sign image',
+                        model: 'department'
+                    }
+
+                    let conditionPopulateCompany = {
+                        path: '_id.companyOfAuthor',
+                        select: '_id name sign image',
+                        model: 'company'
+                    }
+
+                    let listDataProject = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listComments.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let listDataProjectCompanyAuthor = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listComments.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project', companyOfAuthor: '$companyOfAuthor' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    if(listDataProject.length){
+                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
+                    }
+                    // console.log(listDataProject)
+
+                    if(listDataProjectCompanyAuthor.length){
+                        await DEPARTMENT_COLL.populate(listDataProjectCompanyAuthor, conditionPopulateCompany)
+                    }
+                    // console.log(listDataProjectCompanyAuthor)
+
+                    return resolve({ error: false, data: { listDataProject, listDataProjectCompanyAuthor } });
+                }
+
+                /**
+                 * Danh sách chi tiết các thông báo
+                 */
+                if(option == 2){
+                    
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 
 }
 

@@ -14,6 +14,7 @@ module.exports = {
 	 * Func: Thêm datahub package
 	 */
     insert: {
+        auth: "required",
         params: {
             contractor    : { type: "string" },
             project       : { type: "string" },
@@ -50,6 +51,7 @@ module.exports = {
 	 * Func: Sửa datahub package
 	 */
     update: {
+        auth: "required",
         params: {
             datahubPackageID: { type: "string" },
             project         : { type: "string", optional: true },
@@ -87,6 +89,7 @@ module.exports = {
      * Func: Xóa datahub package
      */
     remove: {
+        auth: "required",
         params: {
             datahubPackageID: { type: "string" },
         },
@@ -112,6 +115,7 @@ module.exports = {
      * Func: get info and get list datahub package
      */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             datahubPackageID : { type: "string", optional: true },
             contractorID     : { type: "string" },
@@ -147,10 +151,12 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv
-     * Func: get info and get list datahub package
+     * Dev: HiepNH
+     * Func: Gom nhóm theo tính chất
+     * Date: 17/9/2022
      */
      getListByProperty: {
+        auth: "required",
         params: {
             fieldID  : { type: "string", optional: true },
             areaID  : { type: "string", optional: true  },

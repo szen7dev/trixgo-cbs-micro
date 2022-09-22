@@ -279,6 +279,21 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         ref: 'file',
     }],
     /**
+     * THÔNG TIN TRUY CẬP
+     */
+    //_________Chi tiết các công ty đã view
+    companyViews: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],     
+    //_________Chi tiết các user đã view
+    userViews: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],  
+    //_________Số lượng views
+    numberOfViews: { type: Number, default: 0 },
+    /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
     userCreate: {
