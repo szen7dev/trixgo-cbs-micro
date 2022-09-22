@@ -633,6 +633,34 @@ module.exports = {
         }
     },
 
+    /**
+     * Dev: HiepNH
+     * Func: Gom nhóm theo tính chất
+     * Date: 17/9/2022
+     */
+     getListByProperty: {
+        auth: "required",
+        params: {
+            option              : { type: "string", optional: true  },
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, fromDate, toDate } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByProperty({
+                    option, fromDate, toDate, userID
+                 });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 
     /**
      * Dev: Depv

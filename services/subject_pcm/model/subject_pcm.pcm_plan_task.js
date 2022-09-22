@@ -2946,15 +2946,15 @@ class Model extends BaseModel {
 
                         let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
 
-                        console.log({
-                            startTimeParentTask: parentTask.startTime,
-                            oldStartTimeParentTask: startTime,
-                            expiredTime,
-                            totalDayStartTimeToExpiredTime,
-                            newExpiredTime,
-                            childID: childTask._id,
-                            parentID: parentTask._id,
-                        })
+                        // console.log({
+                        //     startTimeParentTask: parentTask.startTime,
+                        //     oldStartTimeParentTask: startTime,
+                        //     expiredTime,
+                        //     totalDayStartTimeToExpiredTime,
+                        //     newExpiredTime,
+                        //     childID: childTask._id,
+                        //     parentID: parentTask._id,
+                        // })
 
                         delete childTask._id;
                         const newChildTask = await PCM_PLAN_TASK_COLL.create({
@@ -3080,7 +3080,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-     getListByProperty({ userID, option, fromDate, toDate }){
+    getListByProperty({ userID, option, fromDate, toDate }){
         // console.log({ userID, option, fromDate, toDate })
         return new Promise(async resolve => {
             try {
@@ -3088,30 +3088,66 @@ class Model extends BaseModel {
                  * BA
                  * 1-Lấy danh sách các công việc
                  * 2-Gom nhóm dữ liệu
-                 */
-                let listTasks = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
-                // console.log(listComments)
-                
+                 */   
+                let conditionObj = {}
+                //__________Danh sách các nhóm dữ liệu mà userID là members
+                // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                // Lấy công việc mà user được quyền truy cập
+                conditionObj.$or = [
+                    { author: ObjectID(userID) },
+                    { assignee: ObjectID(userID) },
+                    { related: { $in: [ObjectID(userID)] }},
+                    // { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
+                ]
+
                 /**
                  * Tính tổng số lượng theo các phân loại của Nhà thầu
                  */
-                if(option == 1){
-                    let conditionPopulateProject = {
-                        path: '_id.project',
-                        select: '_id name sign',
-                        model: 'department'
+                if(option == 1 || option == 2){
+                    let listTasks = await PCM_PLAN_TASK_COLL.find(conditionObj).select('_id')
+                    // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
+                    // console.log(listTasks)
+    
+                    let objectGroup, conditionPopulateProject, conditionPopulateCompany
+
+                    if(option == 1){
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+    
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAuthor',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+    
+                        objectGroup = { project: '$project', companyOfAuthor: '$companyOfAuthor' }
                     }
 
-                    let conditionPopulateCompany = {
-                        path: '_id.companyOfAuthor',
-                        select: '_id name sign',
-                        model: 'company'
+                    if(option == 2){
+
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+    
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAssignee',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+    
+                        objectGroup = { project: '$project', companyOfAssignee: '$companyOfAssignee' }
                     }
 
-                    let listDataProject = await PCM_COMMENT_COLL.aggregate([
+                    let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
                         {
                             $match: {
-                                _id: {$in: listComments.map(item=>item._id)}
+                                _id: {$in: listTasks.map(item=>item._id)}
                             }
                         },
                         {
@@ -3121,41 +3157,50 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-
-                    let listDataProjectCompanyAuthor = await PCM_COMMENT_COLL.aggregate([
+    
+                    let listDataProjectCompany = await PCM_PLAN_TASK_COLL.aggregate([
                         {
                             $match: {
-                                _id: {$in: listComments.map(item=>item._id)}
+                                _id: {$in: listTasks.map(item=>item._id)}
                             }
                         },
                         {
                             $group: {
-                                _id: { project: '$project', companyOfAuthor: '$companyOfAuthor' },
+                                _id: objectGroup,
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+    
+                    if(listDataProject.length){
+                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
+                    }
+                    // console.log(listDataProject)
+    
+                    if(listDataProjectCompany.length){
+                        await DEPARTMENT_COLL.populate(listDataProjectCompany, conditionPopulateCompany)
+                    }
+                    // console.log(listDataProjectCompany)
+    
+                    return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
+                }
+
+                if(option == 3){
+                    console.log(conditionObj)
+                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: '$subtype' },
                                 amount: { $sum: 1 },
                             }
                         },
                     ])
 
-                    if(listDataProject.length){
-                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
-                    }
-                    // console.log(listDataProject)
-
-                    if(listDataProjectCompanyAuthor.length){
-                        await DEPARTMENT_COLL.populate(listDataProjectCompanyAuthor, conditionPopulateCompany)
-                    }
-                    // console.log(listDataProjectCompanyAuthor)
-
-                    return resolve({ error: false, data: { listDataProject, listDataProjectCompanyAuthor } });
+                    return resolve({ error: false, data: listDataTasks });
                 }
-
-                /**
-                 * Danh sách chi tiết các thông báo
-                 */
-                if(option == 2){
-                    
-                }
-
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

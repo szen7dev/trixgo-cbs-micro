@@ -2164,13 +2164,13 @@ class Model extends BaseModel {
                 if(option == 1){
                     let conditionPopulateProject = {
                         path: '_id.project',
-                        select: '_id name sign',
+                        select: '_id name sign image',
                         model: 'department'
                     }
 
                     let conditionPopulateCompany = {
                         path: '_id.companyOfAuthor',
-                        select: '_id name sign',
+                        select: '_id name sign image',
                         model: 'company'
                     }
 
