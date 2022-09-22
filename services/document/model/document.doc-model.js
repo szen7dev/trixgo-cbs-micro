@@ -494,6 +494,9 @@ class Model extends BaseModel {
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 30, lastestID, select, populates= {} }) {
+            // console.log({parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel,
+            //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate,
+            //     keyword, limit})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -657,7 +660,8 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                console.log({ conditionObj });
+                console.log(conditionObj.type);
+
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
