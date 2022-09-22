@@ -177,6 +177,7 @@ class Model extends BaseModel {
 
                 let infoContractIPC = await CMCS__CONTRACT_IPC_COLL.findById(contractIpcID);
                 let contractID = infoContractIPC.contract;
+                let projectID = infoContractIPC.project;
 
                 if(type){
                     dataUpdate.type = type;
