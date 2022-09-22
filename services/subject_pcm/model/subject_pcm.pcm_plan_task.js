@@ -40,6 +40,8 @@ const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_p
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
 const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll');
 const CONTRACT_COLL                     = require('../../item/database/item.contract-coll');
+const USER_COLL                         = require('../../auth/database/auth.user-coll');
+const { email } = require('../../../tools/mailer/config/cf_mailer');
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
@@ -3080,8 +3082,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, fromDate, toDate }){
-        // console.log({ userID, option, fromDate, toDate })
+    getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
+        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3185,8 +3187,30 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
                 }
 
+                // Danh sách các công việc theo phân loại
                 if(option == 3){
-                    console.log(conditionObj)
+                    // console.log(conditionObj)
+                    conditionObj.project = ObjectID(projectID)
+                    conditionObj.companyOfAuthor = ObjectID(companyID)
+                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: '$subtype' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listDataTasks });
+                }
+
+                if(option == 4){
+                    // console.log(conditionObj)
+                    conditionObj.project = ObjectID(projectID)
+                    conditionObj.companyOfAssignee = ObjectID(companyID)
                     let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
                         {
                             $match: conditionObj
@@ -3367,59 +3391,68 @@ class Model extends BaseModel {
      * Func: Tạo task từ dữ liệu excel
      * Date: 15/09/2022
      */
-    // importTaskFromExcel({ taskID, dataImport, userID, ctx }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             const dataImportJSON = JSON.parse(dataImport);
-    //             // console.log('=============Log data===================')
-    //             // console.log(dataImportJSON)
-    //             let index = 0;
-    //             let errorNumber = 0
-    //             for (const data of dataImportJSON) {
-    //                 if(index > 0){
-    //                     let dataInsert = {
-    //                         name: data?.__EMPTY_1,
-    //                         groupID: data?.__EMPTY_12,
-    //                         authorID: userID,
-    //                         sign: data?.__EMPTY_8,
-    //                         type: data?.__EMPTY_9,
-    //                         note: data?.__EMPTY_10,
-    //                         startTime:  data?.__EMPTY_14,
-    //                         expiredTime:  data?.__EMPTY_15,
-    //                         assigneeID: data?.__EMPTY_13,
-    //                         draft: data?.__EMPTY_17,
-    //                         subType: data?.__EMPTY_9,
-    //                         ctx,
-    //                     }
+    importTaskFromExcel({ taskID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================')
+                // return console.log(dataImportJSON)
+                let index = 0;
+                let errorNumber = 0
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        let dataInsert = {
+                            name: data?.__EMPTY_1,
+                            groupID: data?.__EMPTY_12,
+                            authorID: userID,
+                            sign: data?.__EMPTY_8,
+                            type: data?.__EMPTY_9,
+                            note: data?.__EMPTY_10,
+                            startTime:  data?.__EMPTY_14,
+                            expiredTime:  data?.__EMPTY_15,
+                            assigneeID: data?.__EMPTY_13,
+                            draft: data?.__EMPTY_17,
+                            subType: data?.__EMPTY_9,
+                            ctx,
+                        }
 
-    //                     if(checkObjectIDs(taskID)){
-    //                         dataInsert.parentID = taskID;
-    //                     }
+                        let listEmailRelates = data?.__EMPTY_5?.split(",");
+                        let related = await USER_COLL.find({ email: { $in: listEmailRelates.map(email => email.trim()) }}).select("_id")
 
-    //                     let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
-    //                     if(!infoGroup){
-    //                         errorNumber++;
-    //                         return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
-    //                     }
+                        if(related && related.length){
+                            dataInsert.relatedIDs = related.map(item => ObjectID(item._id));
+                        }
 
-    //                     dataInsert.projectID = `${infoGroup.project}`;
-    //                     let infoAfterInsert = await this.insert(dataInsert);
-    //                     if(infoAfterInsert.error){
-    //                         errorNumber++;
-    //                     }
-    //                 }
-    //                 index ++;
-    //             }
+                        if(checkObjectIDs(taskID)){
+                            dataInsert.parentID = taskID;
+                        }
 
-    //             if(errorNumber != 0)
-    //                 return resolve({ error: false, message: "Tạo mới thất bại" });
-    //             return resolve({ error: false, message: "Tạo mới thành công" });
-    //         } catch (error) {
-    //             console.log({ error })
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+                        let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
+                        if(!infoGroup){
+                            errorNumber++;
+                            return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
+                        }
+
+
+                        dataInsert.projectID = `${infoGroup.project}`;
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+                    }
+                    index ++;
+                }
+
+                if(errorNumber != 0)
+                    return resolve({ error: false, message: "import field" });
+                    
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

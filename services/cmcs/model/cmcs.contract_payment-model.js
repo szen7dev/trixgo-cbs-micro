@@ -9,6 +9,8 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * import inter-coll, exter-coll
  */
+const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll');
+const ITEM__CONTRACT_COLL               = require('../../item/database/item.contract-coll');
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 
@@ -106,8 +108,7 @@ class Model extends BaseModel {
      * Name: update contract payment
      * Author: Depv
      */
-    update({ contractPaymentID, date, name, sign, ipc, description, value, userID, ctx  }){
-        const that = this
+    update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -120,7 +121,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
                 if(!checkObjectIDs(contractPaymentID))
                     return resolve({ error: true, message: "contractPaymentID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
 
@@ -128,8 +129,12 @@ class Model extends BaseModel {
                 if(!infoPayment)
                     return resolve({ error: true, message: "Payment không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
+                console.log('===============Thông tin kỳ thanh toán=========>>>>>>>>>>>>>>>>>')
+                console.log(infoPayment)
+
                 let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(infoPayment.ipc);
                 let contractID = infoPayment.contract;
+                let projectID = infoPayment.project;
 
                 dataUpdate.type = Number(infoIPC.type);
 
@@ -163,19 +168,38 @@ class Model extends BaseModel {
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
 
+                    // console.log(infoAfterUpdate)
+
                 /**
                  * CẬP NHẬT CHO PHẦN IPC
+                 * - Cập nhật IPC mới
+                 * - Cập nhật IPC cũ
                  */
+                // Cập nhật IPC cũ
                 await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: infoPayment.ipc, userID })
+
+                // Cập nhật IPC mới
+                // await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */
-                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                 let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 2,
                     contractID: `${contractID}`,
                     userID
                 })
+                // console.log(infoContract)
+
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 2,
+                    projectID: `${projectID}`,
+                    userID
+                })
+                // console.log(infoProject)
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {

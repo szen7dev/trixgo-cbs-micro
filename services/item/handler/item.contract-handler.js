@@ -236,6 +236,37 @@ module.exports = {
     },
 
     /**
+     * Name: Cập nhật giá trị
+     * Author: Hiepnh
+     * Date: 15/04/2022
+     */
+    updateValue: {
+        auth: "required",
+        params: {
+            option                      : { type: "number", optional: true },
+            contractID                  : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { option, contractID } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                console.log({option, contractID})
+
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.updateValue({
+                    option, contractID, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
 	 * Dev: Depv
 	 * Func: XÓA HỢP ĐỒNG => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
 	 * Date: 19/08/2021
@@ -492,46 +523,6 @@ module.exports = {
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getListByMonth({
                     userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, select, populates
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Name: Cập nhật giá trị
-     * Author: Hiepnh
-     * Date: 15/04/2022
-     */
-    updateValue: {
-        auth: "required",
-        params: {
-            option                      : { type: "number", optional: true },
-            contractID                  : { type: "string" },
-            acceptance                  : { type: "number", optional: true },
-            vatAcceptance               : { type: "number", optional: true },
-            plusAcceptance              : { type: "number", optional: true },
-            vatPlusAcceptance           : { type: "number", optional: true },
-            retainedValue               : { type: "number", optional: true },
-            advancePaymentDeduction     : { type: "number", optional: true },
-            otherDeduction              : { type: "number", optional: true },
-            recommendedPayment          : { type: "number", optional: true },
-            advancePaymentPaid          : { type: "number", optional: true },
-            amountPaid                  : { type: "number", optional: true },
-            remainingPayment            : { type: "number", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-
-                let { option, contractID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment } = ctx.params;
-                const { _id: userID, company } = ctx.meta.infoUser;
-
-                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.updateValue({
-                    option, contractID, userID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

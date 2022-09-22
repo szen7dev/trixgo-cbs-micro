@@ -170,13 +170,14 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
                 if(!checkObjectIDs(contractIpcID))
                     return resolve({ error: true, message: "Mã IPC không hợp kệ", keyError: "contract_ipc_invalid" })
 
                 let infoContractIPC = await CMCS__CONTRACT_IPC_COLL.findById(contractIpcID);
                 let contractID = infoContractIPC.contract;
+                let projectID = infoContractIPC.project;
 
                 if(type){
                     dataUpdate.type = type;
@@ -264,12 +265,22 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
+                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
                 let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 2,
                     contractID: `${contractID}`,
                     userID
                 })
+
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */    
+                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 2,
+                    projectID: `${projectID}`,
+                    userID
+                }) 
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -312,7 +323,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -356,7 +367,6 @@ class Model extends BaseModel {
                 // console.log("dataUpdate====================>>>>>>>>>>>>>>")
                 // console.log(dataUpdate)
                 
-
                 let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipcID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });

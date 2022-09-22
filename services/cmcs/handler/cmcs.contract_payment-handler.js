@@ -47,7 +47,7 @@ module.exports = {
         auth: "required",
         params: {
             contractPaymentID   : { type: "string" },
-            ipc                 : { type: "string", optional: true  },
+            ipc               : { type: "string", optional: true  },
             date                : { type: "string", optional: true  },
             name                : { type: "string", optional: true  },
             sign                : { type: "string", optional: true  },
@@ -59,6 +59,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { contractPaymentID, ipc, date, name, sign, description, value } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
+
                 const resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.update({
                     contractPaymentID, ipc, date, name, sign, description, value, userID, ctx
                 });
