@@ -3082,8 +3082,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, fromDate, toDate }){
-        // console.log({ userID, option, fromDate, toDate })
+    getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
+        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3187,8 +3187,30 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
                 }
 
+                // Danh sách các công việc theo phân loại
                 if(option == 3){
-                    console.log(conditionObj)
+                    // console.log(conditionObj)
+                    conditionObj.project = ObjectID(projectID)
+                    conditionObj.companyOfAuthor = ObjectID(companyID)
+                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: '$subtype' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listDataTasks });
+                }
+
+                if(option == 4){
+                    // console.log(conditionObj)
+                    conditionObj.project = ObjectID(projectID)
+                    conditionObj.companyOfAssignee = ObjectID(companyID)
                     let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
                         {
                             $match: conditionObj

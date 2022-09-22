@@ -308,6 +308,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     },
     //_________Sản lượng còn lại chưa thực hiện
     contractRemainingProduce: { type: Number, default: 0 },
+    
     /** NGHIỆM THU HOÀN THÀNH */
     //______Giá trị nghiệm thu trước VAT
     contractAcceptance: {

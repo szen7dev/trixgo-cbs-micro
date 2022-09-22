@@ -239,6 +239,34 @@ module.exports = {
         }
     },
 
+    /**
+     * Name: Cập nhật giá trị
+     * Author: Hiepnh
+     * Date: 15/04/2022
+     */
+    updateValue: {
+        auth: "required",
+        params: {
+            option                      : { type: "number", optional: true },
+            projectID                   : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { option, projectID } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler=await ITEM__DEPARTMENT_MODEL.updateValue({
+                    option, projectID, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 
     /**
 	 * Dev: Depv

@@ -21,16 +21,17 @@ const CF_ROUTINGS_ITEM = {
     
     // ================================DEPARTMENT=======================================//
     DEPARTMENTS                                : `${BASE_ROUTE}${DEPARTMENT}`,
-    LIST_DEPARTMENT_IS_MEMBERS                : `${BASE_ROUTE}/list-department-is-members`,
+    DEPARTMENT_UPDATE_VALUE                    : `${BASE_ROUTE}${DEPARTMENT}/update-value`,
+    LIST_DEPARTMENT_IS_MEMBERS                 : `${BASE_ROUTE}/list-department-is-members`,
     DEPARTMENTS_ANALYSIS_ONTIME_ONBUDGET       : `${BASE_ROUTE}${DEPARTMENT}/analysis`,
 
     // ================================CONTRACT=========================================//
     CONTRACTS                                  : `${BASE_ROUTE}${CONTRACT}`,
+    CONTRACT_UPDATE_VALUE                      : `${BASE_ROUTE}${CONTRACT}/update-value`,
     LIST_CONTRACT_IS_MEMBERS                   : `${BASE_ROUTE}/list-contract-is-members`,
     CONTRACT_GET_LIST_BY_FILTER                : `${BASE_ROUTE}/list-contract-by-filter`,
     CONTRACT_GET_AMOUNT_BY_MONTH               : `${BASE_ROUTE}${CONTRACT}/get-amount-by-month`,
     CONTRACT_GET_LIST_BY_MONTH                 : `${BASE_ROUTE}${CONTRACT}/get-list-by-month`,
-    CONTRACT_UPDATE_VALUE                      : `${BASE_ROUTE}${CONTRACT}/update-value`,
     CONTRACT_GET_AMOUNT_BY_PROPERTY            : `${BASE_ROUTE}${CONTRACT}/get-amount-by-property`,
     CONTRACT_GET_RETAIN_PRODUCE                : `${BASE_ROUTE}${CONTRACT}/get-retain-produce`,
     CONTRACT_GET_INVENTORY                     : `${BASE_ROUTE}${CONTRACT}/get-inventory`,
