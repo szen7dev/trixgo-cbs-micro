@@ -97,6 +97,16 @@ class Model extends BaseModel {
                     userID
                 })
 
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 2,
+                    projectID: `${project}`,
+                    userID
+                })
+                // console.log(infoProject)
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -109,6 +119,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
+        console.log({ contractPaymentID, ipc, date, name, sign, description, value, userID })
         return new Promise(async (resolve) => {
             try {
                 /**
