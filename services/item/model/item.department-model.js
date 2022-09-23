@@ -14,7 +14,9 @@ const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-co
  * import inter-coll, exter-coll
  */
 const ITEM__DEPARTMENT_COLL                 = require('../database/item.department-coll');
+const ITEM__CONTRACT_COLL                   = require('../database/item.contract-coll');
 const { RANGE_BASE_PAGINATION_V2 } 		    = require('../../../tools/cursor_base/playground/index');
+const { ObjectID } = require('mongodb');
 
 /**
  * import inter-model, exter-model
@@ -673,59 +675,94 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(projectID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "projectID_invalid" });
 
-                let infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID)
-                // console.log({infoProject})
-
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
                 //1-Cập nhật Sản lượng
                 if(option && Number(option) === 1){
                     console.log('1-Cập nhật Sản lượng DỰ ÁN===========>>>>>>>>>>>>')
-                    let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
-                        userID, projectID
-                    })
 
-                    // Sản lượng còn lại chưa thực hiện
-                    let totalValue = 0, remainingProduce = 0
-                    totalValue = Number(infoProject.contractValue | 0)+Number(infoProject.contractVatValue | 0)+Number(infoProject.contractPlus | 0)+Number(infoProject.contractVatPlus | 0)
+                    let listData = await ITEM__CONTRACT_COLL.aggregate([
+                        {
+                            $match: {
+                                project: ObjectID(projectID),
+                                outin: 2,
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                produce: { $sum: "$produce" },
+                                vatProduce: { $sum: "$vatProduce" },
+                                plusProduce: { $sum: "$plusProduce" },
+                                vatPlusProduce: { $sum: "$vatPlusProduce" },
+                                remainingProduce: { $sum: "$remainingProduce" },
+                            }
+                        }, 
+                    ])
+                    // console.log(listData)
 
-                    remainingProduce = Number(totalValue)-Number(infoIpcContract.data.produce)-Number(infoIpcContract.data.vatProduce)-Number(infoIpcContract.data.plusProduce)-Number(infoIpcContract.data.vatPlusProduce)
-                    // console.log({totalValue})
-                    // console.log({remainingProduce})
-
-                    // console.log(infoIpcContract)
-                    if(infoIpcContract){
-                        dataUpdate.contractProduce = Number(infoIpcContract.data.produce)
-                        dataUpdate.contractVatProduce = Number(infoIpcContract.data.vatProduce)
-                        dataUpdate.contractPlusProduce = Number(infoIpcContract.data.plusProduce)
-                        dataUpdate.contractVatPlusProduce = Number(infoIpcContract.data.vatPlusProduce)
-                        dataUpdate.contractRemainingProduce = Number(remainingProduce)
+                    if(listData.length){
+                        dataUpdate.contractProduce = Number(listData[0].produce);
+                        dataUpdate.contractVatProduce = Number(listData[0].vatProduce);
+                        dataUpdate.contractPlusProduce = Number(listData[0].plusProduce);
+                        dataUpdate.contractVatPlusProduce = Number(listData[0].vatPlusProduce);
+                        dataUpdate.contractRemainingProduce = Number(listData[0].remainingProduce);
                     }
                 }
 
                 //2-Cập nhật Doanh thu, tiền về
                 if(option && Number(option) === 2){
                     console.log('=============2-Cập nhật Doanh thu, tiền về DỰ ÁN===========>>>>>>>>>>>>')
-                    
-                    let info = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
-                        userID, projectID
-                    })
-                    // console.log(info)
-                    if(info){
-                        dataUpdate.contractAcceptance = Number(info.data.acceptance);
-                        dataUpdate.contractVatAcceptance = Number(info.data.vatAcceptance);
-                        dataUpdate.contractPlusAcceptance = Number(info.data.plusAcceptance);
-                        dataUpdate.contractVatPlusAcceptance = Number(info.data.vatPlusAcceptance);
-                        dataUpdate.contractRetainedValue = Number(info.data.retainedValue);
-                        dataUpdate.contractAdvancePaymentDeduction = Number(info.data.advancePaymentDeduction);
-                        dataUpdate.contractOtherDeduction = Number(info.data.otherDeduction);
-                        dataUpdate.contractRecommendedPayment = Number(info.data.recommendedPayment);
-                        dataUpdate.contractAdvancePaymentPaid = Number(info.data.advancePaymentPaid);
-                        dataUpdate.contractAmountPaid = Number(info.data.amountPaid);
-                        dataUpdate.contractRemainingPayment = Number(info.data.recommendedPayment) - Number(info.data.advancePaymentPaid) - Number(info.data.amountPaid)
-                    }
 
-                    // console.log(dataUpdate)
+                    let listData = await ITEM__CONTRACT_COLL.aggregate([
+                        {
+                            $match: {
+                                project: ObjectID(projectID),
+                                outin: 2,
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                value: { $sum: "$value" },
+                                vatValue: { $sum: "$vatValue" },
+                                plus: { $sum: "$plus" },
+                                vatPlus: { $sum: "$vatPlus" },
+                                acceptance: { $sum: "$acceptance" },
+                                vatAcceptance: { $sum: "$vatAcceptance" },
+                                plusAcceptance: { $sum: "$plusAcceptance" },
+                                vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
+                                retainedValue: { $sum: "$retainedValue" },
+                                advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
+                                otherDeduction: { $sum: "$otherDeduction" },
+                                recommendedPayment: { $sum: "$recommendedPayment" },
+                                advancePaymentPaid: { $sum: "$advancePaymentPaid" },
+                                amountPaid: { $sum: "$amountPaid" },
+                                remainingPayment: { $sum: "$remainingPayment" },
+                                advancePaymentOverage: { $sum: "$advancePaymentOverage" },
+                                finalValue: { $sum: "$finalValue" },
+                            }
+                        }, 
+                    ])
+                    // console.log(listData)
+                    
+                    if(listData.length){
+                        dataUpdate.contractValue = Number(listData[0].value);
+                        dataUpdate.contractVatValue = Number(listData[0].vatValue);
+                        dataUpdate.contractPlus = Number(listData[0].plus);
+                        dataUpdate.contractVatPlus = Number(listData[0].vatPlus);
+                        dataUpdate.contractAcceptance = Number(listData[0].acceptance);
+                        dataUpdate.contractVatAcceptance = Number(listData[0].vatAcceptance);
+                        dataUpdate.contractPlusAcceptance = Number(listData[0].plusAcceptance);
+                        dataUpdate.contractVatPlusAcceptance = Number(listData[0].vatPlusAcceptance);
+                        dataUpdate.contractRetainedValue = Number(listData[0].retainedValue);
+                        dataUpdate.contractAdvancePaymentDeduction = Number(listData[0].advancePaymentDeduction);
+                        dataUpdate.contractOtherDeduction = Number(listData[0].otherDeduction);
+                        dataUpdate.contractRecommendedPayment = Number(listData[0].recommendedPayment);
+                        dataUpdate.contractAdvancePaymentPaid = Number(listData[0].advancePaymentPaid);
+                        dataUpdate.contractAmountPaid = Number(listData[0].amountPaid);
+                        dataUpdate.contractRemainingPayment = Number(listData[0].recommendedPayment) - Number(listData[0].advancePaymentPaid) - Number(listData[0].amountPaid)
+                    }
                 }
 
                 //3-Cập nhật Chi phí

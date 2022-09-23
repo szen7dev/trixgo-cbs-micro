@@ -147,7 +147,9 @@ class Model extends BaseModel {
                 let contractID = infoPayment.contract;
                 let projectID = infoPayment.project;
 
-                dataUpdate.type = Number(infoIPC.type);
+                let infoIpcNew = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
+
+                dataUpdate.type = Number(infoIpcNew.type);
 
                 if(date){
                     dataUpdate.date =date;
@@ -190,7 +192,7 @@ class Model extends BaseModel {
                 await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: infoPayment.ipc, userID })
 
                 // Cập nhật IPC mới
-                // await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
+                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG

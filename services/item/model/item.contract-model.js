@@ -763,6 +763,10 @@ class Model extends BaseModel {
                     { $set: fieldUpdate }
                  );
 
+                /**
+                 * CẬP NHẬT LẠI THÔNG TIN CHO DỰ ÁN
+                 */
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -796,7 +800,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
                 /**
                  * VALIDATION STEP (2)
@@ -841,7 +845,8 @@ class Model extends BaseModel {
                     let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
                         userID, contractID
                     })
-                    // console.log(infoIpcContract)
+                    console.log(infoIpcContract)
+
                     if(infoIpcContract){
                         dataUpdate.acceptance = Number(infoIpcContract.data.acceptance);
                         dataUpdate.vatAcceptance = Number(infoIpcContract.data.vatAcceptance);

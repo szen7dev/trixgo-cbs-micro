@@ -151,13 +151,14 @@ class Model extends BaseModel {
 
                 /**
                  * CẬP NHẬT CHO PHẦN DỰ ÁN
-                 */    
-                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
-                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
-                    option: 2,
-                    projectID: `${project}`,
-                    userID
-                }) 
+                 */
+                if(outin == 2){
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                        option: 2,
+                        projectID: `${project}`,
+                        userID
+                    }) 
+                }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -275,7 +276,6 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
                 let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 2,
                     contractID: `${contractID}`,
@@ -285,7 +285,6 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN DỰ ÁN
                  */    
-                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
                     option: 2,
                     projectID: `${projectID}`,
@@ -803,8 +802,8 @@ class Model extends BaseModel {
      * Date: 04/04/2022
      */
     getAmountByObject({ userID, outin, companyID, projectID, contractID }){
-        console.log('=================IPC:getAmountByObject==>>>>>>>>>>>')
-        console.log({ userID, outin, companyID, projectID, contractID })
+        // console.log('=================IPC:getAmountByObject==>>>>>>>>>>>')
+        // console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {
                 /**
