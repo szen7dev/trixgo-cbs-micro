@@ -2295,12 +2295,19 @@ class Model extends BaseModel {
                     }
                     let conditionPopulate = {
                         path: '_id',
-                        select: '_id fullname bizfullname sign image',
+                        select: '_id fullname bizfullname sign image position',
                         model: 'user',
                         match: conditionObj
                     }
 
-                    let listData = await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate);
+                    let conditionPopulate2 = {
+                        path: '_id.position',
+                        select: 'name sign',
+                        model: 'position',
+                    }
+
+                    await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate);
+                    await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate2);
                     listUserOfCompany = listUser.map(item => item._id).filter(Boolean);
                 }
 
