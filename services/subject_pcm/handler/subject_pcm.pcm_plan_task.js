@@ -441,7 +441,9 @@ module.exports = {
     getAmountTaskOfCompanyOfAssignee: {
         auth: "required",
         params: {
-            projectID: { type: "string" },
+            option: { type: "string", optional: true },
+            companyID: { type: "string", optional: true },
+            projectID: { type: "string", optional: true },
             keyword: { type: "string", optional: true },
             subtype: { type: "string", optional: true }
         },
@@ -449,9 +451,16 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-                let { projectID, keyword, subtype } = ctx.params;
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx });
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                let { option, companyID, projectID, keyword, subtype } = ctx.params;
+                // console.log({option, companyID, projectID, keyword, subtype})
+
+                if(!option){
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx });
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                }else{
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, keyword, subtype, ctx });
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                }
             } catch (error) {
                 return { error:  true, message: error.message };
             }
@@ -466,7 +475,9 @@ module.exports = {
     getAmountTaskOfCompanyOfAuthor: {
         auth: "required",
         params: {
-            projectID: { type: "string" },
+            option: { type: "string", optional: true },
+            companyID: { type: "string", optional: true },
+            projectID: { type: "string", optional: true },
             keyword: { type: "string", optional: true },
             subtype: { type: "string", optional: true }
         },
@@ -474,9 +485,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-                let { projectID, keyword, subtype } = ctx.params;
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAuthor({ projectID, keyword, subtype, ctx });
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                let { option, companyID, projectID, keyword, subtype } = ctx.params;
+
+                if(!option){
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, ctx });
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                }else{
+
+                }
             } catch (error) {
                 return { error:  true, message: error.message };
             }

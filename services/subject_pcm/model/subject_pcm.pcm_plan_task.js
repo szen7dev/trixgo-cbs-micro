@@ -2248,15 +2248,202 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Lấy số lượng công việc của companyOfAssignee (gom nhóm theo user, project)
+     * Author: HiepNH
+     * Code: 23/9/2022
+     */
+    getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, keyword, subtype, ctx }){
+        // console.log('==================Tổng hợp theo đơn vị thực hiện 2222================>>>>>>>>>>>>>>>>>')
+        // console.log({ option, companyID, keyword, subtype })
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(companyID))
+                    return resolve({ error: true, message: 'companyID_invalid' });
+
+                let objCodition = {
+                    companyOfAssignee: ObjectID(companyID),
+                }
+
+                if(subtype){
+                    objCodition.subtype = +subtype;
+                }
+
+                let conditionGroup = {}, listUserOfCompany, listProjectOfCompany
+
+                if(option == 1){
+                    conditionGroup = {
+                        _id: "$assignee",
+                        count: { $sum: 1 }
+                    }
+                    
+                    /**
+                     * DANH SÁCH USER THỰC HIỆN CÔNG VIỆC CỦA CÔNG TY
+                     */
+                    let listUser = await PCM_PLAN_TASK_COLL.aggregate([
+                        { $match: objCodition },
+                        { $group: { _id: "$assignee" } },
+                        { $sort: { _id: -1} }
+                    ]);
+                    // console.log(listUser)
+
+                    let conditionObj = {}
+
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        conditionObj.fullname = new RegExp(keyword, 'i');
+                    }
+                    let conditionPopulate = {
+                        path: '_id',
+                        select: '_id fullname bizfullname sign image',
+                        model: 'user',
+                        match: conditionObj
+                    }
+
+                    let listData = await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate);
+                    listUserOfCompany = listUser.map(item => item._id).filter(Boolean);
+                }
+
+                if(option == 2){
+                    conditionGroup = {
+                        _id: "$project",
+                        count: { $sum: 1 }
+                    }
+                    
+                    /**
+                     * DANH SÁCH DỰ ÁN MÀ USER CÔNG TY THAM GIA THỰC HIỆN
+                     */
+                    let listProject = await PCM_PLAN_TASK_COLL.aggregate([
+                        { $match: objCodition },
+                        { $group: { _id: "$project" } },
+                        { $sort: { _id: -1} }
+                    ]);
+                    console.log(listProject)
+
+                    let conditionObj = {}
+
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        conditionObj.name = new RegExp(keyword, 'i');
+                    }
+                    let conditionPopulate = {
+                        path: '_id',
+                        select: '_id name sign image',
+                        model: 'department',
+                        match: conditionObj
+                    }
+
+                    let listData = await PCM_PLAN_TASK_COLL.populate(listProject, conditionPopulate);
+                    listProjectOfCompany = listProject.map(item => item._id).filter(Boolean);
+                }
+
+                /**
+                 * Việc quá hạn
+                 */
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                let conditionSearchTask = {
+                    companyOfAssignee: ObjectID(companyID)
+                }
+                if(subtype){
+                    conditionSearchTask.subtype = +subtype;
+                }
+
+                let listTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $lt: start,
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listTaskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $gte: start,
+                                $lt: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $gte: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            status: 3
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                return resolve({ error: false, data: {
+                    listUserOfCompany, listProjectOfCompany,
+                    listTaskOverdueWork, listTaskNextWeekWork,  listTaskMoreThan7Days, listTaskFinish
+                    } 
+                })
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Lấy số lượng công việc của companyOfAssignee trong dự án V2
      * Author: Depv
      * Code:
      */
     getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx }){
+        // console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
+        // console.log({ projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID_invalid' });
+
                 let objectSearch = {
                     project: ObjectID(projectID), companyOfAssignee: { $exists: true },
                 }
@@ -2277,6 +2464,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObjCompany.name = new RegExp(keyword, 'i');
                 }
+
                 let conditionPopulate = {
                     path: '_id',
                     select: '_id name sign image',
@@ -2284,10 +2472,16 @@ class Model extends BaseModel {
                     match: conditionObjCompany
                 }
 
-                await PCM_PLAN_TASK_COLL.populate(listCompanyOfAssignee, conditionPopulate);
+                let listData = await PCM_PLAN_TASK_COLL.populate(listCompanyOfAssignee, conditionPopulate);
+                // console.log(listData)
+
+                // let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean);
                 let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean);
+                // console.log(listCompany)
+
                 let start = new Date();
                 start.setHours(0,0,0,0);
+
                 let conditionSearchTask = {
                     project: ObjectID(projectID),
                     companyOfAssignee: { $exists: true },
@@ -2296,6 +2490,7 @@ class Model extends BaseModel {
                 if(subtype){
                     conditionSearchTask.subtype = +subtype;
                 }
+
                 let listCompanyAndTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
                     {
                         $match: {
@@ -2381,6 +2576,7 @@ class Model extends BaseModel {
                     listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
                     } });
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -2392,7 +2588,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getAmountTaskOfCompanyOfAuthor({ projectID, keyword, subtype, ctx }){
+    getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, ctx }){
+        // console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
+        // console.log({ projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
@@ -2574,8 +2772,6 @@ class Model extends BaseModel {
                             project: ObjectID(projectID),
                             milestone: { $exists: true },
                             actualFinishTime: {
-                                // $gte: start,
-                                // $lt: addDate(7),
                                 $gte:  moment(start).startOf('day')._d,
                                 $lt: moment(addDate(7)).endOf('day')._d,
                                 $exists: true,
@@ -2584,18 +2780,6 @@ class Model extends BaseModel {
                             status: { $ne: 3 }
                         }
                     },
-
-                //      // lấy việc tới hạn Tuần tới
-                // if(typeStatus && typeStatus == 2){
-                //     conditionObj.actualFinishTime = {
-                //         $gte:  moment(start).startOf('day')._d,
-                //         $lt: moment(addDate(7)).endOf('day')._d,
-                //         // $gte: start,
-                //         // $lt: addDate(7),
-                //         $exists: true,
-                //         $ne: null
-                //     }
-                // }
                     {
                         $group: {
                             _id: "$milestone",
@@ -3086,7 +3270,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
-        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
+        console.log({ userID, option, fromDate, toDate, projectID, companyID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3114,7 +3298,7 @@ class Model extends BaseModel {
                     // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
                     // console.log(listTasks)
 
-                    let objectGroup, conditionPopulateProject, conditionPopulateCompany
+                    let objectGroup, conditionPopulateProject, conditionPopulateCompany, sortProject, sortCompany
 
                     if(option == 1){
                         conditionPopulateProject = {
@@ -3130,6 +3314,9 @@ class Model extends BaseModel {
                         }
 
                         objectGroup = { project: '$project', companyOfAuthor: '$companyOfAuthor' }
+
+                        sortProject = { "_id.project": 1 }
+                        sortCompany = { "_id.companyOfAuthor": 1 }
                     }
 
                     if(option == 2){
@@ -3147,6 +3334,9 @@ class Model extends BaseModel {
                         }
 
                         objectGroup = { project: '$project', companyOfAssignee: '$companyOfAssignee' }
+
+                        sortProject = { "_id.project": 1 }
+                        sortCompany = { "_id.companyOfAssignee": 1 }
                     }
 
                     let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
@@ -3161,6 +3351,7 @@ class Model extends BaseModel {
                                 amount: { $sum: 1 },
                             }
                         },
+                        { $sort: sortProject},
                     ])
 
                     let listDataProjectCompany = await PCM_PLAN_TASK_COLL.aggregate([
@@ -3175,6 +3366,7 @@ class Model extends BaseModel {
                                 amount: { $sum: 1 },
                             }
                         },
+                        { $sort: sortCompany},
                     ])
 
                     if(listDataProject.length){

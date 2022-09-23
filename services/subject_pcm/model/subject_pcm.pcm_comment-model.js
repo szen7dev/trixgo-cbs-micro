@@ -2174,6 +2174,9 @@ class Model extends BaseModel {
                         model: 'company'
                     }
 
+                    let sortProject = { "_id.project": 1 }
+                    let sortCompany = { "_id.companyOfAuthor": 1 }
+
                     let listDataProject = await PCM_COMMENT_COLL.aggregate([
                         {
                             $match: {
@@ -2186,6 +2189,7 @@ class Model extends BaseModel {
                                 amount: { $sum: 1 },
                             }
                         },
+                        { $sort: sortProject},
                     ])
 
                     let listDataProjectCompanyAuthor = await PCM_COMMENT_COLL.aggregate([
@@ -2200,6 +2204,7 @@ class Model extends BaseModel {
                                 amount: { $sum: 1 },
                             }
                         },
+                        { $sort: sortCompany},
                     ])
 
                     if(listDataProject.length){
