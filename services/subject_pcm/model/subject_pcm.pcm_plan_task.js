@@ -598,6 +598,22 @@ class Model extends BaseModel {
                         dataUpdate.description = description;
                         dataUpdate.descriptioncv = stringUtils.removeAccents(description);
                     }
+
+                    /**
+                     * Ngày kết thúc
+                     */
+                    if(actualFinishTime){
+                        dataUpdate.actualFinishTime = new Date(actualFinishTime);
+                    }
+
+                    if(expiredHour) {
+                        const [month, day, year] = actualFinishTime.split('/');
+                        const date = `${year}-${month}-${day}`;
+                        const formatDate = new Date(`${date} ${expiredHour}`);
+
+                        dataUpdate.actualFinishTime = formatDate;
+                    }
+
                 }else{
                     //_________Mô tả: chỉ áp dụng cho Báo cáo, Họp
                     if(infoTask.subtype === 9 || infoTask.subtype === 11){
@@ -637,13 +653,6 @@ class Model extends BaseModel {
                  */
                 if(actualStartTime){
                     dataUpdate.actualStartTime = new Date(actualStartTime);
-                }
-
-                /**
-                 * Ngày kết thúc
-                 */
-                if(actualFinishTime){
-                    dataUpdate.actualFinishTime = new Date(actualFinishTime);
                 }
 
                 /**
@@ -811,14 +820,6 @@ class Model extends BaseModel {
                 // if(bidPriceAdjustment){
                 //     dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
                 // }
-
-                if(expiredHour) {
-                    const [month, day, year] = actualFinishTime.split('/');
-                    const date = `${year}-${month}-${day}`;
-                    const formatDate = new Date(`${date} ${expiredHour}`);
-
-                    dataUpdate.actualFinishTime = formatDate;
-                }
 
                 if(isAddSignature) {
                     const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
