@@ -2252,7 +2252,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 23/9/2022
      */
-    getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, keyword, subtype, ctx }){
+    getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, projectID, keyword, subtype, ctx }){
         // console.log('==================Tổng hợp theo đơn vị thực hiện 2222================>>>>>>>>>>>>>>>>>')
         // console.log({ option, companyID, keyword, subtype })
         return new Promise(async resolve => {
@@ -2271,6 +2271,10 @@ class Model extends BaseModel {
                 let conditionGroup = {}, listUserOfCompany, listProjectOfCompany
 
                 if(option == 1){
+                    if(projectID && checkObjectIDs(projectID)){
+                        objCodition.project = ObjectID(projectID)
+                    }
+                    
                     conditionGroup = {
                         _id: "$assignee",
                         count: { $sum: 1 }
@@ -2325,7 +2329,7 @@ class Model extends BaseModel {
                         { $group: { _id: "$project" } },
                         { $sort: { _id: -1} }
                     ]);
-                    console.log(listProject)
+                    // console.log(listProject)
 
                     let conditionObj = {}
 

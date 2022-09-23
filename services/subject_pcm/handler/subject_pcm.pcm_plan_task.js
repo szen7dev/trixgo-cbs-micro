@@ -458,7 +458,7 @@ module.exports = {
                     let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx });
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
                 }else{
-                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV1({ option, companyID: company._id, keyword, subtype, ctx });
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV1({ option, companyID: company._id, projectID, keyword, subtype, ctx });
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
                 }
             } catch (error) {
