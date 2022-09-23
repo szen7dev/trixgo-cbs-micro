@@ -2300,7 +2300,7 @@ class Model extends BaseModel {
                     }
                     let conditionPopulate = {
                         path: '_id',
-                        select: '_id fullname bizfullname sign image position',
+                        select: '_id fullname bizfullname sign image position department',
                         model: 'user',
                         match: conditionObj
                     }
@@ -2311,8 +2311,15 @@ class Model extends BaseModel {
                         model: 'position',
                     }
 
+                    let conditionPopulate3 = {
+                        path: '_id.department',
+                        select: 'name sign',
+                        model: 'department',
+                    }
+
                     await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate);
                     await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate2);
+                    await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate3);
                     listUserOfCompany = listUser.map(item => item._id).filter(Boolean);
                 }
 
@@ -2346,7 +2353,7 @@ class Model extends BaseModel {
                         match: conditionObj
                     }
 
-                    let listData = await PCM_PLAN_TASK_COLL.populate(listProject, conditionPopulate);
+                    await PCM_PLAN_TASK_COLL.populate(listProject, conditionPopulate);
                     listProjectOfCompany = listProject.map(item => item._id).filter(Boolean);
                 }
 
