@@ -119,7 +119,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
-        console.log({ contractPaymentID, ipc, date, name, sign, description, value, userID })
+        // console.log({ contractPaymentID, ipc, date, name, sign, description, value, userID })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -141,14 +141,16 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Payment không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 console.log('===============Thông tin kỳ thanh toán=========>>>>>>>>>>>>>>>>>')
-                console.log(infoPayment)
+                // console.log(infoPayment)
 
-                let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(infoPayment.ipc);
+                let IpcIDOld = infoPayment.ipc
+
                 let contractID = infoPayment.contract;
                 let projectID = infoPayment.project;
 
                 let infoIpcNew = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
 
+                // Cập nhật phân loại Tạm ứng/Thanh toán
                 dataUpdate.type = Number(infoIpcNew.type);
 
                 if(date){
@@ -181,7 +183,7 @@ class Model extends BaseModel {
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
 
-                    // console.log(infoAfterUpdate)
+                console.log({IpcIDOld, IpcIDNew: ipc})
 
                 /**
                  * CẬP NHẬT CHO PHẦN IPC
@@ -189,7 +191,7 @@ class Model extends BaseModel {
                  * - Cập nhật IPC cũ
                  */
                 // Cập nhật IPC cũ
-                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: infoPayment.ipc, userID })
+                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: IpcIDOld, userID })
 
                 // Cập nhật IPC mới
                 await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })

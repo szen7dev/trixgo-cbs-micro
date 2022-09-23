@@ -365,12 +365,14 @@ class Model extends BaseModel {
                             }
                         }, 
                     ])
-
                     // console.log(listData)
 
                     if(listData && listData.length){
                         dataUpdate.amountPaid = Number(listData[0].amount)
                         dataUpdate.remainingPayment = Number(recommendedPayment) - Number(listData[0].amount)
+                    }else{
+                        dataUpdate.amountPaid = 0
+                        dataUpdate.remainingPayment = Number(recommendedPayment)
                     }
                 }
                 // console.log("dataUpdate====================>>>>>>>>>>>>>>")
