@@ -204,17 +204,17 @@ module.exports = {
 				}
 			});
 
-			agenda.on("success:add_reminder_expired_task", (job) => {
-				console.log({ __SUCCESS_REMINDER_EXPIRED_TASK: job.attrs });;
-			});
+			// agenda.on("success:add_reminder_expired_task", (job) => {
+			// 	console.log({ __SUCCESS_REMINDER_EXPIRED_TASK: job.attrs });;
+			// });
 
-			agenda.on("fail:add_reminder_expired_task", (err, job) => {
-				console.log({ __FAILED_REMINDER_EXPIRED_TASK: err.message });
-			});
+			// agenda.on("fail:add_reminder_expired_task", (err, job) => {
+			// 	console.log({ __FAILED_REMINDER_EXPIRED_TASK: err.message });
+			// });
 
-			agenda.on("complete", (job) => {
-				console.log({ __COMPLETED_JOB: job.attrs.name });
-			});
+			// agenda.on("complete", (job) => {
+			// 	console.log({ __COMPLETED_JOB: job.attrs.name });
+			// });
 
 			await new Promise(resolve => agenda.once('ready', resolve));
 			agenda.start();

@@ -899,12 +899,12 @@ class Model extends BaseModel {
                 if(alert >= 0) {
                     dataUpdate.alert = alert;
 
-                    // Nếu không set nhắc hẹn -> xóa tất cả job reminder đi
-                    if(alert === 0) {
-                        ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK}`, {
-                            taskID
-                        })
-                    } else{
+                    // xóa tất cả job reminder
+                    await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK}`, {
+                        taskID
+                    })
+
+                    if(alert > 0) {
                         ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
                             alert,
                             senderMail,
