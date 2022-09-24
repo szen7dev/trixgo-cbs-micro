@@ -2313,7 +2313,7 @@ class Model extends BaseModel {
 
                     let conditionPopulate3 = {
                         path: '_id.department',
-                        select: 'name sign',
+                        select: 'name sign modifyAt',
                         model: 'department',
                     }
 
@@ -2348,7 +2348,8 @@ class Model extends BaseModel {
                     }
                     let conditionPopulate = {
                         path: '_id',
-                        select: '_id name sign image',
+                        select: '_id name sign image modifyAt',
+                        options: { sort: { 'modifyAt': -1 } },
                         model: 'department',
                         match: conditionObj
                     }

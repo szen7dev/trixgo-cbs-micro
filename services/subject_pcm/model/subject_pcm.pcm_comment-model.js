@@ -2165,6 +2165,7 @@ class Model extends BaseModel {
                     let conditionPopulateProject = {
                         path: '_id.project',
                         select: '_id name sign image',
+                        options: { sort: { 'modifyAt': -1 } },
                         model: 'department'
                     }
 
