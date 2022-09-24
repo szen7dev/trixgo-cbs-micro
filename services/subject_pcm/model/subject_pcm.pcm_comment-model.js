@@ -2156,21 +2156,14 @@ class Model extends BaseModel {
                  * 2-Gom nhóm dữ liệu
                  */
 
-                 let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
- 
-                 // Chỉ lấy task cha
-                 if(isParent == 1){
-                     conditionSubjectObj.parent = { $exists: false };
-                 }
- 
-                 conditionSubjectObj.usersDelete = { $nin: [userID] }
+                let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
 
-                 if(fromDate && toDate){
-                    conditionSubjectObj.createAt = {
-                        $gte: new Date(fromDate),
-                        $lte: new Date(toDate),
-                    }
-				}
+                // Chỉ lấy task cha
+                if(isParent == 1){
+                    conditionSubjectObj.parent = { $exists: false };
+                }
+
+                conditionSubjectObj.usersDelete = { $nin: [userID] }
 
                 // Lấy các chủ đề mà user được quyền truy cập (members của group)
                 if(isGroup && isGroup == 1){
@@ -2195,10 +2188,22 @@ class Model extends BaseModel {
                 let listTask = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name')
                 // console.log(listTask)
 
-                let listComments = await PCM_COMMENT_COLL.find({
-                    task: {$in: listTask.map(item=>item._id)},
-                    project: { $exists: true, $ne: null },
-                })
+                let listComments
+                if(fromDate && toDate){
+                    listComments = await PCM_COMMENT_COLL.find({
+                        task: {$in: listTask.map(item=>item._id)},
+                        createAt: {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        },
+                        project: { $exists: true, $ne: null },
+                    })
+				}else{
+                    listComments = await PCM_COMMENT_COLL.find({
+                        task: {$in: listTask.map(item=>item._id)},
+                        project: { $exists: true, $ne: null },
+                    })
+                }
                 // let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
                 // console.log(listComments)
                 // console.log(listComments.length)
