@@ -1,4 +1,5 @@
 const Agenda            = require('agenda');
+const moment            = require('moment');
 const ObjectID 			= require('mongodb').ObjectID;
 const { MONGODB_URL } 	= require('../../../tools/db/utils');
 const { CF_DOMAIN_SERVICES } 		= require('../../gateway/helper/domain.constant');
@@ -53,10 +54,10 @@ module.exports = {
 
 				switch (+timeMute) {
 					case 1:
-						timeScheduler = "one hours";
+						timeScheduler = "1 hours";
 						break;
 					case 4:
-						timeScheduler = "four hours";
+						timeScheduler = "4 hours";
 						break;
 					case 8:
 						timeScheduler = "tomorrow at 8am";
@@ -69,7 +70,9 @@ module.exports = {
 				if(!timeScheduler)
 					throw new Error("timeScheduler is empty");
 
-				agenda.schedule(timeScheduler, 'update_mute_conversation', { conversationID, userID, isMute: false });
+				agenda.schedule(timeScheduler, 'update_mute_conversation', {
+					conversationID, userID, isMute: false
+				});
 				console.log(`agenda: update_mute_conversation added - ${timeScheduler}`);
 
                 return { error: false, message: 'success' };
@@ -273,56 +276,99 @@ module.exports = {
 
 	addJobReminderExpiredTask: {
         params: {
-            // alert				: { type: "string", optional: true },
-            // actualFinishTime	: { type: "string" },
-            // taskID				: { type: "string" },
-            // userID				: { type: "string" },
+            alert				: { type: "number" },
+            status				: { type: "number" },
+            actualFinishTime	: { type: "string" },
+            taskID				: { type: "string" },
+            userID				: { type: "string" },
         },
         async handler(ctx) {
             try {
-                let { alert, actualFinishTime, taskID, userID } = ctx.params;
-                let timeScheduler = '1 minutes';
+                const { alert, actualFinishTime, status, taskID, userID, senderMail } = ctx.params;
+                let timeScheduler = '', message = '';
 
-				const infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
-					taskID
-				});
-				console.log({ infoTask })
+				// const infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
+				// 	taskID
+				// });
+				// if(infoTask.error) throw new Error("Can't get info task");
+				// const { status } = infoTask.data;
 
-				// switch (+alert) {
-				// 	case 15:
-				// 		timeScheduler = "15 minutes";
-				// 		break;
-				// 	case 1:
-				// 		timeScheduler = "1 hours";
-				// 		break;
-				// 	case 2:
-				// 		timeScheduler = "2 hours";
-				// 		break;
-				// 	case 24:
-				// 		timeScheduler = "1 days";
-				// 		break;
-				// 	case 48:
-				// 		timeScheduler = "2 days";
-				// 		break;
-				// 	default:
-				// 		break;
-				// }
+				if(status === 3)
+					return { error: true, message: "task is done" };
 
-				if(!timeScheduler)
-					throw new Error("timeScheduler is empty");
+				timeScheduler = new Date(actualFinishTime).getTime();
+				// timeScheduler = moment(timeScheduler).subtract(1, 'minute');
+
+				switch (alert) {
+					case 0.4:
+						message = '15 phút';
+						timeScheduler = moment(timeScheduler).subtract(15, 'minutes'); // .valueOf();
+						break;
+					case 1:
+						message = '1 tiếng';
+						timeScheduler = moment(timeScheduler).subtract(1, 'hour');
+						break;
+					case 2:
+						message = '2 tiếng';
+						timeScheduler = moment(timeScheduler).subtract(2, 'hours');
+						break;
+					case 24:
+						message = '1 ngày';
+						timeScheduler = moment(timeScheduler).subtract(1, 'day');
+						break;
+					case 48:
+						message = '2 ngày';
+						timeScheduler = moment(timeScheduler).subtract(2, 'days');
+						break;
+					default:
+						break;
+				}
+
+				timeScheduler = new Date(timeScheduler).getTime();
+
+				if(!message)
+                	return { error: true, message: "Not found alert time" };
 
 				agenda.schedule(timeScheduler, 'add_reminder_expired_task', {
 					taskID,
 					userID,
-					alert,
-					actualFinishTime,
-					timeScheduler,
+					message,
+					senderMail,
 				});
 				console.log(`agenda: add_reminder_expired_task added - ${timeScheduler}`);
 
                 return { error: false, message: 'success' }
             } catch (error) {
-                throw new Error(error.message);
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+	deleteJobReminderExpiredTask: {
+        params: {
+			taskID: { type: 'string' },
+		},
+        async handler(ctx) {
+            try {
+				const { taskID } = ctx.params;
+
+				if(!taskID)
+					return { error: true, message: "Request params taskID invalid" };
+
+				const listJob = await agenda.jobs({
+					name: "add_reminder_expired_task",
+					"data.taskID": taskID
+				});
+
+				if(listJob && listJob.length){
+					const jobsID = listJob.map(job => ObjectID(job.attrs._id));
+					await agenda.cancel({ _id: { $in: jobsID } });
+					console.log(`agenda: delete_job_reminder_expired_task canceled - taskID: ${taskID}`);
+				}
+
+                return { error: false, message: 'success' };
+            } catch (error) {
+				return { error: true, message: error.message };
             }
         }
     },

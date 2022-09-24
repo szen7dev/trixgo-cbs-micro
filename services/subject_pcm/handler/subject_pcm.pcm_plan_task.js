@@ -72,36 +72,37 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            taskID         : { type: "string" },
-            sign           : { type: "string", optional: true },
-            name           : { type: "string", optional: true },
-            sign           : { type: "string", optional: true },
-            description    : { type: "string", optional: true },
-            actualStartTime: { type: "string", optional: true },
-            actualFinishTime: { type: "string", optional: true },
-            expiredHour      : { type: "string", optional: true },
-            amountoftime   : { type: "string", optional: true },
-            amountPerHour  : { type: "string", optional: true },
-            assigneeID     : { type: "string", optional: true },
-            progressType   : { type: "string", optional: true },
-            fieldID        : { type: "string", optional: true },
-            contractID     : { type: "string", optional: true },
-            draft          : { type: "number", optional: true },
-            userIDDelete   : { type: "number", optional: true },
-            typeUpdate     : { type: "number", optional: true },
-            flags          : { type: "array", optional: true },
-            flagsRemoves   : { type: "array", optional: true },
-            related        : { type: "array", optional: true },
-            relatedRemoves : { type: "array", optional: true },
-            lastLogID      : { type: "string", optional: true },
-            isAddSignature : { type: "boolean", optional: true },
-            isOpenBidding   : { type: "boolean", optional: true },
-            authorAttachs   : { type: "array", optional: true },
-            tasksLink       : { type: "array", optional: true },
-            assigneeAttachs : { type: "array", optional: true },
-            milestone       : { type: "number", optional: true },
-            subType         : { type: "number", optional: true },
-            isUpdateNews    : { type: "boolean", optional: true },
+            taskID              : { type: "string" },
+            sign                : { type: "string", optional: true },
+            name                : { type: "string", optional: true },
+            sign                : { type: "string", optional: true },
+            description         : { type: "string", optional: true },
+            actualStartTime     : { type: "string", optional: true },
+            actualFinishTime    : { type: "string", optional: true },
+            expiredHour         : { type: "string", optional: true },
+            alert               : { type: "number", optional: true },
+            amountoftime        : { type: "string", optional: true },
+            amountPerHour       : { type: "string", optional: true },
+            assigneeID          : { type: "string", optional: true },
+            progressType        : { type: "string", optional: true },
+            fieldID             : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            draft               : { type: "number", optional: true },
+            userIDDelete        : { type: "number", optional: true },
+            typeUpdate          : { type: "number", optional: true },
+            flags               : { type: "array", optional: true },
+            flagsRemoves        : { type: "array", optional: true },
+            related             : { type: "array", optional: true },
+            relatedRemoves      : { type: "array", optional: true },
+            lastLogID           : { type: "string", optional: true },
+            isAddSignature      : { type: "boolean", optional: true },
+            isOpenBidding       : { type: "boolean", optional: true },
+            authorAttachs       : { type: "array", optional: true },
+            tasksLink           : { type: "array", optional: true },
+            assigneeAttachs     : { type: "array", optional: true },
+            milestone           : { type: "number", optional: true },
+            subType             : { type: "number", optional: true },
+            isUpdateNews        : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
@@ -111,17 +112,17 @@ module.exports = {
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert
                  } = ctx.params;
-				const { _id: userID, bizfullname, company } = ctx.meta.infoUser;
+				const { _id: userID, bizfullname, fullname, email, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding,
-                    companyOfUser: company._id, milestone, ctx
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email },
+                    companyOfUser: company._id, milestone, alert, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -221,7 +222,7 @@ module.exports = {
                 } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler;
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){

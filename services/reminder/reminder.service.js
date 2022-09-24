@@ -8,6 +8,8 @@ const { CF_ACTIONS_REMINDER } 	        = require('./helper/reminder.actions-cons
 const { CF_ACTIONS_CHATTING } 	        = require('../chatting/helper/chatting.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM }		= require('../subject_pcm/helper/subject_pcm.actions-constant');
 
+const { APP_KEYS, LANGUAGE_KEYS }		= require('../../tools/keys');
+
 const { ENV_DEVICE_WEB_CBS }			= require('../notification/helper/notification.keys-constant');
 
 const REMINDER__CORE_HANLDER            = require('./handler/reminder.core-handler');
@@ -48,6 +50,7 @@ module.exports = {
 		[CF_ACTIONS_REMINDER.ADD_JOB_AUTO_DELETE_MESSAGE_CONVERSATION] 		: REMINDER__CORE_HANLDER.addJobAutoDeleteMessageConversation,
 		[CF_ACTIONS_REMINDER.DELETE_JOB_AUTO_DELETE_MESSAGE_CONVERSATION]	: REMINDER__CORE_HANLDER.deleteJobAutoDeleteMessageConversation,
 		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK]					: REMINDER__CORE_HANLDER.addJobReminderExpiredTask,
+		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK]				: REMINDER__CORE_HANLDER.deleteJobReminderExpiredTask,
 
 	},
 
@@ -137,62 +140,85 @@ module.exports = {
 			});
 
 			agenda.define('add_reminder_expired_task', async (job, done) => {
-				console.log(`========================================`);
-				console.log(`done reminder expired task !!!!`);
-				console.log({ __JOB: job.attrs });
+				try {
+					console.log(`========================================`);
+					console.log(`done reminder expired task !!!!`);
+					console.log({ __JOB: job.attrs });
 
-				const {
-					taskID,
-					userID,
-					alert,
-					actualFinishTime,
-					timeScheduler,
-				} = job.attrs.data;
+					const {
+						taskID,
+						userID,
+						message,
+						senderMail,
+					} = job.attrs.data;
 
-				const infoTask = await this.broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
-					taskID
-				}, {
-					meta: {
-						infoUser: { _id: userID }
+					const infoTask = await this.broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
+						taskID
+					}, {
+						meta: {
+							infoUser: { _id: userID }
+						}
+					});
+					if(infoTask.error) return;
+
+					const { name, assignee, draft } = infoTask.data;
+
+					if(draft === 1) return done();
+
+					const description = `Công việc còn lại ${message} trước khi đến hạn`;
+					const receivers = [assignee];
+					const dataSend = {
+						app: APP_KEYS.PCM_PLAN_TASK,
+						languageKey: LANGUAGE_KEYS.REMINDER_EXPIRED_TASK,
+						mainColl: {
+							kind: 'pcm_plan_task',
+							item: { _id: taskID }
+						},
 					}
-				});
-				console.log({ infoTask })
 
-				if(infoTask.error) return;
+					// SEND MAIL
+					this.broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_SEND_EMAIL_TO_MEMBER_IN_TASK}`, {
+						taskID,
+						title: name,
+						notice: description,
+						members: receivers
+					}, {
+						meta: {
+							infoUser: { _id: userID, ...senderMail }
+						}
+					});
 
-				const { name, assignee } = infoTask.data;
+					// SEND CLOUD-MSG
+					this.broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+						users: receivers,
+						title: name,
+						description,
+						dataSend: dataSend,
+						web_url: `/pcm/detail/${taskID}`,
+						env: ENV_DEVICE_WEB_CBS
+					});
 
-				// SEND CLOUD-MSG
-				this.broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-					users: [assignee],
-					title: name,
-					description: `Công việc còn lại ${alert} tiếng trước khi đến hạn`,
-					dataSend: job.attrs.data,
-					web_url: '',
-					env: ENV_DEVICE_WEB_CBS
-				});
-
-				done();
+					done();
+				} catch(err) {
+					console.error(err)
+				}
 			});
 
-			// agenda.on("success:update_mute_conversation", (job) => {
-			// 	console.log({ __SUCCESS_UPDATE_MUTE_CONVERSATION: job.attrs });;
-			// });
+			agenda.on("success:add_reminder_expired_task", (job) => {
+				console.log({ __SUCCESS_REMINDER_EXPIRED_TASK: job.attrs });;
+			});
 
-			// agenda.on("fail:update_mute_conversation", (err, job) => {
-			// 	console.log({ __FAILED_UPDATE_MUTE_CONVERSATION: err.message });
-			// });
+			agenda.on("fail:add_reminder_expired_task", (err, job) => {
+				console.log({ __FAILED_REMINDER_EXPIRED_TASK: err.message });
+			});
 
-			// agenda.on("complete", (job) => {
-			// 	console.log({ __COMPLETED_JOB: job.attrs.name });
-			// });
+			agenda.on("complete", (job) => {
+				console.log({ __COMPLETED_JOB: job.attrs.name });
+			});
 
 			await new Promise(resolve => agenda.once('ready', resolve));
 			agenda.start();
 		}
-
-		// let client = await MongoClient.connect(MONGODB_URL);
-		// let agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
 
 		const connectionOpts = {
 			db: {

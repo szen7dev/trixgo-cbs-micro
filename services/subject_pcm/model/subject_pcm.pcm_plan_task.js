@@ -15,7 +15,6 @@ const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domai
 const { CF_ACTIONS_FILE } 				        = require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_AUTH }                       = require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
-const { CF_ACTIONS_NOTIFICATION }               = require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_REMINDER }                   = require('../../reminder/helper/reminder.actions-constant');
 
 const {
@@ -41,7 +40,7 @@ const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_p
 const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll');
 const CONTRACT_COLL                     = require('../../item/database/item.contract-coll');
 const USER_COLL                         = require('../../auth/database/auth.user-coll');
-const { email } = require('../../../tools/mailer/config/cf_mailer');
+// const { email } = require('../../../tools/mailer/config/cf_mailer');
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
@@ -121,7 +120,7 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
-        console.log({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
+        // console.log({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -318,11 +317,14 @@ class Model extends BaseModel {
                 }
 
                 // Thêm reminder nhắc công việc đến hạn
-                // await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
-                //     taskID: infoAfterInsert._id?.toString(),
-                //     userID: infoAfterInsert.author?.toString(),
-                //     actualFinishTime: dataInsert.actualFinishTime,
-                // })
+                ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                    senderMail,
+                    status: infoAfterInsert.status,
+                    taskID: infoAfterInsert._id?.toString(),
+                    userID: infoAfterInsert.author?.toString(),
+                    alert: 0.4, // Mặc định khi tạo task, nhắc hẹn trước 15 phút
+                    actualFinishTime: dataInsert.actualFinishTime?.toString(),
+                })
 
                 // const infoTaskTemp = await PCM_PLAN_TASK_COLL
                 //     .findById(infoAfterInsert._id)
@@ -393,7 +395,6 @@ class Model extends BaseModel {
                     }
 
                     if(arrReceiver && arrReceiver.length) {
-                        // CLOUD MSS
                         if(parentID) {
                             // const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                             //     userID: assigneeID,
@@ -432,6 +433,15 @@ class Model extends BaseModel {
                             descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                         }
 
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                            users: arrReceiver,
+                            title: titleMSS,
+                            description: descriptionMSS,
+                            dataSend,
+                            web_url: webUrl,
+                            env: ENV_DEVICE_WEB_CBS
+                        });
+
                         // INSERT NOTIFICATION
                         // await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         //     content: name,
@@ -451,15 +461,6 @@ class Model extends BaseModel {
                         //     },
                         //     type: 1 // InApp (Socket)
                         // })
-
-                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                            users: arrReceiver,
-                            title: titleMSS,
-                            description: descriptionMSS,
-                            dataSend,
-                            web_url: webUrl,
-                            env: ENV_DEVICE_WEB_CBS
-                        });
                     }
                 }
 
@@ -470,7 +471,7 @@ class Model extends BaseModel {
                     await this.sendEmailToMembersInTask({
                         taskID: infoAfterInsert._id,
                         title: 'CREATE_TASK',
-                        notice: '',
+                        notice: infoAfterInsert.name,
                         sender: senderMail,
                         receivers: [infoAfterInsert.assignee, ...infoAfterInsert.related],
                         ctx
@@ -502,7 +503,7 @@ class Model extends BaseModel {
         taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature, isOpenBidding,
-        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, ctx
+        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
     }){
         // console.log({ typeUpdate,
         //     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews,
@@ -892,6 +893,27 @@ class Model extends BaseModel {
                     if(result.error) return resolve(result);
 
                     dataAddToset = { ...dataAddToset, assigneeAttachs };
+                }
+
+                // Cập nhật nhắc hẹn expired time task
+                if(alert >= 0) {
+                    dataUpdate.alert = alert;
+
+                    // Nếu không set nhắc hẹn -> xóa tất cả job reminder đi
+                    if(alert === 0) {
+                        ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK}`, {
+                            taskID
+                        })
+                    } else{
+                        ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                            alert,
+                            senderMail,
+                            status: infoTask.status,
+                            taskID: infoTask._id?.toString(),
+                            userID: infoTask.author?.toString(),
+                            actualFinishTime: infoTask.actualFinishTime?.toString(),
+                        })
+                    }
                 }
 
                 /**
@@ -2243,6 +2265,7 @@ class Model extends BaseModel {
                 // pool
                 //     .exec(MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, [JSON.stringify({ email: mailsUser, title, content: { sender, notice, infoTask } })])
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         });
@@ -2275,12 +2298,12 @@ class Model extends BaseModel {
                     if(projectID && checkObjectIDs(projectID)){
                         objCodition.project = ObjectID(projectID)
                     }
-                    
+
                     conditionGroup = {
                         _id: "$assignee",
                         count: { $sum: 1 }
                     }
-                    
+
                     /**
                      * DANH SÁCH USER THỰC HIỆN CÔNG VIỆC CỦA CÔNG TY
                      */
@@ -2328,7 +2351,7 @@ class Model extends BaseModel {
                         _id: "$project",
                         count: { $sum: 1 }
                     }
-                    
+
                     /**
                      * DANH SÁCH DỰ ÁN MÀ USER CÔNG TY THAM GIA THỰC HIỆN
                      */
@@ -2442,7 +2465,7 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: {
                     listUserOfCompany, listProjectOfCompany,
                     listTaskOverdueWork, listTaskNextWeekWork,  listTaskMoreThan7Days, listTaskFinish
-                    } 
+                    }
                 })
 
             } catch (error) {
