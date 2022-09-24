@@ -77,7 +77,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_________Phân loại khác (1-Thông thường/2-Đặc biệt) (CONTRACT_SUB_TYPES in cf_constant)
     subType: { type: Number, default: 1 },
     //_________Phân loại theo hình thức hợp đồng (1-Trọn gói/2-Theo tháng/3-Đơn giá/..) (CONTRACT_TYPES in cf_constant)
-    type: { type: Number, default: 1 },
+    form: { type: Number, default: 1 },
     //_________Phân loại theo lĩnh vực (type = 3) (POSTMAN -> ITEM - > DOCTYPE)
     field: {
         type: Schema.Types.ObjectId,

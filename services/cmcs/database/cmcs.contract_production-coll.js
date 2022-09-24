@@ -12,9 +12,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract_production", {
     /**
      * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
-    //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
-    type: { type: Number, default: 1 },
-
     //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
     outin: { type: Number, default: 1 },
 

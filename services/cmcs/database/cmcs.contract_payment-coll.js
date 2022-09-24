@@ -8,9 +8,6 @@ const Schema                = require('mongoose').Schema;
  */
 
 module.exports  = DATABASE_MIDDLEWARE("contract_payment", {
-    //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*) Lấy theo ipc
-    type: { type: Number, default: 1 },
-
     /**
      * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
@@ -77,6 +74,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract_payment", {
     /**
      * END THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
+    //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*) Lấy theo ipc
+    type: { type: Number, default: 1 },
 
     //_________IPC(*)
     ipc: {

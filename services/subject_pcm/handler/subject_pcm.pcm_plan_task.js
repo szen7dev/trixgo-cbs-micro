@@ -661,8 +661,8 @@ module.exports = {
             option              : { type: "string", optional: true  },
             fromDate            : { type: 'string', optional: true },
             toDate              : { type: 'string', optional: true },
-            projectID              : { type: "string", optional: true  },
-            companyID              : { type: "string", optional: true  },
+            projectID           : { type: "string", optional: true  },
+            companyID           : { type: "string", optional: true  },
         },
         async handler(ctx) {
             try {

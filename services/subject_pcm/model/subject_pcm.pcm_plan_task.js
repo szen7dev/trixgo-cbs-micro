@@ -2390,8 +2390,13 @@ class Model extends BaseModel {
                 let conditionSearchTask = {
                     companyOfAssignee: ObjectID(companyID)
                 }
+
                 if(subtype){
                     conditionSearchTask.subtype = +subtype;
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionSearchTask.project = ObjectID(projectID);
                 }
 
                 let listTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
@@ -3633,10 +3638,11 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
-                // console.log('=============Log data===================')
+                // console.log('=============Log data===================');
                 // return console.log(dataImportJSON)
                 let index = 0;
-                let errorNumber = 0
+                let errorNumber = 0;
+                let parentID;
                 for (const data of dataImportJSON) {
                     if(index > 0){
                         let dataInsert = {
@@ -3665,15 +3671,21 @@ class Model extends BaseModel {
                             dataInsert.parentID = taskID;
                         }
 
+                        // Kiểm tra nếu có việc con
+                        if(data.__EMPTY_2 && parentID){
+                            dataInsert.parentID = parentID;
+                            dataInsert.name = data.__EMPTY_2;
+                        }
+
                         let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
                         if(!infoGroup){
                             errorNumber++;
                             return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
                         }
-
-
+                        console.log({ dataInsert });
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
+                        parentID = infoAfterInsert?.data?._id;
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
@@ -3682,7 +3694,7 @@ class Model extends BaseModel {
                 }
 
                 if(errorNumber != 0)
-                    return resolve({ error: false, message: "import field" });
+                    return resolve({ error: true, message: "import field" });
 
                 return resolve({ error: false, message: "import success" });
             } catch (error) {

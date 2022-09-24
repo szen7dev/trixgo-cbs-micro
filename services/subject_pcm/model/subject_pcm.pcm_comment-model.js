@@ -2144,10 +2144,10 @@ class Model extends BaseModel {
     /**
      * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
-     * Date: 17/04/2022
+     * Date: 24/9/2022
      */
-    getListByProperty({ userID, option, fromDate, toDate }){
-        // console.log({ userID, option, fromDate, toDate })
+    getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
+        // console.log({ userID, option, fromDate, toDate, isParent, isGroup })
         return new Promise(async resolve => {
             try {
                 /**
@@ -2155,8 +2155,53 @@ class Model extends BaseModel {
                  * 1-Lấy danh sách các comment mà user được quyền truy cập receivers/thông qua Task
                  * 2-Gom nhóm dữ liệu
                  */
-                let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
+
+                 let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
+ 
+                 // Chỉ lấy task cha
+                 if(isParent == 1){
+                     conditionSubjectObj.parent = { $exists: false };
+                 }
+ 
+                 conditionSubjectObj.usersDelete = { $nin: [userID] }
+
+                 if(fromDate && toDate){
+                    conditionSubjectObj.createAt = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+				}
+
+                // Lấy các chủ đề mà user được quyền truy cập (members của group)
+                if(isGroup && isGroup == 1){
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // Lấy công việc mà userID được quyền truy cập
+                    conditionSubjectObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
+                    ]
+                }else{
+                    conditionSubjectObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                    ]
+                }
+
+                let listTask = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name')
+                // console.log(listTask)
+
+                let listComments = await PCM_COMMENT_COLL.find({
+                    task: {$in: listTask.map(item=>item._id)},
+                    project: { $exists: true, $ne: null },
+                })
+                // let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
                 // console.log(listComments)
+                // console.log(listComments.length)
                 
                 /**
                  * Tính tổng số lượng theo các phân loại của Nhà thầu
