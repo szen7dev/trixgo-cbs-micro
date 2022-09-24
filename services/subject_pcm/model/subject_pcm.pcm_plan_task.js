@@ -2372,7 +2372,7 @@ class Model extends BaseModel {
                     conditionSearchTask.subtype = +subtype;
                 }
 
-                if(projectID){
+                if(projectID && checkObjectIDs(projectID)){
                     conditionSearchTask.project = ObjectID(projectID);
                 }
 
