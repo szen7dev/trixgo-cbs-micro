@@ -259,7 +259,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log({userID})
 
                 const {
@@ -271,6 +271,8 @@ module.exports = {
                 // console.log({draft, sortKey, isParent, isActive, isGroup, 
                 //     fromDate, toDate, authorsID, companyOfAuthorsID, projectsID,
                 //     keyword, limit, lastestID, select, populates})
+
+                console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu comment================')
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentBySubject({
                     draft, sortKey, isParent, isActive, isGroup, 
@@ -289,7 +291,7 @@ module.exports = {
     /**
      * Dev: HiepNH
      * Func: Gom nhóm theo tính chất
-     * Date: 17/9/2022
+     * Date: 24/9/2022
      */
     getListByProperty: {
         auth: "required",
