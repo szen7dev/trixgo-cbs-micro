@@ -118,7 +118,7 @@ class Model extends BaseModel {
                 }
 
                 if(type){
-                    dataInsert.type = type;
+                    dataInsert.form = type;
                 }
 
                 if(debtStatus){
@@ -338,7 +338,7 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
-        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce,  ontime, onbudget
+        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce,  ontime, onbudget, userID
         }){
         return new Promise(async resolve => {
             try {
@@ -379,9 +379,12 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(checkObjectIDs(projectID)){
-                    dataUpdate.projectID = projectID;
-                }
+                /**
+                 * TẠM THỜI CHƯA KIỂM SOÁT ĐƯỢC THÔNG TIN => CHƯA CHO UPDATE TRƯỜNG NÀY
+                 */
+                // if(checkObjectIDs(projectID)){
+                //     dataUpdate.projectID = projectID;
+                // }
 
                 if(name){
                     dataUpdate.name = name;
@@ -432,7 +435,7 @@ class Model extends BaseModel {
                 }
 
                 if(type){
-                    dataUpdate.type = type;
+                    dataUpdate.form = type;
                 }
 
                 if(checkObjectIDs(field)){
@@ -718,28 +721,27 @@ class Model extends BaseModel {
                  * - sellerInfo
                  */
                 let {
-                    project: projectAfterUpdate ,
+                    outin: outinAfterUpdate,
+                    real: realAfterUpdate,
                     field: fieldAfterUpdate,
                     dependentUnit: dependentUnitAfterUpdate,
                     personInCharge: personInChargeAfterUpdate,
                     chair: chairAfterUpdate,
                     buyerInfo: buyerInfoAfterUpdate,
                     sellerInfo: sellerInfoAfterUpdate,
-                    type: typeAfterUpdate,
-                    outin: outinAfterUpdate,
-                    real: realAfterUpdate } = infoAfterInsert;
+                    // project: projectAfterUpdate 
+                } = infoAfterInsert;
 
                 let fieldUpdate = {
-                    "project" : ObjectID(projectAfterUpdate),
+                    "outin": Number(outinAfterUpdate),
+                    "real" : Number(realAfterUpdate),
                     "field" : ObjectID(fieldAfterUpdate),
                     "dependentUnit" : ObjectID(dependentUnitAfterUpdate),
                     "personInCharge" : ObjectID(personInChargeAfterUpdate),
                     "chair" : ObjectID(chairAfterUpdate),
                     "buyerInfo" : ObjectID(buyerInfoAfterUpdate),
                     "sellerInfo" : ObjectID(sellerInfoAfterUpdate),
-                    "type" : Number(typeAfterUpdate),
-                    "outin": Number(outinAfterUpdate),
-                    "real" : Number(realAfterUpdate)
+                    // "project" : ObjectID(projectAfterUpdate)
                 }
 
                 // HiepNH: Dùng tạm theo cách này, sau bổ theo call Service
@@ -766,6 +768,11 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT LẠI THÔNG TIN CHO DỰ ÁN
                  */
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 2,
+                    projectID: `${projectID}`,
+                    userID
+                }) 
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
