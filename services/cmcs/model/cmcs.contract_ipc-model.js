@@ -274,6 +274,14 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Cập nhật thất bại" ,keyError: "can't_update_contract_ipc", status: 403 });
 
                 /**
+                 * CẬP NHẬT PHÂN LOẠI TẠM ỨNG/THANH TOÁN CHO CÁC ĐỢT THANH TOÁN
+                 */
+                await CMCS__CONTRACT_PAYMENT_COLL.updateMany(
+                    { ipc: ObjectID(contractIpcID) },
+                    { $set: {"type": type} }
+                 );                     
+
+                /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
                 let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
