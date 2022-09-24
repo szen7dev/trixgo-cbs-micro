@@ -971,6 +971,10 @@ class Model extends BaseModel {
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel = false,
         startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isMember,
         keyword, limit = 10, lastestID, select, populates= {} }) {
+            // console.log('111111111111111111111111111111111111111')
+            // console.log({companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel,
+            //     startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isMember,
+            //     keyword})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1196,6 +1200,7 @@ class Model extends BaseModel {
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isMember, isExportExcel = false,
         startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
+            console.log('2222222222222222222222222')
         return new Promise(async (resolve) => {
             try {
                 /**
