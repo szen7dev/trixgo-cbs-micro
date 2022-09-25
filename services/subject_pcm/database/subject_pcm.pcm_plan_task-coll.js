@@ -281,10 +281,37 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     //_________Thông báo trước thời hạn (h)
     alert: { type: Number, default: 0 },
     /**
-     * ĐÁNH GIÁ CÔNG VIỆC
+     * KPI VÀ ĐÁNH GIÁ CÔNG VIỆC
      */
+    //_________Mức độ cấp bách
+    urgent: { type: Number, default: 1 },
+    //_________Mức độ phức tạp
+    difficult: { type: Number, default: 1 },
+    //_________Hệ số điều chỉnh (kể tới mức độ phức tạp, cấp bách)
+    factor: { type: Number, default: 1 },    
     //_________% hoàn thành (max = 100)
     percentage: { type: Number, default: 0, max: 100 },
+    //_________Đánh giá chung
+    judgement: String,
+    //_________Đánh giá tiến độ (1-Đạt/2-Chậm)
+    overdue: { type: Number, default: 1 },
+    //_________Đánh giá chất lượng
+    score: { type: Number, default: 1, max: 5 },
+    //_________Kết thúc thực tế
+    finishTime: { type: Date, default: null },
+    //_________Giá trị bị phạt
+    punish: { type: Number, default: 0 },
+    //_________Dự kiến thời lượng (h)
+    amountoftime: { type: Number, default: 0 },
+    //________Thực tế thời lượng (h)
+    executiontime: { type: Number, default: 0 },
+    //_________Đơn giá cho 1 giờ làm
+    amountPerHour: { type: Number, default: 0 }, 
+    //_________Phân loại lỗi
+    bugType: {
+        type: Schema.Types.ObjectId,
+        ref : "doctype"
+    },
     /**
      * THÔNG TIN ĐỆ TRÌNH/PHÊ DUYỆT
      * http://thongtindauthau.com/17116/thuat-ngu-tieng-anh-trong-dau-thau-va-hop-dong/
@@ -316,16 +343,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     /**
      * THÔNG TIN TƯƠNG TÁC
      */
-    // Lưu lại tin nhắn đang soạn
-    // responsesTyping : [{
-    //     user:  {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'user'
-    //     },
-    //     content : {
-    //         type : String
-    //     }
-    // }],
     //_________Những user đánh dấu quan tâm/start/bookmark
     flags: [{
         type: Schema.Types.ObjectId,
