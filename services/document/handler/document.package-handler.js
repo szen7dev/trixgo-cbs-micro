@@ -21,6 +21,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
     insert: {
+        auth: "required",
         params: {
 			name            : { type: "string" },
 			sign            : { type: "string" },
@@ -49,6 +50,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
     update: {
+        auth: "required",
         params: {
             packageID               : { type: "string" },
             name                    : { type: "string", optional: true },
@@ -80,6 +82,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
     remove: {
+        auth: "required",
         params: {
             packageID : { type: "string" },
         },
@@ -104,6 +107,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
     removeMany: {
+        auth: "required",
         params: {
             packagesID : { type: "array" },
         },
@@ -128,6 +132,7 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     getInfoAndGetList: {
+        auth: "required",
         params: {
 			departmentID     : { type: "string", optional: true },
 			packageID        : { type: "string", optional: true },

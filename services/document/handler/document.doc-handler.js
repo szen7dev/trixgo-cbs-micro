@@ -28,6 +28,7 @@ module.exports = {
 	 * Date: 26/10/2021
 	 */
     insertDocument: {
+        auth: "required",
         params: {
             parentID            : { type: "string", optional: true },
             name                : { type: "string",                },
@@ -90,6 +91,7 @@ module.exports = {
 	 * Date: 28/10/2021
 	 */
     updateDocument: {
+        auth: "required",
         params: {
             documentID          : { type: "string" },
             name                : { type: "string", optional: true },
@@ -117,7 +119,7 @@ module.exports = {
             storageID           : { type: "string", optional: true },
             value               : { type: "number", optional: true },
             completeStatus      : { type: "number", optional: true },
-            contractID          : { type: "string", optional: true },
+            // contractID          : { type: "string", optional: true },
             datahubContactID    : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -129,6 +131,10 @@ module.exports = {
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID, datahubContactID
                 } = ctx.params;
+
+                // console.log({documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
+                //     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
+                //     fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID, datahubContactID})
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.update({
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
@@ -149,6 +155,7 @@ module.exports = {
 	 * Date: 30/10/2021
 	 */
     deleteDocument: {
+        auth: "required",
         params: {
 			documentID: { type: "string" },
         },
@@ -175,6 +182,7 @@ module.exports = {
 	 * Date: 12/11/2021
 	 */
     getInfoDocumment: {
+        auth: "required",
         params: {
 			documentID : { type: "string" },
             populates  : { type: "string", optional: true },
@@ -203,6 +211,7 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     getListDocument: {
+        auth: "required",
         params: {
             datahubContactID: { type: "string", optional: true }, // Chủ thể ban hành
             senderID	    : { type: "string", optional: true }, // Người ban hành
@@ -257,6 +266,7 @@ module.exports = {
      * Code  : 29/8/2022
      */
     getListByFilter: {
+        auth: "required",
         params: {
             datahubContactsID: { type: "array", optional: true }, // Chủ thể ban hành
             sendersID	    : { type: "array", optional: true }, // Người ban hành
@@ -309,6 +319,7 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     getListGroupDoctype: {
+        auth: "required",
         params: {
 			companyID		: { type: "string", optional: true },
             departmentID	: { type: "string", optional: true },
@@ -337,6 +348,7 @@ module.exports = {
 	 * Date: 30/10/2021
 	 */
     getListStorage: {
+        auth: "required",
         params: {
 			companyID   : { type: "string" },
             lastestID   : { type: "string", optional: true },
@@ -368,6 +380,7 @@ module.exports = {
 	 * Date: 30/12/2021
 	 */
     updateMarkDocument: {
+        auth: "required",
         params: {
 			documentID: { type: "string" },
 			isMark: { type: "boolean" }
@@ -395,6 +408,7 @@ module.exports = {
 	 * Date: 05/11/2021
 	 */
     updateShareDocument: {
+        auth: "required",
         params: {
 			documentID  : { type: "string" },
 			isShare     : { type: "boolean" }
@@ -422,6 +436,7 @@ module.exports = {
 	 * Date: 05/11/2021
 	 */
     updatePermissionShare: {
+        auth: "required",
         params: {
 			documentID  : { type: "string" },
 			userID      : { type: "string" },
@@ -450,6 +465,7 @@ module.exports = {
 	 * Date: 10/11/2021
 	 */
     getListUserShared: {
+        auth: "required",
         params: {
 			documentID  : { type: "string" },
             lastestID   : { type: "string", optional: true },
@@ -480,6 +496,7 @@ module.exports = {
 	 * Date: 13/11/2021
 	 */
     addFileAttachment: {
+        auth: "required",
         params: {
 			documentID: { type: "string" }
         },
@@ -506,6 +523,7 @@ module.exports = {
 	 * Date: 13/11/2021
 	 */
     statisticalByType: {
+        auth: "required",
         params: {
 			departmentID        : { type: "string", optional: true },
 			packageID           : { type: "string", optional: true },
@@ -540,6 +558,7 @@ module.exports = {
 	 * Date: 13/11/2021
 	 */
     getAmountDocumentByProjects: {
+        auth: "required",
         params: {
 			fromDate : { type: "string", optional: true },
 			toDate   : { type: "string", optional: true }

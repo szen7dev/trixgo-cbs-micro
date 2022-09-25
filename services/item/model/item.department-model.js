@@ -989,7 +989,7 @@ class Model extends BaseModel {
      */
     getListByMembers({ companyID, keyword, type, userID, limit = 20, isBudget, unLimit, lastestID, select, populates={} }) {
         console.log('==============Danh mục dự án mà user là member')
-        console.log({ companyID, keyword, type, userID, isBudget, limit, lastestID, select, populates })
+        // console.log({ companyID, keyword, type, userID, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1063,8 +1063,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log('===========>>>>>>>>>>>>>')
-                console.log(conditionObj)
+                // console.log('===========>>>>>>>>>>>>>')
+                // console.log(conditionObj)
 
                 /**
                  * Sử dụng UnLimit để lấy mảng toàn bộ các phần tử, sử dụng cho phương thức $in tại các ứng dụng

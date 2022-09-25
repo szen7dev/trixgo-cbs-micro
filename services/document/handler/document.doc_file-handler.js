@@ -21,6 +21,7 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     insert: {
+        auth: "required",
         params: {
 			documentID   : { type: "string" },
 			fileID       : { type: "string" },
@@ -47,6 +48,7 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     remove: {
+        auth: "required",
         params: {
 			docFileID: { type: "string" },
         },
@@ -72,6 +74,7 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     getInfoAndGetList: {
+        auth: "required",
         params: {
 			documentID      : { type: "string", optional: true },
 			docFileID       : { type: "string", optional: true },
