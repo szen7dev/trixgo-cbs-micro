@@ -3473,7 +3473,7 @@ class Model extends BaseModel {
      * Func: Download excel task
      * Date: 15/09/2022
      */
-    downloadExcelTask({ conditionDownload, userID }) {
+    downloadExcelTask({ option = 1, conditionDownload, userID }) {
         return new Promise(async resolve => {
             try {
 
@@ -3500,10 +3500,10 @@ class Model extends BaseModel {
                 conditionDownload = JSON.parse(conditionDownload);
                 const dataTaskByCondition = await this.getList({
                     ...conditionDownload,
-                    select: 'name expiredTime startTime percentage assignee note status',
+                    select: 'name expiredTime startTime percentage author assignee description status unit quantity unitPrice amount urgent difficult factor ontime quality bugType judgement amountComment expiredTime approver timeApproved finishTime',
                     populates: JSON.stringify({
-                        path: 'assignee',
-                        select: 'bizfullname'
+                        path: 'assignee approver bugType',
+                        select: 'bizfullname name'
                     }),
                     unlimited: true,
                     userID
@@ -3520,9 +3520,9 @@ class Model extends BaseModel {
 
                 const listTaskPin = dataTaskByCondition?.data || [];
 
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_13_TaskPin.xlsm')))
+                if(!option){
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_13_TaskPin.xlsm')))
                     .then(async workbook => {
-
 
                         let indexExcel = 4;
 
@@ -3535,9 +3535,9 @@ class Model extends BaseModel {
 
                             workbook.sheet("Data").row(indexExcel).cell(5).value(infoTask.assignee?.bizfullname);
 
-                            if (infoTask.note) {
-                                // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.note));
-                                workbook.sheet("Data").row(indexExcel).cell(8).value(infoTask.note);
+                            if (infoTask.description) {
+                                // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.description));
+                                workbook.sheet("Data").row(indexExcel).cell(8).value(infoTask.description);
                             }
 
                             workbook.sheet("Data").row(indexExcel).cell(9).value(PCM_STATUS_TASK[infoTask.status - 1].text);
@@ -3557,6 +3557,56 @@ class Model extends BaseModel {
 
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     });
+                }else{
+                    if(option == 1){
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_human_kpi.xlsx')))
+                        .then(async workbook => {
+    
+                            let indexExcel = 7;
+    
+                            listTaskPin.map((infoTask, index) => {
+                                workbook.sheet("KPI").row(indexExcel).cell(1).value(index+1);
+                                workbook.sheet("KPI").row(indexExcel).cell(2).value(infoTask.name);
+                                workbook.sheet("KPI").row(indexExcel).cell(3).value(infoTask.assignee?.bizfullname);
+                                workbook.sheet("KPI").row(indexExcel).cell(4).value(PCM_STATUS_TASK[infoTask.status - 1].text);
+                                workbook.sheet("KPI").row(indexExcel).cell(5).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
+                                workbook.sheet("KPI").row(indexExcel).cell(6).value(infoTask.unit);
+                                workbook.sheet("KPI").row(indexExcel).cell(7).value(Number(infoTask.quantity || 0));
+                                workbook.sheet("KPI").row(indexExcel).cell(8).value(Number(infoTask.unitPrice || 0));
+                                workbook.sheet("KPI").row(indexExcel).cell(9).value(Number(infoTask.amount || 0));
+                                if (infoTask.description) {
+                                    // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.note));
+                                    workbook.sheet("KPI").row(indexExcel).cell(10).value(infoTask.description);
+                                }
+                                workbook.sheet("KPI").row(indexExcel).cell(11).value(Number(infoTask.urgent));
+                                workbook.sheet("KPI").row(indexExcel).cell(12).value(Number(infoTask.difficult));
+                                workbook.sheet("KPI").row(indexExcel).cell(13).value(Number(infoTask.factor));
+                                workbook.sheet("KPI").row(indexExcel).cell(14).value(Number(infoTask.ontime));
+                                workbook.sheet("KPI").row(indexExcel).cell(15).value(Number(infoTask.quality));
+                                workbook.sheet("KPI").row(indexExcel).cell(16).value(infoTask.bugType?.name);
+                                workbook.sheet("KPI").row(indexExcel).cell(17).value(infoTask.judgement);
+                                workbook.sheet("KPI").row(indexExcel).cell(18).value(Number(infoTask.amountComment));
+                                workbook.sheet("KPI").row(indexExcel).cell(19).value(infoTask.expiredTime);
+                                workbook.sheet("KPI").row(indexExcel).cell(20).value(infoTask.approver?.bizfullname);
+                                workbook.sheet("KPI").row(indexExcel).cell(21).value(infoTask.timeApproved);
+
+                                indexExcel++;
+                            })
+    
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `task_report_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                            await workbook.toFileAsync(pathWriteFile);
+    
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+                            fs.unlinkSync(pathWriteFile);
+    
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        });
+                    }
+                }
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });

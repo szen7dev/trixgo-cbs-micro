@@ -689,16 +689,17 @@ module.exports = {
     downloadExcelTask: {
         auth: 'required',
         params: {
-            conditionDownload: { type: 'string' }
+            option: { type: 'string', optional: true },
+            conditionDownload: { type: 'string' },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { conditionDownload } = ctx.params;
+                const { option, conditionDownload } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadExcelTask({
-                    conditionDownload, userID 
+                    option, conditionDownload, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -707,7 +708,6 @@ module.exports = {
             }
         }
     },
-
 
      /**
      * Dev: Depv
@@ -735,7 +735,6 @@ module.exports = {
             }
         }
     },
-
 
      /**
      * Dev: Depv

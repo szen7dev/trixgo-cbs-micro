@@ -180,16 +180,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 6-Quyết toán
      */
     milestone: { type: Number },
-    // //_________Link template (WORKFLOW)
-    // linkTemplate: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : "pcm_plan_task"
-    // },
-    // //_________Loại template sử dụng (IN ẤN)
-    // templateApply: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : "template"
-    // },
+    //_________Template (thuộc Template nào)
+    linkTemplate: {
+        type: Schema.Types.ObjectId,
+        ref : "pcm_plan_task"
+    },
     /**
      * THÔNG TIN CĂN BẢN
      */
@@ -291,46 +286,48 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     factor: { type: Number, default: 1 },    
     //_________% hoàn thành (max = 100)
     percentage: { type: Number, default: 0, max: 100 },
-    //_________Đánh giá chung
-    judgement: String,
     //_________Đánh giá tiến độ (1-Đạt/2-Chậm)
-    overdue: { type: Number, default: 1 },
+    ontime: { type: Number, default: 1 },
     //_________Đánh giá chất lượng
-    score: { type: Number, default: 1, max: 5 },
-    //_________Kết thúc thực tế
-    finishTime: { type: Date, default: null },
-    //_________Giá trị bị phạt
-    punish: { type: Number, default: 0 },
-    //_________Dự kiến thời lượng (h)
-    amountoftime: { type: Number, default: 0 },
-    //________Thực tế thời lượng (h)
-    executiontime: { type: Number, default: 0 },
-    //_________Đơn giá cho 1 giờ làm
-    amountPerHour: { type: Number, default: 0 }, 
+    quality: { type: Number, default: 1, max: 5 },
     //_________Phân loại lỗi
     bugType: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
+    //_________Đánh giá chung
+    judgement: String,
+    //_________Kết thúc thực tế
+    finishTime: { type: Date, default: null },
+    //_________Giá trị bị phạt
+    punish: { type: Number, default: 0 },
+    //_________Đơn vị tính
+    unit: String,
+    //_________Khối lượng
+    quantity: { type: Number, default: 0 },
+    //_________Đơn giá
+    unitPrice: { type: Number, default: 0 },
+    //_________Thành tiền
+    amount: { type: Number, default: 0 },
+    //_________Dự kiến thời lượng-phục vụ tính tổng số giờ/số ngày để bổ sung việc (h)
+    amountoftime: { type: Number, default: 0 },
+    //________Thực tế thời lượng-dùng để thống kê cho các việc ước lượng về sau (h)
+    executiontime: { type: Number, default: 0 },
+    //_________Đơn giá cho 1 giờ làm
+    amountPerHour: { type: Number, default: 0 }, 
+    //_________Người phê duyệt
+    approver:{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },
+    //_________Thời điểm phê duyệt
+    timeApproved: { type: Date, default: null },
+    //_________Giá trị phê duyệt/Giá phê duyệt trúng thầu
+    valueApproved: { type: Number, default: 0 },
     /**
      * THÔNG TIN ĐỆ TRÌNH/PHÊ DUYỆT
      * http://thongtindauthau.com/17116/thuat-ngu-tieng-anh-trong-dau-thau-va-hop-dong/
      */
-    // //_________Người phê duyệt
-    // approver:{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "user"
-    // },
-    // //_________Thời điểm phê duyệt
-    // timeApproved: { type: Date, default: null },
-    // //_________Giá trị phê duyệt/Giá phê duyệt trúng thầu
-    // valueApproved: { type: Number, default: 0 },
-    // //_________Giá dự thầu
-    // bidPrice: { type: Number, default: 0 },
-    // //_________Giảm giá dự thầu
-    // bidPriceDiscount: { type: Number, default: 0 },
-    // //_________Giá dự thầu thừa/thiếu
-    // bidPriceAdjustment: { type: Number, default: 0 },
     //_________User đồng ý mở thầu
     openedUsers: [{
         type: Schema.Types.ObjectId,
