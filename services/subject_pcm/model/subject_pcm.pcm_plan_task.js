@@ -3502,8 +3502,8 @@ class Model extends BaseModel {
                     ...conditionDownload,
                     select: 'name expiredTime startTime percentage author assignee description status unit quantity unitPrice amount urgent difficult factor ontime quality bugType judgement amountComment expiredTime approver timeApproved finishTime',
                     populates: JSON.stringify({
-                        path: 'assignee approver bugType',
-                        select: 'bizfullname name'
+                        path: 'assignee approver bugType project',
+                        select: 'bizfullname name sign'
                     }),
                     unlimited: true,
                     userID
@@ -3566,29 +3566,30 @@ class Model extends BaseModel {
     
                             listTaskPin.map((infoTask, index) => {
                                 workbook.sheet("KPI").row(indexExcel).cell(1).value(index+1);
-                                workbook.sheet("KPI").row(indexExcel).cell(2).value(infoTask.name);
-                                workbook.sheet("KPI").row(indexExcel).cell(3).value(infoTask.assignee?.bizfullname);
-                                workbook.sheet("KPI").row(indexExcel).cell(4).value(PCM_STATUS_TASK[infoTask.status - 1].text);
-                                workbook.sheet("KPI").row(indexExcel).cell(5).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
-                                workbook.sheet("KPI").row(indexExcel).cell(6).value(infoTask.unit);
-                                workbook.sheet("KPI").row(indexExcel).cell(7).value(Number(infoTask.quantity || 0));
-                                workbook.sheet("KPI").row(indexExcel).cell(8).value(Number(infoTask.unitPrice || 0));
-                                workbook.sheet("KPI").row(indexExcel).cell(9).value(Number(infoTask.amount || 0));
+                                workbook.sheet("KPI").row(indexExcel).cell(2).value(infoTask.project?.sign);
+                                workbook.sheet("KPI").row(indexExcel).cell(3).value(infoTask.name);
+                                workbook.sheet("KPI").row(indexExcel).cell(4).value(infoTask.assignee?.bizfullname);
+                                workbook.sheet("KPI").row(indexExcel).cell(5).value(PCM_STATUS_TASK[infoTask.status - 1].text);
+                                workbook.sheet("KPI").row(indexExcel).cell(6).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
+                                workbook.sheet("KPI").row(indexExcel).cell(7).value(infoTask.unit);
+                                workbook.sheet("KPI").row(indexExcel).cell(8).value(Number(infoTask.quantity || 0));
+                                workbook.sheet("KPI").row(indexExcel).cell(9).value(Number(infoTask.unitPrice || 0));
+                                workbook.sheet("KPI").row(indexExcel).cell(10).value(Number(infoTask.amount || 0));
                                 if (infoTask.description) {
-                                    // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.note));
-                                    workbook.sheet("KPI").row(indexExcel).cell(10).value(infoTask.description);
+                                    // workbook.sheet("Data").row(indexExcel).cell(11).value(removeHtmlTag(infoTask.note));
+                                    workbook.sheet("KPI").row(indexExcel).cell(11).value(infoTask.description);
                                 }
-                                workbook.sheet("KPI").row(indexExcel).cell(11).value(Number(infoTask.urgent));
-                                workbook.sheet("KPI").row(indexExcel).cell(12).value(Number(infoTask.difficult));
-                                workbook.sheet("KPI").row(indexExcel).cell(13).value(Number(infoTask.factor));
-                                workbook.sheet("KPI").row(indexExcel).cell(14).value(Number(infoTask.ontime));
-                                workbook.sheet("KPI").row(indexExcel).cell(15).value(Number(infoTask.quality));
-                                workbook.sheet("KPI").row(indexExcel).cell(16).value(infoTask.bugType?.name);
-                                workbook.sheet("KPI").row(indexExcel).cell(17).value(infoTask.judgement);
-                                workbook.sheet("KPI").row(indexExcel).cell(18).value(Number(infoTask.amountComment));
-                                workbook.sheet("KPI").row(indexExcel).cell(19).value(infoTask.expiredTime);
-                                workbook.sheet("KPI").row(indexExcel).cell(20).value(infoTask.approver?.bizfullname);
-                                workbook.sheet("KPI").row(indexExcel).cell(21).value(infoTask.timeApproved);
+                                workbook.sheet("KPI").row(indexExcel).cell(12).value(Number(infoTask.urgent));
+                                workbook.sheet("KPI").row(indexExcel).cell(13).value(Number(infoTask.difficult));
+                                workbook.sheet("KPI").row(indexExcel).cell(14).value(Number(infoTask.factor));
+                                workbook.sheet("KPI").row(indexExcel).cell(15).value(Number(infoTask.ontime));
+                                workbook.sheet("KPI").row(indexExcel).cell(16).value(Number(infoTask.quality));
+                                workbook.sheet("KPI").row(indexExcel).cell(17).value(infoTask.bugType?.name);
+                                workbook.sheet("KPI").row(indexExcel).cell(18).value(infoTask.judgement);
+                                workbook.sheet("KPI").row(indexExcel).cell(19).value(Number(infoTask.amountComment));
+                                workbook.sheet("KPI").row(indexExcel).cell(20).value(infoTask.expiredTime);
+                                workbook.sheet("KPI").row(indexExcel).cell(21).value(infoTask.approver?.bizfullname);
+                                workbook.sheet("KPI").row(indexExcel).cell(22).value(infoTask.timeApproved);
 
                                 indexExcel++;
                             })

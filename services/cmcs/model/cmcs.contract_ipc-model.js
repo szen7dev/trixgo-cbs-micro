@@ -9,6 +9,10 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const XlsxPopulate                      = require('xlsx-populate');
+const path                              = require('path');
+const fs                                = require('fs');
+const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
  * import inter-coll, exter-coll
@@ -410,6 +414,7 @@ class Model extends BaseModel {
      */
     getInfo({ contractIpcID, 
         select, populates }){
+            console.log({______________contractIpcID:contractIpcID})
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(contractIpcID))
@@ -1003,7 +1008,7 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, outin, companyID, projectID, contractID, optionTime, option, debt, year, ctx }){
-        console.log({ userID, outin, companyID, projectID, contractID, optionTime, option, debt, year })
+        // console.log({ userID, outin, companyID, projectID, contractID, optionTime, option, debt, year })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
@@ -1024,7 +1029,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // BÁO CÁO CÔNG NỢ
                 if(!isNaN(debt) && Number(debt) >= 0){
@@ -1461,6 +1466,100 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Download IPC
+     * Author: HiepNH
+     * Date: 26/9/2022
+     */
+    downloadExcelIpcDetail({ option, ipcID, conditionDownload, userID }) {
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}
+
+                // Thông tin thực hiện kỳ này
+                let infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
+                console.log(infoIpc)
+
+                conditionObj.contract = ObjectID(infoIpc.contract)
+
+                // Lấy lũy kế tới cuối kỳ trước
+                conditionObj.date = {
+                    // $gte: new Date(fromDate),
+                    $lt: new Date(infoIpc.date),
+                }
+                
+                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            acceptance: { $sum: "$acceptance" },
+                            vatAcceptance: { $sum: "$vatAcceptance" },
+                            plusAcceptance: { $sum: "$plusAcceptance" },
+                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
+                            retainedValue: { $sum: "$retainedValue" },
+                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
+                            otherDeduction: { $sum: "$otherDeduction" },
+                            recommendedPayment: { $sum: "$recommendedPayment" },
+                            amountPaid: { $sum: "$amountPaid" },
+                            remainingPayment: { $sum: "$remainingPayment" },
+                        }
+                    }, 
+                ])
+
+                console.log(listData[0])
+
+                if(!option){
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cmcs_ipc_report.xlsx')))
+                    .then(async workbook => {
+
+                        // Tiêu đề kỳ thanh toán
+                        workbook.sheet("Report1").row(2).cell(1).value(infoIpc.name);
+
+                        let indexExcel = 4;
+
+                        // listTaskPin.map((infoTask, index) => {
+                        //     workbook.sheet("Report1").row(indexExcel).cell(1).value(index+1);
+                        //     // workbook.sheet("Report1").row(indexExcel).cell(2).value(infoTask.name);
+                        //     // workbook.sheet("Report1").row(indexExcel).cell(3).value(infoTask.expiredTime);
+
+                        //     // workbook.sheet("Report1").row(indexExcel).cell(4).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
+
+                        //     // workbook.sheet("Report1").row(indexExcel).cell(5).value(infoTask.assignee?.bizfullname);
+
+                        //     // if (infoTask.description) {
+                        //     //     // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.description));
+                        //     //     workbook.sheet("Data").row(indexExcel).cell(8).value(infoTask.description);
+                        //     // }
+
+                        //     // workbook.sheet("Report1").row(indexExcel).cell(9).value(PCM_STATUS_TASK[infoTask.status - 1].text);
+
+                        //     indexExcel++;
+                        // })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `ipc_report_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+                        console.log({ result })
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+                }
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

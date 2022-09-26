@@ -371,4 +371,33 @@ module.exports = {
         }
     }, 
 
+    /**
+     * Dev: Depv
+     * Func: Download Excel
+     * Date: 15/09/2022
+     */
+    downloadExcelIpc: {
+        auth: 'required',
+        params: {
+            option: { type: 'string', optional: true },
+            ipcID: { type: 'string', optional: true },
+            conditionDownload: { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { option, ipcID, conditionDownload } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.downloadExcelIpcDetail({
+                    option, ipcID, conditionDownload, userID 
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
 }
