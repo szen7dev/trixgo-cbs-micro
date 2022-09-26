@@ -705,6 +705,8 @@ class Model extends BaseModel {
                     dataUpdate.onbudget = onbudget;
                 }
 
+                console.log(dataUpdate)
+
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cannot update contract", status: 422 });
