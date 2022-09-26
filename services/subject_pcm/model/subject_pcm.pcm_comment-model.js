@@ -528,11 +528,6 @@ class Model extends BaseModel {
                         descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi`;
                         webUrl          = `/pcm/detail/${taskID}#comment_${infoAfterInsert._id}`;
                         break;
-                    // case 2:
-                    //     languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
-                    //     descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi liên quan`;
-                    //     webUrl          = `/pcm/detail/${taskID}#response_${infoAfterInsert._id}`;
-                    //     break;
                     default:
                         break;
                 }

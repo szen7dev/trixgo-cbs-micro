@@ -326,20 +326,13 @@ class Model extends BaseModel {
                     actualFinishTime: dataInsert.actualFinishTime?.toString(),
                 })
 
-                // const infoTaskTemp = await PCM_PLAN_TASK_COLL
-                //     .findById(infoAfterInsert._id)
-                //     .select(select)
-                //     .populate(populates)
-                //     .lean();
-
-                // return resolve({ error: false, data: infoTaskTemp, status: 200 });
-
                 // Thêm record vào bảng pcm_comment phục vụ search
                 await PCM_COMMENT_MODEL.insertCommentTask({
                     taskID: infoAfterInsert._id,
                     authorID,
                     type: 5,
                     content: infoAfterInsert.name,
+                    rawContent: infoAfterInsert.name,
                     description: infoAfterInsert.description,
                 });
 
@@ -470,8 +463,8 @@ class Model extends BaseModel {
                 if(isNotiEmail) {
                     await this.sendEmailToMembersInTask({
                         taskID: infoAfterInsert._id,
-                        title: 'CREATE_TASK',
-                        notice: infoAfterInsert.name,
+                        title: infoAfterInsert.name,
+                        notice: infoAfterInsert.description,
                         sender: senderMail,
                         receivers: [infoAfterInsert.assignee, ...infoAfterInsert.related],
                         ctx
