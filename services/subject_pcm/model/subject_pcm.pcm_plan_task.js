@@ -833,8 +833,10 @@ class Model extends BaseModel {
                     /**
                      * Nếu là người giao việc xác nhận
                      */
-                    dataUpdate.approver = userID
-                    dataUpdate.timeApproved = Date.now()
+                    if(userID.toString() == infoTask.assignee.toString()){
+                        dataUpdate.approver = userID
+                        dataUpdate.timeApproved = Date.now()
+                    }
                 }
 
                 /**
