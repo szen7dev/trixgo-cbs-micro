@@ -361,5 +361,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : "user"
-    }
+    },
+    // Trick reload trang khi import thành công(Đệ)
+    timeImportExcel: { type: String, default: new Date() },
 })

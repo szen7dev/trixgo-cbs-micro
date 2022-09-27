@@ -3688,17 +3688,21 @@ class Model extends BaseModel {
                         
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
-
-                        parentID = infoAfterInsert?.data?._id;
+                        if(data?.__EMPTY_1){
+                            parentID = infoAfterInsert?.data?._id;
+                        }
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
+                       
                     }
                     index ++;
                 }
-
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "import field" });
+
+                // Update timeImportExcel trick reload việc con
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
                 return resolve({ error: false, message: "import success" });
             } catch (error) {
