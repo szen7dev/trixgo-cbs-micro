@@ -119,8 +119,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
-        // console.log({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
+    insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
+        // console.log({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -260,11 +260,6 @@ class Model extends BaseModel {
 
                 if(sign){
                     dataInsert.sign = sign;
-                }
-
-                if(note){
-                    dataInsert.note = note;
-                    dataInsert.notecv = stringUtils.removeAccents(note);
                 }
 
                 if(progressType && !isNaN(Number(progressType)) && Number(progressType) > 0){
@@ -493,7 +488,7 @@ class Model extends BaseModel {
      * Code: 8/9/2022
      */
     update({ typeUpdate,
-        taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews,
+        taskID, sign, name, description, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
         links, authorAttachs, assigneeAttachs, percentage, urgent, difficult, factor, judgement, overdue, score, finishTime, punish, isAddSignature, isOpenBidding,
         openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
@@ -809,6 +804,9 @@ class Model extends BaseModel {
                 //     dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
                 // }
 
+                /**
+                 * KÝ XÁC NHẬN
+                 */
                 if(isAddSignature) {
                     const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
                         companyID: infoTask.company?.toString(),
@@ -831,6 +829,12 @@ class Model extends BaseModel {
                     if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?.toString()) {
                         dataUpdate.status = 3;
                     }
+
+                    /**
+                     * Nếu là người giao việc xác nhận
+                     */
+                    dataUpdate.approver = userID
+                    dataUpdate.timeApproved = Date.now()
                 }
 
                 /**
@@ -955,7 +959,7 @@ class Model extends BaseModel {
                 /**
                  * XỬ LÝ SOCKET VÀ CLOUD MSS
                  */
-                //1. Thêm người liên quan
+                //1. Socket_CloudMSS_Thêm người liên quan
                 if(related && related.length) {
                     const relatedCurrent = infoTask.related.map(item => item.toString());
                     const newRelated = related.filter(item => !relatedCurrent.includes(item));
@@ -981,24 +985,9 @@ class Model extends BaseModel {
                         web_url: `/pcm/detail/${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
-
-                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    //     content: `đã thêm bạn làm người liên quan`,
-                    //     receivers: newRelated,
-                    //     project: project?.toString(),
-                    //     contract: contract?.toString(),
-                    //     path: webUrl,
-                    //     languageKey: LANGUAGE_KEYS.ADD_RELATION_USER,
-                    //     app: APP_KEYS.PCM_PLAN_TASK,
-                    //     mainColl: {
-                    //         kind: "pcm_plan_task",
-                    //         item: taskID
-                    //     },
-                    //     type: 1 // InApp (Socket)
-                    // })
                 }
 
-                //2. Đồng ý phê duyệt
+                //2. Socket_CloudMSS_Đồng ý phê duyệt
                 if(isAddSignature) {
                     const { name: taskName, related, assignee, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
@@ -1028,24 +1017,9 @@ class Model extends BaseModel {
                         web_url: `/pcm/detail/${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
-
-                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    //     content: `đã phê duyệt 1 công việc`,
-                    //     receivers,
-                    //     project: project.toString(),
-                    //     contract: contract?.toString(),
-                    //     path: `/pcm/detail/${taskID}`,
-                    //     languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
-                    //     app: APP_KEYS.PCM_PLAN_TASK,
-                    //     mainColl: {
-                    //         kind: "pcm_plan_task",
-                    //         item: taskID
-                    //     },
-                    //     type: 1 // InApp (Socket)
-                    // })
                 }
 
-                //3. Mở thầu
+                //3. Socket_CloudMSS_Mở thầu
                 if(isOpenBidding) {
                     const { name: taskName, related, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
@@ -1075,24 +1049,9 @@ class Model extends BaseModel {
                         web_url: `/pcm/detail/${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
-
-                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    //     content: `đã mở thầu`,
-                    //     receivers,
-                    //     project: project.toString(),
-                    //     contract: contract?.toString(),
-                    //     path: `/pcm/detail/${taskID}`,
-                    //     languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
-                    //     app: APP_KEYS.PCM_PLAN_TASK,
-                    //     mainColl: {
-                    //         kind: "pcm_plan_task",
-                    //         item: taskID
-                    //     },
-                    //     type: 1 // InApp (Socket)
-                    // })
                 }
 
-                //4. Cập nhật checklist thành công
+                //4. Socket_CloudMSS_Cập nhật checklist thành công
                 if(infoTask.type === 2 && status === 3) {
                     const { name: taskName, related, assignee, author, parent } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
@@ -1122,25 +1081,6 @@ class Model extends BaseModel {
                         web_url: `/pcm/detail/${parent}#checklist_${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
-
-                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    //     content: `đã hoàn thành 1 checklist`,
-                    //     receivers,
-                    //     project: project?.toString(),
-                    //     contract: contract?.toString(),
-                    //     path: webUrl,
-                    //     languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
-                    //     app: APP_KEYS.PCM_PLAN_TASK,
-                    //     mainColl: {
-                    //         kind: "pcm_plan_task",
-                    //         item: parent
-                    //     },
-                    //     subColl: {
-                    //         kind: "pcm_plan_task",
-                    //         item: taskID
-                    //     },
-                    //     type: 1 // InApp (Socket)
-                    // })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -3040,6 +2980,11 @@ class Model extends BaseModel {
 
                 const { project, group } = infoParent;
 
+                /**
+                * Gán project, group từ việc cha sang việc con
+                * - Chỉ cho phép người tạo việc, thực hiện di chuyển
+                * - Tăng số lượng subtask của task cha
+                */
                 const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
                     _id: taskID,
                     project,
@@ -3047,10 +2992,14 @@ class Model extends BaseModel {
                         { author: userID },
                         { assignee: userID },
                     ]
-                }, {
+                }, 
+                {
                     $set: {
                         parent: parentID,
                         group
+                    },
+                    $inc: {
+                        amountSubtask: 1,
                     }
                 }, { new: true })
 
@@ -3305,7 +3254,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
-        console.log({ userID, option, fromDate, toDate, projectID, companyID })
+        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3689,11 +3638,12 @@ class Model extends BaseModel {
                             authorID: userID,
                             sign: data?.__EMPTY_8,
                             type: data?.__EMPTY_9,
-                            note: data?.__EMPTY_10,
+                            description: data?.__EMPTY_10,
                             startTime:  data?.__EMPTY_14,
                             expiredTime:  data?.__EMPTY_15,
                             assigneeID: data?.__EMPTY_13,
                             draft: data?.__EMPTY_17,
+                            contractID: data?.__EMPTY_16,
                             subType: data?.__EMPTY_9,
                             ctx,
                         }
@@ -3720,9 +3670,11 @@ class Model extends BaseModel {
                             errorNumber++;
                             return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
                         }
-                        console.log({ dataInsert });
+                        // console.log({ dataInsert });
+                        
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
+
                         parentID = infoAfterInsert?.data?._id;
                         if(infoAfterInsert.error){
                             errorNumber++;
