@@ -831,11 +831,23 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Nếu là người giao việc xác nhận
+                     * TH1: 
+                     * - Nếu là Đề nghị phê duyệt (2) + Thanh toán (3) + Nghiệm thu (5) + Đề nghị thay đổi (7) + Báo cáo (9)
+                     * - Người thực hiện ký => phê duyệt luôn
+                     * TH2:
+                     * - Nếu là Các chủ đề khác còn lại
+                     * - Người tạo việc ký => phê duyệt luôn
                      */
-                    if(userID.toString() == infoTask.assignee.toString()){
-                        dataUpdate.approver = userID
-                        dataUpdate.timeApproved = Date.now()
+                    if([2,3,5,7,9].includes(Number(infoTask.subtype))){
+                        if(userID.toString() === infoTask.assignee?.toString()){
+                            dataUpdate.approver = userID
+                            dataUpdate.timeApproved = Date.now()
+                        }
+                    }else{
+                        if(userID.toString() === infoTask.author?.toString()){
+                            dataUpdate.approver = userID
+                            dataUpdate.timeApproved = Date.now()
+                        }
                     }
                 }
 
