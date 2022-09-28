@@ -17,6 +17,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**
  * import inter-coll, exter-coll
  */
+const ITEM__CONTRACT_COLL              = require('../../item/database/item.contract-coll');
 const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
@@ -1475,23 +1476,36 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 26/9/2022
      */
-    downloadExcelIpcDetail({ option, ipcID, conditionDownload, userID }) {
+    downloadExcelIpcDetail({ option, ipcID, contractID, conditionDownload, userID }) {
+        console.log({ option, ipcID, contractID, conditionDownload, userID })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}
+                let conditionObj = {}, infoContract
 
-                // Thông tin thực hiện kỳ này
-                let infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
-                console.log(infoIpc)
+                if(ipcID){
+                    console.log('===========CHI TIẾT 01 KỲ=========>>>>>>>>>>>>')
+                    
+                    // Thông tin thực hiện kỳ này
+                    let infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
+                    // console.log(infoIpc)
 
-                conditionObj.contract = ObjectID(infoIpc.contract)
+                    conditionObj.contract = ObjectID(infoIpc.contract)
 
-                // Lấy lũy kế tới cuối kỳ trước
-                conditionObj.date = {
-                    // $gte: new Date(fromDate),
-                    $lt: new Date(infoIpc.date),
-                }
+                    infoContract = await ITEM__CONTRACT_COLL.findById(infoIpc.contract)
+
+                    // Lấy lũy kế tới cuối kỳ trước
+                    conditionObj.date = {
+                        // $gte: new Date(fromDate),
+                        $lt: new Date(infoIpc.date),
+                    }
                 
+                }else{
+                    console.log('===========CHI TIẾT 01 HỢP ĐỒNG=========>>>>>>>>>>>>')
+
+                    infoContract = await ITEM__CONTRACT_COLL.findById(contractID)
+                    conditionObj.contract = ObjectID(contractID)
+                }
+
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -1513,35 +1527,38 @@ class Model extends BaseModel {
                     }, 
                 ])
 
+                // console.log(infoContract)
                 console.log(listData[0])
 
-                if(!option){
+                if(option && option == 1){
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cmcs_ipc_report.xlsx')))
                     .then(async workbook => {
 
                         // Tiêu đề kỳ thanh toán
-                        workbook.sheet("Report1").row(2).cell(1).value(infoIpc.name);
+                        // workbook.sheet("Report1").row(2).cell(1).value(infoIpc.name);
+
+                        // Thông tin hợp đồng
+                        workbook.sheet("Report1").row(5).cell(3).value(infoContract.name);
+                        workbook.sheet("Report1").row(6).cell(3).value(infoContract.sign);
+                        workbook.sheet("Report1").row(7).cell(3).value(infoContract.date);
+                        workbook.sheet("Report1").row(8).cell(3).value(Number(infoContract.value+infoContract.vatValue));
+                        workbook.sheet("Report1").row(9).cell(3).value(Number(infoContract.plus+infoContract.vatPlus));
+                        workbook.sheet("Report1").row(10).cell(3).value(Number(infoContract.advancePaymentPaid));
 
                         let indexExcel = 4;
 
-                        // listTaskPin.map((infoTask, index) => {
-                        //     workbook.sheet("Report1").row(indexExcel).cell(1).value(index+1);
-                        //     // workbook.sheet("Report1").row(indexExcel).cell(2).value(infoTask.name);
-                        //     // workbook.sheet("Report1").row(indexExcel).cell(3).value(infoTask.expiredTime);
+                        if(listData.length){
+                            workbook.sheet("Report1").row(12).cell(3).value(Number(listData[0].acceptance+listData[0].vatAcceptance+listData[0].plusAcceptance+listData[0].vatPlusAcceptance));
 
-                        //     // workbook.sheet("Report1").row(indexExcel).cell(4).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
+                            workbook.sheet("Report1").row(13).cell(3).value(Number(listData[0].retainedValue));
 
-                        //     // workbook.sheet("Report1").row(indexExcel).cell(5).value(infoTask.assignee?.bizfullname);
-
-                        //     // if (infoTask.description) {
-                        //     //     // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.description));
-                        //     //     workbook.sheet("Data").row(indexExcel).cell(8).value(infoTask.description);
-                        //     // }
-
-                        //     // workbook.sheet("Report1").row(indexExcel).cell(9).value(PCM_STATUS_TASK[infoTask.status - 1].text);
-
-                        //     indexExcel++;
-                        // })
+                            workbook.sheet("Report1").row(14).cell(3).value(Number(listData[0].advancePaymentDeduction))
+                            workbook.sheet("Report1").row(15).cell(3).value(Number(infoContract.advancePaymentOverage))
+                            workbook.sheet("Report1").row(16).cell(3).value(Number(listData[0].otherDeduction))
+                            workbook.sheet("Report1").row(17).cell(3).value(Number(listData[0].recommendedPayment))
+                            workbook.sheet("Report1").row(18).cell(3).value(Number(listData[0].amountPaid))
+                            workbook.sheet("Report1").row(19).cell(3).value(Number(listData[0].remainingPayment))
+                        }
 
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';

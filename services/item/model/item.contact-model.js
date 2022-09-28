@@ -1225,13 +1225,13 @@ class Model extends BaseModel {
                 }
 
                 if(option && option == 1){
-                    // console.log('===========Bên mua================')
-                    conditionObj._id = {$in: listContractAccess.map(item=>item.buyerInfo)}
+                    console.log('===========Bên bán================')
+                    conditionObj._id = {$in: listContractAccess.map(item=>item.sellerInfo)}
                 }
 
                 if(option && option == 2){
-                    console.log('===========Bên bán================')
-                    // conditionObj._id = {$in: listContractAccess.map(item=>item.sellerInfo)}
+                    console.log('===========Bên mua================')
+                    conditionObj._id = {$in: listContractAccess.map(item=>item.buyerInfo)}
                 }
 
                 if(keyword){

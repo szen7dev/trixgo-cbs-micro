@@ -379,18 +379,19 @@ module.exports = {
     downloadExcelIpc: {
         auth: 'required',
         params: {
-            option: { type: 'string', optional: true },
-            ipcID: { type: 'string', optional: true },
-            conditionDownload: { type: 'string', optional: true },
+            option              : { type: 'string', optional: true },
+            ipcID               : { type: 'string', optional: true },
+            contractID          : { type: 'string', optional: true },
+            conditionDownload   : { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { option, ipcID, conditionDownload } = ctx.params;
+                const { option, ipcID, contractID, conditionDownload } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.downloadExcelIpcDetail({
-                    option, ipcID, conditionDownload, userID 
+                    option, ipcID, contractID, conditionDownload, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
