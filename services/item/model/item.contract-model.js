@@ -2385,7 +2385,7 @@ class Model extends BaseModel {
                     .find(conditionObj)
                     .populate({
                         path: 'project field buyerInfo dependentUnit chair personInCharge debtStatus',
-                        select: 'name phone address',
+                        select: 'name sign phone address',
                     })
                     .lean();
 
@@ -2406,27 +2406,26 @@ class Model extends BaseModel {
 
                         listContract.map((contract, index) => {
                             const {
-                                packageName, project, date, field, buyerInfo, value, finalValue,
-                                startTime, endTime, status, outin, note,
+                                packageName, name, project, date, field, buyerInfo, value, finalValue,
+                                startTime, endTime, status, outin, note, sign,
                                 chair, personInCharge, dependentUnit, debtStatus
                             } = contract;
 
                             // console.log({ contract, buyerInfo })
-
                             const row = workbook.sheet("Data").row(indexExcel);
 
                             row.cell(1).style('horizontalAlignment', 'center').value(index+1);
 
                             // Tên hợp đồng (gói thầu)
-                            packageName && row.cell(2).value(packageName);
+                            row.cell(2).value(`${project?.sign}` + `.${name}` + `-${sign}`);
 
                             // Dự án
                             if(project) {
-                                row.cell(3).value(project.name);
+                                row.cell(3).value(project?.name);
                             }
 
                             // Số hợp đồng
-                            // row.cell(4).value();
+                            row.cell(4).value(sign);
 
                             // Ngày ký hợp đồng
                             if(date) {
