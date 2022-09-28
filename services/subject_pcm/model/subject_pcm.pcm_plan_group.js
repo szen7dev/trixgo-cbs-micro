@@ -63,7 +63,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ groupID, name, sign, userID, members, membersRemove, admins, adminsRemove }) {
+    update({ groupID, name, sign, userID, contractID, members, membersRemove, admins, adminsRemove }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(groupID))
@@ -80,6 +80,10 @@ class Model extends BaseModel {
 
                 if(sign){
                     dataInUpdate.sign =sign;
+                }
+
+                if(checkObjectIDs(contractID)){
+                    dataInUpdate.contract = contractID;
                 }
 
                 if(checkObjectIDs(members)){
