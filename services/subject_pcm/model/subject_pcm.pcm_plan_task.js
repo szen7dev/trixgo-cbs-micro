@@ -3640,7 +3640,7 @@ class Model extends BaseModel {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
                 // console.log('=============Log data===================');
-                // return console.log(dataImportJSON)
+                // return console.log({ dataImportJSON });
                 let index = 0;
                 let errorNumber = 0;
                 let parentID;
@@ -3663,7 +3663,7 @@ class Model extends BaseModel {
                         }
 
                         let listEmailRelates = data?.__EMPTY_5?.split(",");
-                        let related = await USER_COLL.find({ email: { $in: listEmailRelates.map(email => email.trim()) }}).select("_id")
+                        let related = await USER_COLL.find({ email: { $in: listEmailRelates?.map(email => email.trim()) }}).select("_id")
 
                         if(related && related.length){
                             dataInsert.relatedIDs = related.map(item => ObjectID(item._id));
@@ -3700,7 +3700,7 @@ class Model extends BaseModel {
                 }
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "import field" });
-
+                console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 // Update timeImportExcel trick reload việc con
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
