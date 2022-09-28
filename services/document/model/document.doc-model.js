@@ -78,29 +78,13 @@ class Model extends BaseModel {
                     });
                 }
 
-                if (!checkObjectIDs(senderID)) {
+                if (!checkObjectIDs(datahubContactID)) {
 					return resolve({
                         error: true,
-                        message: 'Request params senderID invalid',
+                        message: 'Request params datahubContactID invalid',
                         keyError: 'params_invalid',
                     });
                 }
-
-                if (!checkObjectIDs(propertyID)) {
-					return resolve({
-                        error: true,
-                        message: 'Request params propertyID invalid',
-                        keyError: 'params_invalid',
-                    });
-                }
-
-                // if (!checkObjectIDs(datahubContactID)) {
-				// 	return resolve({
-                //         error: true,
-                //         message: 'Request params datahubContactID invalid',
-                //         keyError: 'params_invalid',
-                //     });
-                // }
 
                 if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
                     return resolve({
@@ -140,8 +124,6 @@ class Model extends BaseModel {
                     project: departmentID,
                     contract: contractID,
                     package: packageID,
-                    sender : senderID,
-                    property: propertyID,
                     direction,
                     name,
                     sign,
@@ -162,6 +144,8 @@ class Model extends BaseModel {
                 amount          && (dataInsert.amount           = +amount || 1);
                 amountDelivery  && (dataInsert.amountDelivery   = +amountDelivery || 0);
 
+                (senderID            && checkObjectIDs(senderID))           && (dataInsert.sender            = senderID);
+                (propertyID          && checkObjectIDs(propertyID))         && (dataInsert.property          = propertyID);
                 (receiverID          && checkObjectIDs(receiverID))         && (dataInsert.receiver          = receiverID);
                 (fieldID             && checkObjectIDs(fieldID))            && (dataInsert.field             = fieldID);
                 (datahubContactID    && checkObjectIDs(datahubContactID))   && (dataInsert.datahubContact    = datahubContactID);
@@ -239,17 +223,17 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
         name, description, note, fieldID, value, completeStatus, otherID, ctx
 	}) {
-        console.log({
-            documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-            requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
-            name, description, note, fieldID, value, completeStatus, otherID
-        })
+        // console.log({
+        //     documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
+        //     name, description, note, fieldID, value, completeStatus, otherID
+        // })
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs(documentID, packageID, senderID, propertyID, userID)) {
+                if (!checkObjectIDs(documentID, packageID, datahubContactID, userID)) {
 					return resolve({
                         error: true,
-                        message: 'Request params departmentID|packageID|senderID|propertyID invalid',
+                        message: 'Request params departmentID|packageID|datahubContactID invalid',
                         keyError: 'params_invalid',
                         status: 400
                     });
@@ -272,21 +256,6 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
-
-                // let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                //     document: documentID,
-                //     user: userID,
-                //     permission: { $in: [1,3] }
-                // }).lean()
-
-                // if(!checkPermission) {
-                //     return resolve({
-                //         error: true,
-                //         message: "Permission denined",
-                //         keyError: "permission_denined_document",
-                //         status: 403
-                //     });
-                // }
 
                 let dataUpdate = {
                     userUpdate: userID,

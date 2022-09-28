@@ -40,7 +40,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
      * 3: Nội bộ
      */
     direction: { type: Number, default: 1 },
-    //_________Tính chất hồ sơ
+    //_________Tính chất hồ sơ (*)
     type: { type: Number, default: 1 },
     //_________Cơ quan banh ành
     datahubContact: {
