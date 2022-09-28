@@ -2341,6 +2341,14 @@ class Model extends BaseModel {
                 let resultGetList = { error: true };
 
                 switch (type) {
+                    case 'all':
+                        resultGetList = await this.getListByFilter({
+                            ...filterParams,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
                     case 'out':
                         resultGetList = await this.getList({
                             ...filterParams,
@@ -2373,7 +2381,6 @@ class Model extends BaseModel {
                 if(!resultGetList.error) {
                     conditionObj = resultGetList.data;
                 }
-
                 const listContract = await ITEM__CONTRACT_COLL
                     .find(conditionObj)
                     .populate({
