@@ -1480,14 +1480,14 @@ class Model extends BaseModel {
         console.log({ option, ipcID, contractID, conditionDownload, userID })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}, infoContract
+                let conditionObj = {}, infoIpc, infoContract
 
                 if(ipcID){
                     console.log('===========CHI TIẾT 01 KỲ=========>>>>>>>>>>>>')
                     
                     // Thông tin thực hiện kỳ này
-                    let infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
-                    // console.log(infoIpc)
+                    infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
+                    console.log(infoIpc)
 
                     conditionObj.contract = ObjectID(infoIpc.contract)
 
@@ -1535,7 +1535,9 @@ class Model extends BaseModel {
                     .then(async workbook => {
 
                         // Tiêu đề kỳ thanh toán
-                        // workbook.sheet("Report1").row(2).cell(1).value(infoIpc.name);
+                        if(ipcID){
+                            workbook.sheet("Report1").row(2).cell(1).value(infoIpc.name);
+                        }
 
                         // Thông tin hợp đồng
                         workbook.sheet("Report1").row(5).cell(3).value(infoContract.name);
@@ -1548,16 +1550,28 @@ class Model extends BaseModel {
                         let indexExcel = 4;
 
                         if(listData.length){
+                            /**
+                             * SỐ LIỆU LUỸ KẾ TỚI CUỐI KỲ TRƯỚC
+                             */
                             workbook.sheet("Report1").row(12).cell(3).value(Number(listData[0].acceptance+listData[0].vatAcceptance+listData[0].plusAcceptance+listData[0].vatPlusAcceptance));
-
                             workbook.sheet("Report1").row(13).cell(3).value(Number(listData[0].retainedValue));
-
                             workbook.sheet("Report1").row(14).cell(3).value(Number(listData[0].advancePaymentDeduction))
-                            workbook.sheet("Report1").row(15).cell(3).value(Number(infoContract.advancePaymentOverage))
+                            workbook.sheet("Report1").row(15).cell(3).value(Number(infoContract.advancePaymentOverage)) //** */
                             workbook.sheet("Report1").row(16).cell(3).value(Number(listData[0].otherDeduction))
                             workbook.sheet("Report1").row(17).cell(3).value(Number(listData[0].recommendedPayment))
                             workbook.sheet("Report1").row(18).cell(3).value(Number(listData[0].amountPaid))
                             workbook.sheet("Report1").row(19).cell(3).value(Number(listData[0].remainingPayment))
+
+                            /**
+                             * SỐ LIỆU KỲ NÀY
+                             */
+                            if(ipcID){
+                                workbook.sheet("Report1").row(21).cell(3).value(Number(infoIpc.acceptance+infoIpc.vatAcceptance+infoIpc.plusAcceptance+infoIpc.vatPlusAcceptance));
+                                workbook.sheet("Report1").row(22).cell(3).value(Number(infoIpc.retainedValue));
+                                workbook.sheet("Report1").row(23).cell(3).value(Number(infoIpc.advancePaymentDeduction))
+                                workbook.sheet("Report1").row(25).cell(3).value(Number(infoIpc.otherDeduction))
+                                workbook.sheet("Report1").row(26).cell(3).value(Number(infoIpc.recommendedPayment))
+                            }
                         }
 
                         const now = new Date();
