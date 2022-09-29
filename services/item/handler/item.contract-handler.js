@@ -81,9 +81,9 @@ module.exports = {
             advancePaymentOverage  : { type: "number", optional: true },
             finalValue             : { type: "number", optional: true },
             budget                 : { type: "number", optional: true },
-            budgetVAT              : { type: "number", optional: true },
+            vatBudget              : { type: "number", optional: true },
             forecastBudget         : { type: "number", optional: true },
-            forecastBudgetVAT      : { type: "number", optional: true },
+            forecastVatBudget      : { type: "number", optional: true },
             managementFee          : { type: "number", optional: true },
             subcontractFee         : { type: "number", optional: true },
             expenses               : { type: "number", optional: true },
@@ -103,8 +103,8 @@ module.exports = {
                 const { projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name,
                      sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
-                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget,
-                      forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, remainingProduce, ontime, onbudget  } = ctx.params;
+                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget, forecastBudget,
+                      forecastVatBudget, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, remainingProduce, ontime, onbudget  } = ctx.params;
 
                       console.log('=======================>>>>>>>>>>>>>>>>>>>>')
 
@@ -113,7 +113,7 @@ module.exports = {
                     debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank,
                     sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance,
                     plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid,
-                    amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT,
+                    amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget, forecastBudget, forecastVatBudget,
                     managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget
 				});
 
@@ -186,9 +186,9 @@ module.exports = {
             advancePaymentOverage  : { type: "number", optional: true },
             finalValue             : { type: "number", optional: true },
             budget                 : { type: "number", optional: true },
-            budgetVAT              : { type: "number", optional: true },
+            vatBudget              : { type: "number", optional: true },
             forecastBudget         : { type: "number", optional: true },
-            forecastBudgetVAT      : { type: "number", optional: true },
+            forecastVatBudget      : { type: "number", optional: true },
             managementFee          : { type: "number", optional: true },
             subcontractFee         : { type: "number", optional: true },
             expenses               : { type: "number", optional: true },
@@ -210,8 +210,8 @@ module.exports = {
                 const { contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name,
                      sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
-                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget,
-                      forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
+                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget, forecastBudget,
+                      forecastVatBudget, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
                       photos, remainingProduce, ontime, onbudget
                     } = ctx.params;
 
@@ -221,8 +221,8 @@ module.exports = {
                     dependentUnit, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime,
                     endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce,
                     plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction,
-                    recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT,
-                    forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg,
+                    recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget,
+                    forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg,
                     userID, dataInc, photos, ctx, remainingProduce, ontime, onbudget
 				});
 

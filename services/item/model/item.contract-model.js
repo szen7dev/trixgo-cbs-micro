@@ -47,7 +47,7 @@ class Model extends BaseModel {
 	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-        budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
+        budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
         cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget
          }){
         return new Promise(async resolve => {
@@ -265,16 +265,16 @@ class Model extends BaseModel {
                     dataInsert.budget = budget;
                 }
 
-                if(budgetVAT){
-                    dataInsert.budgetVAT = budgetVAT;
+                if(vatBudget){
+                    dataInsert.vatBudget = vatBudget;
                 }
 
                 if(forecastBudget){
                     dataInsert.forecastBudget = forecastBudget;
                 }
 
-                if(forecastBudgetVAT){
-                    dataInsert.forecastBudgetVAT = forecastBudgetVAT;
+                if(forecastVatBudget){
+                    dataInsert.forecastVatBudget = forecastVatBudget;
                 }
 
                 if(managementFee){
@@ -337,15 +337,15 @@ class Model extends BaseModel {
 	update({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-        budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
+        budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
         cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce,  ontime, onbudget, userID
         }){
-            // console.log({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
-            //     name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
-            //     value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-            //     budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
-            //     cgValue, expiredCg, agValue, expiredAg, dataInc, photos, remainingProduce,  ontime, onbudget, userID
-            //     })
+            console.log({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
+                name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
+                value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
+                budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
+                cgValue, expiredCg, agValue, expiredAg, dataInc, photos, remainingProduce,  ontime, onbudget, userID
+                })
         return new Promise(async resolve => {
             try {
                  /**
@@ -616,16 +616,16 @@ class Model extends BaseModel {
                     dataUpdate.budget = budget;
                 }
 
-                if(!isNaN(budgetVAT) && Number(budgetVAT) >= 0){
-                    dataUpdate.vatBudget = budgetVAT; // fix lại chỗ này
+                if(!isNaN(vatBudget) && Number(vatBudget) >= 0){
+                    dataUpdate.vatBudget = vatBudget; // fix lại chỗ này
                 }
 
                 if(!isNaN(forecastBudget) && Number(forecastBudget) >= 0){
                     dataUpdate.forecastBudget = forecastBudget;
                 }
 
-                if(!isNaN(forecastBudgetVAT) && Number(forecastBudgetVAT) >= 0){
-                    dataUpdate.forecastVatBudget = forecastBudgetVAT;
+                if(!isNaN(forecastVatBudget) && Number(forecastVatBudget) >= 0){
+                    dataUpdate.forecastVatBudget = forecastVatBudget;
                 }
 
                 if(!isNaN(managementFee) && Number(managementFee) >= 0){
