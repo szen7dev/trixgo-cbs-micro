@@ -389,7 +389,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { option, ipcID, contractID, conditionDownload } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-
                 const resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.downloadExcelIpcDetail({
                     option, ipcID, contractID, conditionDownload, userID 
                 })
