@@ -383,14 +383,6 @@ class Model extends BaseModel {
 
                     if(arrReceiver && arrReceiver.length) {
                         if(parentID) {
-                            // const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-                            //     userID: assigneeID,
-                            //     select: '_id'
-                            // });
-
-                            // if(!infoAssignee.error) {
-                            //     arrReceiver = [infoAssignee?.data?._id];
-                            // }
                             let { assignee, related } = infoTaskParent;
                             related = related.map(userID => userID.toString());
 
