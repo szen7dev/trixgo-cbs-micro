@@ -1279,11 +1279,13 @@ class Model extends BaseModel {
 
                 let sortBy;
                 // let keys	 = ['actualFinishTime__-1', '_id__-1'];
-                let keys	 = ['actualFinishTime__1', '_id__1'];
+                // let keys	 = ['actualFinishTime__1', '_id__1'];
+                let keys	 = ['modifyAt__-1'];
                 let totalTaskDone = 0;
 
                 if(isSortChecklist == 1 || isSortChildTask == 1){
                     keys = ['actualFinishTime__1', '_id__1'];
+                    // keys = ['modifyAt__', '_id__1'];
                 }
 
                 // Làm rõ mục đích để làm gì?
