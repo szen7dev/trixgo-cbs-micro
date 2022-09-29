@@ -44,7 +44,6 @@ const USER_COLL                         = require('../../auth/database/auth.user
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
-
 class Model extends BaseModel {
 
     constructor() {
@@ -429,26 +428,6 @@ class Model extends BaseModel {
                             web_url: webUrl,
                             env: ENV_DEVICE_WEB_CBS
                         });
-
-                        // INSERT NOTIFICATION
-                        // await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        //     content: name,
-                        //     receivers: arrReceiver,
-                        //     project: project?.toString(),
-                        //     contract: contract?.toString(),
-                        //     path: webUrl,
-                        //     languageKey,
-                        //     app: APP_KEYS.PCM_PLAN_TASK,
-                        //     mainColl: {
-                        //         kind: "pcm_plan_task",
-                        //         item: taskID
-                        //     },
-                        //     subColl: {
-                        //         kind: "pcm_plan_task",
-                        //         item: infoAfterInsert._id
-                        //     },
-                        //     type: 1 // InApp (Socket)
-                        // })
                     }
                 }
 
@@ -466,8 +445,12 @@ class Model extends BaseModel {
                     })
                 }
 
-                // Update amountTasks cho group;
+                /**
+                 * CẬP NHẬT SỐ LƯỢNG CÔNG VIỆC CHO GROUP
+                 */
                 await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
+                // await DEPARTMENT_COLL.findByIdAndUpdate(groupID, { $inc: { tasks: 1 }})
+
                 const infoTask = await PCM_PLAN_TASK_COLL
                     .findById(infoAfterInsert._id)
                     .select(select)

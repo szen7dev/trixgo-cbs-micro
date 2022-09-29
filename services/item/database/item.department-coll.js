@@ -515,7 +515,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type   : Number,
         default: 0
     },
-    //______Tổng số công việc
+    //______Tổng số công việc đã hoàn thành
     completedTasks: {
         type   : Number,
         default: 0
