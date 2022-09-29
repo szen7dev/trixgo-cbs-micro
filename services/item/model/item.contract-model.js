@@ -340,6 +340,12 @@ class Model extends BaseModel {
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
         cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce,  ontime, onbudget, userID
         }){
+            // console.log({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
+            //     name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
+            //     value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
+            //     budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
+            //     cgValue, expiredCg, agValue, expiredAg, dataInc, photos, remainingProduce,  ontime, onbudget, userID
+            //     })
         return new Promise(async resolve => {
             try {
                  /**
@@ -611,7 +617,7 @@ class Model extends BaseModel {
                 }
 
                 if(!isNaN(budgetVAT) && Number(budgetVAT) >= 0){
-                    dataUpdate.budgetVAT = budgetVAT;
+                    dataUpdate.vatBudget = budgetVAT; // fix lại chỗ này
                 }
 
                 if(!isNaN(forecastBudget) && Number(forecastBudget) >= 0){
@@ -619,7 +625,7 @@ class Model extends BaseModel {
                 }
 
                 if(!isNaN(forecastBudgetVAT) && Number(forecastBudgetVAT) >= 0){
-                    dataUpdate.forecastBudgetVAT = forecastBudgetVAT;
+                    dataUpdate.forecastVatBudget = forecastBudgetVAT;
                 }
 
                 if(!isNaN(managementFee) && Number(managementFee) >= 0){
@@ -705,11 +711,13 @@ class Model extends BaseModel {
                     dataUpdate.onbudget = onbudget;
                 }
 
-                console.log(dataUpdate)
+                // console.log(dataUpdate)
 
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cannot update contract", status: 422 });
+
+                    // console.log(infoAfterInsert)
 
                 /**
                  * CẬP NHẬT LẠI CÁC THUỘC TÍNH CHO SẢN LƯỢNG, NGHIỆM THU, TIỀN VỀ
