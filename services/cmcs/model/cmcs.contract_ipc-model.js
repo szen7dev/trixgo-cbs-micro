@@ -1477,7 +1477,7 @@ class Model extends BaseModel {
      * Date: 26/9/2022
      */
     downloadExcelIpcDetail({ option, ipcID, contractID, conditionDownload, userID }) {
-        console.log({ option, ipcID, contractID, conditionDownload, userID })
+        // console.log({ option, ipcID, contractID, conditionDownload, userID })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, infoIpc, infoContract
