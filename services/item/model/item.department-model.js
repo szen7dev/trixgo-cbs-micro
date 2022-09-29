@@ -861,7 +861,7 @@ class Model extends BaseModel {
      * Code  : F00402
      */
     getList({ companyID, keyword, type, userID, isMember, isBudget, limit = 20, lastestID, select, populates={} }) {
-        // console.log('==============Danh mục dự án=>dùng chung')
+        console.log('==============Danh mục dự án=>DÙNG CHUNG')
         // console.log({ companyID, keyword, type, userID, isMember, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -988,7 +988,7 @@ class Model extends BaseModel {
      * Code  : 1/9/2022
      */
     getListByMembers({ companyID, keyword, type, userID, limit = 20, isBudget, unLimit, lastestID, select, populates={} }) {
-        console.log('==============Danh mục dự án mà user là member')
+        console.log('==============Danh mục dự án mà user là MEMBER')
         // console.log({ companyID, keyword, type, userID, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -1145,6 +1145,7 @@ class Model extends BaseModel {
                         members : { $in: [_isValid(userID)] },
                         ontime  : { $exists: true },
                         onbudget: { $exists: true },
+                        budget: {$gt: 0}
                     },
                 },
                 {
@@ -1169,6 +1170,7 @@ class Model extends BaseModel {
                     $match: {
                         type: 2,
                         members : { $in: [_isValid(userID)] },
+                        budget: {$gt: 0}
                     },
                 },
                 {
@@ -1194,6 +1196,7 @@ class Model extends BaseModel {
                         members : { $in: [_isValid(userID)] },
                         stage: { $ne: null},
                         type: 2,
+                        budget: {$gt: 0}
                     },
                 },
                 {
