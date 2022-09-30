@@ -427,7 +427,7 @@ class Model extends BaseModel {
                  * Gửi mail
                  */
                 if(isNotiEmail) {
-                    await this.sendEmailToMembersInTask({
+                    this.sendEmailToMembersInTask({
                         taskID: infoAfterInsert._id,
                         title: infoAfterInsert.name,
                         notice: infoAfterInsert.description,
@@ -441,7 +441,6 @@ class Model extends BaseModel {
                  * CẬP NHẬT SỐ LƯỢNG CÔNG VIỆC CHO GROUP
                  */
                 await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
-                // await DEPARTMENT_COLL.findByIdAndUpdate(groupID, { $inc: { tasks: 1 }})
 
                 const infoTask = await PCM_PLAN_TASK_COLL
                     .findById(infoAfterInsert._id)

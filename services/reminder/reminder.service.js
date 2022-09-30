@@ -165,7 +165,7 @@ module.exports = {
 
 					if(draft === 1) return done();
 
-					const description = `Công việc còn lại ${message} trước khi đến hạn`;
+					const description = `Thông báo trước ${message} khi tới hạn`;
 					const receivers = [assignee];
 					const dataSend = {
 						app: APP_KEYS.PCM_PLAN_TASK,
