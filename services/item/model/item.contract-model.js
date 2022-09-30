@@ -1584,14 +1584,11 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getAmountByMonth({ userID, type, outin, real, companyID, projectID, contractID, year, ctx }){
+    getAmountByMonth({ userID, form, outin, real, companyID, projectID, contractID, year, option }){
+        console.log('====================================')
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
-
-                if(type && Number(type) > 0){
-                    conditionObj.type = Number(type)
-                }
 
                 if(outin && Number(outin) > 0){
                     conditionObj.outin = Number(outin)
@@ -1601,11 +1598,9 @@ class Model extends BaseModel {
                     conditionObj.real = Number(real)
                 }
 
-                conditionGroup = {
-                    _id: { month: "$month", year: "$year" },
-                    amount: { $sum: "$amount" },
-                }
-
+                /**
+                 * Lấy số liệu theo hợp đồng, dự án hoặc theo năm
+                 */
                 if(contractID && checkObjectIDs(contractID)){
                     conditionObj.contract = ObjectID(contractID)
                 }else{
@@ -1618,38 +1613,108 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!isNaN(year) && Number(year) >= 0){
-                    conditionObjYear = {
-                        "year": Number(year),
+                if(!option){
+                    console.log('SỐ LIỆU NĂM NAY====================================')
+                    conditionGroup = {
+                        _id: { month: "$month", year: "$year" },
+                        amount: { $sum: "$amount" },
                     }
-                }
 
-                let listData = await ITEM__CONTRACT_COLL.aggregate([
-                    {
-                        $match: conditionObj
-                    },
-                    {
-                        $project : {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            amount: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    },
-                    {
-                        $group: conditionGroup
-                    },
-                    {
-                        $sort: {
-                            "_id.year": 1,
-                            "_id.month": 1,
+                    if(!isNaN(year) && Number(year) >= 0){
+                        conditionObjYear = {
+                            "year": Number(year),
                         }
                     }
-                ])
 
-                return resolve({ error: false, data: listData });
+                    let listData = await ITEM__CONTRACT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                amount: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: {
+                                "_id.year": 1,
+                                "_id.month": 1,
+                            }
+                        }
+                    ])
+    
+                    return resolve({ error: false, data: listData })
+                }else{
+                    // Số liệu cùng kỳ năm ngoái
+                    if(option && option == 1){
+                        console.log('SỐ LIỆU NĂM NGOÁI====================================')
+
+                        conditionGroup = {
+                            _id: { year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        let firstDayOfLastYear = `${Number(year-1)}-01-01T00:00:00.000Z`;
+                        let lastDayOfLastYear 
+
+                        let thisYear = moment(new Date()).toDate().getFullYear()
+
+                        if(Number(year) == Number(thisYear)){
+                            var today = new Date(); 
+                            //Sunday 4 September 2016 - Week 36
+                            // console.log({today})
+    
+                            lastDayOfLastYear = new moment(today).subtract(12, 'months').toDate();
+                            //Friday 4 September 2015 - Week 37
+                            // console.log({lastDayOfLastYear})
+                        }else{
+                            lastDayOfLastYear = `${Number(year-1)}-12-31T00:00:00.000Z`;
+                        }
+
+                        conditionObj.date = {
+                            // $gte: moment(firstDayOfLastYear).toDate(),
+                            // $lt: moment(lastDayOfLastYear).toDate(),
+                            $gte: new Date(firstDayOfLastYear),
+                            $lte: new Date(lastDayOfLastYear)
+                        }
+                        console.log(conditionObj)
+
+                        let listData = await ITEM__CONTRACT_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : {
+                                    year : {$year : "$date"},
+                                    month : {$month : "$date"},
+                                    amount: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
+                                }
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: {
+                                    "_id.year": 1,
+                                    "_id.month": 1,
+                                }
+                            }
+                        ])
+        
+                        return resolve({ error: false, data: listData })
+                    }
+                }                
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

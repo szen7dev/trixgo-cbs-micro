@@ -453,12 +453,14 @@ module.exports = {
             projectID   : { type: "string", optional: true },
             year        : { type: "string", optional: true },
             outin       : { type: "string", optional: true },
+            real       : { type: "string", optional: true },
+            option       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { companyID, projectID, year, outin } = ctx.params;
+                let { companyID, projectID, year, outin, real, option } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -467,7 +469,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getAmountByMonth({
-                    userID, companyID, projectID, outin: Number(outin), year, ctx
+                    userID, companyID, projectID, outin, real, option, year, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

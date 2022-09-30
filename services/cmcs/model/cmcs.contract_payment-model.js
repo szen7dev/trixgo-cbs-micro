@@ -5,6 +5,11 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const XlsxPopulate                      = require('xlsx-populate');
+const path                              = require('path');
+const fs                                = require('fs');
+const moment                            = require('moment');
+const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
  * import inter-coll, exter-coll
@@ -535,41 +540,76 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 04/04/2022
      */
-    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
+    getAmountByMonth({ userID, companyID, projectID, contractID, outin, year, option }){
         return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 * 1-Áp dụng cho công ty
-                 * 2-Áp dụng cho dự án
-                 */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
 
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = ObjectID(projectID)
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = Number(outin)
+                }
 
-                    conditionGroup = {
-                        _id: { month: "$month", year: "$year" },
-                        amount: { $sum: "$amount" },
-                    }
+                 /**
+                 * Lấy số liệu theo hợp đồng, dự án hoặc theo năm
+                 */
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
                 }else{
-                    if(companyID && checkObjectIDs(companyID)){
-                        conditionObj.company = ObjectID(companyID)
-
-                        conditionGroup = {
-                            _id: { month: "$month" },
-                            amount: { $sum: "$amount" },
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
                         }
                     }
                 }
 
-                if(!isNaN(outin) && Number(outin) > 0){
-                    conditionObj.outin = Number(outin)
-                }
+                if(!option){
+                    console.log('SỐ LIỆU NĂM NAY====================================')
+                    conditionGroup = {
+                        _id: { month: "$month", year: "$year" },
+                        amount: { $sum: "$amount" },
+                    }
 
-                if(!isNaN(year) && Number(year) > 0){
-                    conditionObjYear = {
-                        "year": Number(year),
+                    if(!isNaN(year) && Number(year) >= 0){
+                        conditionObjYear = {
+                            "year": Number(year),
+                        }
+                    }
+
+                }else{
+                    if(option && option == 1){
+                        console.log('SỐ LIỆU NĂM NGOÁI====================================')
+                        
+                        conditionGroup = {
+                            _id: { year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        let firstDayOfLastYear = `${Number(year-1)}-01-01T00:00:00.000Z`;
+                        let lastDayOfLastYear 
+
+                        let thisYear = moment(new Date()).toDate().getFullYear()
+
+                        if(Number(year) == Number(thisYear)){
+                            var today = new Date(); 
+                            //Sunday 4 September 2016 - Week 36
+                            // console.log({today})
+    
+                            lastDayOfLastYear = new moment(today).subtract(12, 'months').toDate();
+                            //Friday 4 September 2015 - Week 37
+                            // console.log({lastDayOfLastYear})
+                        }else{
+                            lastDayOfLastYear = `${Number(year-1)}-12-31T00:00:00.000Z`;
+                        }
+
+                        conditionObj.date = {
+                            // $gte: moment(firstDayOfLastYear).toDate(),
+                            // $lt: moment(lastDayOfLastYear).toDate(),
+                            $gte: new Date(firstDayOfLastYear),
+                            $lte: new Date(lastDayOfLastYear)
+                        }
+                        console.log(conditionObj)
                     }
                 }
 
