@@ -570,8 +570,8 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates = {} }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 } else{
                     limit = +limit
                 }
