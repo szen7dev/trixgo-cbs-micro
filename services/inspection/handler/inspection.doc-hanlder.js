@@ -10,10 +10,10 @@
 
 module.exports = {
     /**
-	 * Dev: HiepNH 
-	 * Func: Thêm template hồ sơ/biên bản
-	 * Date: 17/08/2021
-	 */
+     * Name: Thêm
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
     insertDoc: {
         auth: "required",
         params: {
@@ -47,21 +47,20 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
-	 * Func: Cập nhật template hồ sơ/biên bản
-	 * Date: 17/08/2021
-	 */
+     * Name: Cập nhật
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
     updateDoc: {
         auth: "required",
         params: {
             docID       : { type: "string" },
+            assigneeID  : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
-            template    : { type: "string", optional: true },
+            templateID  : { type: "string", optional: true },
             members     : { type: "array" , optional: true },
-            name        : { type: "string", optional: true },
+            name        : { type: "string" },
             expiredTime : { type: "string", optional: true },
-            job         : { type: "string", optional: true },
-            areas       : { type: "array" , optional: true },
             description : { type: "string", optional: true },
             status      : { type: "number", optional: true },
         },
@@ -69,10 +68,10 @@ module.exports = {
             try {          
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status } = ctx.params;
+                const { docID, sign, templateID, assigneeID, name, expiredTime, description, status, members } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.update({
-					docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status, userID
+					docID, sign, templateID, assigneeID, name, expiredTime, description, status, members, userID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -83,10 +82,10 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ❌
-	 * Func: Cập nhật template hồ sơ/biên bản
-	 * Date: 17/08/2021
-	 */
+     * Name: Xóa
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
     removeDoc: {
         auth: "required",
         params: {
@@ -109,10 +108,10 @@ module.exports = {
     },
 
     /**
-	 * Func: Danh sách template hồ sơ/biên bản 
-	 * Author: Depv 
-	 * Date: 17/08/2021
-	 */
+     * Name: Lấy thông tin + Danh sách
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
     getList: {
         params: {
             projectID   : { type: "string", optional: true },
@@ -127,6 +126,7 @@ module.exports = {
             toDate      : { type: "string", optional: true },
             fromCreateAt: { type: "string", optional: true },
             toCreateAt  : { type: "string", optional: true },
+            
             //_____________THÔNG SỐ MẶC ĐỊNH________________
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
