@@ -10,6 +10,7 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
 const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-constant');
+const { addDate, calculateExpireTime }          = require('../../../tools/utils/time_utils');
 
 /**
  * TOOLS
@@ -32,6 +33,7 @@ const CMCS__CONTRACT_PRODUCTION_COLL            	= require('../../cmcs/database/
 const CMCS__CONTRACT_IPC_COLL            			= require('../../cmcs/database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL            		= require('../../cmcs/database/cmcs.contract_payment-coll');
 const CMCS__CONTRACT_EXPENSE_COLL            		= require('../../cmcs/database/cmcs.contract_expense-coll');
+const { ObjectId } = require('mongodb');
 
 class Model extends BaseModel {
 
@@ -340,12 +342,12 @@ class Model extends BaseModel {
         budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
         cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce,  ontime, onbudget, userID
         }){
-            console.log({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
-                name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
-                value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-                budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
-                cgValue, expiredCg, agValue, expiredAg, dataInc, photos, remainingProduce,  ontime, onbudget, userID
-                })
+            // console.log({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
+            //     name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
+            //     value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
+            //     budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
+            //     cgValue, expiredCg, agValue, expiredAg, dataInc, photos, remainingProduce,  ontime, onbudget, userID
+            //     })
         return new Promise(async resolve => {
             try {
                  /**
@@ -1209,6 +1211,155 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Tổng hợp số liệu bảo lãnh và lấy danh sách bảo lãnh
+     * Author: HiepNH
+     * Code: 2/20/2022
+     */
+    getListGuarantee({ userID, companyID, projectID, contractID, outin, option, guaranteeType }){
+        console.log({userID, companyID, projectID, contractID, outin, option, guaranteeType})
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {status: { $ne: 3 }}
+                let conditionObj1 = {status: { $ne: 3 }}
+                let conditionObj2 = {status: { $ne: 3 }}
+                let conditionObj3 = {status: { $ne: 3 }}
+                let conditionObj4 = {status: { $ne: 3 }}
+                let conditionGuaranteeObj = {}
+
+                if (checkObjectIDs(contractID)) {
+                    conditionObj.contract = ObjectID(contractID)
+                    conditionObj1.contract = ObjectID(contractID)
+                    conditionObj2.contract = ObjectID(contractID)
+                    conditionObj3.contract = ObjectID(contractID)
+                    conditionObj4.contract = ObjectID(contractID)
+                }else{
+                    if (checkObjectIDs(projectID)) {
+                        conditionObj.project = ObjectID(projectID)
+                        conditionObj1.project = ObjectID(projectID)
+                        conditionObj2.project = ObjectID(projectID)
+                        conditionObj3.project = ObjectID(projectID)
+                        conditionObj4.project = ObjectID(projectID)
+                    } else if (checkObjectIDs(companyID)) {
+                        conditionObj.company = ObjectID(companyID)
+                        conditionObj1.company = ObjectID(companyID)
+                        conditionObj2.company = ObjectID(companyID)
+                        conditionObj3.company = ObjectID(companyID)
+                        conditionObj4.company = ObjectID(companyID)
+                    }
+                }
+
+                if(outin && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
+                    conditionObj1.outin = Number(outin)
+                    conditionObj2.outin = Number(outin)
+                    conditionObj3.outin = Number(outin)
+                    conditionObj4.outin = Number(outin)
+                }
+
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                if(!option){
+                    // Danh sách mẩu tin theo điều kiện
+
+                }else{
+                    // Tổng hợp số lượng
+                    if(guaranteeType && Number(guaranteeType) == 1){
+                        conditionObj1.expiredAg = {
+                            $lt: start
+                        }
+                        conditionObj2.expiredAg = {
+                            $gte: start,
+                            $lt: addDate(7),
+                        }
+                        conditionObj3.expiredAg = {
+                            $gte: addDate(7),
+                            $lte: addDate(30),
+                        }
+                        conditionObj4.expiredAg = {
+                            $gt: addDate(30),
+                        }
+                    }
+
+                    // Bảo lãnh hợp đồng
+                    if(guaranteeType && Number(guaranteeType) == 2){
+                        conditionObj1.expiredCg = {
+                            $lt: start
+                        }
+                        conditionObj2.expiredCg = {
+                            $gte: start,
+                            $lt: addDate(7),
+                        }
+                        conditionObj3.expiredCg = {
+                            $gte: addDate(7),
+                            $lte: addDate(30),
+                        }
+                        conditionObj4.expiredCg = {
+                            $gt: addDate(30),
+                        }
+                    }
+                }
+
+                // Số lượng quá hạn
+                let listAmountOverdue = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: conditionObj1
+                    },
+                    {
+                        $group: {
+                            _id: {},
+                            count: { $sum: 1 }
+                        }
+                    }
+                ]);
+
+                // Số lượng Tuần tới
+                let listAmountNextWeek = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: conditionObj2
+                    },
+                    {
+                        $group: {
+                            _id: {},
+                            count: { $sum: 1 }
+                        }
+                    }
+                ]);
+
+                // Số lượng > 7 ngày tiếp theo
+                let listAmountMoreThan7Days = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: conditionObj3
+                    },
+                    {
+                        $group: {
+                            _id: {},
+                            count: { $sum: 1 }
+                        }
+                    }
+                ]);
+
+                // Số lượng > 30 ngày tiếp theo
+                let listAmountMoreThan30Days = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: conditionObj4
+                    },
+                    {
+                        $group: {
+                            _id: {},
+                            count: { $sum: 1 }
+                        }
+                    }
+                ]);
+
+                return resolve({ error: false, data: { listAmountOverdue, listAmountNextWeek, listAmountMoreThan7Days, listAmountMoreThan30Days } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name  : Danh sách hợp đồng mà user là members
      * Author: Depv
      * Code  :
@@ -1217,7 +1368,7 @@ class Model extends BaseModel {
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isMember, isExportExcel = false,
         startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
-            console.log('2222222222222222222222222')
+            // console.log('2222222222222222222222222')
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1433,9 +1584,9 @@ class Model extends BaseModel {
     getListByFilter({
         fromDate, toDate, companysID, projectsID, buyerInfosID, sellerInfosID, statuss, ontimes, onbudgets, isExportExcel = false,
         keyword, limit = 10, lastestID, select, populates= {}, userID }) {
-        console.log({
-            fromDate, toDate, companysID, projectsID, buyerInfosID, sellerInfosID, statuss, ontimes, onbudgets, isExportExcel,
-            keyword, limit, lastestID, select, populates, userID })
+        // console.log({
+        //     fromDate, toDate, companysID, projectsID, buyerInfosID, sellerInfosID, statuss, ontimes, onbudgets, isExportExcel,
+        //     keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 /**

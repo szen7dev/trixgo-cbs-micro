@@ -575,6 +575,45 @@ module.exports = {
     },
 
     /**
+     * Name: Tổng hợp số liệu bảo lãnh và lấy danh sách bảo lãnh
+     * Author: HiepNH
+     * Code: 2/20/2022
+     */
+    getListGuarantee: {
+        auth: "required",
+        params: {
+            companyID           : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+            option              : { type: "string", optional: true },
+            guaranteeType       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { companyID, projectID, contractID, outin, option, guaranteeType  } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                console.log('===============Danh sách bảo lãnh===================')
+
+                if(!companyID){
+                    companyID = company._id
+                }
+                console.log({companyID})
+
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getListGuarantee({
+                    userID, companyID, projectID, contractID, outin, option, guaranteeType 
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Name: Tính sản lượng còn lại chưa thực hiện
      * Author: Hiepnh
      * Date: 18/04/2022

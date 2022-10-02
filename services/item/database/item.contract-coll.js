@@ -260,14 +260,14 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
      * BẢO LÃNH
      */
-    //_________Bảo lãnh hợp đồng (performance security/bank guarantee hay bon)
-    cgValue: { type: Number, default: 0 },
-    //_________Thời hạn bảo lãnh hợp đồng
-    expiredCg: { type: Date, default: null },
     //_________Bảo lãnh tạm ứng (Advance Payment Bond hay Advance Payment Guarantee)
     agValue: { type: Number, default: 0 },
     //_________Thời hạn bảo lãnh tạm ứng
     expiredAg: { type: Date, default: null },
+    //_________Bảo lãnh hợp đồng (performance security/bank guarantee hay bon)
+    cgValue: { type: Number, default: 0 },
+    //_________Thời hạn bảo lãnh hợp đồng
+    expiredCg: { type: Date, default: null },
     //_________Ảnh đại diện
     image: {
         type: String,
