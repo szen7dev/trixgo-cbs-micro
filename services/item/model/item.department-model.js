@@ -36,7 +36,7 @@ class Model extends BaseModel {
      * Name: Tạo mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, budget, vatBudget, forecastBudget, vatForecastBudget, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePaymentPaid, contractAmountPaid, ctx }) {
+    insert({ type, name, location, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, budget, vatBudget, forecastBudget, vatForecastBudget, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePaymentPaid, contractAmountPaid, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!_isValid(company) | !_isValid(authorID))
@@ -103,6 +103,10 @@ class Model extends BaseModel {
                     contractAmountPaid
                 }
 
+                if(location){
+                    dataInsert.location = location;
+                }
+
                 if(pm && _isValid(pm)){
                     dataInsert.pm = pm;
                 }
@@ -114,7 +118,7 @@ class Model extends BaseModel {
                 if(area && _isValid(area)){
                     dataInsert.area = area;
                 }
-
+                
                 if(parent && _isValid(parent)){
                     let infoMenuParent = await ITEM__DEPARTMENT_COLL.findById(parent);
                     dataInsert.parent = parent;

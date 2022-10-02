@@ -2573,6 +2573,14 @@ class Model extends BaseModel {
                             isExportExcel: true
                         });
                         break;
+                    case 'project':
+                        resultGetList = await this.getList({
+                            ...filterParams,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
                     case 'out':
                         resultGetList = await this.getList({
                             ...filterParams,
@@ -2605,12 +2613,17 @@ class Model extends BaseModel {
                 if(!resultGetList.error) {
                     conditionObj = resultGetList.data;
                 }
+
+                let keys	     = ['date__-1', '_id__-1'];
+                let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
+                let sortBy            = dataPagingAndSort?.data?.sort;
                 const listContract = await ITEM__CONTRACT_COLL
                     .find(conditionObj)
                     .populate({
                         path: 'project field buyerInfo dependentUnit chair personInCharge debtStatus',
                         select: 'name sign phone address',
                     })
+                    .sort(sortBy)
                     .lean();
 
                 if(!listContract) {

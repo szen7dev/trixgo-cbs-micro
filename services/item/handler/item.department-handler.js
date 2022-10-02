@@ -22,6 +22,7 @@ module.exports = {
             type            : { type: "number" },
             name            : { type: "string" },
             sign            : { type: "string" },
+            location        : { type: "string" , optional: true  },
             startTime       : { type: "string" },
             expiredTime     : { type: "string" },
             milestones      : { type: "number" },
@@ -56,7 +57,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones,
+                let { companyID, type, name, sign, location, startTime, expiredTime, milestones, completedMilestones,
                     budget,
                     vatBudget,
                     forecastBudget,
@@ -73,7 +74,7 @@ module.exports = {
                     companyID = company._id
                 }
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
-                    ctx, authorID: userID, company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones,
+                    ctx, authorID: userID, company: companyID, type, name, sign, location, startTime, expiredTime, milestones, completedMilestones,
                     budget,
                     vatBudget,
                     forecastBudget,
