@@ -1298,61 +1298,61 @@ class Model extends BaseModel {
                             $gt: addDate(30),
                         }
                     }
+
+                    // Số lượng quá hạn
+                    let listAmountOverdue = await ITEM__CONTRACT_COLL.aggregate([
+                        {
+                            $match: conditionObj1
+                        },
+                        {
+                            $group: {
+                                _id: {},
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ]);
+
+                    // Số lượng Tuần tới
+                    let listAmountNextWeek = await ITEM__CONTRACT_COLL.aggregate([
+                        {
+                            $match: conditionObj2
+                        },
+                        {
+                            $group: {
+                                _id: {},
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ]);
+
+                    // Số lượng > 7 ngày tiếp theo
+                    let listAmountMoreThan7Days = await ITEM__CONTRACT_COLL.aggregate([
+                        {
+                            $match: conditionObj3
+                        },
+                        {
+                            $group: {
+                                _id: {},
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ]);
+
+                    // Số lượng > 30 ngày tiếp theo
+                    let listAmountMoreThan30Days = await ITEM__CONTRACT_COLL.aggregate([
+                        {
+                            $match: conditionObj4
+                        },
+                        {
+                            $group: {
+                                _id: {},
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ]);
+
+                    return resolve({ error: false, data: { listAmountOverdue, listAmountNextWeek, listAmountMoreThan7Days, listAmountMoreThan30Days } });
                 }
-
-                // Số lượng quá hạn
-                let listAmountOverdue = await ITEM__CONTRACT_COLL.aggregate([
-                    {
-                        $match: conditionObj1
-                    },
-                    {
-                        $group: {
-                            _id: {},
-                            count: { $sum: 1 }
-                        }
-                    }
-                ]);
-
-                // Số lượng Tuần tới
-                let listAmountNextWeek = await ITEM__CONTRACT_COLL.aggregate([
-                    {
-                        $match: conditionObj2
-                    },
-                    {
-                        $group: {
-                            _id: {},
-                            count: { $sum: 1 }
-                        }
-                    }
-                ]);
-
-                // Số lượng > 7 ngày tiếp theo
-                let listAmountMoreThan7Days = await ITEM__CONTRACT_COLL.aggregate([
-                    {
-                        $match: conditionObj3
-                    },
-                    {
-                        $group: {
-                            _id: {},
-                            count: { $sum: 1 }
-                        }
-                    }
-                ]);
-
-                // Số lượng > 30 ngày tiếp theo
-                let listAmountMoreThan30Days = await ITEM__CONTRACT_COLL.aggregate([
-                    {
-                        $match: conditionObj4
-                    },
-                    {
-                        $group: {
-                            _id: {},
-                            count: { $sum: 1 }
-                        }
-                    }
-                ]);
-
-                return resolve({ error: false, data: { listAmountOverdue, listAmountNextWeek, listAmountMoreThan7Days, listAmountMoreThan30Days } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

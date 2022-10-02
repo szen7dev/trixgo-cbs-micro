@@ -6,6 +6,8 @@ const BASE_ACTIONS = 'ACT_INSPECTION';
 const DOC_COMMENT           =  'DOC_COMMENT';
 const DOC_REACTION          =  'DOC_REACTION';
 const AREA                  = 'AREA';
+const GROUP                 = 'GROUP';
+const AREA_GROUP            = 'AREA_GROUP';
 const DOC                   = 'DOCS';
 const DOC_CHECKLIST         =  'DOC_CHECKLIST';
 
@@ -16,6 +18,16 @@ const CF_ACTIONS_INSPECTION = {
     AREA_UPDATE                                     : `${BASE_ACTIONS}_${AREA}_UPDATE`,
     AREA_REMOVE                                     : `${BASE_ACTIONS}_${AREA}_REMOVE`,
     AREA_LIST                                       : `${BASE_ACTIONS}_${AREA}_LIST`,
+
+    GROUP_INSERT                                    : `${BASE_ACTIONS}_${GROUP}_INSERT`,
+    GROUP_UPDATE                                    : `${BASE_ACTIONS}_${GROUP}_UPDATE`,
+    GROUP_REMOVE                                    : `${BASE_ACTIONS}_${GROUP}_REMOVE`,
+    GROUP_LIST                                      : `${BASE_ACTIONS}_${GROUP}_LIST`,
+
+    AREA_GROUP_INSERT                               : `${BASE_ACTIONS}_${AREA_GROUP}_INSERT`,
+    AREA_GROUP_UPDATE                               : `${BASE_ACTIONS}_${AREA_GROUP}_UPDATE`,
+    AREA_GROUP_REMOVE                               : `${BASE_ACTIONS}_${AREA_GROUP}_REMOVE`,
+    AREA_GROUP_LIST                                 : `${BASE_ACTIONS}_${AREA_GROUP}_LIST`,
 
     DOCS_INSERT                                     : `${BASE_ACTIONS}_${DOC}_INSERT`,
     DOCS_UPDATE                                     : `${BASE_ACTIONS}_${DOC}_UPDATE`,

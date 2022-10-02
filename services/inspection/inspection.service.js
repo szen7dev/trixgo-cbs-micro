@@ -9,12 +9,16 @@ const { CF_ACTIONS_INSPECTION } 	    = require('./helper/inspection.actions-cons
  */
  const INSPECTION__DOC_COMMENT_COLL				= require('./database/inspection.doc_comment-coll');
  const INSPECTION__AREA_COLL					= require('./database/inspection.area-coll');
+ const INSPECTION__GROUP_COLL					= require('./database/inspection.group-coll');
+ const INSPECTION__AREA_GROUP_COLL				= require('./database/inspection.area_group-coll');
  const INSPECTION__DOCS_COLL					= require('./database/inspection.doc-coll');
  const INSPECTION__DOC_REACTION_COLL			= require('./database/inspection.doc_reaction-coll');
  const INSPECTION__CHECKLIST_COLL				= require('./database/inspection.checklist-coll');
 
 const INSPECTION__DOC_COMMENT_HANLDER  			= require('./handler/inspection.doc_comment-hanlder');
 const INSPECTION__AREA_HANLDER 					= require('./handler/inspection.area-hanlder');
+const INSPECTION__GROUP_HANLDER 				= require('./handler/inspection.group-hanlder');
+const INSPECTION__AREA_GROUP_HANLDER 			= require('./handler/inspection.area_group-hanlder');
 const INSPECTION__DOCS_HANLDER 					= require('./handler/inspection.doc-hanlder');
 const INSPECTION__DOC_REACTION_HANLDER 			= require('./handler/inspection.doc_reaction-hanlder');
 const INSPECTION__CHECKLIST_HANLDER 			= require('./handler/inspection.checklist-hanlder');
@@ -25,6 +29,8 @@ module.exports = {
 		//DbService('inspection_template_docs'),  
 		DbService(INSPECTION__DOC_COMMENT_COLL),  
 		DbService(INSPECTION__AREA_COLL),  
+		DbService(INSPECTION__GROUP_COLL),  
+		DbService(INSPECTION__AREA_GROUP_COLL),  
 		DbService(INSPECTION__DOCS_COLL),  
 		DbService(INSPECTION__DOC_REACTION_COLL),  
 		DbService(INSPECTION__CHECKLIST_COLL),  
@@ -52,6 +58,18 @@ module.exports = {
 		[CF_ACTIONS_INSPECTION.AREA_UPDATE]   : INSPECTION__AREA_HANLDER.update,
 		[CF_ACTIONS_INSPECTION.AREA_REMOVE]   : INSPECTION__AREA_HANLDER.remove,
 		[CF_ACTIONS_INSPECTION.AREA_LIST]  	  : INSPECTION__AREA_HANLDER.getInfoAndGetList,
+
+		// Action inspection group
+		[CF_ACTIONS_INSPECTION.GROUP_INSERT]   : INSPECTION__GROUP_HANLDER.insert,
+		[CF_ACTIONS_INSPECTION.GROUP_UPDATE]   : INSPECTION__GROUP_HANLDER.update,
+		[CF_ACTIONS_INSPECTION.GROUP_REMOVE]   : INSPECTION__GROUP_HANLDER.remove,
+		[CF_ACTIONS_INSPECTION.GROUP_LIST]  	  : INSPECTION__GROUP_HANLDER.getInfoAndGetList,
+
+		// Action inspection area_group
+		[CF_ACTIONS_INSPECTION.AREA_GROUP_INSERT]   : INSPECTION__AREA_GROUP_HANLDER.insert,
+		[CF_ACTIONS_INSPECTION.AREA_GROUP_UPDATE]   : INSPECTION__AREA_GROUP_HANLDER.update,
+		[CF_ACTIONS_INSPECTION.AREA_GROUP_REMOVE]   : INSPECTION__AREA_GROUP_HANLDER.remove,
+		[CF_ACTIONS_INSPECTION.AREA_GROUP_LIST]  	: INSPECTION__AREA_GROUP_HANLDER.getInfoAndGetList,
 
 		// Action inspection docs
 		[CF_ACTIONS_INSPECTION.DOCS_INSERT]   : INSPECTION__DOCS_HANLDER.insertDoc,

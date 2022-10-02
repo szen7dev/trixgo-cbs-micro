@@ -1,13 +1,12 @@
 /**
  * TOOLS
  */
- const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
  /**
   * MODELS
   */
- const INSPECTION__AREA_MODEL            = require('../model/inspection.area-model').MODEL;
-
+const INSPECTION__AREA_MODEL            = require('../model/inspection.area-model').MODEL;
 
 module.exports = {
     /**
@@ -29,14 +28,6 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { parentID, projectID, name, sign, description } = ctx.params;
-
-                //check quyền
-                // let checkRole = false;
-                // if(!checkRole)
-                //     return renderStatusCodeAndResponse({ resultAfterCallHandler: {
-                //         error: true,
-                //         message: "Bạn khồng đủ quyền"
-                //     }, ctx });
 
                 const resultAfterCallHandler = await INSPECTION__AREA_MODEL.insert({
 					parentID, projectID, name, sign, description, userID
