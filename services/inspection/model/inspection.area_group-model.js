@@ -59,7 +59,7 @@ class Model extends BaseModel {
                 
                 if(sign){
                     dataInsert.sign = sign;
-                    let checkSign = await INSPECTION__AREA_COLL.findOne({ project: projectID, sign });
+                    let checkSign = await INSPECTION__AREA_GROUP_COLL.findOne({ project: projectID, sign });
                     if(checkSign){
                         return resolve({ error: true, message: 'Sign existed', status: 400 });
                     }
@@ -119,9 +119,9 @@ class Model extends BaseModel {
 
                 if(sign){
                     dataUpdate.sign = sign;
-                    let { project } = await INSPECTION__AREA_COLL.findById(areaID).select("project");
+                    let { project } = await INSPECTION__AREA_GROUP_COLL.findById(areaID).select("project");
 
-                    let checkSign = await INSPECTION__AREA_COLL.findOne({ project, sign, _id: { $ne: areaID }});
+                    let checkSign = await INSPECTION__AREA_GROUP_COLL.findOne({ project, sign, _id: { $ne: areaID }});
                     if(checkSign){
                         return resolve({ error: true, message: 'Sign existed', status: 400 });
                     }
@@ -161,7 +161,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(areaID))
                     return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
          
-                let infoDataAfterRemove = await INSPECTION__AREA_COLL.findByIdAndUpdate(areaID, { state: 2 }, { new: true });
+                let infoDataAfterRemove = await INSPECTION__AREA_GROUP_COLL.findByIdAndUpdate(areaID, { state: 2 }, { new: true });
                 if(!infoDataAfterRemove)
                     return resolve({ error: true, message: "Can't update inspect area", status: 403 });
 
@@ -191,7 +191,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(areaID))
                     return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
          
-                let infoData = await INSPECTION__AREA_COLL.findById(areaID).select(select);
+                let infoData = await INSPECTION__AREA_GROUP_COLL.findById(areaID).select(select);
                 if(!infoData)
                     return resolve({ error: true, message: "Can't update inspect area", status: 403 });
 
@@ -250,7 +250,7 @@ class Model extends BaseModel {
                  */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await INSPECTION__AREA_COLL.findById(lastestID);
+					let infoData = await INSPECTION__AREA_GROUP_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
@@ -271,18 +271,18 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-                let infoDataAfterGet = await INSPECTION__AREA_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await INSPECTION__AREA_GROUP_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .lean(); 
 
                 // GET TOTAL RECORD
-				// let totalRecord = await INSPECTION__AREA_COLL.count(conditionObj);
-                let totalCurrentPage = await INSPECTION__AREA_COLL.count(conditionFind);
+				// let totalRecord = await INSPECTION__AREA_GROUP_COLL.count(conditionObj);
+                let totalCurrentPage = await INSPECTION__AREA_GROUP_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get template docs", status: 403 });
                 
-                let totalRecord = await INSPECTION__AREA_COLL.countDocuments(conditionObj);
+                let totalRecord = await INSPECTION__AREA_GROUP_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
 

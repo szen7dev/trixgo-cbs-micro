@@ -29,7 +29,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { parentID, projectID, name, sign, description } = ctx.params;
 
-                const resultAfterCallHandler = await INSPECTION__AREA_MODEL.insert({
+                const resultAfterCallHandler = await INSPECTION__GROUP_MODEL.insert({
 					parentID, projectID, name, sign, description, userID
 				});
 
@@ -59,7 +59,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { areaID, name, sign, description } = ctx.params;
 
-                const resultAfterCallHandler = await INSPECTION__AREA_MODEL.update({
+                const resultAfterCallHandler = await INSPECTION__GROUP_MODEL.update({
 					areaID, name, sign, description, userID
 				});
 
@@ -86,7 +86,7 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { areaID } = ctx.params;
-                const resultAfterCallHandler = await INSPECTION__AREA_MODEL.remove({
+                const resultAfterCallHandler = await INSPECTION__GROUP_MODEL.remove({
 					areaID
 				});
 
@@ -120,11 +120,11 @@ module.exports = {
                 const { projectID, keyword, limit, lastestID, areaID, select, filter  } = ctx.params;
                 let resultAfterCallHandler;
                 if(areaID){
-                    resultAfterCallHandler = await INSPECTION__AREA_MODEL.getInfo({
+                    resultAfterCallHandler = await INSPECTION__GROUP_MODEL.getInfo({
                         areaID, select
                     });
                 }else{
-                    resultAfterCallHandler = await INSPECTION__AREA_MODEL.getList({
+                    resultAfterCallHandler = await INSPECTION__GROUP_MODEL.getList({
                         keyword, projectID, limit, lastestID, select, filter 
                     });
                 }
