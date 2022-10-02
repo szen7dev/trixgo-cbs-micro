@@ -4,19 +4,23 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const moment                            =  require("moment");
+const { RANGE_BASE_PAGINATION } 		   = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-coll, exter-coll
  */
-const INSPECTION__DOC_COLL                 = require('../database/inspection.doc-coll');
+const AUTH__USER_COLL                      = require('../../auth/database/auth.user-coll');
 const ITEM__CONTRACT_COLL                  = require('../../item/database/item.contract-coll');
-
-const { RANGE_BASE_PAGINATION } 		   = require('../../../tools/cursor_base/playground/index');
-const INSPECTION__CHECKLIST_MODEL          = require('./inspection.checklist-model').MODEL;
+const INSPECTION__DOC_COLL                 = require('../database/inspection.doc-coll');
+const INSPECTION__AREA_COLL                = require('../database/inspection.area-coll');
+const INSPECTION__GROUP_COLL               = require('../database/inspection.group-coll');
+const INSPECTION__AREA_GROUP_COLL          = require('../database/inspection.area_group-coll');
 
 /**
  * import inter-model, exter-model
  */
+ const INSPECTION__CHECKLIST_MODEL          = require('./inspection.checklist-model').MODEL;
+ const INSPECTION__AREA_GROUP_MODEL         = require('./inspection.area_group-model').MODEL;
 
 /**
  * import util files
@@ -26,7 +30,7 @@ class Model extends BaseModel {
     
     constructor() {
         super(INSPECTION__DOC_COLL);
-        this.STATUS_DONE = 2;
+        this.STATUS_DONE = 4;
     }
     
     /**
@@ -34,11 +38,14 @@ class Model extends BaseModel {
      * Author: DePV 
      * Code: F0231
      */
-    insert({ projectID, contractID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID }) { 
+    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description, userID }) { 
+        console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description, userID })
         return new Promise(async (resolve) => {
             try {
                 /**
-                 * DECALARTION VARIABLE STEP (1)
+                 * BA
+                 * 1-Tạo biên bản (kiểm tra, nghiệm thu)
+                 * 2-Cập nhật % hoàn thành/trạng thái cho Khu vực-Nhóm công tác
                  */
                 let dataInsert = {};
 
@@ -47,43 +54,51 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+                if(!checkObjectIDs(contractID) || !checkObjectIDs(areaID) || !checkObjectIDs(groupID) || !checkObjectIDs(assigneeID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params contractID|areaID|groupID|assigneeID|userID invalid', status: 400 })
 
-                if(!checkObjectIDs(template))
-                    return resolve({ error: true, message: 'Request params template invalid', status: 400 });
-                
-                if(!checkObjectIDs(assignee))
-                    return resolve({ error: true, message: 'Request params assignee invalid', status: 400 });
-                
-                if(!checkObjectIDs(areas))
-                    return resolve({ error: true, message: 'Request params areas invalid', status: 400 });
-                  
-                if(!checkObjectIDs(job))
-                    return resolve({ error: true, message: 'Request params job invalid', status: 400 });
-
-                if(!checkObjectIDs(contractID))
-                    return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
-
-                if(!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
-
-                if(!sign)
-                    return resolve({ error: true, message: 'Request params sign invalid', status: 400 });
-                
-                if (!expiredTime)
-                    return resolve({ error: true, message: 'expiredTime_invalid', status: 400 });
-
-                let checkSign = await INSPECTION__DOC_COLL.findOne({ sign, contract: contractID, state: 1 });
-                if(checkSign)
-                    return resolve({ error: true, message: 'Sign existed', status: 400 });
+                let infoContract        = await ITEM__CONTRACT_COLL.findById(contractID).select('_id name project company')
+                let infoArea            = await INSPECTION__AREA_COLL.findById(areaID).select('_id name parent')
+                let infoGroup           = await INSPECTION__GROUP_COLL.findById(groupID).select('_id name parent')
+                let infoAssignee        = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
+                let infoAuthor          = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
+                console.log(infoContract)
+                console.log(infoArea)
+                console.log(infoGroup)
+                console.log(infoAssignee)
+                console.log(infoAuthor)
+            
                     
-                /** 
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                dataInsert = { project: projectID, contract: contractID, template, sign, assignee, members, name, areas, expiredTime, job, userCreate: userID, userUpdate: userID };
+                dataInsert = { 
+                    project: infoContract.project, 
+                    contract: contractID, 
+                    area: areaID, 
+                    parentArea: infoArea.parent, 
+                    group: groupID, 
+                    parentGroup: infoGroup.parent, 
+                    name, 
+                    expiredTime, 
+                    author: userID, 
+                    companyOfAuthor: infoAuthor.company,
+                    assignee: assigneeID, 
+                    companyOfAssignee: infoAssignee.company
+                };
+
+                if(templateID && !checkObjectIDs(templateID)){
+                    dataInsert.template = templateID;
+                }
+
+                if(members && !checkObjectIDs(members)){
+                    dataInsert.members = members;
+                }
+
+                if(sign && sign != ""){
+                    // let checkSign = await INSPECTION__DOC_COLL.findOne({ sign, contract: contractID });
+                    // if(checkSign)
+                    //     return resolve({ error: true, message: 'Sign existed', status: 400 });
+                    dataInsert.sign = sign;
+                }
+
                 if(description){
                     dataInsert.description = description;
                 }
@@ -92,16 +107,21 @@ class Model extends BaseModel {
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
             
-                // Tiến hành thêm checklist từ tempalte checklist
-                let listTemplateChecklist = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({ inspection: template });
-                if(listTemplateChecklist.length){
-                    for (const templateChecklist of listTemplateChecklist) {
-                        let { name } = templateChecklist;
-                        let infoChecklistAfterInsert = await INSPECTION__CHECKLIST_MODEL.insert({
-                            inspection: infoDataAfterInserted._id, template, name, authorID: userID
-                        })
-                    }
-                }
+                // // Tiến hành thêm checklist từ tempalte checklist
+                // let listTemplateChecklist = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({ inspection: templateID });
+                // if(listTemplateChecklist.length){
+                //     for (const templateChecklist of listTemplateChecklist) {
+                //         let { name } = templateChecklist;
+                //         let infoChecklistAfterInsert = await INSPECTION__CHECKLIST_MODEL.insert({
+                //             inspection: infoDataAfterInserted._id, template, name, authorID: userID
+                //         })
+                //     }
+                // }
+
+                /**
+                 * Cập nhật khu vực
+                 */
+                let infoNew = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })
                 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {

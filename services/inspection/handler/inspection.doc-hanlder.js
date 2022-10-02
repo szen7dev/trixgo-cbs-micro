@@ -17,26 +17,26 @@ module.exports = {
     insertDoc: {
         auth: "required",
         params: {
-            projectID   : { type: "string" },
-			contractID  : { type: "string" },
-            sign        : { type: "string" },
-            template    : { type: "string" },
-            assignee    : { type: "string" },
-            members     : { type: "array", option: true },
+            contractID  : { type: "string" },
+			areaID      : { type: "string" },
+			groupID     : { type: "string" },
+            assigneeID  : { type: "string" },
             name        : { type: "string" },
             expiredTime : { type: "string" },
-            job         : { type: "string" },
-            areas       : { type: "array"  },
-            description : { type: "string" ,optional: true  },
+            sign        : { type: "string", optional: true },
+            templateID  : { type: "string", optional: true },
+            members     : { type: "array", optional: true },
+            description : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, contractID, sign, template, assignee, members, name, expiredTime, job, areas, description } = ctx.params;
+                const { contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description } = ctx.params;
+                console.log({contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description})
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.insert({
-					projectID, contractID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID
+					contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -10,6 +10,7 @@ const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/pl
  */
 const INSPECTION__AREA_GROUP_COLL           = require('../database/inspection.area_group-coll');
 const INSPECTION__AREA_COLL                 = require('../database/inspection.area-coll');
+const INSPECTION__DOC_COLL                  = require('../database/inspection.doc-coll');
 
 /**
  * import inter-model, exter-model
@@ -119,7 +120,17 @@ class Model extends BaseModel {
 
                 let infoDataAfterUpdate = await INSPECTION__AREA_GROUP_COLL.findByIdAndUpdate(areaGroupID, dataUpdate, { new: true });
                 if(!infoDataAfterUpdate)
-                    return resolve({ error: true, message: "Can't update area", status: 403 });
+                    return resolve({ error: true, message: "Can't update", status: 403 });
+
+                /**
+                 * CẬP NHẬT TRẠNG THÁI VÀ % HOÀN THÀNH CHO KHU VỰC CHA
+                 * % hoàn thành
+                 * Trạng thái
+                 */
+                let infoArea = await INSPECTION__AREA_COLL.findById(areaID)
+                if(infoArea.parent && checkObjectIDs(infoArea.parent)){
+                    console.log('=====================CẬP NHẬT KHU VỰC CHA=================')
+                }                    
 
                 return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
             } catch (error) {
@@ -127,6 +138,46 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Cập nhật trạng thái
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
+    updateStatus({ areaID, groupID, userID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                let numberOfTask = await INSPECTION__DOC_COLL.count({area: areaID, group: groupID})
+                let numberOfFinishedTask = await INSPECTION__DOC_COLL.count({area: areaID, group: groupID, status: 4 })
+                console.log({numberOfTask,numberOfFinishedTask})
+
+                let percentage = 0
+                if(numberOfTask != 0){
+                    percentage = Number(numberOfFinishedTask/numberOfTask)
+                }
+
+                let info = await INSPECTION__AREA_GROUP_COLL.findOne({area: areaID, group: groupID})
+                let areaGroupID = info._id
+                let dataUpdate = {percentage: 75, userUpdate: userID, modifyAt: Date.now()};
+
+                if(percentage == 100){
+                    dataUpdate.status = 4 // Hoàn thành
+                }else{
+                    dataUpdate.status = 2 // Đang triển khai
+                }
+               
+                let infoDataAfterUpdate = await INSPECTION__AREA_GROUP_COLL.findByIdAndUpdate(areaGroupID, dataUpdate, { new: true });
+                if(!infoDataAfterUpdate)
+                    return resolve({ error: true, message: "Can't update", status: 403 });
+                console.log(infoDataAfterUpdate)
+
+                return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 
     /**
      * Xóa mẩu tin: Depv 
