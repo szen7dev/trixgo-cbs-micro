@@ -3,12 +3,13 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-coll, exter-coll
  */
-const INSPECTION__AREA_GROUP_COLL            = require('../database/inspection.area_group-coll');
-const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
+const INSPECTION__AREA_GROUP_COLL           = require('../database/inspection.area_group-coll');
+const INSPECTION__AREA_COLL                 = require('../database/inspection.area-coll');
 
 /**
  * import inter-model, exter-model
@@ -59,6 +60,16 @@ class Model extends BaseModel {
                 let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create", status: 403 });
+
+                /**
+                 * CẬP NHẬT TRẠNG THÁI VÀ % HOÀN THÀNH CHO KHU VỰC CHA
+                 * % hoàn thành
+                 * Trạng thái
+                 */
+                let infoArea = await INSPECTION__AREA_COLL.findById(areaID)
+                if(infoArea.parent && checkObjectIDs(infoArea.parent)){
+                    console.log('=====================CẬP NHẬT KHU VỰC CHA=================')
+                }
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {

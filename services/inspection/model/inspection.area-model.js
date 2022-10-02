@@ -207,13 +207,17 @@ class Model extends BaseModel {
      * Code: F0230
      * Author: Depv 
      */
-    getList({ keyword, projectID, limit = 10, lastestID, filter = {}, select = {} }) { 
+    getList({ projectID, parentID, keyword, limit = 10, lastestID, filter = {}, select = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
 
                 let conditionObj = { project: projectID};
+
+                if(parentID && checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID
+                }
 
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };

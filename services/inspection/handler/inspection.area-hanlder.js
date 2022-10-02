@@ -106,6 +106,7 @@ module.exports = {
         auth: "required",
         params: {
             projectID       : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -117,7 +118,7 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, keyword, limit, lastestID, areaID, select, filter  } = ctx.params;
+                const { projectID, parentID, keyword, limit, lastestID, areaID, select, filter  } = ctx.params;
                 let resultAfterCallHandler;
                 if(areaID){
                     resultAfterCallHandler = await INSPECTION__AREA_MODEL.getInfo({
@@ -125,7 +126,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION__AREA_MODEL.getList({
-                        keyword, projectID, limit, lastestID, select, filter 
+                        projectID, parentID, keyword, limit, lastestID, select, filter 
                     });
                 }
               
