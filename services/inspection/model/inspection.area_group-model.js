@@ -315,7 +315,7 @@ class Model extends BaseModel {
  
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
+                    let infoData = await INSPECTION__AREA_GROUP_COLL.findById(lastestID);
                     if(!infoData)
                         return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
