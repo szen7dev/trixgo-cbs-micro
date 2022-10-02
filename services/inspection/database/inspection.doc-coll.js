@@ -83,7 +83,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     //_________Kế hoạch hoàn thành
     expiredTime: Date,
     //_________Ngày hồ sơ hoàn thành thực tế
-    date: Date,
+    finishedTime: Date,
     /**
     * Trạng thái  
     * 1-Khởi tạo 

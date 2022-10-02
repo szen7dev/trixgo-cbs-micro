@@ -158,7 +158,7 @@ class Model extends BaseModel {
 
                 let info = await INSPECTION__AREA_GROUP_COLL.findOne({area: areaID, group: groupID})
                 let areaGroupID = info._id
-                let dataUpdate = {percentage: 75, userUpdate: userID, modifyAt: Date.now()};
+                let dataUpdate = {percentage: Number(percentage*100).toFixed(2), userUpdate: userID, modifyAt: Date.now()};
 
                 if(percentage == 100){
                     dataUpdate.status = 4 // Hoàn thành
@@ -315,7 +315,7 @@ class Model extends BaseModel {
  
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
+                    let infoData = await INSPECTION__AREA_GROUP_COLL.findById(lastestID);
                     if(!infoData)
                         return resolve({ error: true, message: "Can't get info last message", status: 400 });
 

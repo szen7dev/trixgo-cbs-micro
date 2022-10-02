@@ -4,7 +4,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const moment                            =  require("moment");
-const { RANGE_BASE_PAGINATION } 		   = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 		= require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-coll, exter-coll
@@ -34,12 +34,12 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Thêm inspection docs
-     * Author: DePV 
-     * Code: F0231
+     * Name: Thêm
+     * Author: HiepNH
+     * Code: 2/10/2022
      */
     insert({ contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description, userID }) { 
-        console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description, userID })
+        // console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description, userID })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -62,11 +62,11 @@ class Model extends BaseModel {
                 let infoGroup           = await INSPECTION__GROUP_COLL.findById(groupID).select('_id name parent')
                 let infoAssignee        = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
                 let infoAuthor          = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
-                console.log(infoContract)
-                console.log(infoArea)
-                console.log(infoGroup)
-                console.log(infoAssignee)
-                console.log(infoAuthor)
+                // console.log(infoContract)
+                // console.log(infoArea)
+                // console.log(infoGroup)
+                // console.log(infoAssignee)
+                // console.log(infoAuthor)
             
                     
                 dataInsert = { 
@@ -119,9 +119,14 @@ class Model extends BaseModel {
                 // }
 
                 /**
-                 * Cập nhật khu vực
+                 * CẬP NHẬT TRẠNG THÁI CHO NHÓM CÔNG TÁC-KHU VỰC (cần kiểm tra lại cho kỹ)
+                 * 1-Nhóm cha-Khu vực cha (Hoàn thiện-Tầng 1)
+                 * 2-Nhóm cha-Khu vực con (Hoàn thiện-Căn hộ C1.T1)
+                 * 3-Nhóm con-Khu vực con (Công tác xây-Căn hộ C1.T1)
                  */
-                let infoNew = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })
+                let infoG1A1 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID: infoArea.parent, groupID: infoGroup.parent, userID })
+                let infoG1A2 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID: infoGroup.parent, userID })
+                let infoG2A2 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })
                 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
@@ -130,26 +135,23 @@ class Model extends BaseModel {
         })
     }
 
-    /** 
-     * Name: Cập nhật inspection docs
-     * Author: DePV 
-     * Code: F0232
+    /**
+     * Name: Cập nhật
+     * Author: HiepNH
+     * Code: 2/10/2022
      */
-    update({ docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status, lastComment, userID }) { 
+    update({ docID, sign, templateID, assigneeID, name, expiredTime, description, status, members, userID }) { 
         return new Promise(async (resolve) => {
             try {
-                /**      
-                 * DECALARTION VARIABLE STEP (1)
-                 */
-                let dataUpdate = { };
+                let infoDoc = await INSPECTION__DOC_COLL.findById(docID)
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(docID))
-                    return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
+                const { area: areaID, group: groupID } = infoDoc
+
+                let infoArea            = await INSPECTION__AREA_COLL.findById(areaID).select('_id name parent')
+                let infoGroup           = await INSPECTION__GROUP_COLL.findById(groupID).select('_id name parent')
+                // let infoAssignee        = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
+
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now()};
 
                 /** 
                  * LOGIC STEP (3)
@@ -160,11 +162,16 @@ class Model extends BaseModel {
                     dataUpdate.userUpdate = userID;
                 }
 
-                if(checkObjectIDs(template)){
-                    dataUpdate.template = template;
+                /**
+                 * Cập nhật template
+                 * ->Xóa checklist cũ
+                 * ->Cập nhật checklist mới
+                 */
+                if(checkObjectIDs(templateID)){
+                    dataUpdate.template = templateID;
                 }
 
-                if(name){
+                if(name && name != ""){
                     dataUpdate.name = name;
                 }
 
@@ -172,42 +179,43 @@ class Model extends BaseModel {
                     dataUpdate.sign = sign;
                 }
 
-                if(assignee){
-                    dataUpdate.assignee = assignee;
-                }
-
                 if(checkObjectIDs(members)){
-                    dataUpdate.members = members;
-                }
-
-                if(checkObjectIDs(areas)){
-                    dataUpdate.areas = areas;
+                    dataUpdate.$addToSet = {
+                        members: members
+                    }
                 }
 
                 if(expiredTime){
                     dataUpdate.expiredTime = expiredTime;
                 }
 
-                if(job){
-                    dataUpdate.job = job;
-                }
-                
                 if(description){
                     dataUpdate.description = description;
                 }
 
-                if(checkObjectIDs(lastComment)){
-                    dataUpdate.lastComment = lastComment;
-                }
-
+                /**
+                 * Nếu cập nhật về trạng thái hoàn thành
+                 */
                 if(status == this.STATUS_DONE){
                     dataUpdate.status = this.STATUS_DONE;
-                    dataUpdate.date = new Date();
+                    dataUpdate.finishedTime = new Date(); // Ngày hoàn thành thực tế
+                }else{
+                    dataUpdate.status = Number(status)
                 }
 
                 let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, dataUpdate, { new: true });
                 if(!infoDataAfterUpdate)
                     return resolve({ error: true, message: "Can't update docs", status: 403 });
+
+                /**
+                 * CẬP NHẬT TRẠNG THÁI CHO NHÓM CÔNG TÁC-KHU VỰC (cần kiểm tra lại cho kỹ)
+                 * 1-Nhóm cha-Khu vực cha (Hoàn thiện-Tầng 1)
+                 * 2-Nhóm cha-Khu vực con (Hoàn thiện-Căn hộ C1.T1)
+                 * 3-Nhóm con-Khu vực con (Công tác xây-Căn hộ C1.T1)
+                 */
+                let infoG1A1 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID: infoArea.parent, groupID: infoGroup.parent, userID })
+                let infoG1A2 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID: infoGroup.parent, userID })
+                let infoG2A2 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })                    
 
                 return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
             } catch (error) {
@@ -217,9 +225,9 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Xóa inspection docs
-     * Author: DePV 
-     * Code: F0233
+     * Name: Xóa
+     * Author: HiepNH
+     * Code: 2/10/2022
      */
     remove({ docID }) { 
         return new Promise(async (resolve) => {
@@ -247,10 +255,10 @@ class Model extends BaseModel {
         })
     }
 
-     /**
-     * Name: Lấy thông tin inspection docs
-     * Author: DePV 
-     * Code: F0234
+    /**
+     * Name: Lấy thông tin
+     * Author: HiepNH
+     * Code: 2/10/2022
      */
     getInfo({ docID, select }) { 
         return new Promise(async (resolve) => {
@@ -268,32 +276,40 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
                 
                 let infoDocs = await INSPECTION__DOC_COLL.findById(docID)
-                                .select(select)
-                                .populate({
-                                    path: "areas",
-                                    select: "name"
-                                })
-                                .populate({ 
-                                    path: "project",
-                                    select: "name area",
-                                    // populate: "area"
-                                })
-                                .populate({
-                                    path: "members",
-                                    select: "image fullname"
-                                })
-                                .populate({
-                                    path: "contract",
-                                    select: "name"
-                                })
-                                .populate({
-                                    path: "template",
-                                    select: "name"
-                                })
-                                .populate({
-                                    path: "assignee",
-                                    select: "image fullname"
-                                });
+                    .select(select)
+                    .populate({
+                        path: "author",
+                        select: "_id image fullname"
+                    })
+                    .populate({
+                        path: "assignee",
+                        select: "image fullname"
+                    })
+                    .populate({
+                        path: "companyOfAuthor",
+                        select: "_id image name sign"
+                    })
+                    .populate({
+                        path: "companyOfAssignee",
+                        select: "image name sign"
+                    })
+                    .populate({ 
+                        path: "project",
+                        select: "name area",
+                    })
+                    .populate({
+                        path: "members",
+                        select: "image fullname"
+                    })
+                    .populate({
+                        path: "contract",
+                        select: "name"
+                    })
+                    .populate({
+                        path: "template",
+                        select: "name"
+                    })
+
                 if(!infoDocs)
                     return resolve({ error: true, message: "Can't get info inspection docs", status: 403 });
                 
@@ -305,20 +321,83 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Danh sách area theo project
-     * Author: DePV 
-     * Code: F0235
+     * Name: Danh sách
+     * - Theo gói thầu (hợp đồng)
+     * - Theo ngày tháng tạo/hoàn thành (from-to)
+     * - Theo Nhóm công tác con-khu vực con
+     * Author: HiepNH
+     * Code: 2/10/2022
      */
-    getList({limit = 10, lastestID, select, filter, projectID, contractID, assignee, author, userID, signature, area, fromDate, toDate, fromCreateAt, toCreateAt }) { 
+    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, keyword, limit = 10, lastestID, select, populates }) { 
+        console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
+                let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
 
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(limit > 30){
+                    limit = 30;
+                } else{
+                    limit = +limit;
+                }
 
-					filter = JSON.parse(filter);
-				}
+                if(checkObjectIDs(contractID)){
+                    conditionObj.contract = contractID
+                }else{
+                    if(checkObjectIDs(projectID)){
+                        conditionObj.project = projectID
+                    }
+                }
+
+                if(checkObjectIDs(parentAreaID)){
+                    conditionObj.parentArea = parentAreaID
+                }
+
+                if(checkObjectIDs(areaID)){
+                    conditionObj.area = areaID
+                }
+
+                if(checkObjectIDs(parentGroupID)){
+                    conditionObj.parentGroup = parentGroupID
+                }
+
+                if(checkObjectIDs(groupID)){
+                    conditionObj.group = groupID
+                }
+
+                console.log(conditionObj)
+
+                /**
+                 * ĐIỀU KIỆN KHÁC
+                 */
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
+
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
 
 				if(select && typeof select === 'string'){
 					if(!IsJsonString(select))
@@ -326,155 +405,57 @@ class Model extends BaseModel {
 
 					select = JSON.parse(select);
 				}
+ 
+                let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await INSPECTION__DOC_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-                /** 
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { state: 1 };
-
-                if(checkObjectIDs(projectID)){
-                    conditionObj.project = projectID;
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                if(checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID;
-                }
-                if(checkObjectIDs(assignee)){
-                    conditionObj.assignee = assignee;
-                }
-
-                if(checkObjectIDs(author)){
-                    conditionObj.userCreate = author;
-                }
-
-                if(checkObjectIDs(signature)){
-                    conditionObj.signatures = { $in: [signature] };
-                }
-
-                if(checkObjectIDs(area)){
-                    conditionObj.areas = { $in: [area] };
-                }
-
-                if(fromDate && toDate){
-					conditionObj.date = {
-                        $gte: moment(fromDate),
-                        $lte: moment(toDate).endOf('day')._d 
-                    }
-                }
-
-                if(fromCreateAt && toCreateAt){
-					conditionObj.createdAt = {
-                        $gte: moment(fromCreateAt),
-                        $lte: moment(toCreateAt).endOf('day')._d 
-                    }
-                }
-                // Danh sách phải được lấy theo điều kiền members, assignee, userCreateAt
-                conditionObj["$or"] = [ 
-                    {  members: { $in: [userID] }  }, 
-                    { assignee }, 
-                    { userCreateAt: userID }  
-                ];
-
-                let conditionFind = {};
-                let sortBy = { createAt: -1 };
-                let objSort = {};
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
-
-                // GET CONDITION PAGINATION
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoMessage = await INSPECTION__DOC_COLL.findById(lastestID);
-					if(!infoMessage)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
-
-                let infoDataAfterGet = await INSPECTION__DOC_COLL.find({...conditionObj, ...conditionFind }, { ...filter })
-                    .populate({
-                        path: "areas",
-                        select: select && select.areas
-                    })
-                    .populate({
-                        path: "project",
-                        select: select && select.project
-                        // populate: "area"
-                    })
-                    .populate({
-                        path: "members",
-                        select: select && select.members
-                    })
-                    .populate({
-                        path: "contract",
-                        select: select && select.contract
-                    })
-                    .populate({
-                        path: "template",
-                        select: select && select.template
-                    })
-                    .populate({
-                        path: "assignee",
-                        select: select && select.assignee
-                    })
-                    .limit(+limit+1)
-                    .sort(sortBy) 
+                let infoDataAfterGet = await INSPECTION__DOC_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
                     .lean();
 
-                // GET TOTAL RECORD
-				let totalRecord = await INSPECTION__DOC_COLL.count(conditionObj);
-                let totalCurrentPage = await INSPECTION__DOC_COLL.count(conditionFind);
-
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get template docs", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
-				let nextCursor	= null;
-
-				if(infoDataAfterGet && infoDataAfterGet.length){
-					if(infoDataAfterGet.length > limit){
-						nextCursor = infoDataAfterGet[limit - 1]._id;
-						infoDataAfterGet.length = limit;
-					}
-				}
-                
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get docs", status: 403 });
-
-                let totalPage = Math.ceil(totalRecord/limit);
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage = 1
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
                 }
+                let totalRecord = await INSPECTION__DOC_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit: limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
-
+                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
 }
 
 exports.MODEL = new Model;
