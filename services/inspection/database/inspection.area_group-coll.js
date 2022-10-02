@@ -22,6 +22,14 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_area_group", {
         type: Schema.Types.ObjectId,
         ref: "inspection_group"
     },
+    /**
+     * Trạng thái
+     * 1-Khởi tạo
+     * 2-Đang nghiệm thu
+     * 3-Sửa lỗi
+     * 4-Hoàn thành
+     */
+    status: { type: Number, default: 1 },    
     //_________% hoàn thành (max = 100)
     percentage: { type: Number, default: 0, max: 100 },
     //_________Ghi cú 

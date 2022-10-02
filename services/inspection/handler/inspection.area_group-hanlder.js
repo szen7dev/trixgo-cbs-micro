@@ -17,20 +17,18 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            projectID   : { type: "string" },
-			name        : { type: "string" },
-            parentID    : { type: "string", optional: true },
-            sign        : { type: "string", optional: true },
-            description : { type: "string", optional: true },
+            projectID       : { type: "string" },
+			areaID          : { type: "string" },
+			groupID         : { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { parentID, projectID, name, sign, description } = ctx.params;
+                const { projectID, areaID, groupID } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION__AREA_GROUP_MODEL.insert({
-					parentID, projectID, name, sign, description, userID
+					projectID, areaID, groupID, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -48,19 +46,19 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            areaID      : { type: "string" },
-			name        : { type: "string" },
-            sign        : { type: "string", optional: true },
-            description : { type: "string", optional: true },
+            areaGroupID     : { type: "string" },
+			percentage      : { type: "number", option: true },
+			status          : { type: "number", option: true },
+			note            : { type: "string", option: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { areaID, name, sign, description } = ctx.params;
+                const { areaGroupID, percentage, status, note } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION__AREA_GROUP_MODEL.update({
-					areaID, name, sign, description, userID
+					areaGroupID, percentage, status, note, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -79,15 +77,15 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            areaID   : { type: "string" },
+            areaGroupID   : { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { areaID } = ctx.params;
+                const { areaGroupID } = ctx.params;
                 const resultAfterCallHandler = await INSPECTION__AREA_GROUP_MODEL.remove({
-					areaID
+					areaGroupID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -106,26 +104,28 @@ module.exports = {
         auth: "required",
         params: {
             projectID       : { type: "string", optional: true },
+            areaID          : { type: "string", optional: true },
+            groupID         : { type: "string", optional: true },
+            option          : { type: "string", optional: true },
+            areaGroupID     : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
-            areaID          : { type: "string", optional: true },
             select          : { type: "string", optional: true },
-            filter          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, keyword, limit, lastestID, areaID, select, filter  } = ctx.params;
+                const { projectID, areaID, groupID, option, areaGroupID, keyword, limit, lastestID, select  } = ctx.params;
                 let resultAfterCallHandler;
-                if(areaID){
+                if(areaGroupID){
                     resultAfterCallHandler = await INSPECTION__AREA_GROUP_MODEL.getInfo({
-                        areaID, select
+                        areaGroupID, select
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION__AREA_GROUP_MODEL.getList({
-                        keyword, projectID, limit, lastestID, select, filter 
+                        projectID, areaID, groupID, option, keyword, limit, lastestID, select 
                     });
                 }
               

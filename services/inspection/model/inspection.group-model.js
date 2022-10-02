@@ -88,7 +88,7 @@ class Model extends BaseModel {
      * Cập nhât mẩu tin: Depv 
      * F0227
      */
-    update({ areaID, name, sign, description, userID }) { 
+    update({ groupID, name, sign, description, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -104,8 +104,8 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(!checkObjectIDs(areaID))
-                    return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
+                if(!checkObjectIDs(groupID))
+                    return resolve({ error: true, message: 'Request params groupID invalid', status: 400 });
 
                 if (!name || name == '')
                     return resolve({ error: true, message: 'name_invalid', status: 400 });
@@ -115,13 +115,13 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                dataUpdate = { name, userCreate: userID, userUpdate: userID  };
+                dataUpdate = { name, userUpdate: userID, modifyAt: Date.now()  };
 
                 if(sign){
                     dataUpdate.sign = sign;
-                    let { project } = await INSPECTION__GROUP_COLL.findById(areaID).select("project");
+                    let { project } = await INSPECTION__GROUP_COLL.findById(groupID).select("project");
 
-                    let checkSign = await INSPECTION__GROUP_COLL.findOne({ project, sign, _id: { $ne: areaID }});
+                    let checkSign = await INSPECTION__GROUP_COLL.findOne({ project, sign, _id: { $ne: groupID }});
                     if(checkSign){
                         return resolve({ error: true, message: 'Sign existed', status: 400 });
                     }
@@ -131,9 +131,9 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
-                let infoDataAfterUpdate = await this.insertData(dataUpdate);
+                let infoDataAfterUpdate = await INSPECTION__GROUP_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true });
                 if(!infoDataAfterUpdate)
-                    return resolve({ error: true, message: "Can't update area", status: 403 });
+                    return resolve({ error: true, message: "Can't update group", status: 403 });
 
                 return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
             } catch (error) {
@@ -146,7 +146,7 @@ class Model extends BaseModel {
      * Xóa mẩu tin: Depv 
      * F0228
      */
-    remove({ areaID }) { 
+    remove({ groupID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -158,12 +158,12 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(areaID))
-                    return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
+                if(!checkObjectIDs(groupID))
+                    return resolve({ error: true, message: 'Request params groupID invalid', status: 400 });
          
-                let infoDataAfterRemove = await INSPECTION__GROUP_COLL.findByIdAndUpdate(areaID, { state: 2 }, { new: true });
+                let infoDataAfterRemove = await INSPECTION__GROUP_COLL.findByIdAndUpdate(groupID, { state: 2 }, { new: true });
                 if(!infoDataAfterRemove)
-                    return resolve({ error: true, message: "Can't update inspect area", status: 403 });
+                    return resolve({ error: true, message: "Can't remove group", status: 403 });
 
                 return resolve({ error: false, data: "Remove Success", status: 200 });
             } catch (error) {
@@ -176,7 +176,7 @@ class Model extends BaseModel {
      * Lấy thông tin khu vực: Depv 
      * F0229
      */
-    getInfo({ areaID, select }) { 
+    getInfo({ groupID, select }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -188,10 +188,10 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(areaID))
-                    return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
+                if(!checkObjectIDs(groupID))
+                    return resolve({ error: true, message: 'Request params groupID invalid', status: 400 });
          
-                let infoData = await INSPECTION__GROUP_COLL.findById(areaID).select(select);
+                let infoData = await INSPECTION__GROUP_COLL.findById(groupID).select(select);
                 if(!infoData)
                     return resolve({ error: true, message: "Can't update inspect area", status: 403 });
 
@@ -210,14 +210,11 @@ class Model extends BaseModel {
     getList({ keyword, projectID, limit = 10, lastestID, filter = {}, select = {} }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { state: 1 };
- 
-                if(projectID){
-                    conditionObj.project = projectID;
-                }
+
+                if(!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
+
+                let conditionObj = { project: projectID};
 
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
@@ -237,17 +234,6 @@ class Model extends BaseModel {
 					select = JSON.parse(select);
 				}
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await INSPECTION__GROUP_COLL.findById(lastestID);

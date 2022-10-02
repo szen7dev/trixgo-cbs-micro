@@ -4,7 +4,7 @@ const BASE_ROUTE = '/inspection';
  */
 const AREA                  = '/areas';
 const GROUP                 = '/groups';
-const AREA_GROUP            = '/are_group';
+const AREA_GROUP            = '/area_group';
 const DOCS                  = '/docs';
 const DOC_COMMENT           = '/doc_comments'
 const DOC_REACTION          = '/doc_reactions';

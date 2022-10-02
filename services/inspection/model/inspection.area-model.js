@@ -115,7 +115,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                dataUpdate = { name, userCreate: userID, userUpdate: userID  };
+                dataUpdate = { name,  userUpdate: userID, modifyAt: Date.now() };
 
                 if(sign){
                     dataUpdate.sign = sign;
@@ -131,7 +131,7 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
-                let infoDataAfterUpdate = await this.insertData(dataUpdate);
+                let infoDataAfterUpdate = await INSPECTION__AREA_COLL.findByIdAndUpdate(areaID, dataUpdate, { new: true });
                 if(!infoDataAfterUpdate)
                     return resolve({ error: true, message: "Can't update area", status: 403 });
 
@@ -163,7 +163,7 @@ class Model extends BaseModel {
          
                 let infoDataAfterRemove = await INSPECTION__AREA_COLL.findByIdAndUpdate(areaID, { state: 2 }, { new: true });
                 if(!infoDataAfterRemove)
-                    return resolve({ error: true, message: "Can't update inspect area", status: 403 });
+                    return resolve({ error: true, message: "Can't remove area", status: 403 });
 
                 return resolve({ error: false, data: "Remove Success", status: 200 });
             } catch (error) {
@@ -193,7 +193,7 @@ class Model extends BaseModel {
          
                 let infoData = await INSPECTION__AREA_COLL.findById(areaID).select(select);
                 if(!infoData)
-                    return resolve({ error: true, message: "Can't update inspect area", status: 403 });
+                    return resolve({ error: true, message: "Can't get info area", status: 403 });
 
                 return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {
@@ -210,14 +210,10 @@ class Model extends BaseModel {
     getList({ keyword, projectID, limit = 10, lastestID, filter = {}, select = {} }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { state: 1 };
- 
-                if(projectID){
-                    conditionObj.project = projectID;
-                }
+                if(!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
+
+                let conditionObj = { project: projectID};
 
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
@@ -237,17 +233,6 @@ class Model extends BaseModel {
 					select = JSON.parse(select);
 				}
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await INSPECTION__AREA_COLL.findById(lastestID);
