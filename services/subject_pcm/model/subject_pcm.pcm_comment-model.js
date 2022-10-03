@@ -186,7 +186,7 @@ class Model extends BaseModel {
 	 * Date: 22/02/2022
 	 */
     insertCommentTask({
-        taskID, parentID, authorID, type, content, rawContent, description, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
+        taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
     }) {
         return new Promise(async resolve => {
             try {
@@ -319,11 +319,6 @@ class Model extends BaseModel {
                 if(content) {
                     dataInsert.content = content;
                     dataInsert.contentcv = stringUtils.removeAccents(rawContent);
-                }
-
-                if(description) {
-                    dataInsert.description = description;
-                    dataInsert.descriptioncv = stringUtils.removeAccents(description);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -1155,7 +1150,7 @@ class Model extends BaseModel {
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: taskName,
-                        description: `${bizfullname} đã thêm 1 file đính kèm vào phản hồi`,
+                        description: `${bizfullname} thêm file vào phản hồi liên quan`,
                         dataSend,
                         web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
                         env: ENV_DEVICE_WEB_CBS

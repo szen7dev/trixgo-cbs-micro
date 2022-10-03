@@ -376,7 +376,7 @@ class Model extends BaseModel {
 	 */
     getListByFilter({
         companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
-        limit = 20, lastestID, select, populates, userID, ctx
+        limit = 20, lastestID, select, populates, userID
     }) {
         return new Promise(async (resolve) => {
             try {
@@ -414,7 +414,6 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
-                    
                 }
 
                 //__________Danh sách các nhóm dữ liệu mà userID là members

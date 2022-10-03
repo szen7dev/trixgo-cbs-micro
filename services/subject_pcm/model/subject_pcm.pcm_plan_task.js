@@ -118,7 +118,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
+    insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
         // console.log({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -307,7 +307,12 @@ class Model extends BaseModel {
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert) {
-                    return resolve({ error: true, message: "can't_insert_task", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({
+                        error: true,
+                        message: "can't_insert_task",
+                        keyError: KEY_ERROR.INSERT_FAILED,
+                        status: 403
+                    });
                 }
 
                 // Thêm reminder nhắc công việc đến hạn
@@ -325,10 +330,24 @@ class Model extends BaseModel {
                     taskID: infoAfterInsert._id,
                     authorID,
                     type: 5,
-                    content: infoAfterInsert.name,
+                    files: authorAttachs,
+                    content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
                     rawContent: infoAfterInsert.name,
-                    description: infoAfterInsert.description,
                 });
+
+                // if(checkObjectIDs(authorAttachs)) {
+                //     const infoTask = await PCM_PLAN_TASK_COLL
+                //         .findById(infoAfterInsert._id)
+                //         .populate('project', '_id')
+                //         .lean();
+
+                //     await this.handleAddFiles({
+                //         infoTask,
+                //         files: authorAttachs,
+                //         authorID,
+                //         ctx
+                //     });
+                // }
 
                 if(parentID && checkObjectIDs(parentID)){
                     // Cập nhật việc cha
@@ -340,6 +359,11 @@ class Model extends BaseModel {
                         }
                     });
                 }
+
+                /**
+                 * CẬP NHẬT SỐ LƯỢNG CÔNG VIỆC CHO GROUP
+                 */
+                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
 
                 /**
                  * Tạo việc con mới
@@ -437,11 +461,6 @@ class Model extends BaseModel {
                     })
                 }
 
-                /**
-                 * CẬP NHẬT SỐ LƯỢNG CÔNG VIỆC CHO GROUP
-                 */
-                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
-
                 const infoTask = await PCM_PLAN_TASK_COLL
                     .findById(infoAfterInsert._id)
                     .select(select)
@@ -462,10 +481,10 @@ class Model extends BaseModel {
      * Code: 8/9/2022
      */
     update({ typeUpdate,
-        taskID, sign, name, description, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews,
-        contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
-        links, authorAttachs, assigneeAttachs, percentage, urgent, difficult, factor, judgement, overdue, score, finishTime, punish, isAddSignature, isOpenBidding,
-        openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
+        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews,
+        contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink,
+        links, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding,
+        openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
     }){
         return new Promise(async (resolve) => {
             try {
@@ -805,7 +824,7 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * TH1: 
+                     * TH1:
                      * - Nếu là Đề nghị phê duyệt (2) + Thanh toán (3) + Nghiệm thu (5) + Đề nghị thay đổi (7) + Báo cáo (9)
                      * - Người thực hiện ký => phê duyệt luôn
                      * TH2:
@@ -2982,7 +3001,7 @@ class Model extends BaseModel {
                         { author: userID },
                         { assignee: userID },
                     ]
-                }, 
+                },
                 {
                     $set: {
                         parent: parentID,
@@ -3493,9 +3512,9 @@ class Model extends BaseModel {
                     if(option == 1){
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_human_kpi.xlsx')))
                         .then(async workbook => {
-    
+
                             let indexExcel = 7;
-    
+
                             listTaskPin.map((infoTask, index) => {
                                 workbook.sheet("KPI").row(indexExcel).cell(1).value(index+1);
                                 workbook.sheet("KPI").row(indexExcel).cell(2).value(infoTask.project?.sign);
@@ -3525,17 +3544,17 @@ class Model extends BaseModel {
 
                                 indexExcel++;
                             })
-    
+
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
                             const fileName = `task_report_${now.getTime()}.xlsx`;
                             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-    
+
                             await workbook.toFileAsync(pathWriteFile);
-    
+
                             const result = await uploadFileS3(pathWriteFile, fileName);
                             fs.unlinkSync(pathWriteFile);
-    
+
                             return resolve({ error: false, data: result?.Location, status: 200 });
                         });
                     }
@@ -3661,7 +3680,7 @@ class Model extends BaseModel {
                             return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
                         }
                         // console.log({ dataInsert });
-                        
+
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
                         if(data?.__EMPTY_1){
@@ -3670,7 +3689,7 @@ class Model extends BaseModel {
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
-                       
+
                     }
                     index ++;
                 }

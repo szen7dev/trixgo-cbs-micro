@@ -74,11 +74,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     content: String,
     //_________Nội dung convert-chữ thường, không dấu (bao cao danh gia)
     contentcv: String,
-
-    //_________Mô tả
-    description: String,
-    //_________Mô tả convert-chữ thường, không dấu (bao cao danh gia)
-    descriptioncv: String,
     /**
      * Phân loại
      * 1-Phản hồi thông thường (task, project, document,...)

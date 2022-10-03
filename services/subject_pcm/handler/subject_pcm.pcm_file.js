@@ -108,7 +108,6 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 const { fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates } = ctx.params;
-                console.log({ fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates })
 
                 const resultAfterCallHandler = await PCM_FILE_MODEL.getListByFilter({
                     fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates, userID, ctx
