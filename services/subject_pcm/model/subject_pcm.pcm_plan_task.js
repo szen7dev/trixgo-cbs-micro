@@ -335,20 +335,6 @@ class Model extends BaseModel {
                     rawContent: infoAfterInsert.name,
                 });
 
-                // if(checkObjectIDs(authorAttachs)) {
-                //     const infoTask = await PCM_PLAN_TASK_COLL
-                //         .findById(infoAfterInsert._id)
-                //         .populate('project', '_id')
-                //         .lean();
-
-                //     await this.handleAddFiles({
-                //         infoTask,
-                //         files: authorAttachs,
-                //         authorID,
-                //         ctx
-                //     });
-                // }
-
                 if(parentID && checkObjectIDs(parentID)){
                     // Cập nhật việc cha
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
