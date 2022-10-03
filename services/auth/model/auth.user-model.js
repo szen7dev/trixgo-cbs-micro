@@ -1325,26 +1325,6 @@ class Model extends BaseModel {
      * Hiepnh: Không được phép xóa User
 	 * Date: 03/03/2022
 	 */
-    // delete({ usersID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!usersID.length || !checkObjectIDs(usersID)) {
-    //                 return resolve({
-    //                     error: true,
-    //                     message: "Tham số usersID không hợp lệ",
-    //                     keyError: "params_usersID_invalid",
-    //                     status: 400
-    //                 })
-    //             }
-
-    //             const infoAfterDelete = await AUTH__USER_COLL.deleteMany({ _id: { $in: usersID } });
-
-    //             return resolve({ error: false, data: infoAfterDelete, status: 200 });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
 
     /**
 	 * Dev: Depv
