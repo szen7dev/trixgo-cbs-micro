@@ -329,6 +329,7 @@ class Model extends BaseModel {
                 await PCM_COMMENT_MODEL.insertCommentTask({
                     taskID: infoAfterInsert._id,
                     authorID,
+                    companyOfAuthor: infoAuthor.data.company,
                     type: 5,
                     files: authorAttachs,
                     content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
@@ -2566,8 +2567,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, ctx }){
-        // console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
+    getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID }){
+        console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
         // console.log({ projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
@@ -2582,6 +2583,17 @@ class Model extends BaseModel {
                 if(subtype){
                     objectSearch.subtype = +subtype;
                 }
+
+                // Lấy danh sách các nhóm dữ liệu mà userID là members
+                // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                // // Lấy công việc mà mình được quyền truy cập
+                // conditionObj.$or = [
+                //     { author: userID },
+                //     { assignee: userID },
+                //     { related: { $in: [userID] }},
+                //     { group: { $in: listGroups.map(item => item._id) }},
+                // ]
 
                 let listCompanyOfAuthor = await PCM_PLAN_TASK_COLL.aggregate([
                     { $match: objectSearch },
