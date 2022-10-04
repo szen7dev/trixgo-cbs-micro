@@ -2996,10 +2996,10 @@ class Model extends BaseModel {
                 const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
                     _id: taskID,
                     project,
-                    $or: [
-                        { author: userID },
-                        { assignee: userID },
-                    ]
+                    // $or: [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    // ]
                 },
                 {
                     $set: {
