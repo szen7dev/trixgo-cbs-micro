@@ -1262,12 +1262,12 @@ class Model extends BaseModel {
         keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
         console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
-        // console.log({
-        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        //     keyword, limit, unlimit, lastestID, select, populates
-        // })
+        console.log({
+            projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+            subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+            userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+            keyword, limit, unlimit, lastestID, select, populates
+        })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1330,7 +1330,7 @@ class Model extends BaseModel {
                     conditionObj.status = { $in: [status] }
                 }
 
-                // console.log({conditionObj_______1:conditionObj})
+                console.log({conditionObj_______1:conditionObj})
 
                 /**
                  * Quá hạn
@@ -1376,7 +1376,8 @@ class Model extends BaseModel {
                 // Lấy việc trong group
                 if(groupID && checkObjectIDs(groupID)){
                     conditionObj.group = groupID
-                    conditionObj.parent = { $exists: false } // Chỉ lấy các việc cha
+                    // conditionObj.parent = { $exists: false } // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
+                    conditionObj.level = 1; // Chỉ lấy các việc cha
                     delete conditionObj.$or;
                 }
 
@@ -1455,7 +1456,7 @@ class Model extends BaseModel {
                     conditionObj.level = level;
                 }
 
-                // console.log({conditionObj_______3:conditionObj})
+                console.log({conditionObj_______3:conditionObj})
 
                 /**
                  * Lấy việc quá hạn
@@ -1509,7 +1510,8 @@ class Model extends BaseModel {
 
                 // Chỉ lấy task cha
                 if(isParent == 1){
-                    conditionObj.parent = { $exists: false };
+                    // conditionObj.parent = { $exists: false }; // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
+                    conditionObj.level = 1;
                 }
 
                 // Công ty của người tạo việc
@@ -1544,8 +1546,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                // console.log('=======================')
-                // console.log(conditionObj)
+                console.log('=======================')
+                console.log(conditionObj)
 
                 // Tìm kiếm theo keyword
 				if(keyword){
