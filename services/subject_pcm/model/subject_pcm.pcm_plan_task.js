@@ -349,6 +349,12 @@ class Model extends BaseModel {
                         $addToSet: { news: authorID },
                         $set: {
                             modifyAt: new Date(),
+                        }
+                    });
+
+                    // Cập nhật Level cho việc con
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                        $set: {
                             level: Number(infoParentTask.level) + Number(1)
                         }
                     });
@@ -1330,7 +1336,7 @@ class Model extends BaseModel {
                     conditionObj.status = { $in: [status] }
                 }
 
-                console.log({conditionObj_______1:conditionObj})
+                // console.log({conditionObj_______1:conditionObj})
 
                 /**
                  * Quá hạn
@@ -1456,7 +1462,7 @@ class Model extends BaseModel {
                     conditionObj.level = level;
                 }
 
-                console.log({conditionObj_______3:conditionObj})
+                // console.log({conditionObj_______3:conditionObj})
 
                 /**
                  * Lấy việc quá hạn
@@ -1547,7 +1553,7 @@ class Model extends BaseModel {
                 }
 
                 console.log('=======================')
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // Tìm kiếm theo keyword
 				if(keyword){
