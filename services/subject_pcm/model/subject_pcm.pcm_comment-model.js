@@ -188,6 +188,7 @@ class Model extends BaseModel {
     insertCommentTask({
         taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
     }) {
+        // console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1917,6 +1918,7 @@ class Model extends BaseModel {
 	 * Date: 19/8/2022
 	 */
 	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 20, unlimit, lastestID, select, populates = {} }){
+        console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu comment================')
         // console.log({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
 			try {
@@ -1975,16 +1977,16 @@ class Model extends BaseModel {
                         { related: { $in: [userID] }},
                     ]
 
-                    // //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                    // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                    // // Lấy công việc mà mình được quyền truy cập
-                    // conditionSubjectObj.$or = [
-                    //     { author: userID },
-                    //     { assignee: userID },
-                    //     { related: { $in: [userID] }},
-                    //     { group: { $in: listGroups.map(item => item._id) }},
-                    // ]
+                    // Lấy công việc mà mình được quyền truy cập
+                    conditionSubjectObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
+                    ]
                 }
 
                 // Lấy những việc nháp hoặc không phải việc nháp
@@ -2136,7 +2138,8 @@ class Model extends BaseModel {
      * Date: 24/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
-        // console.log({ userID, option, fromDate, toDate, isParent, isGroup })
+        console.log('============Gom nhóm theo thuộc tính 222================')
+        console.log({ userID, option, fromDate, toDate, isParent, isGroup })
         return new Promise(async resolve => {
             try {
                 /**
@@ -2167,10 +2170,21 @@ class Model extends BaseModel {
                         { group: { $in: listGroups.map(item => item._id) }},
                     ]
                 }else{
+                    // conditionSubjectObj.$or = [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    //     { related: { $in: [userID] }},
+                    // ]
+
+                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // Lấy công việc mà userID được quyền truy cập
                     conditionSubjectObj.$or = [
                         { author: userID },
                         { assignee: userID },
                         { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
                     ]
                 }
 
@@ -2186,11 +2200,13 @@ class Model extends BaseModel {
                             $lte: new Date(toDate),
                         },
                         project: { $exists: true, $ne: null },
+                        companyOfAuthor: { $exists: true, $ne: null },
                     })
 				}else{
                     listComments = await PCM_COMMENT_COLL.find({
                         task: {$in: listTask.map(item=>item._id)},
                         project: { $exists: true, $ne: null },
+                        companyOfAuthor: { $exists: true, $ne: null },
                     })
                 }
                 // let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})

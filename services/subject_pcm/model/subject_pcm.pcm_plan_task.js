@@ -329,6 +329,7 @@ class Model extends BaseModel {
                 await PCM_COMMENT_MODEL.insertCommentTask({
                     taskID: infoAfterInsert._id,
                     authorID,
+                    companyOfAuthor: infoAuthor.data.company,
                     type: 5,
                     files: authorAttachs,
                     content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
@@ -336,13 +337,25 @@ class Model extends BaseModel {
                     ctx
                 });
 
+                /**
+                 * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
+                 */
                 if(parentID && checkObjectIDs(parentID)){
+                    let infoParentTask = await PCM_PLAN_TASK_COLL.findById(parentID).select('_id level')
+                    
                     // Cập nhật việc cha
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
                         $inc: { amountSubtask: 1 },
                         $addToSet: { news: authorID },
                         $set: {
-                            modifyAt: new Date()
+                            modifyAt: new Date(),
+                        }
+                    });
+
+                    // Cập nhật Level cho việc con
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                        $set: {
+                            level: Number(infoParentTask.level) + Number(1)
                         }
                     });
                 }
@@ -1254,13 +1267,13 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
-        // console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
-        // console.log({
-        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        //     keyword, limit, unlimit, lastestID, select, populates
-        // })
+        console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
+        console.log({
+            projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+            subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+            userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+            keyword, limit, unlimit, lastestID, select, populates
+        })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1323,6 +1336,8 @@ class Model extends BaseModel {
                     conditionObj.status = { $in: [status] }
                 }
 
+                // console.log({conditionObj_______1:conditionObj})
+
                 /**
                  * Quá hạn
                  */
@@ -1367,7 +1382,8 @@ class Model extends BaseModel {
                 // Lấy việc trong group
                 if(groupID && checkObjectIDs(groupID)){
                     conditionObj.group = groupID
-                    conditionObj.parent = { $exists: false } // Chỉ lấy các việc cha
+                    // conditionObj.parent = { $exists: false } // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
+                    conditionObj.level = 1; // Chỉ lấy các việc cha
                     delete conditionObj.$or;
                 }
 
@@ -1402,7 +1418,8 @@ class Model extends BaseModel {
                     conditionObj.$or = [
                         { author: userID },
                         { assignee: userID },
-                        { related: { $in: [userID] }}
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }}
                     ]
                 }
 
@@ -1444,6 +1461,8 @@ class Model extends BaseModel {
                 if(level){
                     conditionObj.level = level;
                 }
+
+                // console.log({conditionObj_______3:conditionObj})
 
                 /**
                  * Lấy việc quá hạn
@@ -1497,7 +1516,8 @@ class Model extends BaseModel {
 
                 // Chỉ lấy task cha
                 if(isParent == 1){
-                    conditionObj.parent = { $exists: false };
+                    // conditionObj.parent = { $exists: false }; // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
+                    conditionObj.level = 1;
                 }
 
                 // Công ty của người tạo việc
@@ -1532,6 +1552,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                console.log('=======================')
                 // console.log(conditionObj)
 
                 // Tìm kiếm theo keyword
@@ -1562,8 +1583,11 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
 
+                // console.log(conditionObjOrg)
+
                 // Tổng số việc tìm thấy
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
+                console.log({totalRecord})
                 if(unlimit == 1){
                     limit = totalRecord;
                 }
@@ -1617,6 +1641,7 @@ class Model extends BaseModel {
 
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
+                // console.log(infoDataAfterGet)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -2560,8 +2585,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, ctx }){
-        // console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
+    getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID }){
+        console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
         // console.log({ projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
@@ -2576,6 +2601,17 @@ class Model extends BaseModel {
                 if(subtype){
                     objectSearch.subtype = +subtype;
                 }
+
+                // Lấy danh sách các nhóm dữ liệu mà userID là members
+                // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                // // Lấy công việc mà mình được quyền truy cập
+                // conditionObj.$or = [
+                //     { author: userID },
+                //     { assignee: userID },
+                //     { related: { $in: [userID] }},
+                //     { group: { $in: listGroups.map(item => item._id) }},
+                // ]
 
                 let listCompanyOfAuthor = await PCM_PLAN_TASK_COLL.aggregate([
                     { $match: objectSearch },
@@ -3268,7 +3304,8 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
-        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
+        console.log('Gom nhóm công việc theo thuộc tính=================')
+        console.log({ userID, option, fromDate, toDate, projectID, companyID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3278,14 +3315,14 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {}
                 //__________Danh sách các nhóm dữ liệu mà userID là members
-                // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
                 // Lấy công việc mà user được quyền truy cập
                 conditionObj.$or = [
                     { author: ObjectID(userID) },
                     { assignee: ObjectID(userID) },
                     { related: { $in: [ObjectID(userID)] }},
-                    // { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
+                    { group: { $in: listGroups.map(item => item._id) }},
                 ]
 
                 /**

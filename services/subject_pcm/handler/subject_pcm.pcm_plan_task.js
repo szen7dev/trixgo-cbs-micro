@@ -489,7 +489,7 @@ module.exports = {
                 let { option, projectID, keyword, subtype } = ctx.params;
 
                 if(!option){
-                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, ctx });
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID });
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
                 }else{
 
