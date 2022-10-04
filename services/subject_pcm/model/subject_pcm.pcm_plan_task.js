@@ -3576,7 +3576,7 @@ class Model extends BaseModel {
      * Func: Download template import excel
      * Date: 15/09/2022
      */
-    downloadTemplateImportExcel({ projectID }) {
+    downloadTemplateImportExcel({ projectID, userID }) {
         return new Promise(async resolve => {
             try {
 
@@ -3585,8 +3585,9 @@ class Model extends BaseModel {
                     return res.json(infoProject);
 
                 let memberInProject     = infoProject.members;
-                let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID }).select("name sign");
+                let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID, members: {$in: [userID]} }).select("name sign");
                 let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
+
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
                 .then(async workbook => {
