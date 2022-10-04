@@ -1780,7 +1780,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(dataResponse)
+                // console.log(dataResponse)
 
                 return resolve({ error: false, data: {
                     listRecords: dataResponse.length ? dataResponse : infoDataAfterGet,
@@ -2137,7 +2137,7 @@ class Model extends BaseModel {
      * Date: 24/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
-        console.log({ userID, option, fromDate, toDate, isParent, isGroup })
+        // console.log({ userID, option, fromDate, toDate, isParent, isGroup })
         return new Promise(async resolve => {
             try {
                 /**
