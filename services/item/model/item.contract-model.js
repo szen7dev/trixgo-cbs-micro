@@ -1763,7 +1763,7 @@ class Model extends BaseModel {
                         }
                     }
                 }
-
+                
                 if(!option){
                     console.log('SỐ LIỆU NĂM NAY====================================')
                     conditionGroup = {
@@ -1771,7 +1771,7 @@ class Model extends BaseModel {
                         amount: { $sum: "$amount" },
                     }
 
-                    if(!isNaN(year) && Number(year) >= 0){
+                    if(!isNaN(year) && Number(year) > 0){
                         conditionObjYear = {
                             "year": Number(year),
                         }
@@ -1836,7 +1836,6 @@ class Model extends BaseModel {
                             $gte: new Date(firstDayOfLastYear),
                             $lte: new Date(lastDayOfLastYear)
                         }
-                        console.log(conditionObj)
 
                         let listData = await ITEM__CONTRACT_COLL.aggregate([
                             {

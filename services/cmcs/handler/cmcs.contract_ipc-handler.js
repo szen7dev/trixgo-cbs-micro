@@ -223,7 +223,6 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { companyID, projectID, contractID, year, outin, option } = ctx.params;
-
                 const { _id: userID, company } = ctx.meta.infoUser;
                 
                 if(!companyID){
@@ -277,7 +276,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 
                 let { companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
-
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
