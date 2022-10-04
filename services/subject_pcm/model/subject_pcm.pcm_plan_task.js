@@ -333,6 +333,7 @@ class Model extends BaseModel {
                     files: authorAttachs,
                     content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
                     rawContent: infoAfterInsert.name,
+                    ctx
                 });
 
                 if(parentID && checkObjectIDs(parentID)){
@@ -1078,6 +1079,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
