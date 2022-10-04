@@ -307,7 +307,9 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     quantity: { type: Number, default: 0 },
     //_________Đơn giá
     unitPrice: { type: Number, default: 0 },
-    //_________Thành tiền
+    /**
+     * Thành tiền = quantity*unitPrice
+     */
     amount: { type: Number, default: 0 },
     //_________Dự kiến thời lượng-phục vụ tính tổng số giờ/số ngày để bổ sung việc (h)
     amountoftime: { type: Number, default: 0 },

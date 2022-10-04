@@ -332,11 +332,6 @@ class Model extends BaseModel {
                     })
                 }
 
-                // Loại comment được tạo mục đích cho việc tìm kiếm
-                if(type === this.RECORD_TASK_FOR_SEARCH) {
-                    return resolve({ error: false, data: infoAfterInsert, status: 200 });
-                }
-
                 if(files && files.length) {
                     const { errors } = await PromisePool
                         .for(files)
@@ -370,7 +365,6 @@ class Model extends BaseModel {
 								return infoAfterInserted.data && infoAfterInserted.data._id;
 							}
                         });
-
 
                     if(errors.length) {
                         return resolve({
@@ -506,6 +500,11 @@ class Model extends BaseModel {
                         modifyAt: new Date()
                     }
                 });
+
+                // Loại comment được tạo mục đích cho việc tìm kiếm
+                if(type === this.RECORD_TASK_FOR_SEARCH) {
+                    return resolve({ error: false, data: infoAfterInsert, status: 200 });
+                }
 
                 /**
                  * Insert notification and cloud messaging
@@ -922,7 +921,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment (task)
 	 * Date: 22/02/2022
 	 */
-    updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, ctx }) {
+    updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, bizfullname, ctx }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -1150,7 +1149,7 @@ class Model extends BaseModel {
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: taskName,
-                        description: `${bizfullname} thêm file vào phản hồi liên quan`,
+                        description: `${author?.bizfullname} thêm file vào phản hồi liên quan`,
                         dataSend,
                         web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
                         env: ENV_DEVICE_WEB_CBS
