@@ -1137,7 +1137,7 @@ class Model extends BaseModel {
 
                         conditionPopulate = {
                             path: '_id.buyerInfo',
-                            select: '_id name sign',
+                            select: '_id name sign company',
                             model: 'contact'
                         }
 
@@ -1155,7 +1155,7 @@ class Model extends BaseModel {
 
                         conditionPopulate = {
                             path: '_id.sellerInfo',
-                            select: '_id name sign',
+                            select: '_id name sign company',
                             model: 'contact'
                         }
 
