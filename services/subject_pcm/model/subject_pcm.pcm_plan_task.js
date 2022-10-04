@@ -2953,6 +2953,7 @@ class Model extends BaseModel {
      * Date: 22/04/2022
 	 */
     moveTaskToParent({ parentID, taskID, userID }) {
+        // console.log({ parentID, taskID, userID })
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
@@ -2962,7 +2963,19 @@ class Model extends BaseModel {
                 })
                 if(validation.error) return resolve(validation);
 
-                const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID);
+                if(parentID.toString() == taskID.toString()) {
+                    return resolve({
+                        error: true,
+                        message: 'Không thể tự di chuyển vào chính công việc này',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                /**
+                 * Thông tin công việc cha
+                 */
+                const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID)
 
                 if(!infoParent) {
                     return resolve({
@@ -2973,26 +2986,30 @@ class Model extends BaseModel {
                     });
                 }
 
-                const { project, group } = infoParent;
+                const { project } = infoParent;
 
                 /**
-                * Gán project, group từ việc cha sang việc con
+                * Gán project từ việc cha sang việc con (không gán Group)
                 * - Chỉ cho phép người tạo việc, thực hiện di chuyển
                 * - Tăng số lượng subtask của task cha
                 */
                 const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
                     _id: taskID,
                     project,
-                    $or: [
-                        { author: userID },
-                        { assignee: userID },
-                    ]
+                    // $or: [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    // ]
                 },
                 {
                     $set: {
                         parent: parentID,
-                        group
                     },
+                }, { new: true })
+
+                // Cập nhật số lượng công việc con của việc cha
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,
+                {
                     $inc: {
                         amountSubtask: 1,
                     }

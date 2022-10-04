@@ -1483,6 +1483,7 @@ class Model extends BaseModel {
                             real: 1,
                             field: 1,
                             buyerInfo: 1,
+                            sellerInfo: 1,
                             chair: 1,
                             personInCharge: 1,
                             dependentUnit: 1,
