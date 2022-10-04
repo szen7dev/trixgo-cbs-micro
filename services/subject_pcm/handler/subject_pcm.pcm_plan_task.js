@@ -726,7 +726,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 console.log({ projectID })
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadTemplateImportExcel({
-                    projectID 
+                    projectID, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
