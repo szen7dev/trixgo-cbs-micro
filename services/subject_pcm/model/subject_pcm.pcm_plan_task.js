@@ -1261,7 +1261,7 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
-        // console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
+        console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
         // console.log({
         //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
@@ -1329,6 +1329,8 @@ class Model extends BaseModel {
                 if(status){
                     conditionObj.status = { $in: [status] }
                 }
+
+                // console.log({conditionObj_______1:conditionObj})
 
                 /**
                  * Quá hạn
@@ -1409,7 +1411,8 @@ class Model extends BaseModel {
                     conditionObj.$or = [
                         { author: userID },
                         { assignee: userID },
-                        { related: { $in: [userID] }}
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }}
                     ]
                 }
 
@@ -1451,6 +1454,8 @@ class Model extends BaseModel {
                 if(level){
                     conditionObj.level = level;
                 }
+
+                // console.log({conditionObj_______3:conditionObj})
 
                 /**
                  * Lấy việc quá hạn
@@ -1539,6 +1544,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                // console.log('=======================')
                 // console.log(conditionObj)
 
                 // Tìm kiếm theo keyword
@@ -1569,8 +1575,11 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
 
+                // console.log(conditionObjOrg)
+
                 // Tổng số việc tìm thấy
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
+                console.log({totalRecord})
                 if(unlimit == 1){
                     limit = totalRecord;
                 }
@@ -1624,6 +1633,7 @@ class Model extends BaseModel {
 
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
+                // console.log(infoDataAfterGet)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -3304,7 +3314,7 @@ class Model extends BaseModel {
                     { author: ObjectID(userID) },
                     { assignee: ObjectID(userID) },
                     { related: { $in: [ObjectID(userID)] }},
-                    { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
+                    { group: { $in: listGroups.map(item => item._id) }},
                 ]
 
                 /**
