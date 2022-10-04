@@ -336,13 +336,19 @@ class Model extends BaseModel {
                     ctx
                 });
 
+                /**
+                 * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
+                 */
                 if(parentID && checkObjectIDs(parentID)){
+                    let infoParentTask = await PCM_PLAN_TASK_COLL.findById(parentID).select('_id level')
+                    
                     // Cập nhật việc cha
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
                         $inc: { amountSubtask: 1 },
                         $addToSet: { news: authorID },
                         $set: {
-                            modifyAt: new Date()
+                            modifyAt: new Date(),
+                            level: Number(infoParentTask.level) + Number(1)
                         }
                     });
                 }
