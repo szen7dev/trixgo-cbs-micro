@@ -3286,7 +3286,8 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
-        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
+        console.log('Gom nhóm công việc theo thuộc tính=================')
+        console.log({ userID, option, fromDate, toDate, projectID, companyID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3296,14 +3297,14 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {}
                 //__________Danh sách các nhóm dữ liệu mà userID là members
-                // let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
                 // Lấy công việc mà user được quyền truy cập
                 conditionObj.$or = [
                     { author: ObjectID(userID) },
                     { assignee: ObjectID(userID) },
                     { related: { $in: [ObjectID(userID)] }},
-                    // { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
+                    { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
                 ]
 
                 /**

@@ -2138,7 +2138,7 @@ class Model extends BaseModel {
      * Date: 24/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
-        console.log('============Gom nhóm theo thuộc tính================')
+        console.log('============Gom nhóm theo thuộc tính 222================')
         console.log({ userID, option, fromDate, toDate, isParent, isGroup })
         return new Promise(async resolve => {
             try {
@@ -2200,11 +2200,13 @@ class Model extends BaseModel {
                             $lte: new Date(toDate),
                         },
                         project: { $exists: true, $ne: null },
+                        companyOfAuthor: { $exists: true, $ne: null },
                     })
 				}else{
                     listComments = await PCM_COMMENT_COLL.find({
                         task: {$in: listTask.map(item=>item._id)},
                         project: { $exists: true, $ne: null },
+                        companyOfAuthor: { $exists: true, $ne: null },
                     })
                 }
                 // let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
