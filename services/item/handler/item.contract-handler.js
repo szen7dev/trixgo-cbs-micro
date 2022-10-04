@@ -587,15 +587,22 @@ module.exports = {
             contractID          : { type: "string", optional: true },
             outin               : { type: "string", optional: true },
             option              : { type: "string", optional: true },
-            guaranteeType       : { type: "string", optional: true },
+            guaranteeType       : { type: "string", optional: true }, 
+            subType             : { type: "string", optional: true }, 
+
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { companyID, projectID, contractID, outin, option, guaranteeType  } = ctx.params;
+                let { companyID, projectID, contractID, outin, option, guaranteeType, keyword, limit, lastestID, populates, select, subType } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log('===============Danh sách bảo lãnh===================')
 
                 if(!companyID){
                     companyID = company._id
@@ -603,7 +610,7 @@ module.exports = {
                 console.log({companyID})
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getListGuarantee({
-                    userID, companyID, projectID, contractID, outin, option, guaranteeType 
+                    userID, companyID, projectID, contractID, outin, option, guaranteeType, keyword, limit, lastestID, populates, select, subType
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

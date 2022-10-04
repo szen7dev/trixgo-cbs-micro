@@ -1215,8 +1215,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/20/2022
      */
-    getListGuarantee({ userID, companyID, projectID, contractID, outin, option, guaranteeType }){
-        console.log({userID, companyID, projectID, contractID, outin, option, guaranteeType})
+    getListGuarantee({ userID, companyID, projectID, contractID, outin, option, guaranteeType, subType, keyword, limit, lastestID, populates, select }){
+        // console.log({userID, companyID, projectID, contractID, outin, option, guaranteeType})
         return new Promise(async resolve => {
             try {
                 let conditionObj = {status: { $ne: 3 }}
@@ -1239,7 +1239,7 @@ class Model extends BaseModel {
                         conditionObj2.project = ObjectID(projectID)
                         conditionObj3.project = ObjectID(projectID)
                         conditionObj4.project = ObjectID(projectID)
-                    } else if (checkObjectIDs(companyID)) {
+                    } else{
                         conditionObj.company = ObjectID(companyID)
                         conditionObj1.company = ObjectID(companyID)
                         conditionObj2.company = ObjectID(companyID)
@@ -1260,10 +1260,186 @@ class Model extends BaseModel {
                 start.setHours(0,0,0,0);
 
                 if(!option){
+                    console.log('===============Danh sách bảo lãnh===================')
+
                     // Danh sách mẩu tin theo điều kiện
+                    if(limit > 20){
+                        limit = 20
+                    }else{
+                        limit = +limit;
+                    }
+
+                    /**
+                     * DECALARTION VARIABLE (1)
+                     */
+                    let sortBy;
+                    let conditionObj = {};
+                    let keys	     = ['createAt__-1', '_id__-1'];
+    
+                    // POPULATE
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+    
+                        populates = JSON.parse(populates);
+                    }else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
+                    }
+    
+                    if(!isNaN(outin) && Number(outin) > 0){
+                        conditionObj.outin = Number(outin)
+                    }
+    
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
+
+                    // Bảo lãnh tạm ứng
+                    if(guaranteeType && Number(guaranteeType) == 1){
+                        conditionObj.status = { $ne: 3 }
+                        conditionObj.expiredAg = {
+                            $exists: true,
+                            $ne: null
+                        }
+
+                        if(subType && Number(subType) == 1){
+                            conditionObj.expiredAg = {
+                                $exists: true,
+                                $ne: null,
+                                $lt: start
+                            }
+                        }
+                        if(subType && Number(subType) == 2){
+                            conditionObj.expiredAg = {
+                                $exists: true,
+                                $ne: null,
+                                $gte: start,
+                                $lt: addDate(7),
+                            }
+                        }
+                        if(subType && Number(subType) == 3){
+                            conditionObj.expiredAg = {
+                                $exists: true,
+                                $ne: null,
+                                $gte: addDate(7),
+                                $lte: addDate(30),
+                            }
+                        }
+                        if(subType && Number(subType) == 4){
+                            conditionObj.expiredAg = {
+                                $exists: true,
+                                $ne: null,
+                                $gt: addDate(30),
+                            }
+                        }                        
+                    }
+
+                    // Bảo lãnh hợp đồng
+                    if(guaranteeType && Number(guaranteeType) == 2){
+                        conditionObj.status = { $ne: 3 }
+                        conditionObj.expiredCg = {
+                            $exists: true,
+                            $ne: null
+                        }
+
+                        if(subType && Number(subType) == 1){
+                            conditionObj.expiredCg = {
+                                $exists: true,
+                                $ne: null,
+                                $lt: start
+                            }
+                        }
+                        if(subType && Number(subType) == 2){
+                            conditionObj.expiredCg = {
+                                $exists: true,
+                                $ne: null,
+                                $gte: start,
+                                $lt: addDate(7),
+                            }
+                        }
+                        if(subType && Number(subType) == 3){
+                            conditionObj.expiredCg = {
+                                $exists: true,
+                                $ne: null,
+                                $gte: addDate(7),
+                                $lte: addDate(30),
+                            }
+                        }
+                        if(subType && Number(subType) == 4){
+                            conditionObj.expiredCg = {
+                                $exists: true,
+                                $ne: null,
+                                $gt: addDate(30),
+                            }
+                        }                        
+                    }
+    
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let regExpSearch = RegExp(keyword, 'i');
+                        conditionObj.name = regExpSearch;
+                    }
+                    let conditionObjOrg = { ...conditionObj };
+    
+                    // PHÂN TRANG KIỂU MỚI
+                    if(lastestID && checkObjectIDs(lastestID)){
+                        let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
+                        if(!infoData)
+                            return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+    
+                        let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                        if(!dataPagingAndSort || dataPagingAndSort.error)
+                            return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+    
+                        conditionObj = dataPagingAndSort.data.find;
+                        sortBy       = dataPagingAndSort.data.sort;
+                    }else{
+                        let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                        sortBy       = dataPagingAndSort.data.sort;
+                    }
+    
+                    let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
+                        .limit(limit+1)
+                        .sort(sortBy)
+                        .select(select)
+                        .populate(populates)
+                        .lean();
+    
+                    // GET TOTAL RECORD
+                    if(!infoDataAfterGet)
+                        return resolve({ error: true, message: "Can't get data", status: 403 });
+    
+                    let nextCursor	= null;
+                    if(infoDataAfterGet && infoDataAfterGet.length){
+                        if(infoDataAfterGet.length > limit){
+                            nextCursor = infoDataAfterGet[limit - 1]._id;
+                            infoDataAfterGet.length = limit;
+                        }
+                    }
+    
+                    let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
+                    let totalPage   = Math.ceil(totalRecord/limit);
+    
+                    return resolve({ error: false, data: {
+                        listRecords: infoDataAfterGet,
+                        limit: +limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    }, status: 200 });
 
                 }else{
-                    // Tổng hợp số lượng
+                    console.log('==============Tổng hợp phân loại bảo lãnh===================')
+
+                    // Bảo lãnh tạm ứng
                     if(guaranteeType && Number(guaranteeType) == 1){
                         conditionObj1.expiredAg = {
                             $lt: start
