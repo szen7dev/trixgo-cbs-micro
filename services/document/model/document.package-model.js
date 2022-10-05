@@ -31,106 +31,321 @@ class Model extends BaseModel {
         super(DOCUMENT__PACKAGE_COLL);
     }
 
-    /**
-	 * Name: insert document package 
-	 * Author: Depv
-	 * Code:
-	 */
-    insert({ name, sign, userID, projectID, parentID, ctx }) {
-        return new Promise(async resolve => {
+   /**
+     * Name: Insert
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    insert({ userID, parentID, fieldID, areaID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx }) {
+        const that = this
+        return new Promise(async (resolve) => {
             try {
-                /**
-                 * Business Analyst (BA)
-                 * 1. Kiểm tra tính hợp lệ của tham biến
-                 * 2. Tạo gói thầu trong dự án
-                 * 3. Cập nhật thông dự án
-                 */
-                if (!name|| !checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'params_invalid' });
-
-                // call service department để lấy thông tin
+                if(!checkObjectIDs(userID) || !checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'Request params projectID|companyID|userID invalid' })
+                
+                // Thông tin dự án
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                    departmentID: projectID
+                    departmentID: projectID, select: '_id name sign company area'
                 })
 
-                const companyID = infoProject?.data?.company;
-                //__________Khai báo dữ liệu
-                let suid = await stringUtils.randomAndCheckExists( DOCUMENT__PACKAGE_COLL, 'suid');
-                let dataInsert = {
-                    suid,
-                    author: userID,
-                    company: companyID,
-                    project: projectID,
-                    name,
-                    sign,
-                    members: [ObjectID(userID)],
-                    userCreate: userID
+                if (!infoProject)
+                    return resolve({ error: true, message: 'Can not get Project info' });
+                    
+                if (!infoProject.data.area || !_isValid(infoProject.data.area))
+                    return resolve({ error: true, message: 'Không tồn tại khu vực trong dự án' })
+
+                let dataInsert = { 
+                    userCreate: userID, 
+                    area: infoProject.data.area, 
+                    client: infoProject.data.company, 
+                    admins: [userID], 
+                    members: [userID] 
                 }
 
-                //__________Kiểm tra xem có parent hay không
-                if(parentID && checkObjectIDs(parentID)){
+                if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
-                    let infoParent = await DOCUMENT__PACKAGE_COLL.findById(parentID);
-                    dataInsert.level = infoParent.level + 1;
                 }
-                //__________Tạo gói thầu
+
+                if (checkObjectIDs(fieldID)) {
+                    dataInsert.field = fieldID;
+                }
+
+                if (checkObjectIDs(areaID)) {
+                    dataInsert.area = areaID;
+                }
+
+                if (checkObjectIDs(projectID)) {
+                    dataInsert.project = projectID;
+                }
+
+                if (checkObjectIDs(bidderID)) {
+                    dataInsert.bidder = bidderID;
+                }
+
+                if (checkObjectIDs(contractID)) {
+                    dataInsert.contract = contractID;
+                }
+
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataInsert.type = type;
+                }
+
+                if (!isNaN(status) && Number(status) > 0) {
+                    dataInsert.status = status;
+                }
+
+                if (!isNaN(percentOfCompletedPackage) && Number(percentOfCompletedPackage) > 0) {
+                    dataInsert.percentOfCompletedPackage = percentOfCompletedPackage;
+                }
+
+                if (!isNaN(form) && Number(form) > 0) {
+                    dataInsert.form = form;
+                }
+
+                if (!isNaN(contractType) && Number(contractType) > 0) {
+                    dataInsert.contractType = contractType;
+                }
+
+                if (!isNaN(duration) && Number(duration) > 0) {
+                    dataInsert.duration = duration;
+                }
+
+                if (!isNaN(progress) && Number(progress) > 0) {
+                    dataInsert.progress = progress;
+                }
+
+                if (name) {
+                    dataInsert.name = name;
+                }
+
+                if (sign) {
+                    dataInsert.sign = sign;
+                }
+                
+                if (description) {
+                    dataInsert.description = description;
+                }
+
+                if (note) {
+                    dataInsert.note = note;
+                }
+
+                if (startTime) {
+                    dataInsert.startTime = startTime;
+                }
+
+                if (finishTime) {
+                    dataInsert.finishTime = finishTime;
+                }
+
+                if (actualStartTime) {
+                    dataInsert.actualStartTime = actualStartTime;
+                }
+
+                if (actualFinishTime) {
+                    dataInsert.actualFinishTime = actualFinishTime;
+                }
+                
+                if (closingTime) {
+                    dataInsert.closingTime = closingTime;
+                }
+
+                if (!isNaN(packagePrice) && Number(packagePrice) > 0) {
+                    dataInsert.packagePrice = packagePrice;
+                }
+
+                if (!isNaN(tenderPrice) && Number(tenderPrice) > 0) {
+                    dataInsert.tenderPrice = tenderPrice;
+                }
+
+                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) > 0) {
+                    dataInsert.vatTenderPrice = vatTenderPrice;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_update' });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                return resolve({ error: false, data: infoAfterInsert });
+                /**
+                 * CẬP NHẬT THÔNG TIN LẠI VỀ DỰ ÁN
+                 */
+                // Tính toán số lượng, giá trị
+                let infoCal = await that.getAmountByObject({ userID, projectID })
+
+                // Cập nhật vào thông tin dự án
+                if(infoCal){
+                    infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: projectID,
+                        numberOfPackage: infoCal.data.numberOfPackage, 
+                        numberOfUnexecutedPackage: infoCal.data.numberOfUnexecutedPackage, 
+                        numberOfExecutedPackage: infoCal.data.numberOfExecutedPackage, 
+                        numberOfCompletedPackage: infoCal.data.numberOfCompletedPackage, 
+                        amountOfUnexecutedPackage: infoCal.data.amountOfUnexecutedPackage, 
+                        amountOfExecutedPackage: infoCal.data.amountOfExecutedPackage, 
+                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage,
+                        percentOfCompletedPackage: infoCal.data.percentOfCompletedPackage,
+                    })
+                }
+
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
-    /**
-	 * Name: update document package 
-	 * Author: Depv
-	 * Code:
-	 */
-    update({ packageID, name, sign, members, membersRemove, admins, adminsRemove, userID }) {
-        return new Promise(async resolve => {
+     /**
+     * Name: Update 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    update({ packageID, userID, ctx, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
+        const that = this
+        return new Promise(async (resolve) => {
             try {
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
 
-                if(name){
+                if (!checkObjectIDs(packageID))
+                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
+
+                // Thông tin dự án
+                let infoPlan = await DOCUMENT__PACKAGE_COLL.findById(packageID)
+                if (!infoPlan)
+                    return resolve({ error: true, message: 'Can not get info', status: 400 })
+
+                if (checkObjectIDs(fieldID)) {
+                    dataUpdate.field = fieldID;
+                }
+
+                if (checkObjectIDs(bidderID)) {
+                    dataUpdate.bidder = bidderID;
+                }
+
+                if (checkObjectIDs(contractID)) {
+                    dataUpdate.contract = contractID;
+                }
+
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataUpdate.type = type;
+                }
+
+                if (!isNaN(status) && Number(status) > 0) {
+                    dataUpdate.status = status;
+                }
+                
+                if (!isNaN(percentOfCompletedPackage) && Number(percentOfCompletedPackage) > 0) {
+                    dataUpdate.percentOfCompletedPackage = percentOfCompletedPackage;
+                }
+
+                if (!isNaN(form) && Number(form) > 0) {
+                    dataUpdate.form = form;
+                }
+
+                if (!isNaN(contractType) && Number(contractType) > 0) {
+                    dataUpdate.contractType = contractType;
+                }
+
+                if (!isNaN(duration) && Number(duration) > 0) {
+                    dataUpdate.duration = duration;
+                }
+
+                if (!isNaN(progress) && Number(progress) > 0) {
+                    dataUpdate.progress = progress;
+                }
+
+                if (name) {
                     dataUpdate.name = name;
                 }
 
-                if(sign){
+                if (sign) {
                     dataUpdate.sign = sign;
                 }
-
-                if(checkObjectIDs(members)){
-                    dataUpdate.$addToSet = { members }
+                
+                if (description) {
+                    dataUpdate.description = description;
                 }
 
-                if(checkObjectIDs(membersRemove)){
-                    dataUpdate.$pullAll = { members: membersRemove }
+                if (note) {
+                    dataUpdate.note = note;
                 }
 
-                if(checkObjectIDs(admins)){
-                    dataUpdate.$addToSet = { admins }
+                if (startTime) {
+                    dataUpdate.startTime = startTime;
                 }
 
-                if(checkObjectIDs(adminsRemove)){
-                    dataUpdate.$pullAll = { admins: adminsRemove }
+                if (finishTime) {
+                    dataUpdate.finishTime = finishTime;
                 }
 
-                let infoAfterUpdate = await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, dataUpdate, { new: true });
+                if (actualStartTime) {
+                    dataUpdate.actualStartTime = actualStartTime;
+                }
+
+                if (actualFinishTime) {
+                    dataUpdate.actualFinishTime = actualFinishTime;
+                }
+                
+                if (closingTime) {
+                    dataUpdate.closingTime = closingTime;
+                }
+
+                if (!isNaN(packagePrice) && Number(packagePrice) > 0) {
+                    dataUpdate.packagePrice = packagePrice;
+                }
+
+                if (!isNaN(tenderPrice) && Number(tenderPrice) > 0) {
+                    dataUpdate.tenderPrice = tenderPrice;
+                }
+
+                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) > 0) {
+                    dataUpdate.vatTenderPrice = vatTenderPrice;
+                }
+
+                let infoAfterUpdate = await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, dataUpdate, { new: true })
+                console.log({infoAfterUpdate});
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
 
-                return resolve({ error: false, data: infoAfterUpdate });
+                /**
+                 * CẬP NHẬT THÔNG TIN LẠI VỀ DỰ ÁN
+                 */
+                // Tính toán số lượng, giá trị
+                let infoCal = await that.getAmountByObject({ userID, projectID: infoPlan.project })
+                console.log({ infoCal, userID, projectID: infoPlan.project  });
+                // Cập nhật vào thông tin dự án
+                if(infoCal){
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: `${infoPlan.project}`,
+                        numberOfPackage: infoCal.data.numberOfPackage, 
+                        numberOfUnexecutedPackage: infoCal.data.numberOfUnexecutedPackage, 
+                        numberOfExecutedPackage: infoCal.data.numberOfExecutedPackage, 
+                        numberOfCompletedPackage: infoCal.data.numberOfCompletedPackage, 
+                        amountOfUnexecutedPackage: infoCal.data.amountOfUnexecutedPackage, 
+                        amountOfExecutedPackage: infoCal.data.amountOfExecutedPackage, 
+                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage,
+                        percentOfCompletedPackage: infoCal.data.percentOfCompletedPackage,
+                    })
+
+                    // console.log(infoProject)
+                }
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
-    /**
+     /**
+     * Name: Remove
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+
+        /**
 	 * Name: Remove document package 
 	 * Author: Depv
 	 * Code:
@@ -179,7 +394,7 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code:
 	 */
-	getInfo({ packageID, select, populates }) {
+    getInfo({ packageID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -327,6 +542,123 @@ class Model extends BaseModel {
 				});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+     /**
+     * Name: Gom nhóm theo đối tượng 
+     * Author: Hiepnh
+     * Date: 30/04/2022
+     */
+    getAmountByObject({ userID, projectID }){
+        return new Promise(async resolve => {
+            try {
+                let numberOfPackage=0, 
+                    numberOfUnexecutedPackage=0, 
+                    numberOfExecutedPackage=0, 
+                    numberOfCompletedPackage=0, 
+                    amountOfUnexecutedPackage=0, 
+                    amountOfExecutedPackage=0, 
+                    amountOfCompletedPackage=0, 
+                    totalFinishAmount=0, 
+                    percentOfCompletedPackage=0
+
+                let conditionObj = { }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+                }
+
+                // Tính tổng theo phân loại
+                let listData = await DOCUMENT__PACKAGE_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $group: {
+                            _id: { status: "$status"}, // Phân loại trạng thái
+                            count: { $sum: 1}, // Tính tổng số lượng
+                            amount: { $sum: "$packagePrice" }, // Tổng giá trị các gói
+                            totalFinishAmount: { $sum: { $multiply: [ "$percentOfCompletedPackage", "$packagePrice", 0.01 ] } }, // Tổng giá trị hoàn thành
+                        }
+                    }, 
+                    {
+                        $sort: {"_id.status": 1}
+                    }
+                ])
+                if(listData && listData.length){
+                    for (const item of listData) {
+                        if(Number(item._id.status) === 1){
+                            numberOfUnexecutedPackage = Number(item.count)
+                            amountOfUnexecutedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
+                        }
+
+                        if(Number(item._id.status) === 2){
+                            numberOfExecutedPackage = Number(item.count)
+                            amountOfExecutedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
+                        }
+
+                        if(Number(item._id.status) === 3){
+                            numberOfCompletedPackage = Number(item.count)
+                            amountOfCompletedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
+                        }
+                    }
+                    
+                    numberOfPackage = Number(numberOfUnexecutedPackage) + Number(numberOfExecutedPackage) + Number(numberOfCompletedPackage)
+                }
+
+                if(Number(amountOfUnexecutedPackage + amountOfExecutedPackage + amountOfCompletedPackage) != 0){
+                    percentOfCompletedPackage = 100*(Number(totalFinishAmount)/Number(amountOfUnexecutedPackage + amountOfExecutedPackage + amountOfCompletedPackage))
+                }
+                percentOfCompletedPackage = percentOfCompletedPackage.toFixed(2)
+                // console.log({percentOfCompletedPackage})
+
+                return resolve({ error: false, data: { numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage } })
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Báo cáo lựa chọn nhà thầu
+     * Author: Depv
+     * Date: 18/05/2022
+     */
+    contractorSelection({ userID, projectID }){
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}
+
+                if(!checkObjectIDs(projectID)){
+                    return resolve({ error: true, message: "projectID không hợp lệ" });
+                }else{
+                    conditionObj.project = ObjectID(projectID)
+                }
+                            
+                let listData = await DOCUMENT__PACKAGE_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $group: {
+                            _id: { status: "$status"}, // Phân loại trạng thái
+                            amount: { $sum: 1}, // số lượng gói thầu
+                            amountPackagePrice: { $sum: "$packagePrice" }, // Tổng giá trị các gói
+                        }
+                    }, 
+                    {
+                        $sort: {"_id.status": 1}
+                    }
+                ])
+
+                return resolve({ error: false, data: listData })
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }
