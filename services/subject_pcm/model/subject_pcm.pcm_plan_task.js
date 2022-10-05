@@ -481,8 +481,8 @@ class Model extends BaseModel {
      * Code: 8/9/2022
      */
     update({ typeUpdate,
-        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews,
-        contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink,
+        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement,
+        contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
         links, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
     }){
@@ -644,6 +644,11 @@ class Model extends BaseModel {
                     dataUpdate.contract = contractID;
                 }
 
+                //_________Nhóm dữ liệu
+                if(checkObjectIDs(groupID)){
+                    dataUpdate.group = groupID;
+                }
+
                 //_________Tính chất
                 if(checkObjectIDs(fieldID)){
                     dataUpdate.field = fieldID;
@@ -698,10 +703,36 @@ class Model extends BaseModel {
                     dataUpdate.milestone = milestone;
                 }
 
+                /**
+                 * Cập nhật thông tin đánh giá
+                 */
+                if(ontime){
+                    dataUpdate.ontime = ontime;
+                }
+
+                if(quality){
+                    dataUpdate.quality = quality;
+                }
+
+                /**
+                 * Cập nhật thông tin sán lượng
+                 */
+                if(unit){
+                    dataUpdate.unit = unit;
+                }
+
+                if(unitPrice >= 0){
+                    dataUpdate.unitPrice = unitPrice;
+                }
+
+                if(quantity >= 0){
+                    dataUpdate.quantity = quantity;
+                }
+
                 // //_________Dự kiến thời lượng (h)
-                // if(amountoftime){
-                //     dataUpdate.amountoftime = amountoftime;
-                // }
+                if(amountoftime){
+                    dataUpdate.amountoftime = amountoftime;
+                }
                 // //_________Đơn giá cho 1 giờ làm
                 // if(amountPerHour){
                 //     dataUpdate.amountPerHour = amountPerHour;
@@ -733,9 +764,9 @@ class Model extends BaseModel {
                 // }
 
                 // //_________Nhận xét
-                // if(judgement){
-                //     dataUpdate.judgement = judgement;
-                // }
+                if(judgement){
+                    dataUpdate.judgement = judgement;
+                }
 
                 // //_________Tiến độ
                 // if(overdue){

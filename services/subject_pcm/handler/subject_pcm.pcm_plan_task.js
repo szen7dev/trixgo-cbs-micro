@@ -87,6 +87,7 @@ module.exports = {
             progressType        : { type: "string", optional: true },
             fieldID             : { type: "string", optional: true },
             contractID          : { type: "string", optional: true },
+            groupID             : { type: "string", optional: true },
             draft               : { type: "number", optional: true },
             userIDDelete        : { type: "number", optional: true },
             typeUpdate          : { type: "number", optional: true },
@@ -102,6 +103,13 @@ module.exports = {
             assigneeAttachs     : { type: "array", optional: true },
             milestone           : { type: "number", optional: true },
             subType             : { type: "number", optional: true },
+            unit                : { type: "string", optional: true },
+            // unitPrice           : { type: "string", optional: true },
+            // quantity            : { type: "string", optional: true },
+            // amountoftime        : { type: "string", optional: true },
+            ontime              : { type: "string", optional: true },
+            judgement           : { type: "string", optional: true },
+            quality             : { type: "string", optional: true },
             isUpdateNews        : { type: "boolean", optional: true },
         },
         async handler(ctx) {
@@ -109,10 +117,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const {
                     typeUpdate,
-                    taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
+                    taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, amountoftime,
+                    ontime, quality
                  } = ctx.params;
 				const { _id: userID, bizfullname, fullname, email, company } = ctx.meta.infoUser;
 
@@ -121,8 +130,8 @@ module.exports = {
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email },
-                    companyOfUser: company._id, milestone, alert, ctx
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email }, unit, unitPrice, quantity,
+                    companyOfUser: company._id, milestone, alert, groupID, ontime, quality, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
