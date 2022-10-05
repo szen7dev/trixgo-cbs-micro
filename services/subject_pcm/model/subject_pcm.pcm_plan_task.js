@@ -637,6 +637,11 @@ class Model extends BaseModel {
                  */
                 if(status && infoTask.status != 3){
                     dataUpdate.status = status;
+                    
+                    // Nếu cập nhật sang trạng thái hoàn thành
+                    if(status == 3){
+                        dataUpdate.percentage = 100
+                    }
                 }
 
                 //_________Hợp đồng
@@ -768,15 +773,15 @@ class Model extends BaseModel {
                     dataUpdate.judgement = judgement;
                 }
 
-                // //_________Tiến độ
-                // if(overdue){
-                //     dataUpdate.overdue = overdue;
-                // }
+                //_________Tiến độ
+                if(overdue){
+                    dataUpdate.overdue = overdue;
+                }
 
-                // //_________Chất lượng
-                // if(score){
-                //     dataUpdate.score = score;
-                // }
+                //_________Chất lượng
+                if(score){
+                    dataUpdate.score = score;
+                }
 
                 // //_________Mức độ cấp bách
                 // if(urgent){
@@ -852,25 +857,28 @@ class Model extends BaseModel {
                      */
                     if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?.toString()) {
                         dataUpdate.status = 3;
+                        dataUpdate.percentage = 100;
                     }
 
                     /**
                      * TH1:
-                     * - Nếu là Đề nghị phê duyệt (2) + Thanh toán (3) + Nghiệm thu (5) + Đề nghị thay đổi (7) + Báo cáo (9)
+                     * - Nếu là Đề nghị phê duyệt (2) + Thanh toán (3) + Nghiệm thu (5)
                      * - Người thực hiện ký => phê duyệt luôn
                      * TH2:
                      * - Nếu là Các chủ đề khác còn lại
                      * - Người tạo việc ký => phê duyệt luôn
                      */
-                    if([2,3,5,7,9].includes(Number(infoTask.subtype))){
+                    if([2,3,5].includes(Number(infoTask.subtype))){
                         if(userID.toString() === infoTask.assignee?.toString()){
                             dataUpdate.approver = userID
                             dataUpdate.timeApproved = Date.now()
+                            dataUpdate.percentage = 100
                         }
                     }else{
                         if(userID.toString() === infoTask.author?.toString()){
                             dataUpdate.approver = userID
                             dataUpdate.timeApproved = Date.now()
+                            dataUpdate.percentage = 100
                         }
                     }
                 }
