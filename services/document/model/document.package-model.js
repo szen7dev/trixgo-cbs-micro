@@ -202,7 +202,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    update({ packageID, userID, ctx, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
+    update({ packageID, userID, ctx, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, members, membersRemove, admins, adminsRemove }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -265,6 +265,22 @@ class Model extends BaseModel {
 
                 if (sign) {
                     dataUpdate.sign = sign;
+                }
+
+                if(checkObjectIDs(members)){
+                    dataUpdate.$addToSet = { members }
+                }
+
+                if(checkObjectIDs(membersRemove)){
+                    dataUpdate.$pullAll = { members: membersRemove }
+                }
+
+                if(checkObjectIDs(admins)){
+                    dataUpdate.$addToSet = { admins }
+                }
+
+                if(checkObjectIDs(adminsRemove)){
+                    dataUpdate.$pullAll = { admins: adminsRemove }
                 }
                 
                 if (description) {

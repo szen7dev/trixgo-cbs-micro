@@ -88,14 +88,19 @@ module.exports = {
             status              : { type: "number", optional: true },
             percentOfCompletedPackage: { type: "number", optional: true },
             note                : { type: "string", optional: true },
+            members                 : { type: "array", optional: true },
+            membersRemove           : { type: "array", optional: true },
+            admins                  : { type: "array", optional: true },
+            adminsRemove            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { packageID, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice } = ctx.params;
+                let { packageID, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, members, membersRemove, admins, adminsRemove } = ctx.params;
+
                 let resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.update({
-                    packageID, userID, ctx, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice
+                    packageID, userID, ctx, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, members, membersRemove, admins, adminsRemove
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
