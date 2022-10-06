@@ -508,7 +508,11 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'taskID_invalid', status: 400 });
 
-                const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+                // const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+                const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).populate({
+                    path: 'project',
+                    select: '_id admins'
+                })
                 // console.log('===============================')
                 // console.log(infoTask)
 
@@ -532,7 +536,7 @@ class Model extends BaseModel {
                 /**
                  * NẾU LÀ CÔNG VIỆC NHÁP THÌ CHO PHÉP CẬP NHẬT MỘT SỐ THÔNG TIN
                  */
-                if(infoTask.draft == 1){
+                if(infoTask.draft == 1 || infoTask.project.admins.map(item=>item.toString()).includes(userID?.toString())){
                     /**
                      * Các trường thông tin quan trọng/hay gặp
                      */
@@ -585,6 +589,20 @@ class Model extends BaseModel {
                         dataUpdate.actualFinishTime = formatDate;
                     }
 
+                    // Người thực hiện
+                    if(checkObjectIDs(assigneeID)){
+                        dataUpdate.assignee = assigneeID;
+    
+                        let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                            userID: assigneeID, select: "_id company"
+                        })
+        
+                        // companyOfAssignee
+                        if(!infoAssignee.error){
+                            dataUpdate.companyOfAssignee = infoAssignee.data.company;
+                        }
+                    }
+
                 }else{
                     //_________Mô tả: chỉ áp dụng cho Báo cáo, Họp
                     if(infoTask.subtype === 9 || infoTask.subtype === 11){
@@ -592,24 +610,6 @@ class Model extends BaseModel {
                             dataUpdate.description = description;
                             dataUpdate.descriptioncv = stringUtils.removeAccents(description);
                         }
-                    }
-                }
-
-                /**
-                 * Người thực hiện
-                 * - Công việc nháp
-                 * - Admin dự án
-                 */
-                if(checkObjectIDs(assigneeID)){
-                    dataUpdate.assignee = assigneeID;
-
-                    let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                        userID: assigneeID, select: "_id company"
-                    })
-    
-                    // companyOfAssignee
-                    if(!infoAssignee.error){
-                        dataUpdate.companyOfAssignee = infoAssignee.data.company;
                     }
                 }
 
