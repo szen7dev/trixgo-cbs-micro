@@ -101,7 +101,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(adminsRemove)){
                     dataInUpdate.$pullAll = { admins: adminsRemove };
                 }
-
+                console.log({ groupID, name, sign })
                 let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });

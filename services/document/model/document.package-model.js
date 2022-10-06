@@ -42,6 +42,7 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Request params projectID|companyID|userID invalid' })
+                let suid = await stringUtils.randomAndCheckExists(DOCUMENT__PACKAGE_COLL, 'suid');
                 
                 // Thông tin dự án
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
@@ -51,15 +52,16 @@ class Model extends BaseModel {
                 if (!infoProject)
                     return resolve({ error: true, message: 'Can not get Project info' });
                     
-                if (!infoProject.data.area || !_isValid(infoProject.data.area))
-                    return resolve({ error: true, message: 'Không tồn tại khu vực trong dự án' })
+                // if (!infoProject.data.area || !_isValid(infoProject.data.area))
+                //     return resolve({ error: true, message: 'Không tồn tại khu vực trong dự án' })
 
                 let dataInsert = { 
                     userCreate: userID, 
-                    area: infoProject.data.area, 
+                    area: infoProject?.data?.area, 
                     client: infoProject.data.company, 
                     admins: [userID], 
-                    members: [userID] 
+                    members: [userID],
+                    suid
                 }
 
                 if (checkObjectIDs(parentID)) {
@@ -163,6 +165,7 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
+                console.log({infoAfterInsert})
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
@@ -305,7 +308,6 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterUpdate = await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, dataUpdate, { new: true })
-                console.log({infoAfterUpdate});
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
 
@@ -314,7 +316,6 @@ class Model extends BaseModel {
                  */
                 // Tính toán số lượng, giá trị
                 let infoCal = await that.getAmountByObject({ userID, projectID: infoPlan.project })
-                console.log({ infoCal, userID, projectID: infoPlan.project  });
                 // Cập nhật vào thông tin dự án
                 if(infoCal){
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
@@ -328,8 +329,6 @@ class Model extends BaseModel {
                         amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage,
                         percentOfCompletedPackage: infoCal.data.percentOfCompletedPackage,
                     })
-
-                    // console.log(infoProject)
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -615,8 +614,6 @@ class Model extends BaseModel {
                     percentOfCompletedPackage = 100*(Number(totalFinishAmount)/Number(amountOfUnexecutedPackage + amountOfExecutedPackage + amountOfCompletedPackage))
                 }
                 percentOfCompletedPackage = percentOfCompletedPackage.toFixed(2)
-                // console.log({percentOfCompletedPackage})
-
                 return resolve({ error: false, data: { numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage } })
             } catch (error) {
                 return resolve({ error: true, message: error.message });

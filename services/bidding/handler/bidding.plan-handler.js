@@ -7,6 +7,7 @@ const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_cod
  * MODELS
  */
 const BIDDING__PLAN_MODEL = require('../model/bidding.plan-model').MODEL;
+const DOCUMENT_PACKAGE_MODEL = require('../../document/model/document.package-model').MODEL;
 
 module.exports = {
     /**
@@ -183,7 +184,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { projectID } = ctx.params;
                 
-                let resultAfterCallHandler = await BIDDING__PLAN_MODEL.contractorSelection({
+                let resultAfterCallHandler = await DOCUMENT_PACKAGE_MODEL.contractorSelection({
                     projectID
                 });
              
