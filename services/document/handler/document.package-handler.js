@@ -50,7 +50,7 @@ module.exports = {
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await BIDDING__PLAN_MODEL.insert({
+                const resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.insert({
                     userID, parentID, fieldID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx
                 });
 
