@@ -481,7 +481,7 @@ class Model extends BaseModel {
      * Code: 8/9/2022
      */
     update({ typeUpdate,
-        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement,overdue,
+        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
         links, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
@@ -543,11 +543,6 @@ class Model extends BaseModel {
                         dataUpdate.author = userID;
                     }
 
-                    //_________Người thực hiện
-                    if(checkObjectIDs(assigneeID)){
-                        dataUpdate.assignee = assigneeID;
-                    }
-
                     //_________Xoá người liên quan
                     if(checkObjectIDs(relatedRemoves)){
                         dataPullAll = {
@@ -598,6 +593,11 @@ class Model extends BaseModel {
                             dataUpdate.descriptioncv = stringUtils.removeAccents(description);
                         }
                     }
+                }
+
+                //_________Người thực hiện
+                if(checkObjectIDs(assigneeID)){
+                    dataUpdate.assignee = assigneeID;
                 }
 
                 //_________userUpdate
