@@ -595,9 +595,22 @@ class Model extends BaseModel {
                     }
                 }
 
-                //_________Người thực hiện
+                /**
+                 * Người thực hiện
+                 * - Công việc nháp
+                 * - Admin dự án
+                 */
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
+
+                    let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                        userID: assigneeID, select: "_id company"
+                    })
+    
+                    // companyOfAssignee
+                    if(!infoAssignee.error){
+                        dataUpdate.companyOfAssignee = infoAssignee.data.company;
+                    }
                 }
 
                 //_________userUpdate
