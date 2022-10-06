@@ -481,9 +481,9 @@ class Model extends BaseModel {
      * Code: 8/9/2022
      */
     update({ typeUpdate,
-        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement,
+        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement,overdue,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-        links, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding,
+        links, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
     }){
         return new Promise(async (resolve) => {
