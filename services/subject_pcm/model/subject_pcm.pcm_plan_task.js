@@ -342,7 +342,7 @@ class Model extends BaseModel {
                  */
                 if(parentID && checkObjectIDs(parentID)){
                     let infoParentTask = await PCM_PLAN_TASK_COLL.findById(parentID).select('_id level')
-                    
+
                     // Cập nhật việc cha
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
                         $inc: { amountSubtask: 1 },
@@ -592,11 +592,11 @@ class Model extends BaseModel {
                     // Người thực hiện
                     if(checkObjectIDs(assigneeID)){
                         dataUpdate.assignee = assigneeID;
-    
+
                         let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                             userID: assigneeID, select: "_id company"
                         })
-        
+
                         // companyOfAssignee
                         if(!infoAssignee.error){
                             dataUpdate.companyOfAssignee = infoAssignee.data.company;
@@ -650,7 +650,7 @@ class Model extends BaseModel {
                  */
                 if(status && infoTask.status != 3){
                     dataUpdate.status = status;
-                    
+
                     // Nếu cập nhật sang trạng thái hoàn thành
                     if(status == 3){
                         dataUpdate.percentage = 100
@@ -852,7 +852,7 @@ class Model extends BaseModel {
                 if(isAddSignature) {
                     const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
                         companyID: infoTask.company?.toString(),
-                        projectID: infoTask.project?.toString(),
+                        projectID: infoTask.project?._id?.toString(),
                         coll: {
                             kind: 'pcm_plan_task',
                             item: taskID
