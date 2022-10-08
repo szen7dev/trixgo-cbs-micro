@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.decode_jobs"}],"uuid":"7158675c9da74e458d5bf127cfcf5011"}
