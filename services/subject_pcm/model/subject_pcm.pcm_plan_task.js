@@ -1254,7 +1254,15 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                // Bắt đầu kiểm tra quyền
+
+                // Cập nhật thông tin người truy cập
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                    $addToSet: { viewedUsers: userID },
+                });
+
+                /**
+                 * Bắt đầu kiểm tra quyền
+                 */
                 let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
                 if(!infoTaskToCheckPermission) {
                     return resolve({ error: true, message: 'Not found task', status: 404 });
@@ -1291,8 +1299,10 @@ class Model extends BaseModel {
                 // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem(Đệ bỏ đi)
                 // if(Number(infoTaskToCheckPermission.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
                 //     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+                /**
+                 * Kết thúc kiểm tra quyền
+                 */
 
-                // Kết thúc kiểm tra quyền
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
                                 .populate(populates).lean();
@@ -1319,13 +1329,13 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
-        console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
-        console.log({
-            projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-            subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-            userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-            keyword, limit, unlimit, lastestID, select, populates
-        })
+        // console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
+        // console.log({
+        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+        //     keyword, limit, unlimit, lastestID, select, populates
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
