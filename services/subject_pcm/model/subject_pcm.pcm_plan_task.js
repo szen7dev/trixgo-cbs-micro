@@ -42,6 +42,8 @@ const CONTRACT_COLL                     = require('../../item/database/item.cont
 const USER_COLL                         = require('../../auth/database/auth.user-coll');
 // const { email } = require('../../../tools/mailer/config/cf_mailer');
 
+const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll');
+
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
 class Model extends BaseModel {
@@ -483,7 +485,7 @@ class Model extends BaseModel {
     update({ typeUpdate,
         taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-        links, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+        links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
     }){
         return new Promise(async (resolve) => {
@@ -709,6 +711,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(tasksLink)){
                     dataAddToset = { ...dataAddToset, links: tasksLink }
+                }
+
+                if(checkObjectIDs(linksDocs)){
+                    dataAddToset = { ...dataAddToset, linksDocs }
                 }
 
                 //_________% hoàn thành (max = 100)
@@ -993,13 +999,28 @@ class Model extends BaseModel {
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
-                // Khi link việc A vào việc B thì ở trong việc B, links cũng chứa A
+                /**
+                 * Khi link việc A vào việc B thì ở trong việc B, links cũng chứa A
+                 */
                 if(checkObjectIDs(tasksLink)){
                     await PCM_PLAN_TASK_COLL.updateMany({
                         _id: { $in: tasksLink }
                     }, {
                         $addToSet: {
                             links: taskID
+                        }
+                    });
+                }
+
+                /**
+                 * Khi link việc A vào Hồ sơ B thì ở trong Hồ sơ B, links cũng chứa A
+                 */
+                if(checkObjectIDs(linksDocs)){
+                    await DOCUMENT_DOC_COLL.updateMany({
+                        _id: { $in: linksDocs }
+                    }, {
+                        $addToSet: {
+                            tasks: taskID
                         }
                     });
                 }

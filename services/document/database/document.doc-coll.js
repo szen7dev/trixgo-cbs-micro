@@ -136,6 +136,11 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type    :  Number,
         default : 0
     },
+    //_________Link công việc
+    tasks: [{
+        type: Schema.Types.ObjectId,
+        ref: "pcm_plan_task"
+    }],
     //_________Ký xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,
