@@ -145,9 +145,23 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },       
+    //_________Link công việc
+    tasks: [{
+        type: Schema.Types.ObjectId,
+        ref: "pcm_plan_task"
+    }],
+    //________ Tổng số hồ sơ trong gói thầu
+    numberOfDocs: {
+        type: Number,
+        default: 0
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
+    // author: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "user"
+    // },
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
@@ -155,19 +169,5 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
-    },
-   
-    //________ Tổng số hồ sơ trong gói thầu
-    numberOfDocs: {
-        type: Number,
-        default: 0
-    },
-   
-    /**
-     * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
-     */
-    author: {
-        type: Schema.Types.ObjectId,
-        ref : "user"
     },
 })
