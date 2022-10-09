@@ -76,8 +76,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
     }],
     //_________Hình ảnh đại diện
     image: {
-        type: String,
-        defautl: 'group_default.png'
+        type: Schema.Types.ObjectId,
+        ref : "file"
     },
     userUpdate: {
         type: Schema.Types.ObjectId,
