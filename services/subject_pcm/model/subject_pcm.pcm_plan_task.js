@@ -1309,6 +1309,8 @@ class Model extends BaseModel {
                     isMemberGroup = true;
                 }
 
+                // console.log({isAuthor,isAssignee,isRelated,isMemberGroup})
+
                 if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
                     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
@@ -1322,14 +1324,16 @@ class Model extends BaseModel {
                 /**
                  * Cập nhật thông tin người truy cập
                  */
-                // console.log(viewedUsers.map(item=>item.toString()))
-                if(!viewedUsers.map(item=>item.toString()).includes(userID.toString())){
-                    // console.log('========Bạn chưa xem công việc============')
+                let result = viewedUsers.filter(item => item != null);
+                // console.log(result)
+
+                if(!result.map(item=>item.toString()).includes(userID.toString())){
+                    console.log('========Bạn chưa xem công việc============')
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                         $addToSet: { viewedUsers: userID },
                     });
                 }else{
-                    // console.log('========Bạn đã xem công việc============')
+                    console.log('========Bạn đã xem công việc============')
                 }
 
                 /**
