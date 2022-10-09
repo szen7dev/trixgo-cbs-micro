@@ -63,7 +63,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ groupID, name, sign, userID, contractID, members, membersRemove, admins, adminsRemove }) {
+    update({ groupID, name, sign, userID, contractID, image, members, membersRemove, admins, adminsRemove }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(groupID))
@@ -101,8 +101,14 @@ class Model extends BaseModel {
                 if(checkObjectIDs(adminsRemove)){
                     dataInUpdate.$pullAll = { admins: adminsRemove };
                 }
+
+                if(checkObjectIDs(image)){
+                    dataInUpdate.image = image;
+                }
+
                 console.log({ groupID, name, sign })
                 let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
+                console.log({ infoAfterUpdate })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
