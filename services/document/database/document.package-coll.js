@@ -7,6 +7,12 @@ const Schema                = require('mongoose').Schema;
  *  Gói thầu/Thư mục hồ sơ dự án
  */
 module.exports = DATABASE_MIDDLEWARE("document_package", {
+    //_________Mã hiệu bằng số do hệ thống tự phát sinh
+    suid : {
+        type   : String,
+        require:  true,
+        unique : true
+    },
     /**
      * THÔNG TIN CHUNG
      */
@@ -20,31 +26,26 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
         type: Schema.Types.ObjectId,
         ref : "area"
     }, 
-
     //_________Chủ đầu tư (lấy từ thông tin dự án)
     client: {
         type: Schema.Types.ObjectId,
         ref : "company"
     }, 
-
     //_________Phòng ban/dự án
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
-
     //_________Quản trị
     admins: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-
     //_________Thành viên được quyền xem ngân sách
     members: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-
     //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
@@ -55,35 +56,25 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
      * Loại gói thầu
      * 1-Xây lắp
      * 2-Mua sắm thiết bị
-     * 3-Tư vấn
-     * 4-Khác
+     * 3-Quản lý dự án
+     * 4-Tư vấn
+     * 5-Khác
      */
     type: { type: Number, default: 1 },
-
-    //_________Mã hiệu bằng số do hệ thống tự phát sinh
-    suid : {
-        type   : String,
-        require:  true,
-        unique : true
-    },
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
-   
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
-
     //_________Tên gói thầu
     name: String,
-  
     //_________Mô tả
     description: String,
-
     //_________Giá gói thầu
     packagePrice: { type: Number, default: 0 },      
     //_________Ký hiệu gói thầu
