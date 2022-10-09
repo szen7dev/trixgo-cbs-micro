@@ -1255,20 +1255,15 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Cập nhật thông tin người truy cập
-                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                    $addToSet: { viewedUsers: userID },
-                });
-
                 /**
                  * Bắt đầu kiểm tra quyền
                  */
-                let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
-                if(!infoTaskToCheckPermission) {
+                let infoTaskForCheck = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
+                if(!infoTaskForCheck) {
                     return resolve({ error: true, message: 'Not found task', status: 404 });
                 }
 
-                let { author, assignee, related, group } = infoTaskToCheckPermission;
+                let { author, assignee, related, group, viewedUsers, status } = infoTaskForCheck;
 
                 let isAuthor = false;
                 let isAssignee = false;
@@ -1297,11 +1292,36 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
                 // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem(Đệ bỏ đi)
-                // if(Number(infoTaskToCheckPermission.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
+                // if(Number(infoTaskForCheck.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
                 //     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
                 /**
                  * Kết thúc kiểm tra quyền
                  */
+
+                /**
+                 * Cập nhật thông tin người truy cập
+                 */
+                // console.log(viewedUsers.map(item=>item.toString()))
+                if(!viewedUsers.map(item=>item.toString()).includes(userID.toString())){
+                    // console.log('========Bạn chưa xem công việc============')
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { viewedUsers: userID },
+                    });
+                }else{
+                    // console.log('========Bạn đã xem công việc============')
+                }
+
+                /**
+                 * Cập nhật trạng thái triển khai
+                 */
+                if(assignee.toString() == userID.toString() && status == 1){
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
+                        {
+                            $set: {
+                                status: 2
+                            }
+                        }, { new: true })
+                }
 
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
