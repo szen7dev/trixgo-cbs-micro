@@ -221,7 +221,7 @@ module.exports = {
             direction       : { type: "string", optional: true }, // Hướng hồ sơ
             contractID	    : { type: "string", optional: true }, // Thuộc hợp đồng
             packageID	    : { type: "string", optional: true }, // Gói thầu
-            
+
             receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
             requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
 			parentID        : { type: "string", optional: true }, // Phần tử cha
@@ -278,7 +278,7 @@ module.exports = {
             contractsID	    : { type: "array", optional: true }, // Thuộc hợp đồng
             packagesID	    : { type: "array", optional: true }, // Gói thầu
             storagesID	    : { type: "array", optional: true }, // Địa chỉ lưu trữ
-            
+
             receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
             requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
 			parentID        : { type: "string", optional: true }, // Phần tử cha
