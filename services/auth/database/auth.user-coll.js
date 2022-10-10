@@ -20,7 +20,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Công ty
     company: {
         type: Schema.Types.ObjectId,
-        ref : 'company' 
+        ref : 'company'
     },
     //_______Email
     email: {
@@ -54,7 +54,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Thuộc về phòng ban/dự án nào
     department: {
         type: Schema.Types.ObjectId,
-        ref : 'department' 
+        ref : 'department'
     },
     //_______Chức vụ/vị trí
     position: {
@@ -135,7 +135,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         ref: 'user'
     }],
     //_______Danh sách bạn bè
-    friends: [{ 
+    friends: [{
         type: Schema.Types.ObjectId,
         ref: 'user'
     }],
@@ -146,14 +146,14 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     storageUse: {
         type: Number,
         default: 0
-    }, 
+    },
     //_______Code reset mật khẩu
     codeReset: String,
     /**
      * Quản lý thông tin Device Mobile
      */
     devices: [{
-        deviceName      :{ type : String }, 
+        deviceName      :{ type : String },
         deviceID        :{ type : String },
         registrationID  :{ type : String },
         oneSignalID     :{ type : String }, //id cho dịch vụ push noti: OneSignal

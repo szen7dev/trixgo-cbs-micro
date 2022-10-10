@@ -26,41 +26,38 @@ module.exports = {
 
 	aliases: {
 		//--------------------------aliases's GATEWAY service--------------------------//
-		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_HEALTH}`] : 
+		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_HEALTH}`] :
 		[`${CF_DOMAIN_SERVICES.GATEWAY}.${CF_ACTIONS_GATEWAY.CHECK_HEALTH}`],
 
 		//--------------------------aliases's AUTH service--------------------------//
-		[`POST ${CF_ROUTINGS_AUTH.USERS}`] : 
+		[`POST ${CF_ROUTINGS_AUTH.USERS}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER}`],
-		
+
 		/**
 		 * Code: A0015
 		 */
-		[`POST ${CF_ROUTINGS_AUTH.LOGIN}`] : 
+		[`POST ${CF_ROUTINGS_AUTH.LOGIN}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.LOGIN}`],
 
 		/**
 		 * Code: A0016
-		*/ 
-		[`GET ${CF_ROUTINGS_AUTH.SEND_OPT_RESET_PASSWORD}`] : 
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.SEND_OPT_RESET_PASSWORD}`],
+		*/
+		[`GET ${CF_ROUTINGS_AUTH.RECOVER_PASSWORD}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RECOVER_PASSWORD}`],
 
 		/**
 		 * Code: A0017
 		 */
-		[`GET ${CF_ROUTINGS_AUTH.CONFIRM_CODE_RESET_PASSWORD}`] : 
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.CONFIRM_CODE_RESET_PASSWORD}`],
+		[`GET ${CF_ROUTINGS_AUTH.CHECK_OTP_RECOVER_PASSWORD}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.CHECK_OTP_RECOVER_PASSWORD}`],
 
 		/**
 		 * Code: A0018
 		 */
-		[`POST ${CF_ROUTINGS_AUTH.UPDATE_PASSWORD_AFTER_FORGET}`] : 
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PASSWORD_AFTER_FORGET}`],
-		
-		// A00146
-		// [`POST ${CF_ROUTINGS_AUTH.UPDATE_PASSWORD_AFTER_FORGET}`] : 
-		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PASSWORD_AFTER_FORGET}`],
-		
+		[`POST ${CF_ROUTINGS_AUTH.UPDATE_PASSWORD_RECOVER}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PASSWORD_RECOVER}`],
+
+
 		/**
 		 * KHÁCH HÀNG ĐĂNG KÝ TRẢI NGHIỆM SẢN PHẨM
 		 */
@@ -83,7 +80,7 @@ module.exports = {
 	cors: {
 		// Configures the Access-Control-Allow-Origin CORS header.
 		origin: "*",
-		// Configures the Access-Control-Allow-Methods CORS header. 
+		// Configures the Access-Control-Allow-Methods CORS header.
 		methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE"],
 		// Configures the Access-Control-Allow-Headers CORS header.
 		allowedHeaders: ['X-Requested-With', 'content-type', 'Authorization'],

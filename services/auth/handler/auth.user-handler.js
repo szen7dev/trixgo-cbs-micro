@@ -74,6 +74,74 @@ module.exports = {
         }
     },
 
+    /**
+     * Author: MinhVH
+     * Func: Quên mật khẩu
+     * Date: 10/10/2022
+     */
+    recoverPassword: {
+        params: {
+            email: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { email } = ctx.params;
+
+                const infoUser = await AUTH__USER_MODEL.recoverPassword({ email });
+                return infoUser;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Author: MinhVH
+     * Func: Check OTP khôi phục password
+     * Date: 10/10/2022
+     */
+    checkOTPRecoverPassword: {
+        params: {
+            email       : { type: "string" },
+            codeReset   : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { email, codeReset } = ctx.params;
+
+                const result = await AUTH__USER_MODEL.checkOTPRecoverPassword({ email, codeReset });
+                return result;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Author: MinhVH
+     * Func: Khôi phục mật khẩu
+     * Date: 10/10/2022
+     */
+    updatePasswordRecover: {
+        params: {
+            email           : { type: "string" },
+            newPassword     : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { email, newPassword } = ctx.params;
+
+                const result = await AUTH__USER_MODEL.updatePasswordRecover({ email, newPassword });
+                return result;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
      /**
      * Func: Thêm bạn bè
      * Author: MinhVH
