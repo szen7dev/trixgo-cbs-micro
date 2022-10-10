@@ -2,7 +2,6 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
-
 /**
  * import inter-coll, exter-coll
  */
@@ -17,12 +16,12 @@ const AUTH__COMPANY_COLL                = require('../database/auth.company-coll
  * import util files
  */
 // const { checkValidPhoneNumber, validEmail, removeUtf8AndJoinSpace, makeid, randomStringFixLengthCode } = require('../../../tools/utils/string_utils');
-const { randomStringFixLengthCode }
-                                        = require('../../../tools/utils/string_utils');
+const { randomStringFixLengthCode }     = require('../../../tools/utils/string_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
 const sendEmailRecoverPass              = require('../../../tools/mailer/mailer');
 const { templateRecoverPass }           = require('../../../tools/mailer/module/template/recover-pass');
+const { templateInfoAccount }           = require('../../../tools/mailer/module/template/content_info_account');
 const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }
                                         = require('../../../tools/utils/utils');
@@ -36,6 +35,7 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant');
+const { sendNoticeToMember }            = require('../../../tools/mailer/module/notice_pcm_task');
 
 class Model extends BaseModel {
 
@@ -1172,7 +1172,7 @@ class Model extends BaseModel {
                 }
 
                 let emailValid = email.toLowerCase().trim();
-                let password = '12345TRX@#';
+                let password = randomStringFixLengthCode(6);
 
                 // Nếu username hay email đã tồn tại trong hệ thống thì không cho phép tạo : đảm bảo tính độc lập dữ liệu
                 let isExistUser = await AUTH__USER_COLL.findOne({ email: emailValid });
@@ -1242,23 +1242,16 @@ class Model extends BaseModel {
                 }
                 delete infoUserAfterInsert.password;
 
-                // /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
-                // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
-                // let listUserInCompany = await USER_COLL.find({ company: companyID });
-                // let arrUserID = listUserInCompany.map(item => item._id);
-                // // Update bạn bè với các thành viên của công ty
-                // let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                //     friends: arrUserID,
-                // }, { new: true });
-
-                // // Update cho các thành viên công ty nhận bạn bè mới
-                // for(const item of listUserInCompany){
-                //     await USER_COLL.findByIdAndUpdate(item._id, {
-                //         $addToSet: {
-                //             friends: infoUserAfterInsert._id
-                //         }
-                //     }, { new: true });
-                // }
+                // Thông báo email tới người dùng
+                const mailContent = templateInfoAccount(fullname, password);
+                sendEmailRecoverPass(
+                    emailValid,
+                    'THÔNG TIN TÀI KHOẢN/ACCOUNT INFO - TRIXGO.COM',
+                    mailContent,
+                    cb => {
+                        console.log(cb);
+                    }
+                )
 
                 return resolve({ error: false, data: infoUserAfterInsert, status: 200 });
             } catch (error) {
