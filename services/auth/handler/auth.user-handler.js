@@ -111,7 +111,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { email, codeReset } = ctx.params;
 
+                console.log({ email, codeReset })
+
                 const result = await AUTH__USER_MODEL.checkOTPRecoverPassword({ email, codeReset });
+                console.log(result)
                 return result;
             } catch (error) {
                 return { error: true, message: error.message };
