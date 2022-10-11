@@ -268,6 +268,10 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     cgValue: { type: Number, default: 0 },
     //_________Thời hạn bảo lãnh hợp đồng
     expiredCg: { type: Date, default: null },
+    //_________Bảo lãnh bảo hành
+    insuranceValue: { type: Number, default: 0 },
+    //_________Thời hạn bảo lãnh hợp đồng
+    expiredInsurance: { type: Date, default: null },
     //_________Ảnh đại diện
     image: {
         type: String,

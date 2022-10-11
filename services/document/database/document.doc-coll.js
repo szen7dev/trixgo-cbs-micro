@@ -42,7 +42,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     direction: { type: Number, default: 1 },
     //_________Tính chất hồ sơ (*)
     type: { type: Number, default: 1 },
-    //_________Cơ quan banh ành
+    //_________Đơn vị ban hành
     datahubContact: {
         type: Schema.Types.ObjectId,
         require:  true,
