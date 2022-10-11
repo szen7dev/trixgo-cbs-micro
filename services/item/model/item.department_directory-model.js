@@ -23,6 +23,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  * COLLECTIONS
  */
 const ITEM__DEPARTMENT_DIRECTORY_COLL            				= require('../database/item.department_directory-coll');
+const AUTH_USER_COLL            				                = require('../../auth/database/auth.user-coll');
 
 class Model extends BaseModel {
     
@@ -231,7 +232,11 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    let listMemberInDepartmentDirectory = await ITEM__DEPARTMENT_DIRECTORY_COLL.find({ department: projectID }).select("member");
+                    let membersID = listMemberInDepartmentDirectory.map(item => item.member);
+                    let membersIDByKeyword = await AUTH_USER_COLL.find({ _id: { $in: membersID }, fullname: new RegExp(keyword, 'i') }).select("_id");
+                    conditionObj.member = { $in: membersIDByKeyword.map(item => item._id)};
                 }
                 
                 let conditionObjOrg = { ...conditionObj };
