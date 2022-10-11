@@ -463,6 +463,7 @@ class Model extends BaseModel {
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 30, lastestID, select, populates= {} }) {
+            // console.log('========12345========================>>>>>>>>>>>>')
             // console.log({parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel,
             //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate,
             //     keyword, limit})
