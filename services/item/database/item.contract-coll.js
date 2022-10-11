@@ -208,6 +208,14 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     vat: { type: Number, default: 10 },
 
     /**
+     * XUẤT HOÁ ĐƠN
+    */
+    //_________(1) Giá trị trước VAT
+    revenue: { type: Number, default: 0 },
+    //_________(2) Giá trị VAT
+    vatRevenue: { type: Number, default: 0 },
+
+    /**
      * CHI PHÍ
      */
     //_________Chi phí
