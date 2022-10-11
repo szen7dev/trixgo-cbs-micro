@@ -634,11 +634,12 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * Phân loại công việc: không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
-                 */
-                 if(subType && !isNaN(subType)){
-                    if(infoTask.subtype === 4 || infoTask.subtype === 9 || infoTask.subtype === 11){
+                if(subType && !isNaN(subType)){
+                    /**
+                     * Phân loại công việc: không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
+                     */
+                    const subTypes = [4, 9, 11];
+                    if(!subTypes.includes(infoTask.subtype)){
                         dataUpdate.subtype = +subType;
                     }
                 }
