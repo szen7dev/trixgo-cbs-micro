@@ -488,10 +488,10 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
     }){
-        console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-            contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-            links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-            openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
+        // console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -636,10 +636,10 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * Phân loại công việc: không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
+                 */
                 if(subType && !isNaN(subType)){
-                    /**
-                     * Phân loại công việc: không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
-                     */
                     const subTypes = [4, 9, 11];
                     if(!subTypes.includes(infoTask.subtype)){
                         dataUpdate.subtype = +subType;
@@ -764,41 +764,12 @@ class Model extends BaseModel {
                     dataUpdate.amount = Number(unitPrice)*Number(quantity);
                 }
 
-                // //_________Dự kiến thời lượng (h)
+                //_________Dự kiến thời lượng (h)
                 if(amountoftime){
                     dataUpdate.amountoftime = amountoftime;
                 }
-                // //_________Đơn giá cho 1 giờ làm
-                // if(amountPerHour){
-                //     dataUpdate.amountPerHour = amountPerHour;
-                // }
 
-                // //_________Số ngày chậm tiến độ
-                // if(offtimeReason){
-                //     dataUpdate.offtimeReason = offtimeReason;
-                // }
-
-                // //_________Giá trị vượt ngân sách
-                // if(offbudgetReason){
-                //     dataUpdate.offbudgetReason = offbudgetReason;
-                // }
-
-                // //_________Giá trị vượt ngân sách
-                // if(offbudgetReason){
-                //     dataUpdate.offbudgetReason = offbudgetReason;
-                // }
-
-                // //_________Phân loại công việc mẫu/thông thường
-                // if(checkObjectIDs(templateID)){
-                //     dataUpdate.template = templateID;
-                // }
-
-                // //_________Khoá/Mở
-                // if(lock){
-                //     dataUpdate.lock = lock;
-                // }
-
-                // //_________Nhận xét
+                //_________Nhận xét
                 if(judgement){
                     dataUpdate.judgement = judgement;
                 }
@@ -812,56 +783,6 @@ class Model extends BaseModel {
                 if(score){
                     dataUpdate.score = score;
                 }
-
-                // //_________Mức độ cấp bách
-                // if(urgent){
-                //     dataUpdate.urgent = urgent;
-                // }
-
-                // //_________Mức độ phức tạp
-                // if(difficult){
-                //     dataUpdate.difficult = difficult;
-                // }
-
-                // //_________Kết thúc thực tế
-                // if(finishTime){
-                //     dataUpdate.finishTime = finishTime;
-                // }
-
-                // //_________Giá trị bị phạt
-                // if(punish){
-                //     dataUpdate.punish = punish;
-                // }
-
-                // //_________Người phê duyệt
-                // if(checkObjectIDs(approver)){
-                //     dataUpdate.approver = approver;
-                // }
-
-                // //_________Thời điểm phê duyệt
-                // if(timeApproved){
-                //     dataUpdate.timeApproved = timeApproved;
-                // }
-
-                // //_________Giá trị phê duyệt/Giá phê duyệt trúng thầu
-                // if(valueApproved){
-                //     dataUpdate.valueApproved = valueApproved;
-                // }
-
-                // //_________Giá dự thầu
-                // if(bidPrice){
-                //     dataUpdate.bidPrice = bidPrice;
-                // }
-
-                // //_________Giảm giá dự thầu
-                // if(bidPriceDiscount){
-                //     dataUpdate.bidPriceDiscount = bidPriceDiscount;
-                // }
-
-                // //_________Giá dự thầu thừa/thiếu
-                // if(bidPriceAdjustment){
-                //     dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
-                // }
 
                 /**
                  * KÝ XÁC NHẬN
