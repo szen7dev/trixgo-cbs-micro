@@ -588,10 +588,12 @@ class Model extends BaseModel {
                     }
 
                     if(expiredHour) {
-                        const [month, day, year] = actualFinishTime.split('/');
-                        const date = `${year}-${month}-${day}`;
-                        const formatDate = new Date(`${date} ${expiredHour}`);
-
+                        // const [month, day, year] = actualFinishTime.split('/');
+                        // const date = `${year}-${month}-${day}`;
+                        const formatDate = new Date(actualFinishTime);
+                        const expiredHourSplit = expiredHour.split(":");
+                        formatDate.setHours(expiredHourSplit[0], expiredHourSplit[1]);
+                        console.log({formatDate})
                         dataUpdate.actualFinishTime = formatDate;
                     }
 
