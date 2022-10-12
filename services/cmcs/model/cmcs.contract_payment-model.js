@@ -790,6 +790,11 @@ class Model extends BaseModel {
                         conditionObjYear = {
                             "year": Number(year),
                         }
+                    }else{
+                        conditionGroup = {
+                            _id: { year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
                     }
 
                     // Theo Lĩnh vực
