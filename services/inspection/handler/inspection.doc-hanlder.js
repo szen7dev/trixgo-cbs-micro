@@ -27,16 +27,17 @@ module.exports = {
             templateID  : { type: "string", optional: true },
             related     : { type: "array", optional: true },
             description : { type: "string", optional: true },
+            belongSystem : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description } = ctx.params;
+                const { contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem } = ctx.params;
                 // console.log({contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description})
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.insert({
-					contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, userID
+					contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

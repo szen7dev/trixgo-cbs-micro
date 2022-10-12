@@ -4,10 +4,16 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
     
 module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
+    /**
+     * THUỘC VỀ TEMPLATE HỆ THỐNG
+     * 1-Thuộc về doanh nghiệp
+     * 2-Thuộc về hệ thống
+     */
+    belongSystem: { type: Number, default: 1 },
     //_________Mẫu hồ sơ
     template: {
         type    : Schema.Types.ObjectId,
-        ref     : 'datahub_inspection_doc'
+        ref     : 'inspection_doc'
     },
     //_________ Công ty
     company: {

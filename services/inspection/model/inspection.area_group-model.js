@@ -62,16 +62,6 @@ class Model extends BaseModel {
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create", status: 403 });
 
-                /**
-                 * CẬP NHẬT TRẠNG THÁI VÀ % HOÀN THÀNH CHO KHU VỰC CHA
-                 * % hoàn thành
-                 * Trạng thái
-                 */
-                let infoArea = await INSPECTION__AREA_COLL.findById(areaID)
-                if(infoArea.parent && checkObjectIDs(infoArea.parent)){
-                    console.log('=====================CẬP NHẬT KHU VỰC CHA=================')
-                }
-
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

@@ -38,8 +38,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, userID }) { 
-        // console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, userID })
+    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID }) { 
+        // console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -108,6 +108,10 @@ class Model extends BaseModel {
                     dataInsert.description = description;
                 }
 
+                if(!isNaN(belongSystem)){
+                    dataInsert.belongSystem = Number(belongSystem);
+                }
+
                 let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
@@ -127,9 +131,11 @@ class Model extends BaseModel {
                 // }
 
                 /**
-                 * Tạo mới dữ liệu Group_
+                 * Tạo mới dữ liệu Group_Area
                  */
-                let infoG1A1New = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID, userID })
+                let infoG1A1 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID: infoArea.parent, groupID: infoGroup.parent, userID })
+                let infoG1A2 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID: infoGroup.parent, userID })
+                let infoG2A2 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID, userID })
 
                 /**
                  * CẬP NHẬT TRẠNG THÁI CHO NHÓM CÔNG TÁC-KHU VỰC (cần kiểm tra lại cho kỹ)
@@ -137,9 +143,9 @@ class Model extends BaseModel {
                  * 2-Nhóm cha-Khu vực con (Hoàn thiện-Căn hộ C1.T1)
                  * 3-Nhóm con-Khu vực con (Công tác xây-Căn hộ C1.T1)
                  */
-                let infoG1A1 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID: infoArea.parent, groupID: infoGroup.parent, userID })
-                let infoG1A2 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID: infoGroup.parent, userID })
-                let infoG2A2 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })
+                let infoG1A1New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID: infoArea.parent, groupID: infoGroup.parent, userID })
+                let infoG1A2New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID: infoGroup.parent, userID })
+                let infoG2A2New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })
                 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
