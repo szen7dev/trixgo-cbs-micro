@@ -488,10 +488,10 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
     }){
-        // console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
+        console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+            contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+            links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+            openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
         return new Promise(async (resolve) => {
             try {
                 /**
