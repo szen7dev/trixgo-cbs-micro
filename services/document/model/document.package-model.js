@@ -360,49 +360,17 @@ class Model extends BaseModel {
      * Date: 30/4/2022
      */
 
-        /**
+    /**
 	 * Name: Remove document package 
 	 * Author: Depv
 	 * Code:
 	 */
-	remove({ packageID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(packageID))
-                    return resolve({ error: true, message: 'Mã gói thầu không hợp lệ', keyError: "packageID_invalid", status: 400 });
-
-                let infoAterRemove = await DOCUMENT__PACKAGE_COLL.findByIdAndDelete(packageID)
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
-
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
 	 * Name: Remove document package many 
 	 * Author: Depv
 	 * Code:
 	 */
-	removeMany({ packagesID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(packagesID))
-                    return resolve({ error: true, message: 'Mã gói thầu không hợp lệ', keyError: "packagesID_invalid", status: 400 });
-                // Cần kiểm tra bạn phải lại admins của dự án thì mới cho xoá.
-                let infoAterRemove = await DOCUMENT__PACKAGE_COLL.deleteMany({ _id: { $in: packagesID } });
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
-
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
 	/**
 	 * Name: get info document package 
