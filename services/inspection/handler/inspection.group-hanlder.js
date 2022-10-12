@@ -52,7 +52,7 @@ module.exports = {
 			name        : { type: "string" },
             sign        : { type: "string", optional: true },
             description : { type: "string", optional: true },
-            order       : { type: "number", optional: true },
+            order       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
