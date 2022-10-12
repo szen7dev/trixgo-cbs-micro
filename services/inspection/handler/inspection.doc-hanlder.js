@@ -118,27 +118,27 @@ module.exports = {
             projectID   : { type: "string", optional: true },
             contractID  : { type: "string", optional: true },
             docID       : { type: "string", optional: true },
-            assignee    : { type: "string", optional: true },
-            author      : { type: "string", optional: true },
-            contract    : { type: "string", optional: true },
-            signature   : { type: "string", optional: true },
-            area        : { type: "string", optional: true },
-            fromDate    : { type: "string", optional: true },
-            toDate      : { type: "string", optional: true },
-            fromCreateAt: { type: "string", optional: true },
-            toCreateAt  : { type: "string", optional: true },
+            // assignee    : { type: "string", optional: true },
+            // author      : { type: "string", optional: true },
+            // contract    : { type: "string", optional: true },
+            // signature   : { type: "string", optional: true },
+            // area        : { type: "string", optional: true },
+            // fromDate    : { type: "string", optional: true },
+            // toDate      : { type: "string", optional: true },
+            // fromCreateAt: { type: "string", optional: true },
+            // toCreateAt  : { type: "string", optional: true },
             
             //_____________THÔNG SỐ MẶC ĐỊNH________________
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { limit, lastestID, select, filter, projectID, contractID, docID, assignee, author, signature, fromDate, toDate, fromCreateAt, toCreateAt, area  } = ctx.params;
+                let { docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, keyword, limit, lastestID, select, populates  } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(docID){
@@ -147,7 +147,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({
-                        limit,lastestID, select, filter, projectID, contractID, select, assignee, author, signature, area, userID,  fromDate, toDate, fromCreateAt, toCreateAt
+                        projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, keyword, limit, lastestID, select, populates
                     });
                 }
              

@@ -248,31 +248,6 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    remove({ docID }) { 
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE STEP (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(docID))
-                    return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
-         
-                let infoDataAfterRemove = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, { state: 2 }, { new: true });
-                if(!infoDataAfterRemove)
-                    return resolve({ error: true, message: "Can't remove inspection docs", status: 403 });
-
-                return resolve({ error: false, data: "Remove success", status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: Lấy thông tin
@@ -317,7 +292,7 @@ class Model extends BaseModel {
                         select: "name area",
                     })
                     .populate({
-                        path: "members",
+                        path: "related",
                         select: "image fullname"
                     })
                     .populate({
