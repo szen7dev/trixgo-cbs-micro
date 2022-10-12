@@ -255,11 +255,6 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(limit > 30){
                     limit = 30;
                 } else{

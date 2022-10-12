@@ -108,17 +108,18 @@ module.exports = {
         params: {
             projectID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
+            groupID          : { type: "string", optional: true },
+
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
-            groupID          : { type: "string", optional: true },
             select          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, parentID, keyword, limit, lastestID, groupID, select, filter  } = ctx.params;
+                const { projectID, parentID, groupID, keyword, limit, lastestID, select  } = ctx.params;
                 let resultAfterCallHandler;
                 if(groupID){
                     resultAfterCallHandler = await INSPECTION__GROUP_MODEL.getInfo({
@@ -126,7 +127,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION__GROUP_MODEL.getList({
-                        keyword, projectID, parentID, limit, lastestID, select, filter 
+                        projectID, parentID, keyword, limit, lastestID, select 
                     });
                 }
               

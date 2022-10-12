@@ -8,7 +8,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  * import inter-coll, exter-coll
  */
 const INSPECTION__AREA_COLL                 = require('../database/inspection.area-coll');
-const { RANGE_BASE_PAGINATION } 		     = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 		     = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -211,28 +211,51 @@ class Model extends BaseModel {
      * Code: F0230
      * Author: Depv 
      */
-    getList({ projectID, parentID, keyword, limit = 10, lastestID, filter = {}, select = {} }) { 
+    getList({ projectID, parentID, keyword, limit = 10, lastestID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
 
-                let conditionObj = { project: projectID};
+                let conditionObj = { project: projectID };
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
+
+                if(limit > 30){
+                    limit = 30;
+                } else{
+                    limit = +limit;
+                }
 
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
                 }
 
-                let conditionFind = {};
-                let sortBy = { createAt: -1 };
-				let objSort 	 	= {};
+				/**
+                 * ĐIỀU KIỆN KHÁC
+                 */
+                 if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
-					filter = JSON.parse(filter);
-				}
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
+
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
 
 				if(select && typeof select === 'string'){
 					if(!IsJsonString(select))
@@ -240,64 +263,49 @@ class Model extends BaseModel {
 
 					select = JSON.parse(select);
 				}
+ 
+                let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await INSPECTION__AREA_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-                // GET CONDITION PAGINATION
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await INSPECTION__AREA_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
-
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
-
-                // SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
-
-                let infoDataAfterGet = await INSPECTION__AREA_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
-                    .limit(+limit+1)
-                    .sort(sortBy) 
-                    .lean(); 
-
-                // GET TOTAL RECORD
-				// let totalRecord = await INSPECTION__AREA_COLL.count(conditionObj);
-                let totalCurrentPage = await INSPECTION__AREA_COLL.count(conditionFind);
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get template docs", status: 403 });
-                
-                let totalRecord = await INSPECTION__AREA_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
-                let totalPage = Math.ceil(totalRecord/limit);
-
-				if(infoDataAfterGet && infoDataAfterGet.length){
-					if(infoDataAfterGet.length > limit){
-						nextCursor = infoDataAfterGet[limit - 1]._id;
-						infoDataAfterGet.length = limit;
-					}
-				}
-
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage =  1
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
                 }
+
+                let infoDataAfterGet = await INSPECTION__AREA_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                let totalRecord = await INSPECTION__AREA_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit: limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
                 
             } catch (error) {

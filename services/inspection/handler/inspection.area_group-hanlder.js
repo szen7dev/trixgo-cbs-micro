@@ -108,6 +108,7 @@ module.exports = {
             groupID         : { type: "string", optional: true },
             option          : { type: "string", optional: true },
             areaGroupID     : { type: "string", optional: true },
+            
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
