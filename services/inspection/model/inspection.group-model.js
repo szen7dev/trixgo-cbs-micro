@@ -8,7 +8,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  * import inter-coll, exter-coll
  */
 const INSPECTION__GROUP_COLL                 = require('../database/inspection.group-coll');
-const { RANGE_BASE_PAGINATION } 		     = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 		     = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
