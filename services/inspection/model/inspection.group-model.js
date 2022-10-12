@@ -211,7 +211,7 @@ class Model extends BaseModel {
      * Code: F0230
      * Author: Depv 
      */
-    getList({ keyword, projectID, parentID, limit = 10, lastestID, select, populates }) { 
+    getList({ projectID, parentID, option, keyword, limit = 10, lastestID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
 
@@ -227,6 +227,16 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
+                }else{
+                    // Lấy toàn bộ con
+                    if(option && option == 1){
+                        conditionObj.parent = { $exists: true, $ne: null }
+                    }
+
+                    // Chỉ lấy cha
+                    if(option && option == 2){
+                        conditionObj.parent = { $exists: false }
+                    }
                 }
 
 				/**
