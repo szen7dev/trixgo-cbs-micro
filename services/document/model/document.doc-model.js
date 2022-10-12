@@ -223,11 +223,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
         name, description, note, fieldID, value, completeStatus, otherID, ctx
 	}) {
-        // console.log({
-        //     documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
-        //     name, description, note, fieldID, value, completeStatus, otherID
-        // })
+        console.log({
+            documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+            requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
+            name, description, note, fieldID, value, completeStatus, otherID
+        })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(documentID, packageID, datahubContactID, userID)) {
@@ -323,7 +323,7 @@ class Model extends BaseModel {
                 amount          && (dataUpdate.amount           = +amount || 1);
                 amountDelivery  && (dataUpdate.amountDelivery   = +amountDelivery || 0);
 
-                if(type && checkNumberIsValidWithRange({ arrValid: DOC_TYPE, val: type })){
+                if(type && !isNaN(type)){
                     dataUpdate.type = +type;
                 }
 
