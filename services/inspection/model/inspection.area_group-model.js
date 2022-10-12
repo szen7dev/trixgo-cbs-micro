@@ -140,7 +140,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Cập nhật trạng thái
+     * Name: Cập nhật trạng thái + % hoàn thành
      * Author: HiepNH
      * Code: 2/10/2022
      */
@@ -177,7 +177,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 
     /**
      * Xóa mẩu tin: Depv 

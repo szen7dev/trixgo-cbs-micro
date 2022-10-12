@@ -115,11 +115,11 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },   
-    //_________Thành viên liên quan (Thành viên dự án)
-    members: [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'user'
-    }],             
+    //_________Những người liên quan
+    related: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],            
     //_________Chữ ký xác nhận 
     signatures: [{
         type    : Schema.Types.ObjectId,

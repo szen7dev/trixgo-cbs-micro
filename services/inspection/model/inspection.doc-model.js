@@ -38,8 +38,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description, userID }) { 
-        // console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, members, name, expiredTime, description, userID })
+    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, userID }) { 
+        // console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, userID })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -67,7 +67,12 @@ class Model extends BaseModel {
                 // console.log(infoGroup)
                 // console.log(infoAssignee)
                 // console.log(infoAuthor)
-            
+
+                /**
+                 * Kiểm tra chỉ cho phép Khu vực và Nhóm ở cấp 2
+                 */
+                if(!checkObjectIDs(infoArea.parent) || !checkObjectIDs(infoGroup.parent))
+                    return resolve({ error: true, message: 'areaID|groupID param_invalid', status: 400 });
                     
                 dataInsert = { 
                     project: infoContract.project, 
@@ -88,8 +93,8 @@ class Model extends BaseModel {
                     dataInsert.template = templateID;
                 }
 
-                if(members && !checkObjectIDs(members)){
-                    dataInsert.members = members;
+                if(related && !checkObjectIDs(related)){
+                    dataInsert.related = related;
                 }
 
                 if(sign && sign != ""){
@@ -107,7 +112,10 @@ class Model extends BaseModel {
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
             
-                // // Tiến hành thêm checklist từ tempalte checklist
+                /**
+                 * Clone checklist từ Tempalte
+                 * - Cân nhắc sử dụng luôn cùng Coll
+                 */
                 // let listTemplateChecklist = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({ inspection: templateID });
                 // if(listTemplateChecklist.length){
                 //     for (const templateChecklist of listTemplateChecklist) {
@@ -117,6 +125,11 @@ class Model extends BaseModel {
                 //         })
                 //     }
                 // }
+
+                /**
+                 * Tạo mới dữ liệu Group_
+                 */
+                let infoG1A1New = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID, userID })
 
                 /**
                  * CẬP NHẬT TRẠNG THÁI CHO NHÓM CÔNG TÁC-KHU VỰC (cần kiểm tra lại cho kỹ)
@@ -140,7 +153,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    update({ docID, sign, templateID, assigneeID, name, expiredTime, description, status, members, userID }) { 
+    update({ docID, sign, templateID, assigneeID, name, expiredTime, description, status, related, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 let infoDoc = await INSPECTION__DOC_COLL.findById(docID)
@@ -179,9 +192,9 @@ class Model extends BaseModel {
                     dataUpdate.sign = sign;
                 }
 
-                if(checkObjectIDs(members)){
+                if(checkObjectIDs(related)){
                     dataUpdate.$addToSet = {
-                        members: members
+                        related: related
                     }
                 }
 
