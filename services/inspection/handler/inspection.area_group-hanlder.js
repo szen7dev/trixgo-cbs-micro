@@ -118,15 +118,15 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, areaID, groupID, option, areaGroupID, keyword, limit, lastestID, select  } = ctx.params;
+                const { projectID, areaID, groupID, option, areaGroupID, keyword, limit, lastestID, select, populates  } = ctx.params;
                 let resultAfterCallHandler;
                 if(areaGroupID){
                     resultAfterCallHandler = await INSPECTION__AREA_GROUP_MODEL.getInfo({
-                        areaGroupID, select
+                        areaGroupID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION__AREA_GROUP_MODEL.getList({
-                        projectID, areaID, groupID, option, keyword, limit, lastestID, select 
+                        projectID, areaID, groupID, option, keyword, limit, lastestID, select, populates 
                     });
                 }
               
