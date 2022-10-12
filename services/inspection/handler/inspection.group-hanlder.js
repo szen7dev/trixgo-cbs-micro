@@ -52,15 +52,16 @@ module.exports = {
 			name        : { type: "string" },
             sign        : { type: "string", optional: true },
             description : { type: "string", optional: true },
+            order       : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { groupID, name, sign, description } = ctx.params;
+                const { groupID, name, sign, description, order } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION__GROUP_MODEL.update({
-					groupID, name, sign, description, userID
+					groupID, name, sign, description, order, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -88,7 +88,7 @@ class Model extends BaseModel {
      * Cập nhât mẩu tin: Depv 
      * F0227
      */
-    update({ areaID, name, sign, description, userID }) { 
+    update({ areaID, name, sign, description, order, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -129,6 +129,10 @@ class Model extends BaseModel {
 
                 if(description){
                     dataUpdate.description = description;
+                }
+
+                if(!isNaN(order)){
+                    dataUpdate.order = Number(order);
                 }
 
                 let infoDataAfterUpdate = await INSPECTION__AREA_COLL.findByIdAndUpdate(areaID, dataUpdate, { new: true });
