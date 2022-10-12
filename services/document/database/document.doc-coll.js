@@ -42,11 +42,17 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     direction: { type: Number, default: 1 },
     //_________Tính chất hồ sơ (*)
     type: { type: Number, default: 1 },
-    //_________Đơn vị ban hành
+    //_________Đơn vị ban hành (bỏ)
     datahubContact: {
         type: Schema.Types.ObjectId,
         require:  true,
         ref : "datahub_contact"
+    },
+    //_________Đơn vị ban hành (các phân vùng)
+    publish: {
+        type: Schema.Types.ObjectId,
+        require:  true,
+        ref : "company"
     },
     //_________Người ban hành
     sender: {
