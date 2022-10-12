@@ -61,7 +61,7 @@ class Model extends BaseModel {
                 let infoArea            = await INSPECTION__AREA_COLL.findById(areaID).select('_id name parent')
                 let infoGroup           = await INSPECTION__GROUP_COLL.findById(groupID).select('_id name parent')
                 let infoAssignee        = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
-                let infoAuthor          = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
+                let infoAuthor          = await AUTH__USER_COLL.findById(userID).select('_id fullname company')
                 // console.log(infoContract)
                 // console.log(infoArea)
                 // console.log(infoGroup)

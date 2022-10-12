@@ -237,8 +237,8 @@ class Model extends BaseModel {
         console.log({ projectID, areaID, groupID, option, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
-                if(!option)
-                    return resolve({ error: true, message: 'Request params option invalid', status: 400 })
+                // if(!option)
+                //     return resolve({ error: true, message: 'Request params option invalid', status: 400 })
 
                 let conditionObj = {};
                 let sortBy;
@@ -250,18 +250,22 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                if(option && option==1){
-                    if(!checkObjectIDs(projectID) || !checkObjectIDs(groupID))
-                        return resolve({ error: true, message: 'Request params projectID|groupID invalid', status: 400 })
-
-                    conditionObj = { project: projectID, group: groupID };
-                }
-
-                if(option && option==2){
-                    if(!checkObjectIDs(projectID) || !checkObjectIDs(areaID))
-                        return resolve({ error: true, message: 'Request params projectID|areaID invalid', status: 400 })
-
-                    conditionObj = { project: projectID, area: areaID };
+                if(!option){
+                    conditionObj = { project: projectID };
+                }else{
+                    if(option && option==1){
+                        if(!checkObjectIDs(projectID) || !checkObjectIDs(groupID))
+                            return resolve({ error: true, message: 'Request params projectID|groupID invalid', status: 400 })
+    
+                        conditionObj = { project: projectID, group: groupID };
+                    }
+    
+                    if(option && option==2){
+                        if(!checkObjectIDs(projectID) || !checkObjectIDs(areaID))
+                            return resolve({ error: true, message: 'Request params projectID|areaID invalid', status: 400 })
+    
+                        conditionObj = { project: projectID, area: areaID };
+                    }
                 }
 
                 /**
