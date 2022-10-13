@@ -316,8 +316,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, limit = 10, lastestID, select, populates }) { 
-        console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, limit, lastestID, select, populates })
+    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, belongSystem, keyword, limit = 10, lastestID, select, populates }) { 
+        console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, belongSystem, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 let conditionObj = {};
@@ -335,7 +335,7 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                if(!isNaN(belongSystem)){
+                if(!isNaN(belongSystem) && belongSystem == 2){
                     conditionObj.belongSystem = 2
                 }
 
