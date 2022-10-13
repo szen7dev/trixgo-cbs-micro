@@ -171,58 +171,66 @@ class Model extends BaseModel {
     update({ docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID }) { 
         return new Promise(async (resolve) => {
             try {
-                let infoDoc = await INSPECTION__DOC_COLL.findById(docID)
-                if(!infoDoc)
-                    return resolve({ error: true, message: "Can't get info inspection docs", status: 400 });
-
-                let dataUpdate = { userUpdate: userID, modifyAt: Date.now()};
-
-                if(assigneeID && checkObjectIDs(assigneeID)){
-                    dataUpdate.assignee = assigneeID;
-                }
-
-                if(name && name != ""){
-                    dataUpdate.name = name;
-                }
-
-                if(sign){
-                    dataUpdate.sign = sign;
-                }
-
-                if(!isNaN(percentage)){
-                    dataUpdate.percentage = Number(percentage);
-                }
-
-                if(checkObjectIDs(related)){
-                    dataUpdate.$addToSet = {
-                        related: related
-                    }
-                }
-
-                if(expiredTime){
-                    dataUpdate.expiredTime = expiredTime;
-                }
-
-                if(description){
-                    dataUpdate.description = description;
-                }
-
-                /**
-                 * Nếu cập nhật về trạng thái hoàn thành
-                 */
-                if(status == this.STATUS_DONE){
-                    dataUpdate.status = this.STATUS_DONE;
-                    dataUpdate.percentage = 100;
-                    dataUpdate.finishedTime = new Date(); // Ngày hoàn thành thực tế
-                }else{
-                    dataUpdate.status = Number(status)
-                }
-
                 /**
                  * Cập nhật trạng thái xem/chưa xem
                  */
                 if(!optionSeen){
-                    // Cập nhật trạng thái công việc
+                    let infoDoc = await INSPECTION__DOC_COLL.findById(docID)
+                    if(!infoDoc)
+                        return resolve({ error: true, message: "Can't get info inspection docs", status: 400 });
+    
+                    let dataUpdate = { userUpdate: userID, modifyAt: Date.now()};
+    
+                    if(assigneeID && checkObjectIDs(assigneeID)){
+                        dataUpdate.assignee = assigneeID;
+                    }
+    
+                    if(name && name != ""){
+                        dataUpdate.name = name;
+                    }
+    
+                    if(sign){
+                        dataUpdate.sign = sign;
+                    }
+    
+                    if(!isNaN(percentage)){
+                        dataUpdate.percentage = Number(percentage);
+                    }
+    
+                    if(checkObjectIDs(related)){
+                        dataUpdate.$addToSet = {
+                            related: related
+                        }
+                    }
+    
+                    if(expiredTime){
+                        dataUpdate.expiredTime = expiredTime;
+                    }
+    
+                    if(description){
+                        dataUpdate.description = description;
+                    }
+    
+                    /**
+                     * Nếu cập nhật về trạng thái hoàn thành
+                     */
+                    if(status == this.STATUS_DONE){
+                        dataUpdate.status = this.STATUS_DONE;
+                        dataUpdate.percentage = 100;
+                        dataUpdate.finishedTime = new Date(); // Ngày hoàn thành thực tế
+                    }else{
+                        dataUpdate.status = Number(status)
+                    }
+
+                    let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, dataUpdate, { new: true });
+                    if(!infoDataAfterUpdate)
+                        return resolve({ error: true, message: "Can't update docs", status: 403 });
+    
+                    /**
+                     * CẬP NHẬT TRẠNG THÁI CHO DỰ ÁN
+                     */       
+    
+                    return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
                 }else{
                     // Cập nhật các Task được lựa chọn
                     if(optionSeen == 1){
@@ -248,18 +256,8 @@ class Model extends BaseModel {
                             return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
                     }
 
-                    // return resolve({ error: false, message: "update_success" })
+                    return resolve({ error: false, message: "update_success" })
                 }
-
-                let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, dataUpdate, { new: true });
-                if(!infoDataAfterUpdate)
-                    return resolve({ error: true, message: "Can't update docs", status: 403 });
-
-                /**
-                 * CẬP NHẬT TRẠNG THÁI CHO DỰ ÁN
-                 */       
-
-                return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

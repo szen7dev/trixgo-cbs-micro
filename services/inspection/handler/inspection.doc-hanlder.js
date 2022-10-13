@@ -56,7 +56,7 @@ module.exports = {
     updateDoc: {
         auth: "required",
         params: {
-            docID       : { type: "string" },
+            docID       : { type: "string", optional: true },
             assigneeID  : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
             templateID  : { type: "string", optional: true },
