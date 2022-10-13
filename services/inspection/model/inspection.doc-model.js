@@ -347,14 +347,10 @@ class Model extends BaseModel {
                     } else{
                         limit = +Number(limit);
                     }
-    
+
+                    let conditionObj = {}
                     let sortBy;
                     let keys	 = ['modifyAt__-1'];
-    
-                    // Các việc chưa hoàn thành
-                    if(statusNe){
-                        conditionObj.status = { $ne: statusNe };
-                    }
     
                     // Làm rõ mục đích để làm gì?
                     if (sortKey && typeof sortKey === 'string') {
@@ -378,6 +374,11 @@ class Model extends BaseModel {
                     if(!isNaN(belongSystem) && belongSystem == 2){
                         conditionObj.belongSystem = 2
                     }else{
+                        // Các việc chưa hoàn thành
+                        if(statusNe){
+                            conditionObj.status = { $ne: statusNe };
+                        }
+
                         // Lấy công việc mà user được quyền truy cập
                         conditionObj.$or = [
                             { author: userID },
