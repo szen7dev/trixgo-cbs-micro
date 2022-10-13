@@ -17,12 +17,12 @@ module.exports = {
     insertDoc: {
         auth: "required",
         params: {
-            contractID  : { type: "string" },
-			areaID      : { type: "string" },
-			groupID     : { type: "string" },
-            assigneeID  : { type: "string" },
+            contractID  : { type: "string", optional: true },
+			areaID      : { type: "string", optional: true },
+			groupID     : { type: "string", optional: true },
+            assigneeID  : { type: "string", optional: true },
             name        : { type: "string" },
-            expiredTime : { type: "string" },
+            expiredTime : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
             templateID  : { type: "string", optional: true },
             related     : { type: "array", optional: true },

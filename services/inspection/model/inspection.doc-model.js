@@ -48,7 +48,7 @@ class Model extends BaseModel {
                  * 2-Cập nhật % hoàn thành/trạng thái cho Khu vực-Nhóm công tác
                  */
                 let dataInsert = {};
-                if(!isNaN(belongSystem)){
+                if(!isNaN(belongSystem) && belongSystem == 2){
                     dataInsert = { 
                         name, 
                         belongSystem: Number(belongSystem)
