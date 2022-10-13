@@ -176,6 +176,26 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         ref: "user"
     }],
     /**
+     * THÔNG TIN TƯƠNG TÁC
+     */
+    //_________Tổng số lượng việc con
+    amountSubtask: {
+        type: Number, default: 0
+    },
+    //_________Tổng số lượng việc con đã hoàn thành
+    amountFinishedSubtask: {
+        type: Number, default: 0
+    },
+    //_________Tổng số lượng bình luận
+    amountComment: {
+        type: Number, default: 0
+    },
+    //_________Ký duyệt xác nhận
+    signatures: [{
+        type: Schema.Types.ObjectId,
+        ref: "signature"
+    }],
+    /**
      * Những người đã xem: dùng để theo dõi những ai đã truy cập vào Task
      * - Không được xóa phần tử đã thêm
      */
@@ -183,11 +203,6 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],          
-    //_________Chữ ký xác nhận 
-    signatures: [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'signature'
-    }],
     //_________Những user đánh dấu quan tâm/start/bookmark
     flags: [{
         type: Schema.Types.ObjectId,
