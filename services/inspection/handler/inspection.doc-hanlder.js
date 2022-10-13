@@ -139,16 +139,16 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, belongSystem, limit, lastestID, select, populates } = ctx.params;
+                let { docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(docID){
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getInfo({
-                        docID, select, populates
+                        docID, select, populates, userID
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({
-                        projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, belongSystem, limit, lastestID, select, populates
+                        projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID
                     });
                 }
              

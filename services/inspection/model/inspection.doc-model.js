@@ -316,19 +316,52 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, belongSystem, keyword, limit = 10, lastestID, select, populates }) { 
-        console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, belongSystem, keyword, limit, lastestID, select, populates })
+    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, userID }) { 
+        console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
-                let conditionObj = {};
-                let sortBy;
-                let keys	     = ['createAt__-1', '_id__-1'];
+                if(Number(limit) > 50){
+                    limit = 50;
+                } else{
+                    limit = +Number(limit);
+                }
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                // Các việc user đang active
+                let conditionObj = {
+                    usersDelete: { $nin: [userID] },
+                };
+
+                // Các việc chưa hoàn thành
+                if(statusNe){
+                    conditionObj.status = { $ne: statusNe };
+                }
+
+                if(isSortChecklist == 1 || isSortChildTask == 1){
+                    keys = ['actualFinishTime__1', '_id__1'];
+                    // keys = ['modifyAt__', '_id__1'];
+                }
+
+                // Làm rõ mục đích để làm gì?
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                let start = new Date();
+                start.setHours(0,0,0,0);
+                let end = new Date();
+                end.setHours(23,59,59,999);
+
+                // Lấy công việc mà user được quyền truy cập
+                conditionObj.$or = [
+                    { author: userID },
+                    { assignee: userID },
+                    { related: { $in: [userID] }},
+                ]
+
+
                 if(limit > 30){
                     limit = 30;
                 } else{
@@ -339,29 +372,29 @@ class Model extends BaseModel {
                     conditionObj.belongSystem = 2
                 }
 
-                if(checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID
-                }else{
-                    if(checkObjectIDs(projectID)){
-                        conditionObj.project = projectID
-                    }
-                }
+                // if(checkObjectIDs(contractID)){
+                //     conditionObj.contract = contractID
+                // }else{
+                //     if(checkObjectIDs(projectID)){
+                //         conditionObj.project = projectID
+                //     }
+                // }
 
-                if(checkObjectIDs(parentAreaID)){
-                    conditionObj.parentArea = parentAreaID
-                }
+                // if(checkObjectIDs(parentAreaID)){
+                //     conditionObj.parentArea = parentAreaID
+                // }
 
-                if(checkObjectIDs(areaID)){
-                    conditionObj.area = areaID
-                }
+                // if(checkObjectIDs(areaID)){
+                //     conditionObj.area = areaID
+                // }
 
-                if(checkObjectIDs(parentGroupID)){
-                    conditionObj.parentGroup = parentGroupID
-                }
+                // if(checkObjectIDs(parentGroupID)){
+                //     conditionObj.parentGroup = parentGroupID
+                // }
 
-                if(checkObjectIDs(groupID)){
-                    conditionObj.group = groupID
-                }
+                // if(checkObjectIDs(groupID)){
+                //     conditionObj.group = groupID
+                // }
 
                 console.log(conditionObj)
 

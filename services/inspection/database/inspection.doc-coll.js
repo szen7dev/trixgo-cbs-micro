@@ -125,11 +125,52 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     related: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    }],            
+    }],  
+    /**
+     * Những người được quyền truy cập
+     * 1-author (khi tạo việc xong thì add vào)
+     * 2-assignee (khi tạo việc xong thì add vào)
+     * 3-related (khi thêm người liên quan thì add vào)
+     * 4-người được gửi tới khi tạo phản hồi liên quan của chủ đề
+     */
+    accessUsers: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    /**
+     * Những user chưa xem công việc
+     * - Sẽ xóa user khi bấm xem
+     * - Sẽ thêm user khi có thông báo mới
+     */
+    news: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    /**
+     * Những người đã xem: dùng để theo dõi những ai đã truy cập vào Task
+     * - Không được xóa phần tử đã thêm
+     */
+    viewedUsers: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],          
     //_________Chữ ký xác nhận 
     signatures: [{
         type    : Schema.Types.ObjectId,
         ref     : 'signature'
+    }],
+    //_______Mảng user xoá tạm vào thùng rác
+    usersDelete: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    /**
+     * Mảng user xoá vĩnh viễn công việc
+     * Đồng nghĩa với việc giảm dung lượng sử dụng
+     */
+    usersPermanentDelete: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
     }],
     //_________Bình luận cuối cùng của hồ sơ
     lastComment: {

@@ -11,17 +11,24 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_checklist", {
     },
     //_________Tên checklist kiểm tra
     name: String,
-    //_________Trạng thái (0-Khởi tạo/1-Không/2-Đạt)
+    /**
+    * Trạng thái  
+    * 1-Khởi tạo 
+    * 2-Đang triển khai
+    * 3-Sửa lỗi
+    * 4-Hoàn thành
+    */
+    description : String,
     status: {
         type: Number,
-        default: 0
+        default: 1
     },
-    //_________Người xác nhận cuối cùng
+    //_________Người xác nhận
     approver: {
         type: Schema.Types.ObjectId,
         ref : 'user'
     },
-    //_________Thời gian xác nhận cuối cùng
+    //_________Thời gian xác nhận
     timeApproved: Date,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
