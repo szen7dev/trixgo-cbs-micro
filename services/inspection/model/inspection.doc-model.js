@@ -146,6 +146,7 @@ class Model extends BaseModel {
                      * - Sẽ thêm user khi có thông báo mới
                      */
                     dataInsert.news = accessUsers.filter(item => item !== userID); 
+                    console.log(dataInsert)
 
                     let infoDataAfterInserted = await this.insertData(dataInsert);
                     if(!infoDataAfterInserted)
@@ -156,6 +157,7 @@ class Model extends BaseModel {
                      * - Cân nhắc sử dụng luôn cùng Coll
                      */
                     let listTemplateChecklist = await INSPECTION__CHECKLIST_COLL.find({ inspection: templateID });
+                    console.log(listTemplateChecklist)
                     if(listTemplateChecklist.length){
                         for (const item of listTemplateChecklist) {
                             let { name, description } = item;
