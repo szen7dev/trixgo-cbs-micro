@@ -3,9 +3,12 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const moment                            =  require("moment");
 const { RANGE_BASE_PAGINATION_V2 } 		= require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
+const moment                            = require('moment')
+const XlsxPopulate                      = require('xlsx-populate');
+const path                              = require('path');
+const fs                                = require('fs');
 
 /**
  * import inter-coll, exter-coll
@@ -334,163 +337,204 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
-        console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
+    getList({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
+        console.log({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 50){
-                    limit = 50;
-                } else{
-                    limit = +Number(limit);
-                }
-
-                // Các việc user đang active
-                let conditionObj = {
-                    usersDelete: { $nin: [userID] },
-                };
-
-                let sortBy;
-                let keys	 = ['modifyAt__-1'];
-
-                // Các việc chưa hoàn thành
-                if(statusNe){
-                    conditionObj.status = { $ne: statusNe };
-                }
-
-                // Làm rõ mục đích để làm gì?
-                if (sortKey && typeof sortKey === 'string') {
-                    if (!IsJsonString(sortKey))
-                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
-
-                    keys = JSON.parse(sortKey);
-                }
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                // Lấy công việc mà user được quyền truy cập
-                conditionObj.$or = [
-                    { author: userID },
-                    { assignee: userID },
-                    { related: { $in: [userID] }},
-                ]
-
-
-                if(limit > 30){
-                    limit = 30;
-                } else{
-                    limit = +limit;
-                }
-
-                if(!isNaN(belongSystem) && belongSystem == 2){
-                    conditionObj.belongSystem = 2
-                }
-
-                // if(checkObjectIDs(contractID)){
-                //     conditionObj.contract = contractID
-                // }else{
-                //     if(checkObjectIDs(projectID)){
-                //         conditionObj.project = projectID
-                //     }
-                // }
-
-                // if(checkObjectIDs(parentAreaID)){
-                //     conditionObj.parentArea = parentAreaID
-                // }
-
-                // if(checkObjectIDs(areaID)){
-                //     conditionObj.area = areaID
-                // }
-
-                // if(checkObjectIDs(parentGroupID)){
-                //     conditionObj.parentGroup = parentGroupID
-                // }
-
-                // if(checkObjectIDs(groupID)){
-                //     conditionObj.group = groupID
-                // }
-
-                console.log(conditionObj)
-
-                /**
-                 * ĐIỀU KIỆN KHÁC
-                 */
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				} else{
-                    populates = {
-                        path: "",
-                        select: ""
+                if(!option){
+                    if(Number(limit) > 50){
+                        limit = 50;
+                    } else{
+                        limit = +Number(limit);
                     }
-                }
+    
+                    let sortBy;
+                    let keys	 = ['modifyAt__-1'];
+    
+                    // Các việc chưa hoàn thành
+                    if(statusNe){
+                        conditionObj.status = { $ne: statusNe };
+                    }
+    
+                    // Làm rõ mục đích để làm gì?
+                    if (sortKey && typeof sortKey === 'string') {
+                        if (!IsJsonString(sortKey))
+                            return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+    
+                        keys = JSON.parse(sortKey);
+                    }
+    
+                    // let start = new Date();
+                    // start.setHours(0,0,0,0);
+                    // let end = new Date();
+                    // end.setHours(23,59,59,999);
+    
+                    if(limit > 30){
+                        limit = 30;
+                    } else{
+                        limit = +limit;
+                    }
+    
+                    if(!isNaN(belongSystem) && belongSystem == 2){
+                        conditionObj.belongSystem = 2
+                    }else{
+                        // Lấy công việc mà user được quyền truy cập
+                        conditionObj.$or = [
+                            { author: userID },
+                            { assignee: userID },
+                            { related: { $in: [userID] }},
+                        ]
 
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    const regSearch = new RegExp(keyword, 'i');
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
-                }
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
- 
-                let conditionObjOrg = { ...conditionObj };
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await INSPECTION__DOC_COLL.findById(lastestID);
-                    if(!infoData)
-                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-                    conditionObj  = dataPagingAndSort.data.find;
-                    sortBy        = dataPagingAndSort.data.sort;
+                        conditionObj.usersDelete = { $nin: [userID] }
+                    }
+    
+                    // if(checkObjectIDs(contractID)){
+                    //     conditionObj.contract = contractID
+                    // }else{
+                    //     if(checkObjectIDs(projectID)){
+                    //         conditionObj.project = projectID
+                    //     }
+                    // }
+    
+                    // if(checkObjectIDs(parentAreaID)){
+                    //     conditionObj.parentArea = parentAreaID
+                    // }
+    
+                    // if(checkObjectIDs(areaID)){
+                    //     conditionObj.area = areaID
+                    // }
+    
+                    // if(checkObjectIDs(parentGroupID)){
+                    //     conditionObj.parentGroup = parentGroupID
+                    // }
+    
+                    // if(checkObjectIDs(groupID)){
+                    //     conditionObj.group = groupID
+                    // }
+    
+                    console.log(conditionObj)
+    
+                    /**
+                     * ĐIỀU KIỆN KHÁC
+                     */
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+    
+                        populates = JSON.parse(populates);
+                    } else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
+                    }
+    
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        const regSearch = new RegExp(keyword, 'i');
+    
+                        conditionObj.$or = [
+                            { name: regSearch },
+                            { sign: regSearch },
+                        ]
+                    }
+    
+                    if(select && typeof select === 'string'){
+                        if(!IsJsonString(select))
+                            return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+    
+                        select = JSON.parse(select);
+                    }
+     
+                    let conditionObjOrg = { ...conditionObj };
+                    if(lastestID && checkObjectIDs(lastestID)){
+                        let infoData = await INSPECTION__DOC_COLL.findById(lastestID);
+                        if(!infoData)
+                            return resolve({ error: true, message: "Can't get info last message", status: 400 });
+    
+                        let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                        if(!dataPagingAndSort || dataPagingAndSort.error)
+                            return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                        conditionObj  = dataPagingAndSort.data.find;
+                        sortBy        = dataPagingAndSort.data.sort;
+                    }else{
+                        let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                        sortBy                = dataPagingAndSort.data.sort;
+                    }
+    
+                    let infoDataAfterGet = await INSPECTION__DOC_COLL.find(conditionObj)
+                        .limit(limit+1)
+                        .sort(sortBy)
+                        .select(select)
+                        .populate(populates)
+                        .lean();
+    
+                    if(!infoDataAfterGet)
+                        return resolve({ error: true, message: "Can't get data", status: 403 });
+    
+                    let nextCursor	= null;
+                    if(infoDataAfterGet && infoDataAfterGet.length){
+                        if(infoDataAfterGet.length > limit){
+                            nextCursor = infoDataAfterGet[limit - 1]?._id;
+                            infoDataAfterGet.length = limit;
+                        }
+                    }
+                    let totalRecord = await INSPECTION__DOC_COLL.count(conditionObjOrg);
+                    let totalPage   = Math.ceil(totalRecord/limit);
+    
+                    return resolve({ error: false, data: {
+                        listRecords: infoDataAfterGet,
+                        limit: limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    }, status: 200 });
                 }else{
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-                    sortBy                = dataPagingAndSort.data.sort;
+                    let start = new Date();
+                    start.setHours(0,0,0,0);
+                    let end = new Date();
+                    end.setHours(23,59,59,999);
+
+                    // Số công việc chưa xem
+                    amountUnreadTask = await INSPECTION__DOC_COLL.count({
+                        news: { $in: [userID] },
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    // Số công việc của tôi - Quá hạn
+                    amountMyTask1 = await INSPECTION__DOC_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 4 },
+                        usersDelete: { $nin: [userID] },
+                        expiredTime: { $lt: start }
+                    })
+
+                    // Số công việc của tôi - Tuần tới
+                    amountMyTask2 = await INSPECTION__DOC_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 4 },
+                        usersDelete: { $nin: [userID] },
+                        expiredTime: { 
+                            $gte:  moment(start).startOf('day')._d,
+                            $lt: moment(addDate(7)).endOf('day')._d
+                        }
+                    })
+
+                    // Số công việc của tôi - Sau tuần tới
+                    amountMyTask3 = await INSPECTION__DOC_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 4 },
+                        usersDelete: { $nin: [userID] },
+                        expiredTime: { 
+                            $gte: addDate(7)
+                        }
+                    })
+
+                    return resolve({ error: false, data: {
+                        amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3
+                    }});
                 }
-
-                let infoDataAfterGet = await INSPECTION__DOC_COLL.find(conditionObj)
-                    .limit(limit+1)
-                    .sort(sortBy)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
-
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
-
-                let nextCursor	= null;
-                if(infoDataAfterGet && infoDataAfterGet.length){
-                    if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]?._id;
-                        infoDataAfterGet.length = limit;
-                    }
-                }
-                let totalRecord = await INSPECTION__DOC_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit);
-
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit: limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor,
-                }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
