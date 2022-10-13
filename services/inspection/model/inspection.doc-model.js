@@ -5,6 +5,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const moment                            =  require("moment");
 const { RANGE_BASE_PAGINATION_V2 } 		= require('../../../tools/cursor_base/playground/index');
+const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
@@ -38,7 +39,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID }) { 
+    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, authorAttachs, userID }) { 
         // console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID })
         return new Promise(async (resolve) => {
             try {
@@ -114,6 +115,11 @@ class Model extends BaseModel {
                         dataInsert.description = description;
                     }
 
+                    //_______File của người tạo việc
+                    if(checkObjectIDs(authorAttachs)){
+                        dataInsert.authorAttachs = authorAttachs;
+                    }
+
                     let infoDataAfterInserted = await this.insertData(dataInsert);
                     if(!infoDataAfterInserted)
                         return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
@@ -162,7 +168,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    update({ docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, userID }) { 
+    update({ docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 let infoDoc = await INSPECTION__DOC_COLL.findById(docID)
@@ -210,6 +216,39 @@ class Model extends BaseModel {
                     dataUpdate.finishedTime = new Date(); // Ngày hoàn thành thực tế
                 }else{
                     dataUpdate.status = Number(status)
+                }
+
+                /**
+                 * Cập nhật trạng thái xem/chưa xem
+                 */
+                if(!optionSeen){
+                    // Cập nhật trạng thái công việc
+                }else{
+                    // Cập nhật các Task được lựa chọn
+                    if(optionSeen == 1){
+                        let infoTaskAfterUpdate = await INSPECTION__DOC_COLL.updateMany(
+                            { _id: { $in: [docID] } },
+                            { $pull: { news: userID } },
+                            { new: true }
+                        );
+
+                        if (!infoTaskAfterUpdate)
+                            return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+                    }
+
+                    // Cập nhật tất cả các Task của user chưa đọc
+                    if(optionSeen == 2){
+                        let infoTaskAfterUpdate = await INSPECTION__DOC_COLL.updateMany(
+                            { news: { $in: userID } },
+                            { $pull: { news: userID } },
+                            { new: true }
+                        );
+
+                        if (!infoTaskAfterUpdate)
+                            return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+                    }
+
+                    // return resolve({ error: false, message: "update_success" })
                 }
 
                 let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, dataUpdate, { new: true });

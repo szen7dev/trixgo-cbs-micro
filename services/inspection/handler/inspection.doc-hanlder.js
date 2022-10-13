@@ -28,16 +28,17 @@ module.exports = {
             related     : { type: "array", optional: true },
             description : { type: "string", optional: true },
             belongSystem : { type: "string", optional: true },
+            authorAttachs    : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem } = ctx.params;
+                const { contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, authorAttachs } = ctx.params;
                 // console.log({contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description})
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.insert({
-					contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID
+					contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, authorAttachs, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -65,15 +66,17 @@ module.exports = {
             description : { type: "string", optional: true },
             status      : { type: "number", optional: true },
             percentage      : { type: "number", optional: true },
+            option          : { type: "number", optional: true },
+            optionSeen      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {          
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docID, sign, assigneeID, name, expiredTime, description, status, related, percentage } = ctx.params;
+                const { docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.update({
-					docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, userID 
+					docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
