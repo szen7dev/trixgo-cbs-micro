@@ -158,8 +158,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     }],
     /**
      * Những user chưa xem công việc
-     * - Sẽ xóa user khi bấm xem
-     * - Sẽ thêm user khi có thông báo mới
+     * - Sẽ thêm user khi có thông báo mới => Chưa xem
+     * - Sẽ xóa user khi bấm xem => Đã xem
      */
     news: [{
         type: Schema.Types.ObjectId,

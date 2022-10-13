@@ -124,6 +124,7 @@ module.exports = {
             docID       : { type: "string", optional: true },
             belongSystem  : { type: "string", optional: true },
             option      : { type: "string", optional: true },
+            optionSeen      : { type: "string", optional: true },
             // assignee    : { type: "string", optional: true },
             // author      : { type: "string", optional: true },
             // contract    : { type: "string", optional: true },
@@ -144,7 +145,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { option, docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { option, optionSeen, docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(docID){
@@ -153,7 +154,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({
-                        option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey, userID
+                        option, optionSeen, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
              

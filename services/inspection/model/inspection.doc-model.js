@@ -337,8 +337,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getList({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
-        console.log({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
+    getList({ option, optionSeen, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
+        // console.log({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -387,6 +387,16 @@ class Model extends BaseModel {
                         ]
 
                         conditionObj.usersDelete = { $nin: [userID] }
+
+                        // Việc chưa xem
+                        if(optionSeen && optionSeen == 1){
+                            conditionObj.news = { $in: [userID] }
+                        }
+
+                        // Việc đã xem
+                        if(optionSeen && optionSeen == 2){
+                            conditionObj.news = { $nin: [userID] }
+                        }
                     }
     
                     // if(checkObjectIDs(contractID)){
@@ -496,6 +506,8 @@ class Model extends BaseModel {
                     start.setHours(0,0,0,0);
                     let end = new Date();
                     end.setHours(23,59,59,999);
+
+                    let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0
 
                     // Số công việc chưa xem
                     amountUnreadTask = await INSPECTION__DOC_COLL.count({
