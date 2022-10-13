@@ -118,6 +118,7 @@ module.exports = {
             projectID   : { type: "string", optional: true },
             contractID  : { type: "string", optional: true },
             docID       : { type: "string", optional: true },
+            isTemplate  : { type: "string", optional: true },
             // assignee    : { type: "string", optional: true },
             // author      : { type: "string", optional: true },
             // contract    : { type: "string", optional: true },
@@ -138,7 +139,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, limit, lastestID, select, populates } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(docID){
@@ -147,7 +148,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({
-                        projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, keyword, limit, lastestID, select, populates
+                        projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, limit, lastestID, select, populates
                     });
                 }
              

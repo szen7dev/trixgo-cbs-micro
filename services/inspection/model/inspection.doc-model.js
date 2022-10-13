@@ -48,106 +48,109 @@ class Model extends BaseModel {
                  * 2-Cập nhật % hoàn thành/trạng thái cho Khu vực-Nhóm công tác
                  */
                 let dataInsert = {};
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(contractID) || !checkObjectIDs(areaID) || !checkObjectIDs(groupID) || !checkObjectIDs(assigneeID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params contractID|areaID|groupID|assigneeID|userID invalid', status: 400 })
-
-                let infoContract        = await ITEM__CONTRACT_COLL.findById(contractID).select('_id name project company')
-                let infoArea            = await INSPECTION__AREA_COLL.findById(areaID).select('_id name parent')
-                let infoGroup           = await INSPECTION__GROUP_COLL.findById(groupID).select('_id name parent')
-                let infoAssignee        = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
-                let infoAuthor          = await AUTH__USER_COLL.findById(userID).select('_id fullname company')
-                // console.log(infoContract)
-                // console.log(infoArea)
-                // console.log(infoGroup)
-                // console.log(infoAssignee)
-                // console.log(infoAuthor)
-
-                /**
-                 * Kiểm tra chỉ cho phép Khu vực và Nhóm ở cấp 2
-                 */
-                if(!checkObjectIDs(infoArea.parent) || !checkObjectIDs(infoGroup.parent))
-                    return resolve({ error: true, message: 'areaID|groupID param_invalid', status: 400 });
-                    
-                dataInsert = { 
-                    project: infoContract.project, 
-                    contract: contractID, 
-                    area: areaID, 
-                    parentArea: infoArea.parent, 
-                    group: groupID, 
-                    parentGroup: infoGroup.parent, 
-                    name, 
-                    expiredTime, 
-                    author: userID, 
-                    companyOfAuthor: infoAuthor.company,
-                    assignee: assigneeID, 
-                    companyOfAssignee: infoAssignee.company
-                };
-
-                if(templateID && !checkObjectIDs(templateID)){
-                    dataInsert.template = templateID;
-                }
-
-                if(related && !checkObjectIDs(related)){
-                    dataInsert.related = related;
-                }
-
-                if(sign && sign != ""){
-                    // let checkSign = await INSPECTION__DOC_COLL.findOne({ sign, contract: contractID });
-                    // if(checkSign)
-                    //     return resolve({ error: true, message: 'Sign existed', status: 400 });
-                    dataInsert.sign = sign;
-                }
-
-                if(description){
-                    dataInsert.description = description;
-                }
-
                 if(!isNaN(belongSystem)){
-                    dataInsert.belongSystem = Number(belongSystem);
-                }
+                    dataInsert = { 
+                        name, 
+                        belongSystem: Number(belongSystem)
+                    };
 
-                let infoDataAfterInserted = await this.insertData(dataInsert);
-                if(!infoDataAfterInserted)
-                    return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
-            
-                /**
-                 * Clone checklist từ Tempalte
-                 * - Cân nhắc sử dụng luôn cùng Coll
-                 */
-                // let listTemplateChecklist = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({ inspection: templateID });
-                // if(listTemplateChecklist.length){
-                //     for (const templateChecklist of listTemplateChecklist) {
-                //         let { name } = templateChecklist;
-                //         let infoChecklistAfterInsert = await INSPECTION__CHECKLIST_MODEL.insert({
-                //             inspection: infoDataAfterInserted._id, template, name, authorID: userID
-                //         })
-                //     }
-                // }
+                    let infoDataAfterInserted = await this.insertData(dataInsert);
+                    if(!infoDataAfterInserted)
+                        return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
 
-                /**
-                 * Tạo mới dữ liệu Group_Area
-                 */
-                let infoG1A1 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID: infoArea.parent, groupID: infoGroup.parent, userID })
-                let infoG1A2 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID: infoGroup.parent, userID })
-                let infoG2A2 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID, userID })
+                    return resolve({ error: false, data: infoDataAfterInserted, status: 200 });   
+                }else{
+                    if(!checkObjectIDs(contractID) || !checkObjectIDs(areaID) || !checkObjectIDs(groupID) || !checkObjectIDs(assigneeID) || !checkObjectIDs(userID))
+                        return resolve({ error: true, message: 'Request params contractID|areaID|groupID|assigneeID|userID invalid', status: 400 })
 
-                /**
-                 * CẬP NHẬT TRẠNG THÁI CHO NHÓM CÔNG TÁC-KHU VỰC (cần kiểm tra lại cho kỹ)
-                 * 1-Nhóm cha-Khu vực cha (Hoàn thiện-Tầng 1)
-                 * 2-Nhóm cha-Khu vực con (Hoàn thiện-Căn hộ C1.T1)
-                 * 3-Nhóm con-Khu vực con (Công tác xây-Căn hộ C1.T1)
-                 */
-                let infoG1A1New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID: infoArea.parent, groupID: infoGroup.parent, userID })
-                let infoG1A2New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID: infoGroup.parent, userID })
-                let infoG2A2New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })
+                    let infoContract        = await ITEM__CONTRACT_COLL.findById(contractID).select('_id name project company')
+                    let infoArea            = await INSPECTION__AREA_COLL.findById(areaID).select('_id name parent')
+                    let infoGroup           = await INSPECTION__GROUP_COLL.findById(groupID).select('_id name parent')
+                    let infoAssignee        = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
+                    let infoAuthor          = await AUTH__USER_COLL.findById(userID).select('_id fullname company')
+                    // console.log(infoContract)
+                    // console.log(infoArea)
+                    // console.log(infoGroup)
+                    // console.log(infoAssignee)
+                    // console.log(infoAuthor)
+
+                    /**
+                     * Kiểm tra chỉ cho phép Khu vực và Nhóm ở cấp 2
+                     */
+                    if(!checkObjectIDs(infoArea.parent) || !checkObjectIDs(infoGroup.parent))
+                        return resolve({ error: true, message: 'areaID|groupID param_invalid', status: 400 });
+                        
+                    dataInsert = { 
+                        project: infoContract.project, 
+                        contract: contractID, 
+                        area: areaID, 
+                        parentArea: infoArea.parent, 
+                        group: groupID, 
+                        parentGroup: infoGroup.parent, 
+                        name, 
+                        expiredTime, 
+                        author: userID, 
+                        companyOfAuthor: infoAuthor.company,
+                        assignee: assigneeID, 
+                        companyOfAssignee: infoAssignee.company
+                    };
+
+                    if(templateID && !checkObjectIDs(templateID)){
+                        dataInsert.template = templateID;
+                    }
+
+                    if(related && !checkObjectIDs(related)){
+                        dataInsert.related = related;
+                    }
+
+                    if(sign && sign != ""){
+                        // let checkSign = await INSPECTION__DOC_COLL.findOne({ sign, contract: contractID });
+                        // if(checkSign)
+                        //     return resolve({ error: true, message: 'Sign existed', status: 400 });
+                        dataInsert.sign = sign;
+                    }
+
+                    if(description){
+                        dataInsert.description = description;
+                    }
+
+                    let infoDataAfterInserted = await this.insertData(dataInsert);
+                    if(!infoDataAfterInserted)
+                        return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
                 
-                return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
+                    /**
+                     * Clone checklist từ Tempalte
+                     * - Cân nhắc sử dụng luôn cùng Coll
+                     */
+                    // let listTemplateChecklist = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({ inspection: templateID });
+                    // if(listTemplateChecklist.length){
+                    //     for (const templateChecklist of listTemplateChecklist) {
+                    //         let { name } = templateChecklist;
+                    //         let infoChecklistAfterInsert = await INSPECTION__CHECKLIST_MODEL.insert({
+                    //             inspection: infoDataAfterInserted._id, template, name, authorID: userID
+                    //         })
+                    //     }
+                    // }
+
+                    /**
+                     * Tạo mới dữ liệu Group_Area
+                     */
+                    let infoG1A1 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID: infoArea.parent, groupID: infoGroup.parent, userID })
+                    let infoG1A2 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID: infoGroup.parent, userID })
+                    let infoG2A2 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID, userID })
+
+                    /**
+                     * CẬP NHẬT TRẠNG THÁI CHO NHÓM CÔNG TÁC-KHU VỰC (cần kiểm tra lại cho kỹ)
+                     * 1-Nhóm cha-Khu vực cha (Hoàn thiện-Tầng 1)
+                     * 2-Nhóm cha-Khu vực con (Hoàn thiện-Căn hộ C1.T1)
+                     * 3-Nhóm con-Khu vực con (Công tác xây-Căn hộ C1.T1)
+                     */
+                    let infoG1A1New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID: infoArea.parent, groupID: infoGroup.parent, userID })
+                    let infoG1A2New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID: infoGroup.parent, userID })
+                    let infoG2A2New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })
+                    
+                    return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
+                }                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -257,15 +260,6 @@ class Model extends BaseModel {
     getInfo({ docID, select }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE STEP (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(docID))
                     return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
                 
@@ -322,8 +316,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, keyword, limit = 10, lastestID, select, populates }) { 
-        console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, keyword, limit, lastestID, select, populates })
+    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, limit = 10, lastestID, select, populates }) { 
+        console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 let conditionObj = {};
@@ -339,6 +333,10 @@ class Model extends BaseModel {
                     limit = 30;
                 } else{
                     limit = +limit;
+                }
+
+                if(!isNaN(belongSystem)){
+                    conditionObj.belongSystem = 2
                 }
 
                 if(checkObjectIDs(contractID)){
