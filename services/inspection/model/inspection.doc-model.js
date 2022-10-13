@@ -55,7 +55,7 @@ class Model extends BaseModel {
                  */
                 let dataInsert = {};
                 let accessUsers = [userID, assigneeID];
-                let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+                let suid = await stringUtils.randomAndCheckExists(INSPECTION__DOC_COLL, 'suid');
 
                 if(!isNaN(belongSystem) && belongSystem == 2){
                     dataInsert = { 
