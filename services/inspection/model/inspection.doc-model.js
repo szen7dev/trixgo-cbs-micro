@@ -12,6 +12,7 @@ const fs                                = require('fs');
 const { addDate, calculateExpireTime }          = require('../../../tools/utils/time_utils');
 const stringUtils					            = require('../../../tools/utils/string_utils');
 
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 
 /**
