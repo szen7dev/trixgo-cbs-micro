@@ -72,6 +72,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     description: String,
     //_________Mô tả hồ sơ/Vị trí
     descriptioncv: String,
+    //_________Phân loại mức độ quan trọng (cao, bình thường, thấp)
+    priority: { type: Number, default: 2 },
     // //_________Hạng mục
     // item: String,
     // //_________Vị trí

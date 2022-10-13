@@ -303,6 +303,21 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'Request params taskID invalid', status: 400 });
+
+                    /**
+                     * ĐIỀU KIỆN KHÁC
+                     */
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+    
+                        populates = JSON.parse(populates);
+                    } else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
+                    }
                 
                 let infoDocs = await INSPECTION__DOC_COLL.findById(taskID)
                 .select(select)
@@ -331,7 +346,7 @@ class Model extends BaseModel {
      * Code: 2/10/2022
      */
     getList({ option, optionSeen, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
-        // console.log({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
+        console.log({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
