@@ -593,7 +593,7 @@ class Model extends BaseModel {
                         const formatDate = new Date(actualFinishTime);
                         const expiredHourSplit = expiredHour.split(":");
                         formatDate.setHours(expiredHourSplit[0], expiredHourSplit[1]);
-                        console.log({formatDate})
+                        console.log({ formatDate, expiredHour, expiredHourSplit, actualFinishTime });
                         dataUpdate.actualFinishTime = formatDate;
                     }
 
