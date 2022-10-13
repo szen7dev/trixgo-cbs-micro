@@ -13,10 +13,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_checklist", {
     name: String,
     /**
     * Trạng thái  
-    * 1-Khởi tạo 
-    * 2-Đang triển khai
-    * 3-Sửa lỗi
-    * 4-Hoàn thành
+    * 1-Đang triển khai
+    * 2-Hoàn thành
     */
     description : String,
     status: {

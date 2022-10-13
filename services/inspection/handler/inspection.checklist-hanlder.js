@@ -17,27 +17,18 @@ module.exports = {
      insertc: {
         auth: "required",
         params: {
-            contractID  : { type: "string", optional: true },
-			areaID      : { type: "string", optional: true },
-			groupID     : { type: "string", optional: true },
-            assigneeID  : { type: "string", optional: true },
-            name        : { type: "string" },
-            expiredTime : { type: "string", optional: true },
-            sign        : { type: "string", optional: true },
-            templateID  : { type: "string", optional: true },
-            related     : { type: "array", optional: true },
-            description : { type: "string", optional: true },
-            belongSystem : { type: "string", optional: true },
+            inspectionID    : { type: "string" },
+			name            : { type: "string"},
+			description     : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem } = ctx.params;
-                // console.log({contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description})
+                const { inspectionID, name, description } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION__CHECKLIST_MODEL.insert({
-					contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID
+					inspectionID, name, description, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -55,24 +46,19 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            docID       : { type: "string" },
-            assigneeID  : { type: "string", optional: true },
-            sign        : { type: "string", optional: true },
-            templateID  : { type: "string", optional: true },
-            related     : { type: "array" , optional: true },
-            name        : { type: "string" },
-            expiredTime : { type: "string", optional: true },
-            description : { type: "string", optional: true },
-            status      : { type: "number", optional: true },
+            checklistID     : { type: "string" },
+			name            : { type: "string"},
+			description     : { type: "string", optional: true },
+            status          : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {          
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docID, sign, templateID, assigneeID, name, expiredTime, description, status, related } = ctx.params;
+                const { checklistID, name, description, status } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION__CHECKLIST_MODEL.update({
-					docID, sign, templateID, assigneeID, name, expiredTime, description, status, related, userID 
+					checklistID, name, description, status, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -90,15 +76,15 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-			docID : { type: "string" },
+			checklistID : { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { docID } = ctx.params;
+                const { checklistID } = ctx.params;
                 const resultAfterCallHandler = await INSPECTION__CHECKLIST_MODEL.remove({
-					docID 
+					checklistID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -115,19 +101,8 @@ module.exports = {
      */
     getList: {
         params: {
-            projectID   : { type: "string", optional: true },
-            contractID  : { type: "string", optional: true },
-            docID       : { type: "string", optional: true },
-            isTemplate  : { type: "string", optional: true },
-            // assignee    : { type: "string", optional: true },
-            // author      : { type: "string", optional: true },
-            // contract    : { type: "string", optional: true },
-            // signature   : { type: "string", optional: true },
-            // area        : { type: "string", optional: true },
-            // fromDate    : { type: "string", optional: true },
-            // toDate      : { type: "string", optional: true },
-            // fromCreateAt: { type: "string", optional: true },
-            // toCreateAt  : { type: "string", optional: true },
+            checklistID   : { type: "string", optional: true },
+            inspectionID   : { type: "string", optional: true },
             
             //_____________THÔNG SỐ MẶC ĐỊNH________________
             keyword         : { type: "string", optional: true },
@@ -139,16 +114,16 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, belongSystem, limit, lastestID, select, populates } = ctx.params;
+                let { checklistID, inspectionID, keyword, limit, lastestID, select, populates } = ctx.params;
                 let resultAfterCallHandler;
                 
-                if(docID){
+                if(checklistID){
                     resultAfterCallHandler = await INSPECTION__CHECKLIST_MODEL.getInfo({
-                        docID, select, populates
+                        checklistID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION__CHECKLIST_MODEL.getList({
-                        projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, isTemplate, keyword, belongSystem, limit, lastestID, select, populates
+                        inspectionID, keyword, limit, lastestID, select, populates
                     });
                 }
              

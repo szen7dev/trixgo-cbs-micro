@@ -29,39 +29,27 @@ class Model extends BaseModel {
      * Author: DePV
      * Code: F02401
      */
-    insert({ inspection, template, name, authorID }) { 
+    insert({ inspectionID, name, description, userID }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataInsert = { };
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(!checkObjectIDs(inspection))
-                    return resolve({ error: true, message: 'Request params inspection invalid', status: 400 });
-
-                if(!checkObjectIDs(template))
-                    return resolve({ error: true, message: 'Request params template invalid', status: 400 });
+                if(!checkObjectIDs(inspectionID))
+                    return resolve({ error: true, message: 'Request params inspectionID invalid', status: 400 });
                     
                 if (!name || name == '')
                     return resolve({ error: true, message: 'Request params name invalid', status: 400 });
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 dataInsert = {
-                    inspection, template, name, userCreate: authorID, userUpdate: authorID
+                    inspection: inspectionID, name, userCreate: userID, userUpdate: userID
                 };
+
+                if (!description || description == ''){
+                    dataInsert.description = description
+                }
 
                 let infoDataAfterInserted = await this.insertData(dataInsert);
 
@@ -80,7 +68,7 @@ class Model extends BaseModel {
      * Author: DePV
      * Code: F02402
      */
-    update({ checklistID, status, authorID }) { 
+    update({ checklistID, name, description, status, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -97,20 +85,26 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(checklistID))
                     return resolve({ error: true, message: 'Request params checklistID invalid', status: 400 });
 
-                if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(![0, 1].includes(status))
-                    return resolve({ error: true, message: 'Request params status invalid', status: 400 });
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 dataUpdate = {
-                    status, approver: authorID, userUpdate: authorID, timeApproved: new Date()
+                    userUpdate: userID, modifyAt: new Date()
                 };
+
+                if (!name || name == ''){
+                    dataUpdate.name = name
+                }
+
+                if (!description || description == ''){
+                    dataUpdate.description = description
+                }
+
+                if(!isNaN(status) && status == 2){
+                    dataUpdate.status = status
+                    dataUpdate.approver = userID
+                    dataUpdate.timeApproved = new Date()
+                }
 
                 let infoDataAfterUpdate = await INSPECTION__CHECKLIST_COLL.findByIdAndUpdate(checklistID, dataUpdate, { new: true })
 
@@ -132,23 +126,9 @@ class Model extends BaseModel {
     getInfo({ checklistID }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(checklistID))
                     return resolve({ error: true, message: 'Request params checklistID invalid', status: 400 });
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 let infoChecklist = await INSPECTION__CHECKLIST_COLL.findById(checklistID);
                 if(!infoChecklist)
                     return resolve({ error: true, message: "Can't create checklist", status: 403 });
@@ -165,82 +145,100 @@ class Model extends BaseModel {
      * Author: DePV
      * Code: F02404
      */
-    getList({limit = 10, lastestID, filter, select, inspectionID }) { 
+    getList({ inspectionID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { inspection: inspectionID, state: 1 };
-                let conditionFind = {};
-                let sortBy = { createAt: -1 };
-                let objSort = {};
+                if(Number(limit) > 50){
+                    limit = 50;
+                } else{
+                    limit = +Number(limit);
+                }
 
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+                let conditionObj = {inspection: inspectionID}
+                let sortBy;
+                let keys	 = ['modifyAt__-1'];
 
-					filter = JSON.parse(filter);
-				}
+                // Làm rõ mục đích để làm gì?
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
 
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                    keys = JSON.parse(sortKey);
+                }
+                console.log(conditionObj)
 
                 /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
-                // GET CONDITION PAGINATION
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoChecklist = await INSPECTION__CHECKLIST_COLL.findById(lastestID);
-					if(!infoChecklist)
-						return resolve({ error: true, message: "Can't get info last checklist", status: 400 });
+                 * ĐIỀU KIỆN KHÁC
+                 */
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					let nextInfo = `${infoChecklist.createAt}_${infoChecklist._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
+                    populates = JSON.parse(populates);
+                } else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
-                let infoDataAfterGet = await INSPECTION__CHECKLIST_COLL.find({...conditionObj, ...conditionFind }, { ...filter })
-                    .limit(+limit+1) // Cộng thêm 1 để kiểm tra có nextCursor hay không
-                    .sort(sortBy) 
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
+
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
+
+                if(select && typeof select === 'string'){
+                    if(!IsJsonString(select))
+                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+                    select = JSON.parse(select);
+                }
+ 
+                let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await INSPECTION__CHECKLIST_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await INSPECTION__CHECKLIST_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
                     .lean();
 
-                // GET TOTAL RECORD
-				let totalRecord = await INSPECTION__CHECKLIST_COLL.count(conditionObj);
-
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get checklists", status: 403 });
-                
-                let totalPage = Math.ceil(totalRecord/limit);
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
-				let nextCursor	= null;
-				if(infoDataAfterGet && infoDataAfterGet.length){
-					if(infoDataAfterGet.length > limit){
-						nextCursor = infoDataAfterGet[limit - 1]._id;
-						infoDataAfterGet.length = limit;
-					}
-				}
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                let totalRecord = await INSPECTION__CHECKLIST_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit: limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
