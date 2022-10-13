@@ -66,6 +66,23 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     // item: String,
     // //_________Vị trí
     // position: String,
+    /**
+     * Các việc có liên quan kèm theo
+     * Khi link việc A vào việc B thì ở trong việc B, links cũng chứa A
+     */
+    links: [{
+        type: Schema.Types.ObjectId,
+        ref: "inspection_doc"
+    }],
+    linksDocs: [{
+        type: Schema.Types.ObjectId,
+        ref: "document_doc"
+    }],
+    //_________File của người tạo việc (Đi kèm đưa sang phản hồi liên quan với type=5)
+    authorAttachs: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     //_________Số lượng tương tác
     numLike: {
         type: Number,
