@@ -14,7 +14,7 @@ module.exports = {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-     insertc: {
+    insert: {
         auth: "required",
         params: {
             inspectionID    : { type: "string" },
@@ -99,7 +99,7 @@ module.exports = {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getList: {
+    getInfoAndGetList: {
         params: {
             checklistID   : { type: "string", optional: true },
             inspectionID   : { type: "string", optional: true },

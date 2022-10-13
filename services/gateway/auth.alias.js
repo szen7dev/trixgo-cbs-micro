@@ -523,7 +523,6 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_GROUP_LIST}`],
 		//------------------------------S021 END SERVICE INSPECTION. AREA------------------------//
 
-
 		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC 🏁----------------------//
 		[`GET ${CF_ROUTINGS_INSPECTION.DOCS}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_LIST}`],
@@ -538,7 +537,19 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_REMOVE}`],
 		//---------------------------- S021 START SERVICE INSPECTION. DOC---------------------------//
 
+		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC CHECKLIST 🏁---------------------------//
+		[`GET ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_LIST}`],
 
+		[`POST ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_REMOVE}`],
+		//------------------------------ S021 END SERVICE INSPECTION. DOC CHECKLIST---------------------------//
 
 		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC COMMENT 🏁---------------------------//
 		//A0234
@@ -558,7 +569,6 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_COMMENT_LIST}`],
 		//--------------------------S021 END SERVICE INSPECTION. DOC COMMENT---------------------------//
 
-
 		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC REACTION 🏁---------------------------//
 		//A0238
 		[`POST ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] :
@@ -572,15 +582,6 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_REACTION_LIST}`],
 		//---------------------------S021 END SERVICE INSPECTION. DOC REACTION---------------------------//
-
-
-		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC CHECKLIST 🏁---------------------------//
-		[`GET ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_LIST}`],
-
-		[`PUT ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_UPDATE}`],
-		//------------------------------ S021 END SERVICE INSPECTION. DOC CHECKLIST---------------------------//
 
 
 		//---------------------------🏁 START SERVICE ITEM 🏁---------------------------//

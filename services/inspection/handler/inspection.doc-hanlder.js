@@ -14,7 +14,7 @@ module.exports = {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    insertDoc: {
+    insert: {
         auth: "required",
         params: {
             contractID  : { type: "string", optional: true },
@@ -53,7 +53,7 @@ module.exports = {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    updateDoc: {
+    update: {
         auth: "required",
         params: {
             docID       : { type: "string", optional: true },
@@ -91,7 +91,7 @@ module.exports = {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    removeDoc: {
+    remove: {
         auth: "required",
         params: {
 			docID : { type: "string" },
@@ -117,7 +117,7 @@ module.exports = {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getList: {
+    getInfoAndGetList: {
         params: {
             projectID   : { type: "string", optional: true },
             contractID  : { type: "string", optional: true },

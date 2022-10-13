@@ -34,6 +34,11 @@ const CF_ACTIONS_INSPECTION = {
     DOCS_REMOVE                                     : `${BASE_ACTIONS}_${DOC}_REMOVE`,
     DOCS_LIST                                       : `${BASE_ACTIONS}_${DOC}_LIST`,
 
+    DOC_CHECKLIST_INSERT                            : `${BASE_ACTIONS}_${DOC_CHECKLIST}_INSERT`,
+    DOC_CHECKLIST_UPDATE                            : `${BASE_ACTIONS}_${DOC_CHECKLIST}_UPDATE`,
+    DOC_CHECKLIST_REMOVE                            : `${BASE_ACTIONS}_${DOC_CHECKLIST}_REMOVE`,
+    DOC_CHECKLIST_LIST                              : `${BASE_ACTIONS}_${DOC_CHECKLIST}_LIST`,
+
     DOC_COMMENT_INSERT                              : `${BASE_ACTIONS}_${DOC_COMMENT}_INSERT`,
     DOC_COMMENT_UPDATE                              : `${BASE_ACTIONS}_${DOC_COMMENT}_UPDATE`,
     DOC_COMMENT_REMOVE                              : `${BASE_ACTIONS}_${DOC_COMMENT}_REMOVE`,
@@ -42,9 +47,6 @@ const CF_ACTIONS_INSPECTION = {
     DOC_REACTION_INSERT                             : `${BASE_ACTIONS}_${DOC_REACTION}_INSERT`,
     DOC_REACTION_REMOVE                             : `${BASE_ACTIONS}_${DOC_REACTION}_REMOVE`,
     DOC_REACTION_LIST                               : `${BASE_ACTIONS}_${DOC_REACTION}_LIST`,
-
-    DOC_CHECKLIST_UPDATE                            : `${BASE_ACTIONS}_${DOC_CHECKLIST}_UPDATE`,
-    DOC_CHECKLIST_LIST                              : `${BASE_ACTIONS}_${DOC_CHECKLIST}_LIST`,
 }
 
 exports.CF_ACTIONS_INSPECTION = CF_ACTIONS_INSPECTION;
