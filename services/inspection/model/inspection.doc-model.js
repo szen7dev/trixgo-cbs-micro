@@ -21,6 +21,7 @@ const INSPECTION__DOC_COLL                 = require('../database/inspection.doc
 const INSPECTION__AREA_COLL                = require('../database/inspection.area-coll');
 const INSPECTION__GROUP_COLL               = require('../database/inspection.group-coll');
 const INSPECTION__AREA_GROUP_COLL          = require('../database/inspection.area_group-coll');
+const INSPECTION__CHECKLIST_COLL           = require('../database/inspection.checklist-coll');
 
 /**
  * import inter-model, exter-model
@@ -154,15 +155,15 @@ class Model extends BaseModel {
                      * Clone checklist từ Tempalte
                      * - Cân nhắc sử dụng luôn cùng Coll
                      */
-                    // let listTemplateChecklist = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({ inspection: templateID });
-                    // if(listTemplateChecklist.length){
-                    //     for (const templateChecklist of listTemplateChecklist) {
-                    //         let { name } = templateChecklist;
-                    //         let infoChecklistAfterInsert = await INSPECTION__CHECKLIST_MODEL.insert({
-                    //             inspection: infoDataAfterInserted._id, template, name, authorID: userID
-                    //         })
-                    //     }
-                    // }
+                    let listTemplateChecklist = await INSPECTION__CHECKLIST_COLL.find({ inspection: templateID });
+                    if(listTemplateChecklist.length){
+                        for (const item of listTemplateChecklist) {
+                            let { name, description } = item;
+                            let infoChecklistAfterInsert = await INSPECTION__CHECKLIST_MODEL.insert({
+                                inspectionID: infoDataAfterInserted._id, name, description, userID
+                            })
+                        }
+                    }
 
                     /**
                      * CẬP NHẬT THÔNG TIN DỰ ÁN

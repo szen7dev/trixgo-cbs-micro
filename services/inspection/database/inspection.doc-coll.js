@@ -64,10 +64,14 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
      */
     //_________Nội dung
     name: String,
+    //_________Nội dung
+    namecv: String,
     //_________Mã hiệu hồ sơ
     sign: String,
     //_________Mô tả hồ sơ/Vị trí
     description: String,
+    //_________Mô tả hồ sơ/Vị trí
+    descriptioncv: String,
     // //_________Hạng mục
     // item: String,
     // //_________Vị trí
