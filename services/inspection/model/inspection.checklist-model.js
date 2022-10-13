@@ -2,7 +2,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION } 		= require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 		= require('../../../tools/cursor_base/playground/index');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
