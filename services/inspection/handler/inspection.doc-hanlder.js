@@ -64,15 +64,16 @@ module.exports = {
             expiredTime : { type: "string", optional: true },
             description : { type: "string", optional: true },
             status      : { type: "number", optional: true },
+            percentage      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {          
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docID, sign, templateID, assigneeID, name, expiredTime, description, status, related } = ctx.params;
+                const { docID, sign, assigneeID, name, expiredTime, description, status, related, percentage } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.update({
-					docID, sign, templateID, assigneeID, name, expiredTime, description, status, related, userID 
+					docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, userID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

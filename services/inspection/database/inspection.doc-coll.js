@@ -101,6 +101,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type: Number,
         default: 1
     },
+    //_________% hoàn thành (max = 100)
+    percentage: { type: Number, default: 0, max: 100 },
     //_________Người tạo
     author: {
         type: Schema.Types.ObjectId,

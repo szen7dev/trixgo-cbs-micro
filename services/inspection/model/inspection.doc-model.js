@@ -162,35 +162,17 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    update({ docID, sign, templateID, assigneeID, name, expiredTime, description, status, related, userID }) { 
+    update({ docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 let infoDoc = await INSPECTION__DOC_COLL.findById(docID)
-
-                const { area: areaID, group: groupID } = infoDoc
-
-                let infoArea            = await INSPECTION__AREA_COLL.findById(areaID).select('_id name parent')
-                let infoGroup           = await INSPECTION__GROUP_COLL.findById(groupID).select('_id name parent')
-                // let infoAssignee        = await AUTH__USER_COLL.findById(assigneeID).select('_id fullname company')
+                if(!infoDoc)
+                    return resolve({ error: true, message: "Can't get info inspection docs", status: 400 });
 
                 let dataUpdate = { userUpdate: userID, modifyAt: Date.now()};
 
-                /** 
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                if(checkObjectIDs(userID)){
-                    dataUpdate.userUpdate = userID;
-                }
-
-                /**
-                 * Cập nhật template
-                 * ->Xóa checklist cũ
-                 * ->Cập nhật checklist mới
-                 */
-                if(checkObjectIDs(templateID)){
-                    dataUpdate.template = templateID;
+                if(assigneeID && checkObjectIDs(assigneeID)){
+                    dataUpdate.assignee = assigneeID;
                 }
 
                 if(name && name != ""){
@@ -199,6 +181,10 @@ class Model extends BaseModel {
 
                 if(sign){
                     dataUpdate.sign = sign;
+                }
+
+                if(!isNaN(percentage)){
+                    dataUpdate.percentage = Number(percentage);
                 }
 
                 if(checkObjectIDs(related)){
@@ -220,6 +206,7 @@ class Model extends BaseModel {
                  */
                 if(status == this.STATUS_DONE){
                     dataUpdate.status = this.STATUS_DONE;
+                    dataUpdate.percentage = 100;
                     dataUpdate.finishedTime = new Date(); // Ngày hoàn thành thực tế
                 }else{
                     dataUpdate.status = Number(status)
@@ -230,14 +217,8 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't update docs", status: 403 });
 
                 /**
-                 * CẬP NHẬT TRẠNG THÁI CHO NHÓM CÔNG TÁC-KHU VỰC (cần kiểm tra lại cho kỹ)
-                 * 1-Nhóm cha-Khu vực cha (Hoàn thiện-Tầng 1)
-                 * 2-Nhóm cha-Khu vực con (Hoàn thiện-Căn hộ C1.T1)
-                 * 3-Nhóm con-Khu vực con (Công tác xây-Căn hộ C1.T1)
-                 */
-                let infoG1A1 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID: infoArea.parent, groupID: infoGroup.parent, userID })
-                let infoG1A2 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID: infoGroup.parent, userID })
-                let infoG2A2 = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })                    
+                 * CẬP NHẬT TRẠNG THÁI CHO DỰ ÁN
+                 */       
 
                 return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
             } catch (error) {
