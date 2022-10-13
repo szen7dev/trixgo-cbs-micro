@@ -291,54 +291,23 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getInfo({ taskID, select }) { 
+    getInfo({ taskID, userID, select, populates  }) { 
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'Request params taskID invalid', status: 400 });
                 
                 let infoDocs = await INSPECTION__DOC_COLL.findById(taskID)
-                    .select(select)
-                    .populate({
-                        path: "author",
-                        select: "_id image fullname"
-                    })
-                    .populate({
-                        path: "assignee",
-                        select: "image fullname"
-                    })
-                    .populate({
-                        path: "companyOfAuthor",
-                        select: "_id image name sign"
-                    })
-                    .populate({
-                        path: "companyOfAssignee",
-                        select: "image name sign"
-                    })
-                    .populate({ 
-                        path: "project",
-                        select: "name area",
-                    })
-                    .populate({
-                        path: "related",
-                        select: "image fullname"
-                    })
-                    .populate({
-                        path: "contract",
-                        select: "name"
-                    })
-                    .populate({
-                        path: "template",
-                        select: "name"
-                    })
-
-                if(!infoDocs)
-                    return resolve({ error: true, message: "Can't get info inspection docs", status: 403 });
+                .select(select)
+                .populate(populates).lean();
 
                 await INSPECTION__DOC_COLL.findByIdAndUpdate(taskID, {
                     $addToSet: { viewedUsers: userID },
                 });
-                
+
+                if(!infoDocs)
+                    return resolve({ error: true, message: "Can't get info inspection docs", status: 403 });
+
                 return resolve({ error: false, data: {infoDocs}, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

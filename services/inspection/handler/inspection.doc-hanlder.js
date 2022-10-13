@@ -150,7 +150,7 @@ module.exports = {
                 
                 if(taskID){
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getInfo({
-                        taskID, select, populates, userID
+                        taskID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({
