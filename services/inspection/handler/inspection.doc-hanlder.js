@@ -38,7 +38,7 @@ module.exports = {
                 // console.log({contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description})
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.insert({
-					contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs, userID
+					contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs, userID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

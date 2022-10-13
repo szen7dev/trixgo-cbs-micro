@@ -47,7 +47,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs, userID }) { 
+    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs, userID, ctx }) { 
         // console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID })
         return new Promise(async (resolve) => {
             try {
