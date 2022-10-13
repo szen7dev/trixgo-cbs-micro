@@ -173,10 +173,10 @@ class Model extends BaseModel {
                     /**
                      * CẬP NHẬT THÔNG TIN DỰ ÁN
                      */
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
-                        departmentID: infoContract.project, inspectionTasks: 1
-                    })
-                    console.log(infoProject)
+                    // let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                    //     departmentID: infoContract.project, inspectionTasks: 1
+                    // })
+                    // console.log(infoProject)
                     
                     return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
                 }                
