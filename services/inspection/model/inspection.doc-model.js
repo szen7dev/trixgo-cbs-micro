@@ -316,7 +316,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, userID }) { 
+    getList({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
         console.log({ projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
@@ -331,14 +331,12 @@ class Model extends BaseModel {
                     usersDelete: { $nin: [userID] },
                 };
 
+                let sortBy;
+                let keys	 = ['modifyAt__-1'];
+
                 // Các việc chưa hoàn thành
                 if(statusNe){
                     conditionObj.status = { $ne: statusNe };
-                }
-
-                if(isSortChecklist == 1 || isSortChildTask == 1){
-                    keys = ['actualFinishTime__1', '_id__1'];
-                    // keys = ['modifyAt__', '_id__1'];
                 }
 
                 // Làm rõ mục đích để làm gì?
