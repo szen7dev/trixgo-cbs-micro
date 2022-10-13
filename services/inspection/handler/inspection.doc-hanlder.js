@@ -25,7 +25,7 @@ module.exports = {
             expiredTime : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
             templateID  : { type: "string", optional: true },
-            related     : { type: "array", optional: true },
+            relatedIDs     : { type: "array", optional: true },
             description : { type: "string", optional: true },
             belongSystem : { type: "string", optional: true },
             authorAttachs    : { type: "array", optional: true },
@@ -34,11 +34,11 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, authorAttachs } = ctx.params;
-                // console.log({contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description})
+                const { contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs } = ctx.params;
+                // console.log({contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description})
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.insert({
-					contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, authorAttachs, userID
+					contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

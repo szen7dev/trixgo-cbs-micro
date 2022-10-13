@@ -10,6 +10,7 @@ const XlsxPopulate                      = require('xlsx-populate');
 const path                              = require('path');
 const fs                                = require('fs');
 const { addDate, calculateExpireTime }          = require('../../../tools/utils/time_utils');
+const stringUtils					            = require('../../../tools/utils/string_utils');
 
 /**
  * import inter-coll, exter-coll
@@ -43,7 +44,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, authorAttachs, userID }) { 
+    insert({ contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs, userID }) { 
         // console.log({ contractID, areaID, groupID, sign, templateID, assigneeID, related, name, expiredTime, description, belongSystem, userID })
         return new Promise(async (resolve) => {
             try {
@@ -53,6 +54,9 @@ class Model extends BaseModel {
                  * 2-Cập nhật % hoàn thành/trạng thái cho Khu vực-Nhóm công tác
                  */
                 let dataInsert = {};
+                let accessUsers = [userID, assigneeID];
+                let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+
                 if(!isNaN(belongSystem) && belongSystem == 2){
                     dataInsert = { 
                         name, 
@@ -97,15 +101,26 @@ class Model extends BaseModel {
                         author: userID, 
                         companyOfAuthor: infoAuthor.company,
                         assignee: assigneeID, 
-                        companyOfAssignee: infoAssignee.company
+                        companyOfAssignee: infoAssignee.company,
+                        suid,
+                        accessUsers,
                     };
 
+                    /**
+                     * Gán template và tạo checklist đi kèm
+                     */
                     if(templateID && !checkObjectIDs(templateID)){
                         dataInsert.template = templateID;
                     }
 
-                    if(related && !checkObjectIDs(related)){
-                        dataInsert.related = related;
+                    if(relatedIDs && relatedIDs.length){
+                        relatedIDs = [...new Set(relatedIDs)];
+    
+                        if(!checkObjectIDs(relatedIDs)) {
+                            return resolve({ error: true, message: "relatedIDs_invalid", status: 400 });
+                        }
+                        dataInsert.related = relatedIDs;
+                        accessUsers.push(...relatedIDs);
                     }
 
                     if(sign && sign != ""){
@@ -123,6 +138,13 @@ class Model extends BaseModel {
                     if(checkObjectIDs(authorAttachs)){
                         dataInsert.authorAttachs = authorAttachs;
                     }
+
+                    /**
+                     * Những user chưa xem công việc
+                     * - Sẽ xóa user khi bấm xem
+                     * - Sẽ thêm user khi có thông báo mới
+                     */
+                    dataInsert.news = accessUsers.filter(item => item !== userID); 
 
                     let infoDataAfterInserted = await this.insertData(dataInsert);
                     if(!infoDataAfterInserted)
@@ -143,21 +165,8 @@ class Model extends BaseModel {
                     // }
 
                     /**
-                     * Tạo mới dữ liệu Group_Area
+                     * CẬP NHẬT THÔNG TIN DỰ ÁN
                      */
-                    let infoG1A1 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID: infoArea.parent, groupID: infoGroup.parent, userID })
-                    let infoG1A2 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID: infoGroup.parent, userID })
-                    let infoG2A2 = await INSPECTION__AREA_GROUP_MODEL.insert({ projectID: infoContract.project, areaID, groupID, userID })
-
-                    /**
-                     * CẬP NHẬT TRẠNG THÁI CHO NHÓM CÔNG TÁC-KHU VỰC (cần kiểm tra lại cho kỹ)
-                     * 1-Nhóm cha-Khu vực cha (Hoàn thiện-Tầng 1)
-                     * 2-Nhóm cha-Khu vực con (Hoàn thiện-Căn hộ C1.T1)
-                     * 3-Nhóm con-Khu vực con (Công tác xây-Căn hộ C1.T1)
-                     */
-                    let infoG1A1New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID: infoArea.parent, groupID: infoGroup.parent, userID })
-                    let infoG1A2New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID: infoGroup.parent, userID })
-                    let infoG2A2New = await INSPECTION__AREA_GROUP_MODEL.updateStatus({ areaID, groupID, userID })
                     
                     return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
                 }                
@@ -231,8 +240,8 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Can't update docs", status: 403 });
     
                     /**
-                     * CẬP NHẬT TRẠNG THÁI CHO DỰ ÁN
-                     */       
+                     * CẬP NHẬT THÔNG TIN DỰ ÁN
+                     */      
     
                     return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
                 }else{
