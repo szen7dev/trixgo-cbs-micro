@@ -147,22 +147,22 @@ class Model extends BaseModel {
         contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
         closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
         receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-        numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
+        numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs, inspectionTasks, completedInspectionTasksTasks, ctx
     }) {
-        // console.log('++++++++++++++++++++++++++++++++++++')
-        // console.log('======================Update thông tin')
-        // console.log({
-        //     departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
-        //     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
-        //     pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
-        //     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-        //     realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
-        //     contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
-        //     contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
-        //     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
-        //     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-        //     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
-        // })
+        console.log('++++++++++++++++++++++++++++++++++++')
+        console.log('======================Update thông tin')
+        console.log({
+            departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+            description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
+            pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
+            images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
+            realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
+            contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
+            contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
+            closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
+            receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
+            numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs, inspectionTasks, completedInspectionTasksTasks
+        })
         return new Promise(async resolve => {
             try {
                 let dataUpdate   = {};
@@ -221,6 +221,20 @@ class Model extends BaseModel {
                     //     return resolve({ error: true, message: `Số lượng thành viên đã vượt ngưỡng hệ thống quy định` });
                         
                     dataAddToSet.members = members;
+
+                    for (const item of members){
+                        // console.log(item)
+
+                        // Lấy thông tin công ty để gán ký hiệu công ty vào tên dự án
+                        let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+                            userID: item
+                        });
+                        // console.log(infoCompany)
+
+                        if(infoCompany){
+                            dataAddToSet.contractors = infoCompany.data.company;
+                        }
+                    }
                 }
 
                 if(checkObjectIDs(membersRemove)){
@@ -610,6 +624,14 @@ class Model extends BaseModel {
 
                 if(numberFinishOfDocs){
                     dataInc.numberFinishOfDocs = numberFinishOfDocs;
+                }
+
+                if(inspectionTasks){
+                    dataInc.inspectionTasks = inspectionTasks;
+                }
+
+                if(completedInspectionTasksTasks){
+                    dataInc.completedInspectionTasksTasks = completedInspectionTasksTasks;
                 }
 
                 // Xử lý addToSet, pullAll, inc

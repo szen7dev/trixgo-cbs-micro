@@ -12,6 +12,8 @@ const fs                                = require('fs');
 const { addDate, calculateExpireTime }          = require('../../../tools/utils/time_utils');
 const stringUtils					            = require('../../../tools/utils/string_utils');
 
+const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+
 /**
  * import inter-coll, exter-coll
  */
@@ -157,7 +159,7 @@ class Model extends BaseModel {
                      * - Cân nhắc sử dụng luôn cùng Coll
                      */
                     let listTemplateChecklist = await INSPECTION__CHECKLIST_COLL.find({ inspection: templateID });
-                    console.log(listTemplateChecklist)
+                    // console.log(listTemplateChecklist)
                     if(listTemplateChecklist.length){
                         for (const item of listTemplateChecklist) {
                             let { name, description } = item;
@@ -170,6 +172,10 @@ class Model extends BaseModel {
                     /**
                      * CẬP NHẬT THÔNG TIN DỰ ÁN
                      */
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: infoContract.project, inspectionTasks: 1
+                    })
+                    console.log(infoProject)
                     
                     return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
                 }                

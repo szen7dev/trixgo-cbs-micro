@@ -7,7 +7,7 @@ const Schema                = require('mongoose').Schema;
  * DỰ ÁN/PHÒNG BAN
  */
 module.exports  = DATABASE_MIDDLEWARE("department", {
-    //_________Công ty  
+    //_________Công ty/Chủ đầu tư  
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -498,7 +498,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     },
 
     /**
-    * THÔNG TIN KHÁC
+    * CÔNG VIỆC
     */
     //______Tổng số cột mốc
     milestones: {
@@ -517,6 +517,16 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     },
     //______Tổng số công việc đã hoàn thành
     completedTasks: {
+        type   : Number,
+        default: 0
+    },
+    //______Tổng số công việc nghiệm thu
+    inspectionTasks: {
+        type   : Number,
+        default: 0
+    },
+    //______Tổng số công việc đã nghiệm thu hoàn thành
+    completedInspectionTasks: {
         type   : Number,
         default: 0
     },
@@ -580,6 +590,11 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
+    //_________Các bên tham gia dự án
+    contractors: [{
+        type: Schema.Types.ObjectId,
+        ref: 'company',
+    }],
     //_________Ảnh đại diện
     image: {
         type: String,
