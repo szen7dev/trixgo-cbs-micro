@@ -110,7 +110,7 @@ class Model extends BaseModel {
                     /**
                      * Gán template và tạo checklist đi kèm
                      */
-                    if(templateID && !checkObjectIDs(templateID)){
+                    if(templateID && checkObjectIDs(templateID)){
                         dataInsert.template = templateID;
                     }
 
