@@ -188,6 +188,11 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type    : Schema.Types.ObjectId,
         ref     : 'signature'
     }],
+    //_________Những user đánh dấu quan tâm/start/bookmark
+    flags: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
     //_______Mảng user xoá tạm vào thùng rác
     usersDelete: [{
         type: Schema.Types.ObjectId,

@@ -56,7 +56,7 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            docID       : { type: "string", optional: true },
+            taskID       : { type: "string", optional: true },
             assigneeID  : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
             templateID  : { type: "string", optional: true },
@@ -73,10 +73,10 @@ module.exports = {
             try {          
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen } = ctx.params;
+                const { taskID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.update({
-					docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID 
+					taskID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -94,15 +94,15 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-			docID : { type: "string" },
+			taskID : { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { docID } = ctx.params;
+                const { taskID } = ctx.params;
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.remove({
-					docID 
+					taskID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -121,7 +121,7 @@ module.exports = {
         params: {
             projectID   : { type: "string", optional: true },
             contractID  : { type: "string", optional: true },
-            docID       : { type: "string", optional: true },
+            taskID       : { type: "string", optional: true },
             belongSystem  : { type: "string", optional: true },
             option      : { type: "string", optional: true },
             optionSeen      : { type: "string", optional: true },
@@ -145,12 +145,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionSeen, docID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { option, optionSeen, taskID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
                 let resultAfterCallHandler;
                 
-                if(docID){
+                if(taskID){
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getInfo({
-                        docID, select, populates, userID
+                        taskID, select, populates, userID
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({

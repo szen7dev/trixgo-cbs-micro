@@ -184,14 +184,14 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    update({ docID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID }) { 
+    update({ taskID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * Cập nhật trạng thái xem/chưa xem
                  */
                 if(!optionSeen){
-                    let infoDoc = await INSPECTION__DOC_COLL.findById(docID)
+                    let infoDoc = await INSPECTION__DOC_COLL.findById(taskID)
                     if(!infoDoc)
                         return resolve({ error: true, message: "Can't get info inspection docs", status: 400 });
     
@@ -238,7 +238,7 @@ class Model extends BaseModel {
                         dataUpdate.status = Number(status)
                     }
 
-                    let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, dataUpdate, { new: true });
+                    let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
                     if(!infoDataAfterUpdate)
                         return resolve({ error: true, message: "Can't update docs", status: 403 });
     
@@ -251,7 +251,7 @@ class Model extends BaseModel {
                     // Cập nhật các Task được lựa chọn
                     if(optionSeen == 1){
                         let infoTaskAfterUpdate = await INSPECTION__DOC_COLL.updateMany(
-                            { _id: { $in: [docID] } },
+                            { _id: { $in: [taskID] } },
                             { $pull: { news: userID } },
                             { new: true }
                         );
@@ -291,13 +291,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getInfo({ docID, select }) { 
+    getInfo({ taskID, select }) { 
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(docID))
-                    return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
+                if(!checkObjectIDs(taskID))
+                    return resolve({ error: true, message: 'Request params taskID invalid', status: 400 });
                 
-                let infoDocs = await INSPECTION__DOC_COLL.findById(docID)
+                let infoDocs = await INSPECTION__DOC_COLL.findById(taskID)
                     .select(select)
                     .populate({
                         path: "author",
@@ -334,6 +334,10 @@ class Model extends BaseModel {
 
                 if(!infoDocs)
                     return resolve({ error: true, message: "Can't get info inspection docs", status: 403 });
+
+                await INSPECTION__DOC_COLL.findByIdAndUpdate(taskID, {
+                    $addToSet: { viewedUsers: userID },
+                });
                 
                 return resolve({ error: false, data: {infoDocs}, status: 200 });
             } catch (error) {
