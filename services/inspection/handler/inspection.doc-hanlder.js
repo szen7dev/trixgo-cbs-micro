@@ -60,7 +60,8 @@ module.exports = {
             assigneeID  : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
             templateID  : { type: "string", optional: true },
-            related     : { type: "array", optional: true },
+            relatedIDs     : { type: "array", optional: true },
+            linksDocs     : { type: "array", optional: true },
             name        : { type: "string", optional: true },
             expiredTime : { type: "string", optional: true },
             description : { type: "string", optional: true },
@@ -73,10 +74,10 @@ module.exports = {
             try {          
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { taskID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen } = ctx.params;
+                const { taskID, sign, assigneeID, name, expiredTime, description, status, relatedIDs, percentage, option, optionSeen, linksDocs } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.update({
-					taskID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID 
+					taskID, sign, assigneeID, name, expiredTime, description, status, relatedIDs, percentage, option, optionSeen, linksDocs, userID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

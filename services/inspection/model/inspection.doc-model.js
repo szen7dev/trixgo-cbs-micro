@@ -192,7 +192,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    update({ taskID, sign, assigneeID, name, expiredTime, description, status, related, percentage, option, optionSeen, userID }) { 
+    update({ taskID, sign, assigneeID, name, expiredTime, description, status, relatedIDs, percentage, linksDocs, optionSeen, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -204,6 +204,8 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Can't get info inspection docs", status: 400 });
     
                     let dataUpdate = { userUpdate: userID, modifyAt: Date.now()};
+                    let dataAddToset = {};
+                    let dataPullAll  = {};
     
                     if(assigneeID && checkObjectIDs(assigneeID)){
                         dataUpdate.assignee = assigneeID;
@@ -221,10 +223,15 @@ class Model extends BaseModel {
                         dataUpdate.percentage = Number(percentage);
                     }
     
-                    if(checkObjectIDs(related)){
+                    if(checkObjectIDs(relatedIDs)){
                         dataUpdate.$addToSet = {
-                            related: related
+                            related: relatedIDs
                         }
+                        dataAddToset = { ...dataAddToset, relatedIDs }
+                    }
+
+                    if(checkObjectIDs(linksDocs)){
+                        dataAddToset = { ...dataAddToset, linksDocs }
                     }
     
                     if(expiredTime){
@@ -233,6 +240,10 @@ class Model extends BaseModel {
     
                     if(description){
                         dataUpdate.description = description;
+                    }
+
+                    if(dataAddToset){
+                        dataUpdate.$addToSet = dataAddToset;
                     }
     
                     /**
