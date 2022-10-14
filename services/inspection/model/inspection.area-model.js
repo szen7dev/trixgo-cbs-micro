@@ -150,32 +150,7 @@ class Model extends BaseModel {
      * Xóa mẩu tin: Depv 
      * F0228
      */
-    remove({ areaID }) { 
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE STEP (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(areaID))
-                    return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
-         
-                let infoDataAfterRemove = await INSPECTION__AREA_COLL.findByIdAndUpdate(areaID, { state: 2 }, { new: true });
-                if(!infoDataAfterRemove)
-                    return resolve({ error: true, message: "Can't remove area", status: 403 });
-
-                return resolve({ error: false, data: "Remove Success", status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
+    
     /**
      * Lấy thông tin khu vực: Depv 
      * F0229
