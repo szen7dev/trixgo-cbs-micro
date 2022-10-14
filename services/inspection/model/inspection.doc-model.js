@@ -397,29 +397,29 @@ class Model extends BaseModel {
                         }
                     }
     
-                    // if(checkObjectIDs(contractID)){
-                    //     conditionObj.contract = contractID
-                    // }else{
-                    //     if(checkObjectIDs(projectID)){
-                    //         conditionObj.project = projectID
-                    //     }
-                    // }
+                    if(checkObjectIDs(contractID)){
+                        conditionObj.contract = contractID
+                    }else{
+                        if(checkObjectIDs(projectID)){
+                            conditionObj.project = projectID
+                        }
+                    }
     
-                    // if(checkObjectIDs(parentAreaID)){
-                    //     conditionObj.parentArea = parentAreaID
-                    // }
+                    if(checkObjectIDs(parentAreaID)){
+                        conditionObj.parentArea = parentAreaID
+                    }
     
-                    // if(checkObjectIDs(areaID)){
-                    //     conditionObj.area = areaID
-                    // }
+                    if(checkObjectIDs(areaID)){
+                        conditionObj.area = areaID
+                    }
     
-                    // if(checkObjectIDs(parentGroupID)){
-                    //     conditionObj.parentGroup = parentGroupID
-                    // }
+                    if(checkObjectIDs(parentGroupID)){
+                        conditionObj.parentGroup = parentGroupID
+                    }
     
-                    // if(checkObjectIDs(groupID)){
-                    //     conditionObj.group = groupID
-                    // }
+                    if(checkObjectIDs(groupID)){
+                        conditionObj.group = groupID
+                    }
     
                     console.log(conditionObj)
     
@@ -565,133 +565,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!option){
-                    console.log('=--------------------')
-                    if(Number(limit) > 50){
-                        limit = 50;
-                    } else{
-                        limit = +Number(limit);
-                    }
-
-                    let conditionObj = {}
-                    let sortBy;
-                    let keys	 = ['modifyAt__-1'];
-    
-                    // Làm rõ mục đích để làm gì?
-                    if (sortKey && typeof sortKey === 'string') {
-                        if (!IsJsonString(sortKey))
-                            return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
-    
-                        keys = JSON.parse(sortKey);
-                    }
-    
-                    if(!isNaN(belongSystem) && belongSystem == 2){
-                        conditionObj.belongSystem = 2
-                    }else{
-
-                    }
-    
-                    // if(checkObjectIDs(contractID)){
-                    //     conditionObj.contract = contractID
-                    // }else{
-                    //     if(checkObjectIDs(projectID)){
-                    //         conditionObj.project = projectID
-                    //     }
-                    // }
-    
-                    // if(checkObjectIDs(parentAreaID)){
-                    //     conditionObj.parentArea = parentAreaID
-                    // }
-    
-                    // if(checkObjectIDs(areaID)){
-                    //     conditionObj.area = areaID
-                    // }
-    
-                    // if(checkObjectIDs(parentGroupID)){
-                    //     conditionObj.parentGroup = parentGroupID
-                    // }
-    
-                    // if(checkObjectIDs(groupID)){
-                    //     conditionObj.group = groupID
-                    // }
-    
-                    console.log(conditionObj)
-    
-                    /**
-                     * ĐIỀU KIỆN KHÁC
-                     */
-                    if(populates && typeof populates === 'string'){
-                        if(!IsJsonString(populates))
-                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-    
-                        populates = JSON.parse(populates);
-                    } else{
-                        populates = {
-                            path: "",
-                            select: ""
-                        }
-                    }
-    
-                    if(keyword){
-                        keyword = keyword.split(" ");
-                        keyword = '.*' + keyword.join(".*") + '.*';
-                        const regSearch = new RegExp(keyword, 'i');
-    
-                        conditionObj.$or = [
-                            { name: regSearch },
-                            { sign: regSearch },
-                        ]
-                    }
-    
-                    if(select && typeof select === 'string'){
-                        if(!IsJsonString(select))
-                            return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-    
-                        select = JSON.parse(select);
-                    }
-     
-                    let conditionObjOrg = { ...conditionObj };
-                    if(lastestID && checkObjectIDs(lastestID)){
-                        let infoData = await INSPECTION__DOC_COLL.findById(lastestID);
-                        if(!infoData)
-                            return resolve({ error: true, message: "Can't get info last message", status: 400 });
-    
-                        let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-                        if(!dataPagingAndSort || dataPagingAndSort.error)
-                            return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-                        conditionObj  = dataPagingAndSort.data.find;
-                        sortBy        = dataPagingAndSort.data.sort;
-                    }else{
-                        let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-                        sortBy                = dataPagingAndSort.data.sort;
-                    }
-    
-                    let infoDataAfterGet = await INSPECTION__DOC_COLL.find(conditionObj)
-                        .limit(limit+1)
-                        .sort(sortBy)
-                        .select(select)
-                        .populate(populates)
-                        .lean();
-    
-                    if(!infoDataAfterGet)
-                        return resolve({ error: true, message: "Can't get data", status: 403 });
-    
-                    let nextCursor	= null;
-                    if(infoDataAfterGet && infoDataAfterGet.length){
-                        if(infoDataAfterGet.length > limit){
-                            nextCursor = infoDataAfterGet[limit - 1]?._id;
-                            infoDataAfterGet.length = limit;
-                        }
-                    }
-                    let totalRecord = await INSPECTION__DOC_COLL.count(conditionObjOrg);
-                    let totalPage   = Math.ceil(totalRecord/limit);
-    
-                    return resolve({ error: false, data: {
-                        listRecords: infoDataAfterGet,
-                        limit: limit,
-                        totalRecord,
-                        totalPage,
-                        nextCursor,
-                    }, status: 200 });
+                    
                 }else{
                     let conditionObj = {}
                     
@@ -744,6 +618,58 @@ class Model extends BaseModel {
                                 conditionObj.parentArea = ObjectID(parentAreaID)
                                 conditionGroup = {
                                     _id: { area: "$area" },
+                                    amount: { $sum: 1 },
+                                }
+                            }
+
+                            // Tính tổng trạng thái theo phân loại
+                            if(optionArea && Number(optionArea) == 21){
+                                conditionObj.parentGroup = ObjectID(parentGroupID)
+                                conditionObj.parentArea = ObjectID(parentAreaID)
+                                conditionGroup = {
+                                    _id: { status: "$status" },
+                                    amount: { $sum: 1 },
+                                }
+                            }
+
+                            // Gom nhóm theo các khu vực con
+                            if(optionArea && Number(optionArea) == 3){
+                                conditionObj.parentGroup = ObjectID(parentGroupID)
+                                conditionObj.area = ObjectID(areaID)
+                                conditionGroup = {
+                                    _id: { group: "$group" },
+                                    amount: { $sum: 1 },
+                                }
+                            }
+
+                            // Tính tổng trạng thái theo phân loại
+                            if(optionArea && Number(optionArea) == 31){
+                                conditionObj.parentGroup = ObjectID(parentGroupID)
+                                conditionObj.area = ObjectID(areaID)
+                                conditionGroup = {
+                                    _id: { status: "$status" },
+                                    amount: { $sum: 1 },
+                                }
+                            }
+
+                            // Tính tổng trạng thái theo phân loại
+                            if(optionArea && Number(optionArea) == 31){
+                                conditionObj.parentGroup = ObjectID(parentGroupID)
+                                conditionObj.area = ObjectID(areaID)
+                                conditionGroup = {
+                                    _id: { status: "$status" },
+                                    amount: { $sum: 1 },
+                                }
+                            }
+
+                            // Tính tổng trạng thái theo Căn hộ-Nhóm công tác
+                            if(optionArea && Number(optionArea) == 41){
+                                console.log('Tính tổng trạng thái theo Căn hộ-Nhóm công tác')
+
+                                conditionObj.area = ObjectID(areaID)
+                                conditionObj.area = ObjectID(areaID)
+                                conditionGroup = {
+                                    _id: { status: "$status" },
                                     amount: { $sum: 1 },
                                 }
                             }
