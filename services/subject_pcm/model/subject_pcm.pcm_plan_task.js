@@ -216,21 +216,23 @@ class Model extends BaseModel {
                  * Precalculated
                  */
                 let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    userID: authorID, select: "_id company"
+                    userID: authorID, select: "_id company department"
                 })
 
                 let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    userID: assigneeID, select: "_id company"
+                    userID: assigneeID, select: "_id company department"
                 })
 
                 // companyOfAuthor
                 if(!infoAuthor.error){
                     dataInsert.companyOfAuthor = infoAuthor.data.company;
+                    dataInsert.departmentOfAuthor = infoAuthor.data.department;
                 }
 
                 // companyOfAssignee
                 if(!infoAssignee.error){
                     dataInsert.companyOfAssignee = infoAssignee.data.company;
+                    dataInsert.departmentOfAssignee = infoAssignee.data.department;
                 }
 
                 // Việc con hoặc check list
