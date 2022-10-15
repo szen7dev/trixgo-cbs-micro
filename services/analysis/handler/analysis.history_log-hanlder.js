@@ -16,21 +16,20 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            project           : { type: "string", optional: true },
-            contract          : { type: "string", optional: true },
-            type              : { type: "number", optional: true },
-            parentCollection  : { type: "object", optional: true },
-            subCollection     : { type: "object", optional: true },
+            taskID            : { type: "string", optional: true },
+            documentID        : { type: "string", optional: true },
+            title             : { type: "string", optional: true },
             content           : { type: "string", optional: true },
+            type              : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  project, contract, type, parentCollection, subCollection, content } = ctx.params;
+                let {  taskID, documentID, type, title, content } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await ANALYSIS__HISTORY_LOG_MODEL.insert({
-                    project, contract, type, parentCollection, subCollection, content, userCreate: userID, ctx
+                    taskID, documentID, type, title, content, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -47,8 +46,9 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             historyLogID        : { type: "string", optional: true },
-            parentCollectionID  : { type: "string", optional: true },
-            subCollectionID     : { type: "string", optional: true },
+            taskID              : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
             // Field mặc định
@@ -61,7 +61,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  historyLogID, parentCollectionID, subCollectionID, fromDate, toDate, keyword, limit, lastestID, select, populates } = ctx.params;
+                let {  historyLogID, taskID, projectID, contractID, fromDate, toDate, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler;
@@ -71,7 +71,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ANALYSIS__HISTORY_LOG_MODEL.getList({
-                        parentCollectionID, subCollectionID, fromDate, toDate, keyword, limit, lastestID, select, populates
+                        taskID, projectID, contractID, fromDate, toDate, keyword, limit, lastestID, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
