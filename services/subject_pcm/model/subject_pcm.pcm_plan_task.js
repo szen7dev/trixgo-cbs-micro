@@ -1928,69 +1928,55 @@ class Model extends BaseModel {
      * Name: Lấy thông báo công việc (chưa đọc)
      * Author: HiepNH
      */
-    getAmountNotification({ userID, option }){
+    getAmountNotification({ userID }){
         return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 * Không truyền option => lấy cả 3 loại cùng lúc
-                 * option = 1: Số công việc chưa xem
-                 * option = 2: Số công việc của tôi
-                 * option = 3: Số công việc nháp
-                 */
-                let amountUnreadTask =0, amountMyTask=0, amountDraftTask=0
 
-                if(!option){
+                let start = new Date();
+                    start.setHours(0,0,0,0);
+                    let end = new Date();
+                    end.setHours(23,59,59,999);
+
+                    let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0
+
                     // Số công việc chưa xem
                     amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
                         usersDelete: { $nin: [userID] }
                     })
 
-                    // Số công việc của tôi (mà chưa hoàn thành)
-                    amountMyTask = await PCM_PLAN_TASK_COLL.count({
+                    // Số công việc của tôi - Quá hạn
+                    amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        usersDelete: { $nin: [userID] }
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: { $lt: start }
                     })
 
-                    // Số lượng công việc nháp
-                    amountDraftTask = await PCM_PLAN_TASK_COLL.count({
-                        author: userID,
-                        draft: 1,
-                        usersDelete: { $nin: [userID] }
+                    // Số công việc của tôi - Tuần tới
+                    amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: { 
+                            $gte:  moment(start).startOf('day')._d,
+                            $lt: moment(addDate(7)).endOf('day')._d
+                        }
                     })
-                }else{
-                    if(option == 1){
-                        // Số công việc chưa xem
-                        amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
-                            news: { $in: [userID] },
-                            usersDelete: { $nin: [userID] }
-                        })
-                    }
 
-                    if(option == 2){
-                        // Số công việc của tôi (mà chưa hoàn thành)
-                        amountMyTask = await PCM_PLAN_TASK_COLL.count({
-                            assignee: userID,
-                            status: { $ne: 3 },
-                            usersDelete: { $nin: [userID] }
-                        })
-                    }
+                    // Số công việc của tôi - Sau tuần tới
+                    amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: { 
+                            $gte: addDate(7)
+                        }
+                    })
 
-                    if(option == 3){
-                        // Số lượng công việc nháp
-                        amountDraftTask = await PCM_PLAN_TASK_COLL.count({
-                            author: userID,
-                            draft: 1,
-                            usersDelete: { $nin: [userID] }
-                        })
-                    }
-                }
-
-                return resolve({ error: false, data: {
-                    amountUnreadTask, amountMyTask, amountDraftTask
-                }});
+                    return resolve({ error: false, data: {
+                        amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3
+                    }});
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
