@@ -53,7 +53,7 @@ class Model extends BaseModel {
 	insert({
         parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
-        name, description, note, fieldID, value, completeStatus, ctx
+        name, description, note, fieldID, value, completeStatus, publishID, ctx
 	}) {
         // console.log({
         //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
@@ -78,10 +78,10 @@ class Model extends BaseModel {
                     });
                 }
 
-                if (!checkObjectIDs(datahubContactID)) {
+                if (!checkObjectIDs(publishID)) {
 					return resolve({
                         error: true,
-                        message: 'Request params datahubContactID invalid',
+                        message: 'Request params publishID invalid',
                         keyError: 'params_invalid',
                     });
                 }
@@ -151,7 +151,8 @@ class Model extends BaseModel {
                 (datahubContactID    && checkObjectIDs(datahubContactID))   && (dataInsert.datahubContact    = datahubContactID);
                 (otherID    && checkObjectIDs(otherID))     && (dataInsert.other    = otherID);
                 (storageID  && checkObjectIDs(storageID))   && (dataInsert.storage  = storageID);
-
+                (publishID  && checkObjectIDs(publishID))   && (dataInsert.publish  = publishID);
+                
                 if(parentID && checkObjectIDs(parentID)){
                     let infoParent = await DOCUMENT__DOC_COLL.findById(parentID).select('level');
                     if(!infoParent)
@@ -221,7 +222,7 @@ class Model extends BaseModel {
     update({
 		documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
-        name, description, note, fieldID, value, completeStatus, otherID, ctx
+        name, description, note, fieldID, value, completeStatus, otherID, publishID, ctx
 	}) {
         console.log({
             documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
@@ -230,10 +231,10 @@ class Model extends BaseModel {
         })
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs(documentID, packageID, datahubContactID, userID)) {
+                if (!checkObjectIDs(documentID, packageID, publishID, userID)) {
 					return resolve({
                         error: true,
-                        message: 'Request params departmentID|packageID|datahubContactID invalid',
+                        message: 'Request params departmentID|packageID|publishID invalid',
                         keyError: 'params_invalid',
                         status: 400
                     });
@@ -335,7 +336,8 @@ class Model extends BaseModel {
                 (otherID    && checkObjectIDs(otherID))     && (dataUpdate.other    = otherID);
                 (propertyID && checkObjectIDs(propertyID))  && (dataUpdate.property = propertyID);
                 (storageID  && checkObjectIDs(storageID))   && (dataUpdate.storage  = storageID);
-
+                (publishID  && checkObjectIDs(publishID))   && (dataUpdate.publish  = publishID);
+                
 				let infoAfterUpdate = await this.updateWhereClause({ _id: documentID }, dataUpdate);
 
 				if (!infoAfterUpdate) {
@@ -416,7 +418,7 @@ class Model extends BaseModel {
      * Code  : 25/8/2022
      */
     getList({
-        parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel = false,
+        parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, publishID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 30, lastestID, select, populates= {} }) {
             // console.log('========12345========================>>>>>>>>>>>>')
@@ -489,8 +491,8 @@ class Model extends BaseModel {
                     conditionObj.company = companyID
                 }
 
-                if(datahubContactID){
-                    conditionObj.datahubContact = datahubContactID
+                if(publishID){
+                    conditionObj.publish = publishID
                 }
 
                 if(type){
@@ -628,7 +630,7 @@ class Model extends BaseModel {
      * Code  : 29/8/2022
      */
     getListByFilter({
-        parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel = false,
+        parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {} }) {
             // console.log({
@@ -646,7 +648,7 @@ class Model extends BaseModel {
                     propertysID             : { value: propertysID, isRequire: false },
                     fieldsID                : { value: fieldsID, isRequire: false },
                     contractsID             : { value: contractsID, isRequire: false },
-                    datahubContactsID       : { value: datahubContactsID, isRequire: false },
+                    publishsID              : { value: publishsID, isRequire: false },
                     departmentsID           : { value: departmentsID, isRequire: false },
                     storagesID              : { value: storagesID, isRequire: false },
                 });
@@ -700,7 +702,7 @@ class Model extends BaseModel {
                 packagesID && packagesID.length                 && (conditionObj.package = { $in: packagesID });
                 sendersID && sendersID.length                   && (conditionObj.sender = { $in: sendersID });
                 contractsID && contractsID.length               && (conditionObj.contract = { $in: contractsID });
-                datahubContactsID && datahubContactsID.length   && (conditionObj.datahubContact = { $in: datahubContactsID });
+                publishsID && publishsID.length                 && (conditionObj.publish = { $in: publishsID });
                 departmentsID && departmentsID.length           && (conditionObj.project = { $in: departmentsID });
                 storagesID && storagesID.length                 && (conditionObj.storage = { $in: storagesID });
 

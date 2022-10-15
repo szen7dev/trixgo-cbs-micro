@@ -59,6 +59,7 @@ module.exports = {
             departmentID        : { type: "string",                },
             value               : { type: "number", optional: true },
             completeStatus      : { type: "number", optional: true },
+            publishID           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -67,16 +68,13 @@ module.exports = {
                 const {
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID, datahubContactID
+                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID, datahubContactID, publishID
                 } = ctx.params;
-                // console.log({   parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                //     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                //     fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID })
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus,contractID, datahubContactID, ctx
+                    fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus,contractID, datahubContactID, publishID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -121,6 +119,7 @@ module.exports = {
             completeStatus      : { type: "number", optional: true },
             // contractID          : { type: "string", optional: true },
             datahubContactID    : { type: "string", optional: true },
+            publishID           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -129,17 +128,13 @@ module.exports = {
                 const {
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID, datahubContactID
+                    fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID, datahubContactID, publishID
                 } = ctx.params;
-
-                // console.log({documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                //     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                //     fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID, datahubContactID})
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.update({
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, userID: userUpdate, value, completeStatus, contractID, datahubContactID, ctx
+                    fieldID, propertyID, otherID, storageID, note, userID: userUpdate, value, completeStatus, contractID, datahubContactID, publishID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -213,7 +208,8 @@ module.exports = {
     getListDocument: {
         auth: "required",
         params: {
-            datahubContactID: { type: "string", optional: true }, // Chủ thể ban hành
+            // datahubContactID: { type: "string", optional: true }, // Chủ thể ban hành
+            publishID       : { type: "string", optional: true }, // Chủ thể ban hành
             senderID	    : { type: "string", optional: true }, // Người ban hành
             type            : { type: "string", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
             propertyID      : { type: "string", optional: true }, // Phân loại hồ sơ (người dùng quy định)
@@ -243,13 +239,13 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let {
-                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, datahubContactID,
+                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, publishID,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
                 // console.log({ contractID })
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
-                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, datahubContactID, userID, keyword,
+                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, publishID, userID, keyword,
                     limit, lastestID, select, populates
                 });
 
@@ -268,7 +264,8 @@ module.exports = {
     getListByFilter: {
         auth: "required",
         params: {
-            datahubContactsID: { type: "array", optional: true }, // Chủ thể ban hành
+            // datahubContactsID: { type: "array", optional: true }, // Chủ thể ban hành
+            publishsID      : { type: "array", optional: true }, // Chủ thể ban hành
             sendersID	    : { type: "array", optional: true }, // Người ban hành
             types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
             propertysID      : { type: "array", optional: true }, // Phân loại hồ sơ (người dùng quy định)
@@ -296,13 +293,13 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let {
-                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, publishsID,
                     types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListByFilter({
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
-                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, datahubContactsID, userID, keyword,
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID, userID, keyword,
                     limit, lastestID, select, populates
                 });
 
