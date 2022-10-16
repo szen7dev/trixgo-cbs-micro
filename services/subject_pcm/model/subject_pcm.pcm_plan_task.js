@@ -14,6 +14,7 @@ const fs                                = require('fs');
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 				        = require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_AUTH }                       = require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_REMINDER }                   = require('../../reminder/helper/reminder.actions-constant');
 
@@ -203,7 +204,6 @@ class Model extends BaseModel {
                     dataInsert.expiredTime = new Date();
                     dataInsert.actualFinishTime = new Date();
                 }
-
                 if(expiredHour && expiredTime) {
                     const formatDate = new Date(expiredTime);
                     const expiredHourSplit = expiredHour.split(":");
@@ -489,7 +489,7 @@ class Model extends BaseModel {
         taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
         contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, ctx
+        openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
         // console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
         //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
@@ -577,10 +577,15 @@ class Model extends BaseModel {
                     if(name){
                         dataUpdate.name = name;
                         dataUpdate.namecv = stringUtils.removeAccents(name);
-
                         /**
-                         * Ghi log sửa 
+                         * Ghi log sửa
                          */
+                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`, 
+                            type: 2,
+                            title: "Cập nhật tên công việc",
+                            content: `${fullnameUpdate} đã cập nhật tên công việc "${infoTask.name.toUpperCase()}" thành "${name.toUpperCase()}"`,
+                        });
                     }
 
                     //_________Mô tả
@@ -1597,7 +1602,7 @@ class Model extends BaseModel {
                 }
 
                 console.log('=======================')
-                // console.log(conditionObj)
+                console.log({conditionObj})
 
                 // Tìm kiếm theo keyword
 				if(keyword){
