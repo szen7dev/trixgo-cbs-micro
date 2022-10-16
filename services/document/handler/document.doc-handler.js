@@ -208,8 +208,8 @@ module.exports = {
     getListDocument: {
         auth: "required",
         params: {
-            // datahubContactID: { type: "string", optional: true }, // Chủ thể ban hành
-            publishID       : { type: "string", optional: true }, // Chủ thể ban hành
+            datahubContactID: { type: "string", optional: true }, // Chủ thể ban hành
+            // publishID       : { type: "string", optional: true }, // Chủ thể ban hành
             senderID	    : { type: "string", optional: true }, // Người ban hành
             type            : { type: "string", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
             propertyID      : { type: "string", optional: true }, // Phân loại hồ sơ (người dùng quy định)
@@ -239,13 +239,12 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let {
-                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, publishID,
+                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, datahubContactID,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
-                // console.log({ contractID })
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
-                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, publishID, userID, keyword,
+                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, publishID: datahubContactID, userID, keyword,
                     limit, lastestID, select, populates
                 });
 
@@ -265,7 +264,7 @@ module.exports = {
         auth: "required",
         params: {
             // datahubContactsID: { type: "array", optional: true }, // Chủ thể ban hành
-            publishsID      : { type: "array", optional: true }, // Chủ thể ban hành
+            datahubContactsID : { type: "array", optional: true }, // Chủ thể ban hành
             sendersID	    : { type: "array", optional: true }, // Người ban hành
             types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
             propertysID      : { type: "array", optional: true }, // Phân loại hồ sơ (người dùng quy định)
@@ -293,13 +292,13 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let {
-                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, publishsID,
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
                     types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListByFilter({
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
-                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID, userID, keyword,
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID: datahubContactsID, userID, keyword,
                     limit, lastestID, select, populates
                 });
 

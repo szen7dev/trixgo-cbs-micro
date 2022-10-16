@@ -491,10 +491,7 @@ class Model extends BaseModel {
                     conditionObj.company = companyID
                 }
 
-                if(publishID){
-                    conditionObj.publish = publishID
-                }
-
+               
                 if(type){
                     conditionObj.type = type
                 }
@@ -549,6 +546,11 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false }
                 }
 
+                if(publishID){
+                    conditionObj.publish = publishID;
+                    delete conditionObj.parent
+                }
+
                 if(marked){
                     conditionObj.usersMarked = { $in: [userID] }
                 }
@@ -587,9 +589,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
-
-                console.log(conditionObj.type);
-
+                console.log({ conditionObj });
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
@@ -768,8 +768,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
-
-                // console.log({ conditionObj });
 
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
@@ -960,14 +958,14 @@ class Model extends BaseModel {
                 //     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
                 // }
                 packageID       && (conditionObj.package = ObjectID(packageID));
-                conditionObj.datahubContact = { $exists: true }
+                conditionObj.publish = { $exists: true }
                 let	listDoctypeGroupByType = await DOCUMENT__DOC_COLL.aggregate([
                     {
                         $match: conditionObj
                     },
                     {
                         $group: {
-                            _id: "$datahubContact",
+                            _id: "$publish",
                             totalDocument: { $sum: 1 }
                         }
                     },
@@ -988,7 +986,7 @@ class Model extends BaseModel {
                     },
                     {
                         $group: {
-                            _id: "$datahubContact",
+                            _id: "$publish",
                             totalDocument: { $sum: 1 }
                         }
                     },
@@ -1001,7 +999,7 @@ class Model extends BaseModel {
                     listDoctypeGroupByType.map(doctype => {
                         const doctypeHaveNewDocumentInWeek = listDoctypeGroupByWeek.find(newDoc => newDoc._id.toString() == doctype._id.toString())
                         listDoctype[listDoctype.length] = {
-                            datahubContact: doctype._id,
+                            publish: doctype._id,
                             totalDocument: doctype.totalDocument,
                             totalDocumentNew: doctypeHaveNewDocumentInWeek ? doctypeHaveNewDocumentInWeek.totalDocument : 0
                         }
@@ -1009,9 +1007,9 @@ class Model extends BaseModel {
                 }
 
                 await DOCUMENT__DOC_COLL.populate(listDoctype, {
-                    path: "datahubContact",
+                    path: "publish",
                     select: "name",
-                    model: "datahub_contact"
+                    model: "company"
                 })
 
                 if(!listDoctype) {
