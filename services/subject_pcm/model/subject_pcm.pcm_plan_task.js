@@ -577,6 +577,10 @@ class Model extends BaseModel {
                     if(name){
                         dataUpdate.name = name;
                         dataUpdate.namecv = stringUtils.removeAccents(name);
+
+                        /**
+                         * Ghi log sửa 
+                         */
                     }
 
                     //_________Mô tả
