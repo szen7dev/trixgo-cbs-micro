@@ -221,7 +221,10 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Nếu có trường này thì lấy tất cả group trong dự án mà mình có thể không là members
+                /**
+                 * Lấy tất cả group trong dự án
+                 * Phục vụ cho việc Admin dự án
+                 */
                 if(isShowAll == 1){
                     delete conditionObj.$or;
                  }
@@ -308,7 +311,8 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
-                }, status: 200 });
+                }, status: 200 })
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
