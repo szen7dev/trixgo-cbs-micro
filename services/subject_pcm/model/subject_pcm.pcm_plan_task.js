@@ -396,8 +396,8 @@ class Model extends BaseModel {
                     let arrReceiver = [];
 
                      /**
-                     * 0: chính thức
-                     * 1: việc nháp
+                     * 0: Chính thức
+                     * 1: Việc nháp
                      */
                     if(draft == 0) {
                         if(accessUsers && accessUsers.length) {
@@ -571,7 +571,9 @@ class Model extends BaseModel {
                         dataUpdate.sign = sign;
                     }
 
-                    //_________Tên công việc
+                    /**
+                     * Sửa Tên công việc
+                     */
                     if(name){
                         dataUpdate.name = name;
                         dataUpdate.namecv = stringUtils.removeAccents(name);

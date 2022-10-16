@@ -37,7 +37,7 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
     //_________Tiêu đề thay đổi
     title: String,
 
-    //_________Nội dung thay đổi(mô tả ngắn nội dung)
+    //_________Nội dung thay đổi (mô tả ngắn nội dung)
     content: String,
 
     //_________Công ty của người thực thi hành động
