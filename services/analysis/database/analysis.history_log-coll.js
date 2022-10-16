@@ -24,7 +24,14 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
         type: Schema.Types.ObjectId,
         ref : 'document_doc' 
     }, 
-    //_________Loại hành động(1-Xem/2-Thêm/3-Sửa/4-Xóa) dùng để sau này truy vấn ai đã thêm/sửa/xoá trên 1 đối tượng
+    /**
+     * Loại hành động
+     * 1-Xem
+     * 2-Thêm
+     * 3-Sửa
+     * 4-Xóa
+     * dùng để sau này truy vấn ai đã thêm/sửa/xoá trên 1 đối tượng
+     **/
     type: {
         type: Number,
         default: 1

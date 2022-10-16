@@ -578,13 +578,13 @@ class Model extends BaseModel {
                         dataUpdate.name = name;
                         dataUpdate.namecv = stringUtils.removeAccents(name);
                         /**
-                         * Ghi log sửa
+                         * Ghi log
                          */
                         let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
                             taskID: `${taskID}`, 
-                            type: 2,
+                            type: 3,
                             title: "Cập nhật tên công việc",
-                            content: `${fullnameUpdate} đã cập nhật tên công việc "${infoTask.name.toUpperCase()}" thành "${name.toUpperCase()}"`,
+                            content: `${fullnameUpdate} đã cập nhật tên công việc "${infoTask.name}" thành "${name}"`,
                         });
                     }
 
@@ -606,6 +606,16 @@ class Model extends BaseModel {
                         const expiredHourSplit = expiredHour.split(":");
                         formatDate.setHours(expiredHourSplit[0], expiredHourSplit[1]);
                         dataUpdate.actualFinishTime = formatDate;
+
+                        /**
+                         * Ghi log
+                         */
+                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`, 
+                            type: 3,
+                            title: "Cập nhật thời hạn",
+                            content: `${fullnameUpdate} đã cập nhật thời hạn công việc "${infoTask.nam}" từ ${infoTask.actualFinishTime} thành "${actualFinishTime}"`,
+                        });
                     }
 
                     // Người thực hiện
