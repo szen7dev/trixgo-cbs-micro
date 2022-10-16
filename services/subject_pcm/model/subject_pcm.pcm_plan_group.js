@@ -105,7 +105,10 @@ class Model extends BaseModel {
                 if(checkObjectIDs(image)){
                     dataInUpdate.image = image;
                 }
-
+                
+                /**
+                 * Di chuyển thư mục
+                 */
                 if(checkObjectIDs(parentID)){
                     dataInUpdate.parent = parentID;
                 }
