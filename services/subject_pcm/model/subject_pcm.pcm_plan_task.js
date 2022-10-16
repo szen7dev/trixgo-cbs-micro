@@ -316,15 +316,19 @@ class Model extends BaseModel {
                     });
                 }
 
-                // Thêm reminder nhắc công việc đến hạn
-                ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
-                    senderMail,
-                    status: infoAfterInsert.status,
-                    taskID: infoAfterInsert._id?.toString(),
-                    userID: infoAfterInsert.author?.toString(),
-                    alert: 0.4, // Mặc định khi tạo task, nhắc hẹn trước 15 phút
-                    actualFinishTime: dataInsert.actualFinishTime?.toString(),
-                })
+                /**
+                 * Thêm reminder nhắc công việc đến hạn
+                 * - Mặc định không thêm
+                 * - Nếu user chọn thì mới thêm
+                 */
+                // ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                //     senderMail,
+                //     status: infoAfterInsert.status,
+                //     taskID: infoAfterInsert._id?.toString(),
+                //     userID: infoAfterInsert.author?.toString(),
+                //     alert: 0.4, // Mặc định khi tạo task, nhắc hẹn trước 15 phút
+                //     actualFinishTime: dataInsert.actualFinishTime?.toString(),
+                // })
 
                 // Thêm record vào bảng pcm_comment phục vụ search
                 await PCM_COMMENT_MODEL.insertCommentTask({
