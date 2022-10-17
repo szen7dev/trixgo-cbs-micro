@@ -124,7 +124,7 @@ module.exports = {
                     ontime, quality
                  } = ctx.params;
 				const { _id: userID, bizfullname, fullname, email, company } = ctx.meta.infoUser;
-
+                // console.log({ userID,bizfullname, fullnameUpdate, email, company });
                 console.log('========================Update cong viec============')
 
                 // console.log(typeUpdate,
@@ -140,7 +140,7 @@ module.exports = {
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email }, unit, unitPrice, quantity,
-                    companyOfUser: company._id, milestone, alert, groupID, ontime, quality, ctx
+                    companyOfUser: company._id, milestone, alert, groupID, ontime, quality, fullnameUpdate: fullname, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
