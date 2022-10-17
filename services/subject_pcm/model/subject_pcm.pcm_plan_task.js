@@ -588,7 +588,7 @@ class Model extends BaseModel {
                             taskID: `${taskID}`, 
                             type: 3,
                             title: "Cập nhật tên công việc",
-                            content: `${fullnameUpdate} đã cập nhật tên công việc "${infoTask.name}" thành "${name}"`,
+                            content: `đã cập nhật tên công việc "${infoTask.name}" thành "${name}"`,
                         });
                     }
 
@@ -622,7 +622,7 @@ class Model extends BaseModel {
                             taskID: `${taskID}`, 
                             type: 3,
                             title: "Cập nhật thời hạn",
-                            content: `${fullnameUpdate} đã cập nhật thời hạn công việc "${infoTask.nam}" từ ${infoTask.actualFinishTime} thành "${actualFinishTime}"`,
+                            content: `đã cập nhật thời hạn từ ${moment(infoTask.actualFinishTime).format("L")} thành "${moment(actualFinishTime).format("L")}"`,
                         });
                     }
 
