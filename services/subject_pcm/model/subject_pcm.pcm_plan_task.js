@@ -521,8 +521,8 @@ class Model extends BaseModel {
 
                 // const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
                 const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).populate({
-                    path: 'project',
-                    select: '_id admins'
+                    path: 'project assignee',
+                    select: '_id admins name fullname'
                 })
                 // console.log('===============================')
                 // console.log(infoTask)
@@ -600,6 +600,17 @@ class Model extends BaseModel {
                     if(description){
                         dataUpdate.description = description;
                         dataUpdate.descriptioncv = stringUtils.removeAccents(description);
+
+                         /**
+                         * Ghi log
+                         * Cập nhật comment type=5 tương ứng
+                         */
+                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`, 
+                            type: 3,
+                            title: "Cập nhật nội dung công việc",
+                            content: `đã cập nhật nội dung công việc "${infoTask.description}" thành "${description}"`,
+                        });
                     }
 
                     /**
@@ -631,13 +642,24 @@ class Model extends BaseModel {
                         dataUpdate.assignee = assigneeID;
 
                         let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                            userID: assigneeID, select: "_id company"
+                            userID: assigneeID, select: "_id company fullname"
                         })
 
                         // companyOfAssignee
                         if(!infoAssignee.error){
                             dataUpdate.companyOfAssignee = infoAssignee.data.company;
                         }
+
+                        /**
+                         * Ghi log
+                         * Cập nhật comment type=5 tương ứng
+                         */
+                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`, 
+                            type: 3,
+                            title: "Cập nhật người thực hiện",
+                            content: `đã cập nhật người thực hiện "${infoTask.assignee.fullname}" thành "${infoAssignee.data.fullname}"`,
+                        });
                     }
 
                 }else{
@@ -835,7 +857,7 @@ class Model extends BaseModel {
                      * trong task có phân loại là "Lựa chọn nhà thầu"
                      * -> Cập nhật trạng thái của task thành "Hoàn thành"
                      */
-                    if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?.toString()) {
+                    if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?._id.toString()) {
                         dataUpdate.approver = userID
                         dataUpdate.timeApproved = Date.now()
                         dataUpdate.status = 3;
@@ -851,7 +873,7 @@ class Model extends BaseModel {
                      * - Người tạo việc ký => phê duyệt luôn
                      */
                     if([2,3,5].includes(Number(infoTask.subtype))){
-                        if(userID.toString() === infoTask.assignee?.toString()){
+                        if(userID.toString() === infoTask.assignee?._id.toString()){
                             dataUpdate.approver = userID
                             dataUpdate.timeApproved = Date.now()
                             dataUpdate.percentage = 100
