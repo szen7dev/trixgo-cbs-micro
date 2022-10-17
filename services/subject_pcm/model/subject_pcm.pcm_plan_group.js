@@ -181,6 +181,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) {
+        console.log({ userID, parentID, projectID, lastestID, keyword, limit, select, populates, isShowAll, isShowParentAndChild })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20 || isNaN(limit)){
@@ -241,6 +242,8 @@ class Model extends BaseModel {
                         conditionObj.parent = { $exists: false };
                     }
                 }
+
+                console.log(conditionObj)
 
                 if(keyword){
                     keyword = keyword.split(" ");
