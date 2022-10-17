@@ -573,6 +573,8 @@ class Model extends BaseModel {
 
                     /**
                      * Sửa Tên công việc
+                     * - Sửa công việc
+                     * - Sửa comment
                      */
                     if(name){
                         dataUpdate.name = name;
@@ -588,7 +590,11 @@ class Model extends BaseModel {
                         });
                     }
 
-                    //_________Mô tả
+                    /**
+                     * Mô tả
+                     * - Sửa công việc
+                     * - Sửa comment
+                     */
                     if(description){
                         dataUpdate.description = description;
                         dataUpdate.descriptioncv = stringUtils.removeAccents(description);
@@ -828,6 +834,8 @@ class Model extends BaseModel {
                      * -> Cập nhật trạng thái của task thành "Hoàn thành"
                      */
                     if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?.toString()) {
+                        dataUpdate.approver = userID
+                        dataUpdate.timeApproved = Date.now()
                         dataUpdate.status = 3;
                         dataUpdate.percentage = 100;
                     }
@@ -845,12 +853,14 @@ class Model extends BaseModel {
                             dataUpdate.approver = userID
                             dataUpdate.timeApproved = Date.now()
                             dataUpdate.percentage = 100
+                            dataUpdate.status = 3
                         }
                     }else{
                         if(userID.toString() === infoTask.author?.toString()){
                             dataUpdate.approver = userID
                             dataUpdate.timeApproved = Date.now()
                             dataUpdate.percentage = 100
+                            dataUpdate.status = 3
                         }
                     }
                 }
