@@ -622,6 +622,8 @@ class Model extends BaseModel {
 	 * Date: 12/08/2021
 	 */
 	getListFilesGroupByContract({ keyword, projectID, userID }){
+        // console.log('==============123232=================')
+        // console.log({ keyword, projectID, userID })
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
