@@ -112,6 +112,12 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     style: String,
     //_________Tình trạng văn bản
     status: String,
+    /**
+     * Hồ sơ hoàn thành
+     * 1-Đang triển khai
+     * 2-Hoàn thành
+     */
+    fish: { type: Number, default: 1 },
     //_________Ghi chú
     note: String,
     //_________Người phê duyệt (Người ký)

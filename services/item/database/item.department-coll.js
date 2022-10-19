@@ -27,6 +27,11 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
+    //_________Mod
+    mods: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],    
     //_________Thành viên
     members: [{
         type: Schema.Types.ObjectId,

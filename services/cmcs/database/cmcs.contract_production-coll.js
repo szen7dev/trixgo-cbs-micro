@@ -8,7 +8,6 @@ const Schema                = require('mongoose').Schema;
  */
 
 module.exports  = DATABASE_MIDDLEWARE("contract_production", {
-
     /**
      * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
@@ -75,6 +74,12 @@ module.exports  = DATABASE_MIDDLEWARE("contract_production", {
     /**
      * END THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
+    /**
+     * Kế hoạch/Thực hiện
+     * 1-Kế hoạch
+     * 2-Thực tế
+     */
+    plan: { type: Number, default: 1, enum: [1,2] },    
     //_________Ngày hoạch toán(*)
     date: { type: Date, default: Date.now },
     

@@ -272,14 +272,20 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     agValue: { type: Number, default: 0 },
     //_________Thời hạn bảo lãnh tạm ứng
     expiredAg: { type: Date, default: null },
+    //_________Thông báo trước thời hạn (h)
+    alertAg: { type: Number, default: 0 },
     //_________Bảo lãnh hợp đồng (performance security/bank guarantee hay bon)
     cgValue: { type: Number, default: 0 },
     //_________Thời hạn bảo lãnh hợp đồng
     expiredCg: { type: Date, default: null },
+    //_________Thông báo trước thời hạn (h)
+    alertCg: { type: Number, default: 0 },    
     //_________Bảo lãnh bảo hành
     insuranceValue: { type: Number, default: 0 },
     //_________Thời hạn bảo lãnh hợp đồng
     expiredInsurance: { type: Date, default: null },
+    //_________Thông báo trước thời hạn (h)
+    alertInsurance: { type: Number, default: 0 },
     //_________Ảnh đại diện
     image: {
         type: String,

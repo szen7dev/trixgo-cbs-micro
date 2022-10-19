@@ -1757,7 +1757,7 @@ class Model extends BaseModel {
      */
     getListByFilter({
         fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, keyword, unlimited,
+        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, keyword, unlimited,
         limit = 50, lastestID, select, populates, userID
     }) {
         // console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
@@ -1817,16 +1817,29 @@ class Model extends BaseModel {
                 /**
                  * Kiểm soát quyền truy cập Task
                  */
-                // Lấy danh sách các nhóm dữ liệu mà userID là members
-                // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                if(isGroup && Number(isGroup) == 1){
+                    // Lấy danh sách các nhóm dữ liệu mà userID là members
+                    const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                // Lấy công việc mà mình được quyền truy cập
-                conditionObj.$or = [
-                    { author: userID },
-                    { assignee: userID },
-                    { related: { $in: [userID] }},
-                    // { group: { $in: listGroups.map(item => item._id) }},
-                ]
+                    // Lấy công việc mà mình được quyền truy cập
+                    conditionObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
+                    ]
+                }else{
+                    // Lấy danh sách các nhóm dữ liệu mà userID là members
+                    // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // Lấy công việc mà mình được quyền truy cập
+                    conditionObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        // { group: { $in: listGroups.map(item => item._id) }},
+                    ]
+                }
 
                 /**
                  * Bộ lọc với nhiều lựa chọn
