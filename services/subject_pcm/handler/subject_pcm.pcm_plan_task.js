@@ -231,6 +231,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                console.log({ PARAMS: ctx.params })
                 await this.validateEntity(ctx.params);
 
                 let {
