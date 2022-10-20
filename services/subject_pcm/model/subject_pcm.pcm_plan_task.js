@@ -1762,7 +1762,7 @@ class Model extends BaseModel {
     }) {
         // console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
         // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, unlimited,
+        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, unlimited,
         //     limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
