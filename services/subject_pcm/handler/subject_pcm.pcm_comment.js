@@ -268,11 +268,10 @@ module.exports = {
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
+                // console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu Comment================')
                 // console.log({draft, sortKey, isParent, isActive, isGroup, 
                 //     fromDate, toDate, authorsID, companyOfAuthorsID, projectsID,
                 //     keyword, limit, lastestID, select, populates})
-
-                // console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu comment================')
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentBySubject({
                     draft, sortKey, isParent, isActive, isGroup, 
