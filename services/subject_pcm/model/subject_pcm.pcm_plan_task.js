@@ -493,10 +493,10 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
-        // console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
+        console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+            contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+            links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+            openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -858,6 +858,7 @@ class Model extends BaseModel {
                      * -> Cập nhật trạng thái của task thành "Hoàn thành"
                      */
                     if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?._id.toString()) {
+                        console.log('==========NHÀ THẦU VỪA DỰ THẦU===============')
                         dataUpdate.approver = userID
                         dataUpdate.timeApproved = Date.now()
                         dataUpdate.status = 3;
@@ -1056,6 +1057,7 @@ class Model extends BaseModel {
 
                 //2. Socket_CloudMSS_Đồng ý phê duyệt
                 if(isAddSignature) {
+                    console.log('==========CLOUDMSS KÝ XÁC NHẬN===============')
                     const { name: taskName, related, assignee, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, assignee.toString(), author.toString()];
@@ -1088,6 +1090,7 @@ class Model extends BaseModel {
 
                 //3. Socket_CloudMSS_Mở thầu
                 if(isOpenBidding) {
+                    console.log('==========CLOUDMSS CÁC BÊN VỪA MỞ THẦU===============')
                     const { name: taskName, related, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString()];
