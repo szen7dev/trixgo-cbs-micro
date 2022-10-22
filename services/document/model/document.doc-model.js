@@ -53,7 +53,7 @@ class Model extends BaseModel {
 	insert({
         parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
-        name, description, note, fieldID, value, completeStatus, publishID, ctx
+        name, description, note, fieldID, value, completeStatus, publishID, finish, ctx
 	}) {
         // console.log({
         //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
@@ -152,7 +152,11 @@ class Model extends BaseModel {
                 (otherID    && checkObjectIDs(otherID))     && (dataInsert.other    = otherID);
                 (storageID  && checkObjectIDs(storageID))   && (dataInsert.storage  = storageID);
                 (publishID  && checkObjectIDs(publishID))   && (dataInsert.publish  = publishID);
-                
+
+                if(finish){
+                    dataInsert.finish = finish
+                }
+
                 if(parentID && checkObjectIDs(parentID)){
                     let infoParent = await DOCUMENT__DOC_COLL.findById(parentID).select('level');
                     if(!infoParent)
@@ -222,7 +226,7 @@ class Model extends BaseModel {
     update({
 		documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
-        name, description, note, fieldID, value, completeStatus, otherID, publishID, ctx
+        name, description, note, fieldID, value, completeStatus, otherID, publishID, finish, ctx
 	}) {
         console.log({
             documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
@@ -309,6 +313,10 @@ class Model extends BaseModel {
 
                 if(description){
                     dataUpdate.description = description;
+                }
+
+                if(finish){
+                    dataUpdate.finish = finish;
                 }
 
                 if(!isNaN(value)){

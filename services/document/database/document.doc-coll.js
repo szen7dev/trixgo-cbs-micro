@@ -117,7 +117,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
      * 1-Đang triển khai
      * 2-Hoàn thành
      */
-    fish: { type: Number, default: 1 },
+    finish: { type: Number, default: 1 },
     //_________Ghi chú
     note: String,
     //_________Người phê duyệt (Người ký)

@@ -50,7 +50,7 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
-        cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget
+        cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget, alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance
          }){
         return new Promise(async resolve => {
             try {
@@ -311,6 +311,26 @@ class Model extends BaseModel {
                     dataInsert.expiredAg = expiredAg;
                 }
 
+                if(alertAg){
+                    dataInsert.alertAg = alertAg;
+                }
+
+                if(alertCg){
+                    dataInsert.alertCg = alertCg;
+                }
+
+                if(insuranceValue){
+                    dataInsert.insuranceValue = insuranceValue;
+                }
+
+                if(expiredInsurance){
+                    dataInsert.expiredInsurance = expiredInsurance;
+                }
+
+                if(alertInsurance){
+                    dataInsert.alertInsurance = alertInsurance;
+                }
+
                 if(remainingProduce){
                     dataInsert.remainingProduce = remainingProduce;
                 }
@@ -340,7 +360,7 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
-        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce,  ontime, onbudget, userID
+        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce,  ontime, onbudget, userID,  alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance
         }){
             // console.log({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
             //     name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
@@ -664,6 +684,26 @@ class Model extends BaseModel {
                     dataUpdate.expiredAg = expiredAg;
                 }else{
                     dataUpdate.expiredAg = null
+                }
+
+                if(alertAg){
+                    dataUpdate.alertAg = alertAg
+                }
+
+                if(alertCg){
+                    dataUpdate.alertCg = alertCg
+                }
+
+                if(insuranceValue){
+                    dataUpdate.insuranceValue = insuranceValue
+                }
+
+                if(expiredInsurance){
+                    dataUpdate.expiredInsurance = expiredInsurance
+                }
+
+                if(alertInsurance){
+                    dataUpdate.alertInsurance = alertInsurance
                 }
 
                 if(dataAddToSet){

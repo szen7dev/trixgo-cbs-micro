@@ -88,10 +88,19 @@ module.exports = {
             subcontractFee         : { type: "number", optional: true },
             expenses               : { type: "number", optional: true },
             profit                 : { type: "number", optional: true },
+
             cgValue                : { type: "number", optional: true },
             expiredCg              : { type: "string", optional: true },
+            alertCg                : { type: "number", optional: true },
+
             agValue                : { type: "number", optional: true },
             expiredAg              : { type: "string", optional: true },
+            alertAg                : { type: "number", optional: true },
+
+            insuranceValue         : { type: "number", optional: true },
+            expiredInsurance       : { type: "string", optional: true },
+            alertInsurance         : { type: "number", optional: true },
+
             remainingProduce       : { type: "number", optional: true },
             ontime                 : { type: "number", optional: true },
             onbudget               : { type: "number", optional: true },
@@ -104,9 +113,9 @@ module.exports = {
                      sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget, forecastBudget,
-                      forecastVatBudget, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, remainingProduce, ontime, onbudget  } = ctx.params;
-
-                      console.log('=======================>>>>>>>>>>>>>>>>>>>>')
+                      forecastVatBudget, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, remainingProduce, ontime, onbudget,
+                      alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance
+                    } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.insert({
 					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
@@ -114,7 +123,8 @@ module.exports = {
                     sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance,
                     plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid,
                     amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget, forecastBudget, forecastVatBudget,
-                    managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget
+                    managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget,
+                    alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -193,10 +203,19 @@ module.exports = {
             subcontractFee         : { type: "number", optional: true },
             expenses               : { type: "number", optional: true },
             profit                 : { type: "number", optional: true },
+
             cgValue                : { type: "number", optional: true },
             expiredCg              : { type: "string", optional: true },
+            alertCg                : { type: "number", optional: true },
+
             agValue                : { type: "number", optional: true },
             expiredAg              : { type: "string", optional: true },
+            alertAg                : { type: "number", optional: true },
+
+            insuranceValue         : { type: "number", optional: true },
+            expiredInsurance       : { type: "string", optional: true },
+            alertInsurance         : { type: "number", optional: true },
+
             dataInc                : { type: "object", optional: true },
             photos                 : { type: "array", optional: true },
             remainingProduce       : { type: "number", optional: true },
@@ -212,7 +231,7 @@ module.exports = {
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget, forecastBudget,
                       forecastVatBudget, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
-                      photos, remainingProduce, ontime, onbudget
+                      photos, remainingProduce, ontime, onbudget, alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance
                     } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
@@ -223,7 +242,7 @@ module.exports = {
                     plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction,
                     recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget,
                     forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg,
-                    userID, dataInc, photos, ctx, remainingProduce, ontime, onbudget
+                    userID, dataInc, photos, ctx, remainingProduce, ontime, onbudget, alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
