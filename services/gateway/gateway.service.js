@@ -17,7 +17,7 @@ const GATEWAY__HANDLER      			= require('./handler/gateway.handler');
 module.exports = {
 	name: CF_DOMAIN_SERVICES.GATEWAY,
 	mixins: [
-		ApiGateway, 
+		ApiGateway,
 		// OpenApiMixin(),
 	],
 	settings: {
@@ -36,7 +36,7 @@ module.exports = {
 		cors: {
 			// Configures the Access-Control-Allow-Origin CORS header.
 			origin: "*",
-			// Configures the Access-Control-Allow-Methods CORS header. 
+			// Configures the Access-Control-Allow-Methods CORS header.
 			methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE"],
 			// Configures the Access-Control-Allow-Headers CORS header.
 			allowedHeaders: ['X-Requested-With', 'content-type', 'Authorization'],
@@ -72,11 +72,11 @@ module.exports = {
 	dependencies: [
 		CF_DOMAIN_SERVICES.AUTH
 	],
-	
+
 	/**
 	* Actions HEALTH/VERSION
 	*/
-	actions: {	
+	actions: {
 		[CF_ACTIONS_GATEWAY.CHECK_HEALTH] 		: GATEWAY__HANDLER.checkHealth,
 		[CF_ACTIONS_GATEWAY.CHECK_VERSION] 		: GATEWAY__HANDLER.checkVersion,
 	},
@@ -87,7 +87,7 @@ module.exports = {
 				res.redirect('/ui');
 			});
 		},
-		
+
 		// async authenticate(ctx, route, req, res) {
 		// 	try {
 		// 		let accessToken = req.headers[ 'x-access-token' ] || req.headers.token || null;
@@ -97,7 +97,7 @@ module.exports = {
 		// 			// let resolveToken = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token: accessToken })
 		// 			if(resolveToken.error){
 		// 				return Promise.reject(resolveToken.message);
-		// 			}	
+		// 			}
 		// 			return Promise.resolve(null)
 		// 		}
 		// 		else{
