@@ -378,6 +378,11 @@ class Model extends BaseModel {
         companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
         limit = 20, lastestID, select, populates, userID
     }) {
+        console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu File================')
+        console.log({
+            companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
+            limit, lastestID, select, populates, userID
+        })
         return new Promise(async (resolve) => {
             try {
                 /**
