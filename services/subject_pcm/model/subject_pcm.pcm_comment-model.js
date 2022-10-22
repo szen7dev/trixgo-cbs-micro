@@ -1414,103 +1414,6 @@ class Model extends BaseModel {
 	 * Func: Xóa comment
 	 * Date: 22/02/2022
 	 */
-    // delete({ commentID, authorID }) {
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             /**
-    //              * VALIDATION STEP (2)
-    //              *  - Kiểm tra valid từ các input
-    //              *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-    //              */
-    //             if(!checkObjectIDs([commentID])) {
-    //                 return resolve({
-    //                     error: true,
-    //                     message: 'Tham số commentID không hợp lệ',
-    //                     keyError: 'params_commentID_invalid',
-    //                     status: 400
-    //                 });
-    //             }
-
-    //             if(!checkObjectIDs([authorID])) {
-    //                 return resolve({
-    //                     error: true,
-    //                     message: 'Tham số authorID không hợp lệ',
-    //                     keyError: 'params_authorID_invalid',
-    //                     status: 400
-    //                 });
-    //             }
-
-    //             const infoComment = await PCM_COMMENT_COLL
-    //                 .findById(commentID)
-    //                 .lean();
-
-    //             if(!infoComment) {
-    //                 return resolve({
-    //                     error: true,
-    //                     message: "Bình luận không tồn tại",
-    //                     keyError: "comment_not_exists_or_comment_is_response",
-    //                     status: 400
-    //                 })
-    //             }
-
-    //             if(infoComment.type === 2) {
-    //                 return resolve({
-    //                     error: true,
-    //                     message: "Phản hồi liên quan không thể xóa",
-    //                     keyError: "response_cannot_delete",
-    //                     status: 403
-    //                 })
-    //             }
-
-    //             const expireTime = new Date(infoComment.createAt).addHours(1);
-    //             const now 		 = new Date(Date.now());
-
-    //             if(expireTime < now){
-    //                 return resolve({
-    //                     error: true,
-    //                     message: "Bình luận đã hết hạn xóa (1 tiếng)",
-    //                     keyError: "time_to_delete_comment_has_expired",
-    //                     status: 403
-    //                 })
-    //             }
-
-    //             let infoDataAfterDelete = await PCM_COMMENT_COLL.findOneAndDelete({
-    //                 _id: commentID,
-    //                 author: authorID
-    //             });
-
-    //             if(!infoDataAfterDelete) {
-    //                 return resolve({
-    //                     error: true,
-    //                     message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
-    //                     keyError: 'error_occurred',
-    //                     status: 422
-    //                 });
-    //             }
-
-    //             if(infoComment.task) {
-    //                 switch (infoComment.type) {
-    //                     case 1: // Pre-calculate comment
-    //                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountComment: -1 } });
-    //                         break;
-    //                     case 2: // Pre-calculate related response
-    //                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountResponse: -1 } });
-    //                         break;
-    //                     default:
-    //                         break;
-    //                 }
-    //             }
-
-    //             await PCM_FILE_COLL.deleteMany({
-    //                 comment: commentID
-    //             });
-
-    //             return resolve({ error: false, data: infoDataAfterDelete, status: 200 });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
 
     /**
 	 * Dev: MinhVH
@@ -1572,7 +1475,7 @@ class Model extends BaseModel {
         taskID, contractID, projectID, parentID, isHaveImage, type, official,
         limit = 10, lastestID, sortKey, select, populates, authorID, isGetReaction = 'true', switchType
     }) {
-        // console.log('==============********************')
+        // console.log('==============********************=============DS comment')
         // console.log({
         //     taskID, contractID, projectID, parentID, isHaveImage, type, official,
         //     limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
