@@ -179,8 +179,9 @@ class Model extends BaseModel {
      * Code:
      */
     update({
-        contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
+        contractIpcID, plan, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
     }){
+        // console.log({contractIpcID, plan, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -195,6 +196,10 @@ class Model extends BaseModel {
                 let infoContractIPC = await CMCS__CONTRACT_IPC_COLL.findById(contractIpcID);
                 let contractID = infoContractIPC.contract;
                 let projectID = infoContractIPC.project;
+
+                if(plan){
+                    dataUpdate.plan = plan;
+                }
 
                 if(type){
                     dataUpdate.type = type;

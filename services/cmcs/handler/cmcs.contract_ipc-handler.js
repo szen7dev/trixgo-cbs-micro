@@ -57,6 +57,7 @@ module.exports = {
         auth: "required",
         params: {
             contractIpcID       : { type: "string" },
+            plan                : { type: "number", optional: true },
             type                : { type: "number", optional: true },
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
@@ -77,11 +78,13 @@ module.exports = {
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                let { contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
+                let { contractIpcID, plan, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
+
+                // console.log({ contractIpcID, plan, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment })
                
                 const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.update({
-                    contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
+                    contractIpcID, plan, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
