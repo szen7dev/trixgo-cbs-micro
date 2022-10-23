@@ -1253,7 +1253,7 @@ class Model extends BaseModel {
     /**
      * Name: Tổng hợp số liệu bảo lãnh và lấy danh sách bảo lãnh
      * Author: HiepNH
-     * Code: 2/20/2022
+     * Code: 2/10/2022
      */
     getListGuarantee({ userID, companyID, projectID, contractID, outin, option, guaranteeType, subType, keyword, limit, lastestID, populates, select }){
         // console.log({userID, companyID, projectID, contractID, outin, option, guaranteeType})
@@ -1343,6 +1343,7 @@ class Model extends BaseModel {
 
                     // Bảo lãnh tạm ứng
                     if(guaranteeType && Number(guaranteeType) == 1){
+                        console.log('===============Bảo lãnh tạm ứng===================')
                         conditionObj.status = { $ne: 3 }
                         conditionObj.expiredAg = {
                             $exists: true,
@@ -1383,6 +1384,7 @@ class Model extends BaseModel {
 
                     // Bảo lãnh hợp đồng
                     if(guaranteeType && Number(guaranteeType) == 2){
+                        console.log('===============Bảo lãnh hợp đồng===================')
                         conditionObj.status = { $ne: 3 }
                         conditionObj.expiredCg = {
                             $exists: true,
@@ -1414,6 +1416,47 @@ class Model extends BaseModel {
                         }
                         if(subType && Number(subType) == 4){
                             conditionObj.expiredCg = {
+                                $exists: true,
+                                $ne: null,
+                                $gt: addDate(30),
+                            }
+                        }                        
+                    }
+
+                    // Bảo lãnh bảo hành
+                    if(guaranteeType && Number(guaranteeType) == 3){
+                        console.log('===============Bảo lãnh bảo hành===================')
+                        conditionObj.status = { $ne: 3 }
+                        conditionObj.expiredInsurance = {
+                            $exists: true,
+                            $ne: null
+                        }
+
+                        if(subType && Number(subType) == 1){
+                            conditionObj.expiredInsurance = {
+                                $exists: true,
+                                $ne: null,
+                                $lt: start
+                            }
+                        }
+                        if(subType && Number(subType) == 2){
+                            conditionObj.expiredInsurance = {
+                                $exists: true,
+                                $ne: null,
+                                $gte: start,
+                                $lt: addDate(7),
+                            }
+                        }
+                        if(subType && Number(subType) == 3){
+                            conditionObj.expiredInsurance = {
+                                $exists: true,
+                                $ne: null,
+                                $gte: addDate(7),
+                                $lte: addDate(30),
+                            }
+                        }
+                        if(subType && Number(subType) == 4){
+                            conditionObj.expiredInsurance = {
                                 $exists: true,
                                 $ne: null,
                                 $gt: addDate(30),
