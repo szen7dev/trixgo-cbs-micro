@@ -1028,9 +1028,8 @@ class Model extends BaseModel {
      */
     getList({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel = false,
-        startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isMember,
+        startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isExpiredInsurance, isMember,
         keyword, limit = 10, lastestID, select, populates= {} }) {
-            // console.log('111111111111111111111111111111111111111')
             // console.log({companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel,
             //     startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isMember,
             //     keyword})
@@ -1058,7 +1057,6 @@ class Model extends BaseModel {
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
 					populates = JSON.parse(populates);
 				} else{
                     populates = {
@@ -1166,6 +1164,14 @@ class Model extends BaseModel {
                     keys = ['expiredCg__1', '_id__-1']
 
                     conditionObj.expiredCg = { $exists: true, $ne: null }
+                    conditionObj.status = { $ne: 3 } // Chỉ lấy các hợp đồng chưa hoàn thành
+                }
+
+                // Theo dõi bảo lãnh bảo hành
+                if(isExpiredInsurance == 1){
+                    keys = ['expiredInsurance__1', '_id__-1']
+
+                    conditionObj.expiredInsurance = { $exists: true, $ne: null }
                     conditionObj.status = { $ne: 3 } // Chỉ lấy các hợp đồng chưa hoàn thành
                 }
 
