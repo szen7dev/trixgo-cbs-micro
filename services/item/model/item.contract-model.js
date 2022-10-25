@@ -686,11 +686,11 @@ class Model extends BaseModel {
                     dataUpdate.expiredAg = null
                 }
 
-                if(alertAg){
+                if(alertAg || alertAg == 0){
                     dataUpdate.alertAg = alertAg
                 }
 
-                if(alertCg){
+                if(alertCg || alertAg == 0){
                     dataUpdate.alertCg = alertCg
                 }
 
@@ -702,7 +702,7 @@ class Model extends BaseModel {
                     dataUpdate.expiredInsurance = expiredInsurance
                 }
 
-                if(alertInsurance){
+                if(alertInsurance || alertAg == 0){
                     dataUpdate.alertInsurance = alertInsurance
                 }
 
