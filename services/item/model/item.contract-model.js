@@ -50,7 +50,7 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
-        cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget, alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance
+         userID, ctx, remainingProduce, ontime, onbudget, cgValue, expiredCg, alertCg, agValue, alertAg, expiredAg, insuranceValue, expiredInsurance, alertInsurance
          }){
         return new Promise(async resolve => {
             try {
@@ -295,39 +295,45 @@ class Model extends BaseModel {
                     dataInsert.profit = profit;
                 }
 
-                if(cgValue){
+                if(expiredCg != ""){
+                    dataInsert.expiredCg = expiredCg;
+                }else{
+                    dataInsert.expiredCg = null
+                }
+
+                if(!isNaN(cgValue) && Number(cgValue) >= 0){
                     dataInsert.cgValue = cgValue;
                 }
 
-                if(expiredCg != ""){
-                    dataInsert.expiredCg = expiredCg;
-                }
-
-                if(agValue){
-                    dataInsert.agValue = agValue;
+                if(!isNaN(alertCg) && Number(alertCg) >= 0){
+                    dataInsert.alertCg = alertCg;
                 }
 
                 if(expiredAg != ""){
                     dataInsert.expiredAg = expiredAg;
+                }else{
+                    dataInsert.expiredAg = null
                 }
 
-                if(alertAg){
+                if(!isNaN(agValue) && Number(agValue) >= 0){
+                    dataInsert.agValue = agValue;
+                }
+
+                if(!isNaN(alertAg) && Number(alertAg) >= 0){
                     dataInsert.alertAg = alertAg;
                 }
 
-                if(alertCg){
-                    dataInsert.alertCg = alertCg;
+                if(expiredInsurance != ""){
+                    dataInsert.expiredInsurance = expiredInsurance;
+                }else{
+                    dataInsert.expiredInsurance = null
                 }
 
-                if(insuranceValue){
+                if(!isNaN(insuranceValue) && Number(insuranceValue) >= 0){
                     dataInsert.insuranceValue = insuranceValue;
                 }
 
-                if(expiredInsurance){
-                    dataInsert.expiredInsurance = expiredInsurance;
-                }
-
-                if(alertInsurance){
+                if(!isNaN(alertInsurance) && Number(alertInsurance) >= 0){
                     dataInsert.alertInsurance = alertInsurance;
                 }
 
@@ -666,18 +672,18 @@ class Model extends BaseModel {
                     dataUpdate.profit = profit;
                 }
 
-                if(!isNaN(cgValue) && Number(cgValue) >= 0){
-                    dataUpdate.cgValue = cgValue;
-                }
-
                 if(expiredCg != ""){
                     dataUpdate.expiredCg = expiredCg;
                 }else{
                     dataUpdate.expiredCg = null
                 }
 
-                if(!isNaN(agValue) && Number(agValue) >= 0){
-                    dataUpdate.agValue = agValue;
+                if(!isNaN(cgValue) && Number(cgValue) >= 0){
+                    dataUpdate.cgValue = cgValue;
+                }
+
+                if(!isNaN(alertCg) && Number(alertCg) >= 0){
+                    dataUpdate.alertCg = alertCg;
                 }
 
                 if(expiredAg != ""){
@@ -686,24 +692,26 @@ class Model extends BaseModel {
                     dataUpdate.expiredAg = null
                 }
 
-                if(alertAg || alertAg == 0){
-                    dataUpdate.alertAg = alertAg
+                if(!isNaN(agValue) && Number(agValue) >= 0){
+                    dataUpdate.agValue = agValue;
                 }
 
-                if(alertCg || alertAg == 0){
-                    dataUpdate.alertCg = alertCg
+                if(!isNaN(alertAg) && Number(alertAg) >= 0){
+                    dataUpdate.alertAg = alertAg;
                 }
 
-                if(insuranceValue){
-                    dataUpdate.insuranceValue = insuranceValue
+                if(expiredInsurance != ""){
+                    dataUpdate.expiredInsurance = expiredInsurance;
+                }else{
+                    dataUpdate.expiredInsurance = null
                 }
 
-                if(expiredInsurance){
-                    dataUpdate.expiredInsurance = expiredInsurance
+                if(!isNaN(insuranceValue) && Number(insuranceValue) >= 0){
+                    dataUpdate.insuranceValue = insuranceValue;
                 }
 
-                if(alertInsurance || alertAg == 0){
-                    dataUpdate.alertInsurance = alertInsurance
+                if(!isNaN(alertInsurance) && Number(alertInsurance) >= 0){
+                    dataUpdate.alertInsurance = alertInsurance;
                 }
 
                 if(dataAddToSet){
