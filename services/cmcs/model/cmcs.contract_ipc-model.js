@@ -650,6 +650,8 @@ class Model extends BaseModel {
      */
     getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, plan,
         keyword, limit = 20, lastestID, select, populates= {} }){
+            // console.log({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, plan,
+            //     keyword, limit, lastestID, select, populates })
         return new Promise(async resolve => {
             try {
                 if(limit > 20){
@@ -768,8 +770,9 @@ class Model extends BaseModel {
                     {$sort: {"date": 1}}
                 ])
 
-                console.log(conditionObjAgg)
-                console.log(listData)
+                // console.log(conditionObjAgg)
+                // console.log(conditionProjectObj)
+                // console.log(listData)
 
                 conditionObj._id = {$in: listData.map(item=>item._id)}
 
@@ -1092,6 +1095,7 @@ class Model extends BaseModel {
                                 }
                             }
                         ])
+                        // console.log(listData)
 
                         return resolve({ error: false, data: listData });
                     }else{
