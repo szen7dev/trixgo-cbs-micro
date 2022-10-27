@@ -267,6 +267,7 @@ module.exports = {
             sellerInfo      : { type: "string", optional: true },
             month           : { type: "string", optional: true },
             year            : { type: "string", optional: true },
+            plan            : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -279,7 +280,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, plan, keyword, limit, lastestID, populates, select } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -287,7 +288,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getListByMonth({
-                    userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, select, populates
+                    userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, plan, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

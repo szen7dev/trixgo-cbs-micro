@@ -648,7 +648,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo,
+    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, plan,
         keyword, limit = 20, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
@@ -659,11 +659,11 @@ class Model extends BaseModel {
                 }
 
                 let sortBy;
-                let conditionObj = {};
+                let conditionObj = {}
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 // Điều kiện để Aggregate
-                let conditionObjAgg = {}, conditionObjYear = {}
+                let conditionObjAgg = {}, conditionObjYear = {}, conditionProjectObj = {}
 
                 if(month && Number(month) > 0){
                     conditionObjYear.month = Number(month)
@@ -742,16 +742,25 @@ class Model extends BaseModel {
                     conditionObj.name = regExpSearch;
                 }
 
+                if(!plan){
+                    conditionProjectObj = {
+                        year : {$year : "$date"},
+                        month : {$month : "$date"},
+                    }
+                }else{
+                    conditionProjectObj = {
+                        year : {$year : "$timeForPayment"},
+                        month : {$month : "$timeForPayment"},
+                    }
+                }
+
                 // Danh sách các Payment trong tháng, năm của công ty
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
                         $match: conditionObjAgg
                     },
                     {
-                        $project : {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                        }
+                        $project : conditionProjectObj
                     },
                     {
                         $match: conditionObjYear
