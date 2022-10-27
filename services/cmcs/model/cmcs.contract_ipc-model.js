@@ -940,11 +940,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo tháng trong năm (BỎ)
+     * Name: Gom nhóm theo tháng trong năm
      * Author: Hiepnh
      * Date: 5/4/2022
      */
-    getAmountByMonth({ userID, companyID, projectID, contractID, outin, year, option }){
+    getAmountByMonth({ userID, companyID, projectID, contractID, outin, year, option, plan }){
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
@@ -968,81 +968,127 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!option){
-                    console.log('SỐ LIỆU NĂM NAY====================================')
-                    conditionGroup = {
-                        _id: { month: "$month", year: "$year" },
-                        amount: { $sum: "$amount" },
-                    }
-
-                    if(!isNaN(year) && Number(year) >= 0){
-                        conditionObjYear = {
-                            "year": Number(year),
+                if(!plan){
+                    console.log('SỐ LIỆU THỰC TẾ====================================')
+                    if(!option){
+                        console.log('SỐ LIỆU NĂM NAY====================================')
+                        conditionGroup = {
+                            _id: { month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+    
+                        if(!isNaN(year) && Number(year) >= 0){
+                            conditionObjYear = {
+                                "year": Number(year),
+                            }
+                        }
+    
+                    }else{
+                        if(option && option == 1){
+                            console.log('SỐ LIỆU NĂM NGOÁI====================================')
+    
+                            conditionGroup = {
+                                _id: { year: "$year" },
+                                amount: { $sum: "$amount" },
+                            }
+    
+                            let firstDayOfLastYear = `${Number(year-1)}-01-01T00:00:00.000Z`;
+                            let lastDayOfLastYear
+    
+                            let thisYear = moment(new Date()).toDate().getFullYear()
+    
+                            if(Number(year) == Number(thisYear)){
+                                var today = new Date();
+                                //Sunday 4 September 2016 - Week 36
+                                // console.log({today})
+    
+                                lastDayOfLastYear = new moment(today).subtract(12, 'months').toDate();
+                                //Friday 4 September 2015 - Week 37
+                                // console.log({lastDayOfLastYear})
+                            }else{
+                                lastDayOfLastYear = `${Number(year-1)}-12-31T00:00:00.000Z`;
+                            }
+    
+                            conditionObj.date = {
+                                // $gte: moment(firstDayOfLastYear).toDate(),
+                                // $lt: moment(lastDayOfLastYear).toDate(),
+                                $gte: new Date(firstDayOfLastYear),
+                                $lte: new Date(lastDayOfLastYear)
+                            }
+                            console.log(conditionObj)
                         }
                     }
-
+    
+                    let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: {
+                                "_id.year": 1,
+                                "_id.month": 1,
+                            }
+                        }
+                    ])
+    
+                    return resolve({ error: false, data: listData });
                 }else{
-                    if(option && option == 1){
-                        console.log('SỐ LIỆU NĂM NGOÁI====================================')
-
+                    if(!option){
+                        console.log('SỐ LIỆU KẾ HOẠCH====================================')
                         conditionGroup = {
-                            _id: { year: "$year" },
+                            _id: { month: "$month", year: "$year" },
                             amount: { $sum: "$amount" },
                         }
 
-                        let firstDayOfLastYear = `${Number(year-1)}-01-01T00:00:00.000Z`;
-                        let lastDayOfLastYear
-
-                        let thisYear = moment(new Date()).toDate().getFullYear()
-
-                        if(Number(year) == Number(thisYear)){
-                            var today = new Date();
-                            //Sunday 4 September 2016 - Week 36
-                            // console.log({today})
-
-                            lastDayOfLastYear = new moment(today).subtract(12, 'months').toDate();
-                            //Friday 4 September 2015 - Week 37
-                            // console.log({lastDayOfLastYear})
-                        }else{
-                            lastDayOfLastYear = `${Number(year-1)}-12-31T00:00:00.000Z`;
+                        if(!isNaN(year) && Number(year) >= 0){
+                            conditionObjYear = {
+                                "year": Number(year),
+                            }
                         }
 
-                        conditionObj.date = {
-                            // $gte: moment(firstDayOfLastYear).toDate(),
-                            // $lt: moment(lastDayOfLastYear).toDate(),
-                            $gte: new Date(firstDayOfLastYear),
-                            $lte: new Date(lastDayOfLastYear)
-                        }
-                        console.log(conditionObj)
+                        let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : {
+                                    year : {$year : "$timeForPayment"},
+                                    month : {$month : "$timeForPayment"},
+                                    amount: { $sum: "$recommendedPayment" },
+                                }
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: {
+                                    "_id.year": 1,
+                                    "_id.month": 1,
+                                }
+                            }
+                        ])
+
+                        return resolve({ error: false, data: listData });
+                    }else{
+
                     }
                 }
-
-                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: conditionObj
-                    },
-                    {
-                        $project : {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    },
-                    {
-                        $group: conditionGroup
-                    },
-                    {
-                        $sort: {
-                            "_id.year": 1,
-                            "_id.month": 1,
-                        }
-                    }
-                ])
-
-                return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

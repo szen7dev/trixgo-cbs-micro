@@ -221,11 +221,12 @@ module.exports = {
             year        : { type: "string", optional: true },
             outin       : { type: "string", optional: true },
             option       : { type: "string", optional: true },
+            plan       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, projectID, contractID, year, outin, option } = ctx.params;
+                let { companyID, projectID, contractID, year, outin, option, plan } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
                 
                 if(!companyID){
@@ -234,7 +235,7 @@ module.exports = {
                 console.log({companyID})
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.getAmountByMonth({
-                    userID, companyID, projectID, contractID, year, outin, option
+                    userID, companyID, projectID, contractID, year, outin, option, plan
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
