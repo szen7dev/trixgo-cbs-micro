@@ -565,7 +565,7 @@ class Model extends BaseModel {
                 }
 
                 if(!option){
-                    console.log('SỐ LIỆU NĂM NAY====================================')
+                    console.log('SỐ LIỆU TIỀN VỀ NĂM NAY====================================')
                     conditionGroup = {
                         _id: { month: "$month", year: "$year" },
                         amount: { $sum: "$amount" },
@@ -579,7 +579,7 @@ class Model extends BaseModel {
 
                 }else{
                     if(option && option == 1){
-                        console.log('SỐ LIỆU NĂM NGOÁI====================================')
+                        console.log('SỐ LIỆU TIỀN VỀ NĂM NGOÁI====================================')
                         
                         conditionGroup = {
                             _id: { year: "$year" },

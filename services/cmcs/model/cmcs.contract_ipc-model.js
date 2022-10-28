@@ -957,6 +957,7 @@ class Model extends BaseModel {
      * Date: 5/4/2022
      */
     getAmountByMonth({ userID, companyID, projectID, contractID, outin, year, option, plan }){
+        console.log({ userID, companyID, projectID, contractID, outin, year, option, plan })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
@@ -983,7 +984,7 @@ class Model extends BaseModel {
                 if(!plan){
                     console.log('SỐ LIỆU THỰC TẾ====================================')
                     if(!option){
-                        console.log('SỐ LIỆU NĂM NAY====================================')
+                        // console.log('SỐ LIỆU NĂM NAY====================================')
                         conditionGroup = {
                             _id: { month: "$month", year: "$year" },
                             amount: { $sum: "$amount" },
@@ -997,7 +998,7 @@ class Model extends BaseModel {
     
                     }else{
                         if(option && option == 1){
-                            console.log('SỐ LIỆU NĂM NGOÁI====================================')
+                            // console.log('SỐ LIỆU NĂM NGOÁI====================================')
     
                             conditionGroup = {
                                 _id: { year: "$year" },
@@ -1095,7 +1096,7 @@ class Model extends BaseModel {
                                 }
                             }
                         ])
-                        // console.log(listData)
+                        console.log(listData)
 
                         return resolve({ error: false, data: listData });
                     }else{
