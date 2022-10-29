@@ -382,6 +382,34 @@ module.exports = {
     },
 
     /**
+     * Name: Báo cáo linh hoạt
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getDynamicReport: {
+        auth: "required",
+        params: {
+            reportType        : { type: 'string' },
+            option            : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const {
+                    reportType, option
+                } = ctx.params;
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
 	 * Dev: Depv
 	 * Func: Lấy số lượng công việc của bạn để hiển thị ngoài trang chủ
 	 */

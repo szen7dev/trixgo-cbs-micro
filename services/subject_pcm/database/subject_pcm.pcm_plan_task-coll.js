@@ -159,7 +159,12 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 7-Khóa
      */
     status: { type: Number, default: 1 },
-    //_________Phân loại mức độ quan trọng (cao, bình thường, thấp)
+    /**
+     * Phân loại mức độ quan trọng
+     * 1-Thấp
+     * 2-Bình thường
+     * 3-Cao
+     */
     priority: { type: Number, default: 2 },
     //_________Phân loại mức độ rủi ro (cao, bình thường, thấp)
     risk: { type: Number, default: 2 },

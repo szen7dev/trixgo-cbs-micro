@@ -44,6 +44,7 @@ const USER_COLL                         = require('../../auth/database/auth.user
 // const { email } = require('../../../tools/mailer/config/cf_mailer');
 
 const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll');
+const { sortBy } = require('lodash');
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
@@ -2000,8 +2001,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy thông báo công việc (chưa đọc)
+     * Name: Lấy thông báo công việc
      * Author: HiepNH
+     * Date: 29/10/2022
      */
     getAmountNotification({ userID }){
         return new Promise(async resolve => {
@@ -2012,7 +2014,7 @@ class Model extends BaseModel {
                     let end = new Date();
                     end.setHours(23,59,59,999);
 
-                    let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0
+                    let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
 
                     // Số công việc chưa xem
                     amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
@@ -2049,9 +2051,215 @@ class Model extends BaseModel {
                         }
                     })
 
+                    // Số công việc của tôi - Quan trọng
+                    amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        priority: { $ne: 3 },
+                        usersDelete: { $nin: [userID] }
+                    })
+
                     return resolve({ error: false, data: {
-                        amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3
+                        amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
                     }});
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Báo cáo linh hoạt
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getDynamicReport({ userID, option, reportType }){
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}
+                let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
+
+                // Việc của tôi
+                if(reportType && reportType == 1){
+                    conditionObj.assignee = ObjectID(userID)
+                    conditionObj.usersDelete = { $nin: [userID] }
+                }
+
+                if(!option){
+                    let start = new Date();
+                    start.setHours(0,0,0,0);
+                    let end = new Date();
+                    end.setHours(23,59,59,999);
+
+                    let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
+
+                    // Số công việc chưa xem
+                    amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
+                        news: { $in: [userID] },
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    // Số công việc của tôi - Quá hạn
+                    amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: { $lt: start }
+                    })
+
+                    // Số công việc của tôi - Tuần tới
+                    amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: { 
+                            $gte:  moment(start).startOf('day')._d,
+                            $lt: moment(addDate(7)).endOf('day')._d
+                        }
+                    })
+
+                    // Số công việc của tôi - Sau tuần tới
+                    amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: { 
+                            $gte: addDate(7)
+                        }
+                    })
+
+                    // Số công việc của tôi - Quan trọng
+                    amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        priority: { $ne: 3 },
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    return resolve({ error: false, data: {
+                        amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
+                    }});
+                }else{
+                    // Theo đơn vị giao việc
+                    if(option && Number(option) == 1){
+                        objectGroup = { companyOfAuthor: '$companyOfAuthor' }
+                        sortBy = { "_id.companyOfAuthor": 1 }
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAuthor',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        let listDataCompany = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        
+                        if(listDataCompany.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataCompany, conditionPopulateCompany)
+                        }
+                        // console.log(listDataCompany)
+
+                        return resolve({ error: false, data: { listDataCompany } });
+                    }
+
+                    // Theo người giao việc
+                    if(option && Number(option) == 2){
+                        objectGroup = { author: '$author' }
+                        sortBy = { "_id.author": 1 }
+                        conditionPopulateUser = {
+                            path: '_id.author',
+                            select: '_id name sign image fullname',
+                            model: 'user'
+                        }
+
+                        let listDataUser = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        
+                        if(listDataUser.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataUser, conditionPopulateUser)
+                        }
+                        // console.log(listDataUser)
+
+                        return resolve({ error: false, data: { listDataUser } });
+                    }
+
+                    // Theo dự án
+                    if(option && Number(option) == 5){
+                        objectGroup = { project: '$project' }
+                        sortBy = { "_id.project": 1 }
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+
+                        // console.log(conditionObj)
+
+                        let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        
+                        if(listDataProject.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataProject, conditionPopulateProject)
+                        }
+                        // console.log(listDataProject)
+
+                        return resolve({ error: false, data: { listDataProject } });
+                    }
+
+                    // Theo tính chất
+                    if(option && Number(option) == 6){
+                        objectGroup = { subtype: '$subtype' }
+                        sortBy = { "_id.subtype": 1 }
+
+                        // console.log(conditionObj)
+
+                        let listDataSubtype = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        // console.log(listDataSubtype)
+
+                        return resolve({ error: false, data: { listDataSubtype } });
+                    }
+
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
