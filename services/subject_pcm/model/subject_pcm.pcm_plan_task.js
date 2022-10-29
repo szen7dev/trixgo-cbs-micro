@@ -1364,7 +1364,7 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
-        // console.log('=============Danh sách chủ đề=============>>>>>>>>>>>')
+        // console.log('=============Danh sách chủ đề 6688=============>>>>>>>>>>>')
         // console.log({
         //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
@@ -1760,14 +1760,14 @@ class Model extends BaseModel {
      * Date: 11/05/2022
      */
     getListByFilter({
-        fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+        reportType, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, keyword, unlimited,
         limit = 50, lastestID, select, populates, userID
     }) {
-        // console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
-        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, unlimited,
-        //     limit, lastestID, select, populates, userID})
+        console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
+        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, unlimited,
+            limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1781,6 +1781,7 @@ class Model extends BaseModel {
                     companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
                     assigneesID         : { value: assigneesID, isRequire: false },
                     authorsID           : { value: authorsID, isRequire: false },
+                    companiesOfAuthor   : { value: companiesOfAuthor, isRequire: false },
                     projectsID          : { value: projectsID, isRequire: false },
                     fieldsID            : { value: fieldsID, isRequire: false },
                 });
@@ -1845,6 +1846,12 @@ class Model extends BaseModel {
                     ]
                 }
 
+                // Việc của tôi
+                if(reportType == 1){
+                    conditionObj.assignee = userID;
+                    delete conditionObj.$or
+                }
+
                 /**
                  * Bộ lọc với nhiều lựa chọn
                  */
@@ -1855,6 +1862,7 @@ class Model extends BaseModel {
                 authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
                 fieldsID && fieldsID.length                         && (conditionObj.field = { $in: fieldsID });
                 companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
+                companiesOfAuthor && companiesOfAuthor.length       && (conditionObj.companyOfAuthor = { $in: companiesOfAuthor });
 
                 // Chỉ lấy task cha hoặc lấy tất cả
                 if(isParent && isParent == 1){
@@ -3607,8 +3615,8 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
-        console.log('Gom nhóm công việc theo thuộc tính=================')
-        console.log({ userID, option, fromDate, toDate, projectID, companyID })
+        // console.log('Gom nhóm công việc theo thuộc tính=================')
+        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
         return new Promise(async resolve => {
             try {
                 /**
