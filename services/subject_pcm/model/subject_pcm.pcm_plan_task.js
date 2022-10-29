@@ -2016,60 +2016,59 @@ class Model extends BaseModel {
     getAmountNotification({ userID }){
         return new Promise(async resolve => {
             try {
-
                 let start = new Date();
-                    start.setHours(0,0,0,0);
-                    let end = new Date();
-                    end.setHours(23,59,59,999);
+                start.setHours(0,0,0,0);
+                let end = new Date();
+                end.setHours(23,59,59,999);
 
-                    let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
+                let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
 
-                    // Số công việc chưa xem
-                    amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
-                        news: { $in: [userID] },
-                        usersDelete: { $nin: [userID] }
-                    })
+                // Số công việc chưa xem
+                amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
+                    news: { $in: [userID] },
+                    usersDelete: { $nin: [userID] }
+                })
 
-                    // Số công việc của tôi - Quá hạn
-                    amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
-                        assignee: userID,
-                        status: { $ne: 3 },
-                        usersDelete: { $nin: [userID] },
-                        actualFinishTime: { $lt: start }
-                    })
+                // Số công việc của tôi - Quá hạn
+                amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    actualFinishTime: { $lt: start }
+                })
 
-                    // Số công việc của tôi - Tuần tới
-                    amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
-                        assignee: userID,
-                        status: { $ne: 3 },
-                        usersDelete: { $nin: [userID] },
-                        actualFinishTime: { 
-                            $gte:  moment(start).startOf('day')._d,
-                            $lt: moment(addDate(7)).endOf('day')._d
-                        }
-                    })
+                // Số công việc của tôi - Tuần tới
+                amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    actualFinishTime: { 
+                        $gte:  moment(start).startOf('day')._d,
+                        $lt: moment(addDate(7)).endOf('day')._d
+                    }
+                })
 
-                    // Số công việc của tôi - Sau tuần tới
-                    amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
-                        assignee: userID,
-                        status: { $ne: 3 },
-                        usersDelete: { $nin: [userID] },
-                        actualFinishTime: { 
-                            $gte: addDate(7)
-                        }
-                    })
+                // Số công việc của tôi - Sau tuần tới
+                amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    actualFinishTime: { 
+                        $gte: addDate(7)
+                    }
+                })
 
-                    // Số công việc của tôi - Quan trọng
-                    amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
-                        assignee: userID,
-                        status: { $ne: 3 },
-                        priority: { $ne: 3 },
-                        usersDelete: { $nin: [userID] }
-                    })
+                // Số công việc của tôi - Quan trọng
+                amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    status: { $ne: 3 },
+                    priority: { $ne: 3 },
+                    usersDelete: { $nin: [userID] }
+                })
 
-                    return resolve({ error: false, data: {
-                        amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
-                    }});
+                return resolve({ error: false, data: {
+                    amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
+                }});
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
