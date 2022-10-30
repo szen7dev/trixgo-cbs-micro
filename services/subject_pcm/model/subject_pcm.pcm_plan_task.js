@@ -1764,13 +1764,13 @@ class Model extends BaseModel {
      */
     getListByFilter({
         reportType, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, keyword, unlimited,
+        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, keyword, unlimited,
         limit = 50, lastestID, select, populates, userID
     }) {
-        console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
-        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, unlimited,
-            limit, lastestID, select, populates, userID})
+        // console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
+        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, reportType, unlimited,
+        //     limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1808,6 +1808,7 @@ class Model extends BaseModel {
                 let conditionObj = {
                     usersDelete: { $nin: [userID] },
                 };
+                
                 let nextCursor  = null;
                 let sortBy      = null;
                 let keys	 = ['modifyAt__-1', '_id__-1'];
@@ -1849,7 +1850,12 @@ class Model extends BaseModel {
                     ]
                 }
 
-                // Việc của tôi
+                /**
+                 * PHÂN LOẠI CÔNG VIỆC
+                 * 1-Việc của tôi
+                 * 2-Việc giao người khác
+                 * 3-Việc liên quan
+                 */
                 if(reportType == 1){
                     conditionObj.assignee = userID;
                     delete conditionObj.$or
