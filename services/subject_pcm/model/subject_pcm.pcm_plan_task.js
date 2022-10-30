@@ -1767,10 +1767,10 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
         limit = 50, lastestID, select, populates, userID
     }) {
-        // console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
-        // console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        //     projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, reportType, unlimited,
-        //     limit, lastestID, select, populates, userID})
+        console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
+        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, reportType, unlimited,
+            limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
