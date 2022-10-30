@@ -1764,7 +1764,7 @@ class Model extends BaseModel {
      */
     getListByFilter({
         fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, keyword, unlimited,
+        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
         limit = 50, lastestID, select, populates, userID
     }) {
         // console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
@@ -1920,6 +1920,13 @@ class Model extends BaseModel {
                             $lte: new Date(toDate),
                         }
                     }
+                }
+
+                /**
+                 * Việc quan trọng
+                 */
+                if(priority && Number(priority) > 0){
+                    conditionObj.priority = Number(priority)
                 }
 
                 // Tìm kiếm theo keyword
