@@ -1763,7 +1763,7 @@ class Model extends BaseModel {
      * Date: 11/05/2022
      */
     getListByFilter({
-        reportType, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, keyword, unlimited,
         limit = 50, lastestID, select, populates, userID
     }) {
@@ -1808,7 +1808,7 @@ class Model extends BaseModel {
                 let conditionObj = {
                     usersDelete: { $nin: [userID] },
                 };
-                
+
                 let nextCursor  = null;
                 let sortBy      = null;
                 let keys	 = ['modifyAt__-1', '_id__-1'];
