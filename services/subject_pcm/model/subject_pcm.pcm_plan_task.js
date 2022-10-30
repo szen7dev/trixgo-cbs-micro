@@ -2065,7 +2065,7 @@ class Model extends BaseModel {
                 amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
                     assignee: userID,
                     status: { $ne: 3 },
-                    priority: { $ne: 3 },
+                    priority: 3,
                     usersDelete: { $nin: [userID] }
                 })
 
@@ -2142,7 +2142,7 @@ class Model extends BaseModel {
                     amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        priority: { $ne: 3 },
+                        priority: 3,
                         usersDelete: { $nin: [userID] }
                     })
 
