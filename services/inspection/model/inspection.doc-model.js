@@ -193,6 +193,7 @@ class Model extends BaseModel {
      * Code: 2/10/2022
      */
     update({ taskID, sign, assigneeID, name, expiredTime, description, status, relatedIDs, percentage, linksDocs, optionSeen, userID }) { 
+        // console.log({ taskID, sign, assigneeID, name, expiredTime, description, status, relatedIDs, percentage, linksDocs, optionSeen, userID })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -222,12 +223,14 @@ class Model extends BaseModel {
                     if(!isNaN(percentage)){
                         dataUpdate.percentage = Number(percentage);
                     }
-    
+
+                    //_________Thêm người liên quan
                     if(checkObjectIDs(relatedIDs)){
-                        dataUpdate.$addToSet = {
-                            related: relatedIDs
+                        let related = relatedIDs.map(item=>item)
+                        dataAddToset = {
+                            ...dataAddToset,
+                            related
                         }
-                        dataAddToset = { ...dataAddToset, relatedIDs }
                     }
 
                     if(checkObjectIDs(linksDocs)){
@@ -256,6 +259,9 @@ class Model extends BaseModel {
                     }else{
                         dataUpdate.status = Number(status)
                     }
+
+                    // console.log('=================>>>>>>>>>>>>>>>>>')
+                    // console.log(dataUpdate)
 
                     let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
                     if(!infoDataAfterUpdate)

@@ -980,6 +980,9 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
+                // console.log('=================>>>>>>>>>>>>>>>>>')
+                // console.log(dataUpdate)
+
                 /**
                  * TIẾN HÀNH CẬP NHẬT CÔNG VIỆC
                  */
