@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, validateParamsObjectID }                        
                                         = require('../../../tools/utils/utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
@@ -367,7 +367,7 @@ class Model extends BaseModel {
      * Code: 2/10/2022
      */
     getList({ option, optionSeen, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
-        console.log({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
+        // console.log({ option, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -573,6 +573,295 @@ class Model extends BaseModel {
     }
 
     /**
+     * Dev: HiepNH
+     * Func: Tìm kiếm Task
+     * Date: 31/10/2022
+     */
+    getListByFilter({
+        fromDate, toDate, month, year, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        projectsID, status, isExpired, read, isGrant, priority, reportType, 
+        keyword, unlimited, limit = 50, lastestID, select, populates,
+        userID
+    }) {
+        console.log('=============Danh sách công việc TÌM KIẾM=============>>>>>>>>>>>')
+        console.log({ fromDate, toDate, month, year, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+            projectsID, status, isExpired, read, priority, reportType, 
+            keyword, unlimited, limit, lastestID, select, populates,
+            userID})
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 */
+                let conditionObjYear
+
+                // Phân trang
+                if(limit > 50 && isNaN(limit)){
+                    limit = 50;
+                } else{
+                    limit = +limit;
+                }
+
+                /**
+                 * VALIDATION (1)
+                 */
+                const validation = validateParamsObjectID({
+                    companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
+                    assigneesID         : { value: assigneesID, isRequire: false },
+                    authorsID           : { value: authorsID, isRequire: false },
+                    companiesOfAuthor   : { value: companiesOfAuthor, isRequire: false },
+                    projectsID          : { value: projectsID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                /**
+                 * DECALARTION VARIABLE (2)
+                 */
+                let conditionObj = {
+                    usersDelete: { $nin: [userID] },
+                };
+
+                let nextCursor  = null;
+                let sortBy      = null;
+                let keys	 = ['modifyAt__-1', '_id__-1'];
+                // let keys	    = ['actualFinishTime__-1', '_id__-1'];
+
+                /**
+                 * Kiểm soát quyền truy cập Task
+                 */
+                if(isGrant && Number(Grant) == 1){
+                    conditionObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                    ]
+                }
+
+                /**
+                 * PHÂN LOẠI CÔNG VIỆC
+                 * 1-Việc của tôi
+                 * 2-Việc giao người khác
+                 * 3-Việc liên quan
+                 */
+                if(reportType == 1){
+                    conditionObj.assignee = userID;
+                    delete conditionObj.$or
+                }
+
+                /**
+                 * Bộ lọc với nhiều lựa chọn
+                 */
+                assigneesID && assigneesID.length                   && (conditionObj.assignee = { $in: assigneesID })
+                companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee })
+                authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID })
+                companiesOfAuthor && companiesOfAuthor.length       && (conditionObj.companyOfAuthor = { $in: companiesOfAuthor })
+                projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID })
+                status && status.length                             && (conditionObj.status = { $in: status })
+
+                // Chưa xem (user nắm trong mảng new)
+                if(read && read == 1){
+                    conditionObj.news = { $in: [userID] }
+                }
+                // Đã xem (user bị xoá ra khỏi mảng news)
+                if(read && read == 2){
+                    conditionObj.news = { $nin: [userID] }
+                }
+
+                /**
+                 * Quá hạn
+                 */
+                if(isExpired){
+                    // Đã quá hạn
+                    if(isExpired == 1) {
+                        conditionObj.status = { $ne: 4 }; // Chưa hoàn thành
+                        conditionObj.expiredTime = {
+                            $lt: new Date()
+                        }
+                    }
+
+                    // Chưa quá hạn
+                    if(isExpired == 2) {
+                        conditionObj.expiredTime = {
+                            $gt: new Date()
+                        }
+                    }
+                }else{
+                    /**
+                     * Lấy những công việc từ ngày đến ngày
+                     * - Sẽ không cùng diễn ra với Lọc quá hạn
+                     */
+                    if(fromDate && toDate){
+                        conditionObj.expiredTime = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+                }
+
+                if(!isNaN(year) && Number(year) >= 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                    }
+
+                    if(!isNaN(month) && Number(month) > 0){
+                        conditionObjYear = {
+                            "year": Number(year),
+                            "month": Number(month),
+                        }
+                    }
+
+                    console.log(conditionObj)
+                    console.log(conditionObjYear)
+                    let listDataAgg = await INSPECTION__DOC_COLL.aggregate([
+                        {
+                            $match: {}
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$finishedTime"},
+                                month : {$month : "$finishedTime"},
+                                area : 1,
+                                parentArea : 1,
+                                group : 1,
+                                parentGroup : 1,
+                                status : 1,
+                                expiredTime : 1,
+                                finishedTime : 1,
+                                percentage : 1,
+                                author : 1,
+                                companyOfAuthor : 1,
+                                assignee : 1,
+                                companyOfAssignee : 1,
+                                project : 1,
+                                contract : 1,
+                                priority : 1,
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                    ])
+
+                    // console.log(listDataAgg)
+                    // conditionObj._id = {$in: listDataAgg.map(item=>item._id)}
+                    // console.log(conditionObj)
+                }
+
+                /**
+                 * Việc quan trọng
+                 */
+                if(priority && Number(priority) > 0){
+                    conditionObj.priority = Number(priority)
+                }
+
+                // Tìm kiếm theo keyword
+				if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i')
+                    // conditionObj.$or = [
+                    //     { name  :  new RegExp(keyword, 'i') },
+                    //     { description  :  new RegExp(keyword, 'i') }
+                    // ]
+                }
+                // console.log('========================')
+                // console.log(conditionObj)
+
+                let conditionObjOrg = {...conditionObj};
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await INSPECTION__DOC_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                /**
+                 * Dùng để lấy all data, Chỉ:
+                 * - Dùng internal services
+                 * - Không cho client truyền qua API
+                 */
+                if(unlimited) {
+                    const infoDataAfterGet = await INSPECTION__DOC_COLL
+                        .find(conditionObj)
+                        .select(select)
+                        .populate(populates)
+                        .sort(sortBy)
+                        .lean();
+
+                    return resolve({
+                        data: infoDataAfterGet
+                    });
+                }
+
+                /**
+                 * QUERY DATABASE (4)
+                 */
+                const infoDataAfterGet = await INSPECTION__DOC_COLL
+                    .find(conditionObj)
+                    .limit(limit+1)
+                    .select(select)
+                    .populate(populates)
+                    .sort(sortBy)
+                    .lean();
+
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                const totalRecord = await INSPECTION__DOC_COLL.countDocuments(conditionObjOrg);
+                const totalPage   = Math.ceil(totalRecord / limit);
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: {
+                        listRecords: infoDataAfterGet,
+                        limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    },
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Name: Danh sách
      * - Theo gói thầu (hợp đồng)
      * - Theo ngày tháng tạo/hoàn thành (from-to)
@@ -581,7 +870,7 @@ class Model extends BaseModel {
      * Code: 2/10/2022
      */
     getListByProperty({ option, optionProcess, optionArea, optionGroup, optionTime, optionContract, optionAssignee, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, year, month, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) { 
-        console.log({ option, optionProcess, optionArea, optionGroup, optionTime, optionContract, optionAssignee, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, year, month, keyword, limit, lastestID, select, populates, sortKey, userID })
+        // console.log({ option, optionProcess, optionArea, optionGroup, optionTime, optionContract, optionAssignee, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, year, month, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){

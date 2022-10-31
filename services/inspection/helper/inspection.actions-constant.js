@@ -46,6 +46,7 @@ const CF_ACTIONS_INSPECTION = {
     DOCS_REMOVE                                     : `${BASE_ACTIONS}_${DOC}_REMOVE`,
     DOCS_LIST                                       : `${BASE_ACTIONS}_${DOC}_LIST`,
     DOC_GET_LIST_BY_PROPERTY                        : `${BASE_ACTIONS}_${DOC}_GET_LIST_BY_PROPERTY `,
+    DOC_GET_LIST_BY_FILTER                          : `${BASE_ACTIONS}_${DOC}_GET_LIST_BY_FILTER`,
 
     /**
      * CHECKLIST
@@ -55,11 +56,15 @@ const CF_ACTIONS_INSPECTION = {
     DOC_CHECKLIST_REMOVE                            : `${BASE_ACTIONS}_${DOC_CHECKLIST}_REMOVE`,
     DOC_CHECKLIST_LIST                              : `${BASE_ACTIONS}_${DOC_CHECKLIST}_LIST`,
 
+    /**
+     * COMMENT
+     */
     DOC_COMMENT_INSERT                              : `${BASE_ACTIONS}_${DOC_COMMENT}_INSERT`,
     DOC_COMMENT_UPDATE                              : `${BASE_ACTIONS}_${DOC_COMMENT}_UPDATE`,
     DOC_COMMENT_REMOVE                              : `${BASE_ACTIONS}_${DOC_COMMENT}_REMOVE`,
     DOC_COMMENT_LIST                                : `${BASE_ACTIONS}_${DOC_COMMENT}_LIST`,
 
+    /** */
     DOC_REACTION_INSERT                             : `${BASE_ACTIONS}_${DOC_REACTION}_INSERT`,
     DOC_REACTION_REMOVE                             : `${BASE_ACTIONS}_${DOC_REACTION}_REMOVE`,
     DOC_REACTION_LIST                               : `${BASE_ACTIONS}_${DOC_REACTION}_LIST`,

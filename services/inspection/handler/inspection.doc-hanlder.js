@@ -167,6 +167,58 @@ module.exports = {
     },
 
     /**
+     * Dev: HiepNH
+     * Func: Tìm kiếm Task
+     * Date: 31/10/2022
+     */
+    getListByFilter: {
+        auth: 'required',
+        params: {
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            month               : { type: 'string', optional: true },
+            year                : { type: 'string', optional: true },
+            assigneesID         : { type: 'array', optional: true },
+            companiesOfAssignee : { type: 'array', optional: true },
+            authorsID           : { type: 'array', optional: true },
+            companiesOfAuthor   : { type: 'array', optional: true },
+            projectsID          : { type: 'array', optional: true },
+            status              : { type: 'array', optional: true },
+            isExpired           : { type: 'string', optional: true },
+            read                : { type: 'string', optional: true },
+            isGrant             : { type: 'string', optional: true }, 
+            priority            : { type: 'string', optional: true }, 
+            reportType          : { type: 'string', optional: true }, 
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    fromDate, toDate, month, year, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor, projectsID, status, isExpired, read, isGrant, priority, reportType, 
+                    keyword,limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await INSPECTION_DOC_MODEL.getListByFilter({
+                    fromDate, toDate, month, year, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor, projectsID, status, isExpired, read, isGrant, priority, reportType, 
+                    keyword,limit, lastestID, select, populates, 
+                    userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Name: Danh sách theo phân loại
      * Author: HiepNH
      * Code: 14/10/2022

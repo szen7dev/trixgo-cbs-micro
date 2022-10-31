@@ -17,6 +17,7 @@ const CF_ROUTINGS_INSPECTION = {
     AREA_GROUP                                 : `${BASE_ROUTE}${AREA_GROUP}`,
     DOCS                                       : `${BASE_ROUTE}${DOCS}`, 
     DOC_GET_LIST_BY_PROPERTY                   : `${BASE_ROUTE}${DOCS}/get-list-by-property`,
+    DOC_GET_LIST_BY_FILTER                     : `${BASE_ROUTE}${DOCS}/get-list-by-filter`,
     DOC_CHECKLIST                              : `${BASE_ROUTE}${DOC_CHECKLIST}`,
     DOC_COMMENT                                : `${BASE_ROUTE}${DOC_COMMENT}`,
     DOC_REACTION                               : `${BASE_ROUTE}${DOC_REACTION}`,
