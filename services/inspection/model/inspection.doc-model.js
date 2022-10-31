@@ -95,6 +95,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'areaID|groupID param_invalid', status: 400 });
                         
                     dataInsert = { 
+                        company: infoContract.company, 
                         project: infoContract.project, 
                         contract: contractID, 
                         area: areaID, 
@@ -252,12 +253,14 @@ class Model extends BaseModel {
                     /**
                      * Nếu cập nhật về trạng thái hoàn thành
                      */
-                    if(status == this.STATUS_DONE){
-                        dataUpdate.status = this.STATUS_DONE;
-                        dataUpdate.percentage = 100;
-                        dataUpdate.finishedTime = new Date(); // Ngày hoàn thành thực tế
-                    }else{
-                        dataUpdate.status = Number(status)
+                    if(status && !isNaN(status)){
+                        if(status == this.STATUS_DONE){
+                            dataUpdate.status = this.STATUS_DONE;
+                            dataUpdate.percentage = 100;
+                            dataUpdate.finishedTime = new Date(); // Ngày hoàn thành thực tế
+                        }else{
+                            dataUpdate.status = Number(status)
+                        }
                     }
 
                     // console.log('=================>>>>>>>>>>>>>>>>>')
