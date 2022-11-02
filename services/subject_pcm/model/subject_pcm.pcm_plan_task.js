@@ -2104,6 +2104,7 @@ class Model extends BaseModel {
 
                 // Việc của tôi
                 if(reportType && reportType == 1){
+                    conditionObj.status = { $ne: 3 }
                     conditionObj.assignee = ObjectID(userID)
                     conditionObj.usersDelete = { $nin: [userID] }
                 }
