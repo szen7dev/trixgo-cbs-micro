@@ -1894,7 +1894,7 @@ class Model extends BaseModel {
                 /**
                  * Quá hạn
                  */
-                if(isExpired){
+                if(isExpired && Number(isExpired) > 0){
                     // Đã quá hạn
                     if(isExpired == 1) {
                         conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
