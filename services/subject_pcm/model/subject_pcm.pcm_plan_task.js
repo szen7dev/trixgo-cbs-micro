@@ -2096,15 +2096,17 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, option, reportType }){
+    getDynamicReport({ userID, option, reportType, status }){
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}
+                if(Array.isArray(status)){
+                    conditionObj = {status: {$in: status}}
+                }
                 let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
                 // Việc của tôi
                 if(reportType && reportType == 1){
-                    conditionObj.status = { $ne: 3 }
                     conditionObj.assignee = ObjectID(userID)
                     conditionObj.usersDelete = { $nin: [userID] }
                 }
@@ -2126,7 +2128,6 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Quá hạn
                     amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        status: { $ne: 3 },
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: { $lt: start }
                     })
@@ -2134,7 +2135,6 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Tuần tới
                     amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        status: { $ne: 3 },
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: { 
                             $gte:  moment(start).startOf('day')._d,
@@ -2145,7 +2145,6 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Sau tuần tới
                     amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        status: { $ne: 3 },
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: { 
                             $gte: addDate(7)
@@ -2155,7 +2154,6 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Quan trọng
                     amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        status: { $ne: 3 },
                         priority: 3,
                         usersDelete: { $nin: [userID] }
                     })
@@ -2283,7 +2281,32 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: { listDataSubtype } });
                     }
 
+                    // Theo trạng thái
+                    if(option && Number(option) == 7){
+                        objectGroup = { status: '$status' }
+                        sortBy = { "_id.status": 1 }
+
+                        // console.log(conditionObj)
+
+                        let listDataStatus = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        // console.log(listDataSubtype)
+
+                        return resolve({ error: false, data: { listDataStatus } });
+                    }
+
                 }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
