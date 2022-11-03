@@ -1939,8 +1939,8 @@ class Model extends BaseModel {
                     //     { description  :  new RegExp(keyword, 'i') }
                     // ]
                 }
-                // console.log('========================')
-                // console.log(conditionObj)
+                console.log('========================')
+                console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -2096,7 +2096,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, option, reportType, status }){
+    getDynamicReport({ userID, option, reportType, status, fromDate, toDate }){
+        console.log('Báo cáo động ========>>>>>>>>')
+        console.log({ userID, option, reportType, status, fromDate, toDate })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}
@@ -2109,6 +2111,14 @@ class Model extends BaseModel {
                 if(reportType && reportType == 1){
                     conditionObj.assignee = ObjectID(userID)
                     conditionObj.usersDelete = { $nin: [userID] }
+                }
+
+                // Theo thời hạn
+                if(fromDate && toDate){
+                    conditionObj.actualFinishTime = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
                 }
 
                 if(!option){
@@ -2304,7 +2314,6 @@ class Model extends BaseModel {
 
                         return resolve({ error: false, data: { listDataStatus } });
                     }
-
                 }
 
             } catch (error) {
