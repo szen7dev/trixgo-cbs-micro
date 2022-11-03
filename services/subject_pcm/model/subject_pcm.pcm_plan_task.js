@@ -2103,7 +2103,7 @@ class Model extends BaseModel {
             try {
                 let conditionObj = {}
                 if(Array.isArray(status)){
-                    conditionObj = {status: {$in: status}}
+                    conditionObj = {status: {$in: status.map(item=>Number(item))}} // Do sử dụng agg nên phải pas sang Number
                 }
                 let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
@@ -2244,7 +2244,7 @@ class Model extends BaseModel {
                             model: 'department'
                         }
 
-                        // console.log(conditionObj)
+                        console.log(conditionObj)
 
                         let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
                             {
@@ -2258,6 +2258,7 @@ class Model extends BaseModel {
                             },
                             { $sort: sortBy},
                         ])
+                        console.log(listDataProject)
                         
                         if(listDataProject.length){
                             await PCM_PLAN_TASK_COLL.populate(listDataProject, conditionPopulateProject)
