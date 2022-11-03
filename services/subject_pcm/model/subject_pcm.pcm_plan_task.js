@@ -2154,6 +2154,7 @@ class Model extends BaseModel {
                     amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         usersDelete: { $nin: [userID] },
+                        status: { $ne: 3 },
                         actualFinishTime: { $lt: start }
                     })
 
@@ -2161,6 +2162,7 @@ class Model extends BaseModel {
                     amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         usersDelete: { $nin: [userID] },
+                        status: { $ne: 3 },
                         actualFinishTime: { 
                             $gte:  moment(start).startOf('day')._d,
                             $lt: moment(addDate(7)).endOf('day')._d
@@ -2171,6 +2173,7 @@ class Model extends BaseModel {
                     amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         usersDelete: { $nin: [userID] },
+                        status: { $ne: 3 },
                         actualFinishTime: { 
                             $gte: addDate(7)
                         }
@@ -2179,6 +2182,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Quan trọng
                     amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
+                        status: { $ne: 3 },
                         priority: 3,
                         usersDelete: { $nin: [userID] }
                     })
