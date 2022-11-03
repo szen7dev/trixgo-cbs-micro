@@ -251,11 +251,14 @@ exports.SUBJECT_SOCKET = {
 			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
 			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
+			const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID });
+
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 				users: receivers,
 				title: infoTask.name,
 				description: `${bizfullname} đã phê duyệt 1 công việc`,
+				amountNoti: amountNoti?.data?.amountUnreadTask,
 				dataSend: {
 					app: APP_KEYS.PCM_PLAN_TASK,
 					languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
@@ -326,11 +329,14 @@ exports.SUBJECT_SOCKET = {
 				event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_OPEN_BIDDING], io
 			});
 
+			const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID });
+
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 				users: receivers,
 				title: infoTask.name,
 				description: `${bizfullname} đã mở thầu`,
+				amountNoti: amountNoti?.data?.amountUnreadTask,
 				dataSend: {
 					app: APP_KEYS.PCM_PLAN_TASK,
 					languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
@@ -394,7 +400,7 @@ exports.SUBJECT_SOCKET = {
 
 			await PromisePool
 				.for(receivers)
-				.withConcurrency(2)
+				.withConcurrency(4)
 				.process(async userId => {
 					const { error, data } = await PCM_PLAN_TASK_MODEL.getAmountNotification({
 						userID: userId

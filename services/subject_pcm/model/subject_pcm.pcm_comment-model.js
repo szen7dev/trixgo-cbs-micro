@@ -32,6 +32,7 @@ const PCM_COMMENT_COLL                          = require('../database/subject_p
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
 const PCM_FILE_COLL                             = require('../database/subject_pcm.pcm_file-coll');
 const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
+const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 class Model extends BaseModel {
 
@@ -560,10 +561,13 @@ class Model extends BaseModel {
                 }
 
                 if(arrReceiver && arrReceiver.length) {
+                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
@@ -846,10 +850,13 @@ class Model extends BaseModel {
                 }
 
                 if(arrReceiver && arrReceiver.length) {
+                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
@@ -1147,10 +1154,13 @@ class Model extends BaseModel {
                         }
                     };
 
+                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: taskName,
                         description: `${author?.bizfullname} thêm file vào phản hồi liên quan`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
                         env: ENV_DEVICE_WEB_CBS

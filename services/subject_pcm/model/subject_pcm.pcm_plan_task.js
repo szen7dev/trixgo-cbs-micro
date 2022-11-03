@@ -444,10 +444,13 @@ class Model extends BaseModel {
                             descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                         }
 
+                        const amountNoti = await this.getAmountNotification({ userID: authorID });
+
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                             users: arrReceiver,
                             title: titleMSS,
                             description: descriptionMSS,
+                            amountNoti: amountNoti?.data?.amountUnreadTask,
                             dataSend,
                             web_url: webUrl,
                             env: ENV_DEVICE_WEB_CBS
@@ -1042,10 +1045,13 @@ class Model extends BaseModel {
                      */
                     let { name: taskName } = infoAfterUpdate;
 
+                    const amountNoti = await this.getAmountNotification({ userID });
+
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: newRelated,
                         title: taskName,
                         description: `${bizfullname} đã thêm bạn làm người liên quan`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend: {
                             app: APP_KEYS.PCM_PLAN_TASK,
                             languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
@@ -1075,10 +1081,13 @@ class Model extends BaseModel {
                         }
                     });
 
+                    const amountNoti = await this.getAmountNotification({ userID });
+
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receivers,
                         title: taskName,
                         description: `${bizfullname} đã ký xác nhận`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend: {
                             app: APP_KEYS.PCM_PLAN_TASK,
                             languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
@@ -1108,10 +1117,13 @@ class Model extends BaseModel {
                         }
                     });
 
+                    const amountNoti = await this.getAmountNotification({ userID });
+
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receivers,
                         title: taskName,
                         description: `${bizfullname} đã mở thầu`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend: {
                             app: APP_KEYS.PCM_PLAN_TASK,
                             languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
@@ -1140,10 +1152,13 @@ class Model extends BaseModel {
                         }
                     });
 
+                    const amountNoti = await this.getAmountNotification({ userID });
+
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receivers,
                         title: taskName,
                         description: `${bizfullname} đã hoàn thành 1 checklist`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend: {
                             app: APP_KEYS.PCM_PLAN_TASK,
                             languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
