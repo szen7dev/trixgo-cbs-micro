@@ -394,6 +394,9 @@ module.exports = {
         params: {
             reportType        : { type: 'string' },
             option            : { type: 'string', optional: true },
+            status            : { type: 'array', optional: true },
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
@@ -401,10 +404,10 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const {
-                    reportType, option
+                    reportType, option, status, fromDate, toDate
                 } = ctx.params;
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option });
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option, status, fromDate, toDate });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
