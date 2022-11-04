@@ -572,7 +572,8 @@ class Model extends BaseModel {
                         users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
+                        amountNoti: 1,
+                        // amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
@@ -862,7 +863,8 @@ class Model extends BaseModel {
                         users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
+                        amountNoti: 1,
+                        // amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
@@ -1167,7 +1169,8 @@ class Model extends BaseModel {
                         users: arrReceiver,
                         title: taskName,
                         description: `${author?.bizfullname} thêm file vào phản hồi liên quan`,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
+                        amountNoti: 1,
+                        // amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
                         env: ENV_DEVICE_WEB_CBS
