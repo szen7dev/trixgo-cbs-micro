@@ -47,7 +47,7 @@ const DOCUMENT_DOC_COLL                 = require('../../document/database/docum
 const { sortBy } = require('lodash');
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
-const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
+// const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
 class Model extends BaseModel {
 
     constructor() {
@@ -122,7 +122,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates, ctx }) {
+    insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
         // console.log({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -334,16 +334,27 @@ class Model extends BaseModel {
                 // })
 
                 // Thêm record vào bảng pcm_comment phục vụ search
-                await PCM_COMMENT_MODEL.insertCommentTask({
-                    taskID: infoAfterInsert._id,
-                    authorID,
-                    companyOfAuthor: infoAuthor.data.company,
+                await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
+                    taskID: infoAfterInsert._id?.toString(),
                     type: 5,
                     files: authorAttachs,
                     content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
                     rawContent: infoAfterInsert.name,
-                    ctx
+                }, {
+                    meta: {
+                        infoUser: { _id: authorID, bizfullname, company }
+                    }
                 });
+                // await PCM_COMMENT_MODEL.insertCommentTask({
+                //     taskID: infoAfterInsert._id,
+                //     authorID,
+                //     companyOfAuthor: infoAuthor.data.company,
+                //     type: 5,
+                //     files: authorAttachs,
+                //     content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
+                //     rawContent: infoAfterInsert.name,
+                //     ctx
+                // });
 
                 /**
                  * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
