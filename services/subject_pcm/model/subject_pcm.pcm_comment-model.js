@@ -32,7 +32,7 @@ const PCM_COMMENT_COLL                          = require('../database/subject_p
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
 const PCM_FILE_COLL                             = require('../database/subject_pcm.pcm_file-coll');
 const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
-// const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
+const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 class Model extends BaseModel {
 
@@ -562,18 +562,13 @@ class Model extends BaseModel {
                 }
 
                 if(arrReceiver && arrReceiver.length) {
-                    console.log('amountNoti=========================')
-                    console.log({authorID})
-                    let amountNoti = 1 // fix nhanh => Minh check lại do bị lỗi ở đây
-                    // let amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
-                    console.log({amountNoti})
+                    let amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
-                        amountNoti: 1,
-                        // amountNoti: amountNoti?.data?.amountUnreadTask,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
@@ -856,15 +851,13 @@ class Model extends BaseModel {
                 }
 
                 if(arrReceiver && arrReceiver.length) {
-                    let amountNoti = 1 // fix nhanh => Minh check lại do bị lỗi ở đây
-                    // const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
-                        amountNoti: 1,
-                        // amountNoti: amountNoti?.data?.amountUnreadTask,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
@@ -1162,15 +1155,13 @@ class Model extends BaseModel {
                         }
                     };
 
-                    let amountNoti = 1 // fix nhanh => Minh check lại do bị lỗi ở đây
-                    // const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: taskName,
                         description: `${author?.bizfullname} thêm file vào phản hồi liên quan`,
-                        amountNoti: 1,
-                        // amountNoti: amountNoti?.data?.amountUnreadTask,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend,
                         web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
                         env: ENV_DEVICE_WEB_CBS
@@ -2135,7 +2126,7 @@ class Model extends BaseModel {
                 // let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
                 // console.log(listComments)
                 // console.log(listComments.length)
-                
+
                 /**
                  * Tính tổng số lượng theo các phân loại của Nhà thầu
                  */
@@ -2203,7 +2194,7 @@ class Model extends BaseModel {
                  * Danh sách chi tiết các thông báo
                  */
                 if(option == 2){
-                    
+
                 }
 
             } catch (error) {
@@ -2215,5 +2206,3 @@ class Model extends BaseModel {
 }
 
 exports.MODEL = new Model;
-
-const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;

@@ -35,11 +35,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID, bizfullname, fullname, company } = ctx.meta.infoUser;
+				const { _id: authorID, bizfullname, company } = ctx.meta.infoUser;
                 const { content, rawContent, taskID, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, projectID, parentID, authorID, type, content, rawContent, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname: bizfullname || fullname,
+					taskID, projectID, parentID, authorID, type, content, rawContent, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname: bizfullname,
                     companyOfAuthor: company._id, ctx
 				});
 
