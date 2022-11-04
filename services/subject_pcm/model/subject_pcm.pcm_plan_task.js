@@ -2045,6 +2045,7 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getAmountNotification({ userID }){
+        console.log({ userID })
         return new Promise(async resolve => {
             try {
                 let start = new Date();

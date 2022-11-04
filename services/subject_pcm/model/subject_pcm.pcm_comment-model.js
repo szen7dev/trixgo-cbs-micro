@@ -32,7 +32,7 @@ const PCM_COMMENT_COLL                          = require('../database/subject_p
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
 const PCM_FILE_COLL                             = require('../database/subject_pcm.pcm_file-coll');
 const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
-const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
+// const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 class Model extends BaseModel {
 
@@ -189,7 +189,8 @@ class Model extends BaseModel {
     insertCommentTask({
         taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
     }) {
-        // console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
+        console.log('=======================insertCommentTask=====================')
+        console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
         return new Promise(async resolve => {
             try {
                 /**
@@ -561,7 +562,11 @@ class Model extends BaseModel {
                 }
 
                 if(arrReceiver && arrReceiver.length) {
-                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    console.log('amountNoti=========================')
+                    console.log({authorID})
+                    let amountNoti = 1 // fix nhanh => Minh check lại do bị lỗi ở đây
+                    // let amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    console.log({amountNoti})
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
@@ -850,7 +855,8 @@ class Model extends BaseModel {
                 }
 
                 if(arrReceiver && arrReceiver.length) {
-                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    let amountNoti = 1 // fix nhanh => Minh check lại do bị lỗi ở đây
+                    // const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
@@ -1154,7 +1160,8 @@ class Model extends BaseModel {
                         }
                     };
 
-                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    let amountNoti = 1 // fix nhanh => Minh check lại do bị lỗi ở đây
+                    // const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
@@ -2205,3 +2212,5 @@ class Model extends BaseModel {
 }
 
 exports.MODEL = new Model;
+
+const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
