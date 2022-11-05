@@ -18,6 +18,8 @@ const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_REMINDER }                   = require('../../reminder/helper/reminder.actions-constant');
 
+const { CF_ACTIONS_SUBJECT_PCM }                = require('./../helper/subject_pcm.actions-constant');
+
 const {
     checkObjectIDs,
     IsJsonString,
@@ -333,7 +335,7 @@ class Model extends BaseModel {
                 //     actualFinishTime: dataInsert.actualFinishTime?.toString(),
                 // })
 
-                // Thêm record vào bảng pcm_comment phục vụ search
+                // Thêm record vào bảng pcm_comment phục vụ search (****)
                 await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
                     taskID: infoAfterInsert._id?.toString(),
                     type: 5,
