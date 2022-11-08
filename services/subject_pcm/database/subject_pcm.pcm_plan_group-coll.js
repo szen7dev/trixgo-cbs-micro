@@ -56,16 +56,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_group"
     },
-    /**
-     * Con
-     */
-    // childs: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "pcm_plan_group"
-    // }],
-    /**
-     * Để populate child
-     */
     level: {
         type: Number,
         default: 1
@@ -84,6 +74,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
+    //_________Hình ảnh đại diện
+    image: {
+        type: Schema.Types.ObjectId,
+        ref : "file"
+    },
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : "user"

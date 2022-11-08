@@ -14,7 +14,24 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
         type: Schema.Types.ObjectId,
         ref : 'contract' 
     },  
-    //_________Loại hành động(1-Xem/2-Thêm/3-Sửa/4-Xóa) dùng để sau này truy vấn ai đã thêm/sửa/xoá trên 1 đối tượng
+
+    task: {
+        type: Schema.Types.ObjectId,
+        ref : 'pcm_plan_task' 
+    }, 
+
+    document: {
+        type: Schema.Types.ObjectId,
+        ref : 'document_doc' 
+    }, 
+    /**
+     * Loại hành động
+     * 1-Xem
+     * 2-Thêm
+     * 3-Sửa
+     * 4-Xóa
+     * dùng để sau này truy vấn ai đã thêm/sửa/xoá trên 1 đối tượng
+     **/
     type: {
         type: Number,
         default: 1
@@ -23,13 +40,13 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
     languageKey: {
         type: String 
     },  
-    //_________Thực hiện trên collection nào(VD: pcm_plan_task, document ...)
-    coll: {
-        kind: String,
-        item: { type: Schema.Types.ObjectId, refPath: 'coll.kind' }
-    },
-    //_________Nội dung (mô tả ngắn nội dung)
+
+    //_________Tiêu đề thay đổi
+    title: String,
+
+    //_________Nội dung thay đổi (mô tả ngắn nội dung)
     content: String,
+
     //_________Công ty của người thực thi hành động
     companyOfAuthor: {
         type: Schema.Types.ObjectId,

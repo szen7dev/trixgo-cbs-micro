@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.positions"}],"uuid":"a3ccf54fc18e45c4a8279b6f800dd15e"}

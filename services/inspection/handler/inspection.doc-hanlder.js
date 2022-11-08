@@ -10,33 +10,35 @@
 
 module.exports = {
     /**
-	 * Dev: HiepNH 
-	 * Func: Thêm template hồ sơ/biên bản
-	 * Date: 17/08/2021
-	 */
-    insertDoc: {
+     * Name: Thêm
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
+    insert: {
         auth: "required",
         params: {
-            projectID   : { type: "string" },
-			contractID  : { type: "string" },
-            sign        : { type: "string" },
-            template    : { type: "string" },
-            assignee    : { type: "string" },
-            members     : { type: "array", option: true },
+            contractID  : { type: "string", optional: true },
+			areaID      : { type: "string", optional: true },
+			groupID     : { type: "string", optional: true },
+            assigneeID  : { type: "string", optional: true },
             name        : { type: "string" },
-            expiredTime : { type: "string" },
-            job         : { type: "string" },
-            areas       : { type: "array"  },
-            description : { type: "string" ,optional: true  },
+            expiredTime : { type: "string", optional: true },
+            sign        : { type: "string", optional: true },
+            templateID  : { type: "string", optional: true },
+            relatedIDs     : { type: "array", optional: true },
+            description : { type: "string", optional: true },
+            belongSystem : { type: "string", optional: true },
+            authorAttachs    : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, contractID, sign, template, assignee, members, name, expiredTime, job, areas, description } = ctx.params;
+                const { contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs } = ctx.params;
+                // console.log({contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description})
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.insert({
-					projectID, contractID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID
+					contractID, areaID, groupID, sign, templateID, assigneeID, relatedIDs, name, expiredTime, description, belongSystem, authorAttachs, userID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -47,32 +49,35 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
-	 * Func: Cập nhật template hồ sơ/biên bản
-	 * Date: 17/08/2021
-	 */
-    updateDoc: {
+     * Name: Cập nhật
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
+    update: {
         auth: "required",
         params: {
-            docID       : { type: "string" },
-            sign        : { type: "string", optional: true },
-            template    : { type: "string", optional: true },
-            members     : { type: "array" , optional: true },
-            name        : { type: "string", optional: true },
-            expiredTime : { type: "string", optional: true },
-            job         : { type: "string", optional: true },
-            areas       : { type: "array" , optional: true },
-            description : { type: "string", optional: true },
-            status      : { type: "number", optional: true },
+            taskID          : { type: "string", optional: true },
+            assigneeID      : { type: "string", optional: true },
+            sign            : { type: "string", optional: true },
+            templateID      : { type: "string", optional: true },
+            relatedIDs      : { type: "array", optional: true },
+            linksDocs       : { type: "array", optional: true },
+            name            : { type: "string", optional: true },
+            expiredTime     : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            status          : { type: "number", optional: true },
+            percentage      : { type: "number", optional: true },
+            option          : { type: "number", optional: true },
+            optionSeen      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {          
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status } = ctx.params;
+                const { taskID, sign, assigneeID, name, expiredTime, description, status, relatedIDs, percentage, option, optionSeen, linksDocs } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.update({
-					docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status, userID
+					taskID, sign, assigneeID, name, expiredTime, description, status, relatedIDs, percentage, option, optionSeen, linksDocs, userID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -83,22 +88,22 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ❌
-	 * Func: Cập nhật template hồ sơ/biên bản
-	 * Date: 17/08/2021
-	 */
-    removeDoc: {
+     * Name: Xóa
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
+    remove: {
         auth: "required",
         params: {
-			docID : { type: "string" },
+			taskID : { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { docID } = ctx.params;
+                const { taskID } = ctx.params;
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.remove({
-					docID 
+					taskID 
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -109,46 +114,152 @@ module.exports = {
     },
 
     /**
-	 * Func: Danh sách template hồ sơ/biên bản 
-	 * Author: Depv 
-	 * Date: 17/08/2021
-	 */
-    getList: {
+     * Name: Lấy thông tin + Danh sách
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
+    getInfoAndGetList: {
         params: {
             projectID   : { type: "string", optional: true },
             contractID  : { type: "string", optional: true },
-            docID       : { type: "string", optional: true },
-            assignee    : { type: "string", optional: true },
-            author      : { type: "string", optional: true },
-            contract    : { type: "string", optional: true },
-            signature   : { type: "string", optional: true },
-            area        : { type: "string", optional: true },
-            fromDate    : { type: "string", optional: true },
-            toDate      : { type: "string", optional: true },
-            fromCreateAt: { type: "string", optional: true },
-            toCreateAt  : { type: "string", optional: true },
+            taskID       : { type: "string", optional: true },
+            belongSystem  : { type: "string", optional: true },
+            option      : { type: "string", optional: true },
+            optionSeen      : { type: "string", optional: true },
+            // assignee    : { type: "string", optional: true },
+            // author      : { type: "string", optional: true },
+            // contract    : { type: "string", optional: true },
+            // signature   : { type: "string", optional: true },
+            // area        : { type: "string", optional: true },
+            // fromDate    : { type: "string", optional: true },
+            // toDate      : { type: "string", optional: true },
+            // fromCreateAt: { type: "string", optional: true },
+            // toCreateAt  : { type: "string", optional: true },
+            
             //_____________THÔNG SỐ MẶC ĐỊNH________________
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { limit, lastestID, select, filter, projectID, contractID, docID, assignee, author, signature, fromDate, toDate, fromCreateAt, toCreateAt, area  } = ctx.params;
+                let { option, optionSeen, taskID, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
                 let resultAfterCallHandler;
                 
-                if(docID){
+                if(taskID){
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getInfo({
-                        docID, select
+                        taskID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({
-                        limit,lastestID, select, filter, projectID, contractID, select, assignee, author, signature, area, userID,  fromDate, toDate, fromCreateAt, toCreateAt
+                        option, optionSeen, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
+             
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Tìm kiếm Task
+     * Date: 31/10/2022
+     */
+    getListByFilter: {
+        auth: 'required',
+        params: {
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            month               : { type: 'string', optional: true },
+            year                : { type: 'string', optional: true },
+            assigneesID         : { type: 'array', optional: true },
+            companiesOfAssignee : { type: 'array', optional: true },
+            authorsID           : { type: 'array', optional: true },
+            companiesOfAuthor   : { type: 'array', optional: true },
+            projectsID          : { type: 'array', optional: true },
+            status              : { type: 'array', optional: true },
+            isExpired           : { type: 'string', optional: true },
+            read                : { type: 'string', optional: true },
+            isGrant             : { type: 'string', optional: true }, 
+            priority            : { type: 'string', optional: true }, 
+            reportType          : { type: 'string', optional: true }, 
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    fromDate, toDate, month, year, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor, projectsID, status, isExpired, read, isGrant, priority, reportType, 
+                    keyword,limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await INSPECTION_DOC_MODEL.getListByFilter({
+                    fromDate, toDate, month, year, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor, projectsID, status, isExpired, read, isGrant, priority, reportType, 
+                    keyword,limit, lastestID, select, populates, 
+                    userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Name: Danh sách theo phân loại
+     * Author: HiepNH
+     * Code: 14/10/2022
+     */
+    getListByProperty: {
+        params: {
+            projectID   : { type: "string", optional: true },
+            contractID  : { type: "string", optional: true },
+            taskID       : { type: "string", optional: true },
+            belongSystem  : { type: "string", optional: true },
+            option      : { type: "string", optional: true },
+            optionArea      : { type: "string", optional: true },
+            optionGroup      : { type: "string", optional: true },
+            optionTime      : { type: "string", optional: true },
+            // assignee    : { type: "string", optional: true },
+            // author      : { type: "string", optional: true },
+            // contract    : { type: "string", optional: true },
+            // signature   : { type: "string", optional: true },
+            // area        : { type: "string", optional: true },
+            // fromDate    : { type: "string", optional: true },
+            // toDate      : { type: "string", optional: true },
+            // fromCreateAt: { type: "string", optional: true },
+            // toCreateAt  : { type: "string", optional: true },
+            
+            //_____________THÔNG SỐ MẶC ĐỊNH________________
+            keyword         : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                let { option, optionProcess, optionArea, optionGroup, optionTime, optionContract, optionAssignee, year, month, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+
+                console.log('==========Danh sách theo phân loại================')
+
+                let resultAfterCallHandler = await INSPECTION_DOC_MODEL.getListByProperty({
+                    option, optionProcess, optionArea, optionGroup, optionTime, optionContract, optionAssignee, year, month, projectID, contractID, parentAreaID, areaID, parentGroupID, groupID, statusNe, belongSystem, keyword, limit, lastestID, select, populates, sortKey, userID
+                    });
              
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

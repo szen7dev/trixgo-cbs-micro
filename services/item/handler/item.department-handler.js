@@ -22,6 +22,7 @@ module.exports = {
             type            : { type: "number" },
             name            : { type: "string" },
             sign            : { type: "string" },
+            location        : { type: "string" , optional: true  },
             startTime       : { type: "string" },
             expiredTime     : { type: "string" },
             milestones      : { type: "number" },
@@ -56,7 +57,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones,
+                let { companyID, type, name, sign, location, startTime, expiredTime, milestones, completedMilestones,
                     budget,
                     vatBudget,
                     forecastBudget,
@@ -73,7 +74,7 @@ module.exports = {
                     companyID = company._id
                 }
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
-                    ctx, authorID: userID, company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones,
+                    ctx, authorID: userID, company: companyID, type, name, sign, location, startTime, expiredTime, milestones, completedMilestones,
                     budget,
                     vatBudget,
                     forecastBudget,
@@ -202,6 +203,8 @@ module.exports = {
             numberOfPhotos                 : { type: "number", optional: true },
             numberOfInspections            : { type: "number", optional: true },
             numberFinishOfDocs             : { type: "number", optional: true },
+            inspectionTasks                 : { type: "number", optional: true },
+            completedInspectionTasks            : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -217,7 +220,7 @@ module.exports = {
                     contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
                     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-                    numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs } = ctx.params;
+                    numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs, inspectionTasks, completedInspectionTasks } = ctx.params;
 
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.update({
                     departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
@@ -229,7 +232,8 @@ module.exports = {
                     contractOtherDeduction, contractRecommendedPayment,  contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
                     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-                    numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
+                    numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs, inspectionTasks, completedInspectionTasks,
+                     ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -239,6 +243,34 @@ module.exports = {
         }
     },
 
+    /**
+     * Name: Cập nhật giá trị
+     * Author: Hiepnh
+     * Date: 15/04/2022
+     */
+    updateValue: {
+        auth: "required",
+        params: {
+            option                      : { type: "number", optional: true },
+            projectID                   : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { option, projectID } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler=await ITEM__DEPARTMENT_MODEL.updateValue({
+                    option, projectID, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 
     /**
 	 * Dev: Depv

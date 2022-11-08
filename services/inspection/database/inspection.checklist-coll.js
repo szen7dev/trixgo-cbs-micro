@@ -9,28 +9,25 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_checklist", {
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_doc'
     },
-    //_________Template
-    template: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'inspection_template_checklist'
-    },
     //_________Tên checklist kiểm tra
     name: String,
-    //_________Trạng thái (1-Đang triển khai/2-Đã hoàn thành)
+    /**
+    * Trạng thái  
+    * 1-Đang triển khai
+    * 2-Hoàn thành
+    */
+    description : String,
     status: {
         type: Number,
         default: 1
     },
-    //_________Người xác nhận hoàn thành
+    //_________Người xác nhận
     approver: {
         type: Schema.Types.ObjectId,
         ref : 'user'
     },
-    //_________Thời gian phê duyệt
-    timeApproved: {
-        type : Date,
-        default: null
-    },
+    //_________Thời gian xác nhận
+    timeApproved: Date,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

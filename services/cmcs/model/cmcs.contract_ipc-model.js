@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -9,10 +9,16 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const XlsxPopulate                      = require('xlsx-populate');
+const path                              = require('path');
+const fs                                = require('fs');
+const moment                            = require('moment');
+const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
  * import inter-coll, exter-coll
  */
+const ITEM__CONTRACT_COLL              = require('../../item/database/item.contract-coll');
 const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
@@ -29,17 +35,17 @@ const { ResumeToken }                   = require('mongodb');
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {               
+class Model extends BaseModel {
     constructor() {
         super(CMCS__CONTRACT_IPC_COLL);
     }
-    
+
     /**
-     * Name: insert contract ipc 
+     * Name: insert contract ipc
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    insert({ type, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx  }) { 
+    insert({ type, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx  }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -59,7 +65,7 @@ class Model extends BaseModel {
                 const { outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, company, project } = infoContract.data;
 
                 let dataInsert = { userCreate: userID, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, company, project, contract: contractID };
-                
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -97,7 +103,7 @@ class Model extends BaseModel {
                     dataInsert.vatAcceptance     = vatAcceptance;
                 }
                 //______Giá trị nghiệm thu phát sinh trước VAT(3)
-                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){   
+                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){
                     dataInsert.plusAcceptance     = plusAcceptance;
                 }
                 //_____Giá trị nghiệm thu phát sinh phần VAT(4)
@@ -105,19 +111,19 @@ class Model extends BaseModel {
                     dataInsert.vatPlusAcceptance  = vatPlusAcceptance;
                 }
                 //_____Giá trị giữ lại (5)
-                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){  
+                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){
                     dataInsert.retainedValue     = retainedValue;
                 }
                 //_____Thu hồi tạm ứng (6)
-                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){  
+                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){
                     dataInsert.advancePaymentDeduction     = advancePaymentDeduction;
                 }
                 //_____Khấu trừ khác (nếu có) (7)
-                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){   
+                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){
                     dataInsert.otherDeduction     = otherDeduction;
                 }
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
-                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){ 
+                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){
                     dataInsert.recommendedPayment     = recommendedPayment;
                 }
 
@@ -127,27 +133,38 @@ class Model extends BaseModel {
                 }
 
                 // //_____Đã giải ngân (10)
-                // if(!isNaN(amountPaid) && Number(amountPaid) >= 0){    
+                // if(!isNaN(amountPaid) && Number(amountPaid) >= 0){
                 //     dataInsert.amountPaid     = amountPaid;
                 // }
 
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){  
+                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){
                     dataInsert.remainingPayment     = remainingPayment;
                 }
-                
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_contract_ipc " });
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
-                 */    
+                 */
                 await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 2,
                     contractID,
                     userID
                 })
+
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */
+                if(outin == 2){
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                        option: 2,
+                        projectID: `${project}`,
+                        userID
+                    })
+                }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -157,26 +174,32 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update contract ipc 
+     * Name: update contract ipc
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    update({ 
-        contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
+    update({
+        contractIpcID, plan, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
     }){
+        // console.log({contractIpcID, plan, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID})
         const that = this
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
                 if(!checkObjectIDs(contractIpcID))
                     return resolve({ error: true, message: "Mã IPC không hợp kệ", keyError: "contract_ipc_invalid" })
 
                 let infoContractIPC = await CMCS__CONTRACT_IPC_COLL.findById(contractIpcID);
                 let contractID = infoContractIPC.contract;
+                let projectID = infoContractIPC.project;
+
+                if(plan){
+                    dataUpdate.plan = plan;
+                }
 
                 if(type){
                     dataUpdate.type = type;
@@ -213,7 +236,7 @@ class Model extends BaseModel {
                 }
 
                 //______Giá trị nghiệm thu phát sinh trước VAT(3)
-                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){    
+                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){
                     dataUpdate.plusAcceptance = plusAcceptance;
                 }
 
@@ -223,22 +246,22 @@ class Model extends BaseModel {
                 }
 
                 //_____Giá trị giữ lại (5)
-                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){    
+                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){
                     dataUpdate.retainedValue = retainedValue;
                 }
 
                 //_____Thu hồi tạm ứng (6)
-                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){    
+                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){
                     dataUpdate.advancePaymentDeduction = advancePaymentDeduction;
                 }
 
                 //_____Khấu trừ khác (nếu có) (7)
-                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){    
+                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){
                     dataUpdate.otherDeduction = otherDeduction;
                 }
-                
+
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
-                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){    
+                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){
                     dataUpdate.recommendedPayment = recommendedPayment;
                 }
 
@@ -248,12 +271,12 @@ class Model extends BaseModel {
                 }
 
                 //_____Đã giải ngân (10)
-                // if(!isNaN(amountPaid) && Number(amountPaid) >= 0){   
+                // if(!isNaN(amountPaid) && Number(amountPaid) >= 0){
                 //     dataUpdate.amountPaid = amountPaid;
                 // }
 
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){    
+                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){
                     dataUpdate.remainingPayment = remainingPayment;
                 }
 
@@ -262,31 +285,47 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Cập nhật thất bại" ,keyError: "can't_update_contract_ipc", status: 403 });
 
                 /**
+                 * CẬP NHẬT PHÂN LOẠI TẠM ỨNG/THANH TOÁN CHO CÁC ĐỢT THANH TOÁN
+                 */
+                await CMCS__CONTRACT_PAYMENT_COLL.updateMany(
+                    { ipc: ObjectID(contractIpcID) },
+                    { $set: {"type": type} }
+                 );
+
+                /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
-                 */    
-                console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
+                 */
                 let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 2,
                     contractID: `${contractID}`,
                     userID
                 })
 
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 2,
+                    projectID: `${projectID}`,
+                    userID
+                })
+
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
-                console.log(error)   
+                console.log(error)
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
     /**
-     * Name  : Cập nhật giá trị 
+     * Name  : Cập nhật giá trị
      * Author: Hiepnh
-     * Date  : 12/4/2022 
+     * Date  : 12/4/2022
      */
-    updateValue({ 
+    updateValue({
         option, ipcID, userID
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -308,18 +347,18 @@ class Model extends BaseModel {
                 // console.log(infoIpc)
                 // console.log(infoIpc.recommendedPayment)
                 // console.log({recommendedPayment})
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
-                
-                /** 
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-             
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -337,25 +376,26 @@ class Model extends BaseModel {
                             $match: {
                                 ipc: ObjectID(ipcID),
                             }
-                        }, 
+                        },
                         {
                             $group: {
                                 _id: { },
                                 amount: { $sum: "$value" },
                             }
-                        }, 
+                        },
                     ])
-
                     // console.log(listData)
 
                     if(listData && listData.length){
                         dataUpdate.amountPaid = Number(listData[0].amount)
                         dataUpdate.remainingPayment = Number(recommendedPayment) - Number(listData[0].amount)
+                    }else{
+                        dataUpdate.amountPaid = 0
+                        dataUpdate.remainingPayment = Number(recommendedPayment)
                     }
                 }
                 // console.log("dataUpdate====================>>>>>>>>>>>>>>")
                 // console.log(dataUpdate)
-                
 
                 let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipcID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
@@ -369,18 +409,19 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove contract ipc 
+     * Name: Remove contract ipc
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    
+
     /**
-     * Name: get info contract ipc 
+     * Name: get info contract ipc
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ contractIpcID, 
+    getInfo({ contractIpcID,
         select, populates }){
+            console.log({______________contractIpcID:contractIpcID})
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(contractIpcID))
@@ -413,12 +454,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách contract ipc 
+     * Name  : Danh sách contract ipc
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({ isMember, option, companyID, projectID, contractID, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -433,14 +474,14 @@ class Model extends BaseModel {
                  let sortBy;
                  let conditionObj = {};
                  let keys	     = ['createAt__-1', '_id__-1'];
-             
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                  //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-				
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -457,7 +498,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 if(!isNaN(type) && Number(type) > 0){
                     conditionObj.type = Number(type)
                 }
@@ -478,7 +519,7 @@ class Model extends BaseModel {
                     }else{
                         if(companyID && checkObjectIDs(companyID)){
                             conditionObj.company = ObjectID(companyID)
-                        }        
+                        }
                     }
                 }
 
@@ -515,11 +556,11 @@ class Model extends BaseModel {
 
                     conditionObj.remainingPayment = {
                         $gt: 0
-                    }   
+                    }
 
                     // Tổng công nợ
                     if(!isNaN(option) && Number(option)=== 1){
-                       
+
                     }
 
                     // Công nợ trong kỳ
@@ -565,14 +606,14 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await CMCS__CONTRACT_IPC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
-                
+                    .lean();
+
                 // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -595,7 +636,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -607,8 +648,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, 
+    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, plan,
         keyword, limit = 20, lastestID, select, populates= {} }){
+            // console.log({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, plan,
+            //     keyword, limit, lastestID, select, populates })
         return new Promise(async resolve => {
             try {
                 if(limit > 20){
@@ -618,11 +661,11 @@ class Model extends BaseModel {
                 }
 
                 let sortBy;
-                let conditionObj = {};
+                let conditionObj = {}
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 // Điều kiện để Aggregate
-                let conditionObjAgg = {}, conditionObjYear = {}
+                let conditionObjAgg = {}, conditionObjYear = {}, conditionProjectObj = {}
 
                 if(month && Number(month) > 0){
                     conditionObjYear.month = Number(month)
@@ -701,16 +744,25 @@ class Model extends BaseModel {
                     conditionObj.name = regExpSearch;
                 }
 
+                if(!plan){
+                    conditionProjectObj = {
+                        year : {$year : "$date"},
+                        month : {$month : "$date"},
+                    }
+                }else{
+                    conditionProjectObj = {
+                        year : {$year : "$timeForPayment"},
+                        month : {$month : "$timeForPayment"},
+                    }
+                }
+
                 // Danh sách các Payment trong tháng, năm của công ty
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
                         $match: conditionObjAgg
                     },
                     {
-                        $project : {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                        }
+                        $project : conditionProjectObj
                     },
                     {
                         $match: conditionObjYear
@@ -718,8 +770,9 @@ class Model extends BaseModel {
                     {$sort: {"date": 1}}
                 ])
 
-                console.log(conditionObjAgg)
-                console.log(listData)
+                // console.log(conditionObjAgg)
+                // console.log(conditionProjectObj)
+                // console.log(listData)
 
                 conditionObj._id = {$in: listData.map(item=>item._id)}
 
@@ -775,16 +828,16 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message });
             }
         })
-    } 
+    }
 
     /**
-     * Name: Gom nhóm theo đối tượng 
+     * Name: Gom nhóm theo đối tượng
      * Author: Hiepnh
      * Date: 04/04/2022
      */
     getAmountByObject({ userID, outin, companyID, projectID, contractID }){
-        console.log('=================IPC:getAmountByObject==>>>>>>>>>>>')
-        console.log({ userID, outin, companyID, projectID, contractID })
+        // console.log('=================IPC:getAmountByObject==>>>>>>>>>>>')
+        // console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -822,7 +875,7 @@ class Model extends BaseModel {
                 let listData1 = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
                         $match: conditionObj1
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
@@ -837,7 +890,7 @@ class Model extends BaseModel {
                             amountPaid: { $sum: "$amountPaid" },
                             remainingPayment: { $sum: "$remainingPayment" }
                         }
-                    }, 
+                    },
                 ])
                 // console.log('listData1')
                 // console.log(listData1)
@@ -845,7 +898,7 @@ class Model extends BaseModel {
                 let listData2 = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
                         $match: conditionObj2
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
@@ -860,7 +913,7 @@ class Model extends BaseModel {
                             amountPaid: { $sum: "$amountPaid" },
                             remainingPayment: { $sum: "$remainingPayment" }
                         }
-                    }, 
+                    },
                 ])
                 // console.log('listData2')
                 // console.log(listData2)
@@ -899,69 +952,157 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo tháng trong năm (BỎ)
+     * Name: Gom nhóm theo tháng trong năm
      * Author: Hiepnh
      * Date: 5/4/2022
      */
-    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
+    getAmountByMonth({ userID, companyID, projectID, contractID, outin, year, option, plan }){
+        console.log({ userID, companyID, projectID, contractID, outin, year, option, plan })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
 
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = ObjectID(projectID)
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = Number(outin)
+                }
 
-                    conditionGroup = {
-                        _id: { month: "$month", year: "$year" },
-                        amount: { $sum: "$amount" },
-                    }
+                 /**
+                 * Lấy số liệu theo hợp đồng, dự án hoặc theo năm
+                 */
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
                 }else{
-                    if(companyID && checkObjectIDs(companyID)){
-                        conditionObj.company = ObjectID(companyID)
-    
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
+                }
+
+                if(!plan){
+                    console.log('SỐ LIỆU THỰC TẾ====================================')
+                    if(!option){
+                        // console.log('SỐ LIỆU NĂM NAY====================================')
                         conditionGroup = {
-                            _id: { month: "$month" },
+                            _id: { month: "$month", year: "$year" },
                             amount: { $sum: "$amount" },
                         }
+    
+                        if(!isNaN(year) && Number(year) >= 0){
+                            conditionObjYear = {
+                                "year": Number(year),
+                            }
+                        }
+    
+                    }else{
+                        if(option && option == 1){
+                            // console.log('SỐ LIỆU NĂM NGOÁI====================================')
+    
+                            conditionGroup = {
+                                _id: { year: "$year" },
+                                amount: { $sum: "$amount" },
+                            }
+    
+                            let firstDayOfLastYear = `${Number(year-1)}-01-01T00:00:00.000Z`;
+                            let lastDayOfLastYear
+    
+                            let thisYear = moment(new Date()).toDate().getFullYear()
+    
+                            if(Number(year) == Number(thisYear)){
+                                var today = new Date();
+                                //Sunday 4 September 2016 - Week 36
+                                // console.log({today})
+    
+                                lastDayOfLastYear = new moment(today).subtract(12, 'months').toDate();
+                                //Friday 4 September 2015 - Week 37
+                                // console.log({lastDayOfLastYear})
+                            }else{
+                                lastDayOfLastYear = `${Number(year-1)}-12-31T00:00:00.000Z`;
+                            }
+    
+                            conditionObj.date = {
+                                // $gte: moment(firstDayOfLastYear).toDate(),
+                                // $lt: moment(lastDayOfLastYear).toDate(),
+                                $gte: new Date(firstDayOfLastYear),
+                                $lte: new Date(lastDayOfLastYear)
+                            }
+                            console.log(conditionObj)
+                        }
+                    }
+    
+                    let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: {
+                                "_id.year": 1,
+                                "_id.month": 1,
+                            }
+                        }
+                    ])
+    
+                    return resolve({ error: false, data: listData });
+                }else{
+                    if(!option){
+                        console.log('SỐ LIỆU KẾ HOẠCH====================================')
+                        conditionGroup = {
+                            _id: { month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        if(!isNaN(year) && Number(year) >= 0){
+                            conditionObjYear = {
+                                "year": Number(year),
+                            }
+                        }
+
+                        let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : {
+                                    year : {$year : "$timeForPayment"},
+                                    month : {$month : "$timeForPayment"},
+                                    amount: { $sum: "$recommendedPayment" },
+                                }
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: {
+                                    "_id.year": 1,
+                                    "_id.month": 1,
+                                }
+                            }
+                        ])
+                        console.log(listData)
+
+                        return resolve({ error: false, data: listData });
+                    }else{
+
                     }
                 }
-
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj.outin = outin
-                }
-
-                if(!isNaN(year) && Number(year) >= 0){
-                    conditionObjYear = {
-                        "year": Number(year),
-                    }
-                }
-
-                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: conditionObj
-                    }, 
-                    {
-                        $project : { 
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    }, 
-                    {
-                        $group: conditionGroup
-                    },
-                    {
-                        $sort: {
-                            "_id.year": 1,
-                            "_id.month": 1,
-                        }
-                    } 
-                ])
-
-                return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -969,12 +1110,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo thuộc tính 
+     * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, outin, companyID, projectID, contractID, optionTime, option, debt, year, ctx }){
-        console.log({ userID, outin, companyID, projectID, contractID, optionTime, option, debt, year })
+        // console.log({ userID, outin, companyID, projectID, contractID, optionTime, option, debt, year })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
@@ -995,7 +1136,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // BÁO CÁO CÔNG NỢ
                 if(!isNaN(debt) && Number(debt) >= 0){
@@ -1014,7 +1155,7 @@ class Model extends BaseModel {
                         // Cấu hình thời gian để kiểm tra quá hạn
                         let start = new Date();
                         start.setHours(0,0,0,0);
-        
+
                         // Lấy việc quá hạn
                         conditionObj.timeForPayment = {
                             $lt: start,
@@ -1027,7 +1168,7 @@ class Model extends BaseModel {
                             $gt: 0
                         }
                     }
-                    
+
                     // Tổng hợp chung, không phân loại
                     conditionGroup = {
                         _id: { },
@@ -1061,7 +1202,7 @@ class Model extends BaseModel {
 
                         conditionPopulate = {
                             path: '_id.buyerInfo',
-                            select: '_id name sign',
+                            select: '_id name sign company',
                             model: 'contact'
                         }
 
@@ -1079,7 +1220,7 @@ class Model extends BaseModel {
 
                         conditionPopulate = {
                             path: '_id.sellerInfo',
-                            select: '_id name sign',
+                            select: '_id name sign company',
                             model: 'contact'
                         }
 
@@ -1087,7 +1228,7 @@ class Model extends BaseModel {
                             "_id.sellerInfo": 1,
                         }
                     }
-                    
+
                     // Theo Phụ trách
                     if(!isNaN(option) && Number(option) === 4){
                         conditionGroup = {
@@ -1122,7 +1263,7 @@ class Model extends BaseModel {
                         sortBy = {
                             "_id.chair": 1,
                         }
-                    }  
+                    }
 
                     // Theo Đơn vị
                     if(Number(option) === 6){
@@ -1150,10 +1291,15 @@ class Model extends BaseModel {
                             _id: { },
                             amount: { $sum: "$amount" },
                         }
-    
+
                         if(!isNaN(year) && Number(year) >= 0){
                             conditionObjYear = {
                                 "year": Number(year),
+                            }
+                        }else{
+                            conditionGroup = {
+                                _id: { year: "$year" },
+                                amount: { $sum: "$amount" },
                             }
                         }
 
@@ -1210,7 +1356,7 @@ class Model extends BaseModel {
                                 "_id.sellerInfo": 1,
                             }
                         }
-                        
+
                         // Theo Phụ trách
                         if(!isNaN(option) && Number(option) === 4){
                             conditionGroup = {
@@ -1245,7 +1391,7 @@ class Model extends BaseModel {
                             sortBy = {
                                 "_id.chair": 1,
                             }
-                        }  
+                        }
 
                         // Theo Đơn vị
                         if(Number(option) === 6){
@@ -1332,7 +1478,7 @@ class Model extends BaseModel {
                                 "_id.sellerInfo": 1,
                             }
                         }
-                        
+
                         // Theo Phụ trách
                         if(!isNaN(option) && Number(option) === 4){
                             conditionGroup = {
@@ -1367,7 +1513,7 @@ class Model extends BaseModel {
                             sortBy = {
                                 "_id.chair": 1,
                             }
-                        }  
+                        }
 
                         // Theo Đơn vị
                         if(Number(option) === 6){
@@ -1396,9 +1542,9 @@ class Model extends BaseModel {
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
                         $match: conditionObj
-                    }, 
+                    },
                     {
-                        $project : { 
+                        $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
@@ -1407,6 +1553,7 @@ class Model extends BaseModel {
                             real: 1,
                             field: 1,
                             buyerInfo: 1,
+                            sellerInfo: 1,
                             chair: 1,
                             personInCharge: 1,
                             dependentUnit: 1,
@@ -1416,13 +1563,13 @@ class Model extends BaseModel {
                     },
                     {
                         $match: conditionObjYear
-                    }, 
+                    },
                     {
                         $group: conditionGroup
-                    }, 
+                    },
                     {
                         $sort: sortBy
-                    } 
+                    }
                 ])
 
                 if(!isNaN(option) && Number(option) > 0){
@@ -1432,6 +1579,130 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Download IPC
+     * Author: HiepNH
+     * Date: 26/9/2022
+     */
+    downloadExcelIpcDetail({ option, ipcID, contractID, conditionDownload, userID }) {
+        // console.log({ option, ipcID, contractID, conditionDownload, userID })
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, infoIpc, infoContract
+
+                if(ipcID){
+                    console.log('===========CHI TIẾT 01 KỲ=========>>>>>>>>>>>>')
+
+                    // Thông tin thực hiện kỳ này
+                    infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
+                    console.log(infoIpc)
+
+                    conditionObj.contract = ObjectID(infoIpc.contract)
+
+                    infoContract = await ITEM__CONTRACT_COLL.findById(infoIpc.contract)
+
+                    // Lấy lũy kế tới cuối kỳ trước
+                    conditionObj.date = {
+                        // $gte: new Date(fromDate),
+                        $lt: new Date(infoIpc.date),
+                    }
+
+                }else{
+                    console.log('===========CHI TIẾT 01 HỢP ĐỒNG=========>>>>>>>>>>>>')
+
+                    infoContract = await ITEM__CONTRACT_COLL.findById(contractID)
+                    conditionObj.contract = ObjectID(contractID)
+                }
+
+                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            acceptance: { $sum: "$acceptance" },
+                            vatAcceptance: { $sum: "$vatAcceptance" },
+                            plusAcceptance: { $sum: "$plusAcceptance" },
+                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
+                            retainedValue: { $sum: "$retainedValue" },
+                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
+                            otherDeduction: { $sum: "$otherDeduction" },
+                            recommendedPayment: { $sum: "$recommendedPayment" },
+                            amountPaid: { $sum: "$amountPaid" },
+                            remainingPayment: { $sum: "$remainingPayment" },
+                        }
+                    },
+                ])
+
+                // console.log(infoContract)
+                console.log(listData[0])
+
+                if(option && option == 1){
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cmcs_ipc_report.xlsx')))
+                    .then(async workbook => {
+
+                        // Tiêu đề kỳ thanh toán
+                        if(ipcID){
+                            workbook.sheet("Report1").row(2).cell(1).value(infoIpc.name);
+                        }
+
+                        // Thông tin hợp đồng
+                        workbook.sheet("Report1").row(5).cell(3).value(infoContract.name);
+                        workbook.sheet("Report1").row(6).cell(3).value(infoContract.sign);
+                        workbook.sheet("Report1").row(7).cell(3).value(infoContract.date);
+                        workbook.sheet("Report1").row(8).cell(3).value(Number(infoContract.value+infoContract.vatValue));
+                        workbook.sheet("Report1").row(9).cell(3).value(Number(infoContract.plus+infoContract.vatPlus));
+                        workbook.sheet("Report1").row(10).cell(3).value(Number(infoContract.advancePaymentPaid));
+
+                        let indexExcel = 4;
+
+                        if(listData.length){
+                            /**
+                             * SỐ LIỆU LUỸ KẾ TỚI CUỐI KỲ TRƯỚC
+                             */
+                            workbook.sheet("Report1").row(12).cell(3).value(Number(listData[0].acceptance+listData[0].vatAcceptance+listData[0].plusAcceptance+listData[0].vatPlusAcceptance));
+                            workbook.sheet("Report1").row(13).cell(3).value(Number(listData[0].retainedValue));
+                            workbook.sheet("Report1").row(14).cell(3).value(Number(listData[0].advancePaymentDeduction))
+                            workbook.sheet("Report1").row(15).cell(3).value(Number(infoContract.advancePaymentOverage)) //** */
+                            workbook.sheet("Report1").row(16).cell(3).value(Number(listData[0].otherDeduction))
+                            workbook.sheet("Report1").row(17).cell(3).value(Number(listData[0].recommendedPayment))
+                            workbook.sheet("Report1").row(18).cell(3).value(Number(listData[0].amountPaid))
+                            workbook.sheet("Report1").row(19).cell(3).value(Number(listData[0].remainingPayment))
+
+                            /**
+                             * SỐ LIỆU KỲ NÀY
+                             */
+                            if(ipcID){
+                                workbook.sheet("Report1").row(21).cell(3).value(Number(infoIpc.acceptance+infoIpc.vatAcceptance+infoIpc.plusAcceptance+infoIpc.vatPlusAcceptance));
+                                workbook.sheet("Report1").row(22).cell(3).value(Number(infoIpc.retainedValue));
+                                workbook.sheet("Report1").row(23).cell(3).value(Number(infoIpc.advancePaymentDeduction))
+                                workbook.sheet("Report1").row(25).cell(3).value(Number(infoIpc.otherDeduction))
+                                workbook.sheet("Report1").row(26).cell(3).value(Number(infoIpc.recommendedPayment))
+                            }
+                        }
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `ipc_report_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+                        console.log({ result })
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+                }
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

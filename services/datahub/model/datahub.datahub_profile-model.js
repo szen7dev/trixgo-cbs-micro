@@ -30,23 +30,23 @@ class Model extends BaseModel {
     constructor() {
         super(DATAHUB_PROFILE_COLL);
     }
-    
+
     /**
 	 * Name: insert datahub profile
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
     insert({ company, name, files, userID }) {
         return new Promise(async resolve => {
-            try { 
+            try {
                 if(!checkObjectIDs(company))
                     return resolve({ error: true, message: "company invalid", keyError: 'params_invalid' });
 
                 let dataInsert = { company, name, files, userCreate: userID };
                 let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert) 
+                if (!infoAfterInsert)
                     return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_insert' });
-                
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -57,12 +57,12 @@ class Model extends BaseModel {
     /**
 	 * Name: update datahub profile
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
     update({ datahubProfileID, name, files, filesRemove, userID  }) {
         return new Promise(async resolve => {
             try {
-                
+
                 let dataUpdate = { userUpdate: userID };
                 if(name){
                     dataUpdate.name = name;
@@ -77,9 +77,9 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterUpdate = await DATAHUB_PROFILE_COLL.findByIdAndUpdate(datahubProfileID, dataUpdate, { new: true });
-                if (!infoAfterUpdate) 
+                if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
-                
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -88,46 +88,46 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub profile 
+	 * Name: Remove datahub profile
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
-	remove({ datahubProfileID }) { 
+	remove({ datahubProfileID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(datahubProfileID))
                     return resolve({ error: true, message: 'Mã datahubProfileID không hợp lệ', keyError: "datahubProfileID_invalid", status: 400 });
-                
+
                 let infoAterRemove = await DATAHUB_PROFILE_COLL.findByIdAndDelete(datahubProfileID)
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {               
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
 	/**
-	 * Name: get info datahub profile 
+	 * Name: get info datahub profile
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
-	getInfo({ datahubProfileID, select, populates }) { 
+	getInfo({ datahubProfileID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(datahubProfileID))
                     return resolve({ error: true, message: 'Request params datahubProfileID invalid', status: 400 });
-                
+
                  // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -150,32 +150,33 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /**
 	 * Dev: Depv
 	 * Func: Lấy danh sách datahub profile
 	 * Date: 26/10/2021
 	 */
-    getList({ userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getList({ contractorID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
-                let conditionObj = {};
-                let sortBy; 
+                if(!checkObjectIDs(userID) || !checkObjectIDs(contractorID))
+                    return resolve({ error: true, message: 'Request params userID|contractorID invalid', status: 400 });
+
+
+                let conditionObj = {company: contractorID};
+                let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20;
                 }
-
-				if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))

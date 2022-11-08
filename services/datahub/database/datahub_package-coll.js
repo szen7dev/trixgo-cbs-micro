@@ -11,39 +11,42 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
         type: Schema.Types.ObjectId,
         ref : "datahub_project"
     },
-    //_________Chủ đầu tư => được lấy theo trường "client" của project trong datahub_project
+    /**
+     * CÁC THÔNG TIN LẤY TỪ PROJECT
+     */
+    //_________Chủ đầu tư/khách hàng
     client: { 
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Tỉnh/Thành phố => được lấy theo thông tin của project trong của datahub_project
+    //_________Tỉnh/Thành phố
     area1: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Huyện/Quận => được lấy theo thông tin của project trong của datahub_project
+    //_________Huyện/Quận
     area2: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Xã/Phường => được lấy theo thông tin của project trong của datahub_project
+    //_________Xã/Phường
     area3: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Nhóm dự án => được lấy theo thông tin của project trong của datahub_project
+    //_________Nhóm dự án
     projectType: { type: Number, default: 1 },
-    //_________Loại công trình => được lấy theo thông tin của project trong của datahub_project
+    //_________Loại công trình
     buildingType: { type: Number, default: 1 },
-    //_________Cấp công trình => được lấy theo thông tin của project trong của datahub_project
+    //_________Cấp công trình
     buildingGrade: { type: Number, default: 1 },
-    //_________Số tầng hầm => được lấy theo thông tin của project trong của datahub_project
+    //_________Số tầng hầm
     basementNumber: { type: Number, default: 0 },
-    //_________Diện tích tầng hầm => được lấy theo thông tin của project trong của datahub_project
+    //_________Diện tích tầng hầm
     basementArea: { type: Number, default: 0 },
-    //_________Số tầng cao => được lấy theo thông tin của project trong của datahub_project
+    //_________Số tầng cao
     floorNumber: { type: Number, default: 0 },
-    //_________Diện tích tầng cao => được lấy theo thông tin của project trong của datahub_project
+    //_________Diện tích tầng cao
     floorArea: { type: Number, default: 0 }, 
     //_________Lĩnh vực (type=1)
     field: {
@@ -71,6 +74,12 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
     startTime: { type: Date, default: null },
     //_________Thực hiện đến ngày
     endTime: { type: Date, default: null },
+    /**
+     * Tính chất hợp đồng
+     * 1-Chính
+     * 2-Phụ
+     */
+    property: { type: Number, default: 1 },
     //_________Tình trạng hợp đồng
     status: { type: Number, default: 1 },
     //_________Tài liệu đính kèm

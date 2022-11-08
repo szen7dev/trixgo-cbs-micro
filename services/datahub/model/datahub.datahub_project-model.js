@@ -3,14 +3,20 @@
 /**
  * EXTERNAL PACKAGE
  */
-const stringUtils						 = require('../../../tools/utils/string_utils');
-const ObjectID                           = require('mongoose').Types.ObjectId;
-const BaseModel                                 	= require('../../../tools/db/base_model');
-const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
+const stringUtils						= require('../../../tools/utils/string_utils');
+const ObjectID                          = require('mongoose').Types.ObjectId;
+const BaseModel                         = require('../../../tools/db/base_model');
+const { RANGE_BASE_PAGINATION_V2 } 		= require('../../../tools/cursor_base/playground/index');
 const {
     checkObjectIDs,
     IsJsonString,
 } = require('../../../tools/utils/utils');
+const moment                            = require('moment')
+const XlsxPopulate                      = require('xlsx-populate');
+const path                              = require('path');
+const fs                                = require('fs');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**
  * CONSTANTS
  */
@@ -24,8 +30,10 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * COLLECTIONS
  */
-const DATAHUB_PROJECT_COLL           				= require('../database/datahub_project-coll');
-
+const AREA_COLL                         = require('../../item/database/item.area-coll');
+const COMPANY_COLL                      = require('../../auth/database/auth.company-coll');
+const DATAHUB_PROJECT_COLL           	= require('../database/datahub_project-coll');
+const DATAHUB_PACKAGE_COLL           	= require('../database/datahub_package-coll');
 class Model extends BaseModel {
 
     constructor() {
@@ -41,10 +49,26 @@ class Model extends BaseModel {
          basementArea, floorNumber, floorArea, status, userID, ctx }) {
         return new Promise(async resolve => {
             try { 
-                if(!name)
-                    return resolve({ error: true, message: "Tên datahub project không hợp lệ", keyError: 'name_invalid' });
+                if(!name || !checkObjectIDs(area3))
+                    return resolve({ error: true, message: "name|area3 không hợp lệ", keyError: 'name_invalid' });
 
-                let dataInsert = { name, userCreate: userID, userUpdate: userID };
+                let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
+                    areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
+                })
+
+                if(infoArea3?.data?.level != 3)
+                    return resolve({ error: true, message: "Khu vực chọn phải là phường/xã, không được chọn quận/huyện, tỉnh/thành phố", keyError: 'name_invalid' });
+
+                let dataInsert = { name, area3, userCreate: userID, userUpdate: userID };
+
+                let area2 = infoArea3?.data?.parent?._id;
+                let area1 = infoArea3?.data?.parent?.parent?._id;
+                if(checkObjectIDs(area2)){
+                    dataInsert.area2 = area2;
+                }
+                if(checkObjectIDs(area1)){
+                    dataInsert.area1 = area1;
+                }
 
                 if(client){
                     dataInsert.client = client;
@@ -52,22 +76,6 @@ class Model extends BaseModel {
 
                 if(address){
                     dataInsert.address = address;
-                }
-
-                if(area3){
-                    dataInsert.area3 = area3;
-                    // Call service area để lấy area1 và area2 => Xử lý sau
-                    let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
-                        areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
-                    })
-                    let area2 = infoArea3?.data?.parent?._id;
-                    let area1 = infoArea3?.data?.parent?.parent?._id;
-                    if(area2){
-                        dataInsert.area2 = area2;
-                    }
-                    if(area1){
-                        dataInsert.area1 = area1;
-                    }
                 }
                 
                 if(location){
@@ -134,10 +142,35 @@ class Model extends BaseModel {
         basementNumber, basementArea, floorNumber, floorArea, status, userID, ctx }) {
         return new Promise(async resolve => {
             try {
-                
-                let dataUpdate = { userUpdate: userID };
-                if(name){
-                    dataUpdate.name = name;
+                if(!name || !checkObjectIDs(area3))
+                    return resolve({ error: true, message: "name|area3 không hợp lệ", keyError: 'name_invalid' });
+
+                let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
+                    areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
+                })
+
+                // console.log(infoArea3?.data)
+                // console.log(infoArea3?.data?.level)
+
+                if(infoArea3?.data?.level != 3)
+                    return resolve({ error: true, message: "Khu vực chọn phải là phường/xã, không được chọn quận/huyện, tỉnh/thành phố", keyError: 'name_invalid' });
+
+                let dataUpdate = {name, area3, userUpdate: userID, modifyAt: Date.now() };
+                let objectUpdatePackage = {}
+
+                dataUpdate.area3 = area3;
+                objectUpdatePackage.area3 = area3;
+
+                let area2 = infoArea3?.data?.parent?._id;
+                let area1 = infoArea3?.data?.parent?.parent?._id;
+
+                if(checkObjectIDs(area2)){
+                    dataUpdate.area2 = area2;
+                    objectUpdatePackage.area2 = area2;
+                }
+                if(checkObjectIDs(area1)){
+                    dataUpdate.area1 = area1;
+                    objectUpdatePackage.area1 = area1;
                 }
 
                 if(client){
@@ -146,22 +179,6 @@ class Model extends BaseModel {
 
                 if(address){
                     dataUpdate.address = address;
-                }
-
-                if(area3){
-                    dataUpdate.area3 = area3;
-                     // Call service area để lấy area1 và area2 => Xử lý sau
-                     let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
-                        areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
-                    })
-                    let area2 = infoArea3?.data?.parent?._id;
-                    let area1 = infoArea3?.data?.parent?.parent?._id;
-                    if(area2){
-                        dataUpdate.area2 = area2;
-                    }
-                    if(area1){
-                        dataUpdate.area1 = area1;
-                    }
                 }
 
                 if(location){
@@ -178,30 +195,37 @@ class Model extends BaseModel {
 
                 if(projectType){
                     dataUpdate.projectType = projectType;
+                    objectUpdatePackage.projectType = projectType;
                 }
 
                 if(buildingType){
                     dataUpdate.buildingType = buildingType;
+                    objectUpdatePackage.buildingType = buildingType;
                 }
 
                 if(buildingGrade){
                     dataUpdate.buildingGrade = buildingGrade;
+                    objectUpdatePackage.buildingGrade = buildingGrade;
                 }
 
                 if(basementNumber){
                     dataUpdate.basementNumber = basementNumber;
+                    objectUpdatePackage.basementNumber = basementNumber;
                 }
 
                 if(basementArea){
                     dataUpdate.basementArea = basementArea;
+                    objectUpdatePackage.basementArea = basementArea;
                 }
 
                 if(floorNumber){
                     dataUpdate.floorNumber = floorNumber;
+                    objectUpdatePackage.floorNumber = floorNumber;
                 }
 
                 if(floorArea){
                     dataUpdate.floorArea = floorArea;
+                    objectUpdatePackage.floorArea = floorArea;
                 }
 
                 if(status){
@@ -211,6 +235,14 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await DATAHUB_PROJECT_COLL.findByIdAndUpdate(datahubProjectID, dataUpdate, { new: true });
                 if (!infoAfterUpdate) 
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
+
+                /**
+                 * CẬP NHẬT KHU VỰC CHO CÁC GÓI THẦU CỦA DỰ ÁN
+                 */
+                await DATAHUB_PACKAGE_COLL.updateMany(
+                    {project: datahubProjectID},
+                    {$set: objectUpdatePackage},
+                )    
                 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -380,6 +412,136 @@ class Model extends BaseModel {
             }
         })
     }
+
+
+     /**
+     * Dev: HiepNH
+     * Func: Download template import excel
+     * Date: 18/09/2022
+     */
+    downloadTemplateImportExcel({ userID }) {
+        return new Promise(async resolve => {
+            try {
+                let listArea  = await AREA_COLL.find({ }).populate({
+                    path: "parent",
+                    populate: {
+                        path: "parent"
+                    },
+                }).sort({_id: 1})
+                let listCompany = await COMPANY_COLL.find({ }).populate({
+                    path: "area",
+                    select: "name sign",
+                    populate: {
+                        path: "parent",
+                        select: "name sign",
+                        populate: {
+                            path: "parent",
+                            select: "name sign",
+                        },
+                    },
+                })
+                .sort({_id: 1})
+                let listProject  = await DATAHUB_PROJECT_COLL.find({ }).populate({
+                    path: "client area3",
+                    select: "name sign",
+                    populate: {
+                        path: "parent",
+                        populate: {
+                            path: "parent"
+                        },
+                    },
+                }).sort({_id: 1})
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/datahub_tem_1_list_project.xlsx')))
+                .then(async workbook => {
+                    var i = 3;
+                    listArea?.forEach((item, index) => {
+                        let nameFull = ''
+                        if(item.parent){
+                            nameFull = `${item.name}, ${item.parent.name}`
+
+                            if(item.parent.parent){
+                                nameFull = `${item.name}, ${item.parent.name}, ${item.parent.parent.name}`
+                            }
+                        }
+                        workbook.sheet("3-KhuVuc").row(i).cell(2).value(`${item._id}`);
+                        workbook.sheet("3-KhuVuc").row(i).cell(3).value(nameFull); 
+                        workbook.sheet("3-KhuVuc").row(i).cell(4).value(`${item.sign}`); 
+                        workbook.sheet("3-KhuVuc").row(i).cell(5).value(Number(1)); 
+                        i++
+                    });
+
+                    var i = 3;
+                    listCompany.forEach((item, index) => {
+                        // console.log(item.area)
+                        // console.log(item.birthDay)
+                        let nameFull = ''
+                        if(item.area && item.area.parent){
+                            nameFull = `${item.area.name}, ${item.area.parent.name}`
+
+                            if(item.area.parent.parent){
+                                nameFull = `${item.area.name}, ${item.area.parent.name}, ${item.area.parent.parent.name}`
+                            }
+                        }
+                        workbook.sheet("2-ChuDauTu").row(i).cell(2).value(`${item._id}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(3).value(`${item.name}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(4).value(`${item.sign}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(5).value(`${item.address}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(6).value(`${item.taxid}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(7).value(`${item.phone}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(8).value(`${item.email}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(9).value(`${item.description}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(10).value(item.birthDay);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(11).value(`${item.scale}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(12).value(nameFull);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(13).value(`${item.website}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(14).value(`${item.show}`);
+                        workbook.sheet("2-ChuDauTu").row(i).cell(15).value(Number(1));
+                        i++
+                    });
+
+                    var i = 3;
+                    listProject.forEach((item, index) => {
+                        workbook.sheet("1-DuAn").row(i).cell(2).value(`${item._id}`);
+                        workbook.sheet("1-DuAn").row(i).cell(3).value(`${item.name}`);
+                        workbook.sheet("1-DuAn").row(i).cell(4).value(`${item.sign}`);
+                        workbook.sheet("1-DuAn").row(i).cell(5).value(`${item.client.name}`);
+                        workbook.sheet("1-DuAn").row(i).cell(6).value(`${item.address}`);
+                        workbook.sheet("1-DuAn").row(i).cell(7).value(`${item.area3.name}, ${item.area3.parent.name}, ${item.area3.parent.parent.name}`);
+                        workbook.sheet("1-DuAn").row(i).cell(8).value(`${item.location}`);
+                        workbook.sheet("1-DuAn").row(i).cell(9).value(`${item.note}`);
+                        workbook.sheet("1-DuAn").row(i).cell(10).value(`${item.projectType}`);
+                        workbook.sheet("1-DuAn").row(i).cell(11).value(`${item.buildingType}`);
+                        workbook.sheet("1-DuAn").row(i).cell(12).value(`${item.buildingGrade}`);
+                        workbook.sheet("1-DuAn").row(i).cell(13).value(`${item.basementNumber}`);
+                        workbook.sheet("1-DuAn").row(i).cell(14).value(`${item.basementArea}`);
+                        workbook.sheet("1-DuAn").row(i).cell(15).value(`${item.floorNumber}`);
+                        workbook.sheet("1-DuAn").row(i).cell(16).value(`${item.floorArea}`);
+                        workbook.sheet("1-DuAn").row(i).cell(17).value(`${item.status}`);
+                        workbook.sheet("1-DuAn").row(i).cell(18).value(Number(1));
+                        i++
+                    });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `temp_import_datahub_project_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+                    fs.unlinkSync(pathWriteFile);
+                    console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });                         
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

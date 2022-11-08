@@ -22,7 +22,9 @@ const { INSURANCE_STATUS }              = require('../../../tools/constants');
  * COLLECTIONS
  */
 const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll');
+const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
+const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll')
 
 class Model extends BaseModel {
 
@@ -564,12 +566,12 @@ class Model extends BaseModel {
     getList({
         userID, companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
         insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
-        isExportExcel,
+        isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
         keyword, limit = 10, lastestID, select, populates = {} }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 } else{
                     limit = +limit
                 }
@@ -604,37 +606,30 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                //
+
+                // Lấy tất cả
                 if(isMember){
-                    // // Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
+                    // Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
                     let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
-                    // // console.log(listDepartment)
-                    // // console.log(listDepartment.map(item=>item._id))
-
-                    // // conditionObj.department = {$in: listDepartment.map(item=>item._id) }
-
-                    // // Hoặc lấy theo công ty của userID, hoặc Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
                     conditionObj.$or = [
                         { company: companyID },
                         { department: {$in: listDepartment.map(item=>item._id) } },
                     ]
-                    // // console.log(conditionObj)
-
-                    // if(companyID){
-                    //     conditionObj.company = companyID
-                    // }
-
-                    // if(checkObjectIDs(departmentID)){
-                    //     conditionObj.department = departmentID
-                    // }
                 }else{
-                    // Lấy nhân sự theo công ty
-                    if(checkObjectIDs(companyID)){
-                        conditionObj.company = companyID
-                    }
+                    if(isPartner == 1){
+                        // Lấy nhân sự theo đối tác
+                        let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
+                        conditionObj.department = { $in: listDepartment.map(item=>item._id) };
+                        conditionObj.company = { $ne: companyID }
+                    }else{
+                        // Lấy nhân sự theo công ty
+                        if(checkObjectIDs(companyID)){
+                            conditionObj.company = companyID
+                        }
 
-                    if(checkObjectIDs(departmentID)){
-                        conditionObj.department = departmentID
+                        if(checkObjectIDs(departmentID)){
+                            conditionObj.department = departmentID
+                        }
                     }
                 }
 
@@ -699,7 +694,7 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
+                    let regSearch = new RegExp(keyword, 'i');   
                     let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
                     conditionObj.$and = [
                         {
@@ -719,6 +714,96 @@ class Model extends BaseModel {
                     ]
                 }
 
+                // Trình độ học vấn
+                if(educationalBackground2){
+                    // Call service sau
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, educationalBackground2 });
+                    let arrContactIDForEducationBG2 = arrContact.map(item => {
+                        return item._id.toString()
+                    })
+                    conditionObj.documents = { $in : arrContactIDForEducationBG2 }
+                }
+
+                let arrContactID = [];
+                // Chuyên ngành
+                if(field2 && field2 != 0){
+                    // Call service sau
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, field2 }, { contact: 1 , _id: 0});
+                    let arrContactIDForField2 = arrContact.map(item => {
+                        return item.contact.toString()
+                    })
+                    let dataUnique = [...new Set(arrContactIDForField2)];
+                    if(!arrContactID.length){
+                        arrContactID = dataUnique;
+                    }else{
+                        arrContactID = arrContactID.filter(item => dataUnique.includes(item));
+                    }
+                }
+
+                // Loại chứng chỉ
+                if(typeCertificate){
+                    // conditionObj.educationalBackground = educationalBackground
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, certificateType: typeCertificate });
+
+                    let arrContactIDForTypeCertificate = arrContact.map(item => {
+                        return item.contact.toString();
+                    })
+
+                    let dataUnique = [...new Set(arrContactIDForTypeCertificate)];
+
+                    if(!arrContactID.length){
+                        arrContactID = dataUnique;
+                    }else{
+                        arrContactID = arrContactID.filter(item => dataUnique.includes(item));
+                    }
+                }
+
+                // lĩnh vực chính chỉ
+                if(certificateName){
+                    // conditionObj.educationalBackground = educationalBackground
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, certificateName }, { contact: 1 , _id: 0});
+                    let arrContactIDForCertificateName = arrContact.map(item => {
+                        return item.contact.toString()
+                    })
+                    let dataUnique = [...new Set([...arrContactIDForCertificateName])];
+
+                    if(!arrContactID.length){
+                        arrContactID = dataUnique;
+                    }else{
+                        arrContactID = arrContactID.filter(item => arrContactIDForCertificateName.includes(item));
+                    }
+                }
+
+                // Hạng chứng chỉ (1/2/3/4-Nếu)
+                if(certificateGrade){
+                    // conditionObj.educationalBackground = educationalBackground
+                    let arrContact = await CONTACT_DOCUMENT_COLL.find({ company: companyID, certificateGrade: Number(certificateGrade) }, { contact: 1, _id: 0});
+                    let arrContactIDForCertificateGrade = arrContact.map(item => {
+                        return item.contact.toString();
+                    })
+                    let dataUnique = [...new Set([...arrContactIDForCertificateGrade])];
+
+                    if(!arrContactID.length){
+                        arrContactID = dataUnique;
+                    }else{
+                        arrContactID = arrContactID.filter(item => arrContactIDForCertificateGrade.includes(item));
+                    }
+                }
+
+                //  Check thời hạng hợp đồng còn 4 tháng là hết hạn
+                if(isContractExpire4month == 1){
+                    var monthAdd4 = new Date();
+                    monthAdd4.setMonth(monthAdd4.getMonth() + 4);   
+     
+                    conditionObj.contractExpire = {
+                        $gte: new Date(),
+                        $lte: monthAdd4
+                    }
+                }
+
+                if(arrContactID.length){
+                    conditionObj._id = { $in: [...new Set([...arrContactID])] }
+                }
                 /**
                  * Purpose: Sử dụng trong export excel nhân sự (theo bộ lọc)
                  * Function: exportHuman (model)
@@ -744,7 +829,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy                = dataPagingAndSort.data.sort;
                 }
-
                 let infoDataAfterGet = await ITEM__CONTACT_COLL
                     .find(conditionObj)
                     .limit(+limit+1)
@@ -897,28 +981,27 @@ class Model extends BaseModel {
             try {
                 const validation = validateParamsObjectID({ userID, companyID });
                 if(validation.error) return resolve(validation);
+                // console.log({ filterParams })
 
                 let conditionObj = {};
                 const { data, error } = await this.getList({
                     ...filterParams,
                     userID,
                     companyID,
-                    isMember: 1,
+                    type: 1,
+                    // isMember: 1,
                     isExportExcel: true
                 });
 
                 if(!error) {
                     conditionObj = { ...data };
                 }
+                // console.log({ conditionObj, companyID })
 
                 const listHuman = await ITEM__CONTACT_COLL
                     .find(conditionObj)
                     .populate({
-                        path: 'position workingStatus educationalBackground contractType department documents certificateName',
-                        populate: {
-                            path: 'documents.educationalBackground2',
-                            select: 'name'
-                        }
+                        path: 'position workingStatus educationalBackground contractType department documents'
                     })
                     .lean();
 
@@ -930,6 +1013,10 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
+
+                await ITEM__CONTACT_COLL.populate(listHuman, {
+                    path: 'documents.certificateName'
+                })
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/human_1_HumanInCompany.xlsm')))
                     .then(async workbook => {
@@ -949,6 +1036,7 @@ class Model extends BaseModel {
                         }
 
                         let indexExcel = 4;
+                        const DATE_FORMAT = 'DD/MM/YYYY';
                         const currentYear = new Date().getFullYear();
 
                         workbook.sheet("DanhSachNhanSu").row(1).cell(1).value(`DANH SÁCH CÁN BỘ ${infoCompany?.name}`);
@@ -956,13 +1044,34 @@ class Model extends BaseModel {
                         listHuman.map((human, index) => {
                             const {
                                 name, position, department, workingStatus, birthday, workStartDate,
-                                contractType, contractExpire, certificateName,
+                                contractType, contractExpire, documents,
                                 insuranceNumber, taxid, phone, identity, dateProvice, place, note,
                             } = human;
 
                             let graduationYear = 0;
+                            let trainingPlace = '';
+                            let certificateGrade = '';
+                            let certificateName = '';
+                            let certificatePeriod = '';
+
                             if(human.graduationYear) {
                                 graduationYear = new Date(human.graduationYear).getFullYear();
+                            }
+
+                            if(documents && documents.length) {
+                                documents.map(doc => {
+                                    // Trình độ học vấn
+                                    if(doc.type === 4) {
+                                        trainingPlace = doc.workplace;
+                                    }
+
+                                    // Bằng cấp chứng chỉ
+                                    if(doc.type === 5) {
+                                        certificateGrade = doc.certificateGrade;
+                                        certificateName = doc.certificateName?.name;
+                                        certificatePeriod = doc.toDate;
+                                    }
+                                })
                             }
 
                             const educationalBackground = human.educationalBackground?.map(item => item.name).join(', ');
@@ -970,68 +1079,90 @@ class Model extends BaseModel {
                             let humanInsuranceStatus = human.insuranceStatus || 1;
                             const insuranceStatus = `${INSURANCE_STATUS[--humanInsuranceStatus].text}`;
 
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(1).value(index+1);
+                            const currRow = workbook.sheet("DanhSachNhanSu").row(indexExcel);
+
+                            currRow.cell(1).value(index+1);
                             // Họ và tên
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(2).value(name);
+                            currRow.cell(2).value(name);
                             // Chức vụ
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(3).value(position?.name);
+                            currRow.cell(3).value(position?.name);
                             // Phòng ban
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(4).value(department?.name);
+                            currRow.cell(4).value(department?.name);
                             // Tình trạng làm việc
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(5).value(workingStatus?.name);
+                            currRow.cell(5).value(workingStatus?.name);
                             // Ngày tháng năm sinh
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(6).value(birthday ? moment(birthday).format('DD/MM/YYYY') : '');
+                            if(birthday) {
+                                currRow.cell(6).value(moment(birthday).format(DATE_FORMAT));
+                            }
                             // Thời gian tuyển dụng
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(7).value(workStartDate ? moment(workStartDate).format('DD/MM/YYYY') : '');
+                            if(workStartDate) {
+                                currRow.cell(7).value(moment(workStartDate).format(DATE_FORMAT));
+                            }
                             // Chuyên môn/Trình độ học vấn
-                            workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(8).value(educationalBackground);
+                            currRow.cell(8).value(educationalBackground);
                             // Nơi đào tạo
-                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(9).value('Nơi đào tạo');
+                            trainingPlace && currRow.cell(9).value(trainingPlace);
 
                             if(graduationYear) {
                                 // Năm tốt nghiệp
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(10).value(graduationYear);
+                                currRow.cell(10).value(graduationYear);
                                 // Năm kinh nghiệm
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(11).value(currentYear - graduationYear);
+                                currRow.cell(11).value(currentYear - graduationYear);
                             }
 
                             // Lĩnh vực chứng chỉ
-                            if(certificateName?.description) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(12).value(certificateName.description);
-                            }
+                            certificateName && currRow.cell(12).value(certificateName);
                             // Hạng chứng chỉ
-                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(13).value('Hạng chứng chỉ');
+                            certificateGrade && currRow.cell(13).value(`Hạng ${certificateGrade}`);
+
                             // Ngày hết hạn chứng chỉ
-                            // workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(14).value('Ngày hết hạn chứng chỉ');
+                            if(certificatePeriod) {
+                                currRow.cell(14).value(moment(certificatePeriod).format(DATE_FORMAT));
+                            }
+
                             // Loại hợp đồng
                             if(contractType?.name) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(15).value(contractType.name);
+                                currRow.cell(15).value(contractType.name);
                             }
                             // Thời hạn hợp đồng
                             if(contractExpire) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(16).value(moment(contractExpire).format('DD/MM/YYYY'));
+                                currRow.cell(16).value(moment(contractExpire).format(DATE_FORMAT));
                             }
 
                             // Số sổ BHXH
-                            insuranceNumber && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(17).value(insuranceNumber);
+                            insuranceNumber && currRow.cell(17).value(insuranceNumber);
                             // Mã số thuế
-                            taxid && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(18).value(taxid);
+                            taxid && currRow.cell(18).value(taxid);
                             // Số điện thoại
-                            phone && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(19).value(phone);
+                            phone && currRow.cell(19).value(phone);
                             // Số CCCD
-                            identity && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(20).value(identity);
+                            identity && currRow.cell(20).value(identity);
                             // Ngày cấp CCCD
                             if(dateProvice) {
-                                workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(21).value(moment(dateProvice).format('DD/MM/YYYY'));
+                                currRow.cell(21).value(moment(dateProvice).format(DATE_FORMAT));
                             }
                             // Nơi cấp CCCD
-                            place && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(22).value(place);
+                            place && currRow.cell(22).value(place);
                             // Tình trạng sổ BHXH
-                            insuranceStatus && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(23).value(insuranceStatus);
+                            insuranceStatus && currRow.cell(23).value(insuranceStatus);
                             // Ghi chú
-                            note && workbook.sheet("DanhSachNhanSu").row(indexExcel).cell(24).value(note);
+                            note && currRow.cell(24).value(note);
 
                             indexExcel++;
+                        })
+
+                        // const rangeUsed = workbook.sheet("DanhSachNhanSu").usedRange();
+                        const range = workbook.sheet('DanhSachNhanSu').range(`A4:X${listHuman.length + 3}`);
+
+                        range.style({
+                            fontFamily: 'Times New Roman',
+                            fontColor: 'black',
+                            fontSize: 13,
+                            bold: false,
+                            horizontalAlignment: 'center',
+                            border: true,
+                            borderColor: 'black',
+                            wrapText: true,
                         })
 
                         const now = new Date();
@@ -1040,12 +1171,128 @@ class Model extends BaseModel {
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                         await workbook.toFileAsync(pathWriteFile);
-
                         const result = await uploadFileS3(pathWriteFile, fileName);
                         fs.unlinkSync(pathWriteFile);
 
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     });
+            } catch (error) {
+                console.error(error)
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Danh bạ (bên mua, bên bán) mà user được quyền truy cập theo hợp đồng
+     * Author: HiepNH
+     * Code  : 7/9/2022
+     */
+    getListAccessByContract({
+        userID, option,
+        keyword, limit = 10, lastestID, select, populates = {} }) {
+            console.log({option,keyword,populates})
+        return new Promise(async (resolve) => {
+            try {
+                if(limit > 20){
+                    limit = 20
+                } else{
+                    limit = +limit
+                }
+
+                // Danh sách hợp đồng mà user là members
+                let listContractAccess = await ITEM__CONTRACT_COLL.find({members: {$in: [userID]}}).select('name sign buyerInfo sellerInfo')
+                // console.log(listContractAccess)
+
+                /**
+                 * DECALARTION VARIABLE
+                 */
+                let conditionObj = { };
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(option && option == 1){
+                    console.log('===========Bên bán================')
+                    conditionObj._id = {$in: listContractAccess.map(item=>item.sellerInfo)}
+                }
+
+                if(option && option == 2){
+                    console.log('===========Bên mua================')
+                    conditionObj._id = {$in: listContractAccess.map(item=>item.buyerInfo)}
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
+                // console.log(conditionObj)
+                
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj = dataPagingAndSort?.data?.find;
+					sortBy       = dataPagingAndSort?.data?.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy                = dataPagingAndSort?.data?.sort;
+                }
+
+                let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	    = null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor
+                }, status: 200 });
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

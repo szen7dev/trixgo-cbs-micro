@@ -7,7 +7,7 @@ const Schema                = require('mongoose').Schema;
  * DỰ ÁN/PHÒNG BAN
  */
 module.exports  = DATABASE_MIDDLEWARE("department", {
-    //_________Công ty  
+    //_________Công ty/Chủ đầu tư  
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -27,11 +27,32 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
+    //_________Mod
+    mods: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],    
     //_________Thành viên
     members: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
+    /**
+     * Phiên bản cao cấp/trả phí: Cho phép add thành viên ngoài phân vùng vào dự án (Hệ thống cấu hình)
+     * 0-Không cho phép, chỉ cho phép add user trong nội bộ phân vùng
+     * 1-Cho phép ngoài phân vùng (phải trả phí)
+     */
+    premium: {
+        type: Number,
+        default: 0 
+    },
+    /**
+     * Số thành viên tối đa bên ngoài phân vùng được phép add vào (Hệ thống cấu hình)
+     */
+    maxMembers: {
+        type   : Number,
+        default: 0
+    },
     /** 
      * Phân loại
      * 1-Phòng ban
@@ -292,6 +313,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     },
     //_________Sản lượng còn lại chưa thực hiện
     contractRemainingProduce: { type: Number, default: 0 },
+    
     /** NGHIỆM THU HOÀN THÀNH */
     //______Giá trị nghiệm thu trước VAT
     contractAcceptance: {
@@ -481,7 +503,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     },
 
     /**
-    * THÔNG TIN KHÁC
+    * CÔNG VIỆC
     */
     //______Tổng số cột mốc
     milestones: {
@@ -498,8 +520,18 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type   : Number,
         default: 0
     },
-    //______Tổng số công việc
+    //______Tổng số công việc đã hoàn thành
     completedTasks: {
+        type   : Number,
+        default: 0
+    },
+    //______Tổng số công việc nghiệm thu
+    inspectionTasks: {
+        type   : Number,
+        default: 0
+    },
+    //______Tổng số công việc đã nghiệm thu hoàn thành
+    completedInspectionTasks: {
         type   : Number,
         default: 0
     },
@@ -563,6 +595,11 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
+    //_________Các bên tham gia dự án
+    contractors: [{
+        type: Schema.Types.ObjectId,
+        ref: 'company',
+    }],
     //_________Ảnh đại diện
     image: {
         type: String,

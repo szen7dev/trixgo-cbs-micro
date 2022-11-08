@@ -19,9 +19,9 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
   *      - //TODO service reminder: nhắc sau bao lâu không thanh toán (chỉ là ví dụ)
   */
  exports.EXAMPLE__CASE1_FAIL       = `EXAMPLE__CASE1_FAIL`;
- 
+
  // ----------------------------------------------------------------------------------------------- //
- 
+
  /**
   * định nghĩa các EVENT mà SERVICE(EXAMPLE) sẽ subscribe (nhận job từ các service khác)
   */
@@ -45,24 +45,24 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             // console.log("The called event name:", ctx.eventName);
 
             /**
-             *  =========== env(auth.user-coll) ================= 
-            *  1/ WEB_CBS          
-            *  2/ MOBILE_TEARSER   
-            *  3/ MOBILE_CBS       
+             *  =========== env(auth.user-coll) =================
+            *  1/ WEB_CBS
+            *  2/ MOBILE_TEARSER
+            *  3/ MOBILE_CBS
              */
-            const { 
+            const {
                 users: listRecievers, title, description, web_url, amountNoti, dataSend, env
             } = ctx.params;
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
-            await NOTIFICATION__LOG_MODEL.sendNotiMobileAndWebPush({ 
+            await NOTIFICATION__LOG_MODEL.sendNotiMobileAndWebPush({
                 users: listRecievers,
                 title: title,
                 description: description,
                 objDataForSend: {
                     amountNoti,
                     dataSend
-                }, 
+                },
                 web_url,
                 env,
                 ctx

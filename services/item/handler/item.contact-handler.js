@@ -199,7 +199,14 @@ module.exports = {
             isListParentOrListChilds: { type: "string", optional: true },
             isMember            : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
-
+            educationalBackground2: { type: "string", optional: true },
+            field2              : { type: "string", optional: true },
+            typeCertificate     : { type: "string", optional: true },
+            certificateName     : { type: "string", optional: true },
+            certificateGrade    : { type: "string", optional: true },
+            isPartner           : { type: "string", optional: true },
+            isContractExpire4month: { type: "string", optional: true },
+            
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -213,7 +220,8 @@ module.exports = {
                 let {
                     companyID, contactID, type, departmentID, positionID, contractTypeID,
                     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
-                    isMember, parentID, realStatus, familyPolicy,
+                    isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate,
+                    certificateName, certificateGrade, isPartner, isContractExpire4month,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
@@ -221,7 +229,7 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id
                 }
-
+                
                 let resultAfterCallHandler;
                 if(contactID){
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getInfo({
@@ -230,7 +238,8 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
                         companyID, type, departmentID, positionID, contractTypeID,
-                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID, realStatus, familyPolicy,
+                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
+                        parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }
@@ -265,6 +274,44 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name  : Danh bạ (bên mua, bên bán) mà user được quyền truy cập theo hợp đồng
+     * Author: HiepNH
+     * Code  : 7/9/2022
+     */
+    getListAccessByContract: {
+        auth: 'required',
+        params: {
+            option              : { type: 'string', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    option, 
+                    keyword, limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListAccessByContract({
+                    option, 
+                    keyword, limit, lastestID, select, populates, 
+                    userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },

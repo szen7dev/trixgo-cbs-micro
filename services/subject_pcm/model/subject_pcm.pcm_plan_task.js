@@ -4,6 +4,9 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const PromisePool				        = require('@supercharge/promise-pool');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment')
+const XlsxPopulate                      = require('xlsx-populate');
+const path                              = require('path');
+const fs                                = require('fs');
 
 /**
  * Import utils, constants
@@ -11,8 +14,11 @@ const moment                            = require('moment')
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 				        = require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_AUTH }                       = require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
-const { CF_ACTIONS_NOTIFICATION }               = require('../../notification/helper/notification.actions-constant');
+const { CF_ACTIONS_REMINDER }                   = require('../../reminder/helper/reminder.actions-constant');
+
+const { CF_ACTIONS_SUBJECT_PCM }                = require('./../helper/subject_pcm.actions-constant');
 
 const {
     checkObjectIDs,
@@ -21,19 +27,29 @@ const {
 } = require('../../../tools/utils/utils');
 
 const stringUtils					            = require('../../../tools/utils/string_utils');
-const { addDate }					            = require('../../../tools/utils/time_utils');
+const { addDate, calculateExpireTime }          = require('../../../tools/utils/time_utils');
 const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { sendNoticeToMember }                    = require('../../../tools/mailer/module/notice_pcm_task');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
+const { PCM_STATUS_TASK }			            = require('../../../tools/constants');
+const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
  * import inter-coll, exter-coll
  */
 const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
-const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
+const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll');
+const CONTRACT_COLL                     = require('../../item/database/item.contract-coll');
+const USER_COLL                         = require('../../auth/database/auth.user-coll');
+// const { email } = require('../../../tools/mailer/config/cf_mailer');
 
+const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll');
+const { sortBy } = require('lodash');
+
+const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
+// const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
 class Model extends BaseModel {
 
     constructor() {
@@ -108,15 +124,18 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, subType, authorAttachs, bizfullname, select, populates, ctx }) {
+    insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
+        // console.log({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = {};
+                let accessUsers = [authorID, assigneeID];
                 let infoGroup = null;
                 let companyID = null;
+                let infoTaskParent = null;
                 let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
 
                 if(!name)
@@ -148,53 +167,37 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                if(!parentID){
-                    // call service department để lấy thông tin
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
-                    /**
-                     * Company lấy theo company của project
-                     * Chứ không phải lấy theo company của user tạo task
-                     */
-                    companyID = infoProject?.data?.company;
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID
+                })
 
-                    if(!companyID)
-                        return resolve({ error: true, message: "company_invalid", status: 400 });
-                } else{
-                    // Lấy thông tin công ty theo công việc cha
-                    let infoTaskParent = await this.getInfo({
-                        taskID: parentID,
-                        userID: authorID,
-                        populates: JSON.stringify({
-                            path: 'author assignee',
-                            select: '_id'
-                        })
-                    });
+                companyID = infoProject?.data?.company
 
-                    let { author, assignee, company, subtype } = infoTaskParent.data;
-                    /**
-                     * Check quyền nếu user là author hoặc assignee của công việc cha thì mới cho tạo
-                     * Hiepnh: Cần bổ sung cả người liên quan cũng được tạo => đối với RFI
-                     */
-                    if(Number(subtype) != 1){
-                        if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
-                            return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED, status: 403 })
-                    }
-                    companyID = company._id;
-                }
+                if(!companyID)
+                    return resolve({ error: true, message: "company_invalid", status: 400 })
 
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
+
                 dataInsert = {
                     name,
+                    namecv: stringUtils.removeAccents(name),
                     company : companyID,
                     project : projectID,
                     group   : groupID,
                     assignee: assigneeID,
                     author  : authorID,
                     suid,
+                    accessUsers,
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
-                    type,
+                    type
+                }
+                // console.log({ expiredTime, expiredHour })
+
+                if(parentID){
+                    infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
+                    dataInsert.subtype = infoTaskParent.subtype;
+                }else{
+                    dataInsert.subtype = subType;
                 }
 
                 if(expiredTime) {
@@ -204,41 +207,35 @@ class Model extends BaseModel {
                     dataInsert.expiredTime = new Date();
                     dataInsert.actualFinishTime = new Date();
                 }
-
                 if(expiredHour && expiredTime) {
-                    const [month, day, year] = expiredTime.split('/');
-                    const date = `${year}-${month}-${day}`;
-                    const formatDate = new Date(`${date} ${expiredHour}`);
-
+                    const formatDate = new Date(expiredTime);
+                    const expiredHourSplit = expiredHour.split(":");
+                    formatDate.setHours(expiredHourSplit[0], expiredHourSplit[1]);
                     dataInsert.expiredTime = formatDate;
                     dataInsert.actualFinishTime = formatDate;
                 }
-
-                // precalculated
-                // companyOfAuthor
-                // companyOfAssignee
-                // subtype (Xử lý sau)
-                // amountChecklist
-                // amountFinishedChecklist
-                // amountSubtask
-                // amountFinishedSubtask
-                // amountResponse
-                // amountMarkedResponse
+           
+                /**
+                 * Precalculated
+                 */
                 let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    userID: authorID, select: "_id company"
+                    userID: authorID, select: "_id company department"
                 })
 
                 let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    userID: assigneeID, select: "_id company"
+                    userID: assigneeID, select: "_id company department"
                 })
+
                 // companyOfAuthor
                 if(!infoAuthor.error){
                     dataInsert.companyOfAuthor = infoAuthor.data.company;
+                    dataInsert.departmentOfAuthor = infoAuthor.data.department;
                 }
 
                 // companyOfAssignee
                 if(!infoAssignee.error){
                     dataInsert.companyOfAssignee = infoAssignee.data.company;
+                    dataInsert.departmentOfAssignee = infoAssignee.data.department;
                 }
 
                 // Việc con hoặc check list
@@ -258,18 +255,16 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "relatedIDs_invalid", status: 400 });
                     }
                     dataInsert.related = relatedIDs;
+                    accessUsers.push(...relatedIDs);
                 }
 
                 if(description){
                     dataInsert.description = description;
+                    dataInsert.descriptioncv = stringUtils.removeAccents(description);
                 }
 
                 if(sign){
                     dataInsert.sign = sign;
-                }
-
-                if(note){
-                    dataInsert.note = note;
                 }
 
                 if(progressType && !isNaN(Number(progressType)) && Number(progressType) > 0){
@@ -284,17 +279,7 @@ class Model extends BaseModel {
                     dataInsert.actualStartTime = new Date();
                 }
 
-                //_________B2.1 Kiểm tra có docreID hay không (nếu tạo từ tài liệu)
-                if(docreID && ObjectID.isValid(docreID)){
-                    dataInsert.docre = docreID;
-                }
-
-                //_________B2.2 Kiểm tra có messageID có hay không (nếu tạo từ tin nhắn)
-                if(messageID && ObjectID.isValid(messageID)){
-                    dataInsert.message = messageID;
-                }
-
-                //_________B2.3 Kiểm tra có contractID có hay không (nếu tạo từ ngân sách hợp đồng)
+                //_________B2.3 Kiểm tra có contractID
                 if(contractID && ObjectID.isValid(contractID)){
                     dataInsert.contract = contractID;
                 }else{
@@ -303,33 +288,10 @@ class Model extends BaseModel {
                         dataInsert.contract = infoGroup.contract
                     }
                 }
-                //_________B2.4 Kiểm tra có contractID có hay không (nếu tạo từ văn bản)
-                if(documentID && ObjectID.isValid(documentID)){
-                    dataInsert.document = documentID;
-                }
-
-                if(fieldID && ObjectID.isValid(fieldID)){
-                    dataInsert.field = fieldID;
-                }
-
-                //_________B2.5 Kiểm tra có boardID có hay không (nếu tạo từ board)
-                if(boardID && ObjectID.isValid(boardID)){
-                    dataInsert.board = boardID;
-                }
-
-                //_________Trường hợp tạo Đệ trình phê duyệt
-                if(subType && !isNaN(subType)){
-                    dataInsert.subtype = +subType;
-                } else{
-                    // Lấy theo group
-                    if(infoGroup.type){
-                        dataInsert.subtype = infoGroup.type;
-                    }
-                }
 
                 //_________Phân loại khác
-                if(infoGroup && infoGroup.property){
-                    dataInsert.field = infoGroup.property;
+                if(fieldID && ObjectID.isValid(fieldID)){
+                    dataInsert.field = fieldID;
                 }
 
                 //_________Việc nháp/chính thức
@@ -342,30 +304,80 @@ class Model extends BaseModel {
                     dataInsert.template = Number(template);
                 }
 
-                //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
-                let infoAfterInsert = await this.insertData(dataInsert);
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: "can't_insert_task", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                /**
+                 * Những user chưa xem công việc
+                 * - Sẽ xóa user khi bấm xem
+                 * - Sẽ thêm user khi có thông báo mới
+                 */
+                dataInsert.news = accessUsers.filter(userId => userId !== authorID);
 
-                // Cập nhật amountChecklist hoặc amountSubtask cho việc cha
-                if(parentID && checkObjectIDs(parentID)){
-                    // Việc con
-                    if(type == 1){
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountSubtask: 1 }})
-                    } else{ // checklist
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChecklist: 1 }})
-                    }
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert) {
+                    return resolve({
+                        error: true,
+                        message: "can't_insert_task",
+                        keyError: KEY_ERROR.INSERT_FAILED,
+                        status: 403
+                    });
                 }
 
-                // if(Object.keys(dataAdditional).length) {
-                //     infoAfterInsert = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterInsert._id, dataAdditional, { new: true });
+                /**
+                 * Thêm reminder nhắc công việc đến hạn
+                 * - Mặc định không thêm
+                 * - Nếu user chọn thì mới thêm
+                 */
+                // ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                //     senderMail,
+                //     status: infoAfterInsert.status,
+                //     taskID: infoAfterInsert._id?.toString(),
+                //     userID: infoAfterInsert.author?.toString(),
+                //     alert: 0.4, // Mặc định khi tạo task, nhắc hẹn trước 15 phút
+                //     actualFinishTime: dataInsert.actualFinishTime?.toString(),
+                // })
 
-                //     if(!infoAfterInsert)
-                //         return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-                // }
+                // Thêm record vào bảng pcm_comment phục vụ search (****)
+                await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
+                    taskID: infoAfterInsert._id?.toString(),
+                    type: 5,
+                    files: authorAttachs,
+                    content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
+                    rawContent: infoAfterInsert.name,
+                }, {
+                    meta: {
+                        infoUser: { _id: authorID, bizfullname, company }
+                    }
+                });
 
                 /**
-                 * Tạo checklist hoặc việc con mới
+                 * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
+                 */
+                if(parentID && checkObjectIDs(parentID)){
+                    let infoParentTask = await PCM_PLAN_TASK_COLL.findById(parentID).select('_id level')
+
+                    // Cập nhật việc cha
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
+                        $inc: { amountSubtask: 1 },
+                        $addToSet: { news: authorID },
+                        $set: {
+                            modifyAt: new Date(),
+                        }
+                    });
+
+                    // Cập nhật Level cho việc con
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                        $set: {
+                            level: Number(infoParentTask.level) + Number(1)
+                        }
+                    });
+                }
+
+                /**
+                 * CẬP NHẬT SỐ LƯỢNG CÔNG VIỆC CHO GROUP
+                 */
+                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
+
+                /**
+                 * Tạo việc con mới
                  * + Insert thông báo vào DB và bắn Cloud MSS
                  */
                 if([1,2].includes(type)) {
@@ -375,36 +387,43 @@ class Model extends BaseModel {
                     let languageKey         = '';
                     let dataSend 		    = { app: APP_KEYS.PCM_PLAN_TASK };
                     let taskID              = parentID;
-                    let isChecklist         = type === 2;
 
                     if(!parentID) {
                         taskID = infoAfterInsert._id;
                         webUrl = `/pcm/detail/${taskID}`;
                         languageKey = LANGUAGE_KEYS.CREATE_NEW_TASK;
                     } else {
-                        webUrl = `/pcm/detail/${taskID}#${isChecklist ? 'checklist' : 'childtask'}_${infoAfterInsert._id}`;
-                        languageKey = isChecklist ? LANGUAGE_KEYS.CREATE_CHECKLIST_PCM : LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
+                        webUrl = `/pcm/detail/${taskID}#${'childtask'}_${infoAfterInsert._id}`;
+                        languageKey = LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
                     }
 
                     let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+                    let { name: taskName, author, assignee, related, accessUsers } = infoTask;
+                    let arrReceiver = [];
 
-                    let { name: taskName, author, assignee, related, project, contract } = infoTask;
-                    related = related.map(userID => userID.toString());
+                     /**
+                     * 0: Chính thức
+                     * 1: Việc nháp
+                     */
+                    if(infoAfterInsert.draft == 0) {
+                        if(accessUsers && accessUsers.length) {
+                            arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
+                        } else{
+                            related = related.map(userID => userID.toString());
 
-                    let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-                    let arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                            let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+                            arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                        }
+                    }
+                    console.log({ BEFORE: arrReceiver })
 
                     if(arrReceiver && arrReceiver.length) {
-                        // CLOUD MSS
                         if(parentID) {
-                            const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-                                userID: assigneeID,
-                                select: '_id'
-                            });
+                            let { related } = infoTaskParent;
+                            related = related.map(userID => userID.toString());
 
-                            if(!infoAssignee.error) {
-                                arrReceiver = [infoAssignee?.data?._id];
-                            }
+                            let listReceivers = [...new Set([assigneeID, ...related])];
+                            arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                             dataSend = {
                                 ...dataSend,
@@ -415,7 +434,7 @@ class Model extends BaseModel {
                                 },
                             };
                             titleMSS        = taskName;
-                            descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
+                            descriptionMSS  = `${bizfullname} đã tạo 1 việc con cho bạn`;
                         } else {
                             dataSend = {
                                 ...dataSend,
@@ -425,34 +444,18 @@ class Model extends BaseModel {
                                     item: { _id: taskID }
                                 }
                             };
-                            titleMSS        = `THÔNG BÁO`;
+                            titleMSS        = taskName;
                             descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                         }
 
-                        // INSERT NOTIFICATION
-                        await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                            content: name,
-                            receivers: arrReceiver,
-                            project: project?.toString(),
-                            contract: contract?.toString(),
-                            path: webUrl,
-                            languageKey,
-                            app: APP_KEYS.PCM_PLAN_TASK,
-                            mainColl: {
-                                kind: "pcm_plan_task",
-                                item: taskID
-                            },
-                            subColl: {
-                                kind: "pcm_plan_task",
-                                item: infoAfterInsert._id
-                            },
-                            type: 1 // InApp (Socket)
-                        })
+                        const amountNoti = await this.getAmountNotification({ userID: authorID });
+                        console.log({ AFTER: arrReceiver })
 
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                             users: arrReceiver,
                             title: titleMSS,
                             description: descriptionMSS,
+                            amountNoti: amountNoti?.data?.amountUnreadTask,
                             dataSend,
                             web_url: webUrl,
                             env: ENV_DEVICE_WEB_CBS
@@ -460,8 +463,20 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Update amountTasks cho group;
-                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
+                /**
+                 * Gửi mail
+                 */
+                if(isNotiEmail) {
+                    this.sendEmailToMembersInTask({
+                        taskID: infoAfterInsert._id,
+                        title: infoAfterInsert.name,
+                        notice: infoAfterInsert.description,
+                        sender: senderMail,
+                        receivers: [infoAfterInsert.assignee, ...infoAfterInsert.related],
+                        ctx
+                    })
+                }
+
                 const infoTask = await PCM_PLAN_TASK_COLL
                     .findById(infoAfterInsert._id)
                     .select(select)
@@ -478,15 +493,19 @@ class Model extends BaseModel {
 
     /**
      * Name: update task
-     * Author: Depv
-     * Code:
+     * Author: DePV/MinhNH/HiepNH
+     * Code: 8/9/2022
      */
     update({ typeUpdate,
-        taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
-        contractID, draft, subType, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
-        links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature, isOpenBidding,
-        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, ctx
+        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+        contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+        openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
+        console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+            contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+            links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+            openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -509,7 +528,13 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'taskID_invalid', status: 400 });
 
-                const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+                // const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+                const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).populate({
+                    path: 'project assignee',
+                    select: '_id admins name fullname'
+                })
+                // console.log('===============================')
+                // console.log(infoTask)
 
                 if(!infoTask)
                     return resolve({ error: true, message: 'task_not_exists', status: 400 });
@@ -529,59 +554,176 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
+                 * NẾU LÀ CÔNG VIỆC NHÁP THÌ CHO PHÉP CẬP NHẬT MỘT SỐ THÔNG TIN
                  */
-                //_________Mã công việc
-                if(sign){
-                    dataUpdate.sign = sign;
-                }
-                //_________Tên công việc
-                if(name){
-                    dataUpdate.name = name;
-                }
-                //_________Mô tả
-                if(description){
-                    dataUpdate.description = description;
-                }
-                //_________Ghi chú
-                if(note){
-                    dataUpdate.note = note;
-                }
+                if(infoTask.draft == 1 || infoTask.project.admins.map(item=>item.toString()).includes(userID?.toString())){
+                    /**
+                     * Các trường thông tin quan trọng/hay gặp
+                     */
+                    //_________Việc nháp sang việc chính thức
+                    if(+draft === 0){
+                        dataUpdate.draft = 0;
+                        dataUpdate.companyOfAuthor = companyOfUser;
+                        dataUpdate.author = userID;
+                    }
 
-                if(actualStartTime){
-                    dataUpdate.actualStartTime = actualStartTime;
-                }
+                    //_________Xoá người liên quan
+                    if(checkObjectIDs(relatedRemoves)){
+                        dataPullAll = {
+                            ...dataPullAll,
+                            related: relatedRemoves,
+                            accessUsers: relatedRemoves,
+                            news: relatedRemoves
+                        }
+                    }
 
-                if(actualFinishTime){
-                    dataUpdate.actualFinishTime = new Date(actualFinishTime);
-                }
-                //_________Dự kiến thời lượng (h)
-                if(amountoftime){
-                    dataUpdate.amountoftime = amountoftime;
-                }
-                //_________Đơn giá cho 1 giờ làm
-                if(amountPerHour){
-                    dataUpdate.amountPerHour = amountPerHour;
-                }
+                    //_________Mã công việc
+                    if(sign){
+                        dataUpdate.sign = sign;
+                    }
 
-                //_________người thực hiện
-                if(checkObjectIDs(assigneeID)){
-                    dataUpdate.assignee = assigneeID;
+                    /**
+                     * Sửa Tên công việc
+                     * - Sửa công việc
+                     * - Sửa comment
+                     */
+                    if(name){
+                        dataUpdate.name = name;
+                        dataUpdate.namecv = stringUtils.removeAccents(name);
+                        /**
+                         * Ghi log
+                         */
+                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`, 
+                            type: 3,
+                            title: "Cập nhật tên công việc",
+                            content: `đã cập nhật tên công việc "${infoTask.name}" thành "${name}"`,
+                        });
+                    }
+
+                    /**
+                     * Mô tả
+                     * - Sửa công việc
+                     * - Sửa comment
+                     */
+                    if(description){
+                        dataUpdate.description = description;
+                        dataUpdate.descriptioncv = stringUtils.removeAccents(description);
+
+                         /**
+                         * Ghi log
+                         * Cập nhật comment type=5 tương ứng
+                         */
+                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`, 
+                            type: 3,
+                            title: "Cập nhật nội dung công việc",
+                            content: `đã cập nhật nội dung công việc "${infoTask.description}" thành "${description}"`,
+                        });
+                    }
+
+                    /**
+                     * Ngày kết thúc
+                     */
+                    if(actualFinishTime){
+                        dataUpdate.actualFinishTime = new Date(actualFinishTime);
+                    }
+
+                    if(expiredHour) {
+                        const formatDate = new Date(actualFinishTime);
+                        const expiredHourSplit = expiredHour.split(":");
+                        formatDate.setHours(expiredHourSplit[0], expiredHourSplit[1]);
+                        dataUpdate.actualFinishTime = formatDate;
+
+                        /**
+                         * Ghi log
+                         */
+                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`, 
+                            type: 3,
+                            title: "Cập nhật thời hạn",
+                            content: `đã cập nhật thời hạn từ ${moment(infoTask.actualFinishTime).format("L")} thành "${moment(actualFinishTime).format("L")}"`,
+                        });
+                    }
+
+                    // Người thực hiện
+                    if(checkObjectIDs(assigneeID)){
+                        dataUpdate.assignee = assigneeID;
+
+                        let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                            userID: assigneeID, select: "_id company fullname"
+                        })
+
+                        // companyOfAssignee
+                        if(!infoAssignee.error){
+                            dataUpdate.companyOfAssignee = infoAssignee.data.company;
+                        }
+
+                        /**
+                         * Ghi log
+                         * Cập nhật comment type=5 tương ứng
+                         */
+                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`, 
+                            type: 3,
+                            title: "Cập nhật người thực hiện",
+                            content: `đã cập nhật người thực hiện "${infoTask.assignee.fullname}" thành "${infoAssignee.data.fullname}"`,
+                        });
+                    }
+
+                }else{
+                    //_________Mô tả: chỉ áp dụng cho Báo cáo, Họp
+                    if(infoTask.subtype === 9 || infoTask.subtype === 11){
+                        if(description){
+                            dataUpdate.description = description;
+                            dataUpdate.descriptioncv = stringUtils.removeAccents(description);
+                        }
+                    }
                 }
 
                 //_________userUpdate
                 if(checkObjectIDs(userID)){
                     dataUpdate.userUpdate = userID;
                 }
-                //_________Phân loại tiến độ
-                if(progressType){
-                    dataUpdate.progressType = progressType;
+
+                //_________Thêm người liên quan
+                if(checkObjectIDs(related)){
+                    dataAddToset = {
+                        ...dataAddToset,
+                        related,
+                        accessUsers: related,
+                        news: related
+                    }
                 }
-                //_________Tính chất
-                if(checkObjectIDs(fieldID)){
-                    dataUpdate.field = fieldID;
+
+                /**
+                 * Phân loại công việc: không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
+                 */
+                if(subType && !isNaN(subType)){
+                    const subTypes = [4, 9, 11];
+                    if(!subTypes.includes(infoTask.subtype)){
+                        dataUpdate.subtype = +subType;
+                    }
+                }
+
+                /**
+                 * Ngày bắt đầu
+                 */
+                if(actualStartTime){
+                    dataUpdate.actualStartTime = new Date(actualStartTime);
+                }
+
+                /**
+                 * Trạng thái công việc
+                 * - Chỉ được update khi trạng thái công việc chưa hoàn thành
+                 */
+                if(status && infoTask.status != 3){
+                    dataUpdate.status = status;
+
+                    // Nếu cập nhật sang trạng thái hoàn thành
+                    if(status == 3){
+                        dataUpdate.percentage = 100
+                    }
                 }
 
                 //_________Hợp đồng
@@ -589,16 +731,19 @@ class Model extends BaseModel {
                     dataUpdate.contract = contractID;
                 }
 
-                //_________Việc nháp
-                if(draft === 0 && infoTask.draft === 1){
-                    dataUpdate.draft = 0;
-                    dataUpdate.companyOfAuthor = companyOfUser;
-                    dataUpdate.author = userID;
+                //_________Nhóm dữ liệu
+                if(checkObjectIDs(groupID)){
+                    dataUpdate.group = groupID;
                 }
 
-                //_________Phân loại công việc
-                if(subType && !isNaN(subType)){
-                    dataUpdate.subtype = +subType;
+                //_________Tính chất
+                if(checkObjectIDs(fieldID)){
+                    dataUpdate.field = fieldID;
+                }
+
+                //_________Phân loại tiến độ
+                if(progressType){
+                    dataUpdate.progressType = progressType;
                 }
 
                 //_________User xóa task
@@ -606,53 +751,19 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, usersDelete: usersDeleteID }
                 }
 
-                //_________Thêm người liên quan
-                if(checkObjectIDs(related)){
-                    dataAddToset = { ...dataAddToset, related }
+                //_________Những user đánh dấu quan tâm/start/bookmark
+                if(checkObjectIDs(flags)){
+                    dataAddToset = { ...dataAddToset, flags }
                 }
 
-                //_________Xoá người liên quan
-                if(checkObjectIDs(relatedRemoves)){
-                    dataPullAll = { ...dataPullAll, related: relatedRemoves }
-                }
-
+                //_________User xóa quan tâm
                 if(checkObjectIDs(flagsRemoves)) {
                     dataPullAll = { ...dataPullAll, flags: flagsRemoves }
-                }
-
-                //_________Trạng thái công việc
-                if(status){
-                    dataUpdate.status = status;
-                }
-
-                //_________Số ngày chậm tiến độ
-                if(offtimeReason){
-                    dataUpdate.offtimeReason = offtimeReason;
-                }
-
-                //_________Giá trị vượt ngân sách
-                if(offbudgetReason){
-                    dataUpdate.offbudgetReason = offbudgetReason;
-                }
-
-                //_________Giá trị vượt ngân sách
-                if(offbudgetReason){
-                    dataUpdate.offbudgetReason = offbudgetReason;
-                }
-
-                //_________Phân loại công việc mẫu/thông thường
-                if(checkObjectIDs(templateID)){
-                    dataUpdate.template = templateID;
                 }
 
                 //_________Phân loại mức độ quan trọng (cao, bình thường, thấp, siêu cao)
                 if(priority){
                     dataUpdate.priority = priority;
-                }
-
-                //_________Khoá/Mở
-                if(lock){
-                    dataUpdate.lock = lock;
                 }
 
                 //_________Ký duyệt xác nhận
@@ -665,9 +776,57 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, links }
                 }
 
+                if(checkObjectIDs(tasksLink)){
+                    dataAddToset = { ...dataAddToset, links: tasksLink }
+                }
+
+                if(checkObjectIDs(linksDocs)){
+                    dataAddToset = { ...dataAddToset, linksDocs }
+                }
+
                 //_________% hoàn thành (max = 100)
                 if(percentage){
                     dataUpdate.percentage = percentage;
+                }
+
+                //_________Cột mốc
+                if(!isNaN(milestone)){
+                    dataUpdate.milestone = milestone;
+                }
+
+                /**
+                 * Cập nhật thông tin đánh giá
+                 */
+                if(ontime){
+                    dataUpdate.ontime = ontime;
+                }
+
+                if(quality){
+                    dataUpdate.quality = quality;
+                }
+
+                /**
+                 * Cập nhật thông tin sán lượng
+                 */
+                if(unit){
+                    dataUpdate.unit = unit;
+                }
+
+                if(unitPrice >= 0){
+                    dataUpdate.unitPrice = unitPrice;
+                }
+
+                if(quantity >= 0){
+                    dataUpdate.quantity = quantity;
+                }
+
+                if(unitPrice >= 0 && quantity >= 0){
+                    dataUpdate.amount = Number(unitPrice)*Number(quantity);
+                }
+
+                //_________Dự kiến thời lượng (h)
+                if(amountoftime){
+                    dataUpdate.amountoftime = amountoftime;
                 }
 
                 //_________Nhận xét
@@ -685,92 +844,13 @@ class Model extends BaseModel {
                     dataUpdate.score = score;
                 }
 
-                //_________Mức độ cấp bách
-                if(urgent){
-                    dataUpdate.urgent = urgent;
-                }
-
-                //_________Mức độ phức tạp
-                if(difficult){
-                    dataUpdate.difficult = difficult;
-                }
-
-                //_________Kết thúc thực tế
-                if(finishTime){
-                    dataUpdate.finishTime = finishTime;
-                }
-
-                //_________Giá trị bị phạt
-                if(punish){
-                    dataUpdate.punish = punish;
-                }
-
-                //_________Người phê duyệt
-                if(checkObjectIDs(approver)){
-                    dataUpdate.approver = approver;
-                }
-
-                //_________Thời điểm phê duyệt
-                if(timeApproved){
-                    dataUpdate.timeApproved = timeApproved;
-                }
-
-                //_________Giá trị phê duyệt/Giá phê duyệt trúng thầu
-                if(valueApproved){
-                    dataUpdate.valueApproved = valueApproved;
-                }
-
-                //_________Giá dự thầu
-                if(bidPrice){
-                    dataUpdate.bidPrice = bidPrice;
-                }
-
-                //_________Giảm giá dự thầu
-                if(bidPriceDiscount){
-                    dataUpdate.bidPriceDiscount = bidPriceDiscount;
-                }
-
-                //_________Giá dự thầu thừa/thiếu
-                if(bidPriceAdjustment){
-                    dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
-                }
-
-                if(checkObjectIDs(lastLogID)){
-                    dataUpdate.lastLog = lastLogID;
-                }
-
-                //_________User đồng ý mở thầu
-                if(checkObjectIDs(openedUsers)){
-                    dataAddToset = { ...dataAddToset, openedUsers }
-                }
-
-                //_________Hồ sơ thầu đã được mở hay chưa (0/1)
-                if(checkObjectIDs(openedStatus)){
-                    dataUpdate.openedStatus = openedStatus
-                }
-
-                //_________Những user đánh dấu quan tâm/start/bookmark
-                if(checkObjectIDs(flags)){
-                    dataAddToset = { ...dataAddToset, flags }
-                }
-
-                //_________Cột mốc
-                if(!isNaN(milestone)){
-                    dataUpdate.milestone = milestone;
-                }
-
-                if(expiredHour) {
-                    const [month, day, year] = actualFinishTime.split('/');
-                    const date = `${year}-${month}-${day}`;
-                    const formatDate = new Date(`${date} ${expiredHour}`);
-
-                    dataUpdate.actualFinishTime = formatDate;
-                }
-
+                /**
+                 * KÝ XÁC NHẬN
+                 */
                 if(isAddSignature) {
                     const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
                         companyID: infoTask.company?.toString(),
-                        projectID: infoTask.project?.toString(),
+                        projectID: infoTask.project?._id?.toString(),
                         coll: {
                             kind: 'pcm_plan_task',
                             item: taskID
@@ -786,9 +866,44 @@ class Model extends BaseModel {
                      * trong task có phân loại là "Lựa chọn nhà thầu"
                      * -> Cập nhật trạng thái của task thành "Hoàn thành"
                      */
-                    if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?.toString()) {
+                    if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?._id.toString()) {
+                        console.log('==========NHÀ THẦU VỪA DỰ THẦU===============')
+                        dataUpdate.approver = userID
+                        dataUpdate.timeApproved = Date.now()
                         dataUpdate.status = 3;
+                        dataUpdate.percentage = 100;
                     }
+
+                    /**
+                     * TH1:
+                     * - Nếu là Đề nghị phê duyệt (2) + Thanh toán (3) + Nghiệm thu (5)
+                     * - Người thực hiện ký => phê duyệt luôn
+                     * TH2:
+                     * - Nếu là Các chủ đề khác còn lại
+                     * - Người tạo việc ký => phê duyệt luôn
+                     */
+                    if([2,3,5].includes(Number(infoTask.subtype))){
+                        if(userID.toString() === infoTask.assignee?._id.toString()){
+                            dataUpdate.approver = userID
+                            dataUpdate.timeApproved = Date.now()
+                            dataUpdate.percentage = 100
+                            dataUpdate.status = 3
+                        }
+                    }else{
+                        if(userID.toString() === infoTask.author?.toString()){
+                            dataUpdate.approver = userID
+                            dataUpdate.timeApproved = Date.now()
+                            dataUpdate.percentage = 100
+                            dataUpdate.status = 3
+                        }
+                    }
+                }
+
+                /**
+                 * THẦU
+                 */
+                if(checkObjectIDs(openedUsers)){
+                    dataAddToset = { ...dataAddToset, openedUsers }
                 }
 
                 if(isOpenBidding) {
@@ -796,6 +911,7 @@ class Model extends BaseModel {
 
                     const { openedStatus, openedUsers, related } = infoTask;
 
+                    // Kiểm tra khi tất cả mở thầu => cập nhật sang trạng thái là 1 (mở thầu)
                     if(openedStatus === 0) {
                         const usersOpened = [...openedUsers, userID].map(item => item.toString());
                         const allUsersIsOpened = related.every(item => usersOpened.includes(item.toString()));
@@ -806,16 +922,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                //_________File của người tạo việc-cân nhắc bỏ do không linh hoạt phiên bản
-                //  if(checkObjectIDs(authorAttachs)){
-                //     dataAddToset = { ...dataAddToset, authorAttachs }
-                // }
-
-                //_________File của người thực hiện-cân nhắc bỏ do không linh hoạt phiên bản
-                // if(checkObjectIDs(assigneeAttachs)){
-                //     dataAddToset = { ...dataAddToset, assigneeAttachs }
-                // }
-
+                /**
+                 * FILE NGƯỜI TẠO VIỆC ĐÍNH KÈM KHI TẠO TASK
+                 */
                 if(checkObjectIDs(authorAttachs)){
                     const result = await this.handleAddFiles({
                         infoTask, files: authorAttachs, authorID: userID, ctx
@@ -826,6 +935,9 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, authorAttachs };
                 }
 
+                /**
+                 * FILE NGƯỜI THỰC HIỆN ĐÍNH KÈM KHI TRẢ BÀI
+                 */
                 if(checkObjectIDs(assigneeAttachs)){
                     const result = await this.handleAddFiles({
                         infoTask, files: assigneeAttachs, authorID: userID, ctx
@@ -836,19 +948,82 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, assigneeAttachs };
                 }
 
-                //_________Trường hợp cập nhật nhiều dữ liệu addToSet cùng 1 lúc
+                // Cập nhật nhắc hẹn expired time task
+                if(alert >= 0) {
+                    dataUpdate.alert = alert;
+
+                    // xóa tất cả job reminder
+                    await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK}`, {
+                        taskID
+                    })
+
+                    if(alert > 0) {
+                        ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                            alert,
+                            senderMail,
+                            status: infoTask.status,
+                            taskID: infoTask._id?.toString(),
+                            userID: infoTask.author?.toString(),
+                            actualFinishTime: infoTask.actualFinishTime?.toString(),
+                        })
+                    }
+                }
+
+                /**
+                 * Cập nhật user chưa xem
+                 */
+                if(isUpdateNews) {
+                    const usersUnRead = infoTask.accessUsers?.filter(item => item.toString() !== userID.toString());
+                    dataAddToset = { ...dataAddToset, news: usersUnRead };
+                    dataUpdate.modifyAt = new Date();
+                }
+
+                //_________Cập nhật nhiều dữ liệu addToSet cùng 1 lúc
                 if(dataAddToset){
                     dataUpdate.$addToSet = dataAddToset;
                 }
 
+                //_________Xóa nhiều dữ liệu cùng 1 lúc
                 if(dataPullAll){
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
+                // console.log('=================>>>>>>>>>>>>>>>>>')
+                // console.log(dataUpdate)
+
+                /**
+                 * TIẾN HÀNH CẬP NHẬT CÔNG VIỆC
+                 */
                 let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
 
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+
+                /**
+                 * Khi link việc A vào việc B thì ở trong việc B, links cũng chứa A
+                 */
+                if(checkObjectIDs(tasksLink)){
+                    await PCM_PLAN_TASK_COLL.updateMany({
+                        _id: { $in: tasksLink }
+                    }, {
+                        $addToSet: {
+                            links: taskID
+                        }
+                    });
+                }
+
+                /**
+                 * Khi link việc A vào Hồ sơ B thì ở trong Hồ sơ B, links cũng chứa A
+                 */
+                if(checkObjectIDs(linksDocs)){
+                    await DOCUMENT_DOC_COLL.updateMany({
+                        _id: { $in: linksDocs }
+                    }, {
+                        $addToSet: {
+                            tasks: taskID
+                        }
+                    });
+                }
 
                 // Cập nhật amountFinishedChecklist hoặc amountFinishedSubtask cho việc cha
                 if(infoAfterUpdate.parent && status == 3){
@@ -861,7 +1036,10 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Thêm người liên quan
+                /**
+                 * XỬ LÝ SOCKET VÀ CLOUD MSS
+                 */
+                //1. Socket_CloudMSS_Thêm người liên quan
                 if(related && related.length) {
                     const relatedCurrent = infoTask.related.map(item => item.toString());
                     const newRelated = related.filter(item => !relatedCurrent.includes(item));
@@ -870,101 +1048,122 @@ class Model extends BaseModel {
                      * Thêm người liên quan trong công việc
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
-                    const webUrl = `/pcm/detail/${taskID}`;
-                    let { name: taskName, project, contract } = infoAfterUpdate;
+                    let { name: taskName } = infoAfterUpdate;
 
-                    const dataSend = {
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
-                        mainColl: {
-                            kind: 'pcm_plan_task',
-                            item: { _id: taskID }
-                        }
-                    };
-
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã thêm bạn làm người liên quan`,
-                        receivers: newRelated,
-                        project: project?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey: LANGUAGE_KEYS.ADD_RELATION_USER,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        type: 1 // InApp (Socket)
-                    })
+                    const amountNoti = await this.getAmountNotification({ userID });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: newRelated,
                         title: taskName,
                         description: `${bizfullname} đã thêm bạn làm người liên quan`,
-                        dataSend,
-                        web_url: webUrl,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
+                        },
+                        web_url: `/pcm/detail/${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
                 }
 
-                // Đồng ý phê duyệt
+                //2. Socket_CloudMSS_Đồng ý phê duyệt
                 if(isAddSignature) {
-                    const { project, contract, related, assignee, author } = infoAfterUpdate;
+                    console.log('==========CLOUDMSS KÝ XÁC NHẬN===============')
+                    const { name: taskName, related, assignee, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, assignee.toString(), author.toString()];
                     const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã phê duyệt 1 công việc`,
-                        receivers,
-                        project: project.toString(),
-                        contract: contract?.toString(),
-                        path: `/pcm/detail/${taskID}`,
-                        languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+
+                    const amountNoti = await this.getAmountNotification({ userID });
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receivers,
+                        title: taskName,
+                        description: `${bizfullname} đã ký xác nhận`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
                         },
-                        type: 1 // InApp (Socket)
-                    })
+                        web_url: `/pcm/detail/${taskID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
                 }
 
-                // Mở thầu
+                //3. Socket_CloudMSS_Mở thầu
                 if(isOpenBidding) {
-                    const { project, contract, related, author } = infoAfterUpdate;
+                    console.log('==========CLOUDMSS CÁC BÊN VỪA MỞ THẦU===============')
+                    const { name: taskName, related, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString()];
                     const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã mở thầu`,
-                        receivers,
-                        project: project.toString(),
-                        contract: contract?.toString(),
-                        path: `/pcm/detail/${taskID}`,
-                        languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+
+                    const amountNoti = await this.getAmountNotification({ userID });
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receivers,
+                        title: taskName,
+                        description: `${bizfullname} đã mở thầu`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
                         },
-                        type: 1 // InApp (Socket)
-                    })
+                        web_url: `/pcm/detail/${taskID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
                 }
 
-                // Cập nhật checklist thành công
+                //4. Socket_CloudMSS_Cập nhật checklist thành công
                 if(infoTask.type === 2 && status === 3) {
-                    const { name: taskName, project, contract, related, assignee, author, parent } = infoAfterUpdate;
+                    const { name: taskName, related, assignee, author, parent } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString(), assignee.toString()];
                     const receivers = listReceivers.filter(item => item !== userID.toString());
-                    const webUrl = `/pcm/detail/${parent}#checklist_${taskID}`;
+
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+
+                    const amountNoti = await this.getAmountNotification({ userID });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receivers,
                         title: taskName,
                         description: `${bizfullname} đã hoàn thành 1 checklist`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
                         dataSend: {
                             app: APP_KEYS.PCM_PLAN_TASK,
                             languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
@@ -973,75 +1172,95 @@ class Model extends BaseModel {
                                 item: { _id: taskID }
                             }
                         },
-                        web_url: webUrl,
+                        web_url: `/pcm/detail/${parent}#checklist_${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
-
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: `đã hoàn thành 1 checklist`,
-                        receivers,
-                        project: project?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey: LANGUAGE_KEYS.CHECK_DONE_CHECKLIST,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: parent
-                        },
-                        subColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        type: 1 // InApp (Socket)
-                    })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
     /**
-     * Name: update status mutiple
+     * Name: Cập nhật trạng thái, tình trạng xem công việc
      * Author: Depv
-     * Code:
+     * Update: HiepNH
+     * Code: 20/8/2022
      */
-    updateStatusMutiple({ taskIDs, parentID, type, userID }){
+    updateStatusMutiple({ taskIDs, parentID, type, option, userID }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(taskIDs, parentID))
-                    return resolve({ error: true, message: 'param_invalid' });
+                /**
+                 * 1-Cập nhật trạng thái
+                 * 2-Cập nhật user đã xem công việc
+                 */
+                if(!option || option == 0){
+                    if (!checkObjectIDs(taskIDs, parentID))
+                        return resolve({ error: true, message: 'param_invalid' });
 
-                // Kiểm tra user update có phải là là người thực hiện checklist hoặc người thực hiện việc con ko
-                let listTasks = await PCM_PLAN_TASK_COLL.find({ _id: { $in: taskIDs }});
-                let isAssignee = true;
-                listTasks.forEach(task => {
-                    if(task.assignee.toString() != userID.toString()){
-                        isAssignee = false;
+                    // Kiểm tra user update có phải là là người thực hiện checklist hoặc người thực hiện việc con ko
+                    let listTasks = await PCM_PLAN_TASK_COLL.find({ _id: { $in: taskIDs }});
+                    let isAssignee = true;
+                    listTasks.forEach(task => {
+                        if(task.assignee.toString() != userID.toString()){
+                            isAssignee = false;
+                        }
+                    });
+
+                    if(!isAssignee)
+                        return resolve({ error: true, message: 'Bạn không phải là người thực hiện, nên không được phép cập nhật hoàn thành', keyError: "user_not_assignee" });
+
+                    let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3, percentage: 100 } }, { new: true});
+                    if (!infoTaskAfterUpdate)
+                        return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                    let amountTaskAndChecklist = taskIDs.length;
+                    // Việc con
+                    if (type == 1) {
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,  { $inc : { amountFinishedSubtask: amountTaskAndChecklist }}, { new: true })
                     }
-                });
 
-                if(!isAssignee)
-                    return resolve({ error: true, message: 'Bạn không phải là người thực hiện, nên không được phép cập nhật hoàn thành', keyError: "user_not_assignee" });
+                    // Checklist
+                    if (type == 2) {
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc : { amountFinishedChecklist: amountTaskAndChecklist }}, { new: true })
+                    }
 
-                let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
-				if (!infoTaskAfterUpdate)
-                    return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
-                let amountTaskAndChecklist = taskIDs.length;
-                // Việc con
-                if (type == 1) {
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,  { $inc : { amountFinishedSubtask: amountTaskAndChecklist }}, { new: true })
+                    return resolve({ error: false, message: "update_success" })
                 }
 
-                // Checklist
-                if (type == 2) {
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc : { amountFinishedChecklist: amountTaskAndChecklist }}, { new: true })
+                //2. CẬP NHẬT USER ĐÃ XEM CÔNG VIỆC
+                else {
+                    // Cập nhật các Task được lựa chọn
+                    if(option == 1){
+                        let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany(
+                            { _id: { $in: taskIDs } },
+                            { $pull: { news: userID } },
+                            { new: true }
+                        );
+
+                        if (!infoTaskAfterUpdate)
+                            return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+                    }
+
+                    // Cập nhật tất cả các Task của user chưa đọc
+                    if(option == 2){
+                        let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany(
+                            { news: { $in: userID } },
+                            { $pull: { news: userID } },
+                            { new: true }
+                        );
+
+                        if (!infoTaskAfterUpdate)
+                            return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+                    }
+
+                    return resolve({ error: false, message: "update_success" })
                 }
 
-                return resolve({ error: false, message: "update_success" });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -1069,9 +1288,16 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                // Bắt đầu kiểm tra quyền
-                let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
-                let { author, assignee, related, group } = infoTaskToCheckPermission;
+
+                /**
+                 * Bắt đầu kiểm tra quyền
+                 */
+                let infoTaskForCheck = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
+                if(!infoTaskForCheck) {
+                    return resolve({ error: true, message: 'Not found task', status: 404 });
+                }
+
+                let { author, assignee, related, group, viewedUsers, status } = infoTaskForCheck;
 
                 let isAuthor = false;
                 let isAssignee = false;
@@ -1096,14 +1322,45 @@ class Model extends BaseModel {
                     isMemberGroup = true;
                 }
 
+                // console.log({isAuthor,isAssignee,isRelated,isMemberGroup})
+
                 if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
                     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
-                // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem
-                if(Number(infoTaskToCheckPermission.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
-                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+                // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem(Đệ bỏ đi)
+                // if(Number(infoTaskForCheck.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
+                //     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+                /**
+                 * Kết thúc kiểm tra quyền
+                 */
 
-                // Kết thúc kiểm tra quyền
+                /**
+                 * Cập nhật thông tin người truy cập
+                 */
+                let result = viewedUsers.filter(item => item != null);
+                // console.log(result)
+
+                if(!result.map(item=>item.toString()).includes(userID.toString())){
+                    console.log('========Bạn chưa xem công việc============')
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { viewedUsers: userID },
+                    });
+                }else{
+                    console.log('========Bạn đã xem công việc============')
+                }
+
+                /**
+                 * Cập nhật trạng thái triển khai
+                 */
+                if(assignee.toString() == userID.toString() && status == 1){
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
+                        {
+                            $set: {
+                                status: 2
+                            }
+                        }, { new: true })
+                }
+
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
                                 .populate(populates).lean();
@@ -1121,39 +1378,56 @@ class Model extends BaseModel {
     /**
      * Name  : Danh sách pcm_plan_task
      * Author: Depv
-     * Code  :
+     * Update: HiepNH
+     * Code  : 20/8/2022
      */
     getList({
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 10, unlimit, lastestID, select, populates = {}
+        keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
+        // console.log('=============Danh sách chủ đề 6688=============>>>>>>>>>>>')
+        // console.log({
+        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+        //     keyword, limit, unlimit, lastestID, select, populates
+        // })
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20;
+                /**
+                 * BA
+                 */
+
+                if(Number(limit) > 50){
+                    limit = 50;
                 } else{
-                    limit = +limit;
+                    limit = +Number(limit);
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+                // Các việc user đang active
                 let conditionObj = {
                     usersDelete: { $nin: [userID] },
                 };
 
+                // Các việc chưa hoàn thành
                 if(statusNe){
                     conditionObj.status = { $ne: statusNe };
                 }
 
                 let sortBy;
-                let keys	 = ['actualFinishTime__-1', '_id__-1'];
+                // let keys	 = ['actualFinishTime__-1', '_id__-1'];
+                // let keys	 = ['actualFinishTime__1', '_id__1'];
+                let keys	 = ['modifyAt__-1'];
+                let totalTaskDone = 0;
+
                 if(isSortChecklist == 1 || isSortChildTask == 1){
-                    keys = ['createAt__-1', '_id__-1'];
+                    keys = ['actualFinishTime__1', '_id__1'];
+                    // keys = ['modifyAt__', '_id__1'];
                 }
 
+                // Làm rõ mục đích để làm gì?
                 if (sortKey && typeof sortKey === 'string') {
                     if (!IsJsonString(sortKey))
                         return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
@@ -1163,82 +1437,60 @@ class Model extends BaseModel {
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
-
                 let end = new Date();
                 end.setHours(23,59,59,999);
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                //__________Danh sách các nhóm dữ liệu mà userID là members
                 let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                // Lấy công việc mà mình được quyền truy cập
+                // Lấy công việc mà user được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
                     { assignee: userID },
                     { related: { $in: [userID] }},
-                    { group: { $in: listGroups.map(item => item._id) }},
+                    { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
                 ]
-
-                // Kiểm tra điều kiện populates
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
 
                 // Tìm kiếm nếu có trạng thái công việc
                 if(status){
                     conditionObj.status = { $in: [status] }
                 }
 
-                // Tìm kiếm điều kiên công việc nhanh chậm
-                if(isExpired && isExpired == 1){
-                    //Việc bình thường
-                    conditionObj.actualFinishTime = {
-                        $gt: new Date(),
-                        $exists: true,
-                        $ne: null
+                // console.log({conditionObj_______1:conditionObj})
+
+                /**
+                 * Quá hạn
+                 */
+                if(isExpired){
+                    // Đã quá hạn
+                    if(isExpired == 1) {
+                        conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
+                        conditionObj.actualFinishTime = {
+                            $lt: new Date()
+                        }
+                    }
+
+                    // Chưa quá hạn
+                    if(isExpired == 2) {
+                        conditionObj.actualFinishTime = {
+                            $gt: new Date()
+                        }
+                    }
+                }else{
+                    /**
+                     * Lấy những công việc từ ngày đến ngày
+                     * - Sẽ không cùng diễn ra với Lọc quá hạn
+                     */
+                    if(fromDate && toDate){
+                        conditionObj.actualFinishTime = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
                     }
                 }
 
-                if(isExpired && isExpired == 2){
-                    //Việc chậm
-                    conditionObj.status = { $ne: 3 }
-                    conditionObj.actualFinishTime = {
-                        $lt: new Date(),
-                        $exists: true,
-                        $ne: null
-                    }
-				}
-
-                // Lấy những công việc từ ngày đến ngày
-                if(fromDate && toDate){
-                    conditionObj.actualFinishTime = {
-                        $gte: new Date(fromDate), $lte: new Date(toDate),
-                        $exists: true,
-                        $ne: null
-                    }
-				}
-
-                // lấy những việc nháp hoặc không phải việc nháp
-                if(draft && [0,1].includes(draft)){
+                // Lấy những việc nháp hoặc không phải việc nháp
+                if(draft){
                     conditionObj.draft = draft;
                 }
 
@@ -1246,6 +1498,20 @@ class Model extends BaseModel {
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
                 }
+
+                // Lấy việc trong group
+                if(groupID && checkObjectIDs(groupID)){
+                    conditionObj.group = groupID
+                    // conditionObj.parent = { $exists: false } // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
+                    conditionObj.level = 1; // Chỉ lấy các việc cha
+                    delete conditionObj.$or;
+                }
+
+                // Việc theo cột mốc
+                if(!isNaN(milestone)){
+                    conditionObj.milestone = milestone;
+                }
+
                 /**
                 * Phân loại chủ đề
                 * 1-Công việc
@@ -1255,10 +1521,11 @@ class Model extends BaseModel {
                     conditionObj.type = collection;
                 }
 
-                //Phân loại công việc
+                // Phân loại công việc
                 if(!isNaN(subtype)){
                     conditionObj.subtype = +subtype;
                 }
+
                 /**
                  * Type = 0 Việc của tôi + Giao + Liên quan(All)
                  * Type = 1 Việc của tôi
@@ -1271,54 +1538,62 @@ class Model extends BaseModel {
                     conditionObj.$or = [
                         { author: userID },
                         { assignee: userID },
-                        { related: { $in: [userID] }}
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }}
                     ]
                 }
 
+                // Việc của tôi
                 if(type == 1){
                     conditionObj.assignee = userID;
                     delete conditionObj.$or
                 }
 
+                // Việc giao người khác
                 if(type == 2){
                     conditionObj.author = userID;
                     delete conditionObj.$or
                 }
 
+                // Việc đánh dấu quan tâm
                 if(type == 3){
                     conditionObj.flags = { $in: [userID]};
                     delete conditionObj.$or
                     delete conditionObj.status
                 }
 
+                 // Việc nháp
                 if(type == 4){
-                    // conditionObj.author = userID;
                     conditionObj.$or = [
-                        { author: userID },
-                        { related: { $in: [userID] } },
+                        { author: userID }, // Người tạo việc được xem
+                        { related: { $in: [userID] } }, // Người liên quan được xem
                     ],
-                    conditionObj.draft = 1;
+                    conditionObj.draft = 1; // Gồm cả việc nháp
                     delete conditionObj.status
                 }
 
+                // Việc liên quan
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
+                    delete conditionObj.$or
                 }
 
                 if(level){
                     conditionObj.level = level;
                 }
 
-                // typeStatus
-                // 1 Quá hạn
-                // 2 Tới hạn tuần tới
-                // 3 Tới hạn + 7 ngày tới
-                // Lấy việc quá hạn
+                // console.log({conditionObj_______3:conditionObj})
+
+                /**
+                 * Lấy việc quá hạn
+                 * 1-Quá hạn
+                 * 2-Tuần tới
+                 * 3->7 ngày tới
+                 * 4-Hoàn thành
+                 */
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $lt: start,
-                        $exists: true,
-                        $ne: null
+                        $lt: start
                     }
                 }
 
@@ -1326,19 +1601,20 @@ class Model extends BaseModel {
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
                         $gte:  moment(start).startOf('day')._d,
-                        $lt: moment(addDate(7)).endOf('day')._d,
-                        $exists: true,
-                        $ne: null
+                        $lt: moment(addDate(7)).endOf('day')._d
                     }
                 }
 
                 // Tới hạn + 7 ngày tới
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
-                        $gte: addDate(7),
-                        $exists: true,
-                        $ne: null
+                        $gte: addDate(7)
                     }
+                }
+
+                // Hoàn thành
+                if(typeStatus && typeStatus == 4){
+                    conditionObj.status = 3
                 }
 
                 // Lấy việc của người thực hiện
@@ -1355,23 +1631,13 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                     delete conditionObj.$or
-                    // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
-                    if(isChecklist == 1){
-                        conditionObj.type = 2;
-                        delete conditionObj.status;
-                    } else{
-                        conditionObj.type = 1;
-                    }
-
-                    if(isChildTask == 1){
-                        conditionObj.type = 1;
-                        delete conditionObj.status;
-                    }
+                    delete conditionObj.status;
                 }
 
                 // Chỉ lấy task cha
                 if(isParent == 1){
-                    conditionObj.parent = { $exists: false };
+                    // conditionObj.parent = { $exists: false }; // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
+                    conditionObj.level = 1;
                 }
 
                 // Công ty của người tạo việc
@@ -1392,25 +1658,35 @@ class Model extends BaseModel {
                 if(fieldID && checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID;
                 }
-                
+
+                // Kiểm tra điều kiện populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                console.log('=======================')
+                console.log({conditionObj})
+
                 // Tìm kiếm theo keyword
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
-
-                if(groupID && checkObjectIDs(groupID)){
-                    conditionObj.group = groupID
-                    conditionObj.parent = { $exists: false }
-                    delete conditionObj.$or;
-                }
-                
-                if(!isNaN(milestone)){
-                    conditionObj.milestone = milestone;
+                    conditionObj.$or = [
+                        { name  :  new RegExp(keyword, 'i') },
+                        { description  :  new RegExp(keyword, 'i') }
+                    ]
                 }
 
                 let conditionObjOrg = {...conditionObj};
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
 					if(!infoData)
@@ -1427,11 +1703,30 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
 
+                // console.log(conditionObjOrg)
+
                 // Tổng số việc tìm thấy
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
-
+                console.log({totalRecord})
                 if(unlimit == 1){
                     limit = totalRecord;
+                }
+                /**
+                 * Dùng để lấy all data, Chỉ:
+                 * - Dùng internal services
+                 * - Không cho client truyền qua API
+                 */
+                if(unlimited) {
+                    const infoDataAfterGet = await PCM_PLAN_TASK_COLL
+                        .find({ ...conditionObj, draft: 0 })
+                        .select(select)
+                        .populate(populates)
+                        .sort(sortBy)
+                        .lean();
+
+                    return resolve({
+                        data: infoDataAfterGet
+                    });
                 }
 
                 // Bắt đầu query trong db
@@ -1454,14 +1749,24 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-               
+
+                // Lấy tổng subtask đã hoàn thành (show in detail task)
+                if(parentID && checkObjectIDs(parentID)){
+                    totalTaskDone = await PCM_PLAN_TASK_COLL.count({
+                        parent: parentID,
+                        type: 2,
+                        status: 3
+                    });
+                }
 
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
+                // console.log(infoDataAfterGet)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
+                    totalTaskDone,
                     totalRecord,
                     totalPage,
                     nextCursor,
@@ -1474,25 +1779,34 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Search Task
+     * Func: Tìm kiếm Task
      * Date: 11/05/2022
      */
     getListByFilter({
-        fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-        projectsID, subtypes, status, fieldsID, isExpired, keyword, unlimited,
-        limit = 20, lastestID, select, populates, userID
+        fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
+        limit = 50, lastestID, select, populates, userID
     }) {
+        console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
+        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, reportType, unlimited,
+            limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 */
+
                 /**
                  * VALIDATION (1)
                  */
                 const validation = validateParamsObjectID({
+                    companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
                     assigneesID         : { value: assigneesID, isRequire: false },
                     authorsID           : { value: authorsID, isRequire: false },
+                    companiesOfAuthor   : { value: companiesOfAuthor, isRequire: false },
                     projectsID          : { value: projectsID, isRequire: false },
                     fieldsID            : { value: fieldsID, isRequire: false },
-                    companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
                 });
                 if(validation.error) return resolve(validation);
 
@@ -1514,37 +1828,62 @@ class Model extends BaseModel {
                 let conditionObj = {
                     usersDelete: { $nin: [userID] },
                 };
+
                 let nextCursor  = null;
                 let sortBy      = null;
-                let keys	    = ['actualFinishTime__-1', '_id__-1'];
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
+                let keys	 = ['modifyAt__-1', '_id__-1'];
+                // let keys	    = ['actualFinishTime__-1', '_id__-1'];
 
                 /**
                  * LOGIC CODE (3)
                  */
-                if(limit > 20 && isNaN(limit)){
-                    limit = 20;
+                if(limit > 50 && isNaN(limit)){
+                    limit = 50;
                 } else{
                     limit = +limit;
                 }
 
-                // Lấy danh sách các nhóm dữ liệu mà userID là members
-                const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                /**
+                 * Kiểm soát quyền truy cập Task
+                 */
+                if(isGroup && Number(isGroup) == 1){
+                    // Lấy danh sách các nhóm dữ liệu mà userID là members
+                    const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                // Lấy công việc mà mình được quyền truy cập
-                conditionObj.$or = [
-                    { author: userID },
-                    { assignee: userID },
-                    { related: { $in: [userID] }},
-                    { group: { $in: listGroups.map(item => item._id) }},
-                ]
+                    // Lấy công việc mà mình được quyền truy cập
+                    conditionObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        { group: { $in: listGroups.map(item => item._id) }},
+                    ]
+                }else{
+                    // Lấy danh sách các nhóm dữ liệu mà userID là members
+                    // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                // Điều kiện bộ lọc
+                    // Lấy công việc mà mình được quyền truy cập
+                    conditionObj.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] }},
+                        // { group: { $in: listGroups.map(item => item._id) }},
+                    ]
+                }
+
+                /**
+                 * PHÂN LOẠI CÔNG VIỆC
+                 * 1-Việc của tôi
+                 * 2-Việc giao người khác
+                 * 3-Việc liên quan
+                 */
+                if(reportType == 1){
+                    conditionObj.assignee = userID;
+                    delete conditionObj.$or
+                }
+
+                /**
+                 * Bộ lọc với nhiều lựa chọn
+                 */
                 status && status.length                             && (conditionObj.status = { $in: status });
                 projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
                 subtypes && subtypes.length                         && (conditionObj.subtype = { $in: subtypes });
@@ -1552,44 +1891,76 @@ class Model extends BaseModel {
                 authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
                 fieldsID && fieldsID.length                         && (conditionObj.field = { $in: fieldsID });
                 companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
+                companiesOfAuthor && companiesOfAuthor.length       && (conditionObj.companyOfAuthor = { $in: companiesOfAuthor });
 
-                if(isExpired){
-                    // Việc bình thường
+                // Chỉ lấy task cha hoặc lấy tất cả
+                if(isParent && isParent == 1){
+                    conditionObj.parent = { $exists: false };
+                }
+                if(isParent && isParent == 2){
+                    conditionObj.parent = { $exists: true };
+                }
+
+                // Chưa xem (user nắm trong mảng new)
+                if(read && read == 1){
+                    conditionObj.news = { $in: [userID] }
+                }
+
+                // Đã xem (user bị xoá ra khỏi mảng news)
+                if(read && read == 2){
+                    conditionObj.news = { $nin: [userID] }
+                }
+
+                /**
+                 * Quá hạn
+                 */
+                if(isExpired && Number(isExpired) > 0){
+                    // Đã quá hạn
                     if(isExpired == 1) {
+                        conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
                         conditionObj.actualFinishTime = {
-                            $gt: new Date(),
-                            $exists: true,
-                            $ne: null
+                            $lt: new Date()
                         }
                     }
 
-                    // Việc chậm
+                    // Chưa quá hạn
                     if(isExpired == 2) {
-                        conditionObj.status = { $ne: 3 };
                         conditionObj.actualFinishTime = {
-                            $lt: new Date(),
-                            $exists: true,
-                            $ne: null
+                            $gt: new Date()
+                        }
+                    }
+                }else{
+                    /**
+                     * Lấy những công việc từ ngày đến ngày
+                     * - Sẽ không cùng diễn ra với Lọc quá hạn
+                     */
+                    if(fromDate && toDate){
+                        conditionObj.actualFinishTime = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
                         }
                     }
                 }
 
-                // Lấy những công việc từ ngày đến ngày
-                if(fromDate && toDate){
-                    conditionObj.actualFinishTime = {
-                        $exists: true,
-                        $ne: null,
-                        $gte: new Date(fromDate),
-                        $lte: new Date(toDate),
-                    }
-				}
+                /**
+                 * Việc quan trọng
+                 */
+                if(priority && Number(priority) > 0){
+                    conditionObj.priority = Number(priority)
+                }
 
                 // Tìm kiếm theo keyword
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+                    conditionObj.name = new RegExp(keyword, 'i')
+                    // conditionObj.$or = [
+                    //     { name  :  new RegExp(keyword, 'i') },
+                    //     { description  :  new RegExp(keyword, 'i') }
+                    // ]
                 }
+                console.log('========================')
+                console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -1669,6 +2040,310 @@ class Model extends BaseModel {
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Lấy thông báo công việc
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getAmountNotification({ userID }){
+        console.log({ userID })
+        return new Promise(async resolve => {
+            try {
+                let start = new Date();
+                start.setHours(0,0,0,0);
+                let end = new Date();
+                end.setHours(23,59,59,999);
+
+                let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
+
+                // Số công việc chưa xem
+                amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
+                    news: { $in: [userID] },
+                    usersDelete: { $nin: [userID] }
+                })
+
+                // Số công việc của tôi - Quá hạn
+                amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    actualFinishTime: { $lt: start }
+                })
+
+                // Số công việc của tôi - Tuần tới
+                amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    actualFinishTime: { 
+                        $gte:  moment(start).startOf('day')._d,
+                        $lt: moment(addDate(7)).endOf('day')._d
+                    }
+                })
+
+                // Số công việc của tôi - Sau tuần tới
+                amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    actualFinishTime: { 
+                        $gte: addDate(7)
+                    }
+                })
+
+                // Số công việc của tôi - Quan trọng
+                amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    status: { $ne: 3 },
+                    priority: 3,
+                    usersDelete: { $nin: [userID] }
+                })
+
+                return resolve({ error: false, data: {
+                    amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
+                }});
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Báo cáo linh hoạt
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getDynamicReport({ userID, option, reportType, status, fromDate, toDate }){
+        console.log('Báo cáo động ========>>>>>>>>')
+        console.log({ userID, option, reportType, status, fromDate, toDate })
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}
+                if(Array.isArray(status)){
+                    conditionObj = {status: {$in: status.map(item=>Number(item))}} // Do sử dụng agg nên phải pas sang Number
+                }
+                let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
+
+                // Việc của tôi
+                if(reportType && reportType == 1){
+                    conditionObj.assignee = ObjectID(userID)
+                    conditionObj.usersDelete = { $nin: [userID] }
+                }
+
+                // Theo thời hạn
+                if(fromDate && toDate){
+                    conditionObj.actualFinishTime = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+                }
+
+                if(!option){
+                    let start = new Date();
+                    start.setHours(0,0,0,0);
+                    let end = new Date();
+                    end.setHours(23,59,59,999);
+
+                    let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
+
+                    // Số công việc chưa xem
+                    amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
+                        news: { $in: [userID] },
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    // Số công việc của tôi - Quá hạn
+                    amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        usersDelete: { $nin: [userID] },
+                        status: { $ne: 3 },
+                        actualFinishTime: { $lt: start }
+                    })
+
+                    // Số công việc của tôi - Tuần tới
+                    amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        usersDelete: { $nin: [userID] },
+                        status: { $ne: 3 },
+                        actualFinishTime: { 
+                            $gte:  moment(start).startOf('day')._d,
+                            $lt: moment(addDate(7)).endOf('day')._d
+                        }
+                    })
+
+                    // Số công việc của tôi - Sau tuần tới
+                    amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        usersDelete: { $nin: [userID] },
+                        status: { $ne: 3 },
+                        actualFinishTime: { 
+                            $gte: addDate(7)
+                        }
+                    })
+
+                    // Số công việc của tôi - Quan trọng
+                    amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        priority: 3,
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    return resolve({ error: false, data: {
+                        amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
+                    }});
+                }else{
+                    // Theo đơn vị giao việc
+                    if(option && Number(option) == 1){
+                        objectGroup = { companyOfAuthor: '$companyOfAuthor' }
+                        sortBy = { "_id.companyOfAuthor": 1 }
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAuthor',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        let listDataCompany = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        
+                        if(listDataCompany.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataCompany, conditionPopulateCompany)
+                        }
+                        // console.log(listDataCompany)
+
+                        return resolve({ error: false, data: { listDataCompany } });
+                    }
+
+                    // Theo người giao việc
+                    if(option && Number(option) == 2){
+                        objectGroup = { author: '$author' }
+                        sortBy = { "_id.author": 1 }
+                        conditionPopulateUser = {
+                            path: '_id.author',
+                            select: '_id name sign image fullname',
+                            model: 'user'
+                        }
+
+                        let listDataUser = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        
+                        if(listDataUser.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataUser, conditionPopulateUser)
+                        }
+                        // console.log(listDataUser)
+
+                        return resolve({ error: false, data: { listDataUser } });
+                    }
+
+                    // Theo dự án
+                    if(option && Number(option) == 5){
+                        objectGroup = { project: '$project' }
+                        sortBy = { "_id.project": 1 }
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+
+                        console.log(conditionObj)
+
+                        let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        console.log(listDataProject)
+                        
+                        if(listDataProject.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataProject, conditionPopulateProject)
+                        }
+                        // console.log(listDataProject)
+
+                        return resolve({ error: false, data: { listDataProject } });
+                    }
+
+                    // Theo tính chất
+                    if(option && Number(option) == 6){
+                        objectGroup = { subtype: '$subtype' }
+                        sortBy = { "_id.subtype": 1 }
+
+                        // console.log(conditionObj)
+
+                        let listDataSubtype = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        // console.log(listDataSubtype)
+
+                        return resolve({ error: false, data: { listDataSubtype } });
+                    }
+
+                    // Theo trạng thái
+                    if(option && Number(option) == 7){
+                        objectGroup = { status: '$status' }
+                        sortBy = { "_id.status": 1 }
+
+                        // console.log(conditionObj)
+
+                        let listDataStatus = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        // console.log(listDataSubtype)
+
+                        return resolve({ error: false, data: { listDataStatus } });
+                    }
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }
@@ -1876,7 +2551,7 @@ class Model extends BaseModel {
                     const { data: users } = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
                         { arrayID: JSON.stringify([...receivers, userID]), select: "_id email", isLoadAll: true }
                     );
-                    console.log({ users, emails })
+                    // console.log({ users, emails })
 
                     if(users.length) {
                         mailsUser = users.map(item => item.email);
@@ -1924,9 +2599,218 @@ class Model extends BaseModel {
                 // pool
                 //     .exec(MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, [JSON.stringify({ email: mailsUser, title, content: { sender, notice, infoTask } })])
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         });
+    }
+
+    /**
+     * Name: Lấy số lượng công việc của companyOfAssignee (gom nhóm theo user, project)
+     * Author: HiepNH
+     * Code: 23/9/2022
+     */
+    getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, projectID, keyword, subtype, ctx }){
+        // console.log('==================Tổng hợp theo đơn vị thực hiện 2222================>>>>>>>>>>>>>>>>>')
+        // console.log({ option, companyID, keyword, subtype })
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(companyID))
+                    return resolve({ error: true, message: 'companyID_invalid' });
+
+                let objCodition = {
+                    companyOfAssignee: ObjectID(companyID),
+                }
+
+                if(subtype){
+                    objCodition.subtype = +subtype;
+                }
+
+                let conditionGroup = {}, listUserOfCompany, listProjectOfCompany
+
+                if(option == 1){
+                    if(projectID && checkObjectIDs(projectID)){
+                        objCodition.project = ObjectID(projectID)
+                    }
+
+                    conditionGroup = {
+                        _id: "$assignee",
+                        count: { $sum: 1 }
+                    }
+
+                    /**
+                     * DANH SÁCH USER THỰC HIỆN CÔNG VIỆC CỦA CÔNG TY
+                     */
+                    let listUser = await PCM_PLAN_TASK_COLL.aggregate([
+                        { $match: objCodition },
+                        { $group: { _id: "$assignee" } },
+                        { $sort: { _id: -1} }
+                    ]);
+                    // console.log(listUser)
+
+                    let conditionObj = {}
+
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        conditionObj.fullname = new RegExp(keyword, 'i');
+                    }
+                    let conditionPopulate = {
+                        path: '_id',
+                        select: '_id fullname bizfullname sign image position department',
+                        model: 'user',
+                        match: conditionObj
+                    }
+
+                    let conditionPopulate2 = {
+                        path: '_id.position',
+                        select: 'name sign',
+                        model: 'position',
+                    }
+
+                    let conditionPopulate3 = {
+                        path: '_id.department',
+                        select: 'name sign modifyAt',
+                        model: 'department',
+                    }
+
+                    await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate);
+                    await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate2);
+                    await PCM_PLAN_TASK_COLL.populate(listUser, conditionPopulate3);
+                    listUserOfCompany = listUser.map(item => item._id).filter(Boolean);
+                }
+
+                if(option == 2){
+                    conditionGroup = {
+                        _id: "$project",
+                        count: { $sum: 1 }
+                    }
+
+                    /**
+                     * DANH SÁCH DỰ ÁN MÀ USER CÔNG TY THAM GIA THỰC HIỆN
+                     */
+                    let listProject = await PCM_PLAN_TASK_COLL.aggregate([
+                        { $match: objCodition },
+                        { $group: { _id: "$project" } },
+                        { $sort: { _id: -1} }
+                    ]);
+                    // console.log(listProject)
+
+                    let conditionObj = {}
+
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        conditionObj.name = new RegExp(keyword, 'i');
+                    }
+                    let conditionPopulate = {
+                        path: '_id',
+                        select: '_id name sign image modifyAt',
+                        options: { sort: { 'modifyAt': -1 } },
+                        model: 'department',
+                        match: conditionObj
+                    }
+
+                    await PCM_PLAN_TASK_COLL.populate(listProject, conditionPopulate);
+                    listProjectOfCompany = listProject.map(item => item._id).filter(Boolean);
+                }
+
+                /**
+                 * Việc quá hạn
+                 */
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                let conditionSearchTask = {
+                    companyOfAssignee: ObjectID(companyID)
+                }
+
+                if(subtype){
+                    conditionSearchTask.subtype = +subtype;
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionSearchTask.project = ObjectID(projectID);
+                }
+
+                let listTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $lt: start,
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listTaskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $gte: start,
+                                $lt: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            actualFinishTime: {
+                                $gte: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let listTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionSearchTask,
+                            status: 3
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                return resolve({ error: false, data: {
+                    listUserOfCompany, listProjectOfCompany,
+                    listTaskOverdueWork, listTaskNextWeekWork,  listTaskMoreThan7Days, listTaskFinish
+                    }
+                })
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
     }
 
     /**
@@ -1935,10 +2819,13 @@ class Model extends BaseModel {
      * Code:
      */
     getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx }){
+        // console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
+        // console.log({ projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID_invalid' });
+
                 let objectSearch = {
                     project: ObjectID(projectID), companyOfAssignee: { $exists: true },
                 }
@@ -1959,6 +2846,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObjCompany.name = new RegExp(keyword, 'i');
                 }
+
                 let conditionPopulate = {
                     path: '_id',
                     select: '_id name sign image',
@@ -1966,10 +2854,16 @@ class Model extends BaseModel {
                     match: conditionObjCompany
                 }
 
-                await PCM_PLAN_TASK_COLL.populate(listCompanyOfAssignee, conditionPopulate);
+                let listData = await PCM_PLAN_TASK_COLL.populate(listCompanyOfAssignee, conditionPopulate);
+                // console.log(listData)
+
+                // let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean);
                 let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean);
+                // console.log(listCompany)
+
                 let start = new Date();
                 start.setHours(0,0,0,0);
+
                 let conditionSearchTask = {
                     project: ObjectID(projectID),
                     companyOfAssignee: { $exists: true },
@@ -1978,6 +2872,7 @@ class Model extends BaseModel {
                 if(subtype){
                     conditionSearchTask.subtype = +subtype;
                 }
+
                 let listCompanyAndTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
                     {
                         $match: {
@@ -2057,12 +2952,13 @@ class Model extends BaseModel {
                     },
                     { $sort: { _id: -1 }},
                 ]);
-                
-                return resolve({ error: false, data: { 
+
+                return resolve({ error: false, data: {
                     listCompany,
                     listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
                     } });
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -2070,17 +2966,19 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án V2
+     * Name: Lấy số lượng công việc của companyOfAuthor trong dự án V2
      * Author: Depv
      * Code:
      */
-    getAmountTaskOfCompanyOfAuthor({ projectID, keyword, subtype, ctx }){
+    getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID }){
+        console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
+        // console.log({ projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID_invalid' });
                 let objectSearch = {
-                    project: ObjectID(projectID), 
+                    project: ObjectID(projectID),
                     companyOfAuthor: { $exists: true },
                     parent: { $exists: false },
                 }
@@ -2088,6 +2986,17 @@ class Model extends BaseModel {
                 if(subtype){
                     objectSearch.subtype = +subtype;
                 }
+
+                // Lấy danh sách các nhóm dữ liệu mà userID là members
+                // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                // // Lấy công việc mà mình được quyền truy cập
+                // conditionObj.$or = [
+                //     { author: userID },
+                //     { assignee: userID },
+                //     { related: { $in: [userID] }},
+                //     { group: { $in: listGroups.map(item => item._id) }},
+                // ]
 
                 let listCompanyOfAuthor = await PCM_PLAN_TASK_COLL.aggregate([
                     { $match: objectSearch },
@@ -2202,8 +3111,8 @@ class Model extends BaseModel {
                     },
                     { $sort: { _id: -1 }},
                 ]);
-                
-                return resolve({ error: false, data: { 
+
+                return resolve({ error: false, data: {
                     listCompany,
                     listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
@@ -2256,8 +3165,6 @@ class Model extends BaseModel {
                             project: ObjectID(projectID),
                             milestone: { $exists: true },
                             actualFinishTime: {
-                                // $gte: start,
-                                // $lt: addDate(7),
                                 $gte:  moment(start).startOf('day')._d,
                                 $lt: moment(addDate(7)).endOf('day')._d,
                                 $exists: true,
@@ -2266,18 +3173,6 @@ class Model extends BaseModel {
                             status: { $ne: 3 }
                         }
                     },
-
-                //      // lấy việc tới hạn Tuần tới
-                // if(typeStatus && typeStatus == 2){
-                //     conditionObj.actualFinishTime = {
-                //         $gte:  moment(start).startOf('day')._d,
-                //         $lt: moment(addDate(7)).endOf('day')._d,
-                //         // $gte: start,
-                //         // $lt: addDate(7),
-                //         $exists: true,
-                //         $ne: null
-                //     }
-                // }
                     {
                         $group: {
                             _id: "$milestone",
@@ -2481,6 +3376,7 @@ class Model extends BaseModel {
      * Date: 22/04/2022
 	 */
     moveTaskToParent({ parentID, taskID, userID }) {
+        // console.log({ parentID, taskID, userID })
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
@@ -2490,7 +3386,19 @@ class Model extends BaseModel {
                 })
                 if(validation.error) return resolve(validation);
 
-                const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID);
+                if(parentID.toString() == taskID.toString()) {
+                    return resolve({
+                        error: true,
+                        message: 'Không thể tự di chuyển vào chính công việc này',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                /**
+                 * Thông tin công việc cha
+                 */
+                const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID)
 
                 if(!infoParent) {
                     return resolve({
@@ -2501,19 +3409,32 @@ class Model extends BaseModel {
                     });
                 }
 
-                const { project, group } = infoParent;
+                const { project } = infoParent;
 
+                /**
+                * Gán project từ việc cha sang việc con (không gán Group)
+                * - Chỉ cho phép người tạo việc, thực hiện di chuyển
+                * - Tăng số lượng subtask của task cha
+                */
                 const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
                     _id: taskID,
                     project,
-                    $or: [
-                        { author: userID },
-                        { assignee: userID },
-                    ]
-                }, {
+                    // $or: [
+                    //     { author: userID },
+                    //     { assignee: userID },
+                    // ]
+                },
+                {
                     $set: {
                         parent: parentID,
-                        group
+                    },
+                }, { new: true })
+
+                // Cập nhật số lượng công việc con của việc cha
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,
+                {
+                    $inc: {
+                        amountSubtask: 1,
                     }
                 }, { new: true })
 
@@ -2591,22 +3512,115 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
+     * Func: Copy child task
+     * Date: 01/09/2022
+     */
+    cloneChildTask({ parentId, parentTask, isDraftTask, callback = null }) {
+        return new Promise(async resolve => {
+            try {
+                const listTasks = await PCM_PLAN_TASK_COLL
+                    .find({ parent: parentId })
+                    .populate('parent', 'startTime expiredTime')
+                    .lean();
+
+                if(!listTasks || !listTasks.length) {
+                    return resolve({
+                        results: [],
+                        errors: ['not found tasks']
+                    })
+                }
+
+                const { results, errors } = await PromisePool
+                    .for(listTasks)
+                    .withConcurrency(4)
+                    .process(async childTask => {
+                        const childTaskID = childTask._id;
+
+                        // Thời gian bắt đầu task cha (1)
+                        let startTime = childTask.parent?.startTime;
+
+                        // Deadline task con (2)
+                        let expiredTime = childTask.expiredTime;
+
+                        // Tổng ngày từ startTime task cha -> deadline task con (3)
+                        let totalDayStartTimeToExpiredTime = calculateExpireTime(startTime, expiredTime, 'days');
+
+                        /**
+                         * Lấy startTime của task cha (new) + thêm (3)
+                         * => Deadline mới cho task con (new)
+                         */
+                        let newExpiredTime = moment(parentTask.startTime, "DD-MM-YYYY")
+                            .add(totalDayStartTimeToExpiredTime, 'days');
+
+                        let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+
+                        // console.log({
+                        //     startTimeParentTask: parentTask.startTime,
+                        //     oldStartTimeParentTask: startTime,
+                        //     expiredTime,
+                        //     totalDayStartTimeToExpiredTime,
+                        //     newExpiredTime,
+                        //     childID: childTask._id,
+                        //     parentID: parentTask._id,
+                        // })
+
+                        delete childTask._id;
+                        const newChildTask = await PCM_PLAN_TASK_COLL.create({
+                            ...childTask,
+                            suid,
+                            parent: parentTask._id,
+                            startTime: new Date(),
+                            actualStartTime: new Date(),
+                            expiredTime: new Date(newExpiredTime),
+                            actualFinishTime: new Date(newExpiredTime),
+                            draft: isDraftTask ? 1 : 0,
+                        })
+
+                        if(callback) {
+                            await callback(childTaskID, newChildTask);
+                        }
+
+                        return newChildTask;
+                    })
+
+                return resolve({ results, errors });
+            } catch(error) {
+                return resolve({
+                    results: [],
+                    errors: [error.message]
+                });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
      * Func: Copy task
      * Date: 22/04/2022
+     * Updated: 01/09/2022 - MinhVH
      */
-    copyTask({ taskID, userID, companyOfUser }) {
+    copyTask({
+        taskID, name, projectID, groupID, assigneeID, relatedIDs,
+        authorAttachs, type, subtype, description, startTime, expiredHour,
+        expiredTime, contractID, isDraftTask, isCloneChildTask,
+        userID, bizfullname, ctx
+    }) {
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
-                    taskID: { value: taskID, isRequire: true },
-                    userID: { value: userID, isRequire: true },
-                    companyOfUser: { value: companyOfUser, isRequire: true },
+                    taskID          : { value: taskID, isRequire: true },
+                    projectID       : { value: projectID, isRequire: true },
+                    groupID         : { value: groupID, isRequire: true },
+                    assigneeID      : { value: assigneeID, isRequire: true },
+                    relatedIDs      : { value: relatedIDs, isRequire: false },
+                    contractID      : { value: contractID, isRequire: false },
+                    authorAttachs   : { value: authorAttachs, isRequire: false },
+                    userID          : { value: userID, isRequire: true },
                 });
                 if(validation.error) return resolve(validation);
 
                 const infoOldTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
-                    .select('company project group parent name related assignee companyOfAssignee')
                     .lean();
 
                 if(!infoOldTask) {
@@ -2618,25 +3632,262 @@ class Model extends BaseModel {
                     });
                 }
 
-                const { company, project, group, parent, name, related, assignee, companyOfAssignee } = infoOldTask;
+                const { amountoftime, parent } = infoOldTask;
 
-                const suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
-                const result = await this.insertData({
-                    suid,
-                    name: `Copy of ${name}`,
-                    draft: 1, // Việc nháp
-                    companyOfAuthor: companyOfUser,
-                    companyOfAssignee,
-                    author: userID,
-                    assignee,
-                    related,
-                    company,
-                    project,
-                    group,
-                    parent
-                });
+                // Clone task
+                const infoAfterCloneTask = await this.insert({
+                    name,
+                    description,
+                    projectID,
+                    groupID,
+                    contractID,
+                    authorID: userID,
+                    assigneeID,
+                    relatedIDs,
+                    parentID: parent,
+                    authorAttachs,
+                    type,
+                    subType: subtype,
+                    startTime,
+                    expiredHour,
+                    expiredTime,
+                    draft: isDraftTask ? 1 : 0,
+                    amountoftime,
+                    bizfullname,
+                    ctx
+                })
+                if(infoAfterCloneTask.error) return resolve(infoAfterCloneTask);
 
-                if(!result) {
+                if(isCloneChildTask) {
+                    // Clone child task (level 2)
+                    await this.cloneChildTask({
+                        parentId: taskID,
+                        parentTask: infoAfterCloneTask.data,
+                        isDraftTask,
+                        callback: async (childTaskID, newChildTask) => {
+
+                            // Clone grand child task (level 3)
+                            await this.cloneChildTask({
+                                parentId: childTaskID,
+                                parentTask: newChildTask,
+                                isDraftTask
+                            })
+                        }
+                    })
+                }
+
+                return resolve({ error: false, data: infoAfterCloneTask?.data, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 21/9/2022
+     */
+    getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
+        // console.log('Gom nhóm công việc theo thuộc tính=================')
+        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1-Lấy danh sách các công việc
+                 * 2-Gom nhóm dữ liệu
+                 */
+                let conditionObj = {}
+                //__________Danh sách các nhóm dữ liệu mà userID là members
+                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                // Lấy công việc mà user được quyền truy cập
+                conditionObj.$or = [
+                    { author: ObjectID(userID) },
+                    { assignee: ObjectID(userID) },
+                    { related: { $in: [ObjectID(userID)] }},
+                    { group: { $in: listGroups.map(item => item._id) }},
+                ]
+
+                /**
+                 * Tính tổng số lượng theo các phân loại của Nhà thầu
+                 */
+                if(option == 1 || option == 2){
+                    let listTasks = await PCM_PLAN_TASK_COLL.find(conditionObj).select('_id')
+                    // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
+                    // console.log(listTasks)
+
+                    let objectGroup, conditionPopulateProject, conditionPopulateCompany, sortProject, sortCompany
+
+                    if(option == 1){
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAuthor',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        objectGroup = { project: '$project', companyOfAuthor: '$companyOfAuthor' }
+
+                        sortProject = { "_id.project": 1 }
+                        sortCompany = { "_id.companyOfAuthor": 1 }
+                    }
+
+                    if(option == 2){
+
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAssignee',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        objectGroup = { project: '$project', companyOfAssignee: '$companyOfAssignee' }
+
+                        sortProject = { "_id.project": 1 }
+                        sortCompany = { "_id.companyOfAssignee": 1 }
+                    }
+
+                    let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listTasks.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                        { $sort: sortProject},
+                    ])
+
+                    let listDataProjectCompany = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listTasks.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: objectGroup,
+                                amount: { $sum: 1 },
+                            }
+                        },
+                        { $sort: sortCompany},
+                    ])
+
+                    if(listDataProject.length){
+                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
+                    }
+                    // console.log(listDataProject)
+
+                    if(listDataProjectCompany.length){
+                        await DEPARTMENT_COLL.populate(listDataProjectCompany, conditionPopulateCompany)
+                    }
+                    // console.log(listDataProjectCompany)
+
+                    return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
+                }
+
+                // Danh sách các công việc theo phân loại
+                if(option == 3){
+                    // console.log(conditionObj)
+                    conditionObj.project = ObjectID(projectID)
+                    conditionObj.companyOfAuthor = ObjectID(companyID)
+                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: '$subtype' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listDataTasks });
+                }
+
+                if(option == 4){
+                    // console.log(conditionObj)
+                    conditionObj.project = ObjectID(projectID)
+                    conditionObj.companyOfAssignee = ObjectID(companyID)
+                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: '$subtype' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listDataTasks });
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Dev: Depv
+     * Func: Download excel task
+     * Date: 15/09/2022
+     */
+    downloadExcelTask({ option = 1, conditionDownload, userID }) {
+        return new Promise(async resolve => {
+            try {
+
+                const getPercentageCompletion = (startTimeX, expiredTimeX) => {
+                    let startTime  = moment(startTimeX);
+                    let endTime    = moment(expiredTimeX);
+                    let toDateTime = moment();
+
+                    let percentageCompletion = Math.round(100*(toDateTime - startTime)/(endTime - startTime));
+                    if(percentageCompletion > 100){
+                        percentageCompletion = 100;
+                    }
+
+                    if(!percentageCompletion){
+                        percentageCompletion = 0;
+                    }
+
+                    if(percentageCompletion == "-Infinity"){
+                        percentageCompletion = 0;
+                    }
+
+                    return percentageCompletion;
+                }
+                conditionDownload = JSON.parse(conditionDownload);
+                const dataTaskByCondition = await this.getList({
+                    ...conditionDownload,
+                    select: 'name expiredTime startTime percentage author assignee description status unit quantity unitPrice amount urgent difficult factor ontime quality bugType judgement amountComment expiredTime approver timeApproved finishTime',
+                    populates: JSON.stringify({
+                        path: 'assignee approver bugType project',
+                        select: 'bizfullname name sign'
+                    }),
+                    unlimited: true,
+                    userID
+                })
+
+                if(!dataTaskByCondition || !dataTaskByCondition?.data) {
                     return resolve({
                         error: true,
                         message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
@@ -2645,13 +3896,244 @@ class Model extends BaseModel {
                     });
                 }
 
-                return resolve({ error: false, data: result, status: 200 });
+                const listTaskPin = dataTaskByCondition?.data || [];
+
+                if(!option){
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_13_TaskPin.xlsm')))
+                    .then(async workbook => {
+
+                        let indexExcel = 4;
+
+                        listTaskPin.map((infoTask, index) => {
+                            workbook.sheet("Data").row(indexExcel).cell(1).value(index+1);
+                            workbook.sheet("Data").row(indexExcel).cell(2).value(infoTask.name);
+                            workbook.sheet("Data").row(indexExcel).cell(3).value(infoTask.expiredTime);
+
+                            workbook.sheet("Data").row(indexExcel).cell(4).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
+
+                            workbook.sheet("Data").row(indexExcel).cell(5).value(infoTask.assignee?.bizfullname);
+
+                            if (infoTask.description) {
+                                // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.description));
+                                workbook.sheet("Data").row(indexExcel).cell(8).value(infoTask.description);
+                            }
+
+                            workbook.sheet("Data").row(indexExcel).cell(9).value(PCM_STATUS_TASK[infoTask.status - 1].text);
+
+                            indexExcel++;
+                        })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `List-task-${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+                }else{
+                    if(option == 1){
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_human_kpi.xlsx')))
+                        .then(async workbook => {
+
+                            let indexExcel = 7;
+
+                            listTaskPin.map((infoTask, index) => {
+                                workbook.sheet("KPI").row(indexExcel).cell(1).value(index+1);
+                                workbook.sheet("KPI").row(indexExcel).cell(2).value(infoTask.project?.sign);
+                                workbook.sheet("KPI").row(indexExcel).cell(3).value(infoTask.name);
+                                workbook.sheet("KPI").row(indexExcel).cell(4).value(infoTask.assignee?.bizfullname);
+                                workbook.sheet("KPI").row(indexExcel).cell(5).value(PCM_STATUS_TASK[infoTask.status - 1].text);
+                                workbook.sheet("KPI").row(indexExcel).cell(6).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
+                                workbook.sheet("KPI").row(indexExcel).cell(7).value(infoTask.unit);
+                                workbook.sheet("KPI").row(indexExcel).cell(8).value(Number(infoTask.quantity || 0));
+                                workbook.sheet("KPI").row(indexExcel).cell(9).value(Number(infoTask.unitPrice || 0));
+                                workbook.sheet("KPI").row(indexExcel).cell(10).value(Number(infoTask.amount || 0));
+                                if (infoTask.description) {
+                                    // workbook.sheet("Data").row(indexExcel).cell(11).value(removeHtmlTag(infoTask.note));
+                                    workbook.sheet("KPI").row(indexExcel).cell(11).value(infoTask.description);
+                                }
+                                workbook.sheet("KPI").row(indexExcel).cell(12).value(Number(infoTask.urgent));
+                                workbook.sheet("KPI").row(indexExcel).cell(13).value(Number(infoTask.difficult));
+                                workbook.sheet("KPI").row(indexExcel).cell(14).value(Number(infoTask.factor));
+                                workbook.sheet("KPI").row(indexExcel).cell(15).value(Number(infoTask.ontime));
+                                workbook.sheet("KPI").row(indexExcel).cell(16).value(Number(infoTask.quality));
+                                workbook.sheet("KPI").row(indexExcel).cell(17).value(infoTask.bugType?.name);
+                                workbook.sheet("KPI").row(indexExcel).cell(18).value(infoTask.judgement);
+                                workbook.sheet("KPI").row(indexExcel).cell(19).value(Number(infoTask.amountComment));
+                                workbook.sheet("KPI").row(indexExcel).cell(20).value(infoTask.expiredTime);
+                                workbook.sheet("KPI").row(indexExcel).cell(21).value(infoTask.approver?.bizfullname);
+                                workbook.sheet("KPI").row(indexExcel).cell(22).value(infoTask.timeApproved);
+
+                                indexExcel++;
+                            })
+
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `task_report_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                            await workbook.toFileAsync(pathWriteFile);
+
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+                            fs.unlinkSync(pathWriteFile);
+
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        });
+                    }
+                }
             } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
+    /**
+     * Dev: Depv
+     * Func: Download template import excel
+     * Date: 15/09/2022
+     */
+    downloadTemplateImportExcel({ projectID, userID }) {
+        return new Promise(async resolve => {
+            try {
+
+                let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
+                if(infoProject.error)
+                    return res.json(infoProject);
+
+                let memberInProject     = infoProject.members;
+                let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID, members: {$in: [userID]} }).select("name sign");
+                let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
+                .then(async workbook => {
+                    var i = 2;
+                    planGroupInProject?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`);
+                        i++
+                    });
+
+                    var i = 2;
+                    memberInProject.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(5).value(item.fullname);
+                        i++
+                    });
+
+                    var i = 2;
+                    listContracts.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(7).value(`${item._id}`);
+                        workbook.sheet("Export").row(i).cell(8).value(`${item.sign}-${item.name}`);
+                        i++
+                    });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_task_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+                    fs.unlinkSync(pathWriteFile);
+                    console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: Depv
+     * Func: Tạo task từ dữ liệu excel
+     * Date: 15/09/2022
+     */
+    importTaskFromExcel({ taskID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================');
+                // return console.log({ dataImportJSON });
+                let index = 0;
+                let errorNumber = 0;
+                let parentID;
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        let dataInsert = {
+                            name: data?.__EMPTY_1,
+                            groupID: data?.__EMPTY_12,
+                            authorID: userID,
+                            sign: data?.__EMPTY_8,
+                            type: data?.__EMPTY_9,
+                            description: data?.__EMPTY_10,
+                            startTime:  data?.__EMPTY_14,
+                            expiredTime:  data?.__EMPTY_15,
+                            assigneeID: data?.__EMPTY_13,
+                            draft: data?.__EMPTY_17,
+                            contractID: data?.__EMPTY_16,
+                            subType: data?.__EMPTY_9,
+                            ctx,
+                        }
+
+                        let listEmailRelates = data?.__EMPTY_5?.split(",");
+                        let related = await USER_COLL.find({ email: { $in: listEmailRelates?.map(email => email.trim()) }}).select("_id")
+
+                        if(related && related.length){
+                            dataInsert.relatedIDs = related.map(item => ObjectID(item._id));
+                        }
+
+                        if(checkObjectIDs(taskID)){
+                            dataInsert.parentID = taskID;
+                        }
+
+                        // Kiểm tra nếu có việc con
+                        if(data.__EMPTY_2 && parentID){
+                            dataInsert.parentID = parentID;
+                            dataInsert.name = data.__EMPTY_2;
+                        }
+
+                        let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
+                        if(!infoGroup){
+                            errorNumber++;
+                            return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
+                        }
+                        // console.log({ dataInsert });
+
+                        dataInsert.projectID = `${infoGroup.project}`;
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        if(data?.__EMPTY_1){
+                            parentID = infoAfterInsert?.data?._id;
+                        }
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+
+                    }
+                    index ++;
+                }
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "import field" });
+                console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                // Update timeImportExcel trick reload việc con
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

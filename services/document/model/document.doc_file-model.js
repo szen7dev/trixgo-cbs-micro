@@ -30,41 +30,41 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: insert doc file 
+	 * Name: insert doc file
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
-	insert({ documentID, fileID, userID }) { 
+	insert({ documentID, fileID, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(documentID))
                     return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
-                
+
                 if(!checkObjectIDs(fileID))
                     return resolve({ error: true, message: 'Request params fileID invalid', status: 400 });
-                
+
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-                
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
-                 */ 
+                 */
                 let infoAfterInsert = await this.insertData({ document: documentID, file: fileID, userCreate: userID });
-                                  
+
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
 
-             
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -73,60 +73,57 @@ class Model extends BaseModel {
     }
 
      /**
-	 * Name: delete doc file 
+	 * Name: delete doc file
 	 * Author: Depv
 	 * Code:
 	 */
-	delete({ docFileID }) { 
+	delete({ docFileID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(docFileID))
                     return resolve({ error: true, message: 'Request params docFileID invalid', status: 400 });
-                
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
-                 */ 
+                 */
                 let infoAfterInsert = await DOCUMENT__DOC_FILE_COLL.findByIdAndDelete(docFileID);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_delete", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /**
-	 * Name: get info doc file 
+	 * Name: get info doc file
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
-	getInfo({ docFileID, select, populates }) { 
+	getInfo({ docFileID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(docFileID))
                     return resolve({ error: true, message: 'Request params docFileID invalid', status: 400 });
-                
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -148,14 +145,14 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /**
 	 * Dev: Depv
 	 * Func: Get list doc file

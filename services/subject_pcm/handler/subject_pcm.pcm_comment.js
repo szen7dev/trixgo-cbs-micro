@@ -19,24 +19,28 @@ module.exports = {
         auth: "required",
         params: {
 			content    : { type: "string", optional: true },
+			rawContent : { type: "string", optional: true },
             taskID     : { type: "string", optional: true },
             type       : { type: "number", optional: true },
             switchType : { type: "string", optional: true },
+            receiversID: { type: "array", optional: true },
             projectID  : { type: "string", optional: true },
             parentID   : { type: "string", optional: true },
             files      : { type: "array", optional: true },
             images     : { type: "array", optional: true },
+            isOfficial : { type: "boolean", optional: true },
             select     : { type: "string", optional: true },
             populates  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { content, taskID, projectID, type, parentID, files, images, switchType, select, populates } = ctx.params;
+				const { _id: authorID, bizfullname, company } = ctx.meta.infoUser;
+                const { content, rawContent, taskID, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, projectID, parentID, authorID, type, content, files, images, switchType, select, populates, bizfullname, ctx
+					taskID, projectID, parentID, authorID, type, content, rawContent, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname: bizfullname,
+                    companyOfAuthor: company._id, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -60,6 +64,7 @@ module.exports = {
 			content             : { type: "string", optional: true },
             files               : { type: "array", optional: true },
             images              : { type: "array", optional: true },
+            isOfficial          : { type: "boolean", optional: true },
             switchType          : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
@@ -67,11 +72,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
-                const { taskID, commentID, projectID, switchType, content, files, images, select, populates } = ctx.params;
+				const { _id: authorID, company } = ctx.meta.infoUser;
+                const { taskID, commentID, projectID, switchType, content, files, images, isOfficial, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
-					taskID, commentID, projectID, switchType, authorID, content, files, images, select, populates, ctx
+					taskID, commentID, projectID, switchType, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor: company._id, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -143,6 +148,7 @@ module.exports = {
 	 * Update: 22/02/2022
 	 */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             taskID              : { type: "string", optional: true },
             type                : { type: "string", optional: true },
@@ -197,6 +203,7 @@ module.exports = {
 	 * Update: 22/02/2022
 	 */
     searchCommentById: {
+        auth: "required",
         params: {
             commentID   : { type: "string" },
             taskID      : { type: "string", optional: true },
@@ -218,6 +225,93 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: HiepNH
+	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
+	 * Date: 19/8/2022  
+	 */
+    searchCommentBySubject: {
+        auth: "required",
+        params: {
+            draft               : { type: 'string', optional: true },
+            sortKey             : { type: 'string', optional: true },
+            isParent            : { type: 'string', optional: true },
+            isActive            : { type: 'string', optional: true },
+            isGroup             : { type: 'string', optional: true },
+
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            authorsID           : { type: 'array', optional: true },
+            companyOfAuthorsID  : { type: 'array', optional: true },
+            projectsID          : { type: 'array', optional: true },
+            // official            : { type: 'boolean', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log({userID})
+
+                const {
+                    draft, sortKey, isParent, isActive, isGroup, 
+                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID,
+                    keyword, limit, lastestID, select, populates
+                } = ctx.params;
+
+                // console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu Comment================')
+                // console.log({draft, sortKey, isParent, isActive, isGroup, 
+                //     fromDate, toDate, authorsID, companyOfAuthorsID, projectsID,
+                //     keyword, limit, lastestID, select, populates})
+
+                const resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentBySubject({
+                    draft, sortKey, isParent, isActive, isGroup, 
+                    fromDate, toDate, authorsID, companyOfAuthorsID, projectsID,
+                    keyword, limit, lastestID, select, populates, 
+                    userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },   
+
+    /**
+     * Dev: HiepNH
+     * Func: Gom nhóm theo tính chất
+     * Date: 24/9/2022
+     */
+    getListByProperty: {
+        auth: "required",
+        params: {
+            option              : { type: "string", optional: true  },
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, fromDate, toDate } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await PCM_COMMENT_MODEL.getListByProperty({
+                    option, fromDate, toDate, userID
+                 });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
             }
         }
     },

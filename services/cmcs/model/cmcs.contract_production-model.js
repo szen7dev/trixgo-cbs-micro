@@ -71,19 +71,19 @@ class Model extends BaseModel {
                     dataInsert.date = date
                 }
 
-                if(produce){
+                if(!isNaN(produce)){
                     dataInsert.produce = produce
                 }
 
-                if(vatProduce){
+                if(!isNaN(vatProduce)){    
                     dataInsert.vatProduce = vatProduce
                 }
 
-                if(plusProduce){
+                if(!isNaN(plusProduce)){
                     dataInsert.plusProduce = plusProduce
                 }
                 
-                if(vatPlusProduce){
+                if(!isNaN(vatPlusProduce)){
                     dataInsert.vatPlusProduce = vatPlusProduce
                 }
 
@@ -94,11 +94,22 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                 await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 1,
                     contractID,
                     userID
                 })
+
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */    
+                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 1,
+                    projectID: `${project}`,
+                    userID
+                })
+                // console.log(infoProject) 
                 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -125,10 +136,11 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
                 let infoContractProduction = await CMCS__CONTRACT_PRODUCTION_COLL.findById(contractProductionID);
                 let contractID = infoContractProduction.contract;
+                let projectID = infoContractProduction.project;
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -157,19 +169,19 @@ class Model extends BaseModel {
                     dataUpdate.date = date
                 }
 
-                if(produce){
+                if(!isNaN(produce)){
                     dataUpdate.produce = produce
                 }
 
-                if(vatProduce){
+                if(!isNaN(vatProduce)){
                     dataUpdate.vatProduce = vatProduce
                 }
 
-                if(plusProduce){
+                if(!isNaN(plusProduce)){    
                     dataUpdate.plusProduce = plusProduce
                 }
                 
-                if(vatPlusProduce){
+                if(!isNaN(vatPlusProduce)){    
                     dataUpdate.vatPlusProduce = vatPlusProduce
                 }
 
@@ -180,11 +192,22 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                 await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                let infoContract =  await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 1,
                     contractID: `${contractID}`,
                     userID
                 })
+
+                /**
+                 * CẬP NHẬT CHO PHẦN DỰ ÁN
+                 */    
+                // console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE_VALUE}`, {
+                    option: 1,
+                    projectID: `${projectID}`,
+                    userID
+                })
+                // console.log(infoProject) 
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -547,8 +570,7 @@ class Model extends BaseModel {
                         }
                     }
                 }
-
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let listData = await CMCS__CONTRACT_PRODUCTION_COLL.aggregate([
                     {

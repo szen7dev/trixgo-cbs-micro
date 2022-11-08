@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.bidding_document_evaluations"}],"uuid":"9d6d22b0345a49c3892bee5e0c1835d0"}

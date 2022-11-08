@@ -23,6 +23,8 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  * COLLECTIONS
  */
 const HUMAN__CONTACT_DOCUMENT_COLL      = require('../database/human.contact_document-coll');
+const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll');
+const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll');
 
 class Model extends BaseModel {
 
@@ -390,10 +392,17 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, type, contactID, isDuration3Month,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
+        certificateType, certificateName, certificateGrade, isToDate5Month,
+        keyword, limit = 10, lastestID, select, populates= {}, userID }) {
         return new Promise(async (resolve) => {
             try {
+                
+                if(limit > 20){
+                    limit = 20
+                } else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -420,6 +429,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Điều kiện tìm kiếm document contact
                 if(checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
                 }
@@ -438,20 +448,75 @@ class Model extends BaseModel {
                     conditionObj.toDate = { $lte: today }
                 }
 
+                if(checkObjectIDs(educationalBackground2)){
+                    conditionObj.educationalBackground2 = educationalBackground2;
+                }
+
+                if(checkObjectIDs(field2)){
+                    conditionObj.field2 = field2;
+                }
+
+                if(checkObjectIDs(certificateType)){
+                    conditionObj.certificateType = certificateType;
+                }
+
+                if(checkObjectIDs(certificateName)){
+                    conditionObj.certificateName = certificateName;
+                }
+
+                if(certificateGrade){
+                    conditionObj.certificateGrade = certificateGrade;
+                }
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
+                // Phục vụ cho màn hình tra cứu chứng chỉ /human/certificate
+                if(isCertificate == 1){
+                    // Điều kiện tìm kiếm contact
+                    let conditionContact = {
+                        company: companyID
+                    }
+
+                    if(gender){
+                        conditionContact.gender = gender;
+                    }
+
+                    if(keywordContact){
+                        keywordContact = keywordContact.split(" ");
+                        keywordContact = '.*' + keywordContact.join(".*") + '.*';
+                        conditionContact.name = new RegExp(keywordContact, 'i');
+                    }
+                    let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
+                    conditionContact.$or = [
+                        { company: companyID },
+                        { department: {$in: listDepartment.map(item=>item._id) } },
+                    ]
+
+                    let listContact = await ITEM__CONTACT_COLL.find(conditionContact).select("_id");
+                    let arrayContactID = listContact.map(contact => contact._id);
+                    conditionObj.contact = { $in: arrayContactID };
+                    delete conditionObj.company;
+                }
+
+                // Check thời hạng chứng chỉ còn 5 tháng là hết hạn
+                if(isToDate5Month == 1){
+                    var monthAdd5 = new Date();
+                    monthAdd5.setMonth(monthAdd5.getMonth() + 5);   
+                    conditionObj.toDate = {
+                        $gte: new Date(),
+                        $lte: monthAdd5
+                    }
+                }
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-
                 let conditionObjOrg = { ...conditionObj };
-                console.log({ conditionObjOrg });
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await HUMAN__CONTACT_DOCUMENT_COLL.findById(lastestID);
@@ -488,7 +553,6 @@ class Model extends BaseModel {
 
                 let totalRecord = await HUMAN__CONTACT_DOCUMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,

@@ -523,14 +523,12 @@ exports.validateParamsObjectID = (params) => {
                 }
             }
 
-        } else{
-            if (!this.checkObjectIDs(field)) {
-                return {
-                    error: true,
-                    message: `Tham số ${key} không hợp lệ`,
-                    keyError: `params_${key}_invalid`,
-                    status: 400
-                }
+        } else if (!this.checkObjectIDs(field)){
+            return {
+                error: true,
+                message: `Tham số ${key} không hợp lệ`,
+                keyError: `params_${key}_invalid`,
+                status: 400
             }
         }
     }

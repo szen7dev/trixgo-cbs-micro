@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.financial_general_journals"},{"v":{"$numberInt":"2"},"key":{"contract":{"$numberDouble":"1.0"}},"name":"contract_1","ns":"trixgo_op.financial_general_journals"}],"uuid":"b66bb2b60a434b1f830c74d4d92411b2"}

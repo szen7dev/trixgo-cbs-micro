@@ -63,7 +63,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ groupID, name, sign, userID, members, membersRemove, admins, adminsRemove }) {
+    update({ groupID, name, sign, userID, parentID, contractID, image, members, membersRemove, admins, adminsRemove }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(groupID))
@@ -82,6 +82,10 @@ class Model extends BaseModel {
                     dataInUpdate.sign =sign;
                 }
 
+                if(checkObjectIDs(contractID)){
+                    dataInUpdate.contract = contractID;
+                }
+
                 if(checkObjectIDs(members)){
                     dataInUpdate.$addToSet = { members };
                 }
@@ -98,7 +102,20 @@ class Model extends BaseModel {
                     dataInUpdate.$pullAll = { admins: adminsRemove };
                 }
 
+                if(checkObjectIDs(image)){
+                    dataInUpdate.image = image;
+                }
+                
+                /**
+                 * Di chuyển thư mục
+                 */
+                if(checkObjectIDs(parentID)){
+                    dataInUpdate.parent = parentID;
+                }
+
+                console.log({ dataInUpdate })
                 let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
+
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
@@ -114,44 +131,12 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    // remove({ groupID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!checkObjectIDs(groupID))
-    //                 return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-    //             let infoAfterRemove = await PCM_PLAN_GROUP_COLL.findByIdAndDelete(groupID);
-    //             if (!infoAfterRemove)
-    //                 return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
-
-    //             return resolve({ error: false, data: infoAfterRemove });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     })
-    // };
 
     /**
      * Name: remove many 
      * Author: Depv
      * Code:
      */
-    // removeMany({ groupsID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!checkObjectIDs(groupsID))
-    //                 return resolve({ error: true, message: 'groupsID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-    //             let infoAfterRemove = await PCM_PLAN_GROUP_COLL.deleteMany({ _id: { $in: groupsID }});
-    //             if (!infoAfterRemove)
-    //                 return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
-
-    //             return resolve({ error: false, message: "Xoá thành công" });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     })
-    // };
 
     /**
      * Name: get info user_pcm_plan_group 
@@ -196,6 +181,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) {
+        console.log({ userID, parentID, projectID, lastestID, keyword, limit, select, populates, isShowAll, isShowParentAndChild })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20 || isNaN(limit)){
@@ -236,7 +222,10 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Nếu có trường này thì lấy tất cả group trong dự án mà mình có thể không là members
+                /**
+                 * Lấy tất cả group trong dự án
+                 * Phục vụ cho việc Admin dự án
+                 */
                 if(isShowAll == 1){
                     delete conditionObj.$or;
                  }
@@ -253,6 +242,8 @@ class Model extends BaseModel {
                         conditionObj.parent = { $exists: false };
                     }
                 }
+
+                console.log(conditionObj)
 
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -323,7 +314,8 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
-                }, status: 200 });
+                }, status: 200 })
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

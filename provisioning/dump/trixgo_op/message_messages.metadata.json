@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.message_messages"},{"v":{"$numberInt":"2"},"key":{"conversation":{"$numberDouble":"1.0"},"createAt":{"$numberDouble":"1.0"}},"name":"conversation_1_createAt_1","ns":"trixgo_op.message_messages"}],"uuid":"cbc893c3fec84f6eb155197245ddc14b"}

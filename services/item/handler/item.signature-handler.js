@@ -19,6 +19,7 @@ module.exports = {
         params: {
             companyID       : { type: "string" },
             projectID       : { type: "string" },
+            // coll            : { type: "string" },
             title           : { type: "string", optional: true },
             note            : { type: "string", optional: true },
         },
@@ -27,6 +28,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const { companyID, projectID, coll, title, note } = ctx.params;
+
+                console.log(companyID, projectID, coll, title, note)
 
                 const resultAfterCallHandler = await ITEM__SIGNATURE_MODEL.insert({
                     companyID, projectID, coll, title, note, authorID

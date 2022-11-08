@@ -16,13 +16,14 @@ const { CF_ACTIONS_SUBJECT_PCM } 	    = require('../../subject_pcm/helper/subjec
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * COLLECTIONS
  */
 const ANALYSIS__HISTORY_LOG_COLL    = require('../database/analysis.history_log-coll');
+const PCM_PLAN_TASK_COLL            = require('../../subject_pcm/database/subject_pcm.pcm_plan_task-coll');
 
 class Model extends BaseModel {
 
@@ -35,25 +36,28 @@ class Model extends BaseModel {
 	 * Func: Tạo history log
 	 * Date: 13/12/2021
 	 */
-	insert({ project, contract, type, parentCollection, subCollection, content, userCreate, ctx}){
+	insert({ taskID, documentID, type, title, content, userID }){
         return new Promise(async resolve => { 
             try {
-                let dataInsert = { userCreate }; 
-                
-                if(checkObjectIDs(project)){
-                    dataInsert.project = project;
+                if(!title){
+                    return resolve({ error: true, message: "title_invalid" });
                 }
 
-                if(checkObjectIDs(contract)){
-                    dataInsert.contract = contract;
-                }
+                let dataInsert = { title, userCreate: userID };
+                if(checkObjectIDs(taskID)){
+                    const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID);
+                    if(!infoTask){
+                        return resolve({ error: true, message: "taskID_invalid" })
+                    }
+                    const { project, contract } = infoTask;
+                    dataInsert.task = taskID;
+                    if(checkObjectIDs(project)){
+                        dataInsert.project = project;
+                    }
 
-                if(parentCollection){
-                    dataInsert.parentCollection = parentCollection;
-                }
-
-                if(subCollection){
-                    dataInsert.subCollection = subCollection;
+                    if(checkObjectIDs(contract)){
+                        dataInsert.contract = contract;
+                    }
                 }
 
                 if(content){
@@ -68,19 +72,6 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cannot_insert_history_log" })
 
-                
-                if(parentCollection){
-                    // Cập nhật lastLog cho task
-                    if(parentCollection.kind == "pcm_plan_task"){
-                        try {
-                            let infoTaskAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_UPDATE}`, {
-                                taskID: parentCollection.item, lastLogID: `${infoAfterInsert._id}`
-                            })
-                        } catch (error) {
-                            console.error(error);
-                        }
-                    }
-                }
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -144,19 +135,23 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        parentCollectionID, subCollectionID, fromDate, toDate,
+        taskID, projectID, contractID, fromDate, toDate,
         keyword, limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
+
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                };
-
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                let sortBy;    
+                let conditionObj = { };
+                let keys	 = ['createAt__-1', '_id__-1'];
+              
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -166,7 +161,6 @@ class Model extends BaseModel {
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
 					populates = JSON.parse(populates);
 				}else{
                     populates = {
@@ -181,20 +175,22 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // PHÂN TRANG KIỂU MỚI
+				let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ANALYSIS__HISTORY_LOG_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastest", status: 200 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
+						return resolve({ error: true, message: "Can't get range pagination", status: 200 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
                 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -202,24 +198,28 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 
-                if(parentCollectionID){
-                    conditionObj["parentCollection.item"] = parentCollectionID
+                if(taskID){
+                    conditionObj.task = taskID
                 }
 
-                if(subCollectionID){
-                    conditionObj["subCollection.item"] = subCollectionID
+                if(projectID){
+                    conditionObj.project = projectID
+                }
+
+                if(contractID){
+                    conditionObj.contract = contractID
                 }
 
                 if(fromDate && toDate){
-                    conditionObj.createdAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                    conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                 }
-
-                let infoDataAfterGet = await ANALYSIS__HISTORY_LOG_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
-                    .limit(+limit+1)
-                    .select(select)
-                    .sort(sortBy)
-                    .populate(populates)
-                    .lean(); 
+                console.log({ conditionObj })
+                let infoDataAfterGet = await ANALYSIS__HISTORY_LOG_COLL.find(conditionObj)
+                .select(select)
+                .limit(limit+1)
+                .sort(sortBy)
+                .populate(populates)
+                .lean(); 
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -237,7 +237,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
                     totalRecord,
                     totalPage,
                     nextCursor,

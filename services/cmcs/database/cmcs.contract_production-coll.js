@@ -8,13 +8,9 @@ const Schema                = require('mongoose').Schema;
  */
 
 module.exports  = DATABASE_MIDDLEWARE("contract_production", {
-
     /**
      * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
-    //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
-    type: { type: Number, default: 1 },
-
     //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
     outin: { type: Number, default: 1 },
 
@@ -78,6 +74,12 @@ module.exports  = DATABASE_MIDDLEWARE("contract_production", {
     /**
      * END THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
+    /**
+     * Kế hoạch/Thực hiện
+     * 1-Kế hoạch
+     * 2-Thực tế
+     */
+    plan: { type: Number, default: 1, enum: [1,2] },    
     //_________Ngày hoạch toán(*)
     date: { type: Date, default: Date.now },
     

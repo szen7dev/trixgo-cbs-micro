@@ -2,8 +2,8 @@
  * Constants
  */
 const { EVENT_SOCKET_CONSTANT_SUBJECT_PCM }		= require('./helper/subject_pcm.events-socket-constant');
-const { CF_DOMAIN_SERVICES } 					= require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_NOTIFICATION }               = require('../notification/helper/notification.actions-constant');
+// const { CF_DOMAIN_SERVICES } 					= require('../gateway/helper/domain.constant');
+// const { CF_ACTIONS_NOTIFICATION }               = require('../notification/helper/notification.actions-constant');
 // const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant');
 // const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
 // const { CF_ACTIONS_ITEM }						= require('../item/helper/item.actions-constant');
@@ -13,8 +13,10 @@ const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification
 /**
  * Utils
  */
+const PromisePool								= require('@supercharge/promise-pool');
 const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
 const PCM_PLAN_TASK_COLL                		= require('./database/subject_pcm.pcm_plan_task-coll');
+const PCM_PLAN_TASK_MODEL                		= require('./model/subject_pcm.pcm_plan_task').MODEL;
 
 exports.SUBJECT_SOCKET = {
 
@@ -249,11 +251,14 @@ exports.SUBJECT_SOCKET = {
 			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
 			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
+			const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID });
+
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 				users: receivers,
 				title: infoTask.name,
 				description: `${bizfullname} đã phê duyệt 1 công việc`,
+				amountNoti: amountNoti?.data?.amountUnreadTask,
 				dataSend: {
 					app: APP_KEYS.PCM_PLAN_TASK,
 					languageKey: LANGUAGE_KEYS.ADD_SIGNATURE_TASK,
@@ -324,11 +329,14 @@ exports.SUBJECT_SOCKET = {
 				event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_OPEN_BIDDING], io
 			});
 
+			const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID });
+
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 				users: receivers,
 				title: infoTask.name,
 				description: `${bizfullname} đã mở thầu`,
+				amountNoti: amountNoti?.data?.amountUnreadTask,
 				dataSend: {
 					app: APP_KEYS.PCM_PLAN_TASK,
 					languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
@@ -347,6 +355,74 @@ exports.SUBJECT_SOCKET = {
 				data: { error: true, message: error.message },
 				event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_OPEN_BIDDING], io
 			});
+		}
+	},
+
+	/**
+	 * Cập nhật số lượng thông báo (badge)
+	 */
+	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_UPDATE_COUNT_NOTIFICATION]: async function(data) {
+        try {
+			let socket          = this;
+			let listUserActive  = socket.$service.listUserConnected;
+			let userID          = socket.client.user;
+			let io              = socket.$service.io;
+			let { taskID } 		= data;
+
+			if(!taskID){
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, message: "Tham số taskID không hợp lệ" },
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_COUNT_NOTIFICATION], io
+				});
+			}
+
+			const infoTask = await PCM_PLAN_TASK_COLL
+				.findById(taskID)
+				.select('_id author assignee related')
+				.lean();
+
+			if(!infoTask) {
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, message: "Task không tồn tại" },
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_COUNT_NOTIFICATION], io
+				});
+			}
+
+			let { author, assignee, related } = infoTask;
+			related = related.map(userID => userID.toString());
+
+			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+
+			await PromisePool
+				.for(receivers)
+				.withConcurrency(4)
+				.process(async userId => {
+					const { error, data } = await PCM_PLAN_TASK_MODEL.getAmountNotification({
+						userID: userId
+					})
+
+					if(error) return !error;
+
+					// SEND SOCKET
+					sendDataToMultilSocketsOfListUser({
+						listUserConnected: listUserActive,
+						arrReceiver: [userId],
+						data: {
+							error: false,
+							data,
+						},
+						event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_COUNT_NOTIFICATION],
+						io,
+					});
+				})
+		} catch (error) {
+			console.info('======EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_UPDATE_COUNT_NOTIFICATION=====');
+			console.error(error);
 		}
 	},
 }

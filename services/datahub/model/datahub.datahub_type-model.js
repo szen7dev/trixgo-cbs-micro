@@ -109,22 +109,6 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-	remove({ datahubID }) { 
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(datahubID))
-                    return resolve({ error: true, message: 'Mã datahub không hợp lệ', keyError: "datahubID_invalid", status: 400 });
-                
-                let infoAterRemove = await DATAHUB_TYPE_COLL.findByIdAndDelete(datahubID)
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
- 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {               
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
 	/**
 	 * Name: get info datahub 
@@ -180,15 +164,15 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách gói thầu
 	 * Date: 26/10/2021
 	 */
-    getList({ type, popular, parentID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getList({ type, popular, parentID, userID, lastestID, keyword, limit = 50, select, populates = {}}){
         return new Promise(async resolve => {
             try {
                 let conditionObj = {};
                 let sortBy; 
                 let keys	     = ['createAt__-1', '_id__-1'];
 
-                if(limit > 20){
-                    limit = 20;
+                if(limit > 50){
+                    limit = 50;
                 }else{
                     limit = +limit
                 }
@@ -283,4 +267,4 @@ class Model extends BaseModel {
     }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model

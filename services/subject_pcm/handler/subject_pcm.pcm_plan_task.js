@@ -42,8 +42,8 @@ module.exports = {
             workflowTemplate : { type: "string", optional: true },
             amountoftime     : { type: "string", optional: true },
             amountPerHour    : { type: "string", optional: true },
+            isNotiEmail      : { type: "boolean", optional: true },
             fieldID          : { type: "string", optional: true },
-            subType          : { type: "number", optional: true },
             select           : { type: "string", optional: true },
             populates        : { type: "string", optional: true },
         },
@@ -51,11 +51,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, select, populates } = ctx.params;
+				const { _id: authorID, bizfullname, email, fullname, company } = ctx.meta.infoUser;
+                const { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, bizfullname, select, populates, ctx
+                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, select, populates, senderMail: { email, fullname }, company, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -72,54 +72,75 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            taskID         : { type: "string" },
-            sign           : { type: "string", optional: true },
-            name           : { type: "string", optional: true },
-            sign           : { type: "string", optional: true },
-            description    : { type: "string", optional: true },
-            actualStartTime: { type: "string", optional: true },
-            actualFinishTime: { type: "string", optional: true },
-            expiredHour      : { type: "string", optional: true },
-            amountoftime   : { type: "string", optional: true },
-            amountPerHour  : { type: "string", optional: true },
-            assigneeID     : { type: "string", optional: true },
-            progressType   : { type: "string", optional: true },
-            fieldID        : { type: "string", optional: true },
-            contractID     : { type: "string", optional: true },
-            draft          : { type: "number", optional: true },
-            userIDDelete   : { type: "number", optional: true },
-            typeUpdate     : { type: "number", optional: true },
-            flags          : { type: "array", optional: true },
-            flagsRemoves   : { type: "array", optional: true },
-            related        : { type: "array", optional: true },
-            relatedRemoves : { type: "array", optional: true },
-            lastLogID      : { type: "string", optional: true },
-            isAddSignature : { type: "boolean", optional: true },
-            isOpenBidding : { type: "boolean", optional: true },
-            authorAttachs  : { type: "array", optional: true },
-            assigneeAttachs: { type: "array", optional: true },
-            milestone      : { type: "number", optional: true },
-            subType          : { type: "number", optional: true },
+            taskID              : { type: "string" },
+            sign                : { type: "string", optional: true },
+            name                : { type: "string", optional: true },
+            sign                : { type: "string", optional: true },
+            description         : { type: "string", optional: true },
+            actualStartTime     : { type: "string", optional: true },
+            actualFinishTime    : { type: "string", optional: true },
+            expiredHour         : { type: "string", optional: true },
+            alert               : { type: "number", optional: true },
+            amountoftime        : { type: "string", optional: true },
+            amountPerHour       : { type: "string", optional: true },
+            assigneeID          : { type: "string", optional: true },
+            progressType        : { type: "string", optional: true },
+            fieldID             : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            groupID             : { type: "string", optional: true },
+            draft               : { type: "number", optional: true },
+            userIDDelete        : { type: "number", optional: true },
+            typeUpdate          : { type: "number", optional: true },
+            flags               : { type: "array", optional: true },
+            flagsRemoves        : { type: "array", optional: true },
+            related             : { type: "array", optional: true },
+            relatedRemoves      : { type: "array", optional: true },
+            lastLogID           : { type: "string", optional: true },
+            isAddSignature      : { type: "boolean", optional: true },
+            isOpenBidding       : { type: "boolean", optional: true },
+            authorAttachs       : { type: "array", optional: true },
+            tasksLink           : { type: "array", optional: true },
+            assigneeAttachs     : { type: "array", optional: true },
+            milestone           : { type: "number", optional: true },
+            subType             : { type: "number", optional: true },
+            // unit                : { type: "string", optional: true },
+            // unitPrice           : { type: "string", optional: true },
+            // quantity            : { type: "string", optional: true },
+            // amountoftime        : { type: "string", optional: true },
+            // ontime              : { type: "number", optional: true },
+            // quality             : { type: "number", optional: true },
+            // judgement           : { type: "string", optional: true },
+            isUpdateNews        : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const {
                     typeUpdate,
-                    taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
-                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone
+                    taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
+                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                    links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, amountoftime,
+                    ontime, quality
                  } = ctx.params;
-				const { _id: userID, bizfullname, company } = ctx.meta.infoUser;
+				const { _id: userID, bizfullname, fullname, email, company } = ctx.meta.infoUser;
+                // console.log({ userID,bizfullname, fullnameUpdate, email, company });
+                console.log('========================Update cong viec============')
+
+                // console.log(typeUpdate,
+                //     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
+                //     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
+                //     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, amountoftime,
+                //     ontime, quality)
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
-                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding,
-                    companyOfUser: company._id, milestone, ctx
+                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                    links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email }, unit, unitPrice, quantity,
+                    companyOfUser: company._id, milestone, alert, groupID, ontime, quality, fullnameUpdate: fullname, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -137,25 +158,26 @@ module.exports = {
     updateStatusMutiple: {
         auth: "required",
         params: {
-            taskIDs         : { type: "array" },
-            parentID        : { type: "string" },
-            type            : { type: "number" }, // 1 việc con / 2 checklist
+            taskIDs         : { type: "array", optional: true },
+            parentID        : { type: "string", optional: true },
+            type            : { type: "number", optional: true }, // 1 việc con / 2 checklist
+            option          : { type: "number", optional: true }, // 0-Update status, 1-Update user đã xem
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    taskIDs, parentID, type
+                    taskIDs, parentID, type, option
                  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                // Bước check quyền
+
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
-                    parentID, taskIDs, type, userID
+                    parentID, taskIDs, type, option, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -198,7 +220,7 @@ module.exports = {
             milestone           : { type: "string", optional: true },
             sortKey             : { type: "string", optional: true },
             isParent            : { type: "string", optional: true },
-            
+
             // Field mặc định
             keyword             : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
@@ -241,6 +263,48 @@ module.exports = {
     },
 
     /**
+     * Dev: HiepNH
+     * Func: Danh sách chủ đề
+     * Date: 19/8/2022
+     */
+    getListSubject: {
+        auth: 'required',
+        params: {
+            draft               : { type: 'string', optional: true },
+            sortKey             : { type: 'string', optional: true },
+            isParent            : { type: 'string', optional: true },
+            isActive            : { type: 'string', optional: true },
+            isGroup             : { type: 'string', optional: true },
+            read                : { type: 'string', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    draft, sortKey, isParent, isActive, isGroup, read, keyword,
+                    limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListSubject({
+                    draft, sortKey, isParent, isActive, isGroup, read, 
+                    keyword, limit, lastestID, select, populates, userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Dev: MinhVH
      * Func: Search Task
      * Date: 11/05/2022
@@ -253,14 +317,20 @@ module.exports = {
             assigneesID         : { type: 'array', optional: true },
             companiesOfAssignee : { type: 'array', optional: true },
             authorsID           : { type: 'array', optional: true },
+            companiesOfAuthor   : { type: 'array', optional: true },
             projectsID          : { type: 'array', optional: true },
             subtypes            : { type: 'array', optional: true },
             status              : { type: 'array', optional: true },
             fieldsID            : { type: 'array', optional: true },
-            isExpired           : { type: 'number', optional: true },
+            isExpired           : { type: 'string', optional: true },
+            read                : { type: 'string', optional: true },
+            isParent            : { type: 'string', optional: true }, 
+            isGroup             : { type: 'string', optional: true }, 
+            reportType          : { type: 'string', optional: true }, 
+            priority            : { type: 'string', optional: true }, 
 
             keyword             : { type: "string", optional: true },
-            limit               : { type: "number", optional: true },
+            limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
@@ -270,20 +340,77 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
                 const {
-                    fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-                    projectsID, subtypes, status, fieldsID, isExpired, keyword,
+                    fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
                     limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
-                    fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
-                    projectsID, subtypes, status, fieldsID, isExpired, keyword,
+                    fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
                     limit, lastestID, select, populates, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv
+	 * Func: Lấy thông báo công việc (chưa đọc)
+	 */
+    getAmountNotification: {
+        auth: "required",
+        params: {
+            option            : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const {
+                    option
+                } = ctx.params;
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID, option });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: Báo cáo linh hoạt
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getDynamicReport: {
+        auth: "required",
+        params: {
+            reportType        : { type: 'string' },
+            option            : { type: 'string', optional: true },
+            status            : { type: 'array', optional: true },
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const {
+                    reportType, option, status, fromDate, toDate
+                } = ctx.params;
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option, status, fromDate, toDate });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
             }
         }
     },
@@ -368,17 +495,26 @@ module.exports = {
     getAmountTaskOfCompanyOfAssignee: {
         auth: "required",
         params: {
-            projectID: { type: "string" },
+            option: { type: "string", optional: true },
+            // companyID: { type: "string", optional: true },
+            projectID: { type: "string", optional: true },
             keyword: { type: "string", optional: true },
             subtype: { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID } = ctx.meta.infoUser;
-                let { projectID, keyword, subtype } = ctx.params;
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx });
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                const { _id: userID, company } = ctx.meta.infoUser;
+                let { option, projectID, keyword, subtype } = ctx.params;
+                // console.log({option, company, projectID, keyword, subtype})
+
+                if(!option){
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx });
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                }else{
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV1({ option, companyID: company._id, projectID, keyword, subtype, ctx });
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                }
             } catch (error) {
                 return { error:  true, message: error.message };
             }
@@ -393,17 +529,24 @@ module.exports = {
     getAmountTaskOfCompanyOfAuthor: {
         auth: "required",
         params: {
-            projectID: { type: "string" },
+            option: { type: "string", optional: true },
+            // companyID: { type: "string", optional: true },
+            projectID: { type: "string", optional: true },
             keyword: { type: "string", optional: true },
             subtype: { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID } = ctx.meta.infoUser;
-                let { projectID, keyword, subtype } = ctx.params;
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAuthor({ projectID, keyword, subtype, ctx });
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                const { _id: userID, company } = ctx.meta.infoUser;
+                let { option, projectID, keyword, subtype } = ctx.params;
+
+                if(!option){
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID });
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                }else{
+
+                }
             } catch (error) {
                 return { error:  true, message: error.message };
             }
@@ -519,18 +662,154 @@ module.exports = {
     copyTask: {
         auth: 'required',
         params: {
-            taskID: { type: 'string' }
+            taskID           : { type: "string" },
+            name             : { type: "string" },
+            projectID        : { type: "string" },
+            groupID          : { type: "string" },
+            assigneeID       : { type: "string" },
+            relatedIDs       : { type: "array", optional: true },
+            authorAttachs    : { type: "array", optional: true },
+            type             : { type: "number", optional: true },
+            subtype          : { type: "number", optional: true },
+            description      : { type: "string", optional: true },
+            startTime        : { type: "string", optional: true },
+            expiredHour      : { type: "string", optional: true },
+            expiredTime      : { type: "string", optional: true },
+            contractID       : { type: "string", optional: true },
+            isDraftTask      : { type: "boolean", optional: true },
+            isCloneChildTask : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID, company } = ctx.meta.infoUser;
-                const { taskID } = ctx.params;
+                const { _id: userID, company, bizfullname } = ctx.meta.infoUser;
+                const {
+                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
+                    authorAttachs, type, subtype, description, startTime, expiredHour,
+                    expiredTime, contractID, isDraftTask, isCloneChildTask
+                } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.copyTask({
-                    taskID, userID, companyOfUser: company._id
+                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
+                    authorAttachs, type, subtype, description, startTime, expiredHour,
+                    expiredTime, contractID, isDraftTask, isCloneChildTask,
+                    userID, companyOfUser: company._id, bizfullname, ctx
                 })
 
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Gom nhóm theo tính chất
+     * Date: 17/9/2022
+     */
+     getListByProperty: {
+        auth: "required",
+        params: {
+            option              : { type: "string", optional: true  },
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            projectID           : { type: "string", optional: true  },
+            companyID           : { type: "string", optional: true  },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, fromDate, toDate, projectID, companyID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByProperty({
+                    option, fromDate, toDate, projectID, companyID, userID
+                 });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Dev: Depv
+     * Func: Download Excel
+     * Date: 15/09/2022
+     */
+    downloadExcelTask: {
+        auth: 'required',
+        params: {
+            option: { type: 'string', optional: true },
+            conditionDownload: { type: 'string' },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { option, conditionDownload } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadExcelTask({
+                    option, conditionDownload, userID 
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+     /**
+     * Dev: Depv
+     * Func: Download Excel
+     * Date: 15/09/2022
+     */
+    downloadTemplateImportExcel: {
+        auth: 'required',
+        params: {
+            projectID: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { projectID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                console.log({ projectID })
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadTemplateImportExcel({
+                    projectID, userID 
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+     /**
+     * Dev: Depv
+     * Func: Tạo task từ dữ liệu excel
+     * Date: 15/09/2022
+     */
+    importTaskFromExcel: {
+        auth: 'required',
+        params: {
+            taskID    : { type: 'string', optional: true },
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { taskID, dataImport } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                // console.log(dataImport)
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.importTaskFromExcel({
+                    taskID, dataImport, userID, ctx
+                })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });

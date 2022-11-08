@@ -4,7 +4,7 @@ exports.sendNotificationviaOneSignal = function(data) {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz",
     };
-
+      
     let options = {
       host: "onesignal.com",
       port: 443,

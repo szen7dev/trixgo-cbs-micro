@@ -21,6 +21,7 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     insert: {
+        auth: "required",
         params: {
 			documentID   : { type: "string" },
 			fileID       : { type: "string" },
@@ -33,7 +34,7 @@ module.exports = {
                 let resultAfterCallHandler = await DOCUMENT__DOC_FILE_MODEL.insert({
                     documentID, fileID, userID
                 });
-          
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -47,19 +48,19 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     remove: {
+        auth: "required",
         params: {
-			docFileID      : { type: "string" },
+			docFileID: { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
                 const { docFileID } = ctx.params;
 
                 let resultAfterCallHandler = await DOCUMENT__DOC_FILE_MODEL.delete({
-                    docFileID 
+                    docFileID
                 });
-          
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -73,10 +74,11 @@ module.exports = {
 	 * Date: 27/10/2021
 	 */
     getInfoAndGetList: {
+        auth: "required",
         params: {
 			documentID      : { type: "string", optional: true },
 			docFileID       : { type: "string", optional: true },
-            
+
             lastestID       : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
@@ -89,7 +91,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { docFileID, documentID, keyword, select, lastestID, limit, populates } = ctx.params;
                 let resultAfterCallHandler;
-                
+
                 if(docFileID){
                     resultAfterCallHandler = await DOCUMENT__DOC_FILE_MODEL.getInfo({
                         docFileID, select, populates

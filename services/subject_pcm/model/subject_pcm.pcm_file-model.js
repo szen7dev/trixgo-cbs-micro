@@ -10,7 +10,7 @@ const moment                            = require('moment');
  * Tools
  */
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
@@ -37,7 +37,7 @@ class Model extends BaseModel {
 	 */
     insert({
         companyID, projectID, groupID, contractID, taskID, commentID, fileID,
-        type, nameOrg, name, description, path, size, mimeType, authorID
+        type, nameOrg, name, description, path, size, mimeType, authorID, companyOfAuthor
     }) {
         return new Promise(async (resolve) => {
             try {
@@ -48,7 +48,8 @@ class Model extends BaseModel {
                     size,
                     type,
                     mimeType,
-                    author: authorID
+                    author: authorID,
+                    companyOfAuthor
                 };
 
                 if(!nameOrg || !name || !path || !mimeType) {
@@ -104,15 +105,19 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Func: Lấy danh sách file
+	 * Func: Danh sách file
      * Dev: MinhVH
-     * Update: Hiepnh
-	 * Date: 26/4/2022
+     * Update: HiepNH
+	 * Date: 21/8/2022
 	 */
     getList({
         companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-        limit = 10, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
+        limit = 20, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
     }) {
+        // console.log({
+        //     companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
+        //     limit, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -176,10 +181,12 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Lấy file theo người tạo
                 if(checkObjectIDs(authorID)) {
                     conditionObj.author = ObjectID(authorID)
                 }
 
+                // Phân loại file
                 if(type){
                     conditionObj.type = type;
                 }
@@ -195,7 +202,14 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.nameOrg = new RegExp(keyword, 'i');
+                    conditionObj = {
+                        ...conditionObj,
+                        $or: [
+                            { nameOrg  :  new RegExp(keyword, 'i') },
+                            { description  :  new RegExp(keyword, 'i') },
+                        ]
+                    }
+                    // conditionObj.nameOrg = new RegExp(keyword, 'i');
                 }
 
                 /**
@@ -219,12 +233,16 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Tìm kiếm file (VIAS)
+                // Tìm kiếm file
                 if(isSearchFile) {
                     console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')
 
-                    // Danh sách các Group mà user là members hoặc amdins
+                    /**
+                     * Danh sách các Group mà user là members hoặc amdins
+                     */
+                    // Nếu chọn dự án
                     if(projectID && checkObjectIDs(projectID)){
+
                         // Điều kiện tìm kiếm task
                         conditionObjTask.project = ObjectID(projectID)
 
@@ -234,7 +252,10 @@ class Model extends BaseModel {
                             { admins: { $in: [userID] } },
                             { members: { $in: [userID] } },
                         ]
-                    }else{
+                    }
+
+                    // Nếu không chọn dự án
+                    else{
                         conditionObjGroup.$or = [
                             { admins: { $in: [userID] } },
                             { members: { $in: [userID] } },
@@ -285,6 +306,7 @@ class Model extends BaseModel {
                 // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_FILE__COLL.findById(lastestID);
 					if(!infoData)
@@ -341,6 +363,166 @@ class Model extends BaseModel {
                     },
                     status: 200
                 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Func: Tìm kiếm file
+     * Dev: HiepNH
+	 * Date: 24/8/2022
+	 */
+    getListByFilter({
+        companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
+        limit = 20, lastestID, select, populates, userID
+    }) {
+        console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu File================')
+        console.log({
+            companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
+            limit, lastestID, select, populates, userID
+        })
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * VALIDATION (1)
+                 */
+                const validation = validateParamsObjectID({
+                    companyOfAuthorsID : { value: companyOfAuthorsID, isRequire: false },
+                    authorsID           : { value: authorsID, isRequire: false },
+                    projectsID          : { value: projectsID, isRequire: false },
+
+                });
+                if(validation.error) return resolve(validation);
+
+                if(limit > 20){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
+
+                let sortBy;
+
+                let conditionObj = {}
+                let conditionObjTask = {} // Tìm kiếm task
+                let conditionObjGroup = {} // Tìm kiếm group
+
+                let keys	     = ['createAt__-1', '_id__-1'];
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                //__________Danh sách các nhóm dữ liệu mà userID là members
+                let listGroups = await PCM_PLAN_GROUP__COLL.find({ members: { $in: [userID]} })
+
+                // Danh sách Task mà user được quyền truy cập
+                conditionObjTask.$or = [
+                    { author: userID },
+                    { assignee: userID },
+                    { related: { $in: [userID] } },
+                    { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
+                ]
+
+                const listTask = await PCM_PLAN_TASK__COLL
+                    .find(conditionObjTask)
+                    .select('_id project')
+                    .lean()
+                // console.log(listTask.length)
+
+                // Lấy các File thuộc Task mà user được quyền truy cập
+                conditionObj.task = { $in:  listTask.map(item => item._id) }
+
+                /**
+                 * Lọc theo các điều kiện
+                 */
+                companyOfAuthorsID && companyOfAuthorsID.length     && (conditionObj.companyOfAuthor = { $in: companyOfAuthorsID });
+                authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
+                projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
+
+                if(fromDate && toDate) {
+                    conditionObj.createAt = {
+                        $gte: moment(fromDate).startOf('days').toDate(),
+                        $lte: moment(toDate).endOf('days').toDate()
+                    }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.$or = [
+                        { nameOrg  :  new RegExp(keyword, 'i') },
+                        { description  :  new RegExp(keyword, 'i') },
+                    ]
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await PCM_FILE__COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await PCM_FILE__COLL
+                    .find(conditionObj)
+                    .select(select)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                let nextCursor	= null;
+
+                if(infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await PCM_FILE__COLL.countDocuments(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({
+                    error: false,
+                    data: {
+                        listRecords: infoDataAfterGet,
+                        limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    },
+                    status: 200
+                });
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -445,6 +627,8 @@ class Model extends BaseModel {
 	 * Date: 12/08/2021
 	 */
 	getListFilesGroupByContract({ keyword, projectID, userID }){
+        // console.log('==============123232=================')
+        // console.log({ keyword, projectID, userID })
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {

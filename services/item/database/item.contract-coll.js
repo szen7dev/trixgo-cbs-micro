@@ -9,7 +9,7 @@ const Schema    = require('mongoose').Schema;
  * NGÂN SÁCH HỢP ĐỒNG/THẦU PHỤ => VỚI NHÀ THẦU (HỢP ĐỒNG BÁN RA)
  */
 module.exports  = DATABASE_MIDDLEWARE("contract", {
-    //_________Công ty 
+    //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -77,7 +77,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_________Phân loại khác (1-Thông thường/2-Đặc biệt) (CONTRACT_SUB_TYPES in cf_constant)
     subType: { type: Number, default: 1 },
     //_________Phân loại theo hình thức hợp đồng (1-Trọn gói/2-Theo tháng/3-Đơn giá/..) (CONTRACT_TYPES in cf_constant)
-    type: { type: Number, default: 1 },
+    form: { type: Number, default: 1 },
     //_________Phân loại theo lĩnh vực (type = 3) (POSTMAN -> ITEM - > DOCTYPE)
     field: {
         type: Schema.Types.ObjectId,
@@ -162,7 +162,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     advancePayment: { type: Number, default: 0 },
 
     /**
-     * SẢN LƯỢNG 
+     * SẢN LƯỢNG
      */
     //_________(6)Sản lượng trước VAT
     produce: { type: Number, default: 0 },
@@ -174,7 +174,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     vatPlusProduce: { type: Number, default: 0 },
     //_________Sản lượng còn lại chưa thực hiện
     remainingProduce: { type: Number, default: 0 },
-    
+
     /**
      * NGHIỆM THU HOÀN THÀNH
     */
@@ -206,7 +206,15 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     finalValue: { type: Number, default: 0 },
     //_________Thuế VAT (%)
     vat: { type: Number, default: 10 },
-    
+
+    /**
+     * XUẤT HOÁ ĐƠN
+    */
+    //_________(1) Giá trị trước VAT
+    revenue: { type: Number, default: 0 },
+    //_________(2) Giá trị VAT
+    vatRevenue: { type: Number, default: 0 },
+
     /**
      * CHI PHÍ
      */
@@ -221,7 +229,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
 
     /**
      * USD-NGOẠI TỆ
-     */ 
+     */
     //_________Tỷ giá hối đoái
     fcuExRate: { type: Number, default: 0 },
     /**
@@ -246,7 +254,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     forecastVatBudget: {
         type: Number,
         default : 0
-    },    
+    },
     //______Ngân sách thực tế
     finalBudget: {
         type: Number,
@@ -260,14 +268,27 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
      * BẢO LÃNH
      */
-    //_________Bảo lãnh hợp đồng (performance security/bank guarantee hay bon)
-    cgValue: { type: Number, default: 0 },
-    //_________Thời hạn bảo lãnh hợp đồng
-    expiredCg: { type: Date, default: null },
     //_________Bảo lãnh tạm ứng (Advance Payment Bond hay Advance Payment Guarantee)
     agValue: { type: Number, default: 0 },
     //_________Thời hạn bảo lãnh tạm ứng
     expiredAg: { type: Date, default: null },
+    //_________Thông báo trước thời hạn (h)
+    alertAg: { type: Number, default: 0 },
+
+    //_________Bảo lãnh hợp đồng (performance security/bank guarantee hay bon)
+    cgValue: { type: Number, default: 0 },
+    //_________Thời hạn bảo lãnh hợp đồng
+    expiredCg: { type: Date, default: null },
+    //_________Thông báo trước thời hạn (h)
+    alertCg: { type: Number, default: 0 },   
+
+    //_________Bảo lãnh bảo hành
+    insuranceValue: { type: Number, default: 0 },
+    //_________Thời hạn bảo hành hợp đồng
+    expiredInsurance: { type: Date, default: null },
+    //_________Thông báo trước thời hạn (h)
+    alertInsurance: { type: Number, default: 0 },
+    
     //_________Ảnh đại diện
     image: {
         type: String,
@@ -278,6 +299,21 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref: 'file',
     }],
+    /**
+     * THÔNG TIN TRUY CẬP
+     */
+    //_________Chi tiết các công ty đã view
+    companyViews: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],     
+    //_________Chi tiết các user đã view
+    userViews: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],  
+    //_________Số lượng views
+    numberOfViews: { type: Number, default: 0 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

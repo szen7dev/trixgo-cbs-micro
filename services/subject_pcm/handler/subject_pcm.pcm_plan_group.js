@@ -46,8 +46,11 @@ module.exports = {
         auth: "required",
         params: {
             groupID      : { type: "string" },
+            contractID   : { type: "string", optional: true },
+            parentID     : { type: "string", optional: true },
             name         : { type: "string", optional: true },
             sign         : { type: "string", optional: true },
+            image        : { type: "string", optional: true },
             members      : { type: "array", optional: true },
             admins       : { type: "array", optional: true },
             membersRemove: { type: "array", optional: true },
@@ -56,11 +59,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  groupID, name, sign, members, membersRemove, admins, adminsRemove } = ctx.params;
+                let {  groupID, name, sign, contractID, parentID, image, members, membersRemove, admins, adminsRemove } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.update({
-                    groupID, name, sign, userID, members, membersRemove, admins, adminsRemove
+                    groupID, name, sign, contractID, parentID, image, userID, members, membersRemove, admins, adminsRemove
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

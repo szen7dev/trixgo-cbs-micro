@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.apps"},{"v":{"$numberInt":"2"},"unique":true,"key":{"slug":{"$numberInt":"1"}},"name":"slug_1","ns":"trixgo_op.apps","background":true}],"uuid":"736c80e5bc9a4a3cb0f39abe321b158b"}

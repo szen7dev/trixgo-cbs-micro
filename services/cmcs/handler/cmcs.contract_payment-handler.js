@@ -47,7 +47,7 @@ module.exports = {
         auth: "required",
         params: {
             contractPaymentID   : { type: "string" },
-            ipc                 : { type: "string", optional: true  },
+            ipc               : { type: "string", optional: true  },
             date                : { type: "string", optional: true  },
             name                : { type: "string", optional: true  },
             sign                : { type: "string", optional: true  },
@@ -59,6 +59,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { contractPaymentID, ipc, date, name, sign, description, value } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
+
                 const resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.update({
                     contractPaymentID, ipc, date, name, sign, description, value, userID, ctx
                 });
@@ -195,13 +196,15 @@ module.exports = {
         params: {
             companyID   : { type: "string", optional: true },
             projectID   : { type: "string", optional: true },
+            contractID   : { type: "string", optional: true },
             year        : { type: "string", optional: true },
             outin       : { type: "string", optional: true },
+            option       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, projectID, year, outin } = ctx.params;
+                let { companyID, projectID, contractID, year, outin, option } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -211,7 +214,7 @@ module.exports = {
                 console.log({companyID})
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
-                    userID, companyID, projectID, outin: Number(outin), year, ctx
+                    userID, companyID, projectID, contractID, year, outin, option
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

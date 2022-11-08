@@ -18,7 +18,7 @@ const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
 exports.REACTION_SOCKET = {
 
     [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_CSS_ADD_COMMENT]: async function(data) {
-        try {
+		try {
 			let socket                     		= this;
 			let broker							= socket.$service.broker;
 			let listUserActive             		= socket.$service.listUserConnected;

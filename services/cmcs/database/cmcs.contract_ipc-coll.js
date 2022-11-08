@@ -11,9 +11,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
     /**
      * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
-    //_________Phân loại (1-Tạm ứng/2-Thanh toán)(*)
-    type: { type: Number, default: 1, enum: [1,2] },
-
     //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
     outin: { type: Number, default: 1, enum: [1,2] },
 
@@ -77,7 +74,19 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
     /**
      * END THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
-
+    /**
+     * Kế hoạch/Thực hiện
+     * 1-Kế hoạch
+     * 2-Thực tế
+     */
+    plan: { type: Number, default: 1, enum: [1,2] },
+    /**
+     * Phân loại
+     * 1-Tạm ứng
+     * 2-Thanh toán
+     */
+    type: { type: Number, default: 1, enum: [1,2] },
+    
     //_________Nội dung(*)
     name: String,
     
@@ -125,6 +134,16 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
 
     //_________((11) = 8- 10) Còn lại chưa giải ngân (Để theo dõi công nợ***)
     remainingPayment:  { type: Number, default: 0},
+
+    /**
+     * XUẤT HOÁ ĐƠN
+    */
+    //_________(1) Giá trị trước VAT
+    revenue: { type: Number, default: 0 },
+    //_________(2) Giá trị VAT
+    vatRevenue: { type: Number, default: 0 },
+    //_________(3) Ngày xuất hóa đơn
+    vatDate: { type: Date, default: Date.now },
 
     /**
      * USD-NGOẠI TỆ

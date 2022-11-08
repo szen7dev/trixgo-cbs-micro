@@ -6,6 +6,11 @@ const CacheCleaner                	    = require("../../tools/mixins/cache.clean
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_REMINDER } 	        = require('./helper/reminder.actions-constant');
 const { CF_ACTIONS_CHATTING } 	        = require('../chatting/helper/chatting.actions-constant');
+const { CF_ACTIONS_SUBJECT_PCM }		= require('../subject_pcm/helper/subject_pcm.actions-constant');
+
+const { APP_KEYS, LANGUAGE_KEYS }		= require('../../tools/keys');
+
+const { ENV_DEVICE_WEB_CBS }			= require('../notification/helper/notification.keys-constant');
 
 const REMINDER__CORE_HANLDER            = require('./handler/reminder.core-handler');
 
@@ -14,8 +19,8 @@ const { MONGODB_URL } 					= require('../../tools/db/utils');
 module.exports = {
 	name: CF_DOMAIN_SERVICES.REMINDER,
 	mixins: [
-		DbService('reminder_cores'),  
-		DbService('reminder_tasks'),  
+		DbService('reminder_cores'),
+		DbService('reminder_tasks'),
 		CacheCleaner([CF_DOMAIN_SERVICES.REMINDER])
     ],
 
@@ -36,7 +41,7 @@ module.exports = {
 	/**
 	* Actions
 	*/
-	actions: {	
+	actions: {
 		[CF_ACTIONS_REMINDER.ADD_JOB] 										: REMINDER__CORE_HANLDER.addJob,
 		[CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION] 					: REMINDER__CORE_HANLDER.addJobMuteConversation,
 		[CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION] 					: REMINDER__CORE_HANLDER.deleteJobMuteConversation,
@@ -44,6 +49,9 @@ module.exports = {
 		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION] 				: REMINDER__CORE_HANLDER.deleteJobReminderConversation,
 		[CF_ACTIONS_REMINDER.ADD_JOB_AUTO_DELETE_MESSAGE_CONVERSATION] 		: REMINDER__CORE_HANLDER.addJobAutoDeleteMessageConversation,
 		[CF_ACTIONS_REMINDER.DELETE_JOB_AUTO_DELETE_MESSAGE_CONVERSATION]	: REMINDER__CORE_HANLDER.deleteJobAutoDeleteMessageConversation,
+		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK]					: REMINDER__CORE_HANLDER.addJobReminderExpiredTask,
+		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK]				: REMINDER__CORE_HANLDER.deleteJobReminderExpiredTask,
+
 	},
 
 	/**
@@ -64,7 +72,7 @@ module.exports = {
 	 * Service created lifecycle event handler
 	*/
 	created() {
-		
+
 	},
 
 	/**
@@ -103,11 +111,11 @@ module.exports = {
 					const socket = require('socket.io-client')(`${process.env.SOCKET_URL}?token=${job.attrs.data.userID}&access_key=Y2JzX3Byb2plY3RAMjAyMQo=`);
 
 					socket.on("connect", () => {
-						// console.log({ 
-						// 	__MESSAGE: "Connection with the Gateway established", 
-						// 	__SOCKETID: socket.id, 
-						// 	__CONNECTED: socket.connected, 
-						// 	__DISCONNECTED: socket.disconnected 
+						// console.log({
+						// 	__MESSAGE: "Connection with the Gateway established",
+						// 	__SOCKETID: socket.id,
+						// 	__CONNECTED: socket.connected,
+						// 	__DISCONNECTED: socket.disconnected
 						// });
 						socket.emit('CHATTING_CSS_NOTIFICATION_REMINDER', job.attrs.data);
 						socket.disconnect();
@@ -131,12 +139,77 @@ module.exports = {
 				done();
 			});
 
-			// agenda.on("success:update_mute_conversation", (job) => {
-			// 	console.log({ __SUCCESS_UPDATE_MUTE_CONVERSATION: job.attrs });;
+			agenda.define('add_reminder_expired_task', async (job, done) => {
+				try {
+					console.log(`========================================`);
+					console.log(`done reminder expired task !!!!`);
+					console.log({ __JOB: job.attrs });
+
+					const {
+						taskID,
+						userID,
+						message,
+						senderMail,
+					} = job.attrs.data;
+
+					const infoTask = await this.broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
+						taskID
+					}, {
+						meta: {
+							infoUser: { _id: userID }
+						}
+					});
+					if(infoTask.error) return;
+
+					const { name, assignee, draft } = infoTask.data;
+
+					if(draft === 1) return done();
+
+					const description = `Thông báo trước ${message} khi tới hạn`;
+					const receivers = [assignee];
+					const dataSend = {
+						app: APP_KEYS.PCM_PLAN_TASK,
+						languageKey: LANGUAGE_KEYS.REMINDER_EXPIRED_TASK,
+						mainColl: {
+							kind: 'pcm_plan_task',
+							item: { _id: taskID }
+						},
+					}
+
+					// SEND MAIL
+					this.broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_SEND_EMAIL_TO_MEMBER_IN_TASK}`, {
+						taskID,
+						title: name,
+						notice: description,
+						members: receivers
+					}, {
+						meta: {
+							infoUser: { _id: userID, ...senderMail }
+						}
+					});
+
+					// SEND CLOUD-MSG
+					this.broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+						users: receivers,
+						title: name,
+						description,
+						dataSend: dataSend,
+						web_url: `/pcm/detail/${taskID}`,
+						env: ENV_DEVICE_WEB_CBS
+					});
+
+					done();
+				} catch(err) {
+					console.error(err)
+				}
+			});
+
+			// agenda.on("success:add_reminder_expired_task", (job) => {
+			// 	console.log({ __SUCCESS_REMINDER_EXPIRED_TASK: job.attrs });;
 			// });
 
-			// agenda.on("fail:update_mute_conversation", (err, job) => {
-			// 	console.log({ __FAILED_UPDATE_MUTE_CONVERSATION: err.message });
+			// agenda.on("fail:add_reminder_expired_task", (err, job) => {
+			// 	console.log({ __FAILED_REMINDER_EXPIRED_TASK: err.message });
 			// });
 
 			// agenda.on("complete", (job) => {
@@ -147,12 +220,9 @@ module.exports = {
 			agenda.start();
 		}
 
-		// let client = await MongoClient.connect(MONGODB_URL);
-		// let agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
-
 		const connectionOpts = {
 			db: {
-				address: MONGODB_URL, 
+				address: MONGODB_URL,
 				collection: process.env.AGENDA_COLLECTION || "agenda_jobs",
 				options: { useNewUrlParser: true }
 			},

@@ -3,17 +3,8 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-/**
- * Hồ sơ chi tiết nhân sự (phân các loại)
- * 1. Lịch sử làm việc ở các đơn vị
- * 2. Kinh nghiệm thực tế tham gia tại các Dự án
- * 3. Lịch sử làm việc theo các Quyết định bổ nhiệm tại các hợp đồng (Chức vụ)
- * 4. Trình độ học vấn + Chuyên ngành đào tạo
- * 5. Bằng cấp chứng chỉ
- * 6. Khác (Bảo hiểm xã hội, tài sản giao nhận, lịch sử tuyển dụng, quá trình làm việc, công tác)
- */
 module.exports  = DATABASE_MIDDLEWARE("contact_document", {
-    //_________Công ty   
+    //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -29,6 +20,15 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
         ref : "contact"
     },
     //_________Phân loại (1-6)
+    /**
+     * Hồ sơ chi tiết nhân sự (phân các loại)
+     * 1. Lịch sử làm việc ở các đơn vị
+     * 2. Kinh nghiệm thực tế tham gia tại các Dự án
+     * 3. Lịch sử làm việc theo các Quyết định bổ nhiệm tại các hợp đồng (Chức vụ)
+     * 4. Trình độ học vấn + Chuyên ngành đào tạo
+     * 5. Bằng cấp chứng chỉ
+     * 6. Khác (Bảo hiểm xã hội, tài sản giao nhận, lịch sử tuyển dụng, quá trình làm việc, công tác)
+     */
     type: { type: Number, default: 1 },
     //_________Từ ngày/Ngày cấp
     fromDate: { type: Date, default: null },

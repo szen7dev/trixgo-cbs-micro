@@ -35,7 +35,6 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
-tools/db/cf_database.js
 
 # Typescript v1 declaration files
 typings/
@@ -64,10 +63,10 @@ typings/
 # JetBrains IDE
 .idea
 
-tools/db/cf_database.js
-temp/cbs_query.mongodb
-
 .vscode
 
-temp/test.js
-temp/.gitlab-ci_demo.yml
+tools/db/cf_database.js
+temp/cbs_query.mongodb
+files/temporary_uploads/*
+
+ops/db/*

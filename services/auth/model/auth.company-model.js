@@ -25,7 +25,7 @@ class Model extends BaseModel {
         super(require('../database/auth.company-coll'));
     }
 
-    insert({ name, sign, taxid, address, area, phone, email, userID }) {
+    insert({ name, sign, taxid, address, area, phone, email, description, birthDay, website, userID }) {
         return new Promise(async (resolve) => {
             try {
                 let info = await AUTH__COMPANY_COLL.findOne({
@@ -39,7 +39,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${info.name}` });
 
                 let dataInsert = {
-                    name, sign, taxid, address, area, phone, email, userCreate: userID, userUpdate: userID,
+                    name, sign, taxid, address, area, phone, email, description, birthDay, website, userCreate: userID, userUpdate: userID,
                 }
 
                 let infoCompanyAfterSave = await this.insertData(dataInsert);
@@ -53,13 +53,12 @@ class Model extends BaseModel {
         })
     }
 
-    update({ companyID, name, sign, taxid, address, area, phone, email, userID }) {
+    update({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID }) {
         return new Promise(async (resolve) => {
             try {
                 let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);
                 if(!infoCompany)
                     return resolve({ error: true, message: "company_not_exist" });
-
                 // Kiểm tra tên công ty mới thay đổi đã tồn tại mã hiệu hay không ngoại trừ chính nó.
                 let info = await AUTH__COMPANY_COLL.findOne({
                     _id: { $ne: companyID },
@@ -72,12 +71,52 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "company_existed" })
 
                 let dataUpdate = {
-                    name, sign, taxid,  address, phone, email, userUpdate: userID, modifyAt: new Date()
+                    userUpdate: userID, modifyAt: new Date()
                 }
+
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(taxid){
+                    dataUpdate.taxid = taxid;
+                }
+
+                if(address){
+                    dataUpdate.address = address;
+                }
+
+                if(phone){
+                    dataUpdate.phone = phone;
+                }
+
+                if(email){
+                    dataUpdate.email = email;
+                }
+
                 if(area && _isValid(area)){
                     dataUpdate.area = area;
                 }
 
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(birthDay){
+                    dataUpdate.birthDay = birthDay;
+                }
+
+                if(image){
+                    dataUpdate.image = image;
+                }
+
+                if(website){
+                    dataUpdate.website = website;
+                }
                 let infoCompanyAfterUpdate = await AUTH__COMPANY_COLL.findByIdAndUpdate(companyID, dataUpdate, { new: true })
 
                 if(!infoCompanyAfterUpdate)
@@ -142,6 +181,8 @@ class Model extends BaseModel {
     getList({
         userID, arrayID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
+            console.log({userID, arrayID,
+                keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
 

@@ -8,7 +8,11 @@ const Schema                = require('mongoose').Schema;
  * 2-Chủ đề bài viết cộng đồng
  */
 module.exports  = DATABASE_MIDDLEWARE("datahub_type", {
-    //_________Phân loại
+    /**
+     * Phân loại
+     * 1-Lĩnh vực
+     * 2-Chủ đề cộng đồng => gán vào các bài viết
+     */
     type: { type: Number, default: 1 },
     //_________Cha
     parent: {
@@ -21,20 +25,36 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_type", {
     name: String,
     //_________Mô tả
     description: String,   
-    //_________Số lượng nhà thầu tham gia
-    numberOfContractors: { type: Number, default: 0 },
     //_________Phổ biến hay không (Phổ biến 2/Thông thường 1)
     popular: { type: Number, default: 1 },
+    //_________Số lượng đơn vị tham gia
+    numberOfContractors: { type: Number, default: 0 },
+    //_________Số lượng hợp đồng
+    numberOfContracts: { type: Number, default: 0 },
+    //_________Số lượng bài viết
+    numberOfPosts: { type: Number, default: 0 },
+    //_________Số lượng view
+    numberOfViews: { type: Number, default: 0 },
+    //_________Chi tiết các công ty đã view
+    companyViews: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],     
+    //_________Chi tiết các user đã view
+    userViews: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],    
+    //_________Số lượng nhà thầu thuộc lĩnh vực
+    contractors: [{
+        type: Schema.Types.ObjectId,
+        ref: "company"
+    }],
     //_________Ảnh đại diện
     image: {
         type: Schema.Types.ObjectId,
         ref: "file"
     },
-    //_________Số nhà thầu hoạt động
-    contractors: [{
-        type: Schema.Types.ObjectId,
-        ref : "company"
-    }], 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

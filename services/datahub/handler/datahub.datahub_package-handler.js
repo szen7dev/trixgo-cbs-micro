@@ -10,10 +10,11 @@ const DATAHUB_PACKAGE_MODEL                      = require('../model/datahub.dat
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Thêm datahub package
 	 */
     insert: {
+        auth: "required",
         params: {
             contractor    : { type: "string" },
             project       : { type: "string" },
@@ -33,11 +34,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { contractor, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.insert({
                     contractor, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -46,10 +47,11 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Sửa datahub package
 	 */
     update: {
+        auth: "required",
         params: {
             datahubPackageID: { type: "string" },
             project         : { type: "string", optional: true },
@@ -63,15 +65,16 @@ module.exports = {
             startTime       : { type: "string", optional: true },
             endTime         : { type: "string", optional: true },
             status          : { type: "number", optional: true },
+            files           : { type: "array", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status } = ctx.params;
+                let { datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, files } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.update({
-                    datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID
+                    datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, files, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -80,12 +83,13 @@ module.exports = {
             }
         }
     },
-    
+
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: Xóa datahub package
      */
     remove: {
+        auth: "required",
         params: {
             datahubPackageID: { type: "string" },
         },
@@ -94,11 +98,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { datahubPackageID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.remove({
-                    datahubPackageID 
+                    datahubPackageID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -107,10 +111,11 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: get info and get list datahub package
      */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             datahubPackageID : { type: "string", optional: true },
             contractorID     : { type: "string" },
@@ -137,7 +142,46 @@ module.exports = {
                         contractorID, userID, lastestID, keyword, limit, select, populates
                     });
                 }
-                
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Gom nhóm theo tính chất
+     * Date: 17/9/2022
+     */
+     getListByProperty: {
+        auth: "required",
+        params: {
+            fieldID  : { type: "string", optional: true },
+            areaID  : { type: "string", optional: true  },
+            level   : { type: "string", optional: true  },
+            option   : { type: "string", optional: true  },
+            contractorID   : { type: "string", optional: true  },
+
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                // console.log('========================12322222222222222')
+                await this.validateEntity(ctx.params);
+                let { fieldID, areaID, level, option, contractorID, lastestID, keyword, limit, select, populates } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.getListByProperty({
+                    fieldID, areaID, level, option, contractorID, userID, lastestID, keyword, limit, select, populates
+                 });
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

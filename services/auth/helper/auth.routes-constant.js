@@ -22,6 +22,9 @@ const CF_ROUTINGS_AUTH = {
     ME                                  : `${BASE_ROUTE}${USER}/me`, //GET, PUT, DELETE /auth/users/me
 
     LOGIN                               : `${BASE_ROUTE}${USER}/login`,
+    RECOVER_PASSWORD                    : `${BASE_ROUTE}${USER}/recover-password`,
+    CHECK_OTP_RECOVER_PASSWORD          : `${BASE_ROUTE}${USER}/check-otp-recover-password`,
+    UPDATE_PASSWORD_RECOVER             : `${BASE_ROUTE}${USER}/update-password-recover`,
     UPDATE_DEVICE_WHEN_LOGIN_MOBILE     : `${BASE_ROUTE}${USER}/update-device`,
 
     SEARCH_WITH_FIND                    : `${BASE_ROUTE}${USER}/search-with-find`,

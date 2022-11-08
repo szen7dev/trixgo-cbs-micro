@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.pcm_plan_groups"}],"uuid":"685f4cb9e7994b4f9b1fdc51ea496f5b"}

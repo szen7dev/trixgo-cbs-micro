@@ -21,12 +21,19 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_area", {
         type: Schema.Types.ObjectId,
         ref: "inspection_area"
     },
-    //_________Tên checklist kiểm tra
+    //_________Tên
     name: String,
     //_________Mã hiệu
     sign: String,
     //_________Mô tả 
     description: String,
+    /**
+     * Thứ tự để hiển thị
+     */
+    order: {
+        type: Number,
+        default: 1
+    },
     /**          
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

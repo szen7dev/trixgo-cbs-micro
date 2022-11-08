@@ -10,7 +10,7 @@ const DATAHUB_PROFILE_MODEL                   = require('../model/datahub.datahu
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Thêm datahub profile
 	 */
     insert: {
@@ -24,11 +24,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { company, name, files } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_PROFILE_MODEL.insert({
                     company, name, files, userID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -37,7 +37,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Sửa datahub profile
 	 */
     update: {
@@ -52,9 +52,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let {  datahubProfileID, name, files, filesRemove } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_PROFILE_MODEL.update({
-                    datahubProfileID, name, files, filesRemove, userID 
+                    datahubProfileID, name, files, filesRemove, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -63,9 +63,9 @@ module.exports = {
             }
         }
     },
-    
+
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: Xóa datahub profile
      */
     remove: {
@@ -77,11 +77,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { datahubProfileID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_PROFILE_MODEL.remove({
-                    datahubProfileID 
+                    datahubProfileID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -90,23 +90,25 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: get info and get list datahub profile
      */
     getInfoAndGetList: {
         params: {
-            datahubProfileID : { type: "string", optional: true },
+            datahubProfileID    : { type: "string", optional: true },
+            contractorID        : { type: "string", optional: true },
+
             // Field mặc định
-            keyword     : { type: "string", optional: true },
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
-            populates   : { type: "string", optional: true },
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubProfileID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { datahubProfileID, contractorID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -116,10 +118,10 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_PROFILE_MODEL.getList({
-                        userID, lastestID, keyword, limit: +limit, select, populates
+                        contractorID, userID, lastestID, keyword, limit: +limit, select, populates
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

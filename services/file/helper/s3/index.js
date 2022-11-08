@@ -28,6 +28,12 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
             bucket = `${config.bucket}/files/db/projects`;
         }
 
+        if(typeUpload == "company"){
+            bucket = `${config.bucket}/files/db/companys`;
+        }
+
+        console.log({ typeUpload })
+
         let signedUrl = s3Object.getSignedUrl('putObject', {
             Bucket: bucket,
             Key: fileName,
@@ -103,6 +109,7 @@ const getPathByApp = (params) => {
         APP_KEYS.PCM_PLAN_TASK,
         APP_KEYS.DOCUMENT,
         APP_KEYS.HUMAN,
+        APP_KEYS.DATAHUB,
     ];
     const PROJECTS = [APP_KEYS.PCM_PLAN_TASK, APP_KEYS.DOCUMENT];
     const GROUPS   = [APP_KEYS.PCM_PLAN_TASK];
@@ -152,6 +159,10 @@ const getPathByApp = (params) => {
             appName = 'HUMAN';
             pathS3 += `/${companyID}`;
             break;
+        case APP_KEYS.DATAHUB:
+            appName = 'DATAHUB';
+            pathS3 += `/${companyID}`;
+            break;
         default:
             break;
     }
@@ -195,6 +206,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     switch (typeUpload) {
         case 'contact':
         case 'project':
+        case 'company':
         case 'user': {
             const extension = getExtension(fileName);
             const newFileName = `${uuidv4()}.${extension}`;

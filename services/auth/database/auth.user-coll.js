@@ -20,7 +20,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Công ty
     company: {
         type: Schema.Types.ObjectId,
-        ref : 'company' 
+        ref : 'company'
     },
     //_______Email
     email: {
@@ -38,10 +38,9 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     lastname: String,
     //_______Họ và tên (vd: Nguyễn Văn Nam)
     fullname: String,
-    //_______Tên trong doanh nghiệp (vd: Nam-TRX)
-    bizfirstname: String,
-    //_______Họ và tên trong doanh nghiệp (vd: Nguyễn Văn Nam-TRX)
     bizfullname: String,
+    //_______Họ và tên sau khi convert-chữ thường, không dấu (vd: nguyen van nam-trx)
+    fullnamecv: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,
@@ -55,7 +54,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Thuộc về phòng ban/dự án nào
     department: {
         type: Schema.Types.ObjectId,
-        ref : 'department' 
+        ref : 'department'
     },
     //_______Chức vụ/vị trí
     position: {
@@ -103,24 +102,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : Date,
         default: null
     },
-    /**
-     * Cấu hình nhận email thông báo
-     * 1: Nhận email
-     * 0: Không nhận email
-     */
-    emailConfig: {
-        type   : Number,
-        default: 1
-    },
-    /**
-     * Cấu hình nhận thông báo trên hệ thống
-     * 1: Nhận thông báo.
-     * 0: Không nhận thông báo.
-     */
-    noticeConfig: {
-        type   : Number,
-        default: 1
-    },
 	/**
      * Danh sách pin cuộc hội thoại
     */
@@ -129,30 +110,15 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         ref: 'message_conversation'
     }],
     /**
-     * Danh sách pin bài viết
-    */
-	mediasPin: [{
-        type: Schema.Types.ObjectId,
-        ref: 'media'
-    }],
-    /**
      * Cấu hình hiển thị view mặc định ở trang chủ
-     * 1: Văn hoá doanh nghiệp
-     * 2: Báo cáo quản trị theo phân quyền truy cập
+     * 1: Giao diện Gmail (chung cho cấp nhân viên)
+     * 2: Giao diện cho cấp Quản lý
+     * 3: Giao diện cho cấp Lãnh đạo
      */
-    // displayHomeConfig: {
-    //     type   : Number,
-    //     default: 1
-    // },
-    /**
-     * Cấu hình giao diện chi tiết công việc
-     * 1: Giao diện đơn giản
-     * 2: Giao diện đầy đủ
-     */
-    // displayPcmConfig: {
-    //     type   : Number,
-    //     default: 1
-    // },
+    displayHomeConfig: {
+        type   : Number,
+        default: 1
+    },
     //_______Ngôn ngữ hiển thị (đồng bộ với moment.js)
     lang: {
         type   : String,
@@ -169,38 +135,25 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         ref: 'user'
     }],
     //_______Danh sách bạn bè
-    friends: [{ 
+    friends: [{
         type: Schema.Types.ObjectId,
         ref: 'user'
     }],
-    //_______Bạn bè liên lạc gần đây
-    // recentlyFriends: [{ 
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
-    /**
-     * Số lượng app user được dùng
-     * khi record user_app insert -> amountAppUse ++ (increment)
-     */
-    // amountAppUse: {
-    //     type: Number,
-    //     default: 0
-    // },
     /**
      * Dung lượng sử dụng trong tất cả các ứng dụng
      * khi record của các ứng dụng insert file thì sẽ ++ (increment)
      */
-    // storageUse: {
-    //     type: Number,
-    //     default: 0
-    // }, 
+    storageUse: {
+        type: Number,
+        default: 0
+    },
     //_______Code reset mật khẩu
     codeReset: String,
     /**
      * Quản lý thông tin Device Mobile
      */
     devices: [{
-        deviceName      :{ type : String }, 
+        deviceName      :{ type : String },
         deviceID        :{ type : String },
         registrationID  :{ type : String },
         oneSignalID     :{ type : String }, //id cho dịch vụ push noti: OneSignal

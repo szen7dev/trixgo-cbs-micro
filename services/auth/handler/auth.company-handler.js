@@ -19,15 +19,18 @@ module.exports = {
             area            : { type: "string" },
             phone           : { type: "string", optional: true },
             email           : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            birthDay        : { type: "string", optional: true },
+            website         : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  name, sign, taxid, address, area, phone, email } = ctx.params;
+                let {  name, sign, taxid, address, area, phone, email, description, birthDay, website } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await AUTH__COMPANY_MODEL.insert({
-                    name, sign, taxid, address, area, phone, email, userID 
+                    name, sign, taxid, address, area, phone, email, description, birthDay, website, userID 
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -41,22 +44,26 @@ module.exports = {
         auth: "required",
         params: {
             companyID       : { type: "string" },
-            name            : { type: "string" },
-            sign            : { type: "string" },
-            taxid           : { type: "string" },
-            address         : { type: "string" },
-            area            : { type: "string" },
+            name            : { type: "string", optional: true },
+            sign            : { type: "string", optional: true },
+            taxid           : { type: "string", optional: true },
+            address         : { type: "string", optional: true },
+            area            : { type: "string", optional: true },
             phone           : { type: "string", optional: true },
             email           : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            birthDay        : { type: "string", optional: true },
+            image           : { type: "string", optional: true },
+            website         : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, name, sign, taxid, address, area, phone, email } = ctx.params;
+                let { companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await AUTH__COMPANY_MODEL.update({
-                    companyID, name, sign, taxid, address, area, phone, email, userID 
+                    companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -21,7 +21,7 @@ exports.infoDocrePcm = ({ content }) => {
 
     return `<td>
         <p>Sender/Người gửi: <b>${content.sender.fullname} (${content.sender.email})</b></p>
-        <p>Notice/Nội dung lưu ý: <b style="color:red;">${nl2p(content.notice)}</b></p>
+        <p>Notice/Nội dung lưu ý: <b style="color:#0066ff;">${nl2p(content.notice)}</b></p>
         <p>==============================================</p>
         <h2 style="font-size: 13px;">DOCRE INFO/TÀI LIỆU</h2>
         <p>Docre name/Tên tài liệu: : <span style="color: #385898;font-weight: bold;">${taskName}</span></p>

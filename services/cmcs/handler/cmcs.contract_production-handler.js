@@ -14,6 +14,7 @@ module.exports = {
 	 * Func: Thêm contract production 
 	 */
     insert: {
+        auth: "required",
         params: {
             contractID          : { type: "string" },
             name                : { type: "string" },
@@ -47,6 +48,7 @@ module.exports = {
 	 * Func: Sửa contract production
 	 */
     update: {
+        auth: "required",
         params: {
             contractProductionID: { type: "string" },
             name                : { type: "string", optional: true },
@@ -80,6 +82,7 @@ module.exports = {
      * Func: Xóa contract production
      */
     remove: {
+        auth: "required",
         params: {
             contractProductionID : { type: "string" },
         },
@@ -105,6 +108,7 @@ module.exports = {
      * Func: get info and get list contract production
      */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             contractProductionID : { type: "string", optional: true },
             contractID           : { type: "string", optional: true },

@@ -10,7 +10,7 @@ const DATAHUB_FINREPORT_MODEL                      = require('../model/datahub.d
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Thêm datahub finreport
 	 */
     insert: {
@@ -26,17 +26,18 @@ module.exports = {
             grossConstructionRevenue : { type: "number", optional: true  },
             grossProfit              : { type: "number", optional: true  },
             grossProfitAfterTax      : { type: "number", optional: true  },
+            shortTermLiabilitiy      : { type: "number", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax } = ctx.params;
+                let { contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, shortTermLiabilitiy } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_FINREPORT_MODEL.insert({
-                    contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID
+                    contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, shortTermLiabilitiy, userID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -45,7 +46,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Sửa datahub finreport
 	 */
     update: {
@@ -58,18 +59,20 @@ module.exports = {
             currentAsset      : { type: "number", optional: true  },
             workingCapital    : { type: "number", optional: true  },
             grossRevenue      : { type: "number", optional: true  },
+            files             : { type: "array", optional: true  },
             grossConstructionRevenue : { type: "number", optional: true  },
             grossProfit              : { type: "number", optional: true  },
             grossProfitAfterTax      : { type: "number", optional: true  },
+            shortTermLiabilitiy      : { type: "number", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax } = ctx.params;
+                let {  datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, shortTermLiabilitiy, files } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_FINREPORT_MODEL.update({
-                    datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID
+                    datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, shortTermLiabilitiy, files, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -78,9 +81,9 @@ module.exports = {
             }
         }
     },
-    
+
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: Xóa datahub finreport
      */
     remove: {
@@ -92,11 +95,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { datahubFinreportID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await DATAHUB_FINREPORT_MODEL.remove({
-                    datahubFinreportID 
+                    datahubFinreportID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -105,7 +108,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: get info and get list datahub finreport
      */
     getInfoAndGetList: {
@@ -136,7 +139,7 @@ module.exports = {
                         contractorID, userID, lastestID, keyword, limit, select, populates
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
