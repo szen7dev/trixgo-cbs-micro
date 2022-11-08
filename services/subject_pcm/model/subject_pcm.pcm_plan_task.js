@@ -347,16 +347,6 @@ class Model extends BaseModel {
                         infoUser: { _id: authorID, bizfullname, company }
                     }
                 });
-                // await PCM_COMMENT_MODEL.insertCommentTask({
-                //     taskID: infoAfterInsert._id,
-                //     authorID,
-                //     companyOfAuthor: infoAuthor.data.company,
-                //     type: 5,
-                //     files: authorAttachs,
-                //     content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
-                //     rawContent: infoAfterInsert.name,
-                //     ctx
-                // });
 
                 /**
                  * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
@@ -415,7 +405,7 @@ class Model extends BaseModel {
                      * 0: Chính thức
                      * 1: Việc nháp
                      */
-                    if(draft == 0) {
+                    if(infoAfterInsert.draft == 0) {
                         if(accessUsers && accessUsers.length) {
                             arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
                         } else{
@@ -425,13 +415,14 @@ class Model extends BaseModel {
                             arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
                         }
                     }
+                    console.log({ BEFORE: arrReceiver })
 
                     if(arrReceiver && arrReceiver.length) {
                         if(parentID) {
-                            let { assignee, related } = infoTaskParent;
+                            let { related } = infoTaskParent;
                             related = related.map(userID => userID.toString());
 
-                            let listReceivers = [...new Set([assignee.toString(), ...related])];
+                            let listReceivers = [...new Set([assigneeID, ...related])];
                             arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                             dataSend = {
@@ -458,6 +449,7 @@ class Model extends BaseModel {
                         }
 
                         const amountNoti = await this.getAmountNotification({ userID: authorID });
+                        console.log({ AFTER: arrReceiver })
 
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                             users: arrReceiver,
