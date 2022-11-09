@@ -434,7 +434,7 @@ class Model extends BaseModel {
                                 },
                             };
                             titleMSS        = taskName;
-                            descriptionMSS  = `${bizfullname} đã tạo 1 việc con cho bạn`;
+                            descriptionMSS  = `${bizfullname} đã tạo 1 việc con`;
                         } else {
                             dataSend = {
                                 ...dataSend,
@@ -448,18 +448,29 @@ class Model extends BaseModel {
                             descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                         }
 
-                        const amountNoti = await this.getAmountNotification({ userID: authorID });
+                        const dataAmountNoti = await this.getAmountNotification({ userID: authorID });
+                        const amountNoti = dataAmountNoti?.data?.amountUnreadTask || 1;
                         console.log({ AFTER: arrReceiver })
 
-                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                            users: arrReceiver,
-                            title: titleMSS,
-                            description: descriptionMSS,
-                            amountNoti: amountNoti?.data?.amountUnreadTask,
-                            dataSend,
-                            web_url: webUrl,
-                            env: ENV_DEVICE_WEB_CBS
-                        });
+                        arrReceiver.map(receiver => {
+                            if(assigneeID === receiver) {
+                                descriptionMSS = `${bizfullname} đã tạo 1 công việc cho bạn`;
+                            }
+
+                            if(related.includes(receiver)) {
+                                descriptionMSS = `${bizfullname} đã gán bạn là người liên quan`;
+                            }
+
+                            ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                                users: [receiver],
+                                title: titleMSS,
+                                description: descriptionMSS,
+                                amountNoti,
+                                dataSend,
+                                web_url: webUrl,
+                                env: ENV_DEVICE_WEB_CBS
+                            });
+                        })
                     }
                 }
 
