@@ -1053,7 +1053,7 @@ class Model extends BaseModel {
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receiversNoti,
-                        title: taskName,
+                        title: infoAfterUpdate.name,
                         description: `${bizfullname} đã cập nhật trạng thái công việc`,
                         dataSend: {
                             app: APP_KEYS.PCM_PLAN_TASK,
