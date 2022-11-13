@@ -49,7 +49,7 @@ const DOCUMENT_DOC_COLL                 = require('../../document/database/docum
 const { sortBy } = require('lodash');
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
-// const PCM_COMMENT_MODEL                 = require('../model/subject_pcm.pcm_comment-model').MODEL;
+
 class Model extends BaseModel {
 
     constructor() {
@@ -214,7 +214,7 @@ class Model extends BaseModel {
                     dataInsert.expiredTime = formatDate;
                     dataInsert.actualFinishTime = formatDate;
                 }
-           
+
                 /**
                  * Precalculated
                  */
@@ -448,11 +448,11 @@ class Model extends BaseModel {
                             descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                         }
 
-                        const dataAmountNoti = await this.getAmountNotification({ userID: authorID });
-                        const amountNoti = dataAmountNoti?.data?.amountUnreadTask || 1;
-                        console.log({ AFTER: arrReceiver })
+                        for (let i = 0; i < arrReceiver.length; i++) {
+                            const receiver = arrReceiver[i];
+                            const dataAmountNoti = await this.getAmountNotification({ userID: receiver });
+                            const amountNoti = dataAmountNoti?.data?.amountUnreadTask;
 
-                        arrReceiver.map(receiver => {
                             if(assigneeID === receiver) {
                                 descriptionMSS = `${bizfullname} đã tạo 1 công việc cho bạn`;
                             }
@@ -470,7 +470,7 @@ class Model extends BaseModel {
                                 web_url: webUrl,
                                 env: ENV_DEVICE_WEB_CBS
                             });
-                        })
+                        }
                     }
                 }
 
@@ -513,10 +513,10 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
-        console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-            contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-            links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-            openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
+        // console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -539,11 +539,10 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'taskID_invalid', status: 400 });
 
-                // const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
                 const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).populate({
                     path: 'project assignee',
                     select: '_id admins name fullname'
-                })
+                }).lean()
                 // console.log('===============================')
                 // console.log(infoTask)
 
@@ -605,7 +604,7 @@ class Model extends BaseModel {
                          * Ghi log
                          */
                         let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
-                            taskID: `${taskID}`, 
+                            taskID: `${taskID}`,
                             type: 3,
                             title: "Cập nhật tên công việc",
                             content: `đã cập nhật tên công việc "${infoTask.name}" thành "${name}"`,
@@ -626,7 +625,7 @@ class Model extends BaseModel {
                          * Cập nhật comment type=5 tương ứng
                          */
                         let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
-                            taskID: `${taskID}`, 
+                            taskID: `${taskID}`,
                             type: 3,
                             title: "Cập nhật nội dung công việc",
                             content: `đã cập nhật nội dung công việc "${infoTask.description}" thành "${description}"`,
@@ -650,7 +649,7 @@ class Model extends BaseModel {
                          * Ghi log
                          */
                         let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
-                            taskID: `${taskID}`, 
+                            taskID: `${taskID}`,
                             type: 3,
                             title: "Cập nhật thời hạn",
                             content: `đã cập nhật thời hạn từ ${moment(infoTask.actualFinishTime).format("L")} thành "${moment(actualFinishTime).format("L")}"`,
@@ -675,7 +674,7 @@ class Model extends BaseModel {
                          * Cập nhật comment type=5 tương ứng
                          */
                         let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
-                            taskID: `${taskID}`, 
+                            taskID: `${taskID}`,
                             type: 3,
                             title: "Cập nhật người thực hiện",
                             content: `đã cập nhật người thực hiện "${infoTask.assignee.fullname}" thành "${infoAssignee.data.fullname}"`,
@@ -984,7 +983,9 @@ class Model extends BaseModel {
                  * Cập nhật user chưa xem
                  */
                 if(isUpdateNews) {
-                    const usersUnRead = infoTask.accessUsers?.filter(item => item.toString() !== userID.toString());
+                    const usersUnRead = infoTask.accessUsers?.filter(item =>
+                        item.toString() !== userID.toString()
+                    );
                     dataAddToset = { ...dataAddToset, news: usersUnRead };
                     dataUpdate.modifyAt = new Date();
                 }
@@ -998,9 +999,6 @@ class Model extends BaseModel {
                 if(dataPullAll){
                     dataUpdate.$pullAll = dataPullAll;
                 }
-
-                // console.log('=================>>>>>>>>>>>>>>>>>')
-                // console.log(dataUpdate)
 
                 /**
                  * TIẾN HÀNH CẬP NHẬT CÔNG VIỆC
@@ -2090,7 +2088,7 @@ class Model extends BaseModel {
                     assignee: userID,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
-                    actualFinishTime: { 
+                    actualFinishTime: {
                         $gte:  moment(start).startOf('day')._d,
                         $lt: moment(addDate(7)).endOf('day')._d
                     }
@@ -2101,7 +2099,7 @@ class Model extends BaseModel {
                     assignee: userID,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
-                    actualFinishTime: { 
+                    actualFinishTime: {
                         $gte: addDate(7)
                     }
                 })
@@ -2180,7 +2178,7 @@ class Model extends BaseModel {
                         assignee: userID,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
-                        actualFinishTime: { 
+                        actualFinishTime: {
                             $gte:  moment(start).startOf('day')._d,
                             $lt: moment(addDate(7)).endOf('day')._d
                         }
@@ -2191,7 +2189,7 @@ class Model extends BaseModel {
                         assignee: userID,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
-                        actualFinishTime: { 
+                        actualFinishTime: {
                             $gte: addDate(7)
                         }
                     })
@@ -2230,7 +2228,7 @@ class Model extends BaseModel {
                             },
                             { $sort: sortBy},
                         ])
-                        
+
                         if(listDataCompany.length){
                             await PCM_PLAN_TASK_COLL.populate(listDataCompany, conditionPopulateCompany)
                         }
@@ -2261,7 +2259,7 @@ class Model extends BaseModel {
                             },
                             { $sort: sortBy},
                         ])
-                        
+
                         if(listDataUser.length){
                             await PCM_PLAN_TASK_COLL.populate(listDataUser, conditionPopulateUser)
                         }
@@ -2295,7 +2293,7 @@ class Model extends BaseModel {
                             { $sort: sortBy},
                         ])
                         console.log(listDataProject)
-                        
+
                         if(listDataProject.length){
                             await PCM_PLAN_TASK_COLL.populate(listDataProject, conditionPopulateProject)
                         }

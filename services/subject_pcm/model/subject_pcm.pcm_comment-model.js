@@ -994,6 +994,7 @@ class Model extends BaseModel {
                     .findById(taskID)
                     .populate('project', '_id name sign')
                     .populate('author', '_id bizfullname image')
+                    .populate('assignee', '_id bizfullname image')
                     .lean();
 
                 if(!infoTask) {
@@ -1130,13 +1131,14 @@ class Model extends BaseModel {
 
                 let { name: taskName, author, assignee, related, accessUsers } = infoTask;
                 let arrReceiver = [];
+                let description = '';
 
                 if(accessUsers && accessUsers.length) {
                     arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
                 } else{
                     related = related.map(userID => userID.toString());
 
-                    let listReceivers = [...new Set([author._id?.toString(), assignee.toString(), ...related])];
+                    let listReceivers = [...new Set([author._id?.toString(), assignee._id?.toString(), ...related])];
                     arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
                 }
 
@@ -1155,17 +1157,30 @@ class Model extends BaseModel {
                         }
                     };
 
-                    const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    if(authorID.toString() === assignee._id?.toString()) {
+                        description = `${assignee?.bizfullname} thêm file vào phản hồi liên quan`;
+                    } else if(authorID.toString() === author._id?.toString()) {
+                        description = `${author?.bizfullname} thêm file vào phản hồi liên quan`;
+                    } else if(related.includes(authorID)) {
+                        description = `Người liên quan thêm file vào phản hồi liên quan`;
+                    }
 
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: arrReceiver,
-                        title: taskName,
-                        description: `${author?.bizfullname} thêm file vào phản hồi liên quan`,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
-                        dataSend,
-                        web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
-                        env: ENV_DEVICE_WEB_CBS
-                    });
+                    for (let i = 0; i < arrReceiver.length; i++) {
+                        const dataAmountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({
+                            userID: arrReceiver[i]
+                        });
+                        const amountNoti = dataAmountNoti?.data?.amountUnreadTask;
+
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                            users: [arrReceiver[i]],
+                            title: taskName,
+                            description,
+                            amountNoti,
+                            dataSend,
+                            web_url: `/pcm/detail/${taskID}#${'attachment'}_${commentID}`,
+                            env: ENV_DEVICE_WEB_CBS
+                        });
+                    }
                 }
 
                 // Cập nhật công việc
