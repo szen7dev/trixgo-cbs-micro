@@ -189,8 +189,8 @@ class Model extends BaseModel {
     insertCommentTask({
         taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
     }) {
-        console.log('=======================insertCommentTask=====================')
-        console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
+        // console.log('=======================insertCommentTask=====================')
+        // console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
         return new Promise(async resolve => {
             try {
                 /**
@@ -278,6 +278,7 @@ class Model extends BaseModel {
                     .findById(taskID)
                     .populate('project', '_id name sign')
                     .populate('author', '_id bizfullname image')
+                    .populate('assignee', '_id bizfullname image')
                     .lean();
 
                 if(!infoTask) {
@@ -512,7 +513,7 @@ class Model extends BaseModel {
                 /**
                  * Insert notification and cloud messaging
                  */
-                let { name: taskName, sign: taskSign, author, project } = infoTask;
+                let { name: taskName, sign: taskSign, author, assignee, project } = infoTask;
                 let arrReceiver = dataInsert.receivers;
 
                 // related = related.map(userID => userID.toString());
@@ -522,7 +523,7 @@ class Model extends BaseModel {
                 switch (infoAfterInsert.type) {
                     case 1:
                         languageKey     = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi`;
+                        descriptionMSS  = `Ai đó đã tạo 1 phản hồi liên quan`;
                         webUrl          = `/pcm/detail/${taskID}#comment_${infoAfterInsert._id}`;
                         break;
                     default:
@@ -562,36 +563,33 @@ class Model extends BaseModel {
                 }
 
                 if(arrReceiver && arrReceiver.length) {
-                    let amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    for (let i = 0; i < arrReceiver.length; i++) {
+                        const receiver = arrReceiver[i];
+                        const dataAmountNoti = await this.getAmountNotification({ userID: receiver });
+                        const amountNoti = dataAmountNoti?.data?.amountUnreadTask;
 
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: arrReceiver,
-                        title: titleMSS,
-                        description: descriptionMSS,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
-                        dataSend,
-                        web_url: webUrl,
-                        env: ENV_DEVICE_WEB_CBS
-                    });
+                        if(assignee._id?.toString() === receiver) {
+                            descriptionMSS = `${assignee.bizfullname} đã tạo 1 phản hồi liên quan`;
+                        }
 
-                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    //     content,
-                    //     receivers: arrReceiver,
-                    //     project: project?._id?.toString(),
-                    //     contract: contract?.toString(),
-                    //     path: webUrl,
-                    //     languageKey: dataSend.languageKey,
-                    //     app: APP_KEYS.PCM_PLAN_TASK,
-                    //     mainColl: {
-                    //         kind: "pcm_plan_task",
-                    //         item: taskID
-                    //     },
-                    //     subColl: {
-                    //         kind: "pcm_comment",
-                    //         item: infoAfterInsert._id
-                    //     },
-                    //     type: 1 // InApp (Socket)
-                    // })
+                        if(author._id?.toString() === receiver) {
+                            descriptionMSS = `${author.bizfullname} đã tạo 1 phản hồi liên quan`;
+                        }
+
+                        if(related.includes(receiver)) {
+                            descriptionMSS = `Người liên quan đã tạo 1 phản hồi liên quan`;
+                        }
+
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                            users: arrReceiver,
+                            title: titleMSS,
+                            description: descriptionMSS,
+                            amountNoti,
+                            dataSend,
+                            web_url: webUrl,
+                            env: ENV_DEVICE_WEB_CBS
+                        });
+                    }
                 }
 
                 infoAfterInsert = await PCM_COMMENT_COLL
