@@ -1049,7 +1049,7 @@ class Model extends BaseModel {
                     const { author, assignee, related } = infoTask;
                     const relatedIDs = related?.map(userId => userId.toString());
                     const receivers = [...new Set([author?.toString(), assignee._id?.toString(), ...relatedIDs])]
-                    receiversNoti = receivers.filter(userId => userId !== userID.toString());
+                    const receiversNoti = receivers.filter(userId => userId !== userID.toString());
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receiversNoti,
