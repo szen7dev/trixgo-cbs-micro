@@ -389,27 +389,6 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!option){
-                    
-                }else{
-                    
-                    /**
-                     * VALIDATION (1)
-                     */
-                    const validation = validateParamsObjectID({
-                        fundasID            : { value: fundasID, isRequire: false },
-                    });
-                    if(validation.error) return resolve(validation);
-
-                    let conditionObj = {}
-                    let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
-
-                    // Gom nhóm theo đơn vị cơ sở
-                    if(fundasID && fundasID.length ){
-                        let arrFun = fundasID.map(item=>ObjectID(item))
-                        conditionObj.funda = { $in: arrFun }
-                    }
-
                     if(populates && typeof populates === 'string'){
                         if(!IsJsonString(populates))
                             return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -421,24 +400,43 @@ class Model extends BaseModel {
                             select: ""
                         }
                     }
+                }else{
+                    let conditionObj = {}
+                    let conditionGroup = {}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
 
                     /**
-                     * Tính tổng
+                     * VALIDATION (1)
+                     */
+                    const validation = validateParamsObjectID({
+                        fundasID            : { value: fundasID, isRequire: false },
+                    });
+                    if(validation.error) return resolve(validation);
+
+                    // Gom nhóm theo đơn vị cơ sở
+                    if(fundasID && fundasID.length ){
+                        let arrFun = fundasID.map(item=>ObjectID(item))
+                        conditionObj.funda = { $in: arrFun }
+                    }
+
+                    /**
+                     * Gom nhóm theo các phân loại căn bản
                      */
                     if(option && Number(option) == 1){
-                        if(optionGroup && Number(optionGroup) == 1){
-                            conditionGroup = {
-                                _id: { funda: "$funda", hour: "$hour", shift: "$shift", mistake: "$mistake", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod", customer: "$customer" },
-                                quantity: { $sum: 1 },
-                                amount: { $sum: "$amount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
-                            }
-
+                        conditionGroup = {
+                            _id: { shiftType: "$shiftType", mistake: "$mistake", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod" },
+                            quantity: { $sum: 1 },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
                         }
                     }
 
                     /**
                      * Gom nhóm theo thời gian
+                     * - Số lượng đơn hàng
+                     * - Giá trị đơn hàng
+                     * - Số lượng sản phẩm
                      */
                     if(option && Number(option) == 2){
                         // Theo năm
@@ -447,11 +445,12 @@ class Model extends BaseModel {
                                 _id: { year: "$year" },
                                 quantity: { $sum: 1 },
                                 amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
                             }
                         }
                         
-                        // Theo tháng
+                        // Theo tháng trong năm
                         if(optionTime && Number(optionTime) == 2){
                             if(!isNaN(year) && Number(year) >= 0){
                                 conditionObjYear = {
@@ -463,25 +462,59 @@ class Model extends BaseModel {
                                 _id: { month: "$month", year: "$year" },
                                 quantity: { $sum: 1 },
                                 amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
                             }
                         }  
 
-                        // Theo giờ
-                        if(optionTime && Number(optionTime) == 3){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
-                            }
-    
+                        // Theo giờ trong ngày
+                        if(optionTime && Number(optionTime) == 3){    
                             conditionGroup = {
-                                _id: { funda: "$funda", hour: "$hour" },
+                                _id: { hour: "$hour" },
                                 quantity: { $sum: 1 },
                                 amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
                             }
                         } 
+                    }
+
+                    /**
+                     * Gom nhóm theo đơn vị cơ sở
+                     */
+                    if(option && Number(option) == 3){
+                        conditionGroup = {
+                            _id: { funda: "$funda" },
+                            quantity: { $sum: 1 },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name sign image',
+                            model: 'funda'
+                        }
+                    }
+
+                     /**
+                     * Gom nhóm theo các lỗi hay gặp
+                     */
+                    if(option && Number(option) == 4){
+                        conditionGroup = {
+                            _id: { mistake: "$mistake" },
+                            quantity: { $sum: 1 },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.mistake',
+                            select: '_id name sign image',
+                            model: 'doctype'
+                        }
                     }
                 
                     console.log(conditionObj)
@@ -521,9 +554,9 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    // if(!isNaN(option) && [3,4].includes(Number(option))){
-                    //     await INSPECTION__DOC_COLL.populate(listData, conditionPopulate)
-                    // }
+                    if(!isNaN(option) && [3,4].includes(Number(option))){
+                        await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+                    }
 
                     return resolve({ error: false, data: listData });
                 }
