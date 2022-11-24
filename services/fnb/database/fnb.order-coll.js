@@ -101,6 +101,18 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     // unit: String, 
     //_________Ghi chú
     note: String,
+    /**
+     * Trạng thái đơn
+     * 1-Đang giao hàng/Phục vụ
+     * 2-Hoàn tiền một phần
+     * 3-Hoàn tiền toàn bộ
+     * 4-Đã hủy
+     * 5-Hoàn thành
+     */
+    status: {
+        type: Number,
+        default: 1
+    },
     //_________Số lượng sản phẩm
     numberOfProducts: {
         type: Number,
