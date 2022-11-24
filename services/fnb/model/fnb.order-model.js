@@ -195,10 +195,10 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ groupID, select, populates={} }) {
+    getInfo({ orderID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(groupID))
+                if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populate
@@ -214,7 +214,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await FNB_ORDER_COLL.findById(groupID)
+                let infoPlanGroup = await FNB_ORDER_COLL.findById(orderID)
                                     .select(select)
                                     .populate(populates)
 
@@ -232,114 +232,104 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) {
-        console.log({ userID, parentID, projectID, lastestID, keyword, limit, select, populates, isShowAll, isShowParentAndChild })
+    getList({ fundasID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20 || isNaN(limit)){
-                    limit = 20;
+                if(Number(limit) > 50){
+                    limit = 50;
                 } else{
-                    limit = +limit;
+                    limit = +Number(limit);
                 }
 
-                if(!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: "projectID_invalid", keyError: KEY_ERROR.PARAMS_INVALID });
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = {
-                    $or: [
-                        { members: { $in: [userID] } },
-                        { admins: { $in: [userID] } },
-                    ]
-                };
-
+                let conditionObj = {}
                 let sortBy;
-                let keys	 = ['actualFinishTime__-1', '_id__-1'];
+                let keys	 = ['createAt__-1'];
+
+                const validation = validateParamsObjectID({
+                    fundasID            : { value: fundasID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
+                // Gom nhóm theo đơn vị cơ sở
+                if(fundasID && fundasID.length ){
+                    let arrFun = fundasID.map(item=>ObjectID(item))
+                    conditionObj.funda = { $in: arrFun }
+                }
+
+                // Phân loại kênh bán hàng
+                if(salesChannel && Number(salesChannel) > 0){
+                    conditionObj.salesChannel = Number(salesChannel)
+                }
+
+                // Phân loại theo thời khoảng
+                if(fromDate && toDate){
+                    conditionObj.createAt = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+                }
+
+                // Làm rõ mục đích để làm gì?
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                console.log(conditionObj)
+
                 /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 * ĐIỀU KIỆN KHÁC
                  */
                 if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				} else{
+                    populates = JSON.parse(populates);
+                } else{
                     populates = {
                         path: "",
                         select: ""
                     }
                 }
 
-                /**
-                 * Lấy tất cả group trong dự án
-                 * Phục vụ cho việc Admin dự án
-                 */
-                if(isShowAll == 1){
-                    delete conditionObj.$or;
-                 }
-
-                if(projectID){
-                    conditionObj.project = projectID;
-                }
-
-                // Trường hợp show ở modal tạo task mới (show hết cha và con)
-                if(!isShowParentAndChild) {
-                    if(parentID && checkObjectIDs(parentID)){
-                        conditionObj.parent = parentID;
-                    } else{
-                        conditionObj.parent = { $exists: false };
-                    }
-                }
-
-                console.log(conditionObj)
-
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
 
-                    if(conditionObj.$or) {
-                        conditionObj.$and = [
-                            {
-                                $or: conditionObj.$or
-                            },
-                            {
-                                $or: [
-                                    { name: new RegExp(keyword, 'i') },
-                                    { sign: new RegExp(keyword, 'i') },
-                                ]
-                            }
-                        ]
-                    } else{
-                        conditionObj.$or = [
-                            { name: new RegExp(keyword, 'i') },
-                            { sign: new RegExp(keyword, 'i') },
-                        ]
-                    }
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
                 }
 
+                if(select && typeof select === 'string'){
+                    if(!IsJsonString(select))
+                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+                    select = JSON.parse(select);
+                }
+ 
                 let conditionObjOrg = { ...conditionObj };
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await FNB_ORDER_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await FNB_ORDER_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
                     conditionObj  = dataPagingAndSort.data.find;
-					sortBy        = dataPagingAndSort.data.sort;
-				}else{
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-					sortBy        = dataPagingAndSort.data.sort;
+                    sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await FNB_ORDER_COLL
-                    .find(conditionObj)
+                let infoDataAfterGet = await FNB_ORDER_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -347,18 +337,17 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
-				let nextCursor	= null;
-				if(infoDataAfterGet && infoDataAfterGet.length){
-					if(infoDataAfterGet.length > limit){
-						nextCursor = infoDataAfterGet[limit - 1]._id;
-						infoDataAfterGet.length = limit;
-					}
-				}
-
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
                 let totalRecord = await FNB_ORDER_COLL.count(conditionObjOrg);
-                let totalPage = Math.ceil(totalRecord/limit);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -366,8 +355,7 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
-                }, status: 200 })
-
+                }, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -382,24 +370,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year,
+    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) { 
-        // console.log({ option, fundasID,
-        //     keyword, limit, lastestID, select, populates, sortKey, userID })
+        console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
-                    if(populates && typeof populates === 'string'){
-                        if(!IsJsonString(populates))
-                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-                        populates = JSON.parse(populates);
-                    } else{
-                        populates = {
-                            path: "",
-                            select: ""
-                        }
-                    }
+                    // Danh sách
                 }else{
                     let conditionObj = {}
                     let conditionGroup = {}
@@ -417,6 +394,14 @@ class Model extends BaseModel {
                     if(fundasID && fundasID.length ){
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
+                    }
+
+                    // Phân loại theo thời khoảng
+                    if(fromDate && toDate){
+                        conditionObj.createAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
                     }
 
                     /**

@@ -116,11 +116,11 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            projectID               : { type: "string", optional: true },
-            groupID                 : { type: "string", optional: true },
-            parentID                : { type: "string", optional: true },
-            isShowAll               : { type: "string", optional: true },
-            isShowParentAndChild    : { type: "string", optional: true },
+            fundasID            : { type: "array", optional: true },
+            orderID             : { type: "string", optional: true },
+            fromDate            : { type: "string", optional: true },
+            toDate              : { type: "string", optional: true },
+            salesChannel        : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -132,17 +132,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  parentID, projectID, groupID, isShowAll, isShowParentAndChild, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { orderID, fundasID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(groupID){
+                if(orderID){
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getInfo({
-                        groupID, select, populates,
+                        orderID, select, populates,
                     });
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        parentID, keyword, isShowAll, isShowParentAndChild, limit, userID, lastestID, projectID, select, populates,
+                        fundasID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
@@ -165,8 +165,8 @@ module.exports = {
             optionGroup     : { type: "string", optional: true },
             optionTime      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
-            // fromDate    : { type: "string", optional: true },
-            // toDate      : { type: "string", optional: true },
+            fromDate        : { type: "string", optional: true },
+            toDate          : { type: "string", optional: true },
             
             //_____________THÔNG SỐ MẶC ĐỊNH________________
             keyword         : { type: "string", optional: true },
@@ -178,13 +178,13 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, year,
+                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 console.log('==========Danh sách theo phân loại================')
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
-                    option, optionGroup, optionTime, fundasID, year,
+                    option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      userID
                     });
