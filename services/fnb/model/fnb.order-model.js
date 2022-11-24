@@ -424,7 +424,7 @@ class Model extends BaseModel {
                     if(option && Number(option) == 1){
                         if(optionGroup && Number(optionGroup) == 1){
                             conditionGroup = {
-                                _id: { funda: "$funda" },
+                                _id: { funda: "$funda", hour: "$hour", shift: "$shift", mistake: "$mistake", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod", customer: "$customer" },
                                 quantity: { $sum: 1 },
                                 amount: { $sum: "$amount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -498,6 +498,12 @@ class Model extends BaseModel {
                                 amount : 1,
                                 vatAmount : 1,
                                 numberOfProducts : 1,
+                                internal : 1,
+                                shift : 1,
+                                mistake : 1,
+                                salesChannel : 1,
+                                paymentMethod : 1,
+                                customer : 1,
                             }
                         },
                         {
