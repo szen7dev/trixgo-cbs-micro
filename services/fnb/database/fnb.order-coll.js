@@ -33,11 +33,20 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      */
     /**
      * Ca làm việc
-     * 1-Sáng
-     * 2-Chiều
-     * 3-Tối
+     * - Chấm công theo ca
+     * - Tính vật tư theo ca
      */
     shift: {
+        type: Schema.Types.ObjectId,
+        ref: "fnb_shift"
+    },
+    /**
+     * Phân loại ca làm việc
+     * 1 sáng
+     * 2 chiều
+     * 3-tối
+     */
+    shiftType: {
         type: Number,
         default: 1
     },

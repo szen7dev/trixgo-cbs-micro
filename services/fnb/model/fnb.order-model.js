@@ -34,7 +34,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ fundaID, parentID, mistakeID, customerID, shift, name, sign, appOrderSign, note, salesChannel, paymentMethod, amount, vatAmount, userID }) {
+    insert({ fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, amount, vatAmount, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -62,8 +62,12 @@ class Model extends BaseModel {
                     dataInsert.mistake = mistakeID;
                 }
 
-                if(!isNaN(shift)){
-                    dataInsert.shift = Number(shift);
+                if(shiftID && checkObjectIDs(shiftID)){
+                    dataInsert.shift = shiftID;
+                }
+
+                if(!isNaN(shiftType)){
+                    dataInsert.shiftType = Number(shiftType);
                 }
 
                 if(!isNaN(salesChannel)){

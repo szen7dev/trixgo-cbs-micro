@@ -20,24 +20,25 @@ module.exports = {
             parentID            : { type: "string", optional: true },
             mistakeID           : { type: "string", optional: true },
             customerID          : { type: "string", optional: true },
+            shiftID             : { type: "string" },
             name                : { type: "string" },
             sign                : { type: "string" },
             appOrderSign        : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            shift               : { type: "number" },
             salesChannel        : { type: "number" },
             paymentMethod       : { type: "number" },
+            shiftType           : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             vatAmount           : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  fundaID, parentID, mistakeID, customerID, shift, name, sign, appOrderSign, note, salesChannel, paymentMethod, amount, vatAmount } = ctx.params;
+                let {  fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, amount, vatAmount } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    fundaID, parentID, mistakeID, customerID, shift, name, sign, appOrderSign, note, salesChannel, paymentMethod, amount, vatAmount, userID
+                    fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, amount, vatAmount, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

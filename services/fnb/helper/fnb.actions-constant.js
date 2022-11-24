@@ -5,6 +5,7 @@ const BASE_ACTIONS = 'ACT_FNB';
  */
 const ORDER                      = 'ORDER';
 const PRODUCT                    = 'PRODUCT';
+const SHIFT                      = 'SHIFT';
 
 const CF_ACTIONS_FNB = {
   
@@ -24,6 +25,14 @@ const CF_ACTIONS_FNB = {
    PRODUCT_UPDATE                                    : `${BASE_ACTIONS}_${PRODUCT}_UPDATE`,
    PRODUCT_REMOVE                                    : `${BASE_ACTIONS}_${PRODUCT}_REMOVE`,
    PRODUCT_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${PRODUCT}_GET_INFO_AND_GET_LIST`,
+
+   /**
+   * SHIFT
+   */
+   SHIFT_INSERT                                    : `${BASE_ACTIONS}_${SHIFT}_INSERT`,
+   SHIFT_UPDATE                                    : `${BASE_ACTIONS}_${SHIFT}_UPDATE`,
+   SHIFT_REMOVE                                    : `${BASE_ACTIONS}_${SHIFT}_REMOVE`,
+   SHIFT_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${SHIFT}_GET_INFO_AND_GET_LIST`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;

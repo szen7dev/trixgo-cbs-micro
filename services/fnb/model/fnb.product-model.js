@@ -17,7 +17,7 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
-const FNB_PRODUCT_COLL                  = require('../database/fnb.product-coll');
+const FNB_SHIFT_COLL                  = require('../database/fnb.shift-coll');
 
 /**
  * import inter-model, exter-model
@@ -25,7 +25,7 @@ const FNB_PRODUCT_COLL                  = require('../database/fnb.product-coll'
 class Model extends BaseModel {
 
     constructor() {
-        super(FNB_PRODUCT_COLL);
+        super(FNB_SHIFT_COLL);
     }
 
     /**
@@ -39,7 +39,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let checkExist = await FNB_PRODUCT_COLL.findOne({ project: projectID, name, sign });
+                let checkExist = await FNB_SHIFT_COLL.findOne({ project: projectID, name, sign });
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
@@ -69,7 +69,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(groupID))
                     return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let checkExist = await FNB_PRODUCT_COLL.findOne({ _id: { $ne: groupID }, name, sign });
+                let checkExist = await FNB_SHIFT_COLL.findOne({ _id: { $ne: groupID }, name, sign });
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
@@ -114,7 +114,7 @@ class Model extends BaseModel {
                 }
 
                 console.log({ dataInUpdate })
-                let infoAfterUpdate = await FNB_PRODUCT_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
@@ -162,7 +162,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await FNB_PRODUCT_COLL.findById(groupID)
+                let infoPlanGroup = await FNB_SHIFT_COLL.findById(groupID)
                                     .select(select)
                                     .populate(populates)
 
@@ -271,7 +271,7 @@ class Model extends BaseModel {
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await FNB_PRODUCT_COLL.findById(lastestID);
+					let infoData = await FNB_SHIFT_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -286,7 +286,7 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await FNB_PRODUCT_COLL
+                let infoDataAfterGet = await FNB_SHIFT_COLL
                     .find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
@@ -305,7 +305,7 @@ class Model extends BaseModel {
 					}
 				}
 
-                let totalRecord = await FNB_PRODUCT_COLL.count(conditionObjOrg);
+                let totalRecord = await FNB_SHIFT_COLL.count(conditionObjOrg);
                 let totalPage = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
