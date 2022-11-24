@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, validateParamsObjectID }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -18,6 +18,7 @@ const { template } = require('lodash');
  * import inter-coll, exter-coll
  */
 const FNB_ORDER_COLL                  = require('../database/fnb.order-coll');
+const { ObjectId } = require('mongodb');
 
 /**
  * import inter-model, exter-model
@@ -33,22 +34,63 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, parentID, name, sign, userID }) {
+    insert({ fundaID, parentID, mistakeID, customerID, shift, name, sign, appOrderSign, note, salesChannel, paymentMethod, amount, vatAmount, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'projectID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(fundaID) || !name)
+                    return resolve({ error: true, message: 'fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let checkExist = await FNB_ORDER_COLL.findOne({ project: projectID, name, sign });
-                if(checkExist)
-                    return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                // let checkExist = await FNB_ORDER_COLL.findOne({ funda: fundaID, name, sign });
+                // if(checkExist)
+                //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let dataInsert = { project: projectID, name, sign, userCreate: userID };
-                if(checkObjectIDs(parentID)){
+                let dataInsert = { funda: fundaID, name, sign, userCreate: userID };
+
+                // if(sign){
+                //     dataInsert.sign = sign;
+                // }
+
+                if(appOrderSign && appOrderSign != ""){
+                    dataInsert.appOrderSign = appOrderSign;
+                }
+
+                if(note && note != ""){
+                    dataInsert.note = note;
+                }
+
+                if(mistakeID && checkObjectIDs(mistakeID)){
+                    dataInsert.mistake = mistakeID;
+                }
+
+                if(!isNaN(shift)){
+                    dataInsert.shift = Number(shift);
+                }
+
+                if(!isNaN(salesChannel)){
+                    dataInsert.salesChannel = Number(salesChannel);
+                }
+
+                if(!isNaN(paymentMethod)){
+                    dataInsert.paymentMethod = Number(paymentMethod);
+                }
+
+                if(!isNaN(amount)){
+                    dataInsert.amount = Number(amount);
+                }
+
+                if(!isNaN(vatAmount)){
+                    dataInsert.vatAmount = Number(vatAmount);
+                }
+
+                if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }
+
+                if(customerID && checkObjectIDs(customerID)){
+                    dataInsert.customer = customerID;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
-                console.log(infoAfterInsert)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
@@ -119,6 +161,11 @@ class Model extends BaseModel {
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+
+                /**
+                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
+                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -322,6 +369,138 @@ class Model extends BaseModel {
             }
         })
     }
+
+        /**
+     * Name: Danh sách
+     * - Theo gói thầu (hợp đồng)
+     * - Theo ngày tháng tạo/hoàn thành (from-to)
+     * - Theo Nhóm công tác con-khu vực con
+     * Author: HiepNH
+     * Code: 2/10/2022
+     */
+    getListByProperty({ option, optionGroup, fundasID,
+        keyword, limit, lastestID, select, populates, sortKey, userID }) { 
+        console.log({ option, fundasID,
+            keyword, limit, lastestID, select, populates, sortKey, userID })
+        return new Promise(async (resolve) => {
+            try {
+                if(!option){
+                    
+                }else{
+                    
+                    /**
+                     * VALIDATION (1)
+                     */
+                    const validation = validateParamsObjectID({
+                        fundasID            : { value: fundasID, isRequire: false },
+                    });
+                    if(validation.error) return resolve(validation);
+
+                    let conditionObj = {}
+                    let conditionGroup = {}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
+
+                    // Gom nhóm theo đơn vị cơ sở
+                    if(fundasID && fundasID.length ){
+                        let arrFun = fundasID.map(item=>ObjectID(item))
+                        conditionObj.funda = { $in: arrFun }
+                    }
+
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                        populates = JSON.parse(populates);
+                    } else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
+                    }
+
+                    /**
+                     * Tính tổng
+                     */
+                    if(option && Number(option) == 1){
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionGroup = {
+                                _id: { funda: "$funda" },
+                                quantity: { $sum: 1 },
+                                amount: { $sum: "$amount" },
+                                numberOfProducts: { $sum: "$numberOfProducts" },
+                            }
+
+                        }
+                    }
+
+                    /**
+                     * Gom nhóm theo thời gian
+                     */
+                    // if(option && Number(option) == 2){
+                    //     if(optionTime && Number(optionTime) == 1){
+                    //         conditionGroup = {
+                    //             _id: { year: "$year" },
+                    //             amount: { $sum: 1 },
+                    //         }
+                    //     }
+    
+                    //     if(optionTime && Number(optionTime) == 2){
+                    //         if(!isNaN(year) && Number(year) >= 0){
+                    //             conditionObjYear = {
+                    //                 "year": Number(year),
+                    //             }
+                    //         }
+    
+                    //         conditionGroup = {
+                    //             _id: { month: "$month", year: "$year" },
+                    //             amount: { $sum: 1 },
+                    //         }
+                    //     }  
+                    // }
+                
+                    console.log(conditionObj)
+                    console.log(conditionObjYear)
+                    console.log(conditionGroup)
+
+                    // Danh sách đang triển khai
+                    let listData = await FNB_ORDER_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                hour : {$hour : "$createAt"},
+                                funda : 1,
+                                amount : 1,
+                                vatAmount : 1,
+                                numberOfProducts : 1,
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: sortBy
+                        }
+                    ])
+
+                    // if(!isNaN(option) && [3,4].includes(Number(option))){
+                    //     await INSPECTION__DOC_COLL.populate(listData, conditionPopulate)
+                    // }
+
+                    return resolve({ error: false, data: listData });
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

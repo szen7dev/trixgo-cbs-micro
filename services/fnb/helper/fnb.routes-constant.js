@@ -10,7 +10,8 @@ const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
 
     // ================================FNB_ORDER=======================================//
-    ORDERS                             : `${BASE_ROUTE}${ORDER}`,
+    ORDERS                              : `${BASE_ROUTE}${ORDER}`,
+    ORDER_GET_LIST_BY_PROPERTY          : `${BASE_ROUTE}${ORDER}/get-list-by-property`,
 
     // ================================FNB_PRODUCT=======================================//
     PRODUCTS                            : `${BASE_ROUTE}${PRODUCT}`,
