@@ -378,10 +378,10 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getListByProperty({ option, optionGroup, fundasID,
+    getListByProperty({ option, optionGroup, optionTime, fundasID, year,
         keyword, limit, lastestID, select, populates, sortKey, userID }) { 
-        console.log({ option, fundasID,
-            keyword, limit, lastestID, select, populates, sortKey, userID })
+        // console.log({ option, fundasID,
+        //     keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -436,27 +436,49 @@ class Model extends BaseModel {
                     /**
                      * Gom nhóm theo thời gian
                      */
-                    // if(option && Number(option) == 2){
-                    //     if(optionTime && Number(optionTime) == 1){
-                    //         conditionGroup = {
-                    //             _id: { year: "$year" },
-                    //             amount: { $sum: 1 },
-                    //         }
-                    //     }
+                    if(option && Number(option) == 2){
+                        // Theo năm
+                        if(optionTime && Number(optionTime) == 1){
+                            conditionGroup = {
+                                _id: { year: "$year" },
+                                quantity: { $sum: 1 },
+                                amount: { $sum: "$amount" },
+                                numberOfProducts: { $sum: "$numberOfProducts" },
+                            }
+                        }
+                        
+                        // Theo tháng
+                        if(optionTime && Number(optionTime) == 2){
+                            if(!isNaN(year) && Number(year) >= 0){
+                                conditionObjYear = {
+                                    "year": Number(year),
+                                }
+                            }
     
-                    //     if(optionTime && Number(optionTime) == 2){
-                    //         if(!isNaN(year) && Number(year) >= 0){
-                    //             conditionObjYear = {
-                    //                 "year": Number(year),
-                    //             }
-                    //         }
+                            conditionGroup = {
+                                _id: { month: "$month", year: "$year" },
+                                quantity: { $sum: 1 },
+                                amount: { $sum: "$amount" },
+                                numberOfProducts: { $sum: "$numberOfProducts" },
+                            }
+                        }  
+
+                        // Theo giờ
+                        if(optionTime && Number(optionTime) == 3){
+                            if(!isNaN(year) && Number(year) >= 0){
+                                conditionObjYear = {
+                                    "year": Number(year),
+                                }
+                            }
     
-                    //         conditionGroup = {
-                    //             _id: { month: "$month", year: "$year" },
-                    //             amount: { $sum: 1 },
-                    //         }
-                    //     }  
-                    // }
+                            conditionGroup = {
+                                _id: { funda: "$funda", hour: "$hour" },
+                                quantity: { $sum: 1 },
+                                amount: { $sum: "$amount" },
+                                numberOfProducts: { $sum: "$numberOfProducts" },
+                            }
+                        } 
+                    }
                 
                     console.log(conditionObj)
                     console.log(conditionObjYear)

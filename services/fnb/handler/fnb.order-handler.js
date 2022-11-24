@@ -162,6 +162,8 @@ module.exports = {
             fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
             optionGroup     : { type: "string", optional: true },
+            optionTime      : { type: "string", optional: true },
+            year            : { type: "string", optional: true },
             // fromDate    : { type: "string", optional: true },
             // toDate      : { type: "string", optional: true },
             
@@ -175,13 +177,13 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, fundasID,
+                let { option, optionGroup, optionTime, fundasID, year,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 console.log('==========Danh sách theo phân loại================')
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
-                    option, optionGroup, fundasID,
+                    option, optionGroup, optionTime, fundasID, year,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      userID
                     });
