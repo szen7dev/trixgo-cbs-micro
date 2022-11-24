@@ -34,7 +34,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, amount, vatAmount, userID }) {
+    insert({ fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -76,6 +76,18 @@ class Model extends BaseModel {
 
                 if(!isNaN(paymentMethod)){
                     dataInsert.paymentMethod = Number(paymentMethod);
+                }
+
+                if(!isNaN(total)){
+                    dataInsert.total = Number(total);
+                }
+
+                if(!isNaN(discount)){
+                    dataInsert.discount = Number(discount);
+                }
+
+                if(!isNaN(salesoff)){
+                    dataInsert.salesoff = Number(salesoff);
                 }
 
                 if(!isNaN(amount)){

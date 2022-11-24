@@ -141,7 +141,22 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     //     type: Number,
     //     default : 0
     // },
-    //______Thành tiền
+    //______Tổng giá
+    total: {
+        type: Number,
+        default : 0
+    },
+    //______Triết khấu
+    discount: {
+        type: Number,
+        default : 0
+    },
+    //______Giảm giá
+    salesoff: {
+        type: Number,
+        default : 0
+    },
+    //______Thành tiền (phải thanh toán)
     amount: {
         type: Number,
         default : 0
