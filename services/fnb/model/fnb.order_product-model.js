@@ -37,7 +37,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userID, orderID, productID, mistakeID, note, quantity, unitPrice, amount }) {
+    insert({ userID, orderID, productID, mistakeID, note, quantity }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderID))
@@ -87,7 +87,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG
                  */
                 let infoOrderNew = await FNB_ORDER_MODEL.updateValue({orderID, userID})
-                console.log(infoOrderNew)
+                // console.log(infoOrderNew)
 
                 /**
                  * CẬP NHẬT ĐỊNH MỨC VẬT TƯ

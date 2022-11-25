@@ -21,18 +21,16 @@ module.exports = {
             mistakeID           : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             quantity            : { type: "number", optional: true },
-            unitPrice           : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, productID, mistakeID, note, quantity, unitPrice, amount } = ctx.params;
+                let {  orderID, productID, mistakeID, note, quantity } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.insert({
-                    orderID, productID, mistakeID, note, quantity, unitPrice, amount, userID
+                    orderID, productID, mistakeID, note, quantity, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

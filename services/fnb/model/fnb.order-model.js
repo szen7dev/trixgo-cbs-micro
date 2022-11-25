@@ -40,7 +40,7 @@ class Model extends BaseModel {
     insert({ companyID, fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !name)
+                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 // let checkExist = await FNB_ORDER_COLL.findOne({ funda: fundaID, name, sign });
@@ -51,7 +51,7 @@ class Model extends BaseModel {
                  * Tính mã hóa đơn tự động theo từng cửa hàng/công ty
                  */
 
-                let dataInsert = { company: companyID, funda: fundaID, name, sign, userCreate: userID };
+                let dataInsert = { company: companyID, funda: fundaID, customer: customerID, shift: shiftID, name, sign, userCreate: userID };
 
                 // if(sign){
                 //     dataInsert.sign = sign;
@@ -69,16 +69,8 @@ class Model extends BaseModel {
                     dataInsert.mistake = mistakeID;
                 }
 
-                if(shiftID && checkObjectIDs(shiftID)){
-                    dataInsert.shift = shiftID;
-                }
-
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
-                }
-
-                if(customerID && checkObjectIDs(customerID)){
-                    dataInsert.customer = customerID;
                 }
 
                 if(!isNaN(shiftType)){
@@ -105,9 +97,7 @@ class Model extends BaseModel {
                     dataInsert.salesoff = Number(salesoff);
                 }
 
-                if(!isNaN(amount)){
-                    dataInsert.amount = Number(amount);
-                }
+                dataInsert.amount = Number(total)-Number(discount)-Number(salesoff);
 
                 if(!isNaN(vatAmount)){
                     dataInsert.vatAmount = Number(vatAmount);
@@ -131,7 +121,7 @@ class Model extends BaseModel {
      */
     update({ orderID, userID, 
         mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
-        console.log({ mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount })
+        // console.log({ mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderID))
@@ -151,16 +141,16 @@ class Model extends BaseModel {
                     dataInUpdate.note = note;
                 }
 
-                if(mistakeID && checkObjectIDs(mistakeID)){
-                    dataInUpdate.mistake = mistakeID;
+                if(customerID && checkObjectIDs(customerID)){
+                    dataInUpdate.customer = customerID;
                 }
 
                 if(shiftID && checkObjectIDs(shiftID)){
                     dataInUpdate.shift = shiftID;
                 }
 
-                if(customerID && checkObjectIDs(customerID)){
-                    dataInUpdate.customer = customerID;
+                if(mistakeID && checkObjectIDs(mistakeID)){
+                    dataInUpdate.mistake = mistakeID;
                 }
 
                 if(!isNaN(shiftType)){
@@ -187,15 +177,13 @@ class Model extends BaseModel {
                     dataInUpdate.salesoff = Number(salesoff);
                 }
 
-                if(!isNaN(amount)){
-                    dataInUpdate.amount = Number(amount);
-                }
+                dataInUpdate.amount = Number(total)-Number(discount)-Number(salesoff);
 
                 if(!isNaN(vatAmount)){
                     dataInUpdate.vatAmount = Number(vatAmount);
                 }
-
                 console.log({ dataInUpdate })
+
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
@@ -246,7 +234,7 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                console.log(listData)
+                // console.log(listData)
 
                 if(listData && listData.length){
                     total = Number(listData[0].amount)
@@ -255,7 +243,7 @@ class Model extends BaseModel {
                     dataInUpdate.total = Number(total)
                     dataInUpdate.amount = Number(amount)
                 }
-                console.log({ dataInUpdate })
+                // console.log({ dataInUpdate })
                 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
