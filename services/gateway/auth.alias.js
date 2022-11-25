@@ -33,6 +33,7 @@ const { CF_ROUTINGS_DATAHUB }		= require('../datahub/helper/datahub.routes-const
 const { CF_ROUTINGS_BIDDING }		= require('../bidding/helper/bidding.routes-constant');
 const { CF_ROUTINGS_FIN }			= require('../fin/helper/fin.routes-constant');
 const { CF_ROUTINGS_BUDGET }		= require('../budget/helper/budget.routes-constant');
+const { CF_ROUTINGS_FNB }			= require('../fnb/helper/fnb.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -62,6 +63,7 @@ const { CF_ACTIONS_DATAHUB }		= require('../datahub/helper/datahub.actions-const
 const { CF_ACTIONS_BIDDING }		= require('../bidding/helper/bidding.actions-constant');
 const { CF_ACTIONS_FIN }			= require('../fin/helper/fin.actions-constant');
 const { CF_ACTIONS_BUDGET }			= require('../budget/helper/budget.actions-constant');
+const { CF_ACTIONS_FNB }			= require('../fnb/helper/fnb.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -2022,6 +2024,67 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_GET_INFO_AND_GET_LIST}`],
 
 		//---------------------------🏁 END SERVICE BUDGET 🏁---------------------------//
+
+		//---------------------------🏁 START SERVICE FNB 🏁---------------------------//
+		//____fnb_order
+		[`POST ${CF_ROUTINGS_FNB.ORDERS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_FNB.ORDERS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_UPDATE}`],
+
+		[`PUT ${CF_ROUTINGS_FNB.ORDER_UPDATE_VALUE}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_UPDATE_VALUE}`],
+
+		[`DELETE ${CF_ROUTINGS_FNB.ORDERS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_FNB.ORDERS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_GET_INFO_AND_GET_LIST}`],
+
+		[`GET ${CF_ROUTINGS_FNB.ORDER_GET_LIST_BY_PROPERTY}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_GET_LIST_BY_PROPERTY}`],
+
+		//____fnb_product
+		[`POST ${CF_ROUTINGS_FNB.PRODUCTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.PRODUCT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_FNB.PRODUCTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.PRODUCT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_FNB.PRODUCTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.PRODUCT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_FNB.PRODUCTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.PRODUCT_GET_INFO_AND_GET_LIST}`],
+
+		//____fnb_order_product
+		[`POST ${CF_ROUTINGS_FNB.ORDER_PRODUCTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_PRODUCT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_FNB.ORDER_PRODUCTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_PRODUCT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_FNB.ORDER_PRODUCTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_PRODUCT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_FNB.ORDER_PRODUCTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_PRODUCT_GET_INFO_AND_GET_LIST}`],
+
+		//____fnb_shift
+		[`POST ${CF_ROUTINGS_FNB.SHIFTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.SHIFT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_FNB.SHIFTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.SHIFT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_FNB.SHIFTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.SHIFT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_FNB.SHIFTS}`] :
+		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.SHIFT_GET_INFO_AND_GET_LIST}`],
+
+		//---------------------------🏁 END SERVICE FNB 🏁---------------------------//
 	},
 
 	// Disable to call not-mapped actions

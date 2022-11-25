@@ -1,0 +1,39 @@
+"use strict";
+
+const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
+const Schema                = require('mongoose').Schema;
+/**
+ * ĐỊNH MỨC NGUYÊN LIỆU
+ * Mỗi nguyên liệu chỉ tồn tại trong 1 sản phẩm/mặt hàng 1 lần duy nhất
+ */
+module.exports  = DATABASE_MIDDLEWARE("fnb_quota", {    
+    //_________Sản phẩm
+    product: {
+        type: Schema.Types.ObjectId,
+        ref : "fnb_product"
+    },
+    //_________Nguyên liệu
+    goods: {
+        type: Schema.Types.ObjectId,
+        ref: 'goods'
+    },
+    //_________Khối lượng
+    quantity: { type: Number, default: 0 },
+    /**
+     * Đơn giá: được tính theo đơn giá của nguồn lực khi thêm mới/cập nhật
+     */
+    unitPrice: { type: Number, default: 0 },
+    //_________Ghi chú
+    note: String,
+    /**
+     * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
+     */
+    userCreate: {
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    },
+    userUpdate: {
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    }
+})

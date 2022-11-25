@@ -28,6 +28,7 @@ let CF_DOMAIN_SERVICES = {
     REE             : 'ree',
     QRCODE          : 'qrcode',
     MARKET          : 'market',
+    FNB             : 'fnb',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;
