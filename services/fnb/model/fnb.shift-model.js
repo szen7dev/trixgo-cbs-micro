@@ -34,13 +34,13 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ fundaID, name, note, userID }) {
+    insert({ companyID, fundaID, name, note, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
                     return resolve({ error: true, message: 'fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { funda: fundaID, name, userCreate: userID };
+                let dataInsert = { company: companyID, funda: fundaID, name, userCreate: userID };
 
                 if(note && note != ""){
                     dataInsert.note = note;

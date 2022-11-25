@@ -24,10 +24,11 @@
              try {
                  await this.validateEntity(ctx.params);
                  let {  fundaID, name, note } = ctx.params;
-                 const { _id: userID } = ctx.meta.infoUser;
+                 
+                 const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.insert({
-                    fundaID, name, note, userID
+                    companyID: company._id, fundaID, name, note, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
