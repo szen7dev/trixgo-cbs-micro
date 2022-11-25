@@ -224,6 +224,13 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
+                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+
+                let total = infoOrder.total;
+                let discount = infoOrder.discount;
+                let salesoff = infoOrder.salesoff;
+                let amount = infoOrder.amount;
+
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
@@ -242,10 +249,14 @@ class Model extends BaseModel {
                 console.log(listData)
 
                 if(listData && listData.length){
-                    dataInUpdate.amount = Number(listData[0].amount);
-                }
+                    total = Number(listData[0].amount)
+                    amount = Number(total)-Number(discount)-Number(salesoff)
 
+                    dataInUpdate.total = Number(total)
+                    dataInUpdate.amount = Number(amount)
+                }
                 console.log({ dataInUpdate })
+                
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)

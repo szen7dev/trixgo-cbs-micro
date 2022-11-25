@@ -126,7 +126,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * GIÁT TRỊ
      */
-    //______Tổng giá
+    //______Tổng giá theo các Product của đơn hàng
     total: {
         type: Number,
         default : 0
