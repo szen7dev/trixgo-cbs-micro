@@ -117,7 +117,8 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            fundasID            : { type: "array", optional: true },
+            companyID           : { type: "string", optional: true },
+            fundaID             : { type: "string", optional: true },
             orderID             : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
@@ -133,19 +134,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler;
-                if(orderID){
-                    resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.getInfo({
-                        orderID, select, populates,
+                let resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.getList({
+                        companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
-                }else{
-                    resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.getList({
-                        fundasID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
-                    });
-                }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

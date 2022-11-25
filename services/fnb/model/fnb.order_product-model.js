@@ -216,7 +216,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-     getList({ companyID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+     getList({ companyID, fundaID, orderID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
@@ -231,8 +231,14 @@ class Model extends BaseModel {
                 let keys	 = ['createAt__-1'];
 
                 // Gom nhóm theo đơn vị cơ sở
-                if(companyID ){
-                    conditionObj.company = ObjectID(companyID)
+                if(orderID ){
+                    conditionObj.order = ObjectID(orderID)
+                }else{
+                    if(fundaID ){
+                        conditionObj.funda = ObjectID(fundaID)
+                    }else{
+                        conditionObj.company = ObjectID(companyID)
+                    }
                 }
 
                 // Làm rõ mục đích để làm gì?
