@@ -7,10 +7,12 @@ const { CF_ACTIONS_FNB } 	    			= require('./helper/fnb.actions-constant');
 
 const FNB__ORDER_HANDLER  			 		= require('./handler/fnb.order-handler');
 const FNB__PRODUCT_HANDLER  			 	= require('./handler/fnb.product-handler');
+const FNB__ORDER_PRODUCT_HANDLER  			= require('./handler/fnb.order_product-handler');
 const FNB__SHIFT_HANDLER  			 		= require('./handler/fnb.shift-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
+const FNB__ORDER_PRODUCT_COLL  			 	= require('./database/fnb.order_product-coll');
 const FNB__SHIFT_COLL  			 			= require('./database/fnb.shift-coll');
 
 module.exports = {
@@ -18,6 +20,8 @@ module.exports = {
 	mixins: [
 		DbService(FNB__ORDER_COLL),
 		DbService(FNB__PRODUCT_COLL),
+		DbService(FNB__ORDER_PRODUCT_COLL),
+		DbService(FNB__SHIFT_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -49,6 +53,12 @@ module.exports = {
 		[CF_ACTIONS_FNB.PRODUCT_UPDATE]									: FNB__PRODUCT_HANDLER.update,
 		[CF_ACTIONS_FNB.PRODUCT_REMOVE]									: FNB__PRODUCT_HANDLER.remove,
 		[CF_ACTIONS_FNB.PRODUCT_GET_INFO_AND_GET_LIST]					: FNB__PRODUCT_HANDLER.getInfoAndGetList,
+
+		//========================================== FNB_ORDER_PRODUCT ==============================================///
+		[CF_ACTIONS_FNB.ORDER_PRODUCT_INSERT]									: FNB__ORDER_PRODUCT_HANDLER.insert,
+		[CF_ACTIONS_FNB.ORDER_PRODUCT_UPDATE]									: FNB__ORDER_PRODUCT_HANDLER.update,
+		[CF_ACTIONS_FNB.ORDER_PRODUCT_REMOVE]									: FNB__ORDER_PRODUCT_HANDLER.remove,
+		[CF_ACTIONS_FNB.ORDER_PRODUCT_GET_INFO_AND_GET_LIST]					: FNB__ORDER_PRODUCT_HANDLER.getInfoAndGetList,
 
 		//========================================== FNB_SHIFT ==============================================///
 		[CF_ACTIONS_FNB.SHIFT_INSERT]									: FNB__SHIFT_HANDLER.insert,

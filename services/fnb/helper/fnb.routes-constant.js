@@ -5,6 +5,7 @@ const BASE_ROUTE = '/fnb';
 
 const ORDER                 = '/orders';
 const PRODUCT               = '/products';
+const ORDER_PRODUCT         = '/order_products';
 const SHIFT                 = '/shifts';
 
 const CF_ROUTINGS_FNB = {
@@ -16,6 +17,9 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_PRODUCT=======================================//
     PRODUCTS                            : `${BASE_ROUTE}${PRODUCT}`,
+
+    //================================FNB_ORDER_PRODUCT=======================================//
+    ORDER_PRODUCTS                      : `${BASE_ROUTE}${ORDER_PRODUCT}`,
 
     //================================FNB_SHIFT=======================================//
     SHIFTS                              : `${BASE_ROUTE}${SHIFT}`,

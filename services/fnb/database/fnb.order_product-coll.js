@@ -6,12 +6,12 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
-    //_________Công ty
+    //_________Công ty (Lấy từ orderID)
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
-    //_________Đơn vị cơ sở/Cửa hàng
+    //_________Đơn vị cơ sở/Cửa hàng (Lấy từ orderID)
     funda: {
         type: Schema.Types.ObjectId,
         ref : "funda"
@@ -53,6 +53,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
     shift: {
         type: Schema.Types.ObjectId,
         ref: "fnb_shift"
+    },
+    //_________Lỗi mắc phải (type=19)
+    mistake: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
     },
     //_________Phân loại ca sáng/chiều/tối
     shiftType: {
