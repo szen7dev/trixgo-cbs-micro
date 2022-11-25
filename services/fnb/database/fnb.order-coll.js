@@ -42,19 +42,24 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     },
     /**
      * Phân loại ca làm việc
-     * 1-sáng
-     * 2-chiều
-     * 3-tối
+     * 1-Sáng
+     * 2-Chiều
+     * 3-Tối
      */
     shiftType: {
         type: Number,
         default: 1
     },
+    //_________Số lỗi mắc phải
+    numberOfMistakes: {
+        type: Number,
+        default: 0
+    },
     //_________Lỗi mắc phải (type=19)
-    mistake: {
+    mistake: [{
         type: Schema.Types.ObjectId,
         ref: "doctype"
-    },
+    }],
      /**
      * Phân loại trong hệ thống hoặc nhượng quyền
      * 1-Trong hệ thống
@@ -86,6 +91,16 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
+    /**
+     * Hình thức phục vụ
+     * 1-Tại quán
+     * 2-Mang đi
+     * 3-Giao hàng
+     */
+    service: {
+        type: Number,
+        default: 1
+    },
     //_________Mã khách
     customer: {
         type: Schema.Types.ObjectId,
@@ -106,7 +121,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * 1-Đang giao hàng/Phục vụ
      * 2-Hoàn tiền một phần
      * 3-Hoàn tiền toàn bộ
-     * 4-Đã hủy
+     * 4-Đã hủy (không tính vào doanh số)
      * 5-Hoàn thành
      */
     status: {
