@@ -17,7 +17,9 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
-const FNB_PRODUCT_COLL                  = require('../database/fnb.product-coll');
+ const FNB_ORDER_COLL                          = require('../database/fnb.order-coll');
+ const FNB_PRODUCT_COLL                        = require('../database/fnb.product-coll');
+ const FNB_ORDER_PRODUCT_COLL                  = require('../database/fnb.order_product-coll');
 
 /**
  * import inter-model, exter-model

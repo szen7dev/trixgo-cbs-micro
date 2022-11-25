@@ -17,8 +17,9 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
-const FNB_ORDER_COLL                  = require('../database/fnb.order-coll');
-const { ObjectId } = require('mongodb');
+ const FNB_ORDER_COLL                          = require('../database/fnb.order-coll');
+ const FNB_PRODUCT_COLL                        = require('../database/fnb.product-coll');
+ const FNB_ORDER_PRODUCT_COLL                  = require('../database/fnb.order_product-coll');
 
 /**
  * import inter-model, exter-model
@@ -210,6 +211,57 @@ class Model extends BaseModel {
             }
         });
     }
+
+    /**
+     * Name: Update value
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
+    updateValue({ orderID, userID }) {
+        console.log({ orderID, userID })
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(orderID))
+                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+
+                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+
+                let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $match: {
+                            order: ObjectID(orderID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+                ])
+                console.log(listData)
+
+                if(listData && listData.length){
+                    dataInUpdate.amount = Number(listData[0].amount);
+                }
+
+                console.log({ dataInUpdate })
+                let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
+
+                if (!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                /**
+                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
+                 */
+
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
 
     /**
      * Name: Remove 

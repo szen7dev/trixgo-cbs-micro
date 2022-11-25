@@ -96,6 +96,32 @@ module.exports = {
 
     /**
 	 * Dev: Depv
+	 * Func: update Group
+	 */
+    updateValue: {
+        auth: "required",
+        params: {
+            orderID             : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {  orderID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await FNB_ORDER_MODEL.updateValue({
+                    orderID, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv
 	 * Func: remove Group
 	 */
     remove: {

@@ -14,6 +14,7 @@ const CF_ROUTINGS_FNB = {
     //================================FNB_ORDER=======================================//
     ORDERS                              : `${BASE_ROUTE}${ORDER}`,
     ORDER_GET_LIST_BY_PROPERTY          : `${BASE_ROUTE}${ORDER}/get-list-by-property`,
+    ORDER_UPDATE_VALUE                  : `${BASE_ROUTE}${ORDER}/update-value`,
 
     //================================FNB_PRODUCT=======================================//
     PRODUCTS                            : `${BASE_ROUTE}${PRODUCT}`,

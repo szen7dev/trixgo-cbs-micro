@@ -24,6 +24,8 @@ const FNB_ORDER_PRODUCT_COLL                  = require('../database/fnb.order_p
 /**
  * import inter-model, exter-model
  */
+const FNB_ORDER_MODEL                         = require('./fnb.order-model').MODEL;
+
 class Model extends BaseModel {
 
     constructor() {
@@ -84,6 +86,8 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG
                  */
+                let infoOrderNew = await FNB_ORDER_MODEL.updateValue({orderID, userID})
+                console.log(infoOrderNew)
 
                 /**
                  * CẬP NHẬT ĐỊNH MỨC VẬT TƯ

@@ -18,6 +18,7 @@ const CF_ACTIONS_FNB = {
    ORDER_REMOVE                                    : `${BASE_ACTIONS}_${ORDER}_REMOVE`,
    ORDER_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${ORDER}_GET_INFO_AND_GET_LIST`,
    ORDER_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${ORDER}_GET_LIST_BY_PROPERTY`,
+   ORDER_UPDATE_VALUE                              : `${BASE_ACTIONS}_${ORDER}_UPDATE_VALUE`,
 
    /**
    * PRODUCT
