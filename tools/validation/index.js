@@ -10,6 +10,6 @@ module.exports = {
                 errors.push({ type: "Short password", expected: 5, actual: value });
             return value;
         }
-    }\
+    }
 }
 
