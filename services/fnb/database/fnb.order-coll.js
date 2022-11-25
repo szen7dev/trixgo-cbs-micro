@@ -42,8 +42,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     },
     /**
      * Phân loại ca làm việc
-     * 1 sáng
-     * 2 chiều
+     * 1-sáng
+     * 2-chiều
      * 3-tối
      */
     shiftType: {
