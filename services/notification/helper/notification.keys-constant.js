@@ -2,7 +2,7 @@
 // exports.ONE_SIGNAL__APP_ID              = '79acfc09-966a-48f5-a9ea-44d90410014f';
 exports.ONESIGNAL_APP_TEASER            = process.env.ONESIGNAL_APP_TEASER  || '79acfc09-966a-48f5-a9ea-44d90410014f';
 exports.ONESIGNAL_APP_CBS               = process.env.ONESIGNAL_APP_CBS     || '79acfc09-966a-48f5-a9ea-44d90410014f';
-exports.ONESIGNAL_APP_NEW               = process.env.ONESIGNAL_APP_NEW     || '79acfc09-966a-48f5-a9ea-44d90410014f';
+exports.ONESIGNAL_APP_FNB               = process.env.ONESIGNAL_APP_FNB     || '79acfc09-966a-48f5-a9ea-44d90410014f';
 
 exports.NOTI_TYPE_MOBILE                = 'NOTI_TYPE_MOBILE';
 exports.NOTI_TYPE_WEB                   = 'NOTI_TYPE_WEB';
@@ -35,3 +35,4 @@ exports.MEDIA_SEND_NOTICE_COMMENT_TO_MEMBERS = `${APP_MEDIA}.MEDIA_SEND_NOTICE_C
 exports.ENV_DEVICE_WEB_CBS = 1;
 exports.ENV_DEVICE_APP_CBS = 3;
 exports.ENV_DEVICE_APP_TEASER = 2;
+exports.ENV_DEVICE_APP_FNB = 4;

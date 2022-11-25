@@ -2,6 +2,7 @@ module.exports = {
     checkHealth: {
         async handler(ctx) {
             try {
+                console.log(ctx);
                 return {
                    error: false, message: 'healthy'
                 }
