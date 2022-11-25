@@ -26,7 +26,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         ref: "user"
     }],
     /**
-     * GIÁT TRỊ
+     * GIÁT TRỊ ĐƠN HÀNG CỦA CA
      */
     //______Thành tiền
     amount: {

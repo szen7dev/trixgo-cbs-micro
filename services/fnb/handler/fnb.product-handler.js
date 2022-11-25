@@ -16,22 +16,28 @@
      insert: {
          auth: "required",
          params: {
-             projectID : { type: "string" },
-             parentID  : { type: "string", optional: true },
-             name      : { type: "string" },
-             sign      : { type: "string" },
+            fundaID             : { type: "string", optional: true },
+            parentID            : { type: "string", optional: true },
+            name                : { type: "string" },
+            sign                : { type: "string", optional: true },
+            unit                : { type: "string", optional: true },
+            note                : { type: "string", optional: true },
+            quantity            : { type: "number", optional: true },
+            unitPrice           : { type: "number", optional: true },
+            amount              : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
-                 await this.validateEntity(ctx.params);
-                 let {  projectID, parentID, name, sign } = ctx.params;
-                 const { _id: userID } = ctx.meta.infoUser;
- 
-                 let resultAfterCallHandler = await FNB_PRODUCT_MODEL.insert({
-                     projectID, parentID, name, sign, userID
-                 });
- 
-                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                await this.validateEntity(ctx.params);
+                let {  fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+            
+                let resultAfterCallHandler = await FNB_PRODUCT_MODEL.insert({
+                    userID, companyID: company._id, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
              } catch (error) {
                  return { error:  true, message: error.message };
              }
@@ -45,25 +51,24 @@
      update: {
          auth: "required",
          params: {
-             groupID      : { type: "string" },
-             contractID   : { type: "string", optional: true },
-             parentID     : { type: "string", optional: true },
-             name         : { type: "string", optional: true },
-             sign         : { type: "string", optional: true },
-             image        : { type: "string", optional: true },
-             members      : { type: "array", optional: true },
-             admins       : { type: "array", optional: true },
-             membersRemove: { type: "array", optional: true },
-             adminsRemove : { type: "array", optional: true },
+            productID       : { type: "string" },
+            parentID        : { type: "string", optional: true },
+            name            : { type: "string" },
+            sign            : { type: "string", optional: true },
+            unit            : { type: "string", optional: true },
+            note            : { type: "string", optional: true },
+            quantity        : { type: "number", optional: true },
+            unitPrice       : { type: "number", optional: true },
+            amount          : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  groupID, name, sign, contractID, parentID, image, members, membersRemove, admins, adminsRemove } = ctx.params;
+                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, amount } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_PRODUCT_MODEL.update({
-                     groupID, name, sign, contractID, parentID, image, userID, members, membersRemove, admins, adminsRemove
+                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount 
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -80,16 +85,16 @@
      remove: {
          auth: "required",
          params: {
-             groupID   : { type: "string" }
+            productID   : { type: "string" }
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  groupID } = ctx.params;
+                 let {  productID } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_PRODUCT_MODEL.remove({
-                     groupID
+                    productID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -106,33 +111,33 @@
      getInfoAndGetList: {
          auth: "required",
          params: {
-             projectID               : { type: "string", optional: true },
-             groupID                 : { type: "string", optional: true },
-             parentID                : { type: "string", optional: true },
-             isShowAll               : { type: "string", optional: true },
-             isShowParentAndChild    : { type: "string", optional: true },
- 
-             //==============================================
-             keyword     : { type: "string", optional: true },
-             limit       : { type: "string", optional: true },
-             lastestID   : { type: "string", optional: true },
-             select      : { type: "string", optional: true },
-             populates   : { type: "string", optional: true },
+            productID               : { type: "string", optional: true },
+            parentID                : { type: "string", optional: true },
+            isShowAll               : { type: "string", optional: true },
+            isShowParentAndChild    : { type: "string", optional: true },
+
+            //==============================================
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  parentID, projectID, groupID, isShowAll, isShowParentAndChild, keyword, limit, lastestID, select, populates } = ctx.params;
-                 const { _id: userID } = ctx.meta.infoUser;
+                 let {  productID, keyword, limit, lastestID, select, populates } = ctx.params;
+
+                 const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler;
-                 if(groupID){
+                 if(productID){
                      resultAfterCallHandler = await FNB_PRODUCT_MODEL.getInfo({
-                         groupID, select, populates,
+                        productID, select, populates,
                      });
                  }else{
                      resultAfterCallHandler = await FNB_PRODUCT_MODEL.getList({
-                         parentID, keyword, isShowAll, isShowParentAndChild, limit, userID, lastestID, projectID, select, populates,
+                         companyID: company._id, keyword, limit, lastestID, select, populates, userID
                      });
                  }
  

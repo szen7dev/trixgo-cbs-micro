@@ -17,7 +17,7 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
-const FNB_SHIFT_COLL                  = require('../database/fnb.shift-coll');
+const FNB_PRODUCT_COLL                  = require('../database/fnb.product-coll');
 
 /**
  * import inter-model, exter-model
@@ -25,7 +25,7 @@ const FNB_SHIFT_COLL                  = require('../database/fnb.shift-coll');
 class Model extends BaseModel {
 
     constructor() {
-        super(FNB_SHIFT_COLL);
+        super(FNB_PRODUCT_COLL);
     }
 
     /**
@@ -33,20 +33,42 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, parentID, name, sign, userID }) {
+    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'projectID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !name)
+                    return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let checkExist = await FNB_SHIFT_COLL.findOne({ project: projectID, name, sign });
+                let checkExist = await FNB_PRODUCT_COLL.findOne({ company: companyID, sign });
                 if(checkExist)
-                    return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                    return resolve({ error: true, message: "Mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let dataInsert = { project: projectID, name, sign, userCreate: userID, admins: [userID], members: [userID] };
+                let dataInsert = { company: companyID, funda: fundaID, name, sign, userCreate: userID};
+
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }
+
+                if(unit && unit != ""){
+                    dataInsert.unit = unit;
+                }
+
+                if(note && note != ""){
+                    dataInsert.note = note;
+                }
+
+                if(!isNaN(quantity)){
+                    dataInsert.quantity = Number(quantity);
+                }
+
+                if(!isNaN(unitPrice)){
+                    dataInsert.unitPrice = Number(unitPrice);
+                }
+
+                if(!isNaN(amount)){
+                    dataInsert.amount = Number(amount);
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
@@ -63,58 +85,52 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ groupID, name, sign, userID, parentID, contractID, image, members, membersRemove, admins, adminsRemove }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount  }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(groupID))
-                    return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(productID))
+                    return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let checkExist = await FNB_SHIFT_COLL.findOne({ _id: { $ne: groupID }, name, sign });
-                if(checkExist)
-                    return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
+                // let checkExist = await FNB_PRODUCT_COLL.findOne({ _id: { $ne: groupID }, name, sign });
+                // if(checkExist)
+                //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
+
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+
+                if(checkObjectIDs(parentID)){
+                    dataInUpdate.parent = parentID;
+                }
 
                 if(name){
                     dataInUpdate.name =name;
                 }
 
-                if(sign){
-                    dataInUpdate.sign =sign;
+                // if(sign){
+                //     dataInUpdate.sign =sign;
+                // }
+
+                if(unit && unit != ""){
+                    dataInUpdate.unit = unit;
                 }
 
-                if(checkObjectIDs(contractID)){
-                    dataInUpdate.contract = contractID;
+                if(note && note != ""){
+                    dataInUpdate.note = note;
                 }
 
-                if(checkObjectIDs(members)){
-                    dataInUpdate.$addToSet = { members };
+                if(!isNaN(quantity)){
+                    dataInUpdate.quantity = Number(quantity);
                 }
 
-                if(checkObjectIDs(membersRemove)){
-                    dataInUpdate.$pullAll = { members: membersRemove };
+                if(!isNaN(unitPrice)){
+                    dataInUpdate.unitPrice = Number(unitPrice);
                 }
 
-                if(checkObjectIDs(admins)){
-                    dataInUpdate.$addToSet = { admins };
-                }
-
-                if(checkObjectIDs(adminsRemove)){
-                    dataInUpdate.$pullAll = { admins: adminsRemove };
-                }
-
-                if(checkObjectIDs(image)){
-                    dataInUpdate.image = image;
-                }
-                
-                /**
-                 * Di chuyển thư mục
-                 */
-                if(checkObjectIDs(parentID)){
-                    dataInUpdate.parent = parentID;
+                if(!isNaN(amount)){
+                    dataInUpdate.amount = Number(amount);
                 }
 
                 console.log({ dataInUpdate })
-                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_PRODUCT_COLL.findByIdAndUpdate(productID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
@@ -143,10 +159,10 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ groupID, select, populates={} }) {
+    getInfo({ productID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(groupID))
+                if(!checkObjectIDs(productID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populate
@@ -162,7 +178,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await FNB_SHIFT_COLL.findById(groupID)
+                let infoPlanGroup = await FNB_PRODUCT_COLL.findById(productID)
                                     .select(select)
                                     .populate(populates)
 
@@ -176,118 +192,89 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách user_pcm_plan_group 
-     * Author: Depv
-     * Code  :
+     * Name  : Get list
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
-    getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) {
-        console.log({ userID, parentID, projectID, lastestID, keyword, limit, select, populates, isShowAll, isShowParentAndChild })
+     getList({ companyID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20 || isNaN(limit)){
-                    limit = 20;
+                if(Number(limit) > 50){
+                    limit = 50;
                 } else{
-                    limit = +limit;
+                    limit = +Number(limit);
                 }
 
-                if(!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: "projectID_invalid", keyError: KEY_ERROR.PARAMS_INVALID });
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = {
-                    $or: [
-                        { members: { $in: [userID] } },
-                        { admins: { $in: [userID] } },
-                    ]
-                };
-
+                let conditionObj = {}
                 let sortBy;
-                let keys	 = ['actualFinishTime__-1', '_id__-1'];
+                let keys	 = ['createAt__-1'];
+
+                // Gom nhóm theo đơn vị cơ sở
+                if(companyID ){
+                    conditionObj.company = ObjectID(companyID)
+                }
+
+                // Làm rõ mục đích để làm gì?
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                console.log(conditionObj)
+
                 /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 * ĐIỀU KIỆN KHÁC
                  */
                 if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				} else{
+                    populates = JSON.parse(populates);
+                } else{
                     populates = {
                         path: "",
                         select: ""
                     }
                 }
 
-                /**
-                 * Lấy tất cả group trong dự án
-                 * Phục vụ cho việc Admin dự án
-                 */
-                if(isShowAll == 1){
-                    delete conditionObj.$or;
-                 }
-
-                if(projectID){
-                    conditionObj.project = projectID;
-                }
-
-                // Trường hợp show ở modal tạo task mới (show hết cha và con)
-                if(!isShowParentAndChild) {
-                    if(parentID && checkObjectIDs(parentID)){
-                        conditionObj.parent = parentID;
-                    } else{
-                        conditionObj.parent = { $exists: false };
-                    }
-                }
-
-                console.log(conditionObj)
-
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
 
-                    if(conditionObj.$or) {
-                        conditionObj.$and = [
-                            {
-                                $or: conditionObj.$or
-                            },
-                            {
-                                $or: [
-                                    { name: new RegExp(keyword, 'i') },
-                                    { sign: new RegExp(keyword, 'i') },
-                                ]
-                            }
-                        ]
-                    } else{
-                        conditionObj.$or = [
-                            { name: new RegExp(keyword, 'i') },
-                            { sign: new RegExp(keyword, 'i') },
-                        ]
-                    }
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
                 }
 
+                if(select && typeof select === 'string'){
+                    if(!IsJsonString(select))
+                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+                    select = JSON.parse(select);
+                }
+ 
                 let conditionObjOrg = { ...conditionObj };
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await FNB_SHIFT_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await FNB_PRODUCT_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
                     conditionObj  = dataPagingAndSort.data.find;
-					sortBy        = dataPagingAndSort.data.sort;
-				}else{
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-					sortBy        = dataPagingAndSort.data.sort;
+                    sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await FNB_SHIFT_COLL
-                    .find(conditionObj)
+                let infoDataAfterGet = await FNB_PRODUCT_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -295,18 +282,17 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
-				let nextCursor	= null;
-				if(infoDataAfterGet && infoDataAfterGet.length){
-					if(infoDataAfterGet.length > limit){
-						nextCursor = infoDataAfterGet[limit - 1]._id;
-						infoDataAfterGet.length = limit;
-					}
-				}
-
-                let totalRecord = await FNB_SHIFT_COLL.count(conditionObjOrg);
-                let totalPage = Math.ceil(totalRecord/limit);
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                let totalRecord = await FNB_PRODUCT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -314,8 +300,7 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
-                }, status: 200 })
-
+                }, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

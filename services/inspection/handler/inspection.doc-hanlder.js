@@ -25,7 +25,7 @@ module.exports = {
             expiredTime : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
             templateID  : { type: "string", optional: true },
-            relatedIDs     : { type: "array", optional: true },
+            relatedIDs  : { type: "array", optional: true },
             description : { type: "string", optional: true },
             belongSystem : { type: "string", optional: true },
             authorAttachs    : { type: "array", optional: true },

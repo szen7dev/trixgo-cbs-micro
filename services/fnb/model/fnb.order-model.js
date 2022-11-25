@@ -30,21 +30,27 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert group 
-     * Author: Depv
-     * Code:
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
+     * 
+     * 
      */
-    insert({ fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
+    insert({ companyID, fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(fundaID) || !name)
-                    return resolve({ error: true, message: 'fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !name)
+                    return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 // let checkExist = await FNB_ORDER_COLL.findOne({ funda: fundaID, name, sign });
                 // if(checkExist)
                 //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let dataInsert = { funda: fundaID, name, sign, userCreate: userID };
+                /**
+                 * Tính mã hóa đơn tự động theo từng cửa hàng/công ty
+                 */
+
+                let dataInsert = { company: companyID, funda: fundaID, name, sign, userCreate: userID };
 
                 // if(sign){
                 //     dataInsert.sign = sign;
@@ -64,6 +70,14 @@ class Model extends BaseModel {
 
                 if(shiftID && checkObjectIDs(shiftID)){
                     dataInsert.shift = shiftID;
+                }
+
+                if(parentID && checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID;
+                }
+
+                if(customerID && checkObjectIDs(customerID)){
+                    dataInsert.customer = customerID;
                 }
 
                 if(!isNaN(shiftType)){
@@ -98,14 +112,6 @@ class Model extends BaseModel {
                     dataInsert.vatAmount = Number(vatAmount);
                 }
 
-                if(parentID && checkObjectIDs(parentID)){
-                    dataInsert.parent = parentID;
-                }
-
-                if(customerID && checkObjectIDs(customerID)){
-                    dataInsert.customer = customerID;
-                }
-
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
@@ -118,66 +124,81 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update group 
-     * Author: Depv
-     * Code:
+     * Name: Update 
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
-    update({ groupID, name, sign, userID, parentID, contractID, image, members, membersRemove, admins, adminsRemove }) {
+    update({ orderID, userID, 
+        mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
+        console.log({ mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(groupID))
-                    return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(orderID))
+                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let checkExist = await FNB_ORDER_COLL.findOne({ _id: { $ne: groupID }, name, sign });
-                if(checkExist)
-                    return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
-                if(name){
+                if(name && name != ""){
                     dataInUpdate.name =name;
                 }
 
-                if(sign){
-                    dataInUpdate.sign =sign;
+                if(appOrderSign && appOrderSign != ""){
+                    dataInUpdate.appOrderSign = appOrderSign;
                 }
 
-                if(checkObjectIDs(contractID)){
-                    dataInUpdate.contract = contractID;
+                if(note && note != ""){
+                    dataInUpdate.note = note;
                 }
 
-                if(checkObjectIDs(members)){
-                    dataInUpdate.$addToSet = { members };
+                if(mistakeID && checkObjectIDs(mistakeID)){
+                    dataInUpdate.mistake = mistakeID;
                 }
 
-                if(checkObjectIDs(membersRemove)){
-                    dataInUpdate.$pullAll = { members: membersRemove };
+                if(shiftID && checkObjectIDs(shiftID)){
+                    dataInUpdate.shift = shiftID;
                 }
 
-                if(checkObjectIDs(admins)){
-                    dataInUpdate.$addToSet = { admins };
+                if(customerID && checkObjectIDs(customerID)){
+                    dataInUpdate.customer = customerID;
                 }
 
-                if(checkObjectIDs(adminsRemove)){
-                    dataInUpdate.$pullAll = { admins: adminsRemove };
+                if(!isNaN(shiftType)){
+                    dataInUpdate.shiftType = Number(shiftType);
                 }
 
-                if(checkObjectIDs(image)){
-                    dataInUpdate.image = image;
+                if(!isNaN(salesChannel)){
+                    dataInUpdate.salesChannel = Number(salesChannel);
                 }
-                
-                /**
-                 * Di chuyển thư mục
-                 */
-                if(checkObjectIDs(parentID)){
-                    dataInUpdate.parent = parentID;
+
+                if(!isNaN(paymentMethod)){
+                    dataInUpdate.paymentMethod = Number(paymentMethod);
+                }
+
+                if(!isNaN(total)){
+                    dataInUpdate.total = Number(total);
+                }
+
+                if(!isNaN(discount)){
+                    dataInUpdate.discount = Number(discount);
+                }
+
+                if(!isNaN(salesoff)){
+                    dataInUpdate.salesoff = Number(salesoff);
+                }
+
+                if(!isNaN(amount)){
+                    dataInUpdate.amount = Number(amount);
+                }
+
+                if(!isNaN(vatAmount)){
+                    dataInUpdate.vatAmount = Number(vatAmount);
                 }
 
                 console.log({ dataInUpdate })
-                let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
 
                 /**
                  * THÔNG BÁO SOCKET VÀ CLOUD MSS
@@ -191,21 +212,15 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: remove group 
-     * Author: Depv
-     * Code:
+     * Name: Remove 
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
 
     /**
-     * Name: remove many 
-     * Author: Depv
-     * Code:
-     */
-
-    /**
-     * Name: get info user_pcm_plan_group 
-     * Author: Depv
-     * Code:
+     * Name: Get info 
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
     getInfo({ orderID, select, populates={} }) {
         return new Promise(async resolve => {
@@ -240,9 +255,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách user_pcm_plan_group 
-     * Author: Depv
-     * Code  :
+     * Name  : Get list
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
     getList({ fundasID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         console.log({fromDate, toDate})
@@ -374,13 +389,10 @@ class Model extends BaseModel {
         })
     }
 
-        /**
-     * Name: Danh sách
-     * - Theo gói thầu (hợp đồng)
-     * - Theo ngày tháng tạo/hoàn thành (from-to)
-     * - Theo Nhóm công tác con-khu vực con
+    /**
+     * Name: Danh sách theo phân loại
      * Author: HiepNH
-     * Code: 2/10/2022
+     * Code: 24/11/2022
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) { 

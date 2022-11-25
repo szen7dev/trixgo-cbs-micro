@@ -126,21 +126,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * GIÁT TRỊ
      */
-    // //______Khối lượng
-    // quantity: {
-    //     type: Number,
-    //     default : 0
-    // },
-    // //______Đơn giá
-    // unitPrice: {
-    //     type: Number,
-    //     default : 0
-    // },
-    // //______VAT đơn giá
-    // vatUnitPrice: {
-    //     type: Number,
-    //     default : 0
-    // },
     //______Tổng giá
     total: {
         type: Number,
