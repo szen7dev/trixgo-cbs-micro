@@ -65,9 +65,9 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                if(mistakeID && checkObjectIDs(mistakeID)){
-                    dataInsert.mistake = mistakeID;
-                }
+                // if(mistakeID && checkObjectIDs(mistakeID)){
+                //     dataInsert.mistake = mistakeID; // addToSet
+                // }
 
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
