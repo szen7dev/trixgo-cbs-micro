@@ -41,7 +41,7 @@ class Model extends BaseModel {
      * 
      * 
      */
-    insert({ companyID, fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
+    insert({ companyID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -54,19 +54,20 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                // let checkExist = await FNB_ORDER_COLL.findOne({ funda: fundaID, name, sign });
-                // if(checkExist)
-                //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-
                 /**
-                 * Tính mã hóa đơn tự động theo từng cửa hàng/công ty
+                 * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
                  */
+                let numberOfOrder = await FNB_ORDER_COLL.count({})
 
-                let dataInsert = { company: companyID, funda: fundaID, customer: customerID, shift: shiftID, name, sign, userCreate: userID };
-
-                // if(sign){
-                //     dataInsert.sign = sign;
-                // }
+                let dataInsert = { 
+                    company: companyID, // Cần lấy theo infoFunda
+                    funda: fundaID, 
+                    customer: customerID, 
+                    shift: shiftID, 
+                    name, 
+                    sign: `C${numberOfOrder}`, 
+                    userCreate: userID 
+                };
 
                 if(appOrderSign && appOrderSign != ""){
                     dataInsert.appOrderSign = appOrderSign;
@@ -75,10 +76,6 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
-
-                // if(mistakeID && checkObjectIDs(mistakeID)){
-                //     dataInsert.mistake = mistakeID; // addToSet
-                // }
 
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
@@ -110,9 +107,9 @@ class Model extends BaseModel {
 
                 dataInsert.amount = Number(total)-Number(discount)-Number(salesoff);
 
-                if(!isNaN(vatAmount)){
-                    dataInsert.vatAmount = Number(vatAmount);
-                }
+                // if(!isNaN(vatAmount)){
+                //     dataInsert.vatAmount = Number(vatAmount);
+                // }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
