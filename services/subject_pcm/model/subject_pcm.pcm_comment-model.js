@@ -861,23 +861,23 @@ class Model extends BaseModel {
                         env: ENV_DEVICE_WEB_CBS
                     });
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content,
-                        receivers: arrReceiver,
-                        project: projectID,
-                        path: webUrl,
-                        languageKey: dataSend.languageKey,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "department",
-                            item: projectID
-                        },
-                        subColl: {
-                            kind: "pcm_comment",
-                            item: infoAfterInsert._id
-                        },
-                        type: 1 // InApp (Socket)
-                    })
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content,
+                    //     receivers: arrReceiver,
+                    //     project: projectID,
+                    //     path: webUrl,
+                    //     languageKey: dataSend.languageKey,
+                    //     app: APP_KEYS.PCM_PLAN_TASK,
+                    //     mainColl: {
+                    //         kind: "department",
+                    //         item: projectID
+                    //     },
+                    //     subColl: {
+                    //         kind: "pcm_comment",
+                    //         item: infoAfterInsert._id
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // })
                 }
 
                 infoAfterInsert = await PCM_COMMENT_COLL
