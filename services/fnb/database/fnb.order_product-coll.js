@@ -59,6 +59,16 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
+    //_________Có up size hay không (1/2)
+    upsize: {
+        type: Number,
+        default: 1
+    },
+    //_________Có thêm topping hay không (1/2)
+    topping: {
+        type: Number,
+        default: 1
+    },
     //_________Phân loại ca sáng/chiều/tối
     shiftType: {
         type: Number,

@@ -41,7 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         ref: "fnb_shift"
     },
     /**
-     * Phân loại ca làm việc
+     * Phân loại ca làm việc (cập nhật theo funda)
      * 1-Sáng
      * 2-Chiều
      * 3-Tối
@@ -50,18 +50,18 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
-    //_________Số lỗi mắc phải
+    //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
     numberOfMistakes: {
         type: Number,
         default: 0
     },
-    //_________Lỗi mắc phải (type=19)
+    //_________Lỗi mắc phải (type=19: cập nhật sau khi tạo đơn)
     mistake: [{
         type: Schema.Types.ObjectId,
         ref: "doctype"
     }],
      /**
-     * Phân loại trong hệ thống hoặc nhượng quyền
+     * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
      * 1-Trong hệ thống
      * 2-Nhượng quyền => Setup theo tính chất của Funda
      */
