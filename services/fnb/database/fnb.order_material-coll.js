@@ -5,7 +5,7 @@ const Schema                = require('mongoose').Schema;
 /**
  * NGUYÊN LIỆU CỦA ĐƠN HÀNG
  */
-module.exports  = DATABASE_MIDDLEWARE("fnb_order_goods", {   
+module.exports  = DATABASE_MIDDLEWARE("fnb_order_material", {   
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,

@@ -19,10 +19,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_quota", {
     },
     //_________Khối lượng
     quantity: { type: Number, default: 0 },
-    /**
-     * Đơn giá: được tính theo đơn giá của nguồn lực khi thêm mới/cập nhật
-     */
+    //_________Đơn giá (lấy từ goods)
     unitPrice: { type: Number, default: 0 },
+    //_________Thành tiền
+    amount: { type: Number, default: 0 },
     //_________Ghi chú
     note: String,
     /**

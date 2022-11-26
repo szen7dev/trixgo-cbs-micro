@@ -1,6 +1,8 @@
 "use strict";
 /**
  * ORDER
+ * Tiêu đề CloudMSS: Đơn hàng Winggo Thái Thịnh
+ * Đơn hàng T11225, mã hiệu 22556688, giá trị 42.000 VND, đã được thanh toán thành công bởi Winggo Thái Thịnh
  */
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;

@@ -17,8 +17,13 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
-const FNB_SHIFT_COLL                  = require('../database/fnb.shift-coll');
-const { ObjectId } = require('mongodb');
+const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
+const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
+const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
+const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
+const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
+const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
+const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 
 /**
  * import inter-model, exter-model

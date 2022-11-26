@@ -5,7 +5,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("fnb_order_mistake", {
+module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     //_________Công ty (Lấy từ orderID)
     company: {
         type: Schema.Types.ObjectId,
