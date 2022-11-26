@@ -25,6 +25,8 @@ const FNB_MISTAKE_COLL                         = require('../database/fnb.mistak
 const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
 const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 
+const ITEM__GOODS_COLL            			   = require('../../item/database/item.goods-coll');
+
 /**
  * import inter-model, exter-model
  */
@@ -38,75 +40,38 @@ class Model extends BaseModel {
      * Name: Insert 
      * Author: HiepNH
      * Code: 24/11/2022
-     * 
-     * 
      */
-    insert({ companyID, fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
+    insert({ productID, goodsID, quantity, note, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
-                    return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(productID) || !checkObjectIDs(goodsID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'productID|goodsID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                // let checkExist = await FNB_QUOTA_COLL.findOne({ funda: fundaID, name, sign });
-                // if(checkExist)
-                //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                // Kiểm tra sự tồn tại của định mức
+                let checkExist = await FNB_QUOTA_COLL.findOne({ product: productID, goods: goodsID });
+                if(checkExist)
+                    return resolve({ error: true, message: "Định mức đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
                 /**
-                 * Tính mã hóa đơn tự động theo từng cửa hàng/công ty
+                 * Lấy thông tin của Nguyên liệu (giá căn bản)
                  */
+                let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
+                if(!infoGoods)
+                    return resolve({ error: true, message: "goodsID invalid", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                let dataInsert = { company: companyID, funda: fundaID, customer: customerID, shift: shiftID, name, sign, userCreate: userID };
-
-                // if(sign){
-                //     dataInsert.sign = sign;
-                // }
-
-                if(appOrderSign && appOrderSign != ""){
-                    dataInsert.appOrderSign = appOrderSign;
-                }
+                let dataInsert = { 
+                    product: productID, 
+                    goods: goodsID, 
+                    quantity: Number(quantity).toFixed(3), 
+                    unitPrice: Number(infoGoods.unitprice).toFixed(3), 
+                    amount: Number(quantity*infoGoods.unitprice).toFixed(3), 
+                    userCreate: userID 
+                };
 
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
-
-                // if(mistakeID && checkObjectIDs(mistakeID)){
-                //     dataInsert.mistake = mistakeID; // addToSet
-                // }
-
-                if(parentID && checkObjectIDs(parentID)){
-                    dataInsert.parent = parentID;
-                }
-
-                if(!isNaN(shiftType)){
-                    dataInsert.shiftType = Number(shiftType);
-                }
-
-                if(!isNaN(salesChannel)){
-                    dataInsert.salesChannel = Number(salesChannel);
-                }
-
-                if(!isNaN(paymentMethod)){
-                    dataInsert.paymentMethod = Number(paymentMethod);
-                }
-
-                if(!isNaN(total)){
-                    dataInsert.total = Number(total);
-                }
-
-                if(!isNaN(discount)){
-                    dataInsert.discount = Number(discount);
-                }
-
-                if(!isNaN(salesoff)){
-                    dataInsert.salesoff = Number(salesoff);
-                }
-
-                dataInsert.amount = Number(total)-Number(discount)-Number(salesoff);
-
-                if(!isNaN(vatAmount)){
-                    dataInsert.vatAmount = Number(vatAmount);
-                }
-
+              
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
@@ -188,67 +153,6 @@ class Model extends BaseModel {
                 }
                 console.log({ dataInUpdate })
 
-                let infoAfterUpdate = await FNB_QUOTA_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                /**
-                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
-                 */
-
-                return resolve({ error: false, data: infoAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        });
-    }
-
-    /**
-     * Name: Update value
-     * Author: HiepNH
-     * Code: 24/11/2022
-     */
-    updateValue({ orderID, userID }) {
-        console.log({ orderID, userID })
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-                let infoOrder = await FNB_QUOTA_COLL.findById(orderID)
-
-                let total = infoOrder.total;
-                let discount = infoOrder.discount;
-                let salesoff = infoOrder.salesoff;
-                let amount = infoOrder.amount;
-
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
-
-                let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
-                    {
-                        $match: {
-                            order: ObjectID(orderID)
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            amount: { $sum: "$amount" },
-                        }
-                    }
-                ])
-                // console.log(listData)
-
-                if(listData && listData.length){
-                    total = Number(listData[0].amount)
-                    amount = Number(total)-Number(discount)-Number(salesoff)
-
-                    dataInUpdate.total = Number(total)
-                    dataInUpdate.amount = Number(amount)
-                }
-                // console.log({ dataInUpdate })
-                
                 let infoAfterUpdate = await FNB_QUOTA_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)

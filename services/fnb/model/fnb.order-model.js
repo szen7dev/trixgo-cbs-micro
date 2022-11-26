@@ -111,6 +111,11 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
+                /**
+                 * GÁN SẢN PHẨM VÀO ORDER
+                 * GÁN NGUYÊN LIỆU SỬ DỤNG VÀO ORDER
+                 */
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message })

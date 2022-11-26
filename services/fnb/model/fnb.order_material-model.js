@@ -38,74 +38,48 @@ class Model extends BaseModel {
      * Name: Insert 
      * Author: HiepNH
      * Code: 24/11/2022
-     * 
-     * 
      */
-    insert({ companyID, fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
+    insert({ orderID, productID, quantityOfProduct, goodsID, quantity, unitPrice, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
-                    return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-                // let checkExist = await FNB_ORDER_MATERIAL_COLL.findOne({ funda: fundaID, name, sign });
-                // if(checkExist)
-                //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-
                 /**
-                 * Tính mã hóa đơn tự động theo từng cửa hàng/công ty
+                 * BA
+                 * 1-Khi chọn Product add vào trong Order => lấy định mức của Product trong Quota đưa vào order_material
+                 * 2-Khi xóa Product khỏi Order => xóa nguyên liệu ra khỏi order_material
                  */
+                if(!checkObjectIDs(orderID) || !checkObjectIDs(productID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'orderID|productID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { company: companyID, funda: fundaID, customer: customerID, shift: shiftID, name, sign, userCreate: userID };
+                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                if(!infoOrder)
+                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                // if(sign){
-                //     dataInsert.sign = sign;
+                let infoProduct = await FNB_PRODUCT_COLL.findById(productID)
+                if(!infoProduct)
+                    return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+
+                let dataInsert = { 
+                    order: orderID, 
+                    product: productID, 
+                    quantityOfProduct, 
+                    goods: goodsID, 
+                    quantity, 
+                    unitPrice, 
+                    amount: Number(quantityOfProduct*quantity*unitPrice), 
+                    userCreate: userID 
+                };
+
+                // // Danh sách nguyên liệu cấu thành sản phẩm
+                // let listDataMaterial = await FNB_QUOTA_COLL.find({product: productID})
+                // console.log(listDataMaterial)
+
+                // for(const item of listDataMaterial){
+
                 // }
 
-                if(appOrderSign && appOrderSign != ""){
-                    dataInsert.appOrderSign = appOrderSign;
-                }
+                // let { quantity, unitPrice } = listDataMaterial
 
-                if(note && note != ""){
-                    dataInsert.note = note;
-                }
-
-                // if(mistakeID && checkObjectIDs(mistakeID)){
-                //     dataInsert.mistake = mistakeID; // addToSet
-                // }
-
-                if(parentID && checkObjectIDs(parentID)){
-                    dataInsert.parent = parentID;
-                }
-
-                if(!isNaN(shiftType)){
-                    dataInsert.shiftType = Number(shiftType);
-                }
-
-                if(!isNaN(salesChannel)){
-                    dataInsert.salesChannel = Number(salesChannel);
-                }
-
-                if(!isNaN(paymentMethod)){
-                    dataInsert.paymentMethod = Number(paymentMethod);
-                }
-
-                if(!isNaN(total)){
-                    dataInsert.total = Number(total);
-                }
-
-                if(!isNaN(discount)){
-                    dataInsert.discount = Number(discount);
-                }
-
-                if(!isNaN(salesoff)){
-                    dataInsert.salesoff = Number(salesoff);
-                }
-
-                dataInsert.amount = Number(total)-Number(discount)-Number(salesoff);
-
-                if(!isNaN(vatAmount)){
-                    dataInsert.vatAmount = Number(vatAmount);
-                }
+                // let dataInsert = { company: companyID, funda: fundaID, customer: customerID, shift: shiftID, name, sign, userCreate: userID };
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)

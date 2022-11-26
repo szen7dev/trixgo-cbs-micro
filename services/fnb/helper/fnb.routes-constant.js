@@ -9,7 +9,7 @@ const ORDER_PRODUCT         = '/order_products';
 const SHIFT                 = '/shifts';
 const MISTAKE               = '/mistakes';
 const QUOTA                 = '/quotas';
-const ORDER_MATERIAL        = '/materials';
+const ORDER_MATERIAL        = '/order_materials';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,

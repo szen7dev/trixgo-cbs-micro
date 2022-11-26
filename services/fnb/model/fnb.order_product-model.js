@@ -41,7 +41,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userID, orderID, productID, mistakeID, note, quantity }) {
+    insert({ userID, orderID, productID, note, quantity }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderID))
@@ -54,6 +54,14 @@ class Model extends BaseModel {
                 let infoProduct = await FNB_PRODUCT_COLL.findById(productID)
                 if(!infoProduct)
                     return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+
+                /**
+                 * Kiểm tra sự tồn tại của orderID và productID
+                 */
+                let checkExist = await FNB_ORDER_PRODUCT_COLL.findOne({ product: productID, order: orderID })
+                // console.log(checkExist)
+                if(checkExist)
+                    return resolve({ error: true, message: "Sản phẩm đã tồn tại trong đơn hàng", keyError: KEY_ERROR.ITEM_EXISTED })
 
                 let dataInsert = { 
                     company: infoOrder.company, 
@@ -69,10 +77,6 @@ class Model extends BaseModel {
                     unitPrice: infoProduct.unitPrice,
                     userCreate: userID
                 };
-
-                if(checkObjectIDs(mistakeID)){
-                    dataInsert.mistake = mistakeID;
-                }
 
                 if(note && note != ""){
                     dataInsert.note = note;
