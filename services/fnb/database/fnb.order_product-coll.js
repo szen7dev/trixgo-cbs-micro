@@ -54,17 +54,12 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         type: Schema.Types.ObjectId,
         ref: "fnb_shift"
     },
-    //_________Lỗi mắc phải (type=19)
-    mistake: {
-        type: Schema.Types.ObjectId,
-        ref: "doctype"
-    },
-    //_________Có up size hay không (1/2)
+    //_________Có up size hay không-Thông kê doanh số (1/2)
     upsize: {
         type: Number,
         default: 1
     },
-    //_________Có thêm topping hay không (1/2)
+    //_________Có thêm topping hay không-Thống kê doanh số (1/2)
     topping: {
         type: Number,
         default: 1
