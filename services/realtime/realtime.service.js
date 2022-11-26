@@ -30,6 +30,7 @@ const { CHATTING_SOCKET } 						= require('../chatting/chatting.socket');
 const { MEDIA_SOCKET } 						    = require('../media/media.socket');
 const { REACTION_SOCKET }                       = require('../reaction/reaction.socket');
 const { SUBJECT_SOCKET }                        = require('../subject_pcm/subject_pcm.socket');
+const { FNB_SOCKET }                            = require('../fnb/fnb.socket');
 
 let pub = redis.createClient({
     host: REDIS_SEPERATOR.HOST,
@@ -105,6 +106,7 @@ module.exports = {
                         ...CHATTING_SOCKET,
                         ...MEDIA_SOCKET,
                         ...SUBJECT_SOCKET,
+                        ...FNB_SOCKET,
 
                         'CLIENT_SEND_CHATTING_TEST': async function(data) {
                             let socket                      = this;

@@ -129,22 +129,22 @@ class Model extends BaseModel {
                         env: ENV_DEVICE_WEB_CBS
                     });
 
-                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: content || 'Đã gửi 1 bình luận file',
-                        receivers: arrReceiver,
-                        path: `/media/post/${infoMedia._id}#${infoComment._id}`,
-                        languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
-                        app: APP_KEYS.MEDIA,
-                        mainColl: {
-                            kind: "media",
-                            item: infoMedia._id
-                        },
-                        subColl: {
-                            kind: "media_comment",
-                            item: infoComment._id
-                        },
-                        type: 1 // InApp (Socket)
-                    });
+                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    //     content: content || 'Đã gửi 1 bình luận file',
+                    //     receivers: arrReceiver,
+                    //     path: `/media/post/${infoMedia._id}#${infoComment._id}`,
+                    //     languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
+                    //     app: APP_KEYS.MEDIA,
+                    //     mainColl: {
+                    //         kind: "media",
+                    //         item: infoMedia._id
+                    //     },
+                    //     subColl: {
+                    //         kind: "media_comment",
+                    //         item: infoComment._id
+                    //     },
+                    //     type: 1 // InApp (Socket)
+                    // });
                 }
 
                 return resolve({ error: false, data: arrReceiver, status: 200 });

@@ -42,13 +42,15 @@ module.exports = {
      */
     login: {
         params: {
-            email           : { type: "string" },
-            password        : { type: "string" },
-            platform        : { type: "string" },
-            domain          : { type: "string", optional: true },
+            // email           : { type: "string" },
+            // password        : { type: "string" },
+            // platform        : { type: "string" },
+            // domain          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
+                console.log({ ctx })
+                return console.log({ socket: ctx.options.parentCtx.params.req })
                 await this.validateEntity(ctx.params);
                 let { email, password, platform, domain } = ctx.params;
 

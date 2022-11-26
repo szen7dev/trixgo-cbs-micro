@@ -1,0 +1,14 @@
+include:
+  - project: "trixgo-vn/devops/gitlab-ci-template"
+    file: "/.Docker.gitlab-ci.yml"
+
+build-docker:
+  extends: .build-docker-template
+  variables:
+    NODE_OPTIONS: "--max-old-space-size=2048"
+  tags:
+    - docker
+  only:
+    refs:
+      - master
+      - staging
