@@ -44,6 +44,13 @@ class Model extends BaseModel {
     insert({ companyID, fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * Bước 1: Khởi tạo đơn hàng
+                 * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
+                 * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
+                 * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
+                 */
                 if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 

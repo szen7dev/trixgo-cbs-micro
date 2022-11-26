@@ -44,6 +44,14 @@ class Model extends BaseModel {
     insert({ userID, orderID, productID, note, quantity }) {
         return new Promise(async resolve => {
             try {
+                 /**
+                 * BA
+                 * Bước 1: Khởi tạo đơn hàng
+                 * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
+                 * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
+                 * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
+                 */
+
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
