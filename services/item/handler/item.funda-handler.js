@@ -16,16 +16,19 @@ module.exports = {
      */
     insert:{
         params: {
-            name          : { type: "string" },
-            description   : { type: "string", optional: true },
-            parentID      : { type: "string", optional: true },
+            name            : { type: "string" },
+            sign            : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            internal        : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, description, parentID } = ctx.params;
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, description, userID });
+                const { name, sign, description, internal, parentID } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, internal, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -39,17 +42,30 @@ module.exports = {
      */
     update:{  
         params: {
-            fundaID       : { type: "string" }, 
-            name          : { type: "string", optional: true },
-            description   : { type: "string", optional: true },
-            parentID      : { type: "string", optional: true },
+            fundaID         : { type: "string" }, 
+            name            : { type: "string", optional: true },
+            sign            : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            area            : { type: "string", optional: true },
+            members         : { type: "array", optional: true },
+            membersRemove   : { type: "array", optional: true },
+            admins          : { type: "array", optional: true },
+            adminsRemove    : { type: "array", optional: true },
+            internal        : { type: "number", optional: true },
+            materialExpenseRate : { type: "number", optional: true },
+            materialExpense     : { type: "number", optional: true },
+            planExpense         : { type: "number", optional: true },
+            utilityExpense      : { type: "number", optional: true },
+            humanExpense        : { type: "number", optional: true },
+            otherExpense        : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, name, description } = ctx.params;
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, description, userID });
+                const { fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

@@ -69,6 +69,11 @@ class Model extends BaseModel {
                     userCreate: userID 
                 };
 
+                // Thông tin lấy từ Order
+                dataInsert.company = infoOrder.company
+                dataInsert.funda = infoOrder.funda
+                dataInsert.shift = infoOrder.shift
+
                 // // Danh sách nguyên liệu cấu thành sản phẩm
                 // let listDataMaterial = await FNB_QUOTA_COLL.find({product: productID})
                 // console.log(listDataMaterial)

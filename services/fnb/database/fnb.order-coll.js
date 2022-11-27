@@ -34,6 +34,35 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * THÔNG TIN
      */
     /**
+     * Khu vực
+     */
+    //_________Tỉnh/Thành phố
+    area1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện/Quận
+    area2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Xã/Phường
+    area3: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    /**
+     * Mùa trong năm
+     * 1-Xuân
+     * 2-Hạ
+     * 3-Thu
+     * 4-Đông
+     */
+    seasons: {
+        type: Number,
+        default: 1
+    },
+    /**
      * Ca làm việc
      * - Chấm công theo ca
      * - Tính vật tư theo ca
