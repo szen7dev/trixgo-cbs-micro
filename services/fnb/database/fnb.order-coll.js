@@ -34,25 +34,34 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * THÔNG TIN
      */
     /**
+     * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
+     * 1-Trong hệ thống
+     * 2-Nhượng quyền => Setup theo tính chất của Funda
+     */
+    internal: {
+        type: Number,
+        default: 1
+    }, 
+    /**
      * Khu vực
      */
-    //_________Tỉnh/Thành phố
+    //_________Tỉnh/Thành phố (lấy theo Funda)
     area1: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Huyện/Quận
+    //_________Huyện/Quận (lấy theo Funda)
     area2: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Xã/Phường
+    //_________Xã/Phường (lấy theo Funda)
     area3: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
     /**
-     * Mùa trong năm
+     * Mùa trong năm (theo lịch âm)
      * 1-Xuân
      * 2-Hạ
      * 3-Thu
@@ -85,21 +94,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     numberOfMistakes: {
         type: Number,
         default: 0
-    },
-    //_________Lỗi mắc phải (type=19: cập nhật sau khi tạo đơn)
-    mistake: [{
-        type: Schema.Types.ObjectId,
-        ref: "doctype"
-    }],
-     /**
-     * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
-     * 1-Trong hệ thống
-     * 2-Nhượng quyền => Setup theo tính chất của Funda
-     */
-    internal: {
-        type: Number,
-        default: 1
-    },   
+    },  
     /**
      * Phân loại kênh bán hàng
      * 1-Offline

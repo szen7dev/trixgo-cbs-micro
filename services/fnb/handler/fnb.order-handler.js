@@ -16,16 +16,16 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            fundaID             : { type: "string" },
             parentID            : { type: "string", optional: true },
-            mistakeID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
+            fundaID             : { type: "string" },
+            customerID          : { type: "string" },
             shiftID             : { type: "string" },
             name                : { type: "string" },
             appOrderSign        : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             salesChannel        : { type: "number" },
             paymentMethod       : { type: "number" },
+            seasons             : { type: "number", optional: true },
             shiftType           : { type: "number", optional: true },
             total               : { type: "number", optional: true },
             discount            : { type: "number", optional: true },
@@ -35,12 +35,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  fundaID, parentID, mistakeID, customerID, shiftID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount } = ctx.params;
+                let {  fundaID, parentID, customerID, shiftID, name, appOrderSign, note, seasons, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    companyID: company._id, fundaID, parentID, mistakeID, customerID, shiftID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, userID
+                    fundaID, parentID, customerID, shiftID, name, appOrderSign, note, seasons, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -24,6 +24,7 @@ const FNB_SHIFT_COLL                           = require('../database/fnb.shift-
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
 const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
 const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
 
 /**
  * import inter-model, exter-model
@@ -41,7 +42,7 @@ class Model extends BaseModel {
      * 
      * 
      */
-    insert({ companyID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, userID }) {
+    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, seasons, total, discount, salesoff, vatAmount, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -51,8 +52,13 @@ class Model extends BaseModel {
                  * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
                  */
-                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
+                if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+
+                // Thông tin cửa hàng
+                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                if (!infoFunda) 
+                    return resolve({ error: true, message: 'cannot_get_info_funda' });
 
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
@@ -60,14 +66,24 @@ class Model extends BaseModel {
                 let numberOfOrder = await FNB_ORDER_COLL.count({})
 
                 let dataInsert = { 
-                    company: companyID, // Cần lấy theo infoFunda
+                    company: infoFunda.company,
                     funda: fundaID, 
                     customer: customerID, 
                     shift: shiftID, 
                     name, 
-                    sign: `C${numberOfOrder}`, 
+                    sign: `C${Number(numberOfOrder+1)}`, 
                     userCreate: userID 
                 };
+
+                if(infoFunda.area3){
+                    dataInsert.area1 = infoFunda.area1
+                    dataInsert.area2 = infoFunda.area2
+                    dataInsert.area3 = infoFunda.area3
+                }
+
+                if(infoFunda.internal){
+                    dataInsert.infoFunda = infoFunda.internal
+                }
 
                 if(appOrderSign && appOrderSign != ""){
                     dataInsert.appOrderSign = appOrderSign;
@@ -91,6 +107,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(paymentMethod)){
                     dataInsert.paymentMethod = Number(paymentMethod);
+                }
+
+                if(!isNaN(seasons)){
+                    dataInsert.seasons = Number(seasons);
                 }
 
                 if(!isNaN(total)){
