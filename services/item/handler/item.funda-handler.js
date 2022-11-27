@@ -15,6 +15,7 @@ module.exports = {
      * Func: Thêm funda
      */
     insert:{
+        auth: "required",
         params: {
             name            : { type: "string" },
             sign            : { type: "string", optional: true },
@@ -41,6 +42,7 @@ module.exports = {
      * Func: Cập nhật funda
      */
     update:{  
+        auth: "required",
         params: {
             fundaID         : { type: "string" }, 
             name            : { type: "string", optional: true },
@@ -78,11 +80,13 @@ module.exports = {
 	 * Func: Danh sách funda
 	 */
     getInfoAndGetList: {
+        auth: "required",
         params: {
-            fundaID         : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            isListParentOfListChilds: { type: "string", optional: true },
+            fundaID                     : { type: "string", optional: true },
+            companyID                   : { type: "string", optional: true },
+            parentID                    : { type: "string", optional: true },
+            isListParentOfListChilds    : { type: "string", optional: true },
+            isMember                    : { type: "string", optional: true },
             
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -94,9 +98,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, } = ctx.params;
+                let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, isMember } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
+                console.log(userID)
                 
                 if(!companyID){
                     companyID = company._id
@@ -109,7 +114,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__FUNDA_MODEL.getList({
-                        companyID, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds,
+                        companyID, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, isMember, userID
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
