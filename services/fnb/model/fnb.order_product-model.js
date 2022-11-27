@@ -28,7 +28,6 @@ const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_
 /**
  * import inter-model, exter-model
  */
-const FNB_ORDER_MODEL                         = require('./fnb.order-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -37,14 +36,15 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert group 
-     * Author: Depv
-     * Code:
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
-    insert({ userID, orderID, productID, note, quantity }) {
+    insert({ orderID, productID, quantity, upsize, topping, note, userID }) {
+        // console.log({ orderID, productID, quantity, upsize, topping, note, userID })
         return new Promise(async resolve => {
             try {
-                 /**
+                /**
                  * BA
                  * Bước 1: Khởi tạo đơn hàng
                  * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
@@ -67,7 +67,6 @@ class Model extends BaseModel {
                  * Kiểm tra sự tồn tại của orderID và productID
                  */
                 let checkExist = await FNB_ORDER_PRODUCT_COLL.findOne({ product: productID, order: orderID })
-                // console.log(checkExist)
                 if(checkExist)
                     return resolve({ error: true, message: "Sản phẩm đã tồn tại trong đơn hàng", keyError: KEY_ERROR.ITEM_EXISTED })
 
@@ -77,22 +76,35 @@ class Model extends BaseModel {
                     order: orderID, 
                     product: productID,
                     customer: infoOrder.customer,
+                    internal: infoOrder.internal,
+                    area1: infoOrder.area1,
+                    area2: infoOrder.area2,
+                    area3: infoOrder.area3,
+                    seasons: infoOrder.seasons,
                     shift: infoOrder.shift,
                     shiftType: infoOrder.shiftType,
-                    internal: infoOrder.internal,
                     salesChannel: infoOrder.salesChannel,
                     paymentMethod: infoOrder.paymentMethod,
+                    service: infoOrder.service,
                     unitPrice: infoProduct.unitPrice,
                     userCreate: userID
                 };
+
+                if(!isNaN(quantity)){
+                    dataInsert.quantity = Number(quantity);
+                    dataInsert.amount = Number(quantity)*Number(infoProduct.unitPrice);
+                }
 
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
 
-                if(!isNaN(quantity)){
-                    dataInsert.quantity = Number(quantity);
-                    dataInsert.amount = Number(quantity)*Number(infoProduct.unitPrice);
+                if(!isNaN(upsize) && Number(upsize) > 0){
+                    dataInsert.upsize = Number(upsize)
+                }
+
+                if(!isNaN(topping) && Number(topping) > 0){
+                    dataInsert.topping = Number(topping)
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -100,13 +112,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
                 /**
-                 * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG
-                 */
-                let infoOrderNew = await FNB_ORDER_MODEL.updateValue({orderID, userID})
-                // console.log(infoOrderNew)
-
-                /**
-                 * CẬP NHẬT ĐỊNH MỨC VẬT TƯ
+                 * CẬP NHẬT NGUYÊN LIỆU HAO PHÍ VÀO ĐƠN HÀNG
                  */
 
                 return resolve({ error: false, data: infoAfterInsert });

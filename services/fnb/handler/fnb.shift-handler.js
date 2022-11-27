@@ -16,9 +16,9 @@
      insert: {
          auth: "required",
          params: {
-             fundaID : { type: "string" },
-             name      : { type: "string" },
-             note      : { type: "string", optional: true },
+            fundaID     : { type: "string" },
+            name        : { type: "string" },
+            note        : { type: "string", optional: true },
          },
          async handler(ctx) {
              try {
@@ -28,7 +28,7 @@
                  const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.insert({
-                    companyID: company._id, fundaID, name, note, userID
+                    fundaID, name, note, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

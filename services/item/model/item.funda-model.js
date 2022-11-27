@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, description, internal, userID }){
+	insert({ companyID, parentID, name, sign, description, internal, area, userID }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -64,6 +64,23 @@ class Model extends BaseModel {
                 //_________Phân loại trong hệ thống hoặc nhượng quyền
                 if(internal && !isNaN(internal) && [1, 2].includes(internal)){
                     dataInsert.internal = +internal;
+                }
+
+                //_________Khu vực (phường/xã)
+                if(checkObjectIDs(area)){
+                    let infoArea = await ITEM__AREA_COLL.findById(area).populate({
+                        path: 'parent',
+                        select: "_id name",
+                        populate: {
+                            path: 'parent',
+                            select: "_id name",
+                        }
+                    })
+                    // console.log(infoArea)
+
+                    dataInsert.area3 = area
+                    dataInsert.area2 = infoArea.parent._id
+                    dataInsert.area1 = infoArea.parent.parent._id
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);

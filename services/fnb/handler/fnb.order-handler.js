@@ -10,9 +10,10 @@ const FNB_ORDER_MODEL            = require('../model/fnb.order-model').MODEL;
 
 module.exports = {
     /**
-	 * Dev: Depv
-	 * Func: insert Group
-	 */
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
     insert: {
         auth: "required",
         params: {
@@ -26,21 +27,23 @@ module.exports = {
             salesChannel        : { type: "number" },
             paymentMethod       : { type: "number" },
             seasons             : { type: "number", optional: true },
+            service             : { type: "number", optional: true },
             shiftType           : { type: "number", optional: true },
             total               : { type: "number", optional: true },
             discount            : { type: "number", optional: true },
             salesoff            : { type: "number", optional: true },
             vatAmount           : { type: "number", optional: true },
+            products            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  fundaID, parentID, customerID, shiftID, name, appOrderSign, note, seasons, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount } = ctx.params;
+                let {  fundaID, parentID, customerID, shiftID, name, appOrderSign, note, seasons, service, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    fundaID, parentID, customerID, shiftID, name, appOrderSign, note, seasons, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, userID
+                    fundaID, parentID, customerID, shiftID, name, appOrderSign, note, seasons, service, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

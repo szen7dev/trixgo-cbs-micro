@@ -17,6 +17,7 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
@@ -24,11 +25,12 @@ const FNB_SHIFT_COLL                           = require('../database/fnb.shift-
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
 const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
 const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
 
 /**
  * import inter-model, exter-model
  */
+const FNB_ORDER_PRODUCT_MODEL                  = require('./fnb.order_product-model').MODEL;
+
 class Model extends BaseModel {
 
     constructor() {
@@ -39,10 +41,8 @@ class Model extends BaseModel {
      * Name: Insert 
      * Author: HiepNH
      * Code: 24/11/2022
-     * 
-     * 
      */
-    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, seasons, total, discount, salesoff, vatAmount, userID }) {
+    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -52,6 +52,7 @@ class Model extends BaseModel {
                  * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
                  */
+
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
@@ -82,7 +83,7 @@ class Model extends BaseModel {
                 }
 
                 if(infoFunda.internal){
-                    dataInsert.infoFunda = infoFunda.internal
+                    dataInsert.internal = infoFunda.internal
                 }
 
                 if(appOrderSign && appOrderSign != ""){
@@ -113,6 +114,10 @@ class Model extends BaseModel {
                     dataInsert.seasons = Number(seasons);
                 }
 
+                if(!isNaN(service)){
+                    dataInsert.service = Number(service);
+                }
+
                 if(!isNaN(total)){
                     dataInsert.total = Number(total);
                 }
@@ -137,8 +142,30 @@ class Model extends BaseModel {
 
                 /**
                  * GÁN SẢN PHẨM VÀO ORDER
-                 * GÁN NGUYÊN LIỆU SỬ DỤNG VÀO ORDER
                  */
+                const orderID = infoAfterInsert._id;
+                if(products && products.length){
+                    
+                    for(const item of products){
+                        const dataInsertProduct = {
+                            userID,
+                            orderID,
+                            productID: item.productID,
+                            quantity: item.quantity ? Number(item.quantity) : 0,
+                            upsize: item.upsize,
+                            topping: item.topping,
+                            note: item.note
+                        }
+
+                        let infoOderProduct = await FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct)
+                        // console.log(infoOderProduct)
+                    }
+                }
+
+                /**
+                 * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG SAU KHI CHỌN XONG SẢN PHẨM
+                 */
+                await this.updateValue({orderID, userID})
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -267,7 +294,6 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                // console.log(listData)
 
                 if(listData && listData.length){
                     total = Number(listData[0].amount)
@@ -276,16 +302,10 @@ class Model extends BaseModel {
                     dataInUpdate.total = Number(total)
                     dataInUpdate.amount = Number(amount)
                 }
-                // console.log({ dataInUpdate })
                 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                /**
-                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
-                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {

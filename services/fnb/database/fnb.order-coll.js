@@ -33,6 +33,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * THÔNG TIN
      */
+    //_________Mã khách
+    customer: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
     /**
      * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
      * 1-Trong hệ thống
@@ -90,11 +95,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
-    //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
-    numberOfMistakes: {
-        type: Number,
-        default: 0
-    },  
     /**
      * Phân loại kênh bán hàng
      * 1-Offline
@@ -127,21 +127,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
-    //_________Mã khách
-    customer: {
-        type: Schema.Types.ObjectId,
-        ref: "contact"
-    },
-    //_________Nội dung
-    name: String,
-    //_________Mã hiệu
-    sign: String,
-    //_________Mã đơn app
-    appOrderSign: String,
-    //_________Đơn vị tính (***cân nhắc bỏ qua)
-    // unit: String, 
-    //_________Ghi chú
-    note: String,
     /**
      * Trạng thái đơn
      * 1-Đang giao hàng/Phục vụ
@@ -154,6 +139,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
+    //_________Nội dung
+    name: String,
+    //_________Mã hiệu
+    sign: String,
+    //_________Mã đơn app
+    appOrderSign: String,
+    //_________Ghi chú
+    note: String,
+    //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
+    numberOfMistakes: {
+        type: Number,
+        default: 0
+    },  
     //_________Số lượng sản phẩm
     numberOfProducts: {
         type: Number,
@@ -172,7 +170,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______Triết khấu
+    //______Chiết khấu
     discount: {
         type: Number,
         default : 0
@@ -187,7 +185,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______VAT thành tiền
+    //______VAT thành tiền (10%*amount)
     vatAmount: {
         type: Number,
         default : 0

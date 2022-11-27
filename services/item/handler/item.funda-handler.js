@@ -22,14 +22,15 @@ module.exports = {
             description     : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             internal        : { type: "number", optional: true },
+            area            : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, sign, description, internal, parentID } = ctx.params;
+                const { name, sign, description, internal, area, parentID } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, internal, userID });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, internal, area, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -44,16 +45,16 @@ module.exports = {
     update:{  
         auth: "required",
         params: {
-            fundaID         : { type: "string" }, 
-            name            : { type: "string", optional: true },
-            sign            : { type: "string", optional: true },
-            description     : { type: "string", optional: true },
-            area            : { type: "string", optional: true },
-            members         : { type: "array", optional: true },
-            membersRemove   : { type: "array", optional: true },
-            admins          : { type: "array", optional: true },
-            adminsRemove    : { type: "array", optional: true },
-            internal        : { type: "number", optional: true },
+            fundaID             : { type: "string" }, 
+            name                : { type: "string", optional: true },
+            sign                : { type: "string", optional: true },
+            description         : { type: "string", optional: true },
+            area                : { type: "string", optional: true },
+            members             : { type: "array", optional: true },
+            membersRemove       : { type: "array", optional: true },
+            admins              : { type: "array", optional: true },
+            adminsRemove        : { type: "array", optional: true },
+            internal            : { type: "number", optional: true },
             materialExpenseRate : { type: "number", optional: true },
             materialExpense     : { type: "number", optional: true },
             planExpense         : { type: "number", optional: true },
