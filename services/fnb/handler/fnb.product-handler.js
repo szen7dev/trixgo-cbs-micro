@@ -9,10 +9,11 @@
  const FNB_PRODUCT_MODEL            = require('../model/fnb.product-model').MODEL;
  
  module.exports = {
-     /**
-      * Dev: Depv
-      * Func: insert Group
-      */
+    /**
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
      insert: {
          auth: "required",
          params: {
