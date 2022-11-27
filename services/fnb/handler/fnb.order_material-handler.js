@@ -10,9 +10,10 @@ const FNB_ORDER_MATERIAL_MODEL            = require('../model/fnb.order_material
 
 module.exports = {
     /**
-	 * Dev: Depv
-	 * Func: insert Group
-	 */
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
     insert: {
         auth: "required",
         params: {

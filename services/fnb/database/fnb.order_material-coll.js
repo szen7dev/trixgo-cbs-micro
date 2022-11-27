@@ -4,6 +4,8 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
  * NGUYÊN LIỆU CỦA ĐƠN HÀNG
+ * 1-Trong định mức có chứa cả Trân châu khô
+ * 2-Trong định mức có chứa cả Trân châu thành phẩm (nấu chính->giá = 0)
  */
 module.exports  = DATABASE_MIDDLEWARE("fnb_order_material", {   
     //_________Công ty (***lấy theo orderID)
@@ -36,7 +38,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_material", {
         type: Number,
         default : 1
     },
-    //_________Nguyên liệu
+    //_________Nguyên liệu sử dụng
     goods: {
         type: Schema.Types.ObjectId,
         ref: 'goods'

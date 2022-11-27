@@ -28,7 +28,7 @@ const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_
 /**
  * import inter-model, exter-model
  */
-
+const FNB_ORDER_MATERIAL_MODEL                 = require('./fnb.order_material-model').MODEL;
 class Model extends BaseModel {
 
     constructor() {
@@ -114,6 +114,22 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT NGUYÊN LIỆU HAO PHÍ VÀO ĐƠN HÀNG
                  */
+                let listQuota = await FNB_QUOTA_COLL.find({ product: productID })
+                for (const item of listQuota){
+                    console.log('===================>>>>>>>>>>>>>>>')
+                    let dataInsertOrderMaterial = {
+                        orderID, 
+                        productID, 
+                        quantityOfProduct: quantity, 
+                        goodsID: item.goods, 
+                        quantity: item.quantity, 
+                        unitPrice: item.unitPrice, 
+                        userID
+                    }
+
+                    let infoOM = await FNB_ORDER_MATERIAL_MODEL.insert(dataInsertOrderMaterial)
+                    console.log(infoOM)
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
