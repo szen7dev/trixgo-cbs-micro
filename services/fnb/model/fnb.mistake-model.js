@@ -38,75 +38,45 @@ class Model extends BaseModel {
      * Name: Insert 
      * Author: HiepNH
      * Code: 24/11/2022
-     * 
-     * 
      */
-    insert({ companyID, fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID }) {
+    insert({ orderID, productID, mistakeID, executorID, type, note, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
-                    return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(orderID) || !checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'orderID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                // let checkExist = await FNB_MISTAKE_COLL.findOne({ funda: fundaID, name, sign });
-                // if(checkExist)
-                //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                if(!infoOrder)
+                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                /**
-                 * Tính mã hóa đơn tự động theo từng cửa hàng/công ty
-                 */
+                let dataInsert = { 
+                    company: infoOrder.company, 
+                    funda: infoOrder.funda, 
+                    mistake: mistakeID,
+                    executor: executorID,
+                    type: Number(type),
+                    order: orderID,
+                    customer: infoOrder.customer, 
+                    internal: infoOrder.internal, 
+                    area1: infoOrder.area1, 
+                    area2: infoOrder.area2,
+                    area3: infoOrder.area3, 
+                    seasons: infoOrder.seasons, 
+                    shift: infoOrder.shift, 
+                    shiftType: infoOrder.shiftType, 
+                    salesChannel: infoOrder.salesChannel, 
+                    service: infoOrder.service, 
+                    userCreate: userID 
+                }
 
-                let dataInsert = { company: companyID, funda: fundaID, customer: customerID, shift: shiftID, name, sign, userCreate: userID };
-
-                // if(sign){
-                //     dataInsert.sign = sign;
-                // }
-
-                if(appOrderSign && appOrderSign != ""){
-                    dataInsert.appOrderSign = appOrderSign;
+                if(productID && checkObjectIDs(productID)){
+                    dataInsert.product = productID;
                 }
 
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
-
-                // if(mistakeID && checkObjectIDs(mistakeID)){
-                //     dataInsert.mistake = mistakeID; // addToSet
-                // }
-
-                if(parentID && checkObjectIDs(parentID)){
-                    dataInsert.parent = parentID;
-                }
-
-                if(!isNaN(shiftType)){
-                    dataInsert.shiftType = Number(shiftType);
-                }
-
-                if(!isNaN(salesChannel)){
-                    dataInsert.salesChannel = Number(salesChannel);
-                }
-
-                if(!isNaN(paymentMethod)){
-                    dataInsert.paymentMethod = Number(paymentMethod);
-                }
-
-                if(!isNaN(total)){
-                    dataInsert.total = Number(total);
-                }
-
-                if(!isNaN(discount)){
-                    dataInsert.discount = Number(discount);
-                }
-
-                if(!isNaN(salesoff)){
-                    dataInsert.salesoff = Number(salesoff);
-                }
-
-                dataInsert.amount = Number(total)-Number(discount)-Number(salesoff);
-
-                if(!isNaN(vatAmount)){
-                    dataInsert.vatAmount = Number(vatAmount);
-                }
-
+              
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });

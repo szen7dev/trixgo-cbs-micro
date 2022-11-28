@@ -1,6 +1,7 @@
 "use strict";
 /**
  * ORDER
+ * ---Doanh số phân theo tổng doanh số/Doanh số đơn hủy
  * Tiêu đề CloudMSS: Đơn hàng Winggo Thái Thịnh
  * Đơn hàng T11225, mã hiệu 22556688, giá trị 42.000 VND, đã được thanh toán thành công bởi Winggo Thái Thịnh
  */
@@ -109,21 +110,21 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 1
     },
     /**
-     * Phương thức thanh toán
-     * 1-Tiền mặt
-     * 2-Chuyển khoản
-     */
-    paymentMethod: {
-        type: Number,
-        default: 1
-    },
-    /**
      * Hình thức phục vụ
      * 1-Tại quán
      * 2-Mang đi
      * 3-Giao hàng
      */
     service: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Phương thức thanh toán
+     * 1-Tiền mặt
+     * 2-Chuyển khoản
+     */
+    paymentMethod: {
         type: Number,
         default: 1
     },

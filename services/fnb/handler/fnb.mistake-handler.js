@@ -10,39 +10,29 @@ const FNB_MISTAKE_MODEL            = require('../model/fnb.mistake-model').MODEL
 
 module.exports = {
     /**
-	 * Dev: Depv
-	 * Func: insert Group
-	 */
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
     insert: {
         auth: "required",
         params: {
-            fundaID             : { type: "string" },
-            parentID            : { type: "string", optional: true },
+            orderID             : { type: "string" },
+            productID           : { type: "string", optional: true },
             mistakeID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            shiftID             : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            appOrderSign        : { type: "string", optional: true },
+            executorID          : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            salesChannel        : { type: "number" },
-            paymentMethod       : { type: "number" },
-            shiftType           : { type: "number", optional: true },
-            total               : { type: "number", optional: true },
-            discount            : { type: "number", optional: true },
-            salesoff            : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
-            vatAmount           : { type: "number", optional: true },
+            type                : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount } = ctx.params;
+                let { orderID, productID, mistakeID, executorID, type, note } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.insert({
-                    companyID: company._id, fundaID, parentID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount, userID
+                    orderID, productID, mistakeID, executorID, type, note, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

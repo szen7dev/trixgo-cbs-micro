@@ -92,13 +92,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         type: Number,
         default: 1
     },
-    //_________Phương thức thanh toán
-    paymentMethod: {
+    //_________Hình thức phục vụ
+    service: {
         type: Number,
         default: 1
     },
-    //_________Hình thức phục vụ
-    service: {
+    //_________Phương thức thanh toán
+    paymentMethod: {
         type: Number,
         default: 1
     },
