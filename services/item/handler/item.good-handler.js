@@ -16,16 +16,21 @@ module.exports = {
      */
     insert:{
         params: {
-            name          : { type: "string" },
-            description   : { type: "string", optional: true },
-            parentID      : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            name            : { type: "string" },
+            sign            : { type: "string", optional: true },
+            unit            : { type: "string", optional: true },
+            unitprice       : { type: "number", optional: true },
+            description     : { type: "string", optional: true },
+            note            : { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                const { name, sign, unit, unitprice, description, note, parentID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, description, parentID } = ctx.params;
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, name, description, userID });
+
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, name, sign, unit, unitprice, description, note, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -39,17 +44,21 @@ module.exports = {
      */
     update:{  
         params: {
-            goodsID       : { type: "string" }, 
-            name          : { type: "string", optional: true },
-            description   : { type: "string", optional: true },
-            parentID      : { type: "string", optional: true },
+            goodsID         : { type: "string" }, 
+            name            : { type: "string" },
+            sign            : { type: "string", optional: true },
+            unit            : { type: "string", optional: true },
+            unitprice       : { type: "number", optional: true },
+            description     : { type: "string", optional: true },
+            note            : { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { goodsID, name, description } = ctx.params;
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, description, userID });
+                const { goodsID, name, sign, unit, unitprice, description, note } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, unitprice, description, note, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

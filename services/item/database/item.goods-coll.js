@@ -40,14 +40,14 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     type: { type: Number, default: 1 },
     //_________Tên
     name: String,
-    //_________Mô tả
-    description: String,
     //_________Mã hiệu
     sign: String,    
     //_________Đơn vị
     unit: String,   
     //_________Đơn giá
     unitprice: { type: Number, default: 0 },
+    //_________Mô tả
+    description: String,
     //_________Ghi chú
     note: String, 
     //_________Hình ảnh

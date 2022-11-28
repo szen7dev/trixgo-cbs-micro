@@ -34,7 +34,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, description, userID }){
+	insert({ companyID, parentID, name, sign, unit, unitprice, description, note, userID }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -50,8 +50,24 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
+                if(sign){
+                    dataInsert.sign = sign;
+                }
+
+                if(unit){
+                    dataInsert.unit = unit;
+                }
+
+                if(!isNaN(unitprice)){
+                    dataInsert.unitprice = Number(unitprice);
+                }
+
                 if(description){
                     dataInsert.description = description;
+                }
+
+                if(note){
+                    dataInsert.note = note;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -76,7 +92,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, description, userID }){
+	update({ goodsID, name, sign, unit, unitprice, description, note, userID }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(goodsID))
@@ -89,8 +105,24 @@ class Model extends BaseModel {
                     name, userUpdate: userID, modifyAt: new Date()
                 }
 
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(unit){
+                    dataUpdate.unit = unit;
+                }
+
+                if(!isNaN(unitprice)){
+                    dataUpdate.unitprice = Number(unitprice);
+                }
+
                 if(description){
                     dataUpdate.description = description;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
                 }
 
                 let infoAfterUpdate = await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true });
