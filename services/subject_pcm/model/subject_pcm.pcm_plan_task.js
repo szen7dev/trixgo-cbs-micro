@@ -541,7 +541,7 @@ class Model extends BaseModel {
 
                 const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).populate({
                     path: 'project assignee',
-                    select: '_id admins name fullname bizfullname'
+                    select: '_id admins name fullname'
                 }).lean()
                 // console.log('===============================')
                 // console.log(infoTask)
@@ -1043,29 +1043,6 @@ class Model extends BaseModel {
                         // checklist
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
-                }
-
-                if(status) {
-                    const { author, assignee, related } = infoTask;
-                    const relatedIDs = related?.map(userId => userId.toString());
-                    const receivers = [...new Set([author?.toString(), assignee._id?.toString(), ...relatedIDs])]
-                    const receiversNoti = receivers.filter(userId => userId !== userID.toString());
-
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: receiversNoti,
-                        title: infoAfterUpdate.name,
-                        description: `${bizfullname} đã cập nhật trạng thái công việc`,
-                        dataSend: {
-                            app: APP_KEYS.PCM_PLAN_TASK,
-                            languageKey: LANGUAGE_KEYS.UPDATE_STATUS_TASK,
-                            mainColl: {
-                                kind: 'pcm_plan_task',
-                                item: { _id: taskID }
-                            }
-                        },
-                        web_url: `/pcm/detail/${taskID}`,
-                        env: ENV_DEVICE_WEB_CBS
-                    });
                 }
 
                 /**
