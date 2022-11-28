@@ -40,6 +40,7 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_SHIFT_HANDOVERL=======================================//
     SHIFT_HANDOVERS                     : `${BASE_ROUTE}${SHIFT_HANDOVER}`,
+    SHIFT_HANDOVER_UPDATE_QUOTA         : `${BASE_ROUTE}${SHIFT_HANDOVER}/update-quota`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;

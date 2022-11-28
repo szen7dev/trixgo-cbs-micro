@@ -202,12 +202,12 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    updateValue({ orderID, userID }) {
-        console.log({ orderID, userID })
+     updateQuota({ shiftID, userID }) {
+        console.log({ shiftID, userID })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(shiftID))
+                    return resolve({ error: true, message: 'shiftID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let infoOrder = await FNB_SHIFT_HANDOVER_COLL.findById(orderID)
 

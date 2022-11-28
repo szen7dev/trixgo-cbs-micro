@@ -90,19 +90,19 @@ module.exports = {
 	 * Dev: Depv
 	 * Func: update Group
 	 */
-    updateValue: {
+    updateQuota: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
+            shiftID             : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID } = ctx.params;
+                let {  shiftID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_SHIFT_HANDOVER_MODEL.updateValue({
-                    orderID, userID
+                let resultAfterCallHandler = await FNB_SHIFT_HANDOVER_MODEL.updateQuota({
+                    shiftID, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

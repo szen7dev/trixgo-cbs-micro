@@ -82,6 +82,15 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         default: 1
     },  
     /**
+     * Bật chiến dịch truyền thông/marketing
+     * 1-Không bật
+     * 2-Bật
+     */
+    campaign: {
+        type: Number,
+        default: 1
+    },  
+    /**
      * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
      */
     //_________Chi phí nguyên liệu (%)
