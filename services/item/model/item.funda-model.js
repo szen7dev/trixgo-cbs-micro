@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, description, internal, area, userID }){
+	insert({ companyID, parentID, name, sign, description, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -81,6 +81,33 @@ class Model extends BaseModel {
                     dataInsert.area3 = area
                     dataInsert.area2 = infoArea.parent._id
                     dataInsert.area1 = infoArea.parent.parent._id
+                }
+
+                 /**
+                 * Chi phí vận hành
+                 */
+                if(!isNaN(materialExpenseRate)){
+                    dataInsert.materialExpenseRate = Number(materialExpenseRate);
+                }
+
+                if(!isNaN(materialExpense)){
+                    dataInsert.materialExpense = Number(materialExpense);
+                }
+
+                if(!isNaN(planExpense)){
+                    dataInsert.planExpense = Number(planExpense);
+                }
+
+                if(!isNaN(utilityExpense)){
+                    dataInsert.utilityExpense = Number(utilityExpense);
+                }
+
+                if(!isNaN(humanExpense)){
+                    dataInsert.humanExpense = Number(humanExpense);
+                }
+
+                if(!isNaN(otherExpense)){
+                    dataInsert.otherExpense = Number(otherExpense);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);

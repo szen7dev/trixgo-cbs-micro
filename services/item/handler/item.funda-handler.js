@@ -17,20 +17,26 @@ module.exports = {
     insert:{
         auth: "required",
         params: {
-            name            : { type: "string" },
-            sign            : { type: "string", optional: true },
-            description     : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            internal        : { type: "number", optional: true },
-            area            : { type: "string" },
+            name                : { type: "string" },
+            sign                : { type: "string", optional: true },
+            description         : { type: "string", optional: true },
+            parentID            : { type: "string", optional: true },
+            area                : { type: "string" },
+            internal            : { type: "number", optional: true },
+            materialExpenseRate : { type: "number", optional: true },
+            materialExpense     : { type: "number", optional: true },
+            planExpense         : { type: "number", optional: true },
+            utilityExpense      : { type: "number", optional: true },
+            humanExpense        : { type: "number", optional: true },
+            otherExpense        : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, sign, description, internal, area, parentID } = ctx.params;
+                const { name, sign, description, internal, area, parentID, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, internal, area, userID });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
