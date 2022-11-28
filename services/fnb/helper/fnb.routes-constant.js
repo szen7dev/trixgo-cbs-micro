@@ -10,6 +10,7 @@ const SHIFT                 = '/shifts';
 const MISTAKE               = '/mistakes';
 const QUOTA                 = '/quotas';
 const ORDER_MATERIAL        = '/order_materials';
+const SHIFT_HANDOVER        = '/shift_handovers';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -36,6 +37,10 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_ORDER_MATERIAL=======================================//
     ORDER_MATERIALS                     : `${BASE_ROUTE}${ORDER_MATERIAL}`,
+
+    //================================FNB_SHIFT_HANDOVERL=======================================//
+    SHIFT_HANDOVERS                     : `${BASE_ROUTE}${SHIFT_HANDOVER}`,
+    SHIFT_HANDOVER_UPDATE_QUOTA         : `${BASE_ROUTE}${SHIFT_HANDOVER}/update-quota`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;

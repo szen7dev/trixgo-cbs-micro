@@ -82,6 +82,10 @@ class Model extends BaseModel {
                     dataInsert.area3 = infoFunda.area3
                 }
 
+                if(infoFunda.campaign){
+                    dataInsert.campaign = infoFunda.campaign
+                }
+
                 if(infoFunda.internal){
                     dataInsert.internal = infoFunda.internal
                 }

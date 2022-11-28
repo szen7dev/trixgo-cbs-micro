@@ -22,6 +22,7 @@ module.exports = {
             description         : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
             area                : { type: "string" },
+            campaign            : { type: "number", optional: true },
             internal            : { type: "number", optional: true },
             materialExpenseRate : { type: "number", optional: true },
             materialExpense     : { type: "number", optional: true },
@@ -34,9 +35,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, sign, description, internal, area, parentID, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
+                const { name, sign, description, campaign, internal, area, parentID, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -60,6 +61,7 @@ module.exports = {
             membersRemove       : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
             adminsRemove        : { type: "array", optional: true },
+            campaign            : { type: "number", optional: true },
             internal            : { type: "number", optional: true },
             materialExpenseRate : { type: "number", optional: true },
             materialExpense     : { type: "number", optional: true },
@@ -72,9 +74,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
+                const { fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

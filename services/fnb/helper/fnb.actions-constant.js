@@ -10,6 +10,7 @@ const SHIFT                      = 'SHIFT';
 const MISTAKE                    = 'MISTAKE';
 const QUOTA                      = 'QUOTA';
 const ORDER_MATERIAL             = 'ORDER_MATERIAL';
+const SHIFT_HANDOVER             = 'SHIFT_HANDOVER';
 
 const CF_ACTIONS_FNB = {
   
@@ -70,6 +71,15 @@ const CF_ACTIONS_FNB = {
    ORDER_MATERIAL_UPDATE                                    : `${BASE_ACTIONS}_${ORDER_MATERIAL}_UPDATE`,
    ORDER_MATERIAL_REMOVE                                    : `${BASE_ACTIONS}_${ORDER_MATERIAL}_REMOVE`,
    ORDER_MATERIAL_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${ORDER_MATERIAL}_GET_INFO_AND_GET_LIST`,
+
+   /**
+   * SHIFT_HANDOVER
+   */
+   SHIFT_HANDOVER_INSERT                                    : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_INSERT`,
+   SHIFT_HANDOVER_UPDATE                                    : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_UPDATE`,
+   SHIFT_HANDOVER_REMOVE                                    : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_REMOVE`,
+   SHIFT_HANDOVER_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_GET_INFO_AND_GET_LIST`,
+   SHIFT_HANDOVER_UPDATE_QUOTA                              : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_UPDATE_QUOTA`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;

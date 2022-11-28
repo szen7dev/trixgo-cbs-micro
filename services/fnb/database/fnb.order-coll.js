@@ -40,6 +40,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         ref: "contact"
     },
     /**
+     * Bật chiến dịch truyền thông/marketing (xác lập theo funda)
+     * 1-Không bật
+     * 2-Bật
+     */
+    campaign: {
+        type: Number,
+        default: 1
+    }, 
+    /**
      * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
      * 1-Trong hệ thống
      * 2-Nhượng quyền => Setup theo tính chất của Funda
