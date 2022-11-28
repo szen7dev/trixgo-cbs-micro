@@ -147,7 +147,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      */
     status: {
         type: Number,
-        default: 1
+        default: 5
     },
     //_________Nội dung
     name: String,

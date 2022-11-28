@@ -185,9 +185,15 @@ class Model extends BaseModel {
      */
     update({ orderID, userID, 
         mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
-        // console.log({ mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount })
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * - Nếu cập nhật Đơn hàng sang trạng thái hủy: status = 5 (Hoàn thành) -> 4 (Hủy)
+                 * => Xóa định mức hao phí (fnb_order_material)
+                 * => Cập nhật status cho order_product
+                 * => Cập nhật khối lượng giao ca...
+                 */
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
