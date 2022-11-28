@@ -1,13 +1,5 @@
 "use strict";
 
-
-
-// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-// const ObjectID                          = require('mongoose').Types.ObjectId;
-
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
-
 /**
  * TOOLS
  */
