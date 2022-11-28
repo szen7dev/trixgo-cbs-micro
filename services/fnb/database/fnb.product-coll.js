@@ -54,6 +54,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         type: Number,
         default : 0
     },
+    //_________Ảnh đại diện
+    image: {
+        type: String,
+        defautl: 'product_default.png'
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

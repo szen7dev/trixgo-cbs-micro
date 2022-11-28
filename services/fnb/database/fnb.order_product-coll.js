@@ -26,6 +26,9 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         type: Schema.Types.ObjectId,
         ref : "fnb_product"
     },
+    /**
+     * THÔNG TIN GIÁ TRỊ
+     */
     //______Khối lượng/Số lượng
     quantity: {
         type: Number,
@@ -49,38 +52,71 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    //_________Phân loại trong hệ thống hoặc nhượng quyền
+    internal: {
+        type: Number,
+        default: 1
+    }, 
+    //_________Tỉnh/Thành phố (lấy theo Funda)
+    area1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện/Quận (lấy theo Funda)
+    area2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Xã/Phường (lấy theo Funda)
+    area3: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Mùa trong năm (theo lịch âm)
+    seasons: {
+        type: Number,
+        default: 1
+    },
     //_________Ca làm việc
     shift: {
         type: Schema.Types.ObjectId,
         ref: "fnb_shift"
     },
-    //_________Có up size hay không-Thông kê doanh số (1/2)
-    upsize: {
-        type: Number,
-        default: 1
-    },
-    //_________Có thêm topping hay không-Thống kê doanh số (1/2)
-    topping: {
-        type: Number,
-        default: 1
-    },
-    //_________Phân loại ca sáng/chiều/tối
+    //_________Phân loại ca làm việc (cập nhật theo funda)
     shiftType: {
         type: Number,
         default: 1
     },
-    //_________Phân loại trong hệ thống hoặc nhượng quyền
-    internal: {
-        type: Number,
-        default: 1
-    },   
     //_________Phân loại kênh bán hàng
     salesChannel: {
         type: Number,
         default: 1
     },
+    //_________Hình thức phục vụ
+    service: {
+        type: Number,
+        default: 1
+    },
     //_________Phương thức thanh toán
     paymentMethod: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Có up size hay không
+     * 1-Không upsize
+     * 2-Có upsize
+     */
+    upsize: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Có thêm topping hay không
+     * 1-Không topping
+     * 2-Có topping
+     */
+    topping: {
         type: Number,
         default: 1
     },

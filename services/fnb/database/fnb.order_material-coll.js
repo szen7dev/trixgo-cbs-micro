@@ -4,19 +4,21 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
  * NGUYÊN LIỆU CỦA ĐƠN HÀNG
+ * 1-Trong định mức có chứa cả Trân châu khô
+ * 2-Trong định mức có chứa cả Trân châu thành phẩm (nấu chính->giá = 0)
  */
-module.exports  = DATABASE_MIDDLEWARE("fnb_order_goods", {   
-    //_________Công ty
+module.exports  = DATABASE_MIDDLEWARE("fnb_order_material", {   
+    //_________Công ty (***lấy theo orderID)
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
-    //_________Đơn vị cơ sở/Cửa hàng
+    //_________Đơn vị cơ sở/Cửa hàng (***lấy theo orderID)
     funda: {
         type: Schema.Types.ObjectId,
         ref : "funda"
     },
-    //_________Ca làm việc
+    //_________Ca làm việc (***lấy theo orderID)
     shift: {
         type: Schema.Types.ObjectId,
         ref : "fnb_shift"
@@ -31,14 +33,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_goods", {
         type: Schema.Types.ObjectId,
         ref : "fnb_product"
     },
-    //_________Nguyên liệu
+    //______Khối lượng/Số lượng sản phẩm (lấy theo order_product)
+    quantityOfProduct: {
+        type: Number,
+        default : 1
+    },
+    //_________Nguyên liệu sử dụng
     goods: {
         type: Schema.Types.ObjectId,
         ref: 'goods'
     },
-    //_________Khối lượng
+    //_________Khối lượng định mức (lấy theo định mức Quota)
     quantity: { type: Number, default: 0 },
-    //_________Đơn giá
+    //_________Đơn giá (lấy theo đơn giá Goods)
     unitPrice: { type: Number, default: 0 },
     //_________Thành tiền
     amount: { type: Number, default: 0 },

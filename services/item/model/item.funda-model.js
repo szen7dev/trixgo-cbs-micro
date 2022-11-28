@@ -22,6 +22,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  * COLLECTIONS
  */
 const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
+const ITEM__AREA_COLL            				= require('../database/item.area-coll');
 
 class Model extends BaseModel {
     
@@ -34,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, description, userID }){
+	insert({ companyID, parentID, name, sign, description, internal, area, userID }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -44,14 +45,42 @@ class Model extends BaseModel {
                     userCreate: userID,
                     company: companyID,
                     name, 
+                    admins: [userID],
+                    members: [userID],
                 }    
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }
 
-                if(description){
+                if(sign && sign != ""){
+                    dataInsert.sign = sign;
+                }
+
+                if(description && description != ""){
                     dataInsert.description = description;
+                }
+                
+                //_________Phân loại trong hệ thống hoặc nhượng quyền
+                if(internal && !isNaN(internal) && [1, 2].includes(internal)){
+                    dataInsert.internal = +internal;
+                }
+
+                //_________Khu vực (phường/xã)
+                if(checkObjectIDs(area)){
+                    let infoArea = await ITEM__AREA_COLL.findById(area).populate({
+                        path: 'parent',
+                        select: "_id name",
+                        populate: {
+                            path: 'parent',
+                            select: "_id name",
+                        }
+                    })
+                    // console.log(infoArea)
+
+                    dataInsert.area3 = area
+                    dataInsert.area2 = infoArea.parent._id
+                    dataInsert.area1 = infoArea.parent.parent._id
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -76,7 +105,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, name, description, userID }){
+	update({ fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(fundaID))
@@ -89,8 +118,108 @@ class Model extends BaseModel {
                     name, userUpdate: userID, modifyAt: new Date()
                 }
 
-                if(description){
+                let dataAddToset = {};
+                let dataPullAll  = {};
+
+                if(description && description != ""){
                     dataUpdate.description = description;
+                }
+
+                if(sign && sign != ""){
+                    dataUpdate.sign = sign;
+                }
+
+                //_________Thêm thành viên
+                if(checkObjectIDs(members)){
+                    dataAddToset = {
+                        ...dataAddToset,
+                        members
+                    }
+                }
+
+                if(checkObjectIDs(admins)){
+                    dataAddToset = {
+                        ...dataAddToset,
+                        admins
+                    }
+                }
+
+                //_________Xoá thành viên
+                if(checkObjectIDs(membersRemove)){
+                    dataPullAll = {
+                        ...dataPullAll,
+                        members: membersRemove
+                    }
+                }
+
+                if(checkObjectIDs(adminsRemove)){
+                    dataPullAll = {
+                        ...dataPullAll,
+                        admins: adminsRemove
+                    }
+                }
+
+                //_________Phân loại trong hệ thống hoặc nhượng quyền
+                if(internal && !isNaN(internal) && [1, 2].includes(internal)){
+                    dataUpdate.internal = +internal;
+                }
+
+                //_________Khu vực (phường/xã)
+                if(checkObjectIDs(area)){
+                    let infoArea = await ITEM__AREA_COLL.findById(area).populate({
+                        path: 'parent',
+                        select: "_id name",
+                        populate: {
+                            path: 'parent',
+                            select: "_id name",
+                        }
+                    })
+                    // console.log(infoArea)
+
+                    dataUpdate.area3 = area
+                    dataUpdate.area2 = infoArea.parent._id
+                    dataUpdate.area1 = infoArea.parent.parent._id
+                }
+
+                /**
+                 * Chi phí vận hành
+                 */
+                if(!isNaN(materialExpenseRate)){
+                    dataUpdate.materialExpenseRate = Number(materialExpenseRate);
+                }
+
+                if(!isNaN(materialExpense)){
+                    dataUpdate.materialExpense = Number(materialExpense);
+                }
+
+                if(!isNaN(planExpense)){
+                    dataUpdate.planExpense = Number(planExpense);
+                }
+
+                if(!isNaN(utilityExpense)){
+                    dataUpdate.utilityExpense = Number(utilityExpense);
+                }
+
+                if(!isNaN(humanExpense)){
+                    dataUpdate.humanExpense = Number(humanExpense);
+                }
+
+                if(!isNaN(otherExpense)){
+                    dataUpdate.otherExpense = Number(otherExpense);
+                }
+
+                /**
+                 * Cập nhật nhiều dữ liệu addToSet cùng 1 lúc
+                 */
+                if(dataAddToset){
+                    dataUpdate.$addToSet = dataAddToset;
+                }
+
+                /**
+                 * Xóa nhiều dữ liệu cùng 1 lúc
+                 */
+                if(dataPullAll){
+                    dataUpdate.$pullAll = dataPullAll;
                 }
 
                 let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdate, { new: true });
@@ -109,15 +238,6 @@ class Model extends BaseModel {
     getInfo({ fundaID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(fundaID))
                     return resolve({ error: true, message: 'Request params fundaID invalid', status: 400 });
                 
@@ -133,11 +253,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await ITEM__FUNDA_COLL.findById(fundaID)
                                     .select(select)
                                     .populate(populates)
@@ -157,8 +273,10 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, parentID, isListParentOfListChilds,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        companyID, parentID, isListParentOfListChilds, isMember,
+        keyword, limit = 10, lastestID, select, populates= {}, userID } ) { 
+        console.log({companyID, parentID, isListParentOfListChilds, isMember,
+            keyword, limit, lastestID, select, populates, userID})  
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -166,6 +284,7 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -182,6 +301,10 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(isMember == 1){
+                    conditionObj.members = { $in: [userID] }
                 }
 
                 if(companyID && checkObjectIDs(companyID)){
@@ -202,6 +325,8 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+
+                console.log(conditionObj)
                 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -254,7 +379,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 }
 
 exports.MODEL = new Model;

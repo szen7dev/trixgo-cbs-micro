@@ -9,11 +9,17 @@ const FNB__ORDER_HANDLER  			 		= require('./handler/fnb.order-handler');
 const FNB__PRODUCT_HANDLER  			 	= require('./handler/fnb.product-handler');
 const FNB__ORDER_PRODUCT_HANDLER  			= require('./handler/fnb.order_product-handler');
 const FNB__SHIFT_HANDLER  			 		= require('./handler/fnb.shift-handler');
+const FNB__MISTAKE_HANDLER  			 	= require('./handler/fnb.mistake-handler');
+const FNB__QUOTA_HANDLER  			 		= require('./handler/fnb.quota-handler');
+const FNB__ORDER_MATERIAL_HANDLER  			= require('./handler/fnb.order_material-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
 const FNB__ORDER_PRODUCT_COLL  			 	= require('./database/fnb.order_product-coll');
 const FNB__SHIFT_COLL  			 			= require('./database/fnb.shift-coll');
+const FNB__MISTAKE_COLL  			 		= require('./database/fnb.mistake-coll');
+const FNB__QUOTA_COLL  			 			= require('./database/fnb.quota-coll');
+const FNB__ORDER_MATERIAL_COLL  			= require('./database/fnb.order_material-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FNB,
@@ -22,6 +28,9 @@ module.exports = {
 		DbService(FNB__PRODUCT_COLL),
 		DbService(FNB__ORDER_PRODUCT_COLL),
 		DbService(FNB__SHIFT_COLL),
+		DbService(FNB__MISTAKE_COLL),
+		DbService(FNB__QUOTA_COLL),
+		DbService(FNB__ORDER_MATERIAL_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -41,7 +50,7 @@ module.exports = {
 	* Actions
 	*/
 	actions: {
-		//========================================== FNB_ORDER ==============================================///
+		//========================================== FNB_ORDER ==============================================//
 		[CF_ACTIONS_FNB.ORDER_INSERT]									: FNB__ORDER_HANDLER.insert,
 		[CF_ACTIONS_FNB.ORDER_UPDATE]									: FNB__ORDER_HANDLER.update,
 		[CF_ACTIONS_FNB.ORDER_REMOVE]									: FNB__ORDER_HANDLER.remove,
@@ -49,23 +58,41 @@ module.exports = {
 		[CF_ACTIONS_FNB.ORDER_GET_LIST_BY_PROPERTY]						: FNB__ORDER_HANDLER.getListByProperty,
 		[CF_ACTIONS_FNB.ORDER_UPDATE_VALUE]								: FNB__ORDER_HANDLER.updateValue,
 
-		//========================================== FNB_PRODUCT ==============================================///
+		//========================================== FNB_PRODUCT ==============================================//
 		[CF_ACTIONS_FNB.PRODUCT_INSERT]									: FNB__PRODUCT_HANDLER.insert,
 		[CF_ACTIONS_FNB.PRODUCT_UPDATE]									: FNB__PRODUCT_HANDLER.update,
 		[CF_ACTIONS_FNB.PRODUCT_REMOVE]									: FNB__PRODUCT_HANDLER.remove,
 		[CF_ACTIONS_FNB.PRODUCT_GET_INFO_AND_GET_LIST]					: FNB__PRODUCT_HANDLER.getInfoAndGetList,
 
-		//========================================== FNB_ORDER_PRODUCT ==============================================///
+		//========================================== FNB_ORDER_PRODUCT ==============================================//
 		[CF_ACTIONS_FNB.ORDER_PRODUCT_INSERT]									: FNB__ORDER_PRODUCT_HANDLER.insert,
 		[CF_ACTIONS_FNB.ORDER_PRODUCT_UPDATE]									: FNB__ORDER_PRODUCT_HANDLER.update,
 		[CF_ACTIONS_FNB.ORDER_PRODUCT_REMOVE]									: FNB__ORDER_PRODUCT_HANDLER.remove,
 		[CF_ACTIONS_FNB.ORDER_PRODUCT_GET_INFO_AND_GET_LIST]					: FNB__ORDER_PRODUCT_HANDLER.getInfoAndGetList,
 
-		//========================================== FNB_SHIFT ==============================================///
+		//========================================== FNB_SHIFT ==============================================//
 		[CF_ACTIONS_FNB.SHIFT_INSERT]									: FNB__SHIFT_HANDLER.insert,
 		[CF_ACTIONS_FNB.SHIFT_UPDATE]									: FNB__SHIFT_HANDLER.update,
 		[CF_ACTIONS_FNB.SHIFT_REMOVE]									: FNB__SHIFT_HANDLER.remove,
 		[CF_ACTIONS_FNB.SHIFT_GET_INFO_AND_GET_LIST]					: FNB__SHIFT_HANDLER.getInfoAndGetList,
+
+		//========================================== FNB_MISTAKE ==============================================//
+		[CF_ACTIONS_FNB.MISTAKE_INSERT]									: FNB__MISTAKE_HANDLER.insert,
+		[CF_ACTIONS_FNB.MISTAKE_UPDATE]									: FNB__MISTAKE_HANDLER.update,
+		[CF_ACTIONS_FNB.MISTAKE_REMOVE]									: FNB__MISTAKE_HANDLER.remove,
+		[CF_ACTIONS_FNB.MISTAKE_GET_INFO_AND_GET_LIST]					: FNB__MISTAKE_HANDLER.getInfoAndGetList,
+
+		//========================================== FNB_QUOTA ==============================================//
+		[CF_ACTIONS_FNB.QUOTA_INSERT]									: FNB__QUOTA_HANDLER.insert,
+		[CF_ACTIONS_FNB.QUOTA_UPDATE]									: FNB__QUOTA_HANDLER.update,
+		[CF_ACTIONS_FNB.QUOTA_REMOVE]									: FNB__QUOTA_HANDLER.remove,
+		[CF_ACTIONS_FNB.QUOTA_GET_INFO_AND_GET_LIST]					: FNB__QUOTA_HANDLER.getInfoAndGetList,
+
+		//========================================== FNB_ORDER_MATERIAL ==============================================//
+		[CF_ACTIONS_FNB.ORDER_MATERIAL_INSERT]									: FNB__ORDER_MATERIAL_HANDLER.insert,
+		[CF_ACTIONS_FNB.ORDER_MATERIAL_UPDATE]									: FNB__ORDER_MATERIAL_HANDLER.update,
+		[CF_ACTIONS_FNB.ORDER_MATERIAL_REMOVE]									: FNB__ORDER_MATERIAL_HANDLER.remove,
+		[CF_ACTIONS_FNB.ORDER_MATERIAL_GET_INFO_AND_GET_LIST]					: FNB__ORDER_MATERIAL_HANDLER.getInfoAndGetList,
 
 	},
 

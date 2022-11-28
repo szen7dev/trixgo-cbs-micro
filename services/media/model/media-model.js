@@ -351,8 +351,6 @@ class Model extends BaseModel {
                 }
 
 				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
-				// console.info('CREATE_NEW_MEDIA')
-				// console.log({ arrReceiver })
 
 				if(arrReceiver && arrReceiver.length) {
 					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
@@ -371,19 +369,19 @@ class Model extends BaseModel {
 						env: ENV_DEVICE_WEB_CBS
 					});
 
-					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-						content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
-						project: departmentID,
-						receivers: arrReceiver,
-						path: `/media/post/${mediaID}`,
-						languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
-						app: APP_KEYS.MEDIA,
-						mainColl: {
-							kind: "media",
-							item: mediaID.toString()
-						},
-						type: 1 // InApp (Socket)
-					});
+					// ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+					// 	content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
+					// 	project: departmentID,
+					// 	receivers: arrReceiver,
+					// 	path: `/media/post/${mediaID}`,
+					// 	languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
+					// 	app: APP_KEYS.MEDIA,
+					// 	mainColl: {
+					// 		kind: "media",
+					// 		item: mediaID.toString()
+					// 	},
+					// 	type: 1 // InApp (Socket)
+					// });
 				}
 
                 return resolve({ error: false, data: {

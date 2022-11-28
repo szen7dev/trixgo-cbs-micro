@@ -15,17 +15,22 @@ module.exports = {
      * Func: Thêm funda
      */
     insert:{
+        auth: "required",
         params: {
-            name          : { type: "string" },
-            description   : { type: "string", optional: true },
-            parentID      : { type: "string", optional: true },
+            name            : { type: "string" },
+            sign            : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            internal        : { type: "number", optional: true },
+            area            : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, description, parentID } = ctx.params;
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, description, userID });
+                const { name, sign, description, internal, area, parentID } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, internal, area, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -38,18 +43,32 @@ module.exports = {
      * Func: Cập nhật funda
      */
     update:{  
+        auth: "required",
         params: {
-            fundaID       : { type: "string" }, 
-            name          : { type: "string", optional: true },
-            description   : { type: "string", optional: true },
-            parentID      : { type: "string", optional: true },
+            fundaID             : { type: "string" }, 
+            name                : { type: "string", optional: true },
+            sign                : { type: "string", optional: true },
+            description         : { type: "string", optional: true },
+            area                : { type: "string", optional: true },
+            members             : { type: "array", optional: true },
+            membersRemove       : { type: "array", optional: true },
+            admins              : { type: "array", optional: true },
+            adminsRemove        : { type: "array", optional: true },
+            internal            : { type: "number", optional: true },
+            materialExpenseRate : { type: "number", optional: true },
+            materialExpense     : { type: "number", optional: true },
+            planExpense         : { type: "number", optional: true },
+            utilityExpense      : { type: "number", optional: true },
+            humanExpense        : { type: "number", optional: true },
+            otherExpense        : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, name, description } = ctx.params;
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, description, userID });
+                const { fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -62,11 +81,13 @@ module.exports = {
 	 * Func: Danh sách funda
 	 */
     getInfoAndGetList: {
+        auth: "required",
         params: {
-            fundaID         : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            isListParentOfListChilds: { type: "string", optional: true },
+            fundaID                     : { type: "string", optional: true },
+            companyID                   : { type: "string", optional: true },
+            parentID                    : { type: "string", optional: true },
+            isListParentOfListChilds    : { type: "string", optional: true },
+            isMember                    : { type: "string", optional: true },
             
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -78,9 +99,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, } = ctx.params;
+                let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, isMember } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
+                console.log(userID)
                 
                 if(!companyID){
                     companyID = company._id
@@ -93,7 +115,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__FUNDA_MODEL.getList({
-                        companyID, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds,
+                        companyID, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, isMember, userID
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

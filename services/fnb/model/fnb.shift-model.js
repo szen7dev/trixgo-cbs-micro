@@ -17,8 +17,14 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
-const FNB_SHIFT_COLL                  = require('../database/fnb.shift-coll');
-const { ObjectId } = require('mongodb');
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
+const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
+const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
+const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
+const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
+const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
+const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
+const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 
 /**
  * import inter-model, exter-model
@@ -30,17 +36,27 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert group 
-     * Author: Depv
-     * Code:
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
-    insert({ companyID, fundaID, name, note, userID }) {
+    insert({ fundaID, name, note, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
                     return resolve({ error: true, message: 'fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { company: companyID, funda: fundaID, name, userCreate: userID };
+                // Thông tin cửa hàng
+                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                if (!infoFunda) 
+                    return resolve({ error: true, message: 'cannot_get_info_funda' });
+
+                let dataInsert = { 
+                    company: infoFunda.company, 
+                    funda: fundaID, 
+                    name, 
+                    userCreate: userID 
+                };
 
                 if(note && note != ""){
                     dataInsert.note = note;

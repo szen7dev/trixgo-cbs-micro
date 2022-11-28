@@ -17,15 +17,18 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
-const FNB_ORDER_COLL                          = require('../database/fnb.order-coll');
-const FNB_PRODUCT_COLL                        = require('../database/fnb.product-coll');
-const FNB_ORDER_PRODUCT_COLL                  = require('../database/fnb.order_product-coll');
+const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
+const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
+const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
+const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
+const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
+const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
+const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 
 /**
  * import inter-model, exter-model
  */
-const FNB_ORDER_MODEL                         = require('./fnb.order-model').MODEL;
-
+const FNB_ORDER_MATERIAL_MODEL                 = require('./fnb.order_material-model').MODEL;
 class Model extends BaseModel {
 
     constructor() {
@@ -33,13 +36,22 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert group 
-     * Author: Depv
-     * Code:
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
-    insert({ userID, orderID, productID, mistakeID, note, quantity }) {
+    insert({ orderID, productID, quantity, upsize, topping, note, userID }) {
+        // console.log({ orderID, productID, quantity, upsize, topping, note, userID })
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * Bước 1: Khởi tạo đơn hàng
+                 * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
+                 * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
+                 * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
+                 */
+
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
@@ -51,32 +63,48 @@ class Model extends BaseModel {
                 if(!infoProduct)
                     return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
+                /**
+                 * Kiểm tra sự tồn tại của orderID và productID
+                 */
+                let checkExist = await FNB_ORDER_PRODUCT_COLL.findOne({ product: productID, order: orderID })
+                if(checkExist)
+                    return resolve({ error: true, message: "Sản phẩm đã tồn tại trong đơn hàng", keyError: KEY_ERROR.ITEM_EXISTED })
+
                 let dataInsert = { 
                     company: infoOrder.company, 
                     funda: infoOrder.funda, 
                     order: orderID, 
                     product: productID,
                     customer: infoOrder.customer,
+                    internal: infoOrder.internal,
+                    area1: infoOrder.area1,
+                    area2: infoOrder.area2,
+                    area3: infoOrder.area3,
+                    seasons: infoOrder.seasons,
                     shift: infoOrder.shift,
                     shiftType: infoOrder.shiftType,
-                    internal: infoOrder.internal,
                     salesChannel: infoOrder.salesChannel,
                     paymentMethod: infoOrder.paymentMethod,
+                    service: infoOrder.service,
                     unitPrice: infoProduct.unitPrice,
                     userCreate: userID
                 };
 
-                if(checkObjectIDs(mistakeID)){
-                    dataInsert.mistake = mistakeID;
+                if(!isNaN(quantity)){
+                    dataInsert.quantity = Number(quantity);
+                    dataInsert.amount = Number(quantity)*Number(infoProduct.unitPrice);
                 }
 
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
 
-                if(!isNaN(quantity)){
-                    dataInsert.quantity = Number(quantity);
-                    dataInsert.amount = Number(quantity)*Number(infoProduct.unitPrice);
+                if(!isNaN(upsize) && Number(upsize) > 0){
+                    dataInsert.upsize = Number(upsize)
+                }
+
+                if(!isNaN(topping) && Number(topping) > 0){
+                    dataInsert.topping = Number(topping)
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -84,14 +112,24 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
                 /**
-                 * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG
+                 * CẬP NHẬT NGUYÊN LIỆU HAO PHÍ VÀO ĐƠN HÀNG
                  */
-                let infoOrderNew = await FNB_ORDER_MODEL.updateValue({orderID, userID})
-                // console.log(infoOrderNew)
+                let listQuota = await FNB_QUOTA_COLL.find({ product: productID })
+                for (const item of listQuota){
+                    console.log('===================>>>>>>>>>>>>>>>')
+                    let dataInsertOrderMaterial = {
+                        orderID, 
+                        productID, 
+                        quantityOfProduct: quantity, 
+                        goodsID: item.goods, 
+                        quantity: item.quantity, 
+                        unitPrice: item.unitPrice, 
+                        userID
+                    }
 
-                /**
-                 * CẬP NHẬT ĐỊNH MỨC VẬT TƯ
-                 */
+                    let infoOM = await FNB_ORDER_MATERIAL_MODEL.insert(dataInsertOrderMaterial)
+                    console.log(infoOM)
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {

@@ -7,6 +7,9 @@ const ORDER                 = '/orders';
 const PRODUCT               = '/products';
 const ORDER_PRODUCT         = '/order_products';
 const SHIFT                 = '/shifts';
+const MISTAKE               = '/mistakes';
+const QUOTA                 = '/quotas';
+const ORDER_MATERIAL        = '/order_materials';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -24,7 +27,15 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_SHIFT=======================================//
     SHIFTS                              : `${BASE_ROUTE}${SHIFT}`,
-    
+
+    //================================FNB_MISTAKE=======================================//
+    MISTAKES                            : `${BASE_ROUTE}${MISTAKE}`,
+
+    //================================FNB_QUOTA=======================================//
+    QUOTAS                              : `${BASE_ROUTE}${QUOTA}`,
+
+    //================================FNB_ORDER_MATERIAL=======================================//
+    ORDER_MATERIALS                     : `${BASE_ROUTE}${ORDER_MATERIAL}`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;

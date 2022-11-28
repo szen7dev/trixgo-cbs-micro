@@ -59,9 +59,11 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     }],
     //_________Tên
     name: String,
+    //_________Mã hiệu
+    sign: String,
     //_________Mô tả
     description: String,
-
+    //_________Số phần tử tối
     amountChilds:  {
         type: Number,
         default : 0

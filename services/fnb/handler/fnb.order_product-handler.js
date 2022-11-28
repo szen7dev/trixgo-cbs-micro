@@ -10,27 +10,29 @@ const FNB_ORDER_PRODUCT_MODEL            = require('../model/fnb.order_product-m
 
 module.exports = {
     /**
-	 * Dev: Depv
-	 * Func: insert Group
-	 */
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
     insert: {
         auth: "required",
         params: {
             orderID             : { type: "string" },
             productID           : { type: "string" },
-            mistakeID           : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
             quantity            : { type: "number", optional: true },
+            upsize              : { type: "number", optional: true },
+            topping             : { type: "number", optional: true },
+            note                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, productID, mistakeID, note, quantity } = ctx.params;
+                let { orderID, productID, quantity, upsize, topping, note } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.insert({
-                    orderID, productID, mistakeID, note, quantity, userID
+                    orderID, productID, quantity, upsize, topping, note, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

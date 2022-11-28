@@ -17,9 +17,10 @@ module.exports = {
 	 */
     insert: {
         params: {
-            name        : { type: "string" },
-            description : { type: "string" },
             type        : { type: "number" },
+            name        : { type: "string" },
+            description : { type: "string", optional: true },
+            sign        : { type: "string", optional: true },
             level       : { type: "number", optional: true },
             companyID   : { type: "string", optional: true },
             parent      : { type: "string", optional: true },
@@ -28,14 +29,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { type, name, description, companyID, parent, level } = ctx.params;
+                let { type, name, description, sign, companyID, parent, level } = ctx.params;
 
                 if(!companyID){
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.insert({
-                    type, name, description, companyID, parent, level, userID
+                    type, name, description, sign, companyID, parent, level, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -55,15 +56,16 @@ module.exports = {
             doctypeID   : { type: "string" },
             name        : { type: "string", optional: true },
             description : { type: "string", optional: true },
+            sign        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { doctypeID, name, description } = ctx.params;
+                const { doctypeID, name, description, sign } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.update({
-                    doctypeID, name, description, userID
+                    doctypeID, name, description, sign, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

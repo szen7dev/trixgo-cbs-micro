@@ -7,6 +7,9 @@ const ORDER                      = 'ORDER';
 const PRODUCT                    = 'PRODUCT';
 const ORDER_PRODUCT              = 'ORDER_PRODUCT';
 const SHIFT                      = 'SHIFT';
+const MISTAKE                    = 'MISTAKE';
+const QUOTA                      = 'QUOTA';
+const ORDER_MATERIAL             = 'ORDER_MATERIAL';
 
 const CF_ACTIONS_FNB = {
   
@@ -43,6 +46,30 @@ const CF_ACTIONS_FNB = {
    SHIFT_UPDATE                                    : `${BASE_ACTIONS}_${SHIFT}_UPDATE`,
    SHIFT_REMOVE                                    : `${BASE_ACTIONS}_${SHIFT}_REMOVE`,
    SHIFT_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${SHIFT}_GET_INFO_AND_GET_LIST`,
+
+   /**
+   * MISTAKE
+   */
+   MISTAKE_INSERT                                    : `${BASE_ACTIONS}_${MISTAKE}_INSERT`,
+   MISTAKE_UPDATE                                    : `${BASE_ACTIONS}_${MISTAKE}_UPDATE`,
+   MISTAKE_REMOVE                                    : `${BASE_ACTIONS}_${MISTAKE}_REMOVE`,
+   MISTAKE_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${MISTAKE}_GET_INFO_AND_GET_LIST`,
+
+   /**
+   * QUOTA
+   */
+   QUOTA_INSERT                                    : `${BASE_ACTIONS}_${QUOTA}_INSERT`,
+   QUOTA_UPDATE                                    : `${BASE_ACTIONS}_${QUOTA}_UPDATE`,
+   QUOTA_REMOVE                                    : `${BASE_ACTIONS}_${QUOTA}_REMOVE`,
+   QUOTA_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${QUOTA}_GET_INFO_AND_GET_LIST`,
+
+   /**
+   * ORDER_MATERIAL
+   */
+   ORDER_MATERIAL_INSERT                                    : `${BASE_ACTIONS}_${ORDER_MATERIAL}_INSERT`,
+   ORDER_MATERIAL_UPDATE                                    : `${BASE_ACTIONS}_${ORDER_MATERIAL}_UPDATE`,
+   ORDER_MATERIAL_REMOVE                                    : `${BASE_ACTIONS}_${ORDER_MATERIAL}_REMOVE`,
+   ORDER_MATERIAL_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${ORDER_MATERIAL}_GET_INFO_AND_GET_LIST`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;

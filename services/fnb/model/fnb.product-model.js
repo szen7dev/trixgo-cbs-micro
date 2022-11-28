@@ -17,9 +17,14 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
- const FNB_ORDER_COLL                          = require('../database/fnb.order-coll');
- const FNB_PRODUCT_COLL                        = require('../database/fnb.product-coll');
- const FNB_ORDER_PRODUCT_COLL                  = require('../database/fnb.order_product-coll');
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
+const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
+const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
+const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
+const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
+const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
+const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
+const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 
 /**
  * import inter-model, exter-model
@@ -31,21 +36,35 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert group 
-     * Author: Depv
-     * Code:
+     * Name: Insert 
+     * Author: HiepNH
+     * Code: 24/11/2022
      */
     insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(companyID) || !checkObjectIDs(fundaID) || !name)
+                if(!checkObjectIDs(companyID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let checkExist = await FNB_PRODUCT_COLL.findOne({ company: companyID, sign });
-                if(checkExist)
-                    return resolve({ error: true, message: "Mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                let dataInsert = { name, userCreate: userID };
+                if(sign && sign != ""){
+                    let checkExist = await FNB_PRODUCT_COLL.findOne({ company: companyID, sign });
+                    if(checkExist)
+                        return resolve({ error: true, message: "Mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let dataInsert = { company: companyID, funda: fundaID, name, sign, userCreate: userID};
+                    dataInsert.sign = sign
+                }
+
+                if(fundaID && checkObjectIDs(fundaID)){
+                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                    if (!infoFunda) 
+                        return resolve({ error: true, message: 'cannot_get_info_funda' });
+
+                    dataInsert.funda = fundaID 
+                    dataInsert.company = infoFunda.company 
+                }else{
+                    dataInsert.company = companyID
+                }
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;

@@ -1,6 +1,9 @@
 "use strict";
 /**
  * ORDER
+ * ---Doanh số phân theo tổng doanh số/Doanh số đơn hủy
+ * Tiêu đề CloudMSS: Đơn hàng Winggo Thái Thịnh
+ * Đơn hàng T11225, mã hiệu 22556688, giá trị 42.000 VND, đã được thanh toán thành công bởi Winggo Thái Thịnh
  */
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
@@ -31,6 +34,49 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * THÔNG TIN
      */
+    //_________Mã khách
+    customer: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+    /**
+     * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
+     * 1-Trong hệ thống
+     * 2-Nhượng quyền => Setup theo tính chất của Funda
+     */
+    internal: {
+        type: Number,
+        default: 1
+    }, 
+    /**
+     * Khu vực
+     */
+    //_________Tỉnh/Thành phố (lấy theo Funda)
+    area1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện/Quận (lấy theo Funda)
+    area2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Xã/Phường (lấy theo Funda)
+    area3: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    /**
+     * Mùa trong năm (theo lịch âm)
+     * 1-Xuân
+     * 2-Hạ
+     * 3-Thu
+     * 4-Đông
+     */
+    seasons: {
+        type: Number,
+        default: 1
+    },
     /**
      * Ca làm việc
      * - Chấm công theo ca
@@ -50,25 +96,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
-    //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
-    numberOfMistakes: {
-        type: Number,
-        default: 0
-    },
-    //_________Lỗi mắc phải (type=19: cập nhật sau khi tạo đơn)
-    mistake: [{
-        type: Schema.Types.ObjectId,
-        ref: "doctype"
-    }],
-     /**
-     * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
-     * 1-Trong hệ thống
-     * 2-Nhượng quyền => Setup theo tính chất của Funda
-     */
-    internal: {
-        type: Number,
-        default: 1
-    },   
     /**
      * Phân loại kênh bán hàng
      * 1-Offline
@@ -83,15 +110,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 1
     },
     /**
-     * Phương thức thanh toán
-     * 1-Tiền mặt
-     * 2-Chuyển khoản
-     */
-    paymentMethod: {
-        type: Number,
-        default: 1
-    },
-    /**
      * Hình thức phục vụ
      * 1-Tại quán
      * 2-Mang đi
@@ -101,21 +119,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
-    //_________Mã khách
-    customer: {
-        type: Schema.Types.ObjectId,
-        ref: "contact"
+    /**
+     * Phương thức thanh toán
+     * 1-Tiền mặt
+     * 2-Chuyển khoản
+     */
+    paymentMethod: {
+        type: Number,
+        default: 1
     },
-    //_________Nội dung
-    name: String,
-    //_________Mã hiệu
-    sign: String,
-    //_________Mã đơn app
-    appOrderSign: String,
-    //_________Đơn vị tính (***cân nhắc bỏ qua)
-    // unit: String, 
-    //_________Ghi chú
-    note: String,
     /**
      * Trạng thái đơn
      * 1-Đang giao hàng/Phục vụ
@@ -128,6 +140,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
+    //_________Nội dung
+    name: String,
+    //_________Mã hiệu
+    sign: String,
+    //_________Mã đơn app
+    appOrderSign: String,
+    //_________Ghi chú
+    note: String,
+    //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
+    numberOfMistakes: {
+        type: Number,
+        default: 0
+    },  
     //_________Số lượng sản phẩm
     numberOfProducts: {
         type: Number,
@@ -146,7 +171,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______Triết khấu
+    //______Chiết khấu
     discount: {
         type: Number,
         default : 0
@@ -161,7 +186,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______VAT thành tiền
+    //______VAT thành tiền (10%*amount)
     vatAmount: {
         type: Number,
         default : 0
