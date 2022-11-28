@@ -116,79 +116,44 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderID, userID, 
-        mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
-        // console.log({ mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount })
+    update({ shiftGoodsID, userID, 
+        openingQuantity, usedQuantity, closingQuantity, quotaQuantity, unitPrice, note }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(shiftGoodsID))
+                    return resolve({ error: true, message: 'shiftGoodsID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
-
-                if(name && name != ""){
-                    dataInUpdate.name =name;
-                }
-
-                if(appOrderSign && appOrderSign != ""){
-                    dataInUpdate.appOrderSign = appOrderSign;
-                }
 
                 if(note && note != ""){
                     dataInUpdate.note = note;
                 }
 
-                if(customerID && checkObjectIDs(customerID)){
-                    dataInUpdate.customer = customerID;
+                if(!isNaN(openingQuantity)){
+                    dataInUpdate.openingQuantity = Number(openingQuantity);
                 }
 
-                if(shiftID && checkObjectIDs(shiftID)){
-                    dataInUpdate.shift = shiftID;
+                if(!isNaN(usedQuantity)){
+                    dataInUpdate.usedQuantity = Number(usedQuantity);
                 }
 
-                if(mistakeID && checkObjectIDs(mistakeID)){
-                    dataInUpdate.mistake = mistakeID;
+                if(!isNaN(closingQuantity)){
+                    dataInUpdate.closingQuantity = Number(closingQuantity);
                 }
 
-                if(!isNaN(shiftType)){
-                    dataInUpdate.shiftType = Number(shiftType);
+                if(!isNaN(quotaQuantity)){
+                    dataInUpdate.quotaQuantity = Number(quotaQuantity);
                 }
 
-                if(!isNaN(salesChannel)){
-                    dataInUpdate.salesChannel = Number(salesChannel);
-                }
-
-                if(!isNaN(paymentMethod)){
-                    dataInUpdate.paymentMethod = Number(paymentMethod);
-                }
-
-                if(!isNaN(total)){
-                    dataInUpdate.total = Number(total);
-                }
-
-                if(!isNaN(discount)){
-                    dataInUpdate.discount = Number(discount);
-                }
-
-                if(!isNaN(salesoff)){
-                    dataInUpdate.salesoff = Number(salesoff);
-                }
-
-                dataInUpdate.amount = Number(total)-Number(discount)-Number(salesoff);
-
-                if(!isNaN(vatAmount)){
-                    dataInUpdate.vatAmount = Number(vatAmount);
+                if(!isNaN(unitPrice)){
+                    dataInUpdate.unitPrice = Number(unitPrice);
                 }
                 console.log({ dataInUpdate })
 
-                let infoAfterUpdate = await FNB_SHIFT_HANDOVER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_SHIFT_HANDOVER_COLL.findByIdAndUpdate(shiftGoodsID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                /**
-                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
-                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -200,57 +165,68 @@ class Model extends BaseModel {
     /**
      * Name: Update value
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 29/11/2022
      */
      updateQuota({ shiftID, userID }) {
-        console.log({ shiftID, userID })
+        const that = this
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * 1-Lưu ý chỉ lấy các vật tư thuộc các đơn hàng không bị hủy
+                 */
                 if(!checkObjectIDs(shiftID))
                     return resolve({ error: true, message: 'shiftID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let infoOrder = await FNB_SHIFT_HANDOVER_COLL.findById(orderID)
-
-                let total = infoOrder.total;
-                let discount = infoOrder.discount;
-                let salesoff = infoOrder.salesoff;
-                let amount = infoOrder.amount;
-
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
-
-                let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                // Danh sách vật tư sử dụng trong ca
+                let listData = await FNB_ORDER_MATERIAL_COLL.aggregate([
                     {
                         $match: {
-                            order: ObjectID(orderID)
+                            shift: ObjectID(shiftID)
                         }
                     },
                     {
                         $group: {
-                            _id: { },
-                            amount: { $sum: "$amount" },
+                            _id: { goods: "$goods" },
+                            quantity: { $sum: { $multiply: [ "$quantityOfProduct", "$quantity" ] } },
                         }
                     }
                 ])
+                // console.log(listData)
 
                 if(listData && listData.length){
-                    total = Number(listData[0].amount)
-                    amount = Number(total)-Number(discount)-Number(salesoff)
+                    for(const item of listData){
+                        console.log(item)
+                        let goodsID = item._id.goods
 
-                    dataInUpdate.total = Number(total)
-                    dataInUpdate.amount = Number(amount)
+                        let checkExist = await FNB_SHIFT_HANDOVER_COLL.findOne({shift: shiftID, goods: goodsID})
+                        if(!checkExist){
+                            await that.insert({ 
+                                shiftID, 
+                                goodsID, 
+                                openingQuantity: 0, 
+                                usedQuantity: 0, 
+                                closingQuantity: 0, 
+                                quotaQuantity: item.quantity, 
+                                unitPrice: 0, 
+                                userID 
+                            })
+                        }else{
+                            await FNB_SHIFT_HANDOVER_COLL.findOneAndUpdate({
+                                shift: shiftID, goods: goodsID
+                            }, {
+                                quotaQuantity: item.quantity
+                            }, { new: true });
+                        }
+                    }
                 }
-                
-                let infoAfterUpdate = await FNB_SHIFT_HANDOVER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
-                return resolve({ error: false, data: infoAfterUpdate });
+                return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
         });
     }
-
 
     /**
      * Name: Remove 
@@ -261,12 +237,12 @@ class Model extends BaseModel {
     /**
      * Name: Get info 
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 29/11/2022
      */
-    getInfo({ orderID, select, populates={} }) {
+    getInfo({ shiftGoodsID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderID))
+                if(!checkObjectIDs(shiftGoodsID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populate
@@ -282,7 +258,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await FNB_SHIFT_HANDOVER_COLL.findById(orderID)
+                let infoPlanGroup = await FNB_SHIFT_HANDOVER_COLL.findById(shiftGoodsID)
                                     .select(select)
                                     .populate(populates)
 
@@ -298,10 +274,10 @@ class Model extends BaseModel {
     /**
      * Name  : Get list
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 29/11/2022
      */
-    getList({ fundasID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({fromDate, toDate})
+    getList({ shiftID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({ shiftID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -314,20 +290,9 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__-1'];
 
-                const validation = validateParamsObjectID({
-                    fundasID            : { value: fundasID, isRequire: false },
-                });
-                if(validation.error) return resolve(validation);
-
-                // Gom nhóm theo đơn vị cơ sở
-                if(fundasID && fundasID.length ){
-                    let arrFun = fundasID.map(item=>ObjectID(item))
-                    conditionObj.funda = { $in: arrFun }
-                }
-
-                // Phân loại kênh bán hàng
-                if(salesChannel && Number(salesChannel) > 0){
-                    conditionObj.salesChannel = Number(salesChannel)
+                // Phân loại theo kênh
+                if(shiftID && checkObjectIDs(shiftID)){
+                    conditionObj.shift = ObjectID(shiftID);
                 }
 
                 // Phân loại theo thời khoảng
@@ -636,7 +601,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 }
 
 exports.MODEL = new Model;

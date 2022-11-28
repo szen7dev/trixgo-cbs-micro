@@ -19,7 +19,7 @@ module.exports = {
         params: {
             shiftID             : { type: "string" },
             goodsID             : { type: "string" },
-            note                : { type: "string" },
+            note                : { type: "string", optional: true  },
             openingQuantity     : { type: "number", optional: true },
             usedQuantity        : { type: "number", optional: true },
             closingQuantity     : { type: "number", optional: true },
@@ -51,32 +51,23 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
-            mistakeID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            shiftID             : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            appOrderSign        : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            salesChannel        : { type: "number" },
-            paymentMethod       : { type: "number" },
-            shiftType           : { type: "number", optional: true },
-            total               : { type: "number", optional: true },
-            discount            : { type: "number", optional: true },
-            salesoff            : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
-            vatAmount           : { type: "number", optional: true },
+            shiftGoodsID        : { type: "string" },
+            note                : { type: "string", optional: true  },
+            openingQuantity     : { type: "number", optional: true },
+            usedQuantity        : { type: "number", optional: true },
+            closingQuantity     : { type: "number", optional: true },
+            quotaQuantity       : { type: "number", optional: true },
+            unitPrice           : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount } = ctx.params;
+                let {  shiftGoodsID, openingQuantity, usedQuantity, closingQuantity, quotaQuantity, unitPrice, note } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_SHIFT_HANDOVER_MODEL.update({
-                    orderID, userID,
-                    mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount
+                    shiftGoodsID, userID,
+                    openingQuantity, usedQuantity, closingQuantity, quotaQuantity, unitPrice, note
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -93,7 +84,7 @@ module.exports = {
     updateQuota: {
         auth: "required",
         params: {
-            shiftID             : { type: "string" },
+            shiftID : { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -119,16 +110,16 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            orderID   : { type: "string" }
+            shiftGoodsID   : { type: "string" }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID } = ctx.params;
+                let {  shiftGoodsID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_SHIFT_HANDOVER_MODEL.remove({
-                    orderID
+                    shiftGoodsID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -145,11 +136,10 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            fundasID            : { type: "array", optional: true },
-            orderID             : { type: "string", optional: true },
+            shiftID             : { type: "string", optional: true },
+            shiftGoodsID        : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
-            salesChannel        : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -161,17 +151,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { shiftGoodsID, shiftID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(orderID){
+                if(shiftGoodsID){
                     resultAfterCallHandler = await FNB_SHIFT_HANDOVER_MODEL.getInfo({
-                        orderID, select, populates,
+                        shiftGoodsID, select, populates,
                     });
                 }else{
                     resultAfterCallHandler = await FNB_SHIFT_HANDOVER_MODEL.getList({
-                        fundasID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                        shiftID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
