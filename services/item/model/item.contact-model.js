@@ -50,7 +50,8 @@ class Model extends BaseModel {
                 let conditionObj = {
                     company: company
                 };
-                if((sign && sign != "") || (taxid && taxid != "")){
+
+                if((sign && sign != "") || (taxid && taxid != "") || (phone && phone != "")){
                     conditionObj.$or = []
                 }
                 if((sign && sign != "")){
@@ -59,9 +60,13 @@ class Model extends BaseModel {
                 if((taxid && taxid != "")){
                     conditionObj.$or.push({taxid: taxid})
                 }
+                if((phone && phone != "")){
+                    conditionObj.$or.push({phone: phone})
+                }
+
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
-                    return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
+                    return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
                 let dataInsert = {
                     company,
@@ -253,7 +258,7 @@ class Model extends BaseModel {
                     _id: { $ne: contactID }
                 };
 
-                if((sign && sign != "") || (taxid && taxid != "")){
+                if((sign && sign != "") || (taxid && taxid != "") || (phone && phone != "")){
                     conditionObj.$or = []
                 }
                 if((sign && sign != "")){
@@ -262,10 +267,13 @@ class Model extends BaseModel {
                 if((taxid && taxid != "")){
                     conditionObj.$or.push({taxid: taxid})
                 }
+                if((phone && phone != "")){
+                    conditionObj.$or.push({phone: phone})
+                }
 
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
-                    return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
+                    return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
                 let dataUpdate = {
                     inCRM: 1,
