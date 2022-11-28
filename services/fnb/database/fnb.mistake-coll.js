@@ -106,6 +106,22 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     },
     //_________Ghi chú xử lý lỗi
     note: String,
+    /**
+     * Tình trạng xử lý
+     * 1-Khởi tạo ghi nhận
+     * 2-Hoàn thành
+     */
+    status: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Phạt lỗi
+     */
+    amount: {
+        type: Number,
+        default: 0
+    },
     //_________File/ảnh đính kèm
     files: [{
         type: Schema.Types.ObjectId,

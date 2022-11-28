@@ -39,7 +39,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, mistakeID, executorID, type, note, userID }) {
+    insert({ orderID, productID, mistakeID, executorID, type, amount, note, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderID) || !checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(userID))
@@ -52,10 +52,8 @@ class Model extends BaseModel {
                 let dataInsert = { 
                     company: infoOrder.company, 
                     funda: infoOrder.funda, 
-                    mistake: mistakeID,
-                    executor: executorID,
-                    type: Number(type),
                     order: orderID,
+                    mistake: mistakeID,
                     customer: infoOrder.customer, 
                     internal: infoOrder.internal, 
                     area1: infoOrder.area1, 
@@ -71,6 +69,18 @@ class Model extends BaseModel {
 
                 if(productID && checkObjectIDs(productID)){
                     dataInsert.product = productID;
+                }
+
+                if(executorID && checkObjectIDs(executorID)){
+                    dataInsert.executor = executorID;
+                }
+
+                if(!isNaN(type)){
+                    dataInsert.type = Number(type);
+                }
+
+                if(!isNaN(amount)){
+                    dataInsert.amount = Number(amount);
                 }
 
                 if(note && note != ""){
