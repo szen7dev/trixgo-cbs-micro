@@ -439,7 +439,7 @@ class Model extends BaseModel {
                 }else{
                     let conditionObj = {}
                     let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
 
                     /**
                      * VALIDATION (1)
@@ -468,14 +468,14 @@ class Model extends BaseModel {
                      */
                     if(option && Number(option) == 1){
                         conditionGroup = {
-                            _id: { shiftType: "$shiftType", mistake: "$mistake", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod" },
+                            _id: { mistake: "$mistake" },
                             quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.mistake',
+                            select: '_id name sign',
+                            model: 'doctype'
                         }
                     }
 
@@ -491,12 +491,6 @@ class Model extends BaseModel {
                             conditionGroup = {
                                 _id: { year: "$year" },
                                 quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
                             }
                         }
                         
@@ -511,12 +505,6 @@ class Model extends BaseModel {
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
                                 quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
                             }
                         }  
 
@@ -525,12 +513,6 @@ class Model extends BaseModel {
                             conditionGroup = {
                                 _id: { hour: "$hour" },
                                 quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
                             }
                         } 
                     }
@@ -542,12 +524,6 @@ class Model extends BaseModel {
                         conditionGroup = {
                             _id: { funda: "$funda" },
                             quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
                         }
 
                         conditionPopulate = {
@@ -558,28 +534,11 @@ class Model extends BaseModel {
                     }
 
                      /**
-                     * Gom nhóm theo các lỗi hay gặp
+                     * Gom nhóm theo sản phẩm
                      */
-                    if(option && Number(option) == 4){
-                        conditionGroup = {
-                            _id: { mistake: "$mistake" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
-                        }
-
-                        conditionPopulate = {
-                            path: '_id.mistake',
-                            select: '_id name sign image',
-                            model: 'doctype'
-                        }
-                    }
                 
                     console.log(conditionObj)
+                    console.log(conditionPopulate)
                     console.log(conditionObjYear)
                     console.log(conditionGroup)
 
@@ -594,18 +553,23 @@ class Model extends BaseModel {
                                 month : {$month : "$createAt"},
                                 hour : {$hour : "$createAt"},
                                 funda : 1,
-                                total : 1,
-                                salesoff : 1,
-                                discount : 1,
-                                amount : 1,
-                                vatAmount : 1,
-                                numberOfProducts : 1,
-                                internal : 1,
-                                shift : 1,
                                 mistake : 1,
-                                salesChannel : 1,
-                                paymentMethod : 1,
+                                order : 1,
+                                product : 1,
+                                executor : 1,
+                                type : 1,
                                 customer : 1,
+                                internal : 1,
+                                area1 : 1,
+                                area2 : 1,
+                                area3 : 1,
+                                seasons : 1,
+                                shift : 1,
+                                shiftType : 1,
+                                salesChannel : 1,
+                                service : 1,
+                                status : 1,
+                                amount : 1,
                             }
                         },
                         {
@@ -619,7 +583,7 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [3,4].includes(Number(option))){
+                    if(!isNaN(option) && [1,3].includes(Number(option))){
                         await FNB_MISTAKE_COLL.populate(listData, conditionPopulate)
                     }
 

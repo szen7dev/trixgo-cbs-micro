@@ -55,6 +55,7 @@ const CF_ACTIONS_FNB = {
    MISTAKE_UPDATE                                    : `${BASE_ACTIONS}_${MISTAKE}_UPDATE`,
    MISTAKE_REMOVE                                    : `${BASE_ACTIONS}_${MISTAKE}_REMOVE`,
    MISTAKE_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${MISTAKE}_GET_INFO_AND_GET_LIST`,
+   MISTAKE_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${MISTAKE}_GET_LIST_BY_PROPERTY`,
 
    /**
    * QUOTA
