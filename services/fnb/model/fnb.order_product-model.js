@@ -76,6 +76,7 @@ class Model extends BaseModel {
                     order: orderID, 
                     product: productID,
                     customer: infoOrder.customer,
+                    assignee: infoOrder.assignee,
                     campaign: infoOrder.campaign,
                     internal: infoOrder.internal,
                     area1: infoOrder.area1,
