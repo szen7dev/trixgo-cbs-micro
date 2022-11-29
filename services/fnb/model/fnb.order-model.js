@@ -642,34 +642,10 @@ class Model extends BaseModel {
                         }
                     }
 
-                     /**
-                     * Gom nhóm theo các lỗi hay gặp
-                     */
-                    if(option && Number(option) == 4){
-                        conditionObj.mistake = { $exists: true, $ne: null }
-
-                        conditionGroup = {
-                            _id: { mistake: "$mistake" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
-                        }
-
-                        conditionPopulate = {
-                            path: '_id.mistake',
-                            select: '_id name sign image',
-                            model: 'doctype'
-                        }
-                    }
-
                     /**
                      * Gom nhóm theo khách hàng
                      */
-                    if(option && Number(option) == 5){
+                    if(option && Number(option) == 4){
                         conditionGroup = {
                             _id: { customer: "$customer" },
                             quantity: { $sum: 1 },
@@ -722,7 +698,7 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [3,4].includes(Number(option))){
+                    if(!isNaN(option) && [3].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 

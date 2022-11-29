@@ -431,7 +431,7 @@ class Model extends BaseModel {
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) { 
-        // console.log({fromDate, toDate})
+        console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -439,7 +439,7 @@ class Model extends BaseModel {
                 }else{
                     let conditionObj = {}
                     let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
 
                     /**
                      * VALIDATION (1)
@@ -474,8 +474,8 @@ class Model extends BaseModel {
 
                         conditionPopulate = {
                             path: '_id.mistake',
-                            select: '_id name sign image',
-                            model: 'mistake'
+                            select: '_id name sign',
+                            model: 'doctype'
                         }
                     }
 
@@ -532,8 +532,13 @@ class Model extends BaseModel {
                             model: 'funda'
                         }
                     }
+
+                     /**
+                     * Gom nhóm theo sản phẩm
+                     */
                 
                     console.log(conditionObj)
+                    console.log(conditionPopulate)
                     console.log(conditionObjYear)
                     console.log(conditionGroup)
 
@@ -578,7 +583,7 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [3,4].includes(Number(option))){
+                    if(!isNaN(option) && [1,3].includes(Number(option))){
                         await FNB_MISTAKE_COLL.populate(listData, conditionPopulate)
                     }
 
