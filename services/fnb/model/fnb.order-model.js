@@ -663,6 +663,22 @@ class Model extends BaseModel {
                             model: 'doctype'
                         }
                     }
+
+                    /**
+                     * Gom nhóm theo khách hàng
+                     */
+                    if(option && Number(option) == 5){
+                        conditionGroup = {
+                            _id: { customer: "$customer" },
+                            quantity: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                        }
+                    }
                 
                     console.log(conditionObj)
                     console.log(conditionObjYear)
