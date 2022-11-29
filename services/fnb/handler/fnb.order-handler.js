@@ -21,7 +21,7 @@ module.exports = {
             fundaID             : { type: "string" },
             customerID          : { type: "string" },
             shiftID             : { type: "string" },
-            assigneeID          : { type: "string" },
+            assigneeID          : { type: "string", optional: true },
             name                : { type: "string" },
             appOrderSign        : { type: "string", optional: true },
             note                : { type: "string", optional: true },
