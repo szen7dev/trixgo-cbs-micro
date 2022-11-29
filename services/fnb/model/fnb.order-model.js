@@ -524,7 +524,7 @@ class Model extends BaseModel {
                 }else{
                     let conditionObj = {}
                     let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"total": -1}
 
                     /**
                      * VALIDATION (1)
@@ -605,7 +605,7 @@ class Model extends BaseModel {
                             }
                         }  
 
-                        // Theo giờ trong ngày
+                        // Theo giờ trong ngày (trả về kết quả +7 giờ => bằng giờ trong DB)
                         if(optionTime && Number(optionTime) == 3){    
                             conditionGroup = {
                                 _id: { hour: "$hour" },
