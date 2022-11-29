@@ -646,6 +646,8 @@ class Model extends BaseModel {
                      * Gom nhóm theo các lỗi hay gặp
                      */
                     if(option && Number(option) == 4){
+                        conditionObj.mistake = { $exists: true, $ne: null }
+
                         conditionGroup = {
                             _id: { mistake: "$mistake" },
                             quantity: { $sum: 1 },
