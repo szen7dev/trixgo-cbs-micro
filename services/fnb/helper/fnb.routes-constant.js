@@ -31,6 +31,7 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_MISTAKE=======================================//
     MISTAKES                            : `${BASE_ROUTE}${MISTAKE}`,
+    MISTAKE_GET_LIST_BY_PROPERTY        : `${BASE_ROUTE}${MISTAKE}/get-list-by-property`,
 
     //================================FNB_QUOTA=======================================//
     QUOTAS                              : `${BASE_ROUTE}${QUOTA}`,

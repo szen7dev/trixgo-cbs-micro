@@ -84,6 +84,7 @@ module.exports = {
 		[CF_ACTIONS_FNB.MISTAKE_UPDATE]									: FNB__MISTAKE_HANDLER.update,
 		[CF_ACTIONS_FNB.MISTAKE_REMOVE]									: FNB__MISTAKE_HANDLER.remove,
 		[CF_ACTIONS_FNB.MISTAKE_GET_INFO_AND_GET_LIST]					: FNB__MISTAKE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.MISTAKE_GET_LIST_BY_PROPERTY]					: FNB__MISTAKE_HANDLER.getListByProperty,
 
 		//========================================== FNB_QUOTA ==============================================//
 		[CF_ACTIONS_FNB.QUOTA_INSERT]									: FNB__QUOTA_HANDLER.insert,
