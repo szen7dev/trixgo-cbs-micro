@@ -39,6 +39,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    //_________Người thực hiện
+    assignee: {
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },
     /**
      * Bật chiến dịch truyền thông/marketing (xác lập theo funda)
      * 1-Không bật
@@ -147,7 +152,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      */
     status: {
         type: Number,
-        default: 1
+        default: 5
     },
     //_________Nội dung
     name: String,

@@ -42,7 +42,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
+    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -75,6 +75,12 @@ class Model extends BaseModel {
                     sign: `C${Number(numberOfOrder+1)}`, 
                     userCreate: userID 
                 };
+
+                if(assigneeID && checkObjectIDs(assigneeID)){
+                    dataInsert.assignee = assigneeID;
+                }else{
+                    dataInsert.assignee = userID;
+                }
 
                 if(infoFunda.area3){
                     dataInsert.area1 = infoFunda.area1
@@ -136,9 +142,9 @@ class Model extends BaseModel {
 
                 dataInsert.amount = Number(total)-Number(discount)-Number(salesoff);
 
-                // if(!isNaN(vatAmount)){
-                //     dataInsert.vatAmount = Number(vatAmount);
-                // }
+                if(!isNaN(vatAmount)){
+                    dataInsert.vatAmount = Number(vatAmount);
+                }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -185,9 +191,15 @@ class Model extends BaseModel {
      */
     update({ orderID, userID, 
         mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
-        // console.log({ mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount })
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * - Nếu cập nhật Đơn hàng sang trạng thái hủy: status = 5 (Hoàn thành) -> 4 (Hủy)
+                 * => Xóa định mức hao phí (fnb_order_material)
+                 * => Cập nhật status cho order_product
+                 * => Cập nhật khối lượng giao ca...
+                 */
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 

@@ -38,6 +38,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift_handover", {
     closingQuantity: { type: Number, default: 0 },
     //_________Khối lượng theo định mức
     quotaQuantity: { type: Number, default: 0 },
+    //_________Khối lượng thất thoát
+    lostQuantity: { type: Number, default: 0 },
+    //_________Tỷ lệ thất thoát (%)
+    lostRate: { type: Number, default: 0 },
     //_________Đơn giá
     unitPrice: { type: Number, default: 0 },
     //______Thành tiền đầu kỳ
@@ -57,6 +61,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift_handover", {
     },
     //______Thành tiền theo định mức
     quotaAmount: {
+        type: Number,
+        default : 0
+    },
+    //______Thành tiền thất thoát
+    lostAmount: {
         type: Number,
         default : 0
     },
