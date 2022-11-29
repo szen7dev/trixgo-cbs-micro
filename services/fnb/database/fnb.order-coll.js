@@ -167,7 +167,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 0
     },  
-    //_________Số lượng sản phẩm
+    /**
+     * Số lượng sản phẩm
+     * => Không tính với product là Topping
+     */
     numberOfProducts: {
         type: Number,
         default: 1
