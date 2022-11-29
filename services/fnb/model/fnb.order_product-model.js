@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, validateParamsObjectID }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -367,6 +367,102 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Danh sách theo phân loại
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
+    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
+        keyword, limit, lastestID, select, populates, sortKey, userID }) { 
+        console.log({fromDate, toDate})
+        return new Promise(async (resolve) => {
+            try {
+                if(!option){
+                    // Danh sách
+                }else{
+                    let conditionObj = {}
+                    let conditionGroup = {}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
+
+                    /**
+                     * VALIDATION (1)
+                     */
+                    const validation = validateParamsObjectID({
+                        fundasID            : { value: fundasID, isRequire: false },
+                    });
+                    if(validation.error) return resolve(validation);
+
+                    // Gom nhóm theo đơn vị cơ sở
+                    if(fundasID && fundasID.length ){
+                        let arrFun = fundasID.map(item=>ObjectID(item))
+                        conditionObj.funda = { $in: arrFun }
+                    }
+
+                    // Phân loại theo thời khoảng
+                    if(fromDate && toDate){
+                        conditionObj.createAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    /**
+                     * Gom nhóm theo sản phẩm
+                     */
+                    if(option && Number(option) == 1){
+                        conditionGroup = {
+                            _id: { product: "$product" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.product',
+                            select: '_id name sign',
+                            model: 'fnb_product'
+                        }
+                    }
+
+                    // Danh sách đang triển khai
+                    let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                hour : {$hour : "$createAt"},
+                                funda : 1,
+                                order : 1,
+                                product : 1,
+                                quantity : 1,
+                                unitPrice : 1,
+                                amount : 1,
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: sortBy
+                        }
+                    ])
+
+                    if(!isNaN(option) && [1].includes(Number(option))){
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
+                    }
+
+                    return resolve({ error: false, data: listData });
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

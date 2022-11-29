@@ -437,7 +437,9 @@ class Model extends BaseModel {
                 if(!option){
                     // Danh sách
                 }else{
-                    let conditionObj = {}
+                    let conditionObj = {
+                        mistake: { $exists: true, $ne: null }
+                    }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
 

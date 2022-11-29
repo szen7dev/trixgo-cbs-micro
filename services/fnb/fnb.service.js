@@ -72,6 +72,7 @@ module.exports = {
 		[CF_ACTIONS_FNB.ORDER_PRODUCT_UPDATE]									: FNB__ORDER_PRODUCT_HANDLER.update,
 		[CF_ACTIONS_FNB.ORDER_PRODUCT_REMOVE]									: FNB__ORDER_PRODUCT_HANDLER.remove,
 		[CF_ACTIONS_FNB.ORDER_PRODUCT_GET_INFO_AND_GET_LIST]					: FNB__ORDER_PRODUCT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.ORDER_PRODUCT_GET_LIST_BY_PROPERTY]						: FNB__ORDER_PRODUCT_HANDLER.getListByProperty,
 
 		//========================================== FNB_SHIFT ==============================================//
 		[CF_ACTIONS_FNB.SHIFT_INSERT]									: FNB__SHIFT_HANDLER.insert,
