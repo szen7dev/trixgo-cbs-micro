@@ -164,6 +164,7 @@ module.exports = {
         params: {
             fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
+            mistakeID       : { type: "string", optional: true },
             optionGroup     : { type: "string", optional: true },
             optionTime      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
@@ -180,11 +181,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
+                let { option, optionGroup, optionTime, fundasID, mistakeID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.getListByProperty({
-                    option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
+                    option, optionGroup, optionTime, fundasID, mistakeID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      userID
                     });

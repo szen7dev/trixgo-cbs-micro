@@ -429,13 +429,14 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
+    getListByProperty({ option, mistakeID, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) { 
         console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
                     // Danh sách
+
                 }else{
                     let conditionObj = {
                         mistake: { $exists: true, $ne: null }
@@ -466,7 +467,7 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo các phân loại căn bản
+                     * Gom nhóm theo các loại lỗi
                      */
                     if(option && Number(option) == 1){
                         conditionGroup = {
@@ -523,26 +524,40 @@ class Model extends BaseModel {
                      * Gom nhóm theo đơn vị cơ sở
                      */
                     if(option && Number(option) == 3){
-                        conditionGroup = {
-                            _id: { funda: "$funda" },
-                            quantity: { $sum: 1 },
-                        }
+                        if(mistakeID && checkObjectIDs(mistakeID)){
+                            conditionObj.mistake = ObjectID(mistakeID)
 
-                        conditionPopulate = {
-                            path: '_id.funda',
-                            select: '_id name sign image',
-                            model: 'funda'
+                            conditionGroup = {
+                                _id: { funda: "$funda" },
+                                quantity: { $sum: 1 },
+                            }
+    
+                            conditionPopulate = {
+                                path: '_id.funda',
+                                select: '_id name sign image',
+                                model: 'funda'
+                            }
+                        }else{
+                            conditionGroup = {
+                                _id: { funda: "$funda" },
+                                quantity: { $sum: 1 },
+                            }
+    
+                            conditionPopulate = {
+                                path: '_id.funda',
+                                select: '_id name sign image',
+                                model: 'funda'
+                            }
                         }
                     }
 
                      /**
                      * Gom nhóm theo sản phẩm
                      */
-                
                     console.log(conditionObj)
-                    console.log(conditionPopulate)
-                    console.log(conditionObjYear)
-                    console.log(conditionGroup)
+                    // console.log(conditionPopulate)
+                    // console.log(conditionObjYear)
+                    // console.log(conditionGroup)
 
                     // Danh sách đang triển khai
                     let listData = await FNB_MISTAKE_COLL.aggregate([
