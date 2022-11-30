@@ -419,7 +419,7 @@ class Model extends BaseModel {
                     if(option && Number(option) == 1){
                         conditionGroup = {
                             _id: { product: "$product" },
-                            quantity: { $sum: 1 },
+                            quantity: { $sum: "$quantity" },
                         }
 
                         conditionPopulate = {
