@@ -42,7 +42,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
+    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -108,23 +108,27 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                if(!isNaN(shiftType)){
+                if(!isNaN(customerType) && [1,2,3,4,5].includes(Number(customerType))){
+                    dataInsert.customerType = Number(customerType);
+                }
+
+                if(!isNaN(shiftType) && [1,2,3].includes(Number(shiftType))){
                     dataInsert.shiftType = Number(shiftType);
                 }
 
-                if(!isNaN(salesChannel)){
+                if(!isNaN(salesChannel) && [1,2,3,4,5,6].includes(Number(salesChannel))){
                     dataInsert.salesChannel = Number(salesChannel);
                 }
 
-                if(!isNaN(paymentMethod)){
+                if(!isNaN(paymentMethod)&& [1,2].includes(Number(paymentMethod))){
                     dataInsert.paymentMethod = Number(paymentMethod);
                 }
 
-                if(!isNaN(seasons)){
+                if(!isNaN(seasons)&& [1,2,3,4].includes(Number(seasons))){
                     dataInsert.seasons = Number(seasons);
                 }
 
-                if(!isNaN(service)){
+                if(!isNaN(service)&& [1,2,3].includes(Number(service))){
                     dataInsert.service = Number(service);
                 }
 
@@ -658,9 +662,9 @@ class Model extends BaseModel {
                         }
                     }
                 
-                    console.log(conditionObj)
-                    console.log(conditionObjYear)
-                    console.log(conditionGroup)
+                    // console.log(conditionObj)
+                    // console.log(conditionObjYear)
+                    // console.log(conditionGroup)
 
                     // Danh sách đang triển khai
                     let listData = await FNB_ORDER_COLL.aggregate([
