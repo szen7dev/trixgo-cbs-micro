@@ -383,7 +383,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, fromDate, toDate, salesChannel, isMistake, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
@@ -408,11 +408,12 @@ class Model extends BaseModel {
                     conditionObj.funda = { $in: arrFun }
                 }
 
-                // Phân loại kênh bán hàng
-                if(salesChannel && Number(salesChannel) > 0){
-                    conditionObj.salesChannel = Number(salesChannel)
-                }
+                shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
+                salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
+                services && services.length                 && (conditionObj.service = { $in: services });
+                statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
                 
+                // Phân loại có lỗi hay không
                 if(isMistake && isMistake == 1){
                     conditionObj.numberOfMistakes = { $gt: 0 }
                 }
@@ -432,7 +433,6 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-
                 console.log(conditionObj)
 
                 /**
