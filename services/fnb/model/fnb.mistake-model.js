@@ -294,8 +294,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({fromDate, toDate})
+    getList({ fundasID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({mistakeID, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -317,6 +317,11 @@ class Model extends BaseModel {
                 if(fundasID && fundasID.length ){
                     let arrFun = fundasID.map(item=>ObjectID(item))
                     conditionObj.funda = { $in: arrFun }
+                }
+
+                // Gom nhóm theo lỗi cụ thể
+                if(mistakeID && checkObjectIDs(mistakeID)){
+                    conditionObj.mistake = ObjectID(mistakeID)
                 }
 
                 // Phân loại kênh bán hàng
