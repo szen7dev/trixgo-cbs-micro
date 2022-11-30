@@ -217,7 +217,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-     getList({ companyID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {

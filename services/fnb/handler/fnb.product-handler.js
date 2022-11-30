@@ -113,9 +113,6 @@
          auth: "required",
          params: {
             productID               : { type: "string", optional: true },
-            parentID                : { type: "string", optional: true },
-            isShowAll               : { type: "string", optional: true },
-            isShowParentAndChild    : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
