@@ -75,6 +75,7 @@ class Model extends BaseModel {
                     funda: infoOrder.funda, 
                     order: orderID, 
                     product: productID,
+                    customerType: infoOrder.customerType,
                     customer: infoOrder.customer,
                     assignee: infoOrder.assignee,
                     campaign: infoOrder.campaign,

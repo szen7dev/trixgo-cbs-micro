@@ -34,6 +34,18 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * THÔNG TIN
      */
+    /**
+     * Phân loại khách hàng
+     * 1-Học sinh
+     * 2-Sinh viên
+     * 3-Phụ nữ
+     * 4-Đàn ông
+     * 5-Người lớn (phụ nữ + đàn ông)
+     */
+    customerType: {
+        type: Number,
+        default : 1
+    },
     //_________Mã khách
     customer: {
         type: Schema.Types.ObjectId,

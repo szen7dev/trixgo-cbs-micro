@@ -39,13 +39,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
      * PHÂN LOẠI ĐỂ KIỂM SOÁT LỖI
      */
     /**
-     * Người mắc lỗi
-     */
-    executor: {
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    },
-    /**
      * Phân loại lỗi
      * 1-Do hệ thống kiểm soát phát hiện
      * 2-Do khách hàng phát hiện
@@ -53,6 +46,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     type: {
         type: Number,
         default: 1
+    },
+    /**
+     * Người mắc lỗi
+     */
+    executor: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
     },
     //_________Mã khách (để biết các lỗi mà hay gặp ở khách để sau lưu ý)
     customer: {
