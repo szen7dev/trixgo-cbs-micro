@@ -181,6 +181,12 @@ class Model extends BaseModel {
                  */
                 await this.updateValue({orderID, userID})
 
+                /**
+                 * BẮN SOCKET VÀ CLOUD MSS
+                 * -> Gửi tới các user là members của fundaID (infoFunda.members)
+                 */
+                
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
