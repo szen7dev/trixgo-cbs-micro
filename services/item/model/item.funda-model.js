@@ -340,7 +340,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(isMember == 1){
+                if(isMember && isMember == 1){
                     conditionObj.members = { $in: [userID] }
                 }
 

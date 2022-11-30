@@ -383,7 +383,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ fundasID, fromDate, toDate, salesChannel, isMistake, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
@@ -411,6 +411,10 @@ class Model extends BaseModel {
                 // Phân loại kênh bán hàng
                 if(salesChannel && Number(salesChannel) > 0){
                     conditionObj.salesChannel = Number(salesChannel)
+                }
+                
+                if(isMistake && isMistake == 1){
+                    conditionObj.numberOfMistakes = { $gt: 0 }
                 }
 
                 // Phân loại theo thời khoảng
