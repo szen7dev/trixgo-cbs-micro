@@ -40,13 +40,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount }) {
+    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { name, userCreate: userID };
+                let dataInsert = { name, type, userCreate: userID };
                 if(sign && sign != ""){
                     let checkExist = await FNB_PRODUCT_COLL.findOne({ company: companyID, sign });
                     if(checkExist)
@@ -106,7 +106,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount  }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID))
@@ -116,7 +116,7 @@ class Model extends BaseModel {
                 // if(checkExist)
                 //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataInUpdate = { userUpdate: userID, modifyAt: new Date(), type };
 
                 if(checkObjectIDs(parentID)){
                     dataInUpdate.parent = parentID;
