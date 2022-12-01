@@ -28,6 +28,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
     /**
      * THÔNG TIN
      */
+    /**
+     * Phân loại
+     * 1-Thông thường
+     * 2-Topping
+     */
+    type: {
+        type: Number,
+        default : 1
+    },
     //_________Nội dung
     name: String,
     //_________Mã hiệu
