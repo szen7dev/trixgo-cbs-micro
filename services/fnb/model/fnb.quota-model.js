@@ -88,79 +88,42 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderID, userID, 
-        mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
-        // console.log({ mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount })
+    update({ quotaID, userID, 
+        note, quantity }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(quotaID))
+                    return resolve({ error: true, message: 'quotaID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                
+                let infoQuota = await FNB_QUOTA_COLL.findById(quotaID)
+                if(!infoQuota)
+                    return resolve({ error: true, message: "quotaID invalid", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                /**
+                 * Lấy thông tin của Nguyên liệu (giá căn bản)
+                 */
+                let goodsID = infoQuota.goods
+                let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
+                if(!infoGoods)
+                    return resolve({ error: true, message: "goodsID invalid", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                if(name && name != ""){
-                    dataInUpdate.name =name;
-                }
-
-                if(appOrderSign && appOrderSign != ""){
-                    dataInUpdate.appOrderSign = appOrderSign;
-                }
+                let dataInUpdate = { 
+                    userUpdate: userID,
+                     modifyAt: new Date(),
+                     quantity: Number(quantity).toFixed(3), 
+                     unitPrice: Number(infoGoods.unitprice).toFixed(3), 
+                     amount: Number(quantity*infoGoods.unitprice).toFixed(3), 
+                    
+                };
 
                 if(note && note != ""){
                     dataInUpdate.note = note;
                 }
-
-                if(customerID && checkObjectIDs(customerID)){
-                    dataInUpdate.customer = customerID;
-                }
-
-                if(shiftID && checkObjectIDs(shiftID)){
-                    dataInUpdate.shift = shiftID;
-                }
-
-                if(mistakeID && checkObjectIDs(mistakeID)){
-                    dataInUpdate.mistake = mistakeID;
-                }
-
-                if(!isNaN(shiftType)){
-                    dataInUpdate.shiftType = Number(shiftType);
-                }
-
-                if(!isNaN(salesChannel)){
-                    dataInUpdate.salesChannel = Number(salesChannel);
-                }
-
-                if(!isNaN(paymentMethod)){
-                    dataInUpdate.paymentMethod = Number(paymentMethod);
-                }
-
-                if(!isNaN(total)){
-                    dataInUpdate.total = Number(total);
-                }
-
-                if(!isNaN(discount)){
-                    dataInUpdate.discount = Number(discount);
-                }
-
-                if(!isNaN(salesoff)){
-                    dataInUpdate.salesoff = Number(salesoff);
-                }
-
-                dataInUpdate.amount = Number(total)-Number(discount)-Number(salesoff);
-
-                if(!isNaN(vatAmount)){
-                    dataInUpdate.vatAmount = Number(vatAmount);
-                }
                 console.log({ dataInUpdate })
-
-                let infoAfterUpdate = await FNB_QUOTA_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-
+                
+                let infoAfterUpdate = await FNB_QUOTA_COLL.findByIdAndUpdate(quotaID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                /**
-                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
-                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -181,10 +144,10 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getInfo({ orderID, select, populates={} }) {
+    getInfo({ quotaID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderID))
+                if(!checkObjectIDs(quotaID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populate
@@ -200,7 +163,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await FNB_QUOTA_COLL.findById(orderID)
+                let infoPlanGroup = await FNB_QUOTA_COLL.findById(quotaID)
                                     .select(select)
                                     .populate(populates)
 
@@ -218,8 +181,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({fromDate, toDate})
+    getList({ productID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -228,33 +190,9 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = { product: productID }
                 let sortBy;
                 let keys	 = ['createAt__-1'];
-
-                const validation = validateParamsObjectID({
-                    fundasID            : { value: fundasID, isRequire: false },
-                });
-                if(validation.error) return resolve(validation);
-
-                // Gom nhóm theo đơn vị cơ sở
-                if(fundasID && fundasID.length ){
-                    let arrFun = fundasID.map(item=>ObjectID(item))
-                    conditionObj.funda = { $in: arrFun }
-                }
-
-                // Phân loại kênh bán hàng
-                if(salesChannel && Number(salesChannel) > 0){
-                    conditionObj.salesChannel = Number(salesChannel)
-                }
-
-                // Phân loại theo thời khoảng
-                if(fromDate && toDate){
-                    conditionObj.createAt = {
-                        $gte: new Date(fromDate),
-                        $lte: new Date(toDate),
-                    }
-                }
 
                 // Làm rõ mục đích để làm gì?
                 if (sortKey && typeof sortKey === 'string') {
@@ -347,214 +285,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-     * Name: Danh sách theo phân loại
-     * Author: HiepNH
-     * Code: 24/11/2022
-     */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) { 
-        console.log({fromDate, toDate})
-        return new Promise(async (resolve) => {
-            try {
-                if(!option){
-                    // Danh sách
-                }else{
-                    let conditionObj = {}
-                    let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
-
-                    /**
-                     * VALIDATION (1)
-                     */
-                    const validation = validateParamsObjectID({
-                        fundasID            : { value: fundasID, isRequire: false },
-                    });
-                    if(validation.error) return resolve(validation);
-
-                    // Gom nhóm theo đơn vị cơ sở
-                    if(fundasID && fundasID.length ){
-                        let arrFun = fundasID.map(item=>ObjectID(item))
-                        conditionObj.funda = { $in: arrFun }
-                    }
-
-                    // Phân loại theo thời khoảng
-                    if(fromDate && toDate){
-                        conditionObj.createAt = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
-                        }
-                    }
-
-                    /**
-                     * Gom nhóm theo các phân loại căn bản
-                     */
-                    if(option && Number(option) == 1){
-                        conditionGroup = {
-                            _id: { shiftType: "$shiftType", mistake: "$mistake", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
-                        }
-                    }
-
-                    /**
-                     * Gom nhóm theo thời gian
-                     * - Số lượng đơn hàng
-                     * - Giá trị đơn hàng
-                     * - Số lượng sản phẩm
-                     */
-                    if(option && Number(option) == 2){
-                        // Theo năm
-                        if(optionTime && Number(optionTime) == 1){
-                            conditionGroup = {
-                                _id: { year: "$year" },
-                                quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
-                            }
-                        }
-                        
-                        // Theo tháng trong năm
-                        if(optionTime && Number(optionTime) == 2){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
-                            }
-    
-                            conditionGroup = {
-                                _id: { month: "$month", year: "$year" },
-                                quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
-                            }
-                        }  
-
-                        // Theo giờ trong ngày
-                        if(optionTime && Number(optionTime) == 3){    
-                            conditionGroup = {
-                                _id: { hour: "$hour" },
-                                quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
-                            }
-                        } 
-                    }
-
-                    /**
-                     * Gom nhóm theo đơn vị cơ sở
-                     */
-                    if(option && Number(option) == 3){
-                        conditionGroup = {
-                            _id: { funda: "$funda" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
-                        }
-
-                        conditionPopulate = {
-                            path: '_id.funda',
-                            select: '_id name sign image',
-                            model: 'funda'
-                        }
-                    }
-
-                     /**
-                     * Gom nhóm theo các lỗi hay gặp
-                     */
-                    if(option && Number(option) == 4){
-                        conditionGroup = {
-                            _id: { mistake: "$mistake" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
-                        }
-
-                        conditionPopulate = {
-                            path: '_id.mistake',
-                            select: '_id name sign image',
-                            model: 'doctype'
-                        }
-                    }
-                
-                    console.log(conditionObj)
-                    console.log(conditionObjYear)
-                    console.log(conditionGroup)
-
-                    // Danh sách đang triển khai
-                    let listData = await FNB_QUOTA_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project : {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
-                                hour : {$hour : "$createAt"},
-                                funda : 1,
-                                total : 1,
-                                salesoff : 1,
-                                discount : 1,
-                                amount : 1,
-                                vatAmount : 1,
-                                numberOfProducts : 1,
-                                internal : 1,
-                                shift : 1,
-                                mistake : 1,
-                                salesChannel : 1,
-                                paymentMethod : 1,
-                                customer : 1,
-                            }
-                        },
-                        {
-                            $match: conditionObjYear
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        }
-                    ])
-
-                    if(!isNaN(option) && [3,4].includes(Number(option))){
-                        await FNB_QUOTA_COLL.populate(listData, conditionPopulate)
-                    }
-
-                    return resolve({ error: false, data: listData });
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
 }
 
 exports.MODEL = new Model;
