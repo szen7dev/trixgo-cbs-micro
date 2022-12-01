@@ -37,7 +37,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+    insert({ company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
     }) {
@@ -79,6 +79,7 @@ class Model extends BaseModel {
                     province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
                     name,
                     description,
+                    note,
                     sign,
                     address,
                     taxid,
@@ -245,7 +246,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({
-        contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
@@ -303,6 +304,10 @@ class Model extends BaseModel {
 
                 if(description){
                     dataUpdate.description = description;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
                 }
 
                 if(sign){
