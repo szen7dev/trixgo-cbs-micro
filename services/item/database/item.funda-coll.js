@@ -16,6 +16,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Ngày bắt đầu
+    initialDay: {
+        type: Date,
+        default: null
+    },
     //_________Tên
     name: String,
     //_________Mô tả
