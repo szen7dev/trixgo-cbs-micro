@@ -57,6 +57,8 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     /**
      * Khu vực
      */
+    //_________Địa chỉ
+    address: String,
     //_________Tỉnh/Thành phố
     area1: {
         type: Schema.Types.ObjectId,

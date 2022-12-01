@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, description, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
+	insert({ companyID, parentID, name, sign, description, address, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -59,6 +59,10 @@ class Model extends BaseModel {
 
                 if(description && description != ""){
                     dataInsert.description = description;
+                }
+
+                if(address && address != ""){
+                    dataInsert.address = address;
                 }
 
                 //_________Bật hoặc tắt chiến dịch truyền thông
@@ -137,7 +141,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
+	update({ fundaID, name, sign, description, address, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(fundaID))
@@ -155,6 +159,10 @@ class Model extends BaseModel {
 
                 if(description && description != ""){
                     dataUpdate.description = description;
+                }
+
+                if(address && address != ""){
+                    dataUpdate.address = address;
                 }
 
                 if(sign && sign != ""){
