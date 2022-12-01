@@ -48,32 +48,19 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
-            mistakeID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            shiftID             : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            appOrderSign        : { type: "string", optional: true },
+            quotaID             : { type: "string" },
             note                : { type: "string", optional: true },
-            salesChannel        : { type: "number" },
-            paymentMethod       : { type: "number" },
-            shiftType           : { type: "number", optional: true },
-            total               : { type: "number", optional: true },
-            discount            : { type: "number", optional: true },
-            salesoff            : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
-            vatAmount           : { type: "number", optional: true },
+            quantity            : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount } = ctx.params;
+                let {  quotaID, note, quantity } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_QUOTA_MODEL.update({
-                    orderID, userID,
-                    mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount
+                    quotaID, userID,
+                    note, quantity
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -90,16 +77,16 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            orderID   : { type: "string" }
+            quotaID   : { type: "string" }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID } = ctx.params;
+                let {  quotaID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_QUOTA_MODEL.remove({
-                    orderID
+                    quotaID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -116,11 +103,8 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            fundasID            : { type: "array", optional: true },
-            orderID             : { type: "string", optional: true },
-            fromDate            : { type: "string", optional: true },
-            toDate              : { type: "string", optional: true },
-            salesChannel        : { type: "string", optional: true },
+            productID           : { type: "string", optional: true },
+            quotaID             : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -132,61 +116,20 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { quotaID, productID, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(orderID){
+                if(quotaID){
                     resultAfterCallHandler = await FNB_QUOTA_MODEL.getInfo({
-                        orderID, select, populates,
+                        quotaID, select, populates,
                     });
                 }else{
                     resultAfterCallHandler = await FNB_QUOTA_MODEL.getList({
-                        fundasID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                        productID, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Name: Danh sách theo phân loại
-     * Author: HiepNH
-     * Code: 14/10/2022
-     */
-    getListByProperty: {
-        params: {
-            fundasID        : { type: "array", optional: true },
-            option          : { type: "string", optional: true },
-            optionGroup     : { type: "string", optional: true },
-            optionTime      : { type: "string", optional: true },
-            year            : { type: "string", optional: true },
-            fromDate        : { type: "string", optional: true },
-            toDate          : { type: "string", optional: true },
-            
-            //_____________THÔNG SỐ MẶC ĐỊNH________________
-            keyword         : { type: "string", optional: true },
-            limit           : { type: "string", optional: true },
-            lastestID       : { type: "string", optional: true },
-            select          : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
-
-                let resultAfterCallHandler = await FNB_QUOTA_MODEL.getListByProperty({
-                    option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey, 
-                     userID
-                    });
-             
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

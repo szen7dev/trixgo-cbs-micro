@@ -20,6 +20,8 @@ module.exports = {
             name                : { type: "string" },
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
+            address             : { type: "string", optional: true },
+            initialDay          : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
             area                : { type: "string" },
             campaign            : { type: "number", optional: true },
@@ -35,9 +37,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, sign, description, campaign, internal, area, parentID, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
+                const { name, sign, description, address, initialDay, campaign, internal, area, parentID, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -56,6 +58,8 @@ module.exports = {
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
+            address             : { type: "string", optional: true },
+            initialDay          : { type: "string", optional: true },
             area                : { type: "string", optional: true },
             members             : { type: "array", optional: true },
             membersRemove       : { type: "array", optional: true },
@@ -74,9 +78,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
+                const { fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
