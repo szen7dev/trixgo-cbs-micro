@@ -84,10 +84,7 @@ class Model extends BaseModel {
 
                 if(!isNaN(unitPrice)){
                     dataInsert.unitPrice = Number(unitPrice);
-                }
-
-                if(!isNaN(amount)){
-                    dataInsert.amount = Number(amount);
+                    dataInsert.amount = Number(quantity*unitPrice);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -144,13 +141,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(unitPrice)){
                     dataInUpdate.unitPrice = Number(unitPrice);
+                    dataInUpdate.amount = Number(quantity*unitPrice);
                 }
-
-                if(!isNaN(amount)){
-                    dataInUpdate.amount = Number(amount);
-                }
-
                 console.log({ dataInUpdate })
+                
                 let infoAfterUpdate = await FNB_PRODUCT_COLL.findByIdAndUpdate(productID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
