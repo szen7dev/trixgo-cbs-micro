@@ -257,10 +257,10 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getInfo({ orderID, select, populates={} }) {
+    getInfo({ orderMistakeID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderID))
+                if(!checkObjectIDs(orderMistakeID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populate
@@ -276,7 +276,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await FNB_MISTAKE_COLL.findById(orderID)
+                let infoPlanGroup = await FNB_MISTAKE_COLL.findById(orderMistakeID)
                                     .select(select)
                                     .populate(populates)
 
@@ -294,8 +294,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({mistakeID, fromDate, toDate})
+    getList({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -308,20 +308,25 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__-1'];
 
-                const validation = validateParamsObjectID({
-                    fundasID            : { value: fundasID, isRequire: false },
-                });
-                if(validation.error) return resolve(validation);
+                // Gom nhóm theo đơn hàng cụ thể
+                if(orderID && checkObjectIDs(orderID)){
+                    conditionObj.order = ObjectID(orderID)
+                }else{
+                    // Gom nhóm theo lỗi cụ thể
+                    if(mistakeID && checkObjectIDs(mistakeID)){
+                        conditionObj.mistake = ObjectID(mistakeID)
+                    }else{
+                        // Gom nhóm theo đơn vị cơ sở
+                        if(fundasID && fundasID.length ){
+                            const validation = validateParamsObjectID({
+                                fundasID            : { value: fundasID, isRequire: false },
+                            });
+                            if(validation.error) return resolve(validation);
 
-                // Gom nhóm theo đơn vị cơ sở
-                if(fundasID && fundasID.length ){
-                    let arrFun = fundasID.map(item=>ObjectID(item))
-                    conditionObj.funda = { $in: arrFun }
-                }
-
-                // Gom nhóm theo lỗi cụ thể
-                if(mistakeID && checkObjectIDs(mistakeID)){
-                    conditionObj.mistake = ObjectID(mistakeID)
+                            let arrFun = fundasID.map(item=>ObjectID(item))
+                            conditionObj.funda = { $in: arrFun }
+                        }
+                    }
                 }
 
                 // Phân loại kênh bán hàng
@@ -402,6 +407,7 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
                     .lean();
+                    console.log(infoDataAfterGet)
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });

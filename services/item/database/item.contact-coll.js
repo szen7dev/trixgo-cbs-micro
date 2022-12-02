@@ -265,6 +265,19 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default : 0
     },
     /**
+     * FNB
+     */
+    // Số đơn hàng đã mua
+    numberOfOrders: {
+        type: Number,
+        default: 0
+    },
+    // Giá trị tiền hàng đã mua
+    purchasedValue: {
+        type: Number,
+        default: 0
+    },
+    /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
     userCreate: {
