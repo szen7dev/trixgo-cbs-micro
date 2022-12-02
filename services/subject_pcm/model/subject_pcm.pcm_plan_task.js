@@ -4073,6 +4073,7 @@ class Model extends BaseModel {
 
                     await workbook.toFileAsync(pathWriteFile);
                     const result = await uploadFileS3(pathWriteFile, fileName);
+
                     fs.unlinkSync(pathWriteFile);
                     console.log({ result })
                     return resolve({ error: false, data: result?.Location, status: 200 });

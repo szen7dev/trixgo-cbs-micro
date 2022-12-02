@@ -119,8 +119,9 @@ module.exports = {
         auth: "required",
         params: {
             fundasID            : { type: "array", optional: true },
-            mistakeID           : { type: "string", optional: true },
             orderID             : { type: "string", optional: true },
+            mistakeID           : { type: "string", optional: true },
+            orderMistakeID      : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
             salesChannel        : { type: "string", optional: true },
@@ -135,17 +136,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { orderMistakeID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(orderID){
+                if(orderMistakeID){
                     resultAfterCallHandler = await FNB_MISTAKE_MODEL.getInfo({
-                        orderID, select, populates,
+                        orderMistakeID, select, populates,
                     });
                 }else{
                     resultAfterCallHandler = await FNB_MISTAKE_MODEL.getList({
-                        fundasID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                        fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
