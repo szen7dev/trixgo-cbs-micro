@@ -10,7 +10,7 @@ const FNB_ORDER_MODEL            = require('../model/fnb.order-model').MODEL;
 
 module.exports = {
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -31,7 +31,7 @@ module.exports = {
             service             : { type: "string", optional: true },
             customerType        : { type: "string", optional: true },
             shiftType           : { type: "string", optional: true },
-            total               : { type: "string", optional: true },
+            total               : { type: "number", optional: true },
             discount            : { type: "string", optional: true },
             salesoff            : { type: "string", optional: true },
             vatAmount           : { type: "string", optional: true },
@@ -211,7 +211,7 @@ module.exports = {
             year            : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
-            
+
             //_____________THÔNG SỐ MẶC ĐỊNH________________
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
@@ -227,10 +227,10 @@ module.exports = {
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
                     option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey, 
+                     keyword, limit, lastestID, select, populates, sortKey,
                      userID
                     });
-             
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

@@ -403,6 +403,8 @@ class Model extends BaseModel {
                             let { devices } = user;
 
                             if(devices && devices.length) {
+                                const ENV_MOBILES = [this.MOBILE_TEARSER, this.MOBILE_CBS, this.MOBILE_FNB];
+
                                 listDeviceFromMobile = [
                                     ...listDeviceFromMobile,
                                     /**
@@ -411,7 +413,7 @@ class Model extends BaseModel {
                                      * (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS): kiểm tra rẽ nhánh theo WEB và APP theo 2 arr khác nhau
                                      *
                                      */
-                                    ...devices.filter(item => item.oneSignalID && listEnvReceiveNoti.includes(item.env) && (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS)).map(itemReturn => {
+                                    ...devices.filter(item => item.oneSignalID && listEnvReceiveNoti.includes(item.env) && ENV_MOBILES.includes(item.env)).map(itemReturn => {
                                         return {
                                             oneSignalID: itemReturn.oneSignalID,
                                             app_id: _findAppIdWithEnv(itemReturn.env),
@@ -443,6 +445,8 @@ class Model extends BaseModel {
                             let listDeviceFromMobileWith_CBS        = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_CBS);
 
                             let listDeviceFromMobileWith_TEASER     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
+
+                            let listDeviceFromMobileWith_FNB     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_FNB);
 
                             // =================== MOBILE PUSH (CBS) ===================
                             let dataForMobilePushCBS = {
@@ -481,6 +485,25 @@ class Model extends BaseModel {
                             }
                             console.info('MOBILE PUSH (TEASER)')
                             sendNotificationviaOneSignal(dataForMobilePushTeaser)
+
+                            //  =================== MOBILE PUSH (FNB) ===================
+                            let dataForMobilePushFNB = {
+                                ...dataForSend,
+                                data: objDataForSend,
+                                app_id: ONESIGNAL_APP_FNB,
+                                ios_sound: 'teaser.wav',
+                                android_sound: 'teaser',
+                                ios_badgeType: 'Increase',
+                                ios_badgeCount: 1,
+                                priority: 'high',
+                                include_player_ids: listDeviceFromMobileWith_FNB.map(item => item.oneSignalID)
+                            }
+                            if(objDataForSend.amountNoti) {
+                                dataForMobilePushFNB.ios_badgeType = 'SetTo';
+                                dataForMobilePushFNB.ios_badgeCount = objDataForSend.amountNoti;
+                            }
+                            console.info('MOBILE PUSH (FNB)')
+                            sendNotificationviaOneSignal(dataForMobilePushFNB)
                         }
 
                         if (listDeviceFromWebBrowser.length) {
