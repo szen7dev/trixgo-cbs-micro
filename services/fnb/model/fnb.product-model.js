@@ -110,11 +110,7 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(productID))
                     return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-                // let checkExist = await FNB_PRODUCT_COLL.findOne({ _id: { $ne: groupID }, name, sign });
-                // if(checkExist)
-                //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
-
+                    
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date(), type };
 
                 if(checkObjectIDs(parentID)){
@@ -125,9 +121,9 @@ class Model extends BaseModel {
                     dataInUpdate.name =name;
                 }
 
-                // if(sign){
-                //     dataInUpdate.sign =sign;
-                // }
+                if(sign){
+                    dataInUpdate.sign =sign;
+                }
 
                 if(unit && unit != ""){
                     dataInUpdate.unit = unit;
