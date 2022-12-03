@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type }) {
+    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
@@ -78,13 +78,15 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                if(!isNaN(quantity)){
-                    dataInsert.quantity = Number(quantity);
-                }
-
                 if(!isNaN(unitPrice)){
                     dataInsert.unitPrice = Number(unitPrice);
-                    dataInsert.amount = Number(quantity*unitPrice);
+
+                    if(!isNaN(quantity)){
+                        dataInsert.quantity = Number(quantity);
+                        dataInsert.amount = Number(quantity*unitPrice);
+                    }else{
+                        dataInsert.amount = Number(unitPrice);
+                    }
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -103,7 +105,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, type }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID))
