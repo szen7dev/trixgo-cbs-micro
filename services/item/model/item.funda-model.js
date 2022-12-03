@@ -327,13 +327,13 @@ class Model extends BaseModel {
      */
     getList({
         companyID, parentID, isListParentOfListChilds, isMember,
-        keyword, limit = 10, lastestID, select, populates= {}, userID } ) { 
+        keyword, limit = 20, lastestID, select, populates= {}, userID } ) { 
         console.log({companyID, parentID, isListParentOfListChilds, isMember,
             keyword, limit, lastestID, select, populates, userID})  
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit;
                 }
@@ -343,7 +343,7 @@ class Model extends BaseModel {
                  */
                 let sortBy;
                 let conditionObj = { };
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['createAt__1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
