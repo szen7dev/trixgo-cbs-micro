@@ -12,7 +12,6 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { template } = require('lodash');
 
 /**s
  * import inter-coll, exter-coll
@@ -38,7 +37,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -58,7 +57,7 @@ class Model extends BaseModel {
 
                 // Thông tin cửa hàng
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                if (!infoFunda) 
+                if (!infoFunda)
                     return resolve({ error: true, message: 'cannot_get_info_funda' });
 
                 /**
@@ -66,14 +65,15 @@ class Model extends BaseModel {
                  */
                 let numberOfOrder = await FNB_ORDER_COLL.count({})
 
-                let dataInsert = { 
+                let dataInsert = {
                     company: infoFunda.company,
-                    funda: fundaID, 
-                    customer: customerID, 
-                    shift: shiftID, 
-                    name, 
-                    sign: `C${Number(numberOfOrder+1)}`, 
-                    userCreate: userID 
+                    funda: fundaID,
+                    customer: customerID,
+                    shift: shiftID,
+                    name,
+                    sign: `C${Number(numberOfOrder+1)}`,
+                    amount: 0,
+                    userCreate: userID
                 };
 
                 if(assigneeID && checkObjectIDs(assigneeID)){
@@ -134,17 +134,18 @@ class Model extends BaseModel {
 
                 if(!isNaN(total)){
                     dataInsert.total = Number(total);
+                    dataInsert.amount = Number(total);
                 }
 
                 if(!isNaN(discount)){
                     dataInsert.discount = Number(discount);
+                    dataInsert.amount -= Number(discount);
                 }
 
                 if(!isNaN(salesoff)){
                     dataInsert.salesoff = Number(salesoff);
+                    dataInsert.amount -= Number(salesoff);
                 }
-
-                dataInsert.amount = Number(total)-Number(discount)-Number(salesoff);
 
                 if(!isNaN(vatAmount)){
                     dataInsert.vatAmount = Number(vatAmount);
@@ -159,7 +160,7 @@ class Model extends BaseModel {
                  */
                 const orderID = infoAfterInsert._id;
                 if(products && products.length){
-                    
+
                     for(const item of products){
                         const dataInsertProduct = {
                             userID,
@@ -185,7 +186,7 @@ class Model extends BaseModel {
                  * BẮN SOCKET VÀ CLOUD MSS
                  * -> Gửi tới các user là members của fundaID (infoFunda.members)
                  */
-                
+
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -195,11 +196,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update 
+     * Name: Update
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderID, userID, 
+    update({ orderID, userID,
         mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
         return new Promise(async resolve => {
             try {
@@ -328,7 +329,7 @@ class Model extends BaseModel {
                     dataInUpdate.total = Number(total)
                     dataInUpdate.amount = Number(amount)
                 }
-                
+
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
@@ -342,13 +343,13 @@ class Model extends BaseModel {
 
 
     /**
-     * Name: Remove 
+     * Name: Remove
      * Author: HiepNH
      * Code: 24/11/2022
      */
 
     /**
-     * Name: Get info 
+     * Name: Get info
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -418,7 +419,7 @@ class Model extends BaseModel {
                 salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
                 services && services.length                 && (conditionObj.service = { $in: services });
                 statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
-                
+
                 // Phân loại có lỗi hay không
                 if(isMistake && isMistake == 1){
                     conditionObj.numberOfMistakes = { $gt: 0 }
@@ -473,7 +474,7 @@ class Model extends BaseModel {
 
                     select = JSON.parse(select);
                 }
- 
+
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await FNB_ORDER_COLL.findById(lastestID);
@@ -529,7 +530,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) { 
+        keyword, limit, lastestID, select, populates, sortKey, userID }) {
         console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
@@ -598,7 +599,7 @@ class Model extends BaseModel {
                                 numberOfProducts: { $sum: "$numberOfProducts" },
                             }
                         }
-                        
+
                         // Theo tháng trong năm
                         if(optionTime && Number(optionTime) == 2){
                             if(!isNaN(year) && Number(year) >= 0){
@@ -606,7 +607,7 @@ class Model extends BaseModel {
                                     "year": Number(year),
                                 }
                             }
-    
+
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
                                 quantity: { $sum: 1 },
@@ -617,10 +618,10 @@ class Model extends BaseModel {
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
                             }
-                        }  
+                        }
 
                         // Theo giờ trong ngày (trả về kết quả +7 giờ => bằng giờ trong DB)
-                        if(optionTime && Number(optionTime) == 3){    
+                        if(optionTime && Number(optionTime) == 3){
                             conditionGroup = {
                                 _id: { hour: "$hour" },
                                 quantity: { $sum: 1 },
@@ -631,7 +632,7 @@ class Model extends BaseModel {
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
                             }
-                        } 
+                        }
                     }
 
                     /**
@@ -671,7 +672,7 @@ class Model extends BaseModel {
                             numberOfProducts: { $sum: "$numberOfProducts" },
                         }
                     }
-                
+
                     // console.log(conditionObj)
                     // console.log(conditionObjYear)
                     // console.log(conditionGroup)

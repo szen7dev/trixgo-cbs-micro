@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type }) {
+    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
@@ -78,16 +78,15 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                if(!isNaN(quantity)){
-                    dataInsert.quantity = Number(quantity);
-                }
-
                 if(!isNaN(unitPrice)){
                     dataInsert.unitPrice = Number(unitPrice);
-                }
 
-                if(!isNaN(amount)){
-                    dataInsert.amount = Number(amount);
+                    if(!isNaN(quantity)){
+                        dataInsert.quantity = Number(quantity);
+                        dataInsert.amount = Number(quantity*unitPrice);
+                    }else{
+                        dataInsert.amount = Number(unitPrice);
+                    }
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -106,16 +105,12 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, type }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID))
                     return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-                // let checkExist = await FNB_PRODUCT_COLL.findOne({ _id: { $ne: groupID }, name, sign });
-                // if(checkExist)
-                //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
-
+                    
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date(), type };
 
                 if(checkObjectIDs(parentID)){
@@ -126,9 +121,9 @@ class Model extends BaseModel {
                     dataInUpdate.name =name;
                 }
 
-                // if(sign){
-                //     dataInUpdate.sign =sign;
-                // }
+                if(sign){
+                    dataInUpdate.sign =sign;
+                }
 
                 if(unit && unit != ""){
                     dataInUpdate.unit = unit;
@@ -144,13 +139,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(unitPrice)){
                     dataInUpdate.unitPrice = Number(unitPrice);
+                    dataInUpdate.amount = Number(quantity*unitPrice);
                 }
-
-                if(!isNaN(amount)){
-                    dataInUpdate.amount = Number(amount);
-                }
-
                 console.log({ dataInUpdate })
+                
                 let infoAfterUpdate = await FNB_PRODUCT_COLL.findByIdAndUpdate(productID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)

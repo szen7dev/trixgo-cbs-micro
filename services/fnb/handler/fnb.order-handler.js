@@ -10,7 +10,7 @@ const FNB_ORDER_MODEL            = require('../model/fnb.order-model').MODEL;
 
 module.exports = {
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -25,22 +25,22 @@ module.exports = {
             name                : { type: "string" },
             appOrderSign        : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            salesChannel        : { type: "number" },
-            paymentMethod       : { type: "number" },
-            seasons             : { type: "number", optional: true },
-            service             : { type: "number", optional: true },
-            customerType        : { type: "number", optional: true },
-            shiftType           : { type: "number", optional: true },
+            salesChannel        : { type: "string" },
+            paymentMethod       : { type: "string" },
+            seasons             : { type: "string", optional: true },
+            service             : { type: "string", optional: true },
+            customerType        : { type: "string", optional: true },
+            shiftType           : { type: "string", optional: true },
             total               : { type: "number", optional: true },
-            discount            : { type: "number", optional: true },
-            salesoff            : { type: "number", optional: true },
-            vatAmount           : { type: "number", optional: true },
+            discount            : { type: "string", optional: true },
+            salesoff            : { type: "string", optional: true },
+            vatAmount           : { type: "string", optional: true },
             products            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, seasons, service, customerType, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
+                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, seasons, service, customerType, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -50,7 +50,7 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -211,7 +211,7 @@ module.exports = {
             year            : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
-            
+
             //_____________THÔNG SỐ MẶC ĐỊNH________________
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
@@ -227,10 +227,10 @@ module.exports = {
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
                     option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey, 
+                     keyword, limit, lastestID, select, populates, sortKey,
                      userID
                     });
-             
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

@@ -25,18 +25,18 @@
             note                : { type: "string", optional: true },
             quantity            : { type: "number", optional: true },
             unitPrice           : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
             type                : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let {  fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type } = ctx.params;
+                let { fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type } = ctx.params;
+                // console.log({ fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type } )
 
                 const { _id: userID, company } = ctx.meta.infoUser;
             
                 let resultAfterCallHandler = await FNB_PRODUCT_MODEL.insert({
-                    userID, companyID: company._id, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type
+                    userID, companyID: company._id, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -61,17 +61,16 @@
             note            : { type: "string", optional: true },
             quantity        : { type: "number", optional: true },
             unitPrice       : { type: "number", optional: true },
-            amount          : { type: "number", optional: true },
             type            : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type } = ctx.params;
+                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, type } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_PRODUCT_MODEL.update({
-                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount, type
+                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, type
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

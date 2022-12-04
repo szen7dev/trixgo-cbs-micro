@@ -4,6 +4,7 @@
 const { EVENT_SOCKET_CONSTANT_FNB }		        = require('./helper/fnb.events-socket-constant');
 const { CF_DOMAIN_SERVICES }                    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_ITEM }                       = require('../item/helper/item.actions-constant');
 
 /**
  * Utils
@@ -20,18 +21,30 @@ const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notificat
      */
     [EVENT_SOCKET_CONSTANT_FNB.FNB_CSS_ADD_NEW_ORDER]: async function(data) {
          try {
-            let socket                  = this;
-			let broker                  = socket.$service.broker;
-            let listUserActive          = socket.$service.listUserConnected;
-            let userID                  = socket.client.user;
-            let io                      = socket.$service.io;
-            let { companyID, orderID }  = data;
+            let socket                          = this;
+			let broker                          = socket.$service.broker;
+            let listUserActive                  = socket.$service.listUserConnected;
+            let userID                          = socket.client.user;
+            let io                              = socket.$service.io;
+            let { companyID, fundaID, orderInfo } = data;
 
             if(!companyID){
                 return sendDataToMultilSocketsOfListUser({
                     listUserConnected: listUserActive,
                     arrReceiver: [userID],
                     data: { error: true, message: "Tham số companyID không hợp lệ" },
+                    event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
+                });
+            }
+
+            let fundaResponse = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`, {
+                fundaID
+            });
+            if(!fundaResponse || fundaResponse.error) {
+                return sendDataToMultilSocketsOfListUser({
+                    listUserConnected: listUserActive,
+                    arrReceiver: [userID],
+                    data: { error: true, message: "Tham số fundaID không hợp lệ" },
                     event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
                 });
             }
@@ -44,7 +57,7 @@ const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notificat
                 return sendDataToMultilSocketsOfListUser({
                     listUserConnected: listUserActive,
                     arrReceiver: [userID],
-                    data: { error: true, message: "Request params userID invalid" },
+                    data: { error: true, message: "Tham số userID không hợp lệ" },
                     event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
                 });
             }
@@ -57,24 +70,23 @@ const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notificat
                 return sendDataToMultilSocketsOfListUser({
                     listUserConnected: listUserActive,
                     arrReceiver: [userID],
-                    data: { error: true, message: "Request params company invalid" },
+                    data: { error: true, message: "Tham số company không hợp lệ" },
                     event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
                 });
             }
 
             const usersID = users.data?.map(user => user._id);
             const receivers = usersID.filter(receiverID => receiverID !== userID.toString());
-            const message = `${user.data?.bizfullname} đã tạo đơn hàng mới, mã hiệu ${orderID}`;
+            const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
+            const contentMSS = `Đơn hàng ${orderInfo?.name}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công bởi ${user.data?.bizfullname}`;
 
             // Cloud messaging
             broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 				users: receivers,
-				title: `NEW ORDER ${orderID}`,
-				description: message,
+				title: titleMSS,
+				description: contentMSS,
 				dataSend: {
-					message,
-                    companyID,
-                    orderID,
+                    orderID: orderInfo._id,
 				},
 				web_url: ``,
 				env: ENV_DEVICE_APP_FNB
@@ -87,9 +99,7 @@ const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notificat
                 data: {
                     error: false,
                     data: {
-                        message,
-                        companyID,
-                        orderID,
+                        orderID: orderInfo._id,
                     }
                 }, event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
             });
