@@ -28,7 +28,28 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     /**
      * GIÁT TRỊ ĐƠN HÀNG CỦA CA
      */
-    //______Thành tiền
+    /**
+     * Số đơn hàng
+     * => Không tính với product là Topping
+     */
+    numberOfOrders: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Số lượng sản phẩm
+     * => Không tính với product là Topping
+     */
+    numberOfProducts: {
+        type: Number,
+        default: 1
+    },
+    //______Tổng giá theo các Product của đơn hàng
+    total: {
+        type: Number,
+        default : 0
+    },
+    //______Thành tiền (đã trừ giảm giá, triết khấu)
     amount: {
         type: Number,
         default : 0
