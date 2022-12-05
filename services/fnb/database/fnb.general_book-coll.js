@@ -5,7 +5,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("general_book", {
+module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
@@ -15,6 +15,18 @@ module.exports  = DATABASE_MIDDLEWARE("general_book", {
     funda: {
         type: Schema.Types.ObjectId,
         ref : "funda"
+    },
+    /**
+     * Phân biệt phiếu và chi tiết
+     */
+    //_________Cha (phiếu)
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: "fnb_general_book"
+    },
+    level: {
+        type: Number,
+        default: 1
     },
     /**
      * Doanh thu, chi phí
