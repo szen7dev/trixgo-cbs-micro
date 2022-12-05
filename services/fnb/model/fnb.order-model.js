@@ -391,7 +391,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({fromDate, toDate})
+        console.log({fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -413,6 +413,10 @@ class Model extends BaseModel {
                 if(fundasID && fundasID.length ){
                     let arrFun = fundasID.map(item=>ObjectID(item))
                     conditionObj.funda = { $in: arrFun }
+                }else{
+                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
+                    // console.log(listFundaIsMember)
+                    conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
                 }
 
                 shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
@@ -440,6 +444,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
+                console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
                 console.log(conditionObj)
 
                 /**
@@ -553,6 +558,10 @@ class Model extends BaseModel {
                     if(fundasID && fundasID.length ){
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
+                    }else{
+                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
+                        // console.log(listFundaIsMember)
+                        conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
                     }
 
                     // Phân loại theo thời khoảng
