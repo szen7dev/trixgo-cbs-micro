@@ -11,6 +11,7 @@ const MISTAKE               = '/mistakes';
 const QUOTA                 = '/quotas';
 const ORDER_MATERIAL        = '/order_materials';
 const SHIFT_HANDOVER        = '/shift_handovers';
+const GENERAL_BOOK          = '/general_books';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -43,6 +44,10 @@ const CF_ROUTINGS_FNB = {
     //================================FNB_SHIFT_HANDOVERL=======================================//
     SHIFT_HANDOVERS                     : `${BASE_ROUTE}${SHIFT_HANDOVER}`,
     SHIFT_HANDOVER_UPDATE_QUOTA         : `${BASE_ROUTE}${SHIFT_HANDOVER}/update-quota`,
+
+    //================================FNB_GENERAL_BOOK=======================================//
+    GENERAL_BOOKS                              : `${BASE_ROUTE}${GENERAL_BOOK}`,
+    GENERAL_BOOK_GET_LIST_BY_PROPERTY          : `${BASE_ROUTE}${GENERAL_BOOK}/get-list-by-property`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;

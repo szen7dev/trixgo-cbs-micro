@@ -13,6 +13,7 @@ const FNB__MISTAKE_HANDLER  			 	= require('./handler/fnb.mistake-handler');
 const FNB__QUOTA_HANDLER  			 		= require('./handler/fnb.quota-handler');
 const FNB__ORDER_MATERIAL_HANDLER  			= require('./handler/fnb.order_material-handler');
 const FNB__SHIFT_HANDOVER_HANDLER  			= require('./handler/fnb.shift_handover-handler');
+const FNB__GENERAL_BOOK_HANDLER  			= require('./handler/fnb.general_book-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
@@ -22,6 +23,7 @@ const FNB__MISTAKE_COLL  			 		= require('./database/fnb.mistake-coll');
 const FNB__QUOTA_COLL  			 			= require('./database/fnb.quota-coll');
 const FNB__ORDER_MATERIAL_COLL  			= require('./database/fnb.order_material-coll');
 const FNB__SHIFT_HANDOVER_COLL  			= require('./database/fnb.shift_handover-coll');
+const FNB__GENERAL_BOOK_COLL  				= require('./database/fnb.general_book-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FNB,
@@ -34,6 +36,7 @@ module.exports = {
 		DbService(FNB__QUOTA_COLL),
 		DbService(FNB__ORDER_MATERIAL_COLL),
 		DbService(FNB__SHIFT_HANDOVER_COLL),
+		DbService(FNB__GENERAL_BOOK_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -105,6 +108,13 @@ module.exports = {
 		[CF_ACTIONS_FNB.SHIFT_HANDOVER_REMOVE]									: FNB__SHIFT_HANDOVER_HANDLER.remove,
 		[CF_ACTIONS_FNB.SHIFT_HANDOVER_GET_INFO_AND_GET_LIST]					: FNB__SHIFT_HANDOVER_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_FNB.SHIFT_HANDOVER_UPDATE_QUOTA]							: FNB__SHIFT_HANDOVER_HANDLER.updateQuota,
+
+		//========================================== FNB_GENERAL_BOOK ==============================================//
+		[CF_ACTIONS_FNB.GENERAL_BOOK_INSERT]									: FNB__GENERAL_BOOK_HANDLER.insert,
+		[CF_ACTIONS_FNB.GENERAL_BOOK_UPDATE]									: FNB__GENERAL_BOOK_HANDLER.update,
+		[CF_ACTIONS_FNB.GENERAL_BOOK_REMOVE]									: FNB__GENERAL_BOOK_HANDLER.remove,
+		[CF_ACTIONS_FNB.GENERAL_BOOK_GET_INFO_AND_GET_LIST]						: FNB__GENERAL_BOOK_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.GENERAL_BOOK_GET_LIST_BY_PROPERTY]						: FNB__GENERAL_BOOK_HANDLER.getListByProperty,
 	},
 
 	/**

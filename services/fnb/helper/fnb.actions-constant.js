@@ -11,6 +11,7 @@ const MISTAKE                    = 'MISTAKE';
 const QUOTA                      = 'QUOTA';
 const ORDER_MATERIAL             = 'ORDER_MATERIAL';
 const SHIFT_HANDOVER             = 'SHIFT_HANDOVER';
+const GENERAL_BOOK               = 'GENERAL_BOOK';
 
 const CF_ACTIONS_FNB = {
   
@@ -82,6 +83,16 @@ const CF_ACTIONS_FNB = {
    SHIFT_HANDOVER_REMOVE                                    : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_REMOVE`,
    SHIFT_HANDOVER_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_GET_INFO_AND_GET_LIST`,
    SHIFT_HANDOVER_UPDATE_QUOTA                              : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_UPDATE_QUOTA`,
+
+   /**
+   * GENERAL_BOOK
+   */
+   GENERAL_BOOK_INSERT                                    : `${BASE_ACTIONS}_${GENERAL_BOOK}_INSERT`,
+   GENERAL_BOOK_UPDATE                                    : `${BASE_ACTIONS}_${GENERAL_BOOK}_UPDATE`,
+   GENERAL_BOOK_REMOVE                                    : `${BASE_ACTIONS}_${GENERAL_BOOK}_REMOVE`,
+   GENERAL_BOOK_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${GENERAL_BOOK}_GET_INFO_AND_GET_LIST`,
+   GENERAL_BOOK_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${GENERAL_BOOK}_GET_LIST_BY_PROPERTY`,
+   GENERAL_BOOK_UPDATE_VALUE                              : `${BASE_ACTIONS}_${GENERAL_BOOK}_UPDATE_VALUE`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;
