@@ -64,10 +64,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         default : 0
     },
     //_________Ảnh đại diện
-    image: {
-        type: String,
-        defautl: 'product_default.png'
-    },
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

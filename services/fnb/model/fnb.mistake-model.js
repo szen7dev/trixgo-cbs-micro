@@ -308,25 +308,25 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__-1'];
 
+                // Gom nhóm theo đơn vị cơ sở
+                if(fundasID && fundasID.length ){
+                    const validation = validateParamsObjectID({
+                        fundasID            : { value: fundasID, isRequire: false },
+                    });
+                    if(validation.error) return resolve(validation);
+
+                    let arrFun = fundasID.map(item=>ObjectID(item))
+                    conditionObj.funda = { $in: arrFun }
+                }
+
                 // Gom nhóm theo đơn hàng cụ thể
                 if(orderID && checkObjectIDs(orderID)){
                     conditionObj.order = ObjectID(orderID)
-                }else{
-                    // Gom nhóm theo lỗi cụ thể
-                    if(mistakeID && checkObjectIDs(mistakeID)){
-                        conditionObj.mistake = ObjectID(mistakeID)
-                    }else{
-                        // Gom nhóm theo đơn vị cơ sở
-                        if(fundasID && fundasID.length ){
-                            const validation = validateParamsObjectID({
-                                fundasID            : { value: fundasID, isRequire: false },
-                            });
-                            if(validation.error) return resolve(validation);
-
-                            let arrFun = fundasID.map(item=>ObjectID(item))
-                            conditionObj.funda = { $in: arrFun }
-                        }
-                    }
+                }
+                
+                // Gom nhóm theo lỗi cụ thể
+                if(mistakeID && checkObjectIDs(mistakeID)){
+                    conditionObj.mistake = ObjectID(mistakeID)
                 }
 
                 // Phân loại kênh bán hàng

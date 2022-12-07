@@ -1,30 +1,30 @@
 "use strict";
+
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
+const { checkObjectIDs, IsJsonString }
                                         = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+// const stringUtils					    = require('../../../tools/utils/string_utils');
+// const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { template } = require('lodash');
 
 /**s
  * import inter-coll, exter-coll
  */
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
-const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
-const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
-const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
-const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
-const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
+// const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
+// const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
+// const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
+// const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
+// const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
+// const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 
 /**
  * import inter-model, exter-model
@@ -36,7 +36,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -57,11 +57,11 @@ class Model extends BaseModel {
 
                 if(fundaID && checkObjectIDs(fundaID)){
                     let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                    if (!infoFunda) 
+                    if (!infoFunda)
                         return resolve({ error: true, message: 'cannot_get_info_funda' });
 
-                    dataInsert.funda = fundaID 
-                    dataInsert.company = infoFunda.company 
+                    dataInsert.funda = fundaID
+                    dataInsert.company = infoFunda.company
                 }else{
                     dataInsert.company = companyID
                 }
@@ -101,16 +101,16 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update group 
+     * Name: update group
      * Author: Depv
      * Code:
      */
-    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, type }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID, type }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID))
                     return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-                    
+
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date(), type };
 
                 if(checkObjectIDs(parentID)){
@@ -123,6 +123,12 @@ class Model extends BaseModel {
 
                 if(sign){
                     dataInUpdate.sign =sign;
+                }
+
+                if(imagesID && imagesID.length) {
+                    dataInUpdate.$addToSet = {
+                        images: imagesID,
+                    }
                 }
 
                 if(unit && unit != ""){
@@ -141,8 +147,7 @@ class Model extends BaseModel {
                     dataInUpdate.unitPrice = Number(unitPrice);
                     dataInUpdate.amount = Number(quantity*unitPrice);
                 }
-                console.log({ dataInUpdate })
-                
+
                 let infoAfterUpdate = await FNB_PRODUCT_COLL.findByIdAndUpdate(productID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
@@ -156,19 +161,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: remove group 
-     * Author: Depv
-     * Code:
-     */
-
-    /**
-     * Name: remove many 
-     * Author: Depv
-     * Code:
-     */
-
-    /**
-     * Name: get info user_pcm_plan_group 
+     * Name: get info user_pcm_plan_group
      * Author: Depv
      * Code:
      */
@@ -270,7 +263,7 @@ class Model extends BaseModel {
 
                     select = JSON.parse(select);
                 }
- 
+
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await FNB_PRODUCT_COLL.findById(lastestID);
