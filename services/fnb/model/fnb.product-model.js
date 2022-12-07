@@ -105,13 +105,13 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID, type }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID))
                     return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date(), type };
+                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(checkObjectIDs(parentID)){
                     dataInUpdate.parent = parentID;
@@ -202,8 +202,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
+    getList({ companyID, type, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({ companyID, type, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -219,6 +219,10 @@ class Model extends BaseModel {
                 // Gom nhóm theo đơn vị cơ sở
                 if(companyID ){
                     conditionObj.company = ObjectID(companyID)
+                }
+
+                if(type && !isNaN(type)){
+                    conditionObj.type = Number(type)
                 }
 
                 // Làm rõ mục đích để làm gì?

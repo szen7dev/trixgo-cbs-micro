@@ -61,16 +61,15 @@
             imagesID        : { type: "array", optional: true },
             quantity        : { type: "number", optional: true },
             unitPrice       : { type: "number", optional: true },
-            type            : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID, type } = ctx.params;
+                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await FNB_PRODUCT_MODEL.update({
-                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID, type
+                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -113,6 +112,7 @@
          auth: "required",
          params: {
             productID   : { type: "string", optional: true },
+            type        : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -124,7 +124,7 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let {  productID, type, keyword, limit, lastestID, select, populates } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -135,7 +135,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_PRODUCT_MODEL.getList({
-                         companyID: company._id, keyword, limit, lastestID, select, populates, userID
+                         companyID: company._id, type, keyword, limit, lastestID, select, populates, userID
                      });
                  }
 
