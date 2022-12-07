@@ -221,6 +221,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default : 0
     },
     /**
+     * KHÁCH HÀNG THÂN THIẾT
+     */
+    //______Điểm tích lũy
+    loyaltyPoints: {
+        type: Number,
+        default : 0
+    },
+    /**
      * QUẢN LÝ THÔNG BÁO
      */
     /**

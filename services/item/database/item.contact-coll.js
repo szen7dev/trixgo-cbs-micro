@@ -277,6 +277,21 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 0
     },
+    //______Tổng điểm tích lũy
+    totalLoyaltyPoints: {
+        type: Number,
+        default : 0
+    },
+    //______Điểm đã sử dụng
+    usedLoyaltyPoints: {
+        type: Number,
+        default : 0
+    },
+    //______Điểm còn lại
+    remainLoyaltyPoints: {
+        type: Number,
+        default : 0
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

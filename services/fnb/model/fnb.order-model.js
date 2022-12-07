@@ -536,7 +536,7 @@ class Model extends BaseModel {
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) {
-        console.log({fromDate, toDate})
+        console.log({fundasID, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -682,9 +682,9 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // console.log(conditionObj)
-                    // console.log(conditionObjYear)
-                    // console.log(conditionGroup)
+                    console.log(conditionObj)
+                    console.log(conditionObjYear)
+                    console.log(conditionGroup)
 
                     // Danh sách đang triển khai
                     let listData = await FNB_ORDER_COLL.aggregate([
