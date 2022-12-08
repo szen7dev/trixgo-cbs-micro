@@ -26,6 +26,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         type: Schema.Types.ObjectId,
         ref : "fnb_product"
     },
+    //_________Sản phẩm phụ/Topping kèm theo
+    subProduct: [{
+        type: Schema.Types.ObjectId,
+        ref : "fnb_product"
+    }],
     /**
      * THÔNG TIN GIÁ TRỊ
      */
