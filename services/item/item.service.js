@@ -111,6 +111,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_OF_SYSTEM] 			: ITEM__CONTACT_HANDLER.getListOfSystem,
 		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_ACCESS_BY_CONTRACT] 	: ITEM__CONTACT_HANDLER.getListAccessByContract,
 		[CF_ACTIONS_ITEM.CONTACT_EXPORT] 						: ITEM__CONTACT_HANDLER.exportHuman,
+		[CF_ACTIONS_ITEM.CONTACT_DOWNLOAD_TEMPLATE_IMPORT_EXCEL]: ITEM__CONTACT_HANDLER.downloadTemplateImportExcel,
 
 		//==========================================  WAREHOUSE  =================================
 		[CF_ACTIONS_ITEM.WAREHOUSE_INSERT] 						: ITEM__WAREHOUSE_HANDLER.insert,

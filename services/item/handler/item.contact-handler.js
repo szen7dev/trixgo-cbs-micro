@@ -319,6 +319,36 @@ module.exports = {
     },
 
     /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 8/12/2022
+     */
+    downloadTemplateImportExcel: {
+        auth: 'required',
+        params: {
+            // projectID: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                // const { projectID } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                const resultAfterCallHandler = await ITEM__CONTACT_MODEL.downloadTemplateImportExcel({
+                    companyID: company._id, userID 
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Dev: MinhVH
      * Func: Download Excel Contact
      * Date: 21/06/2022
