@@ -13,7 +13,7 @@ const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.consta
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
-
+const moment = require("moment");
 /**s
  * import inter-coll, exter-coll
  */
@@ -381,7 +381,6 @@ class Model extends BaseModel {
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) { 
-        console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -390,7 +389,6 @@ class Model extends BaseModel {
                     let conditionObj = {}
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
-
                     /**
                      * VALIDATION (1)
                      */
@@ -408,8 +406,11 @@ class Model extends BaseModel {
                     // Phân loại theo thời khoảng
                     if(fromDate && toDate){
                         conditionObj.createAt = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
+                            // $gte: new Date(fromDate),
+                            // $lte: new Date(toDate),
+                            $gte: moment(fromDate).startOf('day')._d,
+                            $lte: moment(toDate).endOf('day')._d,
+                            
                         }
                     }
 
@@ -461,7 +462,6 @@ class Model extends BaseModel {
                     if(!isNaN(option) && [1].includes(Number(option))){
                         await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
                     }
-
                     return resolve({ error: false, data: listData });
                 }
             } catch (error) {
