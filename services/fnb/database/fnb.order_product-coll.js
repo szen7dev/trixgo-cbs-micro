@@ -27,7 +27,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         ref : "fnb_product"
     },
     //_________Sản phẩm phụ/Topping kèm theo
-    subProduct: [{
+    subProducts: [{
         type: Schema.Types.ObjectId,
         ref : "fnb_product"
     }],

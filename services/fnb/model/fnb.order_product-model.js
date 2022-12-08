@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, quantity, upsize, topping, note, userID }) {
+    insert({ orderID, productID, subProductsID, quantity, upsize, topping, note, userID }) {
         // console.log({ orderID, productID, quantity, upsize, topping, note, userID })
         return new Promise(async resolve => {
             try {
@@ -92,6 +92,10 @@ class Model extends BaseModel {
                     unitPrice: infoProduct.unitPrice,
                     userCreate: userID
                 };
+
+                if(subProductsID && checkObjectIDs(subProductsID)){
+                    dataInsert.subProducts = subProductsID;
+                }
 
                 if(!isNaN(quantity)){
                     dataInsert.quantity = Number(quantity);
