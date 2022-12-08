@@ -16,7 +16,8 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
 /**s
  * import inter-coll, exter-coll
  */
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
+const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
@@ -132,6 +133,11 @@ class Model extends BaseModel {
                     dataInsert.service = Number(service);
                 }
 
+                /**
+                 * TÍNH TOÁN GIÁ TRỊ
+                 */
+                let loyaltyPoints = 0
+
                 if(!isNaN(total)){
                     dataInsert.total = Number(total);
                     dataInsert.amount = Number(total);
@@ -145,6 +151,10 @@ class Model extends BaseModel {
                 if(!isNaN(salesoff)){
                     dataInsert.salesoff = Number(salesoff);
                     dataInsert.amount -= Number(salesoff);
+
+                    // Chính sách tích điểm
+                    loyaltyPoints = Number(Number(total-discount-salesoff)*(3/100)).toFixed(0) // Tích điểm 3%
+                    dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
                 if(!isNaN(vatAmount)){
@@ -187,6 +197,13 @@ class Model extends BaseModel {
                  * -> Gửi tới các user là members của fundaID (infoFunda.members)
                  */
 
+                /**
+                 * TÍCH ĐIỂM CHO KHÁCH HÀNG
+                 */
+                let infoCustomer = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                    $inc: { "totalLoyaltyPoints": Number(loyaltyPoints) }
+                })
+                console.log(infoCustomer)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
