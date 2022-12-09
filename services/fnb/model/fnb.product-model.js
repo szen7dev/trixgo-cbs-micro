@@ -14,6 +14,11 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 // const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**s
  * import inter-coll, exter-coll
  */
@@ -314,6 +319,52 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 8/12/2022
+     */
+    downloadTemplateExcel({ companyID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                // console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_product_template_import.xlsx')))
+                .then(async workbook => {
+
+                    // var i = 3;
+                    // listData?.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
+                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
+                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
+                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
+                    //     // workbook.sheet("Export").row(i).cell(5).value(item.description);
+                    //     workbook.sheet("Export").row(i).cell(5).value(item.note);
+                    //     i++
+                    // });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_product_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    // console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
