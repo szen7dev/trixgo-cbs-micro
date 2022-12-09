@@ -221,7 +221,8 @@ class Model extends BaseModel {
 
                 let conditionObj = {}
                 let sortBy;
-                let keys	 = ['createAt__-1'];
+                // let keys	 = ['createAt__-1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(companyID ){
