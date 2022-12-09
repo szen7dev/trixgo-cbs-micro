@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type }) {
+    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
@@ -80,6 +80,7 @@ class Model extends BaseModel {
 
                 if(!isNaN(unitPrice)){
                     dataInsert.unitPrice = Number(unitPrice);
+                    dataInsert.unitPrice2 = Number(unitPrice2);
 
                     if(!isNaN(quantity)){
                         dataInsert.quantity = Number(quantity);
@@ -312,6 +313,62 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: importFromExcel
+     * Date: 8/12/2022
+     */
+    importFromExcel({ companyID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================');
+                // return console.log({ dataImportJSON });
+                let index = 0;
+                let errorNumber = 0;
+                // let parentID;
+                for (const data of dataImportJSON) {
+                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                    if(index > 0){
+                        let dataInsert = {
+                            companyID,
+                            userID,
+                            name: data?.__EMPTY,
+                            sign: data?.__EMPTY_1,
+                            type: data?.__EMPTY_2,
+                            unit: data?.__EMPTY_3,
+                            unitPrice: data?.__EMPTY_4,
+                            unitPrice2: data?.__EMPTY_5,
+                            note: data?.__EMPTY_6,
+                            
+                        }
+
+                        // console.log(dataInsert);
+                    
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+
+                    }
+                    index ++;
+                }
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "Import failed" });
+                    
+                // console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+                // // Update timeImportExcel trick reload việc con
+                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
