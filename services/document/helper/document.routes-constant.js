@@ -10,6 +10,8 @@ const CF_ROUTINGS_DOCUMENT = {
     GET_INFO_DOCUMENT                     		: `${BASE_ROUTE}/info-document`,
     GET_LIST_DOCUMENT                     		: `${BASE_ROUTE}/list-document`,
     FILTER_DOCUMENT                     		: `${BASE_ROUTE}/filter-document`,
+    DOWNLOAD_TEMPLATE_EXCEL                     : `${BASE_ROUTE}/download-template-excel`,
+    IMPORT_FROM_EXCEL                           : `${BASE_ROUTE}/import-from-excel`,
     EXPORT_DOCUMENT                     		: `${BASE_ROUTE}/export-document`,
 
     GET_LIST_STORAGE                     		: `${BASE_ROUTE}/list-storage`,
