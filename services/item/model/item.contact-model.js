@@ -823,7 +823,7 @@ class Model extends BaseModel {
                 }
                 /**
                  * Purpose: Sử dụng trong export excel nhân sự (theo bộ lọc)
-                 * Function: exportHuman (model)
+                 * Function: (model)
                  */
                 if(isExportExcel) {
                     return resolve({ data: conditionObj, error: false });
@@ -993,7 +993,7 @@ class Model extends BaseModel {
      * Func: Download Excel Contact
      * Date: 21/06/2022
      */
-    exportHuman({ companyID, userID, filterParams, ctx }) {
+    exportExcel({ companyID, userID, filterParams, ctx }) {
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({ userID, companyID });
