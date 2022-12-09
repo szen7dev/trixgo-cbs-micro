@@ -1408,11 +1408,12 @@ class Model extends BaseModel {
                     if(index > 0){
                         let dataInsert = {
                             company: companyID,
+                            authorID: userID,
                             name: data?.__EMPTY,
                             phone: data?.__EMPTY_1,
                             address: data?.__EMPTY_2,
                             note: data?.__EMPTY_3,
-                            authorID: userID,
+                            type: 2
                         }
 
                         // console.log(dataInsert);
@@ -1427,11 +1428,6 @@ class Model extends BaseModel {
                 }
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "Import failed" });
-                    
-                // console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-
-                // // Update timeImportExcel trick reload việc con
-                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
                 return resolve({ error: false, message: "Import successfull" });
             } catch (error) {
