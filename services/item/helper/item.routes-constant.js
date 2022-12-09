@@ -46,9 +46,9 @@ const CF_ROUTINGS_ITEM = {
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,
     CONTACTS_GET_LIST_OF_SYSTEM                : `${BASE_ROUTE}${CONTACT}/contact-of-system`,
     CONTACTS_GET_LIST_ACCESS_BY_CONTRACT       : `${BASE_ROUTE}${CONTACT}/list-access-by-contract`,
-    CONTACTS_EXPORT                            : `${BASE_ROUTE}${CONTACT}/export-contact`,
     CONTACT_DOWNLOAD_TEMPLATE_IMPORT_EXCEL     : `${BASE_ROUTE}${CONTACT}/download-template-import-excel`,
     CONTACT_IMPORT_FROM_EXCEL                  : `${BASE_ROUTE}${CONTACT}/import-from-excel`,
+    CONTACT_EXPORT_EXCEL                       : `${BASE_ROUTE}${CONTACT}/export-excel`,
 
     // ================================WAREHOUSE=======================================//
     WAREHOUSES                                 : `${BASE_ROUTE}${WAREHOUSE}`,
@@ -67,7 +67,10 @@ const CF_ROUTINGS_ITEM = {
     ACCOUNT_GET_LIST_NESTED                    : `${BASE_ROUTE}${ACCOUNT}/get-list-nested-item`,
 
     // ================================GOOD============================================//
-    GOODS                                      : `${BASE_ROUTE}${GOODS}`,
+    GOODS                                       : `${BASE_ROUTE}${GOODS}`,
+    GOOD_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${GOODS}/download-template-excel`,
+    GOOD_IMPORT_FROM_EXCEL                      : `${BASE_ROUTE}${GOODS}/import-from-excel`,
+    GOOD_EXPORT_EXCEL                           : `${BASE_ROUTE}${GOODS}/export-excel`,
 
     // ================================FUNDA===========================================//
     FUNDA                                      : `${BASE_ROUTE}${FUNDA}`,
