@@ -41,6 +41,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type }) {
+        console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)

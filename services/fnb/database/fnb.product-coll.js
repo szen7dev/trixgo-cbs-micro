@@ -58,6 +58,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         type: Number,
         default : 0
     },
+    //______Đơn giá 2
+    unitPrice2: {
+        type: Number,
+        default : 0
+    },
     //______Thành tiền
     amount: {
         type: Number,
