@@ -13,7 +13,7 @@ const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.consta
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
-
+const moment = require("moment");
 /**s
  * import inter-coll, exter-coll
  */
@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, quantity, upsize, topping, note, userID }) {
+    insert({ orderID, productID, subProductsID, quantity, upsize, topping, note, userID }) {
         // console.log({ orderID, productID, quantity, upsize, topping, note, userID })
         return new Promise(async resolve => {
             try {
@@ -92,6 +92,10 @@ class Model extends BaseModel {
                     unitPrice: infoProduct.unitPrice,
                     userCreate: userID
                 };
+
+                if(subProductsID && checkObjectIDs(subProductsID)){
+                    dataInsert.subProducts = subProductsID;
+                }
 
                 if(!isNaN(quantity)){
                     dataInsert.quantity = Number(quantity);
@@ -381,7 +385,7 @@ class Model extends BaseModel {
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) { 
-        console.log({fromDate, toDate})
+            console.log({fundasID, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -390,7 +394,6 @@ class Model extends BaseModel {
                     let conditionObj = {}
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
-
                     /**
                      * VALIDATION (1)
                      */
@@ -410,6 +413,9 @@ class Model extends BaseModel {
                         conditionObj.createAt = {
                             $gte: new Date(fromDate),
                             $lte: new Date(toDate),
+                            // $gte: moment(fromDate).startOf('day')._d,
+                            // $lte: moment(toDate).endOf('day')._d,
+                            
                         }
                     }
 
@@ -461,7 +467,6 @@ class Model extends BaseModel {
                     if(!isNaN(option) && [1].includes(Number(option))){
                         await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
                     }
-
                     return resolve({ error: false, data: listData });
                 }
             } catch (error) {

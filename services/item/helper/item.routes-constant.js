@@ -47,6 +47,8 @@ const CF_ROUTINGS_ITEM = {
     CONTACTS_GET_LIST_OF_SYSTEM                : `${BASE_ROUTE}${CONTACT}/contact-of-system`,
     CONTACTS_GET_LIST_ACCESS_BY_CONTRACT       : `${BASE_ROUTE}${CONTACT}/list-access-by-contract`,
     CONTACTS_EXPORT                            : `${BASE_ROUTE}${CONTACT}/export-contact`,
+    CONTACT_DOWNLOAD_TEMPLATE_IMPORT_EXCEL     : `${BASE_ROUTE}${CONTACT}/download-template-import-excel`,
+    CONTACT_IMPORT_FROM_EXCEL                  : `${BASE_ROUTE}${CONTACT}/import-from-excel`,
 
     // ================================WAREHOUSE=======================================//
     WAREHOUSES                                 : `${BASE_ROUTE}${WAREHOUSE}`,

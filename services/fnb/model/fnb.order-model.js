@@ -12,11 +12,13 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const moment = require("moment");
 
 /**s
  * import inter-coll, exter-coll
  */
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
+const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
@@ -42,6 +44,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
+        console.log(fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID)
         return new Promise(async resolve => {
             try {
                 /**
@@ -51,7 +54,6 @@ class Model extends BaseModel {
                  * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
                  */
-
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
@@ -132,6 +134,11 @@ class Model extends BaseModel {
                     dataInsert.service = Number(service);
                 }
 
+                /**
+                 * TÍNH TOÁN GIÁ TRỊ
+                 */
+                let loyaltyPoints = 0
+
                 if(!isNaN(total)){
                     dataInsert.total = Number(total);
                     dataInsert.amount = Number(total);
@@ -145,6 +152,10 @@ class Model extends BaseModel {
                 if(!isNaN(salesoff)){
                     dataInsert.salesoff = Number(salesoff);
                     dataInsert.amount -= Number(salesoff);
+
+                    // Chính sách tích điểm
+                    loyaltyPoints = Number(Number(total-discount-salesoff)*(3/100)).toFixed(0) // Tích điểm 3%
+                    dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
                 if(!isNaN(vatAmount)){
@@ -187,6 +198,13 @@ class Model extends BaseModel {
                  * -> Gửi tới các user là members của fundaID (infoFunda.members)
                  */
 
+                /**
+                 * TÍCH ĐIỂM CHO KHÁCH HÀNG
+                 */
+                let infoCustomer = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                    $inc: { "totalLoyaltyPoints": Number(loyaltyPoints) }
+                })
+                console.log(infoCustomer)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -391,7 +409,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID})
+        // console.log({fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -569,6 +587,8 @@ class Model extends BaseModel {
                         conditionObj.createAt = {
                             $gte: new Date(fromDate),
                             $lte: new Date(toDate),
+                            // $gte: moment(fromDate).startOf('day')._d,
+                            // $lte: moment(toDate).endOf('day')._d,
                         }
                     }
 
@@ -682,9 +702,9 @@ class Model extends BaseModel {
                         }
                     }
 
-                    console.log(conditionObj)
-                    console.log(conditionObjYear)
-                    console.log(conditionGroup)
+                    // console.log(conditionObj)
+                    // console.log(conditionObjYear)
+                    // console.log(conditionGroup)
 
                     // Danh sách đang triển khai
                     let listData = await FNB_ORDER_COLL.aggregate([
@@ -721,7 +741,7 @@ class Model extends BaseModel {
                             $sort: sortBy
                         }
                     ])
-
+                    console.log({listData});
                     if(!isNaN(option) && [3].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }

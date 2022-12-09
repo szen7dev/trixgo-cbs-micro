@@ -25,17 +25,18 @@
             note                : { type: "string", optional: true },
             quantity            : { type: "number", optional: true },
             unitPrice           : { type: "number", optional: true },
+            unitPrice2           : { type: "number", optional: true },
             type                : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type } = ctx.params;
+                let { fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_PRODUCT_MODEL.insert({
-                    userID, companyID: company._id, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type
+                    userID, companyID: company._id, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -61,16 +62,15 @@
             imagesID        : { type: "array", optional: true },
             quantity        : { type: "number", optional: true },
             unitPrice       : { type: "number", optional: true },
-            type            : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID, type } = ctx.params;
+                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await FNB_PRODUCT_MODEL.update({
-                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID, type
+                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -113,6 +113,7 @@
          auth: "required",
          params: {
             productID   : { type: "string", optional: true },
+            type        : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -124,7 +125,7 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let {  productID, type, keyword, limit, lastestID, select, populates } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -135,7 +136,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_PRODUCT_MODEL.getList({
-                         companyID: company._id, keyword, limit, lastestID, select, populates, userID
+                         companyID: company._id, type, keyword, limit, lastestID, select, populates, userID
                      });
                  }
 
@@ -145,4 +146,99 @@
              }
          }
      },
+
+     /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 8/12/2022
+     */
+    downloadTemplateExcel: {
+        auth: 'required',
+        params: {
+
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+                const resultAfterCallHandler = await FNB_PRODUCT_MODEL.downloadTemplateExcel({
+                    companyID: company._id, userID 
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 9/12/2022
+     */
+    importFromExcel: {
+        auth: 'required',
+        params: {
+            // taskID    : { type: 'string', optional: true },
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { dataImport } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log(dataImport)
+
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+
+                console.log(dataImport)
+
+                const resultAfterCallHandler = await FNB_PRODUCT_MODEL.importFromExcel({
+                    companyID: company._id, dataImport, userID, ctx
+                })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 9/12/2022
+     */
+    exportExcel: {
+        auth: 'required',
+        params: {
+            companyID: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let { companyID, filterParams } = ctx.params;
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await FNB_PRODUCT_MODEL.exportExcel({
+                    userID, companyID, filterParams, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
  }

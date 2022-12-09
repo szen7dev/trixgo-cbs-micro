@@ -14,6 +14,11 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 // const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**s
  * import inter-coll, exter-coll
  */
@@ -40,7 +45,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, type }) {
+    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type }) {
+        console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
@@ -80,6 +86,7 @@ class Model extends BaseModel {
 
                 if(!isNaN(unitPrice)){
                     dataInsert.unitPrice = Number(unitPrice);
+                    dataInsert.unitPrice2 = Number(unitPrice2);
 
                     if(!isNaN(quantity)){
                         dataInsert.quantity = Number(quantity);
@@ -105,13 +112,13 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID, type }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID))
                     return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date(), type };
+                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(checkObjectIDs(parentID)){
                     dataInUpdate.parent = parentID;
@@ -202,8 +209,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
+    getList({ companyID, type, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({ companyID, type, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -219,6 +226,10 @@ class Model extends BaseModel {
                 // Gom nhóm theo đơn vị cơ sở
                 if(companyID ){
                     conditionObj.company = ObjectID(companyID)
+                }
+
+                if(type && !isNaN(type)){
+                    conditionObj.type = Number(type)
                 }
 
                 // Làm rõ mục đích để làm gì?
@@ -308,6 +319,108 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 8/12/2022
+     */
+    downloadTemplateExcel({ companyID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                // console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_product_template_import.xlsx')))
+                .then(async workbook => {
+
+                    // var i = 3;
+                    // listData?.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
+                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
+                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
+                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
+                    //     // workbook.sheet("Export").row(i).cell(5).value(item.description);
+                    //     workbook.sheet("Export").row(i).cell(5).value(item.note);
+                    //     i++
+                    // });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_product_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    // console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: importFromExcel
+     * Date: 8/12/2022
+     */
+    importFromExcel({ companyID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================');
+                // return console.log({ dataImportJSON });
+                let index = 0;
+                let errorNumber = 0;
+                // let parentID;
+                for (const data of dataImportJSON) {
+                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                    if(index > 0){
+                        let dataInsert = {
+                            companyID,
+                            userID,
+                            name: data?.__EMPTY,
+                            sign: data?.__EMPTY_1,
+                            type: data?.__EMPTY_2,
+                            unit: data?.__EMPTY_3,
+                            unitPrice: data?.__EMPTY_4,
+                            unitPrice2: data?.__EMPTY_5,
+                            note: data?.__EMPTY_6,
+                            
+                        }
+
+                        // console.log(dataInsert);
+                    
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+
+                    }
+                    index ++;
+                }
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "Import failed" });
+                    
+                // console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+                // // Update timeImportExcel trick reload việc con
+                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
