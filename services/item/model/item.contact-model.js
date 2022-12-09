@@ -41,13 +41,15 @@ class Model extends BaseModel {
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
     }) {
-        console.log({ company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
-            insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-            signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
-        })
+        // console.log({ company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
+        // })
         return new Promise(async resolve => {
             try {
-                if(!name || !_isValid(company) || !_isValid(authorID))
+                // console.log(company)
+                // console.log(checkObjectIDs(company) )
+                if(!name || !checkObjectIDs(company) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'param_not_valid' });
 
                 //___________Kiểm tra việc trùng mã hiệu
@@ -96,32 +98,32 @@ class Model extends BaseModel {
                 if(gender && !isNaN(gender)){
                     dataInsert.gender = gender;
                 }
-                if(department && _isValid(department)){
+                if(department && checkObjectIDs(department)){
                     dataInsert.department = department;
                 }
-                if(position && _isValid(position)){
+                if(position && checkObjectIDs(position)){
                     dataInsert.position = position;
                 }
-                if(linkUser && _isValid(linkUser)){
+                if(linkUser && checkObjectIDs(linkUser)){
                     dataInsert.linkUser = linkUser;
                 }
-                if(linkSale && _isValid(linkSale)){
+                if(linkSale && checkObjectIDs(linkSale)){
                     dataInsert.linkSale = linkSale;
                 }
-                if(field && _isValid(field)){
+                if(field && checkObjectIDs(field)){
                     dataInsert.field = field;
                 }
-                if(property && _isValid(property)){
+                if(property && checkObjectIDs(property)){
                     dataInsert.property = property;
                 }
 
-                if(parent && _isValid(parent)){
+                if(parent && checkObjectIDs(parent)){
                     dataInsert.parent = parent;
                     let infoMenuParent = await ITEM__CONTACT_COLL.findById(parent);
                     dataInsert.level = infoMenuParent.level + 1;
                 }
 
-                if(workingStatus && _isValid(workingStatus)){
+                if(workingStatus && checkObjectIDs(workingStatus)){
                     dataInsert.workingStatus = workingStatus;
                 }
 
@@ -137,7 +139,7 @@ class Model extends BaseModel {
                     dataInsert.familyPolicy = familyPolicy;
                 }
 
-                if(contractType && _isValid(contractType)){
+                if(contractType && checkObjectIDs(contractType)){
                     dataInsert.contractType = contractType;
                 }
 
@@ -349,32 +351,32 @@ class Model extends BaseModel {
                 if(gender && !isNaN(gender)){
                     dataUpdate.gender = gender;
                 }
-                if(department && _isValid(department)){
+                if(department && checkObjectIDs(department)){
                     dataUpdate.department = department;
                 }
-                if(position && _isValid(position)){
+                if(position && checkObjectIDs(position)){
                     dataUpdate.position = position;
                 }
-                if(linkUser && _isValid(linkUser)){
+                if(linkUser && checkObjectIDs(linkUser)){
                     dataUpdate.linkUser = linkUser;
                 }
-                if(linkSale && _isValid(linkSale)){
+                if(linkSale && checkObjectIDs(linkSale)){
                     dataUpdate.linkSale = linkSale;
                 }
-                if(field && _isValid(field)){
+                if(field && checkObjectIDs(field)){
                     dataUpdate.field = field;
                 }
-                if(property && _isValid(property)){
+                if(property && checkObjectIDs(property)){
                     dataUpdate.property = property;
                 }
 
-                if(parent && _isValid(parent)){
+                if(parent && checkObjectIDs(parent)){
                     dataUpdate.parent = parent;
                     let infoMenuParent = await ITEM__CONTACT_COLL.findById(parent);
                     dataUpdate.level = infoMenuParent.level + 1;
                 }
 
-                if(workingStatus && _isValid(workingStatus)){
+                if(workingStatus && checkObjectIDs(workingStatus)){
                     dataUpdate.workingStatus = workingStatus;
                 }
 
@@ -390,7 +392,7 @@ class Model extends BaseModel {
                     dataUpdate.familyPolicy = familyPolicy;
                 }
 
-                if(contractType && _isValid(contractType)){
+                if(contractType && checkObjectIDs(contractType)){
                     dataUpdate.contractType = contractType;
                 }
 
@@ -1380,6 +1382,58 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: result?.Location, status: 200 });
                 });
 
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: importFromExcel
+     * Date: 8/12/2022
+     */
+    importFromExcel({ companyID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================');
+                // return console.log({ dataImportJSON });
+                let index = 0;
+                let errorNumber = 0;
+                // let parentID;
+                for (const data of dataImportJSON) {
+                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                    if(index > 0){
+                        let dataInsert = {
+                            company: companyID,
+                            name: data?.__EMPTY,
+                            phone: data?.__EMPTY_1,
+                            address: data?.__EMPTY_2,
+                            note: data?.__EMPTY_3,
+                            authorID: userID,
+                        }
+
+                        // console.log(dataInsert);
+                    
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+
+                    }
+                    index ++;
+                }
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "Import failed" });
+                    
+                // console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+                // // Update timeImportExcel trick reload việc con
+                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "Import successfull" });
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });

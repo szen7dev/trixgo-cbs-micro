@@ -363,17 +363,17 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { dataImport } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
                 console.log('====================HERE===================')
                 console.log('====================HERE===================')
                 console.log('====================HERE===================')
 
-                console.log(dataImport)
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.importFromExcel({
-                    taskID, dataImport, userID, ctx
+                    companyID: company._id, dataImport, userID, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
