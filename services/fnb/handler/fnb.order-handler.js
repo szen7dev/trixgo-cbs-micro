@@ -31,7 +31,7 @@ module.exports = {
             service             : { type: "string", optional: true },
             customerType        : { type: "string", optional: true },
             shiftType           : { type: "string", optional: true },
-            total               : { type: "number", optional: true },
+            total               : { type: "string", optional: true },
             discount            : { type: "string", optional: true },
             salesoff            : { type: "string", optional: true },
             vatAmount           : { type: "string", optional: true },

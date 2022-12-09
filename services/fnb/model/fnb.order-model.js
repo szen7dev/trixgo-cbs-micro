@@ -44,6 +44,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
+        console.log(fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID)
         return new Promise(async resolve => {
             try {
                 /**
@@ -53,7 +54,6 @@ class Model extends BaseModel {
                  * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
                  */
-
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
