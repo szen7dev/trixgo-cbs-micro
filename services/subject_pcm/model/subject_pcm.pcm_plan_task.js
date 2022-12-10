@@ -125,7 +125,7 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
-        // console.log({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, messageID, contractID, documentID, boardID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, select, populates })
+
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -191,7 +191,7 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type
                 }
-                // console.log({ expiredTime, expiredHour })
+
 
                 if(parentID){
                     infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
@@ -415,7 +415,7 @@ class Model extends BaseModel {
                             arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
                         }
                     }
-                    console.log({ BEFORE: arrReceiver })
+
 
                     if(arrReceiver && arrReceiver.length) {
                         if(parentID) {
@@ -496,7 +496,6 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoTask, status: 200 });
             } catch (error) {
-                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -513,10 +512,6 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
-        // console.log({taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -543,8 +538,6 @@ class Model extends BaseModel {
                     path: 'project assignee',
                     select: '_id admins name fullname bizfullname'
                 }).lean()
-                // console.log('===============================')
-                // console.log(infoTask)
 
                 if(!infoTask)
                     return resolve({ error: true, message: 'task_not_exists', status: 400 });
@@ -877,7 +870,6 @@ class Model extends BaseModel {
                      * -> Cập nhật trạng thái của task thành "Hoàn thành"
                      */
                     if(infoTask.subtype === 4 && userID.toString() === infoTask.assignee?._id.toString()) {
-                        console.log('==========NHÀ THẦU VỪA DỰ THẦU===============')
                         dataUpdate.approver = userID
                         dataUpdate.timeApproved = Date.now()
                         dataUpdate.status = 3;
@@ -1104,7 +1096,6 @@ class Model extends BaseModel {
 
                 //2. Socket_CloudMSS_Đồng ý phê duyệt
                 if(isAddSignature) {
-                    console.log('==========CLOUDMSS KÝ XÁC NHẬN===============')
                     const { name: taskName, related, assignee, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, assignee.toString(), author.toString()];
@@ -1140,7 +1131,6 @@ class Model extends BaseModel {
 
                 //3. Socket_CloudMSS_Mở thầu
                 if(isOpenBidding) {
-                    console.log('==========CLOUDMSS CÁC BÊN VỪA MỞ THẦU===============')
                     const { name: taskName, related, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
                     const listReceivers = [...relatedUsers, author.toString()];
@@ -1211,7 +1201,6 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
-                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -1354,8 +1343,6 @@ class Model extends BaseModel {
                     isMemberGroup = true;
                 }
 
-                // console.log({isAuthor,isAssignee,isRelated,isMemberGroup})
-
                 if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
                     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
@@ -1370,7 +1357,6 @@ class Model extends BaseModel {
                  * Cập nhật thông tin người truy cập
                  */
                 let result = viewedUsers.filter(item => item != null);
-                // console.log(result)
 
                 if(!result.map(item=>item.toString()).includes(userID.toString())){
                     console.log('========Bạn chưa xem công việc============')
@@ -1419,13 +1405,6 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
-        // console.log('=============Danh sách chủ đề 6688=============>>>>>>>>>>>')
-        // console.log({
-        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        //     keyword, limit, unlimit, lastestID, select, populates
-        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1488,7 +1467,6 @@ class Model extends BaseModel {
                     conditionObj.status = { $in: [status] }
                 }
 
-                // console.log({conditionObj_______1:conditionObj})
 
                 /**
                  * Quá hạn
@@ -1614,8 +1592,6 @@ class Model extends BaseModel {
                     conditionObj.level = level;
                 }
 
-                // console.log({conditionObj_______3:conditionObj})
-
                 /**
                  * Lấy việc quá hạn
                  * 1-Quá hạn
@@ -1704,9 +1680,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log('=======================')
-                console.log({conditionObj})
-
                 // Tìm kiếm theo keyword
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -1735,11 +1708,8 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
 
-                // console.log(conditionObjOrg)
-
                 // Tổng số việc tìm thấy
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
-                console.log({totalRecord})
                 if(unlimit == 1){
                     limit = totalRecord;
                 }
@@ -1793,7 +1763,6 @@ class Model extends BaseModel {
 
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
-                // console.log(infoDataAfterGet)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -1819,10 +1788,6 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
         limit = 50, lastestID, select, populates, userID
     }) {
-        console.log('=============Danh sách chủ đề TÌM KIẾM=============>>>>>>>>>>>')
-        console.log({fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-            projectsID, subtypes, status, fieldsID, isExpired, read, keyword, isParent, isGroup, reportType, unlimited,
-            limit, lastestID, select, populates, userID})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1991,8 +1956,6 @@ class Model extends BaseModel {
                     //     { description  :  new RegExp(keyword, 'i') }
                     // ]
                 }
-                console.log('========================')
-                console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -2082,7 +2045,6 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getAmountNotification({ userID }){
-        console.log({ userID })
         return new Promise(async resolve => {
             try {
                 let start = new Date();
@@ -2150,8 +2112,6 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getDynamicReport({ userID, option, reportType, status, fromDate, toDate }){
-        console.log('Báo cáo động ========>>>>>>>>')
-        console.log({ userID, option, reportType, status, fromDate, toDate })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}
@@ -2255,7 +2215,6 @@ class Model extends BaseModel {
                         if(listDataCompany.length){
                             await PCM_PLAN_TASK_COLL.populate(listDataCompany, conditionPopulateCompany)
                         }
-                        // console.log(listDataCompany)
 
                         return resolve({ error: false, data: { listDataCompany } });
                     }
@@ -2286,7 +2245,6 @@ class Model extends BaseModel {
                         if(listDataUser.length){
                             await PCM_PLAN_TASK_COLL.populate(listDataUser, conditionPopulateUser)
                         }
-                        // console.log(listDataUser)
 
                         return resolve({ error: false, data: { listDataUser } });
                     }
@@ -2301,7 +2259,6 @@ class Model extends BaseModel {
                             model: 'department'
                         }
 
-                        console.log(conditionObj)
 
                         let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
                             {
@@ -2315,12 +2272,10 @@ class Model extends BaseModel {
                             },
                             { $sort: sortBy},
                         ])
-                        console.log(listDataProject)
 
                         if(listDataProject.length){
                             await PCM_PLAN_TASK_COLL.populate(listDataProject, conditionPopulateProject)
                         }
-                        // console.log(listDataProject)
 
                         return resolve({ error: false, data: { listDataProject } });
                     }
@@ -2329,8 +2284,6 @@ class Model extends BaseModel {
                     if(option && Number(option) == 6){
                         objectGroup = { subtype: '$subtype' }
                         sortBy = { "_id.subtype": 1 }
-
-                        // console.log(conditionObj)
 
                         let listDataSubtype = await PCM_PLAN_TASK_COLL.aggregate([
                             {
@@ -2344,7 +2297,6 @@ class Model extends BaseModel {
                             },
                             { $sort: sortBy},
                         ])
-                        // console.log(listDataSubtype)
 
                         return resolve({ error: false, data: { listDataSubtype } });
                     }
@@ -2353,8 +2305,6 @@ class Model extends BaseModel {
                     if(option && Number(option) == 7){
                         objectGroup = { status: '$status' }
                         sortBy = { "_id.status": 1 }
-
-                        // console.log(conditionObj)
 
                         let listDataStatus = await PCM_PLAN_TASK_COLL.aggregate([
                             {
@@ -2368,7 +2318,6 @@ class Model extends BaseModel {
                             },
                             { $sort: sortBy},
                         ])
-                        // console.log(listDataSubtype)
 
                         return resolve({ error: false, data: { listDataStatus } });
                     }
@@ -2583,7 +2532,6 @@ class Model extends BaseModel {
                     const { data: users } = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
                         { arrayID: JSON.stringify([...receivers, userID]), select: "_id email", isLoadAll: true }
                     );
-                    // console.log({ users, emails })
 
                     if(users.length) {
                         mailsUser = users.map(item => item.email);
@@ -2626,10 +2574,6 @@ class Model extends BaseModel {
                 });
 
                 return resolve(result);
-
-                // console.log({ __: MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, __: { email: mailsUser, title, content: { sender, notice, infoTask } } });
-                // pool
-                //     .exec(MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, [JSON.stringify({ email: mailsUser, title, content: { sender, notice, infoTask } })])
             } catch (error) {
                 console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -2643,8 +2587,6 @@ class Model extends BaseModel {
      * Code: 23/9/2022
      */
     getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, projectID, keyword, subtype, ctx }){
-        // console.log('==================Tổng hợp theo đơn vị thực hiện 2222================>>>>>>>>>>>>>>>>>')
-        // console.log({ option, companyID, keyword, subtype })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(companyID))
@@ -2678,7 +2620,6 @@ class Model extends BaseModel {
                         { $group: { _id: "$assignee" } },
                         { $sort: { _id: -1} }
                     ]);
-                    // console.log(listUser)
 
                     let conditionObj = {}
 
@@ -2726,7 +2667,6 @@ class Model extends BaseModel {
                         { $group: { _id: "$project" } },
                         { $sort: { _id: -1} }
                     ]);
-                    // console.log(listProject)
 
                     let conditionObj = {}
 
@@ -2851,8 +2791,6 @@ class Model extends BaseModel {
      * Code:
      */
     getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx }){
-        // console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
-        // console.log({ projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
@@ -2887,11 +2825,9 @@ class Model extends BaseModel {
                 }
 
                 let listData = await PCM_PLAN_TASK_COLL.populate(listCompanyOfAssignee, conditionPopulate);
-                // console.log(listData)
 
                 // let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean);
                 let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean);
-                // console.log(listCompany)
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
@@ -3003,8 +2939,6 @@ class Model extends BaseModel {
      * Code:
      */
     getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID }){
-        console.log('==================Tổng hợp theo đơn vị thực hiện trong DỰ ÁN================>>>>>>>>>>>>>>>>>')
-        // console.log({ projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
@@ -3408,7 +3342,6 @@ class Model extends BaseModel {
      * Date: 22/04/2022
 	 */
     moveTaskToParent({ parentID, taskID, userID }) {
-        // console.log({ parentID, taskID, userID })
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
@@ -3586,16 +3519,6 @@ class Model extends BaseModel {
 
                         let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
 
-                        // console.log({
-                        //     startTimeParentTask: parentTask.startTime,
-                        //     oldStartTimeParentTask: startTime,
-                        //     expiredTime,
-                        //     totalDayStartTimeToExpiredTime,
-                        //     newExpiredTime,
-                        //     childID: childTask._id,
-                        //     parentID: parentTask._id,
-                        // })
-
                         delete childTask._id;
                         const newChildTask = await PCM_PLAN_TASK_COLL.create({
                             ...childTask,
@@ -3721,8 +3644,6 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
-        // console.log('Gom nhóm công việc theo thuộc tính=================')
-        // console.log({ userID, option, fromDate, toDate, projectID, companyID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3748,7 +3669,6 @@ class Model extends BaseModel {
                 if(option == 1 || option == 2){
                     let listTasks = await PCM_PLAN_TASK_COLL.find(conditionObj).select('_id')
                     // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
-                    // console.log(listTasks)
 
                     let objectGroup, conditionPopulateProject, conditionPopulateCompany, sortProject, sortCompany
 
@@ -3824,19 +3744,16 @@ class Model extends BaseModel {
                     if(listDataProject.length){
                         await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
                     }
-                    // console.log(listDataProject)
 
                     if(listDataProjectCompany.length){
                         await DEPARTMENT_COLL.populate(listDataProjectCompany, conditionPopulateCompany)
                     }
-                    // console.log(listDataProjectCompany)
 
                     return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
                 }
 
                 // Danh sách các công việc theo phân loại
                 if(option == 3){
-                    // console.log(conditionObj)
                     conditionObj.project = ObjectID(projectID)
                     conditionObj.companyOfAuthor = ObjectID(companyID)
                     let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
@@ -3855,7 +3772,6 @@ class Model extends BaseModel {
                 }
 
                 if(option == 4){
-                    // console.log(conditionObj)
                     conditionObj.project = ObjectID(projectID)
                     conditionObj.companyOfAssignee = ObjectID(companyID)
                     let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
@@ -4019,7 +3935,6 @@ class Model extends BaseModel {
                     }
                 }
             } catch (error) {
-                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -4075,12 +3990,10 @@ class Model extends BaseModel {
                     const result = await uploadFileS3(pathWriteFile, fileName);
 
                     fs.unlinkSync(pathWriteFile);
-                    console.log({ result })
                     return resolve({ error: false, data: result?.Location, status: 200 });
                 });
 
             } catch (error) {
-                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -4095,8 +4008,6 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
-                // console.log('=============Log data===================');
-                // return console.log({ dataImportJSON });
                 let index = 0;
                 let errorNumber = 0;
                 let parentID;
@@ -4140,7 +4051,6 @@ class Model extends BaseModel {
                             errorNumber++;
                             return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
                         }
-                        // console.log({ dataInsert });
 
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
@@ -4156,13 +4066,11 @@ class Model extends BaseModel {
                 }
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "import field" });
-                console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 // Update timeImportExcel trick reload việc con
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
                 return resolve({ error: false, message: "import success" });
             } catch (error) {
-                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

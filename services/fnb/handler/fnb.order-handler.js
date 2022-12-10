@@ -179,8 +179,6 @@ module.exports = {
                 let { orderID, fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                // console.log(salesChannels)
-                // console.log(fundasID)
 
                 let resultAfterCallHandler;
                 if(orderID){

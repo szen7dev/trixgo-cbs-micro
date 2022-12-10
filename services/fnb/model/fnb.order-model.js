@@ -44,7 +44,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
-        console.log(fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID)
         return new Promise(async resolve => {
             try {
                 /**
@@ -170,22 +169,23 @@ class Model extends BaseModel {
                  * GÁN SẢN PHẨM VÀO ORDER
                  */
                 const orderID = infoAfterInsert._id;
-                if(products && products.length){
 
-                    for(const item of products){
+                if(products && products.length){
+                    const productsAsync = products.map(product => {
                         const dataInsertProduct = {
                             userID,
                             orderID,
-                            productID: item.productID,
-                            quantity: item.quantity ? Number(item.quantity) : 0,
-                            upsize: item.upsize,
-                            topping: item.topping,
-                            note: item.note
+                            productID: product.productID,
+                            quantity: product.quantity ? Number(product.quantity) : 0,
+                            subProductsID: product.variantsID,
+                            upsize: product.upsize,
+                            topping: product.topping,
+                            note: product.note
                         }
+                        return FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct);
+                    })
 
-                        let infoOderProduct = await FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct)
-                        // console.log(infoOderProduct)
-                    }
+                    await Promise.all(productsAsync);
                 }
 
                 /**
@@ -201,10 +201,9 @@ class Model extends BaseModel {
                 /**
                  * TÍCH ĐIỂM CHO KHÁCH HÀNG
                  */
-                let infoCustomer = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
                     $inc: { "totalLoyaltyPoints": Number(loyaltyPoints) }
                 })
-                // console.log(infoCustomer)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -287,7 +286,6 @@ class Model extends BaseModel {
                 if(!isNaN(vatAmount)){
                     dataInUpdate.vatAmount = Number(vatAmount);
                 }
-                console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
@@ -311,7 +309,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     updateValue({ orderID, userID }) {
-        console.log({ orderID, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderID))
@@ -409,7 +406,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log({fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -430,11 +426,17 @@ class Model extends BaseModel {
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundasID && fundasID.length ){
                     let arrFun = fundasID.map(item=>ObjectID(item))
-                    conditionObj.funda = { $in: arrFun }
+
+                    if(arrFun.length) {
+                        conditionObj.funda = { $in: arrFun };
+                    }
                 }else{
-                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                    // console.log(listFundaIsMember)
-                    conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
+                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+
+                    if(fundasIDIsMember.length) {
+                        conditionObj.funda = { $in: fundasIDIsMember };
+                    }
                 }
 
                 shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
@@ -463,7 +465,6 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
                 console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
-                console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -554,7 +555,6 @@ class Model extends BaseModel {
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) {
-        console.log({fundasID, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -578,7 +578,6 @@ class Model extends BaseModel {
                         conditionObj.funda = { $in: arrFun }
                     }else{
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                        // console.log(listFundaIsMember)
                         conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
                     }
 
@@ -702,10 +701,6 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // console.log(conditionObj)
-                    // console.log(conditionObjYear)
-                    // console.log(conditionGroup)
-
                     // Danh sách đang triển khai
                     let listData = await FNB_ORDER_COLL.aggregate([
                         {
@@ -741,7 +736,6 @@ class Model extends BaseModel {
                             $sort: sortBy
                         }
                     ])
-                    console.log({listData});
                     if(!isNaN(option) && [3].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
