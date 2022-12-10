@@ -205,7 +205,7 @@ class Model extends BaseModel {
                 let infoCustomer = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
                     $inc: { "totalLoyaltyPoints": Number(loyaltyPoints) }
                 })
-                console.log(infoCustomer)
+                // console.log(infoCustomer)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
