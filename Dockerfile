@@ -11,4 +11,4 @@ ENV NODE_ENV=production
 
 COPY . .
 
-CMD ["pm2", "start", "provisioning/process.config.js"]
+CMD ["pm2-runtime", "provisioning/process.config.js"]
