@@ -109,4 +109,99 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 8/12/2022
+     */
+    downloadTemplateExcel: {
+        auth: 'required',
+        params: {
+            // projectID: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                // const { projectID } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.downloadTemplateExcel({
+                    companyID: company._id, userID 
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 9/12/2022
+     */
+    importFromExcel: {
+        auth: 'required',
+        params: {
+            // taskID    : { type: 'string', optional: true },
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { dataImport } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log(dataImport)
+
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+
+                // console.log(dataImport)
+
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.importFromExcel({
+                    companyID: company._id, dataImport, userID, ctx
+                })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: MinhVH
+     * Func: Download Excel Contact
+     * Date: 21/06/2022
+     */
+    exportExcel: {
+        auth: 'required',
+        params: {
+            companyID: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let { companyID, filterParams } = ctx.params;
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.exportExcel({
+                    userID, companyID, filterParams, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }
