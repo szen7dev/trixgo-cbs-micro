@@ -41,7 +41,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ orderID, productID, subProductsID, quantity, upsize, topping, note, userID }) {
-        console.log({ orderID, productID, subProductsID, quantity, upsize, topping, note, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -94,9 +93,7 @@ class Model extends BaseModel {
                 };
 
                 if(subProductsID && checkObjectIDs(subProductsID)){
-                    dataInsert.$addToSet = {
-                        subProducts: subProductsID,
-                    }
+                    dataInsert.subProducts = [...new Set(subProductsID)];
                 }
 
                 if(!isNaN(quantity)){
@@ -117,16 +114,16 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
+
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
                 /**
                  * CẬP NHẬT NGUYÊN LIỆU HAO PHÍ VÀO ĐƠN HÀNG
                  */
-                let listQuota = await FNB_QUOTA_COLL.find({ product: productID })
-                for (const item of listQuota){
-                    console.log('===================>>>>>>>>>>>>>>>')
-                    let dataInsertOrderMaterial = {
+                const listQuota = await FNB_QUOTA_COLL.find({ product: productID })
+                const orderMaterialAsync = listQuota.map(item => 
+                    FNB_ORDER_MATERIAL_MODEL.insert({
                         orderID,
                         productID,
                         quantityOfProduct: quantity,
@@ -134,15 +131,13 @@ class Model extends BaseModel {
                         quantity: item.quantity,
                         unitPrice: item.unitPrice,
                         userID
-                    }
-
-                    let infoOM = await FNB_ORDER_MATERIAL_MODEL.insert(dataInsertOrderMaterial)
-                    console.log(infoOM)
-                }
+                    })
+                );
+                await Promise.all(orderMaterialAsync);
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message });
             }
         });
     }
