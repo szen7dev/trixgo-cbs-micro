@@ -170,22 +170,23 @@ class Model extends BaseModel {
                  * GÁN SẢN PHẨM VÀO ORDER
                  */
                 const orderID = infoAfterInsert._id;
-                if(products && products.length){
 
-                    for(const item of products){
+                if(products && products.length){
+                    const productsAsync = products.map(product => {
                         const dataInsertProduct = {
                             userID,
                             orderID,
-                            productID: item.productID,
-                            quantity: item.quantity ? Number(item.quantity) : 0,
-                            upsize: item.upsize,
-                            topping: item.topping,
-                            note: item.note
+                            productID: product.productID,
+                            quantity: product.quantity ? Number(product.quantity) : 0,
+                            subProductsID: product.variantsID,
+                            upsize: product.upsize,
+                            topping: product.topping,
+                            note: product.note
                         }
+                        return FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct);
+                    })
 
-                        let infoOderProduct = await FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct)
-                        // console.log(infoOderProduct)
-                    }
+                    await Promise.all(productsAsync);
                 }
 
                 /**

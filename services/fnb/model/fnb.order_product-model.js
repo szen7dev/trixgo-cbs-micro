@@ -36,7 +36,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -70,10 +70,10 @@ class Model extends BaseModel {
                 if(checkExist)
                     return resolve({ error: true, message: "Sản phẩm đã tồn tại trong đơn hàng", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let dataInsert = { 
-                    company: infoOrder.company, 
-                    funda: infoOrder.funda, 
-                    order: orderID, 
+                let dataInsert = {
+                    company: infoOrder.company,
+                    funda: infoOrder.funda,
+                    order: orderID,
                     product: productID,
                     customerType: infoOrder.customerType,
                     customer: infoOrder.customer,
@@ -94,7 +94,9 @@ class Model extends BaseModel {
                 };
 
                 if(subProductsID && checkObjectIDs(subProductsID)){
-                    dataInsert.subProducts = subProductsID;
+                    dataInsert.$addToSet = {
+                        subProducts: subProductsID,
+                    }
                 }
 
                 if(!isNaN(quantity)){
@@ -125,12 +127,12 @@ class Model extends BaseModel {
                 for (const item of listQuota){
                     console.log('===================>>>>>>>>>>>>>>>')
                     let dataInsertOrderMaterial = {
-                        orderID, 
-                        productID, 
-                        quantityOfProduct: quantity, 
-                        goodsID: item.goods, 
-                        quantity: item.quantity, 
-                        unitPrice: item.unitPrice, 
+                        orderID,
+                        productID,
+                        quantityOfProduct: quantity,
+                        goodsID: item.goods,
+                        quantity: item.quantity,
+                        unitPrice: item.unitPrice,
                         userID
                     }
 
@@ -146,7 +148,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update group 
+     * Name: update group
      * Author: Depv
      * Code:
      */
@@ -208,19 +210,19 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: remove group 
+     * Name: remove group
      * Author: Depv
      * Code:
      */
 
     /**
-     * Name: remove many 
+     * Name: remove many
      * Author: Depv
      * Code:
      */
 
     /**
-     * Name: get info user_pcm_plan_group 
+     * Name: get info user_pcm_plan_group
      * Author: Depv
      * Code:
      */
@@ -328,7 +330,7 @@ class Model extends BaseModel {
 
                     select = JSON.parse(select);
                 }
- 
+
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await FNB_ORDER_PRODUCT_COLL.findById(lastestID);
@@ -384,7 +386,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) { 
+        keyword, limit, lastestID, select, populates, sortKey, userID }) {
             console.log({fundasID, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
@@ -415,7 +417,7 @@ class Model extends BaseModel {
                             $lte: new Date(toDate),
                             // $gte: moment(fromDate).startOf('day')._d,
                             // $lte: moment(toDate).endOf('day')._d,
-                            
+
                         }
                     }
 

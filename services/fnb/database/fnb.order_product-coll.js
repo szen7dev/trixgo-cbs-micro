@@ -73,7 +73,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
     internal: {
         type: Number,
         default: 1
-    }, 
+    },
     //_________Tỉnh/Thành phố (lấy theo Funda)
     area1: {
         type: Schema.Types.ObjectId,
