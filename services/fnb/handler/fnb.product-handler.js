@@ -113,6 +113,7 @@
          auth: "required",
          params: {
             productID   : { type: "string", optional: true },
+            parentID   : { type: "string", optional: true },
             type        : { type: "string", optional: true },
 
             //==============================================
@@ -125,7 +126,7 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, type, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let { productID, parentID, type, keyword, limit, lastestID, select, populates } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -136,7 +137,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_PRODUCT_MODEL.getList({
-                         companyID: company._id, type, keyword, limit, lastestID, select, populates, userID
+                         companyID: company._id, parentID, type, keyword, limit, lastestID, select, populates, userID
                      });
                  }
 
