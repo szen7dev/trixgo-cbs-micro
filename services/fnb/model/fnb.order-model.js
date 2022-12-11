@@ -44,6 +44,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
+        console.log({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -131,6 +132,15 @@ class Model extends BaseModel {
 
                 if(!isNaN(service)&& [1,2,3].includes(Number(service))){
                     dataInsert.service = Number(service);
+                }
+
+                // Tính tổng khối lượng sản phẩm (cốc)
+                if(products && products.length){
+                    let totalQuantity = 0;
+                    for (let item of products) {
+                        totalQuantity = Number(totalQuantity) + Number(item.quantity);
+                    }
+                    dataInsert.numberOfProducts = Number(totalQuantity)
                 }
 
                 /**
