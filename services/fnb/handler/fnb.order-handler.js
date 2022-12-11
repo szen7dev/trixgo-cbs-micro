@@ -27,10 +27,8 @@ module.exports = {
             note                : { type: "string", optional: true },
             salesChannel        : { type: "string" },
             paymentMethod       : { type: "string" },
-            seasons             : { type: "string", optional: true },
             service             : { type: "string", optional: true },
             customerType        : { type: "string", optional: true },
-            shiftType           : { type: "string", optional: true },
             total               : { type: "string", optional: true },
             discount            : { type: "string", optional: true },
             salesoff            : { type: "string", optional: true },
@@ -40,12 +38,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, seasons, service, customerType, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
+                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, customerType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, seasons, service, customerType, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
+                    fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, customerType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

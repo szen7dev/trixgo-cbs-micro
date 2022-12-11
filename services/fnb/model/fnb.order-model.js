@@ -43,8 +43,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
-        console.log({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID })
+    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
+        console.log({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -57,10 +57,15 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                // Thông tin cửa hàng
+                // Thông tin cơ sở
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda)
-                    return resolve({ error: true, message: 'cannot_get_info_funda' });
+                    return resolve({ error: true, message: 'cannot_get_infoFunda' });
+                    
+                // Thông tin ca làm việc
+                let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
+                if (!infoShift)
+                    return resolve({ error: true, message: 'cannot_get_infoShift' });
 
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
@@ -110,12 +115,16 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                if(!isNaN(customerType) && [1,2,3,4,5].includes(Number(customerType))){
-                    dataInsert.customerType = Number(customerType);
+                if(infoShift.seasons){
+                    dataInsert.seasons = Number(infoShift.seasons);
                 }
 
-                if(!isNaN(shiftType) && [1,2,3].includes(Number(shiftType))){
-                    dataInsert.shiftType = Number(shiftType);
+                if(infoShift.shiftType){
+                    dataInsert.shiftType = Number(infoShift.shiftType);
+                }
+
+                if(!isNaN(customerType) && [1,2,3,4,5].includes(Number(customerType))){
+                    dataInsert.customerType = Number(customerType);
                 }
 
                 if(!isNaN(salesChannel) && [1,2,3,4,5,6].includes(Number(salesChannel))){
@@ -124,10 +133,6 @@ class Model extends BaseModel {
 
                 if(!isNaN(paymentMethod)&& [1,2].includes(Number(paymentMethod))){
                     dataInsert.paymentMethod = Number(paymentMethod);
-                }
-
-                if(!isNaN(seasons)&& [1,2,3,4].includes(Number(seasons))){
-                    dataInsert.seasons = Number(seasons);
                 }
 
                 if(!isNaN(service)&& [1,2,3].includes(Number(service))){
