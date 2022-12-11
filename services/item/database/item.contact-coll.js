@@ -267,6 +267,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     /**
      * FNB
      */
+    // Ngày bắt đầu tham gia mua hàng
+    joinedDate: { type: Date, default: Date.now },
     // Số đơn hàng đã mua
     numberOfOrders: {
         type: Number,

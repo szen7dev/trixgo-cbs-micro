@@ -24,7 +24,7 @@ const FNB_SHIFT_COLL                           = require('../database/fnb.shift-
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
 const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
 const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
-const GENERAL_BOOK_COLL                        = require('../database/fnb.general_book-coll');
+const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.general_book-coll');
 
 /**
  * import inter-model, exter-model
@@ -34,7 +34,7 @@ const FNB_ORDER_PRODUCT_MODEL                  = require('./fnb.order_product-mo
 class Model extends BaseModel {
 
     constructor() {
-        super(GENERAL_BOOK_COLL);
+        super(FNB_GENERAL_BOOK_COLL);
     }
 
     /**
@@ -42,7 +42,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
+    insert({ fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vat, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -64,7 +64,7 @@ class Model extends BaseModel {
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
                  */
-                let numberOfOrder = await GENERAL_BOOK_COLL.count({})
+                let numberOfOrder = await FNB_GENERAL_BOOK_COLL.count({})
 
                 let dataInsert = {
                     company: infoFunda.company,
@@ -272,7 +272,7 @@ class Model extends BaseModel {
                 }
                 console.log({ dataInUpdate })
 
-                let infoAfterUpdate = await GENERAL_BOOK_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
@@ -300,7 +300,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let infoOrder = await GENERAL_BOOK_COLL.findById(orderID)
+                let infoOrder = await FNB_GENERAL_BOOK_COLL.findById(orderID)
 
                 let total = infoOrder.total;
                 let discount = infoOrder.discount;
@@ -331,7 +331,7 @@ class Model extends BaseModel {
                     dataInUpdate.amount = Number(amount)
                 }
 
-                let infoAfterUpdate = await GENERAL_BOOK_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
@@ -373,7 +373,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await GENERAL_BOOK_COLL.findById(orderID)
+                let infoPlanGroup = await FNB_GENERAL_BOOK_COLL.findById(orderID)
                                     .select(select)
                                     .populate(populates)
 
@@ -483,7 +483,7 @@ class Model extends BaseModel {
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await GENERAL_BOOK_COLL.findById(lastestID);
+                    let infoData = await FNB_GENERAL_BOOK_COLL.findById(lastestID);
                     if(!infoData)
                         return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -497,7 +497,7 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await GENERAL_BOOK_COLL.find(conditionObj)
+                let infoDataAfterGet = await FNB_GENERAL_BOOK_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -514,7 +514,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-                let totalRecord = await GENERAL_BOOK_COLL.count(conditionObjOrg);
+                let totalRecord = await FNB_GENERAL_BOOK_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
@@ -688,7 +688,7 @@ class Model extends BaseModel {
                     // console.log(conditionGroup)
 
                     // Danh sách đang triển khai
-                    let listData = await GENERAL_BOOK_COLL.aggregate([
+                    let listData = await FNB_GENERAL_BOOK_COLL.aggregate([
                         {
                             $match: conditionObj
                         },
@@ -724,7 +724,7 @@ class Model extends BaseModel {
                     ])
 
                     if(!isNaN(option) && [3].includes(Number(option))){
-                        await GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
+                        await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
                     }
 
                     return resolve({ error: false, data: listData });
