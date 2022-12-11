@@ -116,7 +116,7 @@
              try {
                  await this.validateEntity(ctx.params);
                  let { shiftID, fundaID, keyword, limit, lastestID, select, populates } = ctx.params;
-                 const { _id: userID } = ctx.meta.infoUser;
+                 const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler;
                  if(shiftID){
@@ -125,7 +125,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_SHIFT_MODEL.getList({
-                        fundaID, keyword, limit, lastestID, select, populates, userID
+                        companyID: company._id, fundaID, keyword, limit, lastestID, select, populates, userID
                      });
                  }
  

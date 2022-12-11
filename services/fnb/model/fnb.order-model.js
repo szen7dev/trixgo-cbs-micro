@@ -193,8 +193,7 @@ class Model extends BaseModel {
                             productID: product.productID,
                             quantity: product.quantity ? Number(product.quantity) : 0,
                             subProductsID: product.variantsID,
-                            upsize: product.upsize,
-                            topping: product.topping,
+                            unitPrice: product.unitPrice,
                             note: product.note
                         }
                         return FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct);
