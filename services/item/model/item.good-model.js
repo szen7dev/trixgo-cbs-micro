@@ -367,7 +367,6 @@ class Model extends BaseModel {
                             note: data?.__EMPTY_5,
                             
                         }
-
                         // console.log(dataInsert);
                     
                         let infoAfterInsert = await this.insert(dataInsert);
@@ -380,11 +379,6 @@ class Model extends BaseModel {
                 }
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "Import failed" });
-                    
-                // console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-
-                // // Update timeImportExcel trick reload việc con
-                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
                 return resolve({ error: false, message: "Import successfull" });
             } catch (error) {

@@ -200,8 +200,10 @@ class Model extends BaseModel {
 
                 /**
                  * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG SAU KHI CHỌN XONG SẢN PHẨM
+                 * - Bỏ phần này đi, vì đã được tính ở Client rồi
+                 * - Nếu sử dụng hàm này -> cần tính thêm cả giá thành của Topping nữa (subProductsID)
                  */
-                await this.updateValue({orderID, userID})
+                // await this.updateValue({orderID, userID})
 
                 /**
                  * BẮN SOCKET VÀ CLOUD MSS
@@ -415,7 +417,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        // console.log({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -424,7 +427,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = { company: ObjectID(companyID) }
                 let sortBy;
                 let keys	 = ['createAt__-1'];
 
@@ -435,15 +438,18 @@ class Model extends BaseModel {
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundasID && fundasID.length ){
+                    console.log('==============Chọn đơn vị cơ sở')
                     let arrFun = fundasID.map(item=>ObjectID(item))
 
                     if(arrFun.length) {
                         conditionObj.funda = { $in: arrFun };
                     }
                 }else{
+                    console.log('==============Không chọn đơn vị cơ sở')
                     let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                    // console.log(listFundaIsMember)
 
+                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                     if(fundasIDIsMember.length) {
                         conditionObj.funda = { $in: fundasIDIsMember };
                     }
@@ -475,6 +481,7 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
                 console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
+                console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -563,14 +570,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) {
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!option){
                     // Danh sách
                 }else{
-                    let conditionObj = {}
+                    let conditionObj = { company: ObjectID(companyID) }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"total": -1}
 
@@ -588,7 +594,12 @@ class Model extends BaseModel {
                         conditionObj.funda = { $in: arrFun }
                     }else{
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                        conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
+                        // conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
+
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }
                     }
 
                     // Phân loại theo thời khoảng

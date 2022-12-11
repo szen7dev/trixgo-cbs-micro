@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, subProductsID, quantity, upsize, topping, note, userID }) {
+    insert({ orderID, productID, subProductsID, quantity, unitPrice, topping, note, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -89,6 +89,7 @@ class Model extends BaseModel {
                     paymentMethod: infoOrder.paymentMethod,
                     service: infoOrder.service,
                     unitPrice: infoProduct.unitPrice,
+                    // unitPrice: Number(unitPrice),
                     userCreate: userID
                 };
 
@@ -99,15 +100,16 @@ class Model extends BaseModel {
                 if(!isNaN(quantity)){
                     dataInsert.quantity = Number(quantity);
                     dataInsert.amount = Number(quantity)*Number(infoProduct.unitPrice);
+                    // dataInsert.amount = Number(quantity)*Number(unitPrice);
                 }
 
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
 
-                if(!isNaN(upsize) && Number(upsize) > 0){
-                    dataInsert.upsize = Number(upsize)
-                }
+                // if(!isNaN(upsize) && Number(upsize) > 0){
+                //     dataInsert.upsize = Number(upsize)
+                // }
 
                 if(!isNaN(topping) && Number(topping) > 0){
                     dataInsert.topping = Number(topping)
