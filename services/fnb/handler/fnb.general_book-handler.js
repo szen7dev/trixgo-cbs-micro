@@ -97,16 +97,16 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            orderID   : { type: "string" }
+            bookID   : { type: "string" }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID } = ctx.params;
+                let {  bookID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.remove({
-                    orderID
+                    bookID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -123,13 +123,13 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
+            bookID              : { type: "string", optional: true },
             fundasID            : { type: "array", optional: true },
-            orderID             : { type: "string", optional: true },
-            mistakeID           : { type: "string", optional: true },
-            orderMistakeID      : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
-            salesChannel        : { type: "string", optional: true },
+            // mistakeID           : { type: "string", optional: true },
+            // orderMistakeID      : { type: "string", optional: true },
+            // salesChannel        : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -141,17 +141,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderMistakeID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                let { bookID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(orderMistakeID){
+                if(bookID){
                     resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getInfo({
-                        orderMistakeID, select, populates,
+                        bookID, select, populates,
                     });
                 }else{
                     resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getList({
-                        fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                        companyID: company._id, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
@@ -171,7 +171,6 @@ module.exports = {
         params: {
             fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
-            mistakeID       : { type: "string", optional: true },
             optionGroup     : { type: "string", optional: true },
             optionTime      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
@@ -187,12 +186,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, mistakeID, year, fromDate, toDate,
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let { undasID, option, optionGroup, optionTime, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getListByProperty({
-                    option, optionGroup, optionTime, fundasID, mistakeID, year, fromDate, toDate,
+                    companyID: company._id, fundasID, option, optionGroup, optionTime, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      userID
                     });

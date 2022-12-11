@@ -177,7 +177,6 @@ module.exports = {
                 let { orderID, fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-
                 let resultAfterCallHandler;
                 if(orderID){
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getInfo({
