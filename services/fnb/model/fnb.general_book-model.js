@@ -324,8 +324,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({fundasID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID})
+    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
