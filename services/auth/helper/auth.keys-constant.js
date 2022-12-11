@@ -14,6 +14,10 @@ exports.STATUS_BLOCK        = 0;
  */
 exports.validateDomainAndPlatform = [
     {
+        domain: "https://app.trixgo.com",
+        platform: 1
+    },
+    {
         domain: "https://staging.cbs.trixgo.com",
         platform: 1
     },
@@ -22,4 +26,3 @@ exports.validateDomainAndPlatform = [
         platform: 2
     },
 ];
-
