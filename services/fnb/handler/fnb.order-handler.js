@@ -27,10 +27,8 @@ module.exports = {
             note                : { type: "string", optional: true },
             salesChannel        : { type: "string" },
             paymentMethod       : { type: "string" },
-            seasons             : { type: "string", optional: true },
             service             : { type: "string", optional: true },
             customerType        : { type: "string", optional: true },
-            shiftType           : { type: "string", optional: true },
             total               : { type: "string", optional: true },
             discount            : { type: "string", optional: true },
             salesoff            : { type: "string", optional: true },
@@ -40,12 +38,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, seasons, service, customerType, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
+                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, customerType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, seasons, service, customerType, shiftType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
+                    fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, customerType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -177,8 +175,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { orderID, fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
-
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 if(orderID){
@@ -187,7 +184,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID
+                        companyID: company._id, fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
@@ -212,25 +209,16 @@ module.exports = {
             year            : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
-
-            //_____________THÔNG SỐ MẶC ĐỊNH________________
-            keyword         : { type: "string", optional: true },
-            limit           : { type: "string", optional: true },
-            lastestID       : { type: "string", optional: true },
-            select          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
-                    option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey,
-                     userID
-                    });
+                    companyID: company._id, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID
+                });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

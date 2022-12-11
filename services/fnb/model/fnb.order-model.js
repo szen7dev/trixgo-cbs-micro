@@ -43,7 +43,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, shiftType, salesChannel, paymentMethod, seasons, service, total, discount, salesoff, vatAmount, products, userID }) {
+    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
+        console.log({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -56,10 +57,15 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                // Thông tin cửa hàng
+                // Thông tin cơ sở
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda)
-                    return resolve({ error: true, message: 'cannot_get_info_funda' });
+                    return resolve({ error: true, message: 'cannot_get_infoFunda' });
+                    
+                // Thông tin ca làm việc
+                let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
+                if (!infoShift)
+                    return resolve({ error: true, message: 'cannot_get_infoShift' });
 
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
@@ -109,12 +115,16 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                if(!isNaN(customerType) && [1,2,3,4,5].includes(Number(customerType))){
-                    dataInsert.customerType = Number(customerType);
+                if(infoShift.seasons){
+                    dataInsert.seasons = Number(infoShift.seasons);
                 }
 
-                if(!isNaN(shiftType) && [1,2,3].includes(Number(shiftType))){
-                    dataInsert.shiftType = Number(shiftType);
+                if(infoShift.shiftType){
+                    dataInsert.shiftType = Number(infoShift.shiftType);
+                }
+
+                if(!isNaN(customerType) && [1,2,3,4,5].includes(Number(customerType))){
+                    dataInsert.customerType = Number(customerType);
                 }
 
                 if(!isNaN(salesChannel) && [1,2,3,4,5,6].includes(Number(salesChannel))){
@@ -125,12 +135,17 @@ class Model extends BaseModel {
                     dataInsert.paymentMethod = Number(paymentMethod);
                 }
 
-                if(!isNaN(seasons)&& [1,2,3,4].includes(Number(seasons))){
-                    dataInsert.seasons = Number(seasons);
-                }
-
                 if(!isNaN(service)&& [1,2,3].includes(Number(service))){
                     dataInsert.service = Number(service);
+                }
+
+                // Tính tổng khối lượng sản phẩm (cốc)
+                if(products && products.length){
+                    let totalQuantity = 0;
+                    for (let item of products) {
+                        totalQuantity = Number(totalQuantity) + Number(item.quantity);
+                    }
+                    dataInsert.numberOfProducts = Number(totalQuantity)
                 }
 
                 /**
@@ -178,8 +193,7 @@ class Model extends BaseModel {
                             productID: product.productID,
                             quantity: product.quantity ? Number(product.quantity) : 0,
                             subProductsID: product.variantsID,
-                            upsize: product.upsize,
-                            topping: product.topping,
+                            unitPrice: product.unitPrice,
                             note: product.note
                         }
                         return FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct);
@@ -190,8 +204,10 @@ class Model extends BaseModel {
 
                 /**
                  * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG SAU KHI CHỌN XONG SẢN PHẨM
+                 * - Bỏ phần này đi, vì đã được tính ở Client rồi
+                 * - Nếu sử dụng hàm này -> cần tính thêm cả giá thành của Topping nữa (subProductsID)
                  */
-                await this.updateValue({orderID, userID})
+                // await this.updateValue({orderID, userID})
 
                 /**
                  * BẮN SOCKET VÀ CLOUD MSS
@@ -405,7 +421,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        // console.log({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -414,9 +431,9 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = { company: ObjectID(companyID) }
                 let sortBy;
-                let keys	 = ['createAt__-1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 const validation = validateParamsObjectID({
                     fundasID            : { value: fundasID, isRequire: false },
@@ -425,15 +442,18 @@ class Model extends BaseModel {
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundasID && fundasID.length ){
+                    console.log('==============Chọn đơn vị cơ sở')
                     let arrFun = fundasID.map(item=>ObjectID(item))
 
                     if(arrFun.length) {
                         conditionObj.funda = { $in: arrFun };
                     }
                 }else{
+                    console.log('==============Không chọn đơn vị cơ sở')
                     let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                    // console.log(listFundaIsMember)
 
+                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                     if(fundasIDIsMember.length) {
                         conditionObj.funda = { $in: fundasIDIsMember };
                     }
@@ -465,6 +485,7 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
                 console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
+                console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -553,14 +574,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) {
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!option){
                     // Danh sách
                 }else{
-                    let conditionObj = {}
+                    let conditionObj = { company: ObjectID(companyID) }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"total": -1}
 
@@ -578,7 +598,12 @@ class Model extends BaseModel {
                         conditionObj.funda = { $in: arrFun }
                     }else{
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                        conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
+                        // conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
+
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }
                     }
 
                     // Phân loại theo thời khoảng

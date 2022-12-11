@@ -17,23 +17,30 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
-            productID           : { type: "string", optional: true },
-            mistakeID           : { type: "string" },
-            executorID          : { type: "string", optional: true },
+            fundaID             : { type: "string" },
+            parentID            : { type: "string", optional: true },
+            name                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            type                : { type: "number", optional: true },
+            outin               : { type: "number", optional: true },
+            revenueType         : { type: "number", optional: true },
+            expenseType         : { type: "number", optional: true },
+            date                : { type: "string", optional: true },
+            customerID          : { type: "string", optional: true },
+            goodsID             : { type: "string", optional: true },
+            quantity            : { type: "number", optional: true },
+            unitPrice           : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
+            vatAmount           : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, productID, mistakeID, executorID, type, amount, note } = ctx.params;
+                let { fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount } = ctx.params;
 
-                const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.insert({
-                    orderID, productID, mistakeID, executorID, type, amount, note, userID
+                    fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -50,32 +57,30 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
-            mistakeID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            shiftID             : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            appOrderSign        : { type: "string", optional: true },
+            bookID              : { type: "string" },
+            parentID            : { type: "string", optional: true },
+            name                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            salesChannel        : { type: "number" },
-            paymentMethod       : { type: "number" },
-            shiftType           : { type: "number", optional: true },
-            total               : { type: "number", optional: true },
-            discount            : { type: "number", optional: true },
-            salesoff            : { type: "number", optional: true },
+            outin               : { type: "number", optional: true },
+            revenueType         : { type: "number", optional: true },
+            expenseType         : { type: "number", optional: true },
+            date                : { type: "string", optional: true },
+            customerID          : { type: "string", optional: true },
+            goodsID             : { type: "string", optional: true },
+            quantity            : { type: "number", optional: true },
+            unitPrice           : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             vatAmount           : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount } = ctx.params;
+                let { bookID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.update({
-                    orderID, userID,
-                    mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount
+                    userID,
+                    bookID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -92,16 +97,16 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            orderID   : { type: "string" }
+            bookID   : { type: "string" }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID } = ctx.params;
+                let {  bookID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.remove({
-                    orderID
+                    bookID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -118,13 +123,13 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
+            bookID              : { type: "string", optional: true },
             fundasID            : { type: "array", optional: true },
-            orderID             : { type: "string", optional: true },
-            mistakeID           : { type: "string", optional: true },
-            orderMistakeID      : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
-            salesChannel        : { type: "string", optional: true },
+            // mistakeID           : { type: "string", optional: true },
+            // orderMistakeID      : { type: "string", optional: true },
+            // salesChannel        : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -136,17 +141,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderMistakeID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                let { bookID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(orderMistakeID){
+                if(bookID){
                     resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getInfo({
-                        orderMistakeID, select, populates,
+                        bookID, select, populates,
                     });
                 }else{
                     resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getList({
-                        fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                        companyID: company._id, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
@@ -166,7 +171,6 @@ module.exports = {
         params: {
             fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
-            mistakeID       : { type: "string", optional: true },
             optionGroup     : { type: "string", optional: true },
             optionTime      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
@@ -182,12 +186,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, mistakeID, year, fromDate, toDate,
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let { undasID, option, optionGroup, optionTime, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getListByProperty({
-                    option, optionGroup, optionTime, fundasID, mistakeID, year, fromDate, toDate,
+                    companyID: company._id, fundasID, option, optionGroup, optionTime, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      userID
                     });

@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, name, note, userID }) {
+    insert({ fundaID, name, note, campaign, seasons, shiftType, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -60,6 +60,18 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataInsert.note = note;
+                }
+
+                if(campaign && !isNaN(campaign)){
+                    dataInsert.campaign = Number(campaign)
+                }
+
+                if(seasons && !isNaN(seasons)){
+                    dataInsert.seasons = Number(seasons)
+                }
+
+                if(shiftType && !isNaN(shiftType)){
+                    dataInsert.shiftType = Number(shiftType)
                 }
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -171,9 +183,9 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = { company: ObjectID(companyID) }
                 let sortBy;
-                let keys	 = ['createAt__-1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundaID ){

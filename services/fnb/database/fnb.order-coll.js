@@ -57,7 +57,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         ref: "user"
     },
     /**
-     * Bật chiến dịch truyền thông/marketing (xác lập theo funda)
+     * Bật chiến dịch truyền thông/marketing
      * 1-Không bật
      * 2-Bật
      */
