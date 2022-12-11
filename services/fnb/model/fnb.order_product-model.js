@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, subProductsID, quantity, unitPrice, topping, note, userID }) {
+    insert({ orderID, productID, subProductsID, quantity, unitPrice, note, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -50,7 +50,6 @@ class Model extends BaseModel {
                  * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
                  */
-
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
@@ -88,8 +87,8 @@ class Model extends BaseModel {
                     salesChannel: infoOrder.salesChannel,
                     paymentMethod: infoOrder.paymentMethod,
                     service: infoOrder.service,
-                    unitPrice: infoProduct.unitPrice,
-                    // unitPrice: Number(unitPrice),
+                    // unitPrice: infoProduct.unitPrice,
+                    unitPrice: Number(unitPrice),
                     userCreate: userID
                 };
 
@@ -99,8 +98,8 @@ class Model extends BaseModel {
 
                 if(!isNaN(quantity)){
                     dataInsert.quantity = Number(quantity);
-                    dataInsert.amount = Number(quantity)*Number(infoProduct.unitPrice);
-                    // dataInsert.amount = Number(quantity)*Number(unitPrice);
+                    // dataInsert.amount = Number(quantity)*Number(infoProduct.unitPrice);
+                    dataInsert.amount = Number(quantity)*Number(unitPrice);
                 }
 
                 if(note && note != ""){
@@ -111,9 +110,9 @@ class Model extends BaseModel {
                 //     dataInsert.upsize = Number(upsize)
                 // }
 
-                if(!isNaN(topping) && Number(topping) > 0){
-                    dataInsert.topping = Number(topping)
-                }
+                // if(!isNaN(topping) && Number(topping) > 0){
+                //     dataInsert.topping = Number(topping)
+                // }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
 
