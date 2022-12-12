@@ -43,8 +43,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
-        console.log({ fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
+    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
+        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -67,6 +67,11 @@ class Model extends BaseModel {
                 if (!infoShift)
                     return resolve({ error: true, message: 'cannot_get_infoShift' });
 
+                // Thông tin khách hàng
+                let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID)
+                if (!infoCustomer)
+                    return resolve({ error: true, message: 'cannot_get_infoCustomer' });
+
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
                  */
@@ -83,10 +88,15 @@ class Model extends BaseModel {
                     userCreate: userID
                 };
 
-                if(assigneeID && checkObjectIDs(assigneeID)){
-                    dataInsert.assignee = assigneeID;
-                }else{
-                    dataInsert.assignee = userID;
+                /**
+                 * Gán thuộc tính của đơn vị cơ sở vào đơn hàng
+                 */
+                if(infoFunda.campaign){
+                    dataInsert.campaign = infoFunda.campaign
+                }
+
+                if(infoFunda.internal){
+                    dataInsert.internal = infoFunda.internal
                 }
 
                 if(infoFunda.area3){
@@ -95,12 +105,38 @@ class Model extends BaseModel {
                     dataInsert.area3 = infoFunda.area3
                 }
 
-                if(infoFunda.campaign){
-                    dataInsert.campaign = infoFunda.campaign
+                /**
+                 * Gán thuộc tính của ca làm việc vào đơn hàng
+                 */
+                // Mùa trong năm
+                if(infoShift.seasons){
+                    dataInsert.seasons = Number(infoShift.seasons);
                 }
 
-                if(infoFunda.internal){
-                    dataInsert.internal = infoFunda.internal
+                // Phân loại ca sáng, chiều, tối, đêm
+                if(infoShift.shiftType){
+                    dataInsert.shiftType = Number(infoShift.shiftType);
+                }
+
+                // Nhân viên thực hiện
+                if(infoShift.staffs && infoShift.staffs.length){
+                    dataInsert.assignee = infoShift.staffs;
+
+                    // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
+                    dataInsert.avgTotalPerStaff = Number(total/Number(infoShift.staffs.length));
+                }else{
+                    dataInsert.assignee = [userID];
+
+                    // Doanh số trung bình/đầu nhân viên (1 nhân viên)
+                    dataInsert.avgTotalPerStaff = Number(total);
+                }
+
+                /**
+                 * Gán thuộc tính của khách hàng vào đơn hàng
+                 */
+                // Phân loại khách hàng
+                if(infoCustomer.customerType && !isNaN(infoCustomer.customerType)){
+                    dataInsert.customerType = Number(infoCustomer.customerType);
                 }
 
                 if(appOrderSign && appOrderSign != ""){
@@ -113,18 +149,6 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
-                }
-
-                if(infoShift.seasons){
-                    dataInsert.seasons = Number(infoShift.seasons);
-                }
-
-                if(infoShift.shiftType){
-                    dataInsert.shiftType = Number(infoShift.shiftType);
-                }
-
-                if(!isNaN(customerType) && [1,2,3,4,5].includes(Number(customerType))){
-                    dataInsert.customerType = Number(customerType);
                 }
 
                 if(!isNaN(salesChannel) && [1,2,3,4,5,6].includes(Number(salesChannel))){
@@ -145,6 +169,7 @@ class Model extends BaseModel {
                     for (let item of products) {
                         totalQuantity = Number(totalQuantity) + Number(item.quantity);
                     }
+
                     dataInsert.numberOfProducts = Number(totalQuantity)
                 }
 
@@ -168,7 +193,7 @@ class Model extends BaseModel {
                     dataInsert.amount -= Number(salesoff);
 
                     // Chính sách tích điểm
-                    loyaltyPoints = Number(Number(total-discount-salesoff)*(3/100)).toFixed(0) // Tích điểm 3%
+                    loyaltyPoints = Number(Number(total-discount-salesoff)*(5/100)).toFixed(0) // Tích điểm 5%
                     dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
@@ -212,6 +237,7 @@ class Model extends BaseModel {
                 /**
                  * BẮN SOCKET VÀ CLOUD MSS
                  * -> Gửi tới các user là members của fundaID (infoFunda.members)
+                 * -> Thực hiện ở phía Client side
                  */
 
                 /**
@@ -234,7 +260,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
+        status, numberOfMistakes }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -249,68 +275,18 @@ class Model extends BaseModel {
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
-                if(name && name != ""){
-                    dataInUpdate.name =name;
+                if(!isNaN(status)){
+                    dataInUpdate.status = Number(status);
                 }
 
-                if(appOrderSign && appOrderSign != ""){
-                    dataInUpdate.appOrderSign = appOrderSign;
-                }
-
-                if(note && note != ""){
-                    dataInUpdate.note = note;
-                }
-
-                if(customerID && checkObjectIDs(customerID)){
-                    dataInUpdate.customer = customerID;
-                }
-
-                if(shiftID && checkObjectIDs(shiftID)){
-                    dataInUpdate.shift = shiftID;
-                }
-
-                if(mistakeID && checkObjectIDs(mistakeID)){
-                    dataInUpdate.mistake = mistakeID;
-                }
-
-                if(!isNaN(shiftType)){
-                    dataInUpdate.shiftType = Number(shiftType);
-                }
-
-                if(!isNaN(salesChannel)){
-                    dataInUpdate.salesChannel = Number(salesChannel);
-                }
-
-                if(!isNaN(paymentMethod)){
-                    dataInUpdate.paymentMethod = Number(paymentMethod);
-                }
-
-                if(!isNaN(total)){
-                    dataInUpdate.total = Number(total);
-                }
-
-                if(!isNaN(discount)){
-                    dataInUpdate.discount = Number(discount);
-                }
-
-                if(!isNaN(salesoff)){
-                    dataInUpdate.salesoff = Number(salesoff);
-                }
-
-                dataInUpdate.amount = Number(total)-Number(discount)-Number(salesoff);
-
-                if(!isNaN(vatAmount)){
-                    dataInUpdate.vatAmount = Number(vatAmount);
+                if(!isNaN(numberOfMistakes)){
+                    dataInUpdate.numberOfMistakes = Number(numberOfMistakes);
                 }
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                /**
-                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
-                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -484,8 +460,8 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
-                console.log(conditionObj)
+                // console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
+                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
