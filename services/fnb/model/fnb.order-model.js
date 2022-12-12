@@ -83,10 +83,11 @@ class Model extends BaseModel {
                     userCreate: userID
                 };
 
+                // Một đơn hàng có thể có 1 hoặc nhiều người thực hiện => gán từ Ca làm việc
                 if(assigneeID && checkObjectIDs(assigneeID)){
-                    dataInsert.assignee = assigneeID;
+                    dataInsert.assignee = [assigneeID];
                 }else{
-                    dataInsert.assignee = userID;
+                    dataInsert.assignee = [userID];
                 }
 
                 if(infoFunda.area3){

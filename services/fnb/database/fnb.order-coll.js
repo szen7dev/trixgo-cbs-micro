@@ -52,10 +52,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         ref: "contact"
     },
     //_________Người thực hiện
-    assignee: {
+    assignee: [{
         type: Schema.Types.ObjectId,
         ref: "user"
-    },
+    }],
     /**
      * Bật chiến dịch truyền thông/marketing
      * 1-Không bật
