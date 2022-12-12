@@ -26,7 +26,7 @@ const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } = require('../../../to
 const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const {
-    PLATFORM_TRIXGO, PLATFORM_WYNDIX,
+    PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB,
     LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
     STATUS_ACTIVE, STATUS_INACTIVE, STATUS_BLOCK,
 }                                       = require('../helper/auth.keys-constant');
@@ -157,7 +157,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let emailValid          = email.toLowerCase().trim();
-                let listPlatformValid   = [PLATFORM_TRIXGO, PLATFORM_WYNDIX];
+                let listPlatformValid   = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB];
 
                 /**
                  * VALIDATION STEP (2)
@@ -183,14 +183,13 @@ class Model extends BaseModel {
                     });
                 }
 
-                if(isExist.platform !== +platform) {
-                    return resolve({
-                        error: true,
-                        message: 'Nền tảng không tồn tại',
-                        keyError: "platform_invalid",
-                        // status: 400
-                    });
-                }
+                // if(isExist.platform !== +platform) {
+                //     return resolve({
+                //         error: true,
+                //         message: 'Nền tảng không tồn tại',
+                //         keyError: "platform_invalid",
+                //     });
+                // }
 
                 const isMatchPass = await compare(password, isExist.password);
                 if (!isMatchPass) {
@@ -219,13 +218,6 @@ class Model extends BaseModel {
                         status: 403
                     });
                 }
-
-                // delete isExist.password;
-                // delete isExist.bookmarks;
-                // delete isExist.sendToFriends;
-                // delete isExist.receiveFromFriends;
-                // delete isExist.friends;
-                // delete isExist.tags;
 
                 let newExist = {
                     username: isExist.username,

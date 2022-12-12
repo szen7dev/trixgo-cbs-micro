@@ -15,7 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     platform:{
         type: Number,
         default: 1,
-        enum: [1, 2]
+        enum: [1, 2, 3]
     },
     //_______Công ty
     company: {
@@ -159,9 +159,10 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         oneSignalID     :{ type : String }, //id cho dịch vụ push noti: OneSignal
         /**
          * vì mobile có 2 loại app khác nhau
-         *  1/ WEB_CBS          : 8d5db406-1628-4a23-bf40-8bb53bf582ba
-         *  2/ MOBILE_TEARSER   : 79acfc09-966a-48f5-a9ea-44d90410014f
-         *  3/ MOBILE_CBS       : 8d5db406-1628-4a23-bf40-8bb53bf582ba (không có phần chatting, nên các event chatting của loại MOBILE_CBS sẽ không cần push đến đây)
+         *  1/ WEB_CBS          : ****
+         *  2/ MOBILE_TEARSER   : ****
+         *  3/ MOBILE_CBS       : **** (không có phần chatting, nên các event chatting của loại MOBILE_CBS sẽ không cần push đến đây)
+         *  4/ MOBILE_FNB       : ****
          */
         env: {
             type: Number,
