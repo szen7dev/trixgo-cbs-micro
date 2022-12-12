@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, name, note, campaign, seasons, shiftType, userID }) {
+    insert({ fundaID, name, note, campaign, seasons, shiftType, staffsID, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -60,6 +60,10 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataInsert.note = note;
+                }
+
+                if(staffsID && checkObjectIDs(staffsID)){
+                    dataInsert.staffs = staffsID;
                 }
 
                 if(campaign && !isNaN(campaign)){
