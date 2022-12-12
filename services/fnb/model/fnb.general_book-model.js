@@ -368,8 +368,8 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
-                console.log(conditionObj)
+                // console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
+                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC

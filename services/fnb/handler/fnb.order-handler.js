@@ -61,31 +61,18 @@ module.exports = {
         auth: "required",
         params: {
             orderID             : { type: "string" },
-            mistakeID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            shiftID             : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            appOrderSign        : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            salesChannel        : { type: "number" },
-            paymentMethod       : { type: "number" },
-            shiftType           : { type: "number", optional: true },
-            total               : { type: "number", optional: true },
-            discount            : { type: "number", optional: true },
-            salesoff            : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
-            vatAmount           : { type: "number", optional: true },
+            status              : { type: "number", optional: true },
+            numberOfMistakes    : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount } = ctx.params;
+                let {  orderID, status, numberOfMistakes } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.update({
                     orderID, userID,
-                    mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount
+                    status, numberOfMistakes
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

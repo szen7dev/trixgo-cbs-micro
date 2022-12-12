@@ -37,6 +37,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         type: Number,
         default : 1
     },
+    /**
+     * Kích cỡ
+     * 1-Size M
+     * 2-Size L
+     */
+    size: {
+        type: Number,
+        default : 1
+    },
     //_________Nội dung
     name: String,
     //_________Mã hiệu
