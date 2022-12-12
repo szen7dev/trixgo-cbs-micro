@@ -136,21 +136,21 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 1
     },
     /**
+     * Phương thức thanh toán
+     * 1-Tiền mặt
+     * 2-Chuyển khoản
+     */
+    paymentMethod: {
+        type: Number,
+        default: 1
+    },
+    /**
      * Hình thức phục vụ
      * 1-Tại quán
      * 2-Mang đi
      * 3-Giao hàng
      */
     service: {
-        type: Number,
-        default: 1
-    },
-    /**
-     * Phương thức thanh toán
-     * 1-Tiền mặt
-     * 2-Chuyển khoản
-     */
-    paymentMethod: {
         type: Number,
         default: 1
     },
@@ -195,7 +195,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * GIÁT TRỊ
      */
-    //______Tổng giá theo các Product của đơn hàng
+    //______Tổng giá theo các Product của đơn hàng (tổng doanh số)
     total: {
         type: Number,
         default : 0
@@ -217,6 +217,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     },
     //______VAT thành tiền (10%*amount)
     vatAmount: {
+        type: Number,
+        default : 0
+    },
+    //______Doanh số trung bình tính cho 1 nhân viên
+    avgTotalPerStaff: {
         type: Number,
         default : 0
     },

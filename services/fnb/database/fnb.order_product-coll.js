@@ -26,6 +26,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         type: Schema.Types.ObjectId,
         ref : "fnb_product"
     },
+    /**
+     * Kích cỡ
+     * 1-Size M
+     * 2-Size L
+     */
+    size: {
+        type: Number,
+        default : 1
+    },
     //_________Sản phẩm phụ/Topping kèm theo
     subProducts: [{
         type: Schema.Types.ObjectId,

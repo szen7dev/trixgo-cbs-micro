@@ -267,6 +267,18 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     /**
      * FNB
      */
+    /**
+     * Phân loại khách hàng
+     * 1-Học sinh
+     * 2-Sinh viên
+     * 3-Phụ nữ
+     * 4-Đàn ông
+     * 5-Người lớn (phụ nữ + đàn ông)
+     */
+    customerType: {
+        type: Number,
+        default : 3
+    },
     // Ngày bắt đầu tham gia mua hàng
     joinedDate: { type: Date, default: Date.now },
     // Số đơn hàng đã mua

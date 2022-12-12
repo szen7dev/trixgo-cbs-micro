@@ -22,16 +22,17 @@
             campaign    : { type: "number", optional: true },
             seasons     : { type: "number", optional: true },
             shiftType   : { type: "number", optional: true },
+            staffsID    : { type: "array", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  fundaID, name, note, campaign, seasons, shiftType } = ctx.params;
+                 let {  fundaID, name, note, campaign, seasons, shiftType, staffsID } = ctx.params;
                  
                  const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.insert({
-                    fundaID, name, note, campaign, seasons, shiftType, userID
+                    fundaID, name, note, campaign, seasons, shiftType, staffsID, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

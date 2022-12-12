@@ -91,6 +91,10 @@ class Model extends BaseModel {
                     userCreate: userID
                 };
 
+                if(infoProduct.size && !isNaN(infoProduct.size)){
+                    dataInsert.size = Number(infoProduct.size);
+                }
+
                 if(subProductsID && checkObjectIDs(subProductsID)){
                     dataInsert.subProducts = [...new Set(subProductsID)];
                 }
