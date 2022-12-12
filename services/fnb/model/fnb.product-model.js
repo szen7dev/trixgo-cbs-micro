@@ -72,7 +72,7 @@ class Model extends BaseModel {
                     dataInsert.company = companyID
                 }
 
-                if(checkObjectIDs(parentID)){
+                if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }
 
@@ -209,7 +209,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, type, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, parentID, type, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         console.log({ companyID, type, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
@@ -223,6 +223,10 @@ class Model extends BaseModel {
                 let sortBy;
                 // let keys	 = ['createAt__-1'];
                 let keys	 = ['createAt__-1', '_id__-1'];
+
+                if(parentID && checkObjectIDs(parentID)){
+                    conditionObj.parent = ObjectID(parentID);
+                }
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(companyID ){
@@ -398,6 +402,7 @@ class Model extends BaseModel {
                             unitPrice: data?.__EMPTY_4,
                             unitPrice2: data?.__EMPTY_5,
                             note: data?.__EMPTY_6,
+                            parentID: data?.__EMPTY_7,
                             
                         }
 

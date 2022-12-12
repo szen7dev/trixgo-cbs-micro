@@ -19,16 +19,20 @@
             fundaID     : { type: "string" },
             name        : { type: "string" },
             note        : { type: "string", optional: true },
+            campaign    : { type: "number", optional: true },
+            seasons     : { type: "number", optional: true },
+            shiftType   : { type: "number", optional: true },
+            staffsID    : { type: "array", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  fundaID, name, note } = ctx.params;
+                 let {  fundaID, name, note, campaign, seasons, shiftType, staffsID } = ctx.params;
                  
                  const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.insert({
-                    fundaID, name, note, userID
+                    fundaID, name, note, campaign, seasons, shiftType, staffsID, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -113,7 +117,7 @@
              try {
                  await this.validateEntity(ctx.params);
                  let { shiftID, fundaID, keyword, limit, lastestID, select, populates } = ctx.params;
-                 const { _id: userID } = ctx.meta.infoUser;
+                 const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler;
                  if(shiftID){
@@ -122,7 +126,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_SHIFT_MODEL.getList({
-                        fundaID, keyword, limit, lastestID, select, populates, userID
+                        companyID: company._id, fundaID, keyword, limit, lastestID, select, populates, userID
                      });
                  }
  

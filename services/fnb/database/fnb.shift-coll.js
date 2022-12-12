@@ -60,6 +60,36 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default : 0
     },
     /**
+     * Bật chiến dịch truyền thông/marketing
+     * 1-Không bật
+     * 2-Bật
+     */
+    campaign: {
+        type: Number,
+        default: 1
+    }, 
+    /**
+     * Mùa trong năm (theo lịch âm)
+     * 1-Xuân
+     * 2-Hạ
+     * 3-Thu
+     * 4-Đông
+     */
+    seasons: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Phân loại ca làm việc (cập nhật theo funda)
+     * 1-Sáng
+     * 2-Chiều
+     * 3-Tối
+     */
+    shiftType: {
+        type: Number,
+        default: 1
+    },
+    /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
     userCreate: {

@@ -192,7 +192,7 @@ class Model extends BaseModel {
 
                 let conditionObj = { product: productID }
                 let sortBy;
-                let keys	 = ['createAt__-1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 // Làm rõ mục đích để làm gì?
                 if (sortKey && typeof sortKey === 'string') {

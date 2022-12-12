@@ -77,7 +77,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
     //_________Thành tiền
     amount: { type: Number, default: 0 }, 
     //_________Vat
-    vat: { type: Number, default: 0 }, 
+    vatAmount: { type: Number, default: 0 }, 
     /**
      * TK hạch toán
      */

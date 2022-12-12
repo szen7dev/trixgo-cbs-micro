@@ -40,7 +40,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, subProductsID, quantity, upsize, topping, note, userID }) {
+    insert({ orderID, productID, subProductsID, quantity, unitPrice, note, userID }) {
+        console.log({ orderID, productID, subProductsID, quantity, unitPrice, note, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -50,7 +51,6 @@ class Model extends BaseModel {
                  * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
                  */
-
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
@@ -88,7 +88,6 @@ class Model extends BaseModel {
                     salesChannel: infoOrder.salesChannel,
                     paymentMethod: infoOrder.paymentMethod,
                     service: infoOrder.service,
-                    unitPrice: infoProduct.unitPrice,
                     userCreate: userID
                 };
 
@@ -96,21 +95,16 @@ class Model extends BaseModel {
                     dataInsert.subProducts = [...new Set(subProductsID)];
                 }
 
-                if(!isNaN(quantity)){
-                    dataInsert.quantity = Number(quantity);
-                    dataInsert.amount = Number(quantity)*Number(infoProduct.unitPrice);
+                if(unitPrice && !isNaN(unitPrice)){
+                    dataInsert.unitPrice = Number(unitPrice);
+                    if(quantity && !isNaN(quantity)){
+                        dataInsert.quantity = Number(quantity);
+                        dataInsert.amount = Number(quantity)*Number(unitPrice);
+                    }
                 }
 
                 if(note && note != ""){
                     dataInsert.note = note;
-                }
-
-                if(!isNaN(upsize) && Number(upsize) > 0){
-                    dataInsert.upsize = Number(upsize)
-                }
-
-                if(!isNaN(topping) && Number(topping) > 0){
-                    dataInsert.topping = Number(topping)
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -270,7 +264,7 @@ class Model extends BaseModel {
 
                 let conditionObj = {}
                 let sortBy;
-                let keys	 = ['createAt__-1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(orderID ){

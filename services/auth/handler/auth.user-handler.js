@@ -55,16 +55,16 @@ module.exports = {
                 /**
                  * validate code platform-domain
                  */
-                let isValidatePlatform = validateDomainAndPlatform.find(item => item.platform == platform && item.domain == domain);
-                if (!isValidatePlatform) {
-                    return {
-                        error: true,
-                        data: {
-                            message: 'platform_login_invalid',
-                            keyError: 'platform_login_invalid'
-                        }
-                    }
-                }
+                // let isValidatePlatform = validateDomainAndPlatform.find(item => item.platform == platform && item.domain == domain);
+                // if (!isValidatePlatform) {
+                //     return {
+                //         error: true,
+                //         data: {
+                //             message: 'platform_login_invalid',
+                //             keyError: 'platform_login_invalid'
+                //         }
+                //     }
+                // }
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
                 // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5e60f595f63b8a4e196a1943' });
                 return infoUser;

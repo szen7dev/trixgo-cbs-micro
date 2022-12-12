@@ -164,8 +164,8 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
-                    return resolve({ error: true, keyError: 'platform_invalid', message: 'Nền tảng không tồn tại', status: 400 });
+                // if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
+                //     return resolve({ error: true, keyError: 'platform_invalid', message: 'Nền tảng không tồn tại', status: 400 });
 
                 let isExist = await AUTH__USER_COLL
                     .findOne({ email: emailValid })
