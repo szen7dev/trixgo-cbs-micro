@@ -34,7 +34,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
      */
     numberOfOrders: {
         type: Number,
-        default: 1
+        default: 0
     },
     /**
      * Số lượng sản phẩm
@@ -42,7 +42,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
      */
     numberOfProducts: {
         type: Number,
-        default: 1
+        default: 0
     },
     //______Tổng giá theo các Product của đơn hàng
     total: {
