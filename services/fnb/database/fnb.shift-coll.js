@@ -25,6 +25,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
+    //_________Số giờ làm việc của ca
+    workingHours: {
+        type: Number,
+        default: 0
+    },
     /**
      * GIÁT TRỊ ĐƠN HÀNG CỦA CA
      */
