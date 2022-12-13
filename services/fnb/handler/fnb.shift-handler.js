@@ -22,18 +22,19 @@
             campaign    : { type: "number", optional: true },
             seasons     : { type: "number", optional: true },
             shiftType   : { type: "number", optional: true },
+            workingHours   : { type: "number", optional: true },
             staffsID    : { type: "array", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { fundaID, name, note, campaign, seasons, shiftType, staffsID } = ctx.params;
-                //  console.log({ fundaID, name, note, campaign, seasons, shiftType, staffsID })
+                 let { fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID } = ctx.params;
+                //  console.log({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID })
                  
                  const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.insert({
-                    fundaID, name, note, campaign, seasons, shiftType, staffsID, userID
+                    fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -53,6 +54,10 @@
             shiftID      : { type: "string" },
             name         : { type: "string" },
             note         : { type: "string", optional: true },
+            campaign    : { type: "number", optional: true },
+            seasons     : { type: "number", optional: true },
+            shiftType   : { type: "number", optional: true },
+            workingHours   : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
@@ -61,7 +66,7 @@
                  const { _id: userID } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.update({
-                    shiftID, name, note
+                    shiftID, name, note, campaign, seasons, shiftType, workingHours
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

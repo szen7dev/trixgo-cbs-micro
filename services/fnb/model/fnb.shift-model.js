@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, name, note, campaign, seasons, shiftType, staffsID, userID }) {
+    insert({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -77,6 +77,10 @@ class Model extends BaseModel {
                 if(shiftType && !isNaN(shiftType)){
                     dataInsert.shiftType = Number(shiftType)
                 }
+
+                if(workingHours && !isNaN(workingHours)){
+                    dataInsert.workingHours = Number(workingHours)
+                }
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -94,7 +98,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ shiftID, name, note, userID }) {
+    update({ shiftID, name, note, campaign, seasons, shiftType, workingHours, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -109,6 +113,23 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataInUpdate.note =note;
                 }
+
+                if(campaign && !isNaN(campaign)){
+                    dataInUpdate.campaign = Number(campaign)
+                }
+
+                if(seasons && !isNaN(seasons)){
+                    dataInUpdate.seasons = Number(seasons)
+                }
+
+                if(shiftType && !isNaN(shiftType)){
+                    dataInUpdate.shiftType = Number(shiftType)
+                }
+
+                if(workingHours && !isNaN(workingHours)){
+                    dataInUpdate.workingHours = Number(workingHours)
+                }
+
                 console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });
