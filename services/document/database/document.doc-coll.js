@@ -112,12 +112,22 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     style: String,
     //_________Tình trạng văn bản
     status: String,
+    //_________Thời hạn hoàn thành
+    deadline: {
+        type: Date,
+        default: null
+    },
     /**
      * Hồ sơ hoàn thành
      * 1-Đang triển khai
      * 2-Hoàn thành
      */
-    finish: { type: Number, default: 1 },
+    // finish: { type: Number, default: 1 },
+    //_________Trạng thái hoàn thành (0-Chưa hoàn thành/ 1-Hoàn thành)
+    completeStatus: {
+        type: Number,
+        default: 0
+    },
     //_________Ghi chú
     note: String,
     //_________Người phê duyệt (Người ký)
@@ -176,11 +186,6 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     },
     //_________Giá trị
     value: {
-        type: Number,
-        default: 0
-    },
-    //_________Trạng thái hoàn thành (0-Chưa hoàn thành/ 1-Hoàn thành)
-    completeStatus: {
         type: Number,
         default: 0
     },

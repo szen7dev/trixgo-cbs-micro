@@ -53,13 +53,13 @@ class Model extends BaseModel {
 	insert({
         parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
-        name, description, note, fieldID, value, completeStatus, publishID, finish, ctx
+        name, description, note, fieldID, value, completeStatus, publishID, deadline, ctx
 	}) {
-        // console.log({
-        //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
-        //     name, description, note, fieldID, value, completeStatus
-        // })
+        console.log({
+            parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
+        name, description, note, fieldID, value, completeStatus, publishID, deadline
+        })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(departmentID)) {
@@ -101,14 +101,6 @@ class Model extends BaseModel {
                         keyError: 'params_type_invalid',
                     });
                 }
-
-                // if (!sign) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Request params sign invalid',
-                //         keyError: 'params_type_invalid',
-                //     });
-                // }
 
                 let infoDepartment = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID
@@ -153,8 +145,8 @@ class Model extends BaseModel {
                 (storageID  && checkObjectIDs(storageID))   && (dataInsert.storage  = storageID);
                 (publishID  && checkObjectIDs(publishID))   && (dataInsert.publish  = publishID);
 
-                if(finish){
-                    dataInsert.finish = finish
+                if(deadline){
+                    dataInsert.deadline = deadline
                 }
 
                 if(parentID && checkObjectIDs(parentID)){
@@ -226,7 +218,7 @@ class Model extends BaseModel {
     update({
 		documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
-        name, description, note, fieldID, value, completeStatus, otherID, publishID, finish, ctx
+        name, description, note, fieldID, value, completeStatus, otherID, publishID, deadline, ctx
 	}) {
         console.log({
             documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
@@ -315,8 +307,8 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
-                if(finish){
-                    dataUpdate.finish = finish;
+                if(deadline){
+                    dataUpdate.deadline = deadline;
                 }
 
                 if(!isNaN(value)){

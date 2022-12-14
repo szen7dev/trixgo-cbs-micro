@@ -44,7 +44,7 @@ module.exports = {
             status              : { type: "string", optional: true },
             amount              : { type: "number", optional: true },
             amountDelivery      : { type: "number", optional: true },
-            requestResponse     : { type: "number", optional: true },
+            // requestResponse     : { type: "number", optional: true },
             expiredResponse     : { type: "string", optional: true },
             direction           : { type: "number",                },
             packageID           : { type: "string",                },
@@ -60,7 +60,7 @@ module.exports = {
             value               : { type: "number", optional: true },
             completeStatus      : { type: "number", optional: true },
             publishID           : { type: "string", optional: true },
-            finish              : { type: "number", optional: true },
+            deadline            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -69,13 +69,13 @@ module.exports = {
                 const {
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID, datahubContactID, publishID, finish
+                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID, datahubContactID, publishID, deadline
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus,contractID, datahubContactID, publishID, finish, ctx
+                    fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus,contractID, datahubContactID, publishID, deadline, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -121,7 +121,7 @@ module.exports = {
             // contractID          : { type: "string", optional: true },
             datahubContactID    : { type: "string", optional: true },
             publishID           : { type: "string", optional: true },
-            finish              : { type: "number", optional: true },
+            deadline            : { type: "string", optional: true },
 
         },
         async handler(ctx) {
@@ -131,13 +131,13 @@ module.exports = {
                 const {
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID, datahubContactID, publishID, finish
+                    fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID, datahubContactID, publishID, deadline
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.update({
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, userID: userUpdate, value, completeStatus, contractID, datahubContactID, publishID, finish, ctx
+                    fieldID, propertyID, otherID, storageID, note, userID: userUpdate, value, completeStatus, contractID, datahubContactID, publishID, deadline, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
