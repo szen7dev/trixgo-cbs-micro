@@ -67,6 +67,6 @@ typings/
 
 tools/db/cf_database.js
 temp/cbs_query.mongodb
-files/temporary_uploads/*
+# files/temporary_uploads/*
 
 ops/db/*
