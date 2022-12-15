@@ -649,17 +649,30 @@ module.exports = {
      */
     exportDocument: {
         auth: 'required',
-        params: {},
+        params: {
+            // filterParams : { type: "string", optional: true }
+        },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { filterParams } = ctx.params;
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocument({
-                    userID, filterParams, ctx
-                })
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                console.log(filterParams)
+
+                if(!filterParams.option){
+                    const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocument({
+                        userID, filterParams, ctx
+                    })
+    
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                }else{
+                    const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocumentOfPackage({
+                        userID, filterParams, ctx
+                    })
+    
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                }
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }

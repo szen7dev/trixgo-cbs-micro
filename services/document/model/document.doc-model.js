@@ -55,11 +55,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
         name, description, note, fieldID, value, completeStatus, publishID, deadline, ctx
 	}) {
-        console.log({
-            parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
-        name, description, note, fieldID, value, completeStatus, publishID, deadline
-        })
+        // console.log({
+        //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        // requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
+        // name, description, note, fieldID, value, completeStatus, publishID, deadline
+        // })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(departmentID)) {
@@ -1303,21 +1303,7 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
-
-                // let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                //     document: documentID,
-                //     user: userID,
-                // }).lean()
-
-                // if(!checkPermission) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Permission denined document',
-                //         keyError: 'permission_denined_document',
-                //         status: 403
-                //     });
-                // }
-
+                
                 let infoAfterUpdate = null;
 
                 if(isMark) {
@@ -1565,6 +1551,235 @@ class Model extends BaseModel {
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
                         const fileName = `document_2_ListDocument${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+                        fs.unlinkSync(pathWriteFile);
+
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    exportDocumentOfPackage({ userID, filterParams = {} }) {
+        return new Promise(async resolve => {
+            try {
+                console.log(filterParams)
+
+                const validation = validateParamsObjectID({ userID });
+                if(validation.error) return resolve(validation);
+                let conditionObj1 = {
+                    project: { $in: filterParams.departmentsID },
+                    level: 1,
+                };
+                let conditionObj2 = {
+                    project: { $in: filterParams.departmentsID },
+                    level: 2
+                };
+                let conditionObj3 = {
+                    project: { $in: filterParams.departmentsID },
+                    level: 3
+                };
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
+
+                // const { data, error } = await this.getListByFilter({
+                //     ...filterParams,
+                //     userID,
+                //     isExportExcel: true
+                // });
+
+                // if(!error) {
+                //     conditionObj = { ...data };
+                // }
+                console.log(conditionObj1)
+
+                let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj3 });
+                sortBy                = dataPagingAndSort.data.sort;
+
+                const listData1 = await DOCUMENT__DOC_COLL
+                    .find(conditionObj1)
+                    .populate({
+                        path: 'author package sender receiver datahubContact field property storage',
+                        select: '_id bizfullname name',
+                    })
+                    .sort(sortBy)
+                    .lean();
+
+                const listData2 = await DOCUMENT__DOC_COLL
+                .find(conditionObj2)
+                .populate({
+                    path: 'author package sender receiver datahubContact field property storage',
+                    select: '_id bizfullname name',
+                })
+                .sort(sortBy)
+                .lean();
+
+                const listData3 = await DOCUMENT__DOC_COLL
+                .find(conditionObj3)
+                .populate({
+                    path: 'author package sender receiver datahubContact field property storage',
+                    select: '_id bizfullname name',
+                })
+                .sort(sortBy)
+                .lean();
+
+                // if(!listDocument) {
+                //     return resolve({
+                //         error: true,
+                //         message: 'Không tìm thấy hồ sơ văn bản',
+                //         keyError: 'documents_not_exists',
+                //         status: 400
+                //     });
+                // }
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/document_2_ListDocument.xlsm')))
+                    .then(async workbook => {
+
+                        let indexExcel = 3;
+                        const DATE_FORMAT = 'DD/MM/YYYY';
+
+                        listData1.map((document, index) => {
+                            const {
+                                name, sign, storeSign, date, receivedDate, style, author,
+                                amountDelivery, status, amount, modifyAt, note, direction,
+                                sender, receiver, datahubContact, field, property, storage, package: packageInfo
+                            } = document;
+
+                            const currRow = workbook.sheet("Data").row(indexExcel);
+
+                            currRow.cell(1).value(index+1);
+
+                            // Người tạo văn bản
+                            currRow.cell(2).value(author?.bizfullname);
+
+                            // Ngày chỉnh sửa
+                            if(modifyAt) {
+                                currRow.cell(3).value(moment(modifyAt).format(DATE_FORMAT));
+                            }
+
+                            // Tiêu đề hồ sơ
+                            name && currRow.cell(4).value(name);
+
+                            // Mã hiệu
+                            sign && currRow.cell(5).value(sign);
+
+                            // Mã hiệu hồ sơ lưu
+                            storeSign && currRow.cell(6).value(storeSign);
+
+                            // Ngày văn bản
+                            if(date) {
+                                currRow.cell(7).value(moment(date).format(DATE_FORMAT));
+                            }
+
+                            // Ngày nhận thực tế
+                            if(receivedDate) {
+                                currRow.cell(8).value(moment(receivedDate).format(DATE_FORMAT));
+                            }
+
+                            // Định dạng văn bản (nhận dạng)
+                            style && currRow.cell(9).value(style);
+
+                            // Tình trạng
+                            status && currRow.cell(10).value(status);
+
+                            // SL nhận
+                            amount && currRow.cell(11).value(amount);
+
+                            // SL giao
+                            amountDelivery && currRow.cell(12).value(amountDelivery);
+
+                            // Ghi chú
+                            note && currRow.cell(13).value(note);
+
+                            // Hướng hồ sơ
+                            switch (direction) {
+                                case 1:
+                                    currRow.cell(14).value('Đến');
+                                    break;
+                                case 2:
+                                    currRow.cell(14).value('Đi');
+                                    break;
+                                case 3:
+                                    currRow.cell(14).value('Nội bộ');
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            // Gói thầu
+                            if(packageInfo) {
+                                currRow.cell(15).value(packageInfo.name);
+                            }
+
+                            // Chủ thế ban hành
+                            if(sender) {
+                                currRow.cell(16).value(sender.name);
+                            }
+
+                            // Chủ thể nhận
+                            if(receiver) {
+                                currRow.cell(17).value(receiver.name);
+                            }
+
+                            // Cơ quan tổ chức
+                            if(datahubContact) {
+                                currRow.cell(18).value(datahubContact.name);
+                            }
+
+                            // Lĩnh vực
+                            if(field) {
+                                currRow.cell(19).value(field.name);
+                            }
+
+                            // Tính chất
+                            if(property) {
+                                currRow.cell(20).value(property.name);
+                            }
+
+                            // Lưu trữ
+                            if(storage) {
+                                currRow.cell(21).value(storage.name);
+                            }
+
+                            // Mẩu tin con
+                            listData2.map((document2, index) => {
+                                const {
+                                    name, 
+                                } = document2;
+
+                                // Tiêu đề hồ sơ
+                                workbook.sheet("Data").row(indexExcel).cell(3).value('Hồ sơ con--------');
+                                workbook.sheet("Data").row(indexExcel).cell(4).value(name);
+
+                                indexExcel++;
+                            })
+
+                            indexExcel++;
+                        })
+
+                        // const rangeUsed = workbook.sheet("Data").usedRange();
+                        const range = workbook.sheet('Data').range(`A3:U${listData1.length + 2}`);
+
+                        range.style({
+                            fontFamily: 'Times New Roman',
+                            fontColor: 'black',
+                            fontSize: 13,
+                            bold: false,
+                            horizontalAlignment: 'center',
+                            border: true,
+                            borderColor: 'black',
+                            wrapText: true,
+                        })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `ListDocument${now.getTime()}.xlsm`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                         await workbook.toFileAsync(pathWriteFile);

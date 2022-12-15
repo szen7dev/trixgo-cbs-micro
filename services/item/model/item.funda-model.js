@@ -151,11 +151,14 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(fundaID))
                     return resolve({ error: true, message: "fundaID không hợp lệ", keyError: "Request params fundaID invalid" });
 
-                if(!name)
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
-                
+                // if(!name)
+                //     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
                 let dataUpdate = {
-                    name, userUpdate: userID, modifyAt: new Date()
+                    userUpdate: userID, modifyAt: new Date()
+                }
+
+                if(name){
+                    dataUpdate.name = namel
                 }
 
                 let dataAddToset = {};
