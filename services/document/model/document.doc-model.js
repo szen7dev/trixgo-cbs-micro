@@ -1542,7 +1542,7 @@ class Model extends BaseModel {
                             fontColor: 'black',
                             fontSize: 13,
                             bold: false,
-                            horizontalAlignment: 'center',
+                            // horizontalAlignment: 'center',
                             border: true,
                             borderColor: 'black',
                             wrapText: true,
