@@ -1379,7 +1379,7 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Download Excel Document
+     * Func: Download Excel Document Project
      * Date: 27/06/2022
      */
     exportDocument({ userID, filterParams = {} }) {
@@ -1566,11 +1566,14 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Dev: MinhVH
+     * Func: Download Excel Document Package
+     * Date: 15/12/2022
+     */
     exportDocumentOfPackage({ userID, filterParams = {} }) {
         return new Promise(async resolve => {
             try {
-                console.log(filterParams)
-
                 const validation = validateParamsObjectID({ userID });
                 if(validation.error) return resolve(validation);
                 let conditionObj1 = {
@@ -1586,7 +1589,7 @@ class Model extends BaseModel {
                     level: 3
                 };
                 let sortBy;
-                let keys	     = ['createAt__-1', '_id__-1'];
+                let keys	     = ['createAt__1', '_id__1'];
 
                 // const { data, error } = await this.getListByFilter({
                 //     ...filterParams,
@@ -1646,7 +1649,7 @@ class Model extends BaseModel {
 
                         listData1.map((document, index) => {
                             const {
-                                name, sign, storeSign, date, receivedDate, style, author,
+                                _id, name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
                                 sender, receiver, datahubContact, field, property, storage, package: packageInfo
                             } = document;
@@ -1747,20 +1750,21 @@ class Model extends BaseModel {
                                 currRow.cell(21).value(storage.name);
                             }
 
-                            // Mẩu tin con
-                            listData2.map((document2, index) => {
-                                const {
-                                    name, 
-                                } = document2;
-
-                                // Tiêu đề hồ sơ
-                                workbook.sheet("Data").row(indexExcel).cell(3).value('Hồ sơ con--------');
-                                workbook.sheet("Data").row(indexExcel).cell(4).value(name);
-
-                                indexExcel++;
-                            })
-
+                            /**
+                             * HỒ SƠ CẤP 2
+                             */
                             indexExcel++;
+                            listData2.map((item, index) => {
+                                if(item.parent && item.parent.toString() === _id.toString()){
+                                    workbook.sheet("Data").row(indexExcel).cell(4).value(item.name);
+                                    workbook.sheet("Data").row(indexExcel).cell(5).value(item.sign);
+                                    workbook.sheet("Data").row(indexExcel).cell(6).value(item.storeSign);
+                                    workbook.sheet("Data").row(indexExcel).cell(7).value(moment(item.date).format(DATE_FORMAT));
+                                    workbook.sheet("Data").row(indexExcel).cell(8).value(moment(item.receivedDate).format(DATE_FORMAT));
+
+                                    indexExcel++;
+                                }
+                            })
                         })
 
                         // const rangeUsed = workbook.sheet("Data").usedRange();
@@ -1771,7 +1775,7 @@ class Model extends BaseModel {
                             fontColor: 'black',
                             fontSize: 13,
                             bold: false,
-                            horizontalAlignment: 'center',
+                            // horizontalAlignment: 'center',
                             border: true,
                             borderColor: 'black',
                             wrapText: true,
