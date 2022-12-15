@@ -143,6 +143,11 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Date,
         default: null
     },
+    //_________File đính kèm
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref : "file"
+    }],
     //_________File cuối cùng
     lastFile: {
         type: Schema.Types.ObjectId,
