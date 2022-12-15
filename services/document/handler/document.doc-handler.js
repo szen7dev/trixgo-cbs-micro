@@ -587,18 +587,20 @@ module.exports = {
      downloadTemplateExcel: {
         auth: 'required',
         params: {
-
+            projectID : { type: 'string', optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                const { projectID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
+                // console.log(ctx.param)
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.downloadTemplateExcel({
-                    companyID: company._id, userID 
+                    companyID: company._id, projectID, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
