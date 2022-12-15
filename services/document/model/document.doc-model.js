@@ -1609,7 +1609,7 @@ class Model extends BaseModel {
                     .find(conditionObj1)
                     .populate({
                         path: 'author package sender receiver datahubContact field property storage',
-                        select: '_id bizfullname name',
+                        select: '_id fullname name',
                     })
                     .sort(sortBy)
                     .lean();
@@ -1618,7 +1618,7 @@ class Model extends BaseModel {
                 .find(conditionObj2)
                 .populate({
                     path: 'author package sender receiver datahubContact field property storage',
-                    select: '_id bizfullname name',
+                    select: '_id fullname name',
                 })
                 .sort(sortBy)
                 .lean();
@@ -1627,7 +1627,7 @@ class Model extends BaseModel {
                 .find(conditionObj3)
                 .populate({
                     path: 'author package sender receiver datahubContact field property storage',
-                    select: '_id bizfullname name',
+                    select: '_id fullname name',
                 })
                 .sort(sortBy)
                 .lean();
@@ -1651,7 +1651,7 @@ class Model extends BaseModel {
                             const {
                                 _id, name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
-                                sender, receiver, datahubContact, field, property, storage, package: packageInfo
+                                sender, receiver, datahubContact, field, property, storage, package: packageInfo, deadline, completeStatus, lastFile
                             } = document;
 
                             const currRow = workbook.sheet("Data").row(indexExcel);
@@ -1659,7 +1659,7 @@ class Model extends BaseModel {
                             currRow.cell(1).value(index+1);
 
                             // Người tạo văn bản
-                            currRow.cell(2).value(author?.bizfullname);
+                            currRow.cell(2).value(author?.fullname);
 
                             // Ngày chỉnh sửa
                             if(modifyAt) {
@@ -1750,21 +1750,142 @@ class Model extends BaseModel {
                                 currRow.cell(21).value(storage.name);
                             }
 
+                            // Thời hạn hoàn thành
+                            if(deadline) {
+                                currRow.cell(22).value(moment(deadline).format(DATE_FORMAT));
+                            }
+
+                            switch (completeStatus) {
+                                case 0:
+                                    currRow.cell(23).value('Chưa');
+                                    break;
+                                case 1:
+                                    currRow.cell(23).value('Hoàn thành');
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            if(lastFile) {
+                                currRow.cell(25).value(`${lastFile}`);
+                            }
+
                             /**
                              * HỒ SƠ CẤP 2
                              */
                             indexExcel++;
-                            listData2.map((item, index) => {
-                                if(item.parent && item.parent.toString() === _id.toString()){
-                                    workbook.sheet("Data").row(indexExcel).cell(4).value(item.name);
-                                    workbook.sheet("Data").row(indexExcel).cell(5).value(item.sign);
-                                    workbook.sheet("Data").row(indexExcel).cell(6).value(item.storeSign);
-                                    workbook.sheet("Data").row(indexExcel).cell(7).value(moment(item.date).format(DATE_FORMAT));
-                                    workbook.sheet("Data").row(indexExcel).cell(8).value(moment(item.receivedDate).format(DATE_FORMAT));
+                            listData2.map((subitem, subindex) => {
+                                if(subitem.parent && subitem.parent.toString() === _id.toString()){
+                                    workbook.sheet("Data").row(indexExcel).cell(1).value(`${index+1}.${subindex+1}`);
+                                    workbook.sheet("Data").row(indexExcel).cell(4).value(subitem.name);
+                                    workbook.sheet("Data").row(indexExcel).cell(5).value(subitem.sign);
+                                    workbook.sheet("Data").row(indexExcel).cell(6).value(subitem.storeSign);
+                                    workbook.sheet("Data").row(indexExcel).cell(7).value(subitem.date ? moment(subitem.date).format(DATE_FORMAT) : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(8).value(subitem.receivedDate ? moment(subitem.receivedDate).format(DATE_FORMAT) : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(9).value(`${subitem.style}`);
+                                    workbook.sheet("Data").row(indexExcel).cell(10).value(subitem.status);
+                                    workbook.sheet("Data").row(indexExcel).cell(11).value(subitem.amount);
+                                    workbook.sheet("Data").row(indexExcel).cell(12).value(subitem.amountDelivery);
+                                    workbook.sheet("Data").row(indexExcel).cell(13).value(subitem.note);
+                                    switch (subitem.direction) {
+                                        case 1:
+                                            workbook.sheet("Data").row(indexExcel).cell(14).value('Đến');
+                                            break;
+                                        case 2:
+                                            workbook.sheet("Data").row(indexExcel).cell(14).value('Đi');
+                                            break;
+                                        case 3:
+                                            workbook.sheet("Data").row(indexExcel).cell(14).value('Nội bộ');
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    workbook.sheet("Data").row(indexExcel).cell(15).value(subitem.packageInfo ? subitem.packageInfo.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(16).value(subitem.sender ? subitem.sender.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(17).value(subitem.receiver ? subitem.receiver.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(18).value(subitem.datahubContact ? subitem.datahubContact.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(19).value(subitem.field ? subitem.field.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(20).value(subitem.property ? subitem.property.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(21).value(subitem.storage ? subitem.storage.name : "");
+
+                                    if(subitem.deadline) {
+                                        currRow.cell(22).value(moment(subitem.deadline).format(DATE_FORMAT));
+                                    }
+                                    switch (subitem.completeStatus) {
+                                        case 0:
+                                            currRow.cell(23).value('Chưa');
+                                            break;
+                                        case 1:
+                                            currRow.cell(23).value('Hoàn thành');
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    if(subitem.lastFile) {
+                                        currRow.cell(25).value(`${subitem.lastFile}`);
+                                    }
 
                                     indexExcel++;
+
+                                     /**
+                                     * HỒ SƠ CẤP 3
+                                     */
+                                    listData3.map((subitem2, subindex2) => {
+                                        if(subitem2.parent && subitem2.parent.toString() === subitem._id.toString()){
+                                            workbook.sheet("Data").row(indexExcel).cell(1).value(`${index+1}.${subindex+1}.${subindex2+1}`);
+                                            workbook.sheet("Data").row(indexExcel).cell(4).value(subitem2.name);
+                                            workbook.sheet("Data").row(indexExcel).cell(5).value(subitem2.sign);
+                                            workbook.sheet("Data").row(indexExcel).cell(6).value(subitem2.storeSign);
+                                            workbook.sheet("Data").row(indexExcel).cell(7).value(subitem2.date ? moment(subitem2.date).format(DATE_FORMAT) : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(8).value(subitem2.receivedDate ? moment(subitem2.receivedDate).format(DATE_FORMAT) : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(9).value(`${subitem2.style}`);
+                                            workbook.sheet("Data").row(indexExcel).cell(10).value(subitem2.status);
+                                            workbook.sheet("Data").row(indexExcel).cell(11).value(subitem2.amount);
+                                            workbook.sheet("Data").row(indexExcel).cell(12).value(subitem2.amountDelivery);
+                                            workbook.sheet("Data").row(indexExcel).cell(13).value(subitem2.note);
+                                            switch (subitem2.direction) {
+                                                case 1:
+                                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Đến');
+                                                    break;
+                                                case 2:
+                                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Đi');
+                                                    break;
+                                                case 3:
+                                                    workbook.sheet("Data").row(indexExcel).cell(14).value('Nội bộ');
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                            workbook.sheet("Data").row(indexExcel).cell(15).value(subitem2.packageInfo ? subitem2.packageInfo.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(16).value(subitem2.sender ? subitem2.sender.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(17).value(subitem2.receiver ? subitem2.receiver.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(18).value(subitem2.datahubContact ? subitem2.datahubContact.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(19).value(subitem2.field ? subitem2.field.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(20).value(subitem2.property ? subitem2.property.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(21).value(subitem2.storage ? subitem2.storage.name : "");
+                                            if(subitem2.deadline) {
+                                                currRow.cell(22).value(moment(subitem2.deadline).format(DATE_FORMAT));
+                                            }
+                                            switch (subitem2.completeStatus) {
+                                                case 0:
+                                                    currRow.cell(23).value('Chưa');
+                                                    break;
+                                                case 1:
+                                                    currRow.cell(23).value('Hoàn thành');
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                            if(subitem2.lastFile) {
+                                                currRow.cell(25).value(`${subitem2.lastFile}`);
+                                            }
+
+                                            indexExcel++;
+                                        }
+                                    })
                                 }
                             })
+                            
                         })
 
                         // const rangeUsed = workbook.sheet("Data").usedRange();
