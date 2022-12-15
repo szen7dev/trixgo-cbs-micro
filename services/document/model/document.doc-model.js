@@ -22,7 +22,7 @@ const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-const
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const timeUtils									    = require('../../../tools/utils/time_utils');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
-const { DOC_DIRECTION_TYPE, DOC_TYPE }              = require('../helper/document.keys-constant');
+const { DOC_DIRECTION_TYPE, DOC_TYPE, DOCUMENT_TYPES }              = require('../helper/document.keys-constant');
 const {
     checkObjectIDs,
     IsJsonString,
@@ -1432,7 +1432,7 @@ class Model extends BaseModel {
                             const {
                                 name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
-                                sender, receiver, datahubContact, publish, field, property, storage, package: packageInfo
+                                sender, receiver, datahubContact, publish, field, property, type, storage, package: packageInfo
                             } = document;
 
                             const currRow = workbook.sheet("Data").row(indexExcel);
@@ -1522,8 +1522,8 @@ class Model extends BaseModel {
                             }
 
                             // Tính chất
-                            if(property) {
-                                currRow.cell(20).value(property.name);
+                            if(type) {
+                                currRow.cell(20).value(DOCUMENT_TYPES[Number(type-1)].text);
                             }
 
                             // Lưu trữ
@@ -1651,7 +1651,7 @@ class Model extends BaseModel {
                             const {
                                 _id, name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
-                                sender, receiver, datahubContact, publish, field, property, storage, package: packageInfo, deadline, completeStatus, lastFile
+                                sender, receiver, datahubContact, publish, field, property, type, storage, package: packageInfo, deadline, completeStatus, lastFile
                             } = document;
 
                             const currRow = workbook.sheet("Data").row(indexExcel);
@@ -1741,8 +1741,8 @@ class Model extends BaseModel {
                             }
 
                             // Tính chất
-                            if(property) {
-                                currRow.cell(20).value(property.name);
+                            if(type) {
+                                currRow.cell(20).value(DOCUMENT_TYPES[Number(type-1)].text);
                             }
 
                             // Lưu trữ
@@ -1805,7 +1805,10 @@ class Model extends BaseModel {
                                     workbook.sheet("Data").row(indexExcel).cell(17).value(subitem.receiver ? subitem.receiver.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(18).value(subitem.publish ? subitem.publish.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(19).value(subitem.field ? subitem.field.name : "");
-                                    workbook.sheet("Data").row(indexExcel).cell(20).value(subitem.property ? subitem.property.name : "");
+                                    // Tính chất
+                                    if(subitem.type) {
+                                        workbook.sheet("Data").row(indexExcel).cell(20).value(DOCUMENT_TYPES[Number(subitem.type-1)].text);
+                                    }
                                     workbook.sheet("Data").row(indexExcel).cell(21).value(subitem.storage ? subitem.storage.name : "");
 
                                     if(subitem.deadline) {
@@ -1861,7 +1864,10 @@ class Model extends BaseModel {
                                             workbook.sheet("Data").row(indexExcel).cell(17).value(subitem2.receiver ? subitem2.receiver.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(18).value(subitem2.publish ? subitem2.publish.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(19).value(subitem2.field ? subitem2.field.name : "");
-                                            workbook.sheet("Data").row(indexExcel).cell(20).value(subitem2.property ? subitem2.property.name : "");
+                                            // Tính chất
+                                            if(subitem2.type) {
+                                                workbook.sheet("Data").row(indexExcel).cell(20).value(DOCUMENT_TYPES[Number(subitem2.type-1)].text);
+                                            }
                                             workbook.sheet("Data").row(indexExcel).cell(21).value(subitem2.storage ? subitem2.storage.name : "");
                                             if(subitem2.deadline) {
                                                 currRow.cell(22).value(moment(subitem2.deadline).format(DATE_FORMAT));
