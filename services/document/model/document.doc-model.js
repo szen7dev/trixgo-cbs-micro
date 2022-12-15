@@ -1407,7 +1407,7 @@ class Model extends BaseModel {
                 const listDocument = await DOCUMENT__DOC_COLL
                     .find(conditionObj)
                     .populate({
-                        path: 'author package sender receiver datahubContact field property storage',
+                        path: 'author package sender receiver datahubContact publish field property storage',
                         select: '_id bizfullname name',
                     })
                     .sort(sortBy)
@@ -1432,7 +1432,7 @@ class Model extends BaseModel {
                             const {
                                 name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
-                                sender, receiver, datahubContact, field, property, storage, package: packageInfo
+                                sender, receiver, datahubContact, publish, field, property, storage, package: packageInfo
                             } = document;
 
                             const currRow = workbook.sheet("Data").row(indexExcel);
@@ -1502,8 +1502,8 @@ class Model extends BaseModel {
                             }
 
                             // Chủ thế ban hành
-                            if(sender) {
-                                currRow.cell(16).value(sender.name);
+                            if(datahubContact) {
+                                currRow.cell(16).value(datahubContact.name);
                             }
 
                             // Chủ thể nhận
@@ -1512,8 +1512,8 @@ class Model extends BaseModel {
                             }
 
                             // Cơ quan tổ chức
-                            if(datahubContact) {
-                                currRow.cell(18).value(datahubContact.name);
+                            if(publish) {
+                                currRow.cell(18).value(publish.name);
                             }
 
                             // Lĩnh vực
@@ -1608,7 +1608,7 @@ class Model extends BaseModel {
                 const listData1 = await DOCUMENT__DOC_COLL
                     .find(conditionObj1)
                     .populate({
-                        path: 'author package sender receiver datahubContact field property storage',
+                        path: 'author package sender receiver datahubContact publish field property storage',
                         select: '_id fullname name',
                     })
                     .sort(sortBy)
@@ -1617,7 +1617,7 @@ class Model extends BaseModel {
                 const listData2 = await DOCUMENT__DOC_COLL
                 .find(conditionObj2)
                 .populate({
-                    path: 'author package sender receiver datahubContact field property storage',
+                    path: 'author package sender receiver  datahubContact publish field property storage',
                     select: '_id fullname name',
                 })
                 .sort(sortBy)
@@ -1626,7 +1626,7 @@ class Model extends BaseModel {
                 const listData3 = await DOCUMENT__DOC_COLL
                 .find(conditionObj3)
                 .populate({
-                    path: 'author package sender receiver datahubContact field property storage',
+                    path: 'author package sender receiver  datahubContact publish field property storage',
                     select: '_id fullname name',
                 })
                 .sort(sortBy)
@@ -1651,7 +1651,7 @@ class Model extends BaseModel {
                             const {
                                 _id, name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
-                                sender, receiver, datahubContact, field, property, storage, package: packageInfo, deadline, completeStatus, lastFile
+                                sender, receiver, datahubContact, publish, field, property, storage, package: packageInfo, deadline, completeStatus, lastFile
                             } = document;
 
                             const currRow = workbook.sheet("Data").row(indexExcel);
@@ -1721,8 +1721,8 @@ class Model extends BaseModel {
                             }
 
                             // Chủ thế ban hành
-                            if(sender) {
-                                currRow.cell(16).value(sender.name);
+                            if(datahubContact) {
+                                currRow.cell(16).value(datahubContact.name);
                             }
 
                             // Chủ thể nhận
@@ -1731,8 +1731,8 @@ class Model extends BaseModel {
                             }
 
                             // Cơ quan tổ chức
-                            if(datahubContact) {
-                                currRow.cell(18).value(datahubContact.name);
+                            if(publish) {
+                                currRow.cell(18).value(publish.name);
                             }
 
                             // Lĩnh vực
@@ -1801,9 +1801,9 @@ class Model extends BaseModel {
                                             break;
                                     }
                                     workbook.sheet("Data").row(indexExcel).cell(15).value(subitem.packageInfo ? subitem.packageInfo.name : "");
-                                    workbook.sheet("Data").row(indexExcel).cell(16).value(subitem.sender ? subitem.sender.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(16).value(subitem.datahubContact ? subitem.datahubContact.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(17).value(subitem.receiver ? subitem.receiver.name : "");
-                                    workbook.sheet("Data").row(indexExcel).cell(18).value(subitem.datahubContact ? subitem.datahubContact.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(18).value(subitem.publish ? subitem.publish.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(19).value(subitem.field ? subitem.field.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(20).value(subitem.property ? subitem.property.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(21).value(subitem.storage ? subitem.storage.name : "");
@@ -1857,9 +1857,9 @@ class Model extends BaseModel {
                                                     break;
                                             }
                                             workbook.sheet("Data").row(indexExcel).cell(15).value(subitem2.packageInfo ? subitem2.packageInfo.name : "");
-                                            workbook.sheet("Data").row(indexExcel).cell(16).value(subitem2.sender ? subitem2.sender.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(16).value(subitem2.datahubContact ? subitem2.datahubContact.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(17).value(subitem2.receiver ? subitem2.receiver.name : "");
-                                            workbook.sheet("Data").row(indexExcel).cell(18).value(subitem2.datahubContact ? subitem2.datahubContact.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(18).value(subitem2.publish ? subitem2.publish.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(19).value(subitem2.field ? subitem2.field.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(20).value(subitem2.property ? subitem2.property.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(21).value(subitem2.storage ? subitem2.storage.name : "");
