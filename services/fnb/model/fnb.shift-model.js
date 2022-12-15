@@ -98,7 +98,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ shiftID, name, note, campaign, seasons, shiftType, workingHours, userID }) {
+    update({ shiftID, staffsID, name, note, campaign, seasons, shiftType, workingHours, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -128,6 +128,10 @@ class Model extends BaseModel {
 
                 if(workingHours && !isNaN(workingHours)){
                     dataInUpdate.workingHours = Number(workingHours)
+                }
+
+                if(staffsID && checkObjectIDs(staffsID)){
+                    dataInUpdate.staffs = staffsID;
                 }
 
                 console.log({ dataInUpdate })
