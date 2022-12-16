@@ -59,11 +59,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
         name, description, note, fieldID, value, completeStatus, publishID, deadline, ctx
 	}) {
-        // console.log({
-        //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        // requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
-        // name, description, note, fieldID, value, completeStatus, publishID, deadline
-        // })
+        console.log({
+            parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
+        name, description, note, fieldID, value, completeStatus, publishID, deadline
+        })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(departmentID) || !name || name == "") {
@@ -1485,20 +1485,33 @@ class Model extends BaseModel {
      * Func: Download Template Excel
      * Date: 16/12/2022
      */
-    importFromExcel({ projectID, dataImport, userID, ctx }) {
+    importFromExcel({ projectID, documentID, dataImport, userID, ctx }) {
+        console.log({ projectID, documentID, userID })
         return new Promise(async resolve => {
             try {
+                let departmentID;
+                if(documentID && checkObjectIDs(documentID)){
+                    // dataInsert.parentID = taskID;
+                    let infoDoc = await DOCUMENT__DOC_COLL.findById(documentID)
+                    if(infoDoc){
+                        departmentID = infoDoc.project
+                    }
+                }else{
+                    departmentID = projectID
+                }
+
                 const dataImportJSON = JSON.parse(dataImport);
                 let index = 0;
                 let errorNumber = 0;
                 let parentID;
 
                 // console.log(dataImportJSON)
+                // console.log({departmentID})
 
                 for (const data of dataImportJSON) {
                     if(index > 0){
                         let dataInsert = {
-                            departmentID: projectID,
+                            departmentID,
                             userID,
                             name: data?.__EMPTY,
                             sign: data?.__EMPTY_4,
@@ -1525,6 +1538,11 @@ class Model extends BaseModel {
                         // console.log(dataInsert)
                         console.log('======================')
 
+                        if(documentID && checkObjectIDs(documentID)){
+                            dataInsert.parentID = documentID;
+                        }
+                        // console.log({dataInsert})
+
                         /**
                          *  Kiểm tra nếu có hồ sơ con
                          */
@@ -1533,21 +1551,21 @@ class Model extends BaseModel {
                             dataInsert.name = data.__EMPTY_1;
                         }
 
-                        if(data.__EMPTY_2 && data.__EMPTY_2 != "" && parentID){
-                            dataInsert.parentID = parentID;
-                            dataInsert.name = data.__EMPTY_2;
-                        }
+                        // if(data.__EMPTY_2 && data.__EMPTY_2 != "" && parentID){
+                        //     dataInsert.parentID = parentID;
+                        //     dataInsert.name = data.__EMPTY_2;
+                        // }
 
-                        if(data.__EMPTY_3 && data.__EMPTY_3 != "" && parentID){
-                            dataInsert.parentID = parentID;
-                            dataInsert.name = data.__EMPTY_3;
-                        }
+                        // if(data.__EMPTY_3 && data.__EMPTY_3 != "" && parentID){
+                        //     dataInsert.parentID = parentID;
+                        //     dataInsert.name = data.__EMPTY_3;
+                        // }
 
                         let infoAfterInsert = await this.insert(dataInsert)
-                        // console.log(infoAfterInsert)
+                        console.log(infoAfterInsert)
                         if(data?.__EMPTY){
                             parentID = infoAfterInsert?.data?._id;
-                            console.log({parentID})
+                            // console.log({parentID})
                         }
 
                         if(infoAfterInsert.error){
