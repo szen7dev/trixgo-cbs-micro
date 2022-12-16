@@ -596,12 +596,12 @@ module.exports = {
                 const { projectID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log({projectID})
+                // console.log({projectID})
                 console.log('====================HERE===================')
                 console.log('====================HERE===================')
                 console.log('====================HERE===================')
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.downloadTemplateExcel({
-                    companyID: company._id, projectID, userID 
+                    projectID, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

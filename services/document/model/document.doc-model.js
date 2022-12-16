@@ -35,6 +35,7 @@ const { uploadFileS3 } = require('../../../tools/s3');
  * COLLECTIONS
  */
 const COMPANY_COLL                                  = require('../../auth/database/auth.company-coll');
+const DEPARTMENT_COLL                               = require('../../item/database/item.department-coll');
 const DOCTYPE_COLL                                  = require('../../item/database/item.doctype-coll');
 const STORAGE_COLL                                  = require('../../item/database/item.storage-coll');
 const DOCUMENT__DOC_COLL               				= require('../database/document.doc-coll');
@@ -1385,17 +1386,20 @@ class Model extends BaseModel {
      * Func: Download Template Excel
      * Date: 8/12/2022
      */
-    downloadTemplateExcel({ companyID, projectID, userID }) {
+    downloadTemplateExcel({ projectID, userID }) {
         return new Promise(async resolve => {
-            try {     
-                console.log({ companyID, projectID, userID })           
-                if (!checkObjectIDs(companyID) || !checkObjectIDs(projectID) || !checkObjectIDs(userID)) {
+            try {             
+                if (!checkObjectIDs(projectID) || !checkObjectIDs(userID)) {
 					return resolve({
                         error: true,
-                        message: 'Request params companyID|projectID|userID invalid',
+                        message: 'Request params projectID|userID invalid',
                         keyError: 'params_invalid',
                     });
                 }
+
+                let infoProject = await DEPARTMENT_COLL.findById(projectID)
+                if(!infoProject)
+                    return resolve({ error: true, message: 'Can not get project Info', keyError: 'params_invalid' });
 
                 // Gói thầu
                 let listData1  = await DOCUMENT__PACKAGE_COLL.find({ project: projectID, members: {$in: [userID]} })
@@ -1404,10 +1408,10 @@ class Model extends BaseModel {
                 let listData2  = await COMPANY_COLL.find({ })
 
                 // Địa chỉ lưu trữ
-                let listData3  = await STORAGE_COLL.find({ company: companyID })
+                let listData3  = await STORAGE_COLL.find({ company: infoProject.company })
 
                 // Phân loại văn bản
-                let listData4  = await DOCTYPE_COLL.find({ company: companyID, type: 2 })
+                let listData4  = await DOCTYPE_COLL.find({ company: infoProject.company, type: 2 })
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/document_1_ImportDocument.xlsm')))
