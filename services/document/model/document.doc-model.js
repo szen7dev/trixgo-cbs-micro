@@ -66,6 +66,10 @@ class Model extends BaseModel {
         })
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * 1-departmentID phải có định dạng String
+                 */
                 if (!checkObjectIDs(departmentID) || !name || name == "") {
 					return resolve({
                         error: true,
@@ -1498,27 +1502,24 @@ class Model extends BaseModel {
      * Date: 16/12/2022
      */
     importFromExcel({ projectID, documentID, dataImport, userID, ctx }) {
-        console.log({ projectID, documentID, userID })
         return new Promise(async resolve => {
             try {
                 let departmentID;
                 if(documentID && checkObjectIDs(documentID)){
-                    // dataInsert.parentID = taskID;
                     let infoDoc = await DOCUMENT__DOC_COLL.findById(documentID)
                     if(infoDoc){
-                        departmentID = infoDoc.project
+                        departmentID = `${infoDoc.project}`
                     }
                 }else{
-                    departmentID = projectID
+                    departmentID = `${projectID}`
                 }
+
+                console.log({ departmentID, documentID })
 
                 const dataImportJSON = JSON.parse(dataImport);
                 let index = 0;
                 let errorNumber = 0;
                 let parentID;
-
-                // console.log(dataImportJSON)
-                // console.log({departmentID})
 
                 for (const data of dataImportJSON) {
                     if(index > 0){
@@ -1547,13 +1548,10 @@ class Model extends BaseModel {
                             propertyID: data?.__EMPTY_35,
                             ctx,
                         }
-                        // console.log(dataInsert)
-                        console.log('======================')
 
                         if(documentID && checkObjectIDs(documentID)){
                             dataInsert.parentID = documentID;
                         }
-                        // console.log({dataInsert})
 
                         /**
                          *  Kiểm tra nếu có hồ sơ con
@@ -1574,31 +1572,14 @@ class Model extends BaseModel {
                         // }
 
                         let infoAfterInsert = await this.insert(dataInsert)
-                        console.log(infoAfterInsert)
+                        // console.log(infoAfterInsert)
                         if(data?.__EMPTY){
                             parentID = infoAfterInsert?.data?._id;
-                            // console.log({parentID})
                         }
 
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
-
-                        // let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
-                        // if(!infoGroup){
-                        //     errorNumber++;
-                        //     return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
-                        // }
-
-                        // dataInsert.projectID = `${infoGroup.project}`;
-                        // let infoAfterInsert = await this.insert(dataInsert);
-                        // if(data?.__EMPTY_1){
-                        //     parentID = infoAfterInsert?.data?._id;
-                        // }
-                        // if(infoAfterInsert.error){
-                        //     errorNumber++;
-                        // }
-
                     }
 
                     index ++;
