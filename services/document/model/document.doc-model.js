@@ -1275,10 +1275,20 @@ class Model extends BaseModel {
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'Add files attachment failed' });
+
                 const infoAfterInsertTemp = [...infoAfterInsert];
-                //Cập nhật trường lastFile vào trong document
                 const infoLastFile = infoAfterInsertTemp.pop();
-                await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, { lastFile: infoLastFile.file }, { new: true });
+
+                const dataUpdateDoc = {
+                    lastFile: infoLastFile.file,
+                    $addToSet: {
+                        files: filesID
+                    }
+                };
+
+                //Cập nhật trường lastFile vào trong document
+                await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
+
                 return resolve({
                     error: false,
                     status: 200,

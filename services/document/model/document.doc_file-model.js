@@ -23,6 +23,7 @@ const {
  */
 const DOCUMENT__DOC_FILE_COLL           	= require('../database/document.doc_file-coll');
 const DOCUMENT__DOC_COLL           		    = require('../database/document.doc-coll');
+
 class Model extends BaseModel {
 
     constructor() {
@@ -96,6 +97,25 @@ class Model extends BaseModel {
                 let infoAfterInsert = await DOCUMENT__DOC_FILE_COLL.findByIdAndDelete(docFileID);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_delete", status: 403 });
+
+                const docInfo = await DOCUMENT__DOC_COLL.findById(infoAfterInsert.document).select('files').lean();
+
+                if(!docInfo)
+                    return resolve({ error: true, message: "not found document info", status: 404 });
+
+                const docFiles = docInfo.files || [];
+                const newFiles = docFiles.filter(fileID => fileID.toString() !== infoAfterInsert.file.toString());
+                const lastFile = newFiles[newFiles.length - 1];
+
+                const dataUpdateDoc = {
+                    lastFile,
+                    $pull: {
+                        files: { $in: [infoAfterInsert.file] }
+                    }
+                };
+
+                //Cập nhật trường lastFile vào trong document
+                await DOCUMENT__DOC_COLL.findByIdAndUpdate(infoAfterInsert.document, dataUpdateDoc);
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
