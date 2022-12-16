@@ -619,13 +619,13 @@ module.exports = {
     importFromExcel: {
         auth: 'required',
         params: {
-            // taskID    : { type: 'string', optional: true },
-            dataImport: { type: 'string' }
+            projectID       : { type: 'string', optional: true },
+            dataImport      : { type: 'string' }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport } = ctx.params;
+                const { projectID, dataImport } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
@@ -633,10 +633,11 @@ module.exports = {
                 console.log('====================HERE===================')
                 console.log('====================HERE===================')
 
-                console.log(dataImport)
+                console.log({projectID})
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.importFromExcel({
-                    taskID, dataImport, userID, ctx
+                    projectID, dataImport, userID, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

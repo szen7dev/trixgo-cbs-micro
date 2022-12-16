@@ -66,10 +66,10 @@ class Model extends BaseModel {
         // })
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs(departmentID)) {
+                if (!checkObjectIDs(departmentID) || !name || name == "") {
 					return resolve({
                         error: true,
-                        message: 'Request params departmentID invalid',
+                        message: 'Request params departmentID|name invalid',
                         keyError: 'params_invalid',
                     });
                 }
@@ -1475,6 +1475,112 @@ class Model extends BaseModel {
 
             } catch (error) {
                 console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 16/12/2022
+     */
+    importFromExcel({ projectID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+                let parentID;
+
+                // console.log(dataImportJSON)
+
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        let dataInsert = {
+                            departmentID: projectID,
+                            userID,
+                            name: data?.__EMPTY,
+                            sign: data?.__EMPTY_4,
+                            storeSign: data?.__EMPTY_5,
+                            description: data?.__EMPTY_6,
+                            approver:  data?.__EMPTY_7,
+                            date:  data?.__EMPTY_28,
+                            receivedDate: data?.__EMPTY_29,
+                            style: data?.__EMPTY_10,
+                            status: data?.__EMPTY_11,
+                            amount: data?.__EMPTY_12,
+                            amountDelivery: data?.__EMPTY_13,
+                            note: data?.__EMPTY_14,
+                            deadline: data?.__EMPTY_36,
+                            completeStatus: data?.__EMPTY_22,
+                            direction: data?.__EMPTY_30,
+                            packageID: data?.__EMPTY_31,
+                            publishID: data?.__EMPTY_32,
+                            type: data?.__EMPTY_33,
+                            storageID: data?.__EMPTY_34,
+                            propertyID: data?.__EMPTY_35,
+                            ctx,
+                        }
+                        // console.log(dataInsert)
+                        console.log('======================')
+
+                        /**
+                         *  Kiểm tra nếu có hồ sơ con
+                         */
+                        if(data.__EMPTY_1 && data.__EMPTY_1 != "" && parentID){
+                            dataInsert.parentID = parentID;
+                            dataInsert.name = data.__EMPTY_1;
+                        }
+
+                        if(data.__EMPTY_2 && data.__EMPTY_2 != "" && parentID){
+                            dataInsert.parentID = parentID;
+                            dataInsert.name = data.__EMPTY_2;
+                        }
+
+                        if(data.__EMPTY_3 && data.__EMPTY_3 != "" && parentID){
+                            dataInsert.parentID = parentID;
+                            dataInsert.name = data.__EMPTY_3;
+                        }
+
+                        let infoAfterInsert = await this.insert(dataInsert)
+                        // console.log(infoAfterInsert)
+                        if(data?.__EMPTY){
+                            parentID = infoAfterInsert?.data?._id;
+                            console.log({parentID})
+                        }
+
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+
+                        // let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
+                        // if(!infoGroup){
+                        //     errorNumber++;
+                        //     return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
+                        // }
+
+                        // dataInsert.projectID = `${infoGroup.project}`;
+                        // let infoAfterInsert = await this.insert(dataInsert);
+                        // if(data?.__EMPTY_1){
+                        //     parentID = infoAfterInsert?.data?._id;
+                        // }
+                        // if(infoAfterInsert.error){
+                        //     errorNumber++;
+                        // }
+
+                    }
+
+                    index ++;
+                }
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "import field" });
+
+                // Update timeImportExcel trick reload việc con
+                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

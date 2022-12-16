@@ -4054,9 +4054,11 @@ class Model extends BaseModel {
 
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
+
                         if(data?.__EMPTY_1){
                             parentID = infoAfterInsert?.data?._id;
                         }
+                        
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
