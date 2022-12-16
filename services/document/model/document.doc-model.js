@@ -1504,6 +1504,12 @@ class Model extends BaseModel {
     importFromExcel({ projectID, documentID, dataImport, userID, ctx }) {
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * 1-Tìm cách Import tối đa 4 cấp (hiện giờ mới được 2 cấp)
+                 * 2-Import được từ ngoài dự án, và Import được vào trong 1 hồ sơ chi tiết
+                 * 3-Import tối đa 1000 mẩu tin
+                 */
                 let departmentID;
                 if(documentID && checkObjectIDs(documentID)){
                     let infoDoc = await DOCUMENT__DOC_COLL.findById(documentID)
@@ -1522,7 +1528,7 @@ class Model extends BaseModel {
                 let parentID;
 
                 for (const data of dataImportJSON) {
-                    if(index > 0){
+                    if(index > 0 && index <= 1000){
                         let dataInsert = {
                             departmentID,
                             userID,
