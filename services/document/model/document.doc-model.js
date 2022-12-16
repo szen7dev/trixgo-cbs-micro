@@ -22,7 +22,7 @@ const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-const
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const timeUtils									    = require('../../../tools/utils/time_utils');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
-const { DOC_DIRECTION_TYPE, DOC_TYPE, DOCUMENT_TYPES }              = require('../helper/document.keys-constant');
+const { DOC_DIRECTION_TYPE, DOC_TYPE, DOCUMENT_TYPES, DIRECTION_TYPES }              = require('../helper/document.keys-constant');
 const {
     checkObjectIDs,
     IsJsonString,
@@ -34,6 +34,9 @@ const { uploadFileS3 } = require('../../../tools/s3');
 /**
  * COLLECTIONS
  */
+const COMPANY_COLL                                  = require('../../auth/database/auth.company-coll');
+const DOCTYPE_COLL                                  = require('../../item/database/item.doctype-coll');
+const STORAGE_COLL                                  = require('../../item/database/item.storage-coll');
 const DOCUMENT__DOC_COLL               				= require('../database/document.doc-coll');
 const DOCUMENT__FILE_COLL           				= require('../database/document.doc_file-coll');
 const DOCUMENT__PACKAGE_COLL           				= require('../database/document.package-coll');
@@ -1384,24 +1387,74 @@ class Model extends BaseModel {
      */
     downloadTemplateExcel({ companyID, projectID, userID }) {
         return new Promise(async resolve => {
-            try {
-                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-                // console.log(listData)
+            try {     
+                console.log({ companyID, projectID, userID })           
+                if (!checkObjectIDs(companyID) || !checkObjectIDs(projectID) || !checkObjectIDs(userID)) {
+					return resolve({
+                        error: true,
+                        message: 'Request params companyID|projectID|userID invalid',
+                        keyError: 'params_invalid',
+                    });
+                }
+
+                // Gói thầu
+                let listData1  = await DOCUMENT__PACKAGE_COLL.find({ project: projectID, members: {$in: [userID]} })
+
+                // Đơn vị ban hành
+                let listData2  = await COMPANY_COLL.find({ })
+
+                // Địa chỉ lưu trữ
+                let listData3  = await STORAGE_COLL.find({ company: companyID })
+
+                // Phân loại văn bản
+                let listData4  = await DOCTYPE_COLL.find({ company: companyID, type: 2 })
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/document_1_ImportDocument.xlsm')))
                 .then(async workbook => {
 
-                    // var i = 3;
-                    // listData?.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
-                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
-                    //     // workbook.sheet("Export").row(i).cell(5).value(item.description);
-                    //     workbook.sheet("Export").row(i).cell(5).value(item.note);
-                    //     i++
-                    // });
+                    DOCUMENT_TYPES, DIRECTION_TYPES
+                    var i = 2;
+                    DIRECTION_TYPES.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(1).value(item.value);
+                        workbook.sheet("DanhMuc").row(i).cell(2).value(item.text);
+                        i++
+                    })
+
+                    var i = 2;
+                    listData1?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(4).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(5).value(item.name);
+                        i++
+                    })
+
+                    var i = 2;
+                    listData2?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(7).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(8).value(item.name);
+                        i++
+                    })
+
+                    var i = 2;
+                    DOCUMENT_TYPES.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(10).value(item.value);
+                        workbook.sheet("DanhMuc").row(i).cell(11).value(item.text);
+                        i++
+                    })
+
+                    var i = 2;
+                    listData3?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(13).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(14).value(item.name);
+                        i++
+                    })
+
+                    var i = 2;
+                    listData4?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(16).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(17).value(item.name);
+                        i++
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';

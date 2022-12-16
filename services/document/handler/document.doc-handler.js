@@ -587,15 +587,16 @@ module.exports = {
      downloadTemplateExcel: {
         auth: 'required',
         params: {
-            projectID : { type: 'string', optional: true }
+            // projectID : { type: 'string', optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                // const { projectID } = ctx.params;
                 const { projectID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log(ctx.param)
+                console.log({projectID})
                 console.log('====================HERE===================')
                 console.log('====================HERE===================')
                 console.log('====================HERE===================')
