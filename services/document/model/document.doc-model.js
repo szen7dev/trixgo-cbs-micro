@@ -1252,6 +1252,7 @@ class Model extends BaseModel {
 	 * Date: 13/11/2021
 	 */
     addFileAttachment({ authorID, documentID, filesID }) {
+        // console.log('===========THÊM FILE VÀO HỒ SƠ===========>>>>>>>>>>')
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([authorID]))
@@ -1286,8 +1287,9 @@ class Model extends BaseModel {
                     }
                 };
 
-                //Cập nhật trường lastFile vào trong document
-                await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
+                // Cập nhật trường lastFile vào trong document
+               let infoDoc = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
+            //    console.log(infoDoc)
 
                 return resolve({
                     error: false,
