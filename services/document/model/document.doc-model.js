@@ -1825,6 +1825,8 @@ class Model extends BaseModel {
                 let projectID = filterParams.departmentsID[0]
                 // console.log({projectID})
                 let listPackage = await DOCUMENT__PACKAGE_COLL.find({ project: projectID, members: {$in: [userID]} })
+
+                // Tổng số hồ sơ
                 let	listDocGroupByPackage = await DOCUMENT__DOC_COLL.aggregate([
                     {
                         $match: {
@@ -1843,6 +1845,27 @@ class Model extends BaseModel {
                     }
                 ])
                 // console.log(listDocGroupByPackage)
+
+                // Số hồ sơ cần hoàn thành tới ngày nay
+                let	listDocHaveToDone = await DOCUMENT__DOC_COLL.aggregate([
+                    {
+                        $match: {
+                            // members: { $in: [ObjectID(userID)] },
+                            project: ObjectID(projectID),
+                            deadline: { $exists: true, $ne: null, $lt: new Date() },
+                            // completeStatus: 1,
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { package: "$package" },
+                            amount: { $sum: 1 },
+                        }
+                    },
+                    {
+                        $sort: { amount: -1 }
+                    }
+                ])
 
                 let conditionObj1 = {
                     project: { $in: filterParams.departmentsID },
@@ -1948,13 +1971,19 @@ class Model extends BaseModel {
                                 }
                             }
 
+                            for(const packageItem of listDocHaveToDone){
+                                if(packageItem._id.package.toString() === item._id.toString()){
+                                    total2 = Number(total2) + Number(packageItem.amount)
+                                }
+                            }
+
                             workbook.sheet("Report").row(i).cell(1).value(`${index+1}`);
                             workbook.sheet("Report").row(i).cell(2).value(item.name);         
                             workbook.sheet("Report").row(i).cell(3).value(Number(total));   
-                            // workbook.sheet("Report").row(i).cell(4).value(Number(0));         
+                            workbook.sheet("Report").row(i).cell(4).value(Number(total2));         
                             workbook.sheet("Report").row(i).cell(5).value(Number(total1));         
-                            workbook.sheet("Report").row(i).cell(6).value(Number(total - total1));      
-                            // workbook.sheet("Report").row(i).cell(7).value(Number(0));       
+                            workbook.sheet("Report").row(i).cell(6).value(Number(total2-total1));       
+                            // workbook.sheet("Report").row(i).cell(7).value(Number(total2-total1));       
                             workbook.sheet("Report").row(i).cell(8).value(item.note); 
 
                             i++
