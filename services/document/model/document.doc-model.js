@@ -1982,8 +1982,8 @@ class Model extends BaseModel {
                             workbook.sheet("Report").row(i).cell(3).value(Number(total));   
                             workbook.sheet("Report").row(i).cell(4).value(Number(total2));         
                             workbook.sheet("Report").row(i).cell(5).value(Number(total1));         
-                            workbook.sheet("Report").row(i).cell(6).value(Number(total - total1));      
-                            workbook.sheet("Report").row(i).cell(7).value(Number(total2-total1));       
+                            workbook.sheet("Report").row(i).cell(6).value(Number(total2-total1));       
+                            // workbook.sheet("Report").row(i).cell(7).value(Number(total2-total1));       
                             workbook.sheet("Report").row(i).cell(8).value(item.note); 
 
                             i++
