@@ -22,7 +22,7 @@ const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-const
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const timeUtils									    = require('../../../tools/utils/time_utils');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
-const { DOC_DIRECTION_TYPE, DOC_TYPE }              = require('../helper/document.keys-constant');
+const { DOC_DIRECTION_TYPE, DOC_TYPE, DOCUMENT_TYPES, DIRECTION_TYPES }              = require('../helper/document.keys-constant');
 const {
     checkObjectIDs,
     IsJsonString,
@@ -34,6 +34,10 @@ const { uploadFileS3 } = require('../../../tools/s3');
 /**
  * COLLECTIONS
  */
+const COMPANY_COLL                                  = require('../../auth/database/auth.company-coll');
+const DEPARTMENT_COLL                               = require('../../item/database/item.department-coll');
+const DOCTYPE_COLL                                  = require('../../item/database/item.doctype-coll');
+const STORAGE_COLL                                  = require('../../item/database/item.storage-coll');
 const DOCUMENT__DOC_COLL               				= require('../database/document.doc-coll');
 const DOCUMENT__FILE_COLL           				= require('../database/document.doc_file-coll');
 const DOCUMENT__PACKAGE_COLL           				= require('../database/document.package-coll');
@@ -55,17 +59,21 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
         name, description, note, fieldID, value, completeStatus, publishID, deadline, ctx
 	}) {
-        // console.log({
-        //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        // requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
-        // name, description, note, fieldID, value, completeStatus, publishID, deadline
-        // })
+        console.log({
+            parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
+        name, description, note, fieldID, value, completeStatus, publishID, deadline
+        })
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs(departmentID)) {
+                /**
+                 * BA
+                 * 1-departmentID phải có định dạng String
+                 */
+                if (!checkObjectIDs(departmentID) || !name || name == "") {
 					return resolve({
                         error: true,
-                        message: 'Request params departmentID invalid',
+                        message: 'Request params departmentID|name invalid',
                         keyError: 'params_invalid',
                     });
                 }
@@ -1248,6 +1256,7 @@ class Model extends BaseModel {
 	 * Date: 13/11/2021
 	 */
     addFileAttachment({ authorID, documentID, filesID }) {
+        // console.log('===========THÊM FILE VÀO HỒ SƠ===========>>>>>>>>>>')
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([authorID]))
@@ -1271,10 +1280,21 @@ class Model extends BaseModel {
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'Add files attachment failed' });
+
                 const infoAfterInsertTemp = [...infoAfterInsert];
-                //Cập nhật trường lastFile vào trong document
                 const infoLastFile = infoAfterInsertTemp.pop();
-                await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, { lastFile: infoLastFile.file }, { new: true });
+
+                const dataUpdateDoc = {
+                    lastFile: infoLastFile.file,
+                    $addToSet: {
+                        files: filesID
+                    }
+                };
+
+                // Cập nhật trường lastFile vào trong document
+               let infoDoc = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
+            //    console.log(infoDoc)
+
                 return resolve({
                     error: false,
                     status: 200,
@@ -1378,6 +1398,212 @@ class Model extends BaseModel {
     }
 
     /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 8/12/2022
+     */
+    downloadTemplateExcel({ projectID, userID }) {
+        return new Promise(async resolve => {
+            try {             
+                if (!checkObjectIDs(projectID) || !checkObjectIDs(userID)) {
+					return resolve({
+                        error: true,
+                        message: 'Request params projectID|userID invalid',
+                        keyError: 'params_invalid',
+                    });
+                }
+
+                let infoProject = await DEPARTMENT_COLL.findById(projectID)
+                if(!infoProject)
+                    return resolve({ error: true, message: 'Can not get project Info', keyError: 'params_invalid' });
+
+                // Gói thầu
+                let listData1  = await DOCUMENT__PACKAGE_COLL.find({ project: projectID, members: {$in: [userID]} })
+
+                // Đơn vị ban hành
+                let listData2  = await COMPANY_COLL.find({ })
+
+                // Địa chỉ lưu trữ
+                let listData3  = await STORAGE_COLL.find({ company: infoProject.company })
+
+                // Phân loại văn bản
+                let listData4  = await DOCTYPE_COLL.find({ company: infoProject.company, type: 2 })
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/document_1_ImportDocument.xlsm')))
+                .then(async workbook => {
+
+                    DOCUMENT_TYPES, DIRECTION_TYPES
+                    var i = 2;
+                    DIRECTION_TYPES.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(1).value(item.value);
+                        workbook.sheet("DanhMuc").row(i).cell(2).value(item.text);
+                        i++
+                    })
+
+                    var i = 2;
+                    listData1?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(4).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(5).value(item.name);
+                        i++
+                    })
+
+                    var i = 2;
+                    listData2?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(7).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(8).value(item.name);
+                        i++
+                    })
+
+                    var i = 2;
+                    DOCUMENT_TYPES.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(10).value(item.value);
+                        workbook.sheet("DanhMuc").row(i).cell(11).value(item.text);
+                        i++
+                    })
+
+                    var i = 2;
+                    listData3?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(13).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(14).value(item.name);
+                        i++
+                    })
+
+                    var i = 2;
+                    listData4?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(16).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(17).value(item.name);
+                        i++
+                    })
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_document_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    // console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 16/12/2022
+     */
+    importFromExcel({ projectID, documentID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1-Tìm cách Import tối đa 4 cấp (hiện giờ mới được 2 cấp)
+                 * 2-Import được từ ngoài dự án, và Import được vào trong 1 hồ sơ chi tiết
+                 * 3-Import tối đa 1000 mẩu tin
+                 */
+                let departmentID;
+                if(documentID && checkObjectIDs(documentID)){
+                    let infoDoc = await DOCUMENT__DOC_COLL.findById(documentID)
+                    if(infoDoc){
+                        departmentID = `${infoDoc.project}`
+                    }
+                }else{
+                    departmentID = `${projectID}`
+                }
+
+                console.log({ departmentID, documentID })
+
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+                let parentID;
+
+                for (const data of dataImportJSON) {
+                    if(index > 0 && index <= 1000){
+                        let dataInsert = {
+                            departmentID,
+                            userID,
+                            name: data?.__EMPTY,
+                            sign: data?.__EMPTY_4,
+                            storeSign: data?.__EMPTY_5,
+                            description: data?.__EMPTY_6,
+                            approver:  data?.__EMPTY_7,
+                            date:  data?.__EMPTY_28,
+                            receivedDate: data?.__EMPTY_29,
+                            style: data?.__EMPTY_10,
+                            status: data?.__EMPTY_11,
+                            amount: data?.__EMPTY_12,
+                            amountDelivery: data?.__EMPTY_13,
+                            note: data?.__EMPTY_14,
+                            deadline: data?.__EMPTY_36,
+                            completeStatus: data?.__EMPTY_22,
+                            direction: data?.__EMPTY_30,
+                            packageID: data?.__EMPTY_31,
+                            publishID: data?.__EMPTY_32,
+                            type: data?.__EMPTY_33,
+                            storageID: data?.__EMPTY_34,
+                            propertyID: data?.__EMPTY_35,
+                            ctx,
+                        }
+
+                        if(documentID && checkObjectIDs(documentID)){
+                            dataInsert.parentID = documentID;
+                        }
+
+                        /**
+                         *  Kiểm tra nếu có hồ sơ con
+                         */
+                        if(data.__EMPTY_1 && data.__EMPTY_1 != "" && parentID){
+                            dataInsert.parentID = parentID;
+                            dataInsert.name = data.__EMPTY_1;
+                        }
+
+                        // if(data.__EMPTY_2 && data.__EMPTY_2 != "" && parentID){
+                        //     dataInsert.parentID = parentID;
+                        //     dataInsert.name = data.__EMPTY_2;
+                        // }
+
+                        // if(data.__EMPTY_3 && data.__EMPTY_3 != "" && parentID){
+                        //     dataInsert.parentID = parentID;
+                        //     dataInsert.name = data.__EMPTY_3;
+                        // }
+
+                        let infoAfterInsert = await this.insert(dataInsert)
+                        // console.log(infoAfterInsert)
+                        if(data?.__EMPTY){
+                            parentID = infoAfterInsert?.data?._id;
+                        }
+
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+                    }
+
+                    index ++;
+                }
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "import field" });
+
+                // Update timeImportExcel trick reload việc con
+                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Dev: MinhVH
      * Func: Download Excel Document Project
      * Date: 27/06/2022
@@ -1432,7 +1658,7 @@ class Model extends BaseModel {
                             const {
                                 name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
-                                sender, receiver, datahubContact, publish, field, property, storage, package: packageInfo
+                                sender, receiver, datahubContact, publish, field, property, type, storage, package: packageInfo
                             } = document;
 
                             const currRow = workbook.sheet("Data").row(indexExcel);
@@ -1522,8 +1748,8 @@ class Model extends BaseModel {
                             }
 
                             // Tính chất
-                            if(property) {
-                                currRow.cell(20).value(property.name);
+                            if(type) {
+                                currRow.cell(20).value(DOCUMENT_TYPES[Number(type-1)].text);
                             }
 
                             // Lưu trữ
@@ -1542,7 +1768,7 @@ class Model extends BaseModel {
                             fontColor: 'black',
                             fontSize: 13,
                             bold: false,
-                            horizontalAlignment: 'center',
+                            // horizontalAlignment: 'center',
                             border: true,
                             borderColor: 'black',
                             wrapText: true,
@@ -1651,7 +1877,7 @@ class Model extends BaseModel {
                             const {
                                 _id, name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
-                                sender, receiver, datahubContact, publish, field, property, storage, package: packageInfo, deadline, completeStatus, lastFile
+                                sender, receiver, datahubContact, publish, field, property, type, storage, package: packageInfo, deadline, completeStatus, lastFile
                             } = document;
 
                             const currRow = workbook.sheet("Data").row(indexExcel);
@@ -1741,8 +1967,8 @@ class Model extends BaseModel {
                             }
 
                             // Tính chất
-                            if(property) {
-                                currRow.cell(20).value(property.name);
+                            if(type) {
+                                currRow.cell(20).value(DOCUMENT_TYPES[Number(type-1)].text);
                             }
 
                             // Lưu trữ
@@ -1805,7 +2031,10 @@ class Model extends BaseModel {
                                     workbook.sheet("Data").row(indexExcel).cell(17).value(subitem.receiver ? subitem.receiver.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(18).value(subitem.publish ? subitem.publish.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(19).value(subitem.field ? subitem.field.name : "");
-                                    workbook.sheet("Data").row(indexExcel).cell(20).value(subitem.property ? subitem.property.name : "");
+                                    // Tính chất
+                                    if(subitem.type) {
+                                        workbook.sheet("Data").row(indexExcel).cell(20).value(DOCUMENT_TYPES[Number(subitem.type-1)].text);
+                                    }
                                     workbook.sheet("Data").row(indexExcel).cell(21).value(subitem.storage ? subitem.storage.name : "");
 
                                     if(subitem.deadline) {
@@ -1861,7 +2090,10 @@ class Model extends BaseModel {
                                             workbook.sheet("Data").row(indexExcel).cell(17).value(subitem2.receiver ? subitem2.receiver.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(18).value(subitem2.publish ? subitem2.publish.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(19).value(subitem2.field ? subitem2.field.name : "");
-                                            workbook.sheet("Data").row(indexExcel).cell(20).value(subitem2.property ? subitem2.property.name : "");
+                                            // Tính chất
+                                            if(subitem2.type) {
+                                                workbook.sheet("Data").row(indexExcel).cell(20).value(DOCUMENT_TYPES[Number(subitem2.type-1)].text);
+                                            }
                                             workbook.sheet("Data").row(indexExcel).cell(21).value(subitem2.storage ? subitem2.storage.name : "");
                                             if(subitem2.deadline) {
                                                 currRow.cell(22).value(moment(subitem2.deadline).format(DATE_FORMAT));

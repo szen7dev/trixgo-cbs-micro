@@ -23,6 +23,7 @@ const {
  */
 const DOCUMENT__DOC_FILE_COLL           	= require('../database/document.doc_file-coll');
 const DOCUMENT__DOC_COLL           		    = require('../database/document.doc-coll');
+
 class Model extends BaseModel {
 
     constructor() {
@@ -34,43 +35,46 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code:
 	 */
-	insert({ documentID, fileID, userID }) {
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(documentID))
-                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+	// insert({ documentID, fileID, userID }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             /**
+    //              * BA
+    //              * 1-Upload File lên S3
+    //              * 2-Thêm file vào files[] của Document??? => xem addFileAttachment tại document.doc-model
+    //              * 3-Update lastFile của Document??? => xem addFileAttachment tại document.doc-model 
+    //              */
+    //             /**
+    //              * VALIDATION STEP (2)
+    //              *  - Kiểm tra valid từ các input
+    //              *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+    //              */
+    //             if(!checkObjectIDs(documentID))
+    //                 return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
 
-                if(!checkObjectIDs(fileID))
-                    return resolve({ error: true, message: 'Request params fileID invalid', status: 400 });
+    //             if(!checkObjectIDs(fileID))
+    //                 return resolve({ error: true, message: 'Request params fileID invalid', status: 400 });
 
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+    //             if(!checkObjectIDs(userID))
+    //                 return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                let infoAfterInsert = await this.insertData({ document: documentID, file: fileID, userCreate: userID });
+    //             /**
+    //              * LOGIC STEP (3)
+    //              * 3.1: Convert type + update name (ví dụ: string -> number)
+    //              * 3.2: Operation database
+    //              */
+    //             let infoAfterInsert = await this.insertData({ document: documentID, file: fileID, userCreate: userID });
 
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: "can't_insert", status: 403 });
+    //             if(!infoAfterInsert)
+    //                 return resolve({ error: true, message: "can't_insert", status: 403 });
 
 
-                return resolve({ error: false, data: infoAfterInsert, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoAfterInsert, status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
      /**
 	 * Name: delete doc file
@@ -96,6 +100,25 @@ class Model extends BaseModel {
                 let infoAfterInsert = await DOCUMENT__DOC_FILE_COLL.findByIdAndDelete(docFileID);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_delete", status: 403 });
+
+                const docInfo = await DOCUMENT__DOC_COLL.findById(infoAfterInsert.document).select('files').lean();
+
+                if(!docInfo)
+                    return resolve({ error: true, message: "not found document info", status: 404 });
+
+                const docFiles = docInfo.files || [];
+                const newFiles = docFiles.filter(fileID => fileID.toString() !== infoAfterInsert.file.toString());
+                const lastFile = newFiles[newFiles.length - 1];
+
+                const dataUpdateDoc = {
+                    lastFile,
+                    $pull: {
+                        files: { $in: [infoAfterInsert.file] }
+                    }
+                };
+
+                //Cập nhật trường lastFile vào trong document
+                await DOCUMENT__DOC_COLL.findByIdAndUpdate(infoAfterInsert.document, dataUpdateDoc);
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {

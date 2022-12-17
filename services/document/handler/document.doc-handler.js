@@ -587,18 +587,21 @@ module.exports = {
      downloadTemplateExcel: {
         auth: 'required',
         params: {
-
+            // projectID : { type: 'string', optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                // const { projectID } = ctx.params;
+                const { projectID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
+                // console.log({projectID})
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.downloadTemplateExcel({
-                    companyID: company._id, userID 
+                    projectID, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -616,13 +619,14 @@ module.exports = {
     importFromExcel: {
         auth: 'required',
         params: {
-            // taskID    : { type: 'string', optional: true },
-            dataImport: { type: 'string' }
+            projectID       : { type: 'string', optional: true },
+            documentID      : { type: 'string', optional: true },
+            dataImport      : { type: 'string' }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport } = ctx.params;
+                const { projectID, documentID, dataImport } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
@@ -630,10 +634,11 @@ module.exports = {
                 console.log('====================HERE===================')
                 console.log('====================HERE===================')
 
-                console.log(dataImport)
+                // console.log({projectID, documentID})
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.importFromExcel({
-                    taskID, dataImport, userID, ctx
+                    projectID, documentID, dataImport, userID, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -661,7 +666,7 @@ module.exports = {
                 console.log(filterParams)
 
                 if(!filterParams.option){
-                    const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocument({
+                    const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocumentOfPackage({
                         userID, filterParams, ctx
                     })
     

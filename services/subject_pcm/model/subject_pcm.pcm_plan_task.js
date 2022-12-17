@@ -125,7 +125,6 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
-
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -3523,6 +3522,7 @@ class Model extends BaseModel {
                         const newChildTask = await PCM_PLAN_TASK_COLL.create({
                             ...childTask,
                             suid,
+                            status: 1,
                             parent: parentTask._id,
                             startTime: new Date(),
                             actualStartTime: new Date(),
@@ -4054,9 +4054,11 @@ class Model extends BaseModel {
 
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
+
                         if(data?.__EMPTY_1){
                             parentID = infoAfterInsert?.data?._id;
                         }
+                        
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }

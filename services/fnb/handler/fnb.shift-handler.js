@@ -58,15 +58,16 @@
             seasons     : { type: "number", optional: true },
             shiftType   : { type: "number", optional: true },
             workingHours   : { type: "number", optional: true },
+            staffsID    : { type: "array", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  shiftID, name, note } = ctx.params;
+                 let {  shiftID, name, campaign, note, seasons, shiftType, workingHours, staffsID } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.update({
-                    shiftID, name, note, campaign, seasons, shiftType, workingHours
+                    shiftID, name, note, staffsID, campaign, seasons, shiftType, workingHours
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
