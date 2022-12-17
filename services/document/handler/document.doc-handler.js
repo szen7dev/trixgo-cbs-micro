@@ -666,7 +666,7 @@ module.exports = {
                 console.log(filterParams)
 
                 if(!filterParams.option){
-                    const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocument({
+                    const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocumentOfPackage({
                         userID, filterParams, ctx
                     })
     
