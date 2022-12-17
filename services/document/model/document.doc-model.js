@@ -192,12 +192,12 @@ class Model extends BaseModel {
 
                 // Chỉ cập nhật numberOfDocs khi tạo văn bản cha
                 if(!parentID){
-                    // Cập nhật số lượng document cho dự án
+                    // Cập nhật số lượng document cho Dự án
                     await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
                         departmentID, numberOfDocs: 1
                     })
 
-                    // Cập nhật số lượng document cho gói thầu
+                    // Cập nhật số lượng document cho Gói thầu
                     if(packageID && checkObjectIDs(packageID)){
                         await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
                             $inc: {
@@ -206,6 +206,21 @@ class Model extends BaseModel {
                         });
                     }
                 }else{
+                    // Cập nhật số lượng document cho Dự án
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID, numberOfDocs: 1
+                    })
+
+                    // Cập nhật số lượng document cho Gói thầu
+                    if(packageID && checkObjectIDs(packageID)){
+                        await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
+                            $inc: {
+                                numberOfDocs: 1
+                            }
+                        });
+                    }
+
+                    // Cập nhật số lượng document cho Hồ sơ cha
                     if(checkObjectIDs(parentID)){
                         await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, { $inc: { amountDocumentChild: 1 }, new: true })
                     }
@@ -228,11 +243,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
         name, description, note, fieldID, value, completeStatus, otherID, publishID, deadline, ctx
 	}) {
-        console.log({
-            documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-            requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
-            name, description, note, fieldID, value, completeStatus, otherID
-        })
+        // console.log({
+        //     documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
+        //     name, description, note, fieldID, value, completeStatus, otherID
+        // })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(documentID, packageID, publishID, userID)) {
