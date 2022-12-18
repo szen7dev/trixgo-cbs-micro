@@ -3531,6 +3531,10 @@ class Model extends BaseModel {
                             actualFinishTime: new Date(newExpiredTime),
                             draft: isDraftTask ? 1 : 0,
                             signatures: [],
+                            description: "",
+                            descriptioncv: "",
+                            note: "",
+                            notecv: ""
                         })
 
                         if(callback) {
