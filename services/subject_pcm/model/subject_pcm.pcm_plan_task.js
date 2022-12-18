@@ -3523,6 +3523,7 @@ class Model extends BaseModel {
                             ...childTask,
                             suid,
                             status: 1,
+                            percentage: 0,
                             parent: parentTask._id,
                             startTime: new Date(),
                             actualStartTime: new Date(),
