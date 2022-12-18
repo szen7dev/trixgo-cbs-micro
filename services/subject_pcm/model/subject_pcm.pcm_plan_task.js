@@ -3529,6 +3529,7 @@ class Model extends BaseModel {
                             expiredTime: new Date(newExpiredTime),
                             actualFinishTime: new Date(newExpiredTime),
                             draft: isDraftTask ? 1 : 0,
+                            signatures: [],
                         })
 
                         if(callback) {
@@ -3607,6 +3608,7 @@ class Model extends BaseModel {
                     expiredHour,
                     expiredTime,
                     draft: isDraftTask ? 1 : 0,
+                    signatures: [],
                     amountoftime,
                     bizfullname,
                     ctx
