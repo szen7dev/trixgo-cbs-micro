@@ -66,6 +66,10 @@ class Model extends BaseModel {
         // })
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * 1-departmentID phải có định dạng String
+                 */
                 if (!checkObjectIDs(departmentID) || !name || name == "") {
 					return resolve({
                         error: true,
@@ -188,12 +192,12 @@ class Model extends BaseModel {
 
                 // Chỉ cập nhật numberOfDocs khi tạo văn bản cha
                 if(!parentID){
-                    // Cập nhật số lượng document cho dự án
+                    // Cập nhật số lượng document cho Dự án
                     await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
                         departmentID, numberOfDocs: 1
                     })
 
-                    // Cập nhật số lượng document cho gói thầu
+                    // Cập nhật số lượng document cho Gói thầu
                     if(packageID && checkObjectIDs(packageID)){
                         await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
                             $inc: {
@@ -202,6 +206,21 @@ class Model extends BaseModel {
                         });
                     }
                 }else{
+                    // Cập nhật số lượng document cho Dự án
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID, numberOfDocs: 1
+                    })
+
+                    // Cập nhật số lượng document cho Gói thầu
+                    if(packageID && checkObjectIDs(packageID)){
+                        await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
+                            $inc: {
+                                numberOfDocs: 1
+                            }
+                        });
+                    }
+
+                    // Cập nhật số lượng document cho Hồ sơ cha
                     if(checkObjectIDs(parentID)){
                         await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, { $inc: { amountDocumentChild: 1 }, new: true })
                     }
@@ -224,11 +243,11 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
         name, description, note, fieldID, value, completeStatus, otherID, publishID, deadline, ctx
 	}) {
-        console.log({
-            documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-            requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
-            name, description, note, fieldID, value, completeStatus, otherID
-        })
+        // console.log({
+        //     documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
+        //     name, description, note, fieldID, value, completeStatus, otherID
+        // })
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(documentID, packageID, publishID, userID)) {
@@ -1252,6 +1271,7 @@ class Model extends BaseModel {
 	 * Date: 13/11/2021
 	 */
     addFileAttachment({ authorID, documentID, filesID }) {
+        // console.log('===========THÊM FILE VÀO HỒ SƠ===========>>>>>>>>>>')
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([authorID]))
@@ -1286,8 +1306,9 @@ class Model extends BaseModel {
                     }
                 };
 
-                //Cập nhật trường lastFile vào trong document
-                await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
+                // Cập nhật trường lastFile vào trong document
+               let infoDoc = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
+            //    console.log(infoDoc)
 
                 return resolve({
                     error: false,
@@ -1495,20 +1516,36 @@ class Model extends BaseModel {
      * Func: Download Template Excel
      * Date: 16/12/2022
      */
-    importFromExcel({ projectID, dataImport, userID, ctx }) {
+    importFromExcel({ projectID, documentID, dataImport, userID, ctx }) {
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * 1-Tìm cách Import tối đa 4 cấp (hiện giờ mới được 2 cấp)
+                 * 2-Import được từ ngoài dự án, và Import được vào trong 1 hồ sơ chi tiết
+                 * 3-Import tối đa 1000 mẩu tin
+                 */
+                let departmentID;
+                if(documentID && checkObjectIDs(documentID)){
+                    let infoDoc = await DOCUMENT__DOC_COLL.findById(documentID)
+                    if(infoDoc){
+                        departmentID = `${infoDoc.project}`
+                    }
+                }else{
+                    departmentID = `${projectID}`
+                }
+
+                console.log({ departmentID, documentID })
+
                 const dataImportJSON = JSON.parse(dataImport);
                 let index = 0;
                 let errorNumber = 0;
                 let parentID;
 
-                // console.log(dataImportJSON)
-
                 for (const data of dataImportJSON) {
-                    if(index > 0){
+                    if(index > 0 && index <= 1000){
                         let dataInsert = {
-                            departmentID: projectID,
+                            departmentID,
                             userID,
                             name: data?.__EMPTY,
                             sign: data?.__EMPTY_4,
@@ -1532,8 +1569,10 @@ class Model extends BaseModel {
                             propertyID: data?.__EMPTY_35,
                             ctx,
                         }
-                        // console.log(dataInsert)
-                        console.log('======================')
+
+                        if(documentID && checkObjectIDs(documentID)){
+                            dataInsert.parentID = documentID;
+                        }
 
                         /**
                          *  Kiểm tra nếu có hồ sơ con
@@ -1543,42 +1582,25 @@ class Model extends BaseModel {
                             dataInsert.name = data.__EMPTY_1;
                         }
 
-                        if(data.__EMPTY_2 && data.__EMPTY_2 != "" && parentID){
-                            dataInsert.parentID = parentID;
-                            dataInsert.name = data.__EMPTY_2;
-                        }
+                        // if(data.__EMPTY_2 && data.__EMPTY_2 != "" && parentID){
+                        //     dataInsert.parentID = parentID;
+                        //     dataInsert.name = data.__EMPTY_2;
+                        // }
 
-                        if(data.__EMPTY_3 && data.__EMPTY_3 != "" && parentID){
-                            dataInsert.parentID = parentID;
-                            dataInsert.name = data.__EMPTY_3;
-                        }
+                        // if(data.__EMPTY_3 && data.__EMPTY_3 != "" && parentID){
+                        //     dataInsert.parentID = parentID;
+                        //     dataInsert.name = data.__EMPTY_3;
+                        // }
 
                         let infoAfterInsert = await this.insert(dataInsert)
                         // console.log(infoAfterInsert)
                         if(data?.__EMPTY){
                             parentID = infoAfterInsert?.data?._id;
-                            console.log({parentID})
                         }
 
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
-
-                        // let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
-                        // if(!infoGroup){
-                        //     errorNumber++;
-                        //     return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
-                        // }
-
-                        // dataInsert.projectID = `${infoGroup.project}`;
-                        // let infoAfterInsert = await this.insert(dataInsert);
-                        // if(data?.__EMPTY_1){
-                        //     parentID = infoAfterInsert?.data?._id;
-                        // }
-                        // if(infoAfterInsert.error){
-                        //     errorNumber++;
-                        // }
-
                     }
 
                     index ++;
@@ -1791,10 +1813,60 @@ class Model extends BaseModel {
      * Date: 15/12/2022
      */
     exportDocumentOfPackage({ userID, filterParams = {} }) {
+        console.log('==============ĐANG TẢI HỒ SƠ=======================')
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({ userID });
                 if(validation.error) return resolve(validation);
+
+                /**
+                 * DANH SÁCH GÓI THẦU CỦA DỰ ÁN (mà user được quyền truy cập)
+                 */
+                let projectID = filterParams.departmentsID[0]
+                // console.log({projectID})
+                let listPackage = await DOCUMENT__PACKAGE_COLL.find({ project: projectID, members: {$in: [userID]} })
+
+                // Tổng số hồ sơ
+                let	listDocGroupByPackage = await DOCUMENT__DOC_COLL.aggregate([
+                    {
+                        $match: {
+                            // members: { $in: [ObjectID(userID)] },
+                            project: ObjectID(projectID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { package: "$package", completeStatus: "$completeStatus" },
+                            amount: { $sum: 1 },
+                        }
+                    },
+                    {
+                        $sort: { amount: -1 }
+                    }
+                ])
+                // console.log(listDocGroupByPackage)
+
+                // Số hồ sơ cần hoàn thành tới ngày nay
+                let	listDocHaveToDone = await DOCUMENT__DOC_COLL.aggregate([
+                    {
+                        $match: {
+                            // members: { $in: [ObjectID(userID)] },
+                            project: ObjectID(projectID),
+                            deadline: { $exists: true, $ne: null, $lt: new Date() },
+                            // completeStatus: 1,
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { package: "$package" },
+                            amount: { $sum: 1 },
+                        }
+                    },
+                    {
+                        $sort: { amount: -1 }
+                    }
+                ])
+
                 let conditionObj1 = {
                     project: { $in: filterParams.departmentsID },
                     level: 1,
@@ -1807,6 +1879,11 @@ class Model extends BaseModel {
                     project: { $in: filterParams.departmentsID },
                     level: 3
                 };
+                let conditionObj4 = {
+                    project: { $in: filterParams.departmentsID },
+                    level: 4
+                };
+
                 let sortBy;
                 let keys	     = ['createAt__1', '_id__1'];
 
@@ -1819,7 +1896,7 @@ class Model extends BaseModel {
                 // if(!error) {
                 //     conditionObj = { ...data };
                 // }
-                console.log(conditionObj1)
+                // console.log(conditionObj1)
 
                 let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj3 });
                 sortBy                = dataPagingAndSort.data.sort;
@@ -1836,7 +1913,7 @@ class Model extends BaseModel {
                 const listData2 = await DOCUMENT__DOC_COLL
                 .find(conditionObj2)
                 .populate({
-                    path: 'author package sender receiver  datahubContact publish field property storage',
+                    path: 'author package sender receiver datahubContact publish field property storage',
                     select: '_id fullname name',
                 })
                 .sort(sortBy)
@@ -1845,7 +1922,16 @@ class Model extends BaseModel {
                 const listData3 = await DOCUMENT__DOC_COLL
                 .find(conditionObj3)
                 .populate({
-                    path: 'author package sender receiver  datahubContact publish field property storage',
+                    path: 'author package sender receiver datahubContact publish field property storage',
+                    select: '_id fullname name',
+                })
+                .sort(sortBy)
+                .lean();
+
+                const listData4 = await DOCUMENT__DOC_COLL
+                .find(conditionObj4)
+                .populate({
+                    path: 'author package sender receiver datahubContact publish field property storage',
                     select: '_id fullname name',
                 })
                 .sort(sortBy)
@@ -1860,8 +1946,49 @@ class Model extends BaseModel {
                 //     });
                 // }
 
+                // console.log(listData3)
+                // console.log(listData4)
+
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/document_2_ListDocument.xlsm')))
                     .then(async workbook => {
+                        /**
+                         * DANH SÁCH GÓI THẦU
+                         */
+                        var i = 3
+                        listPackage.map((item, index) => {
+
+                            let total=0, total1 = 0, total2 = 0
+
+                            // Tính toán tổng số lượng
+                            for(const packageItem of listDocGroupByPackage){
+                                if(packageItem._id.package.toString() === item._id.toString()){
+                                    if(packageItem._id.completeStatus && packageItem._id.completeStatus == 1){
+                                        total1 = Number(total1) + Number(packageItem.amount)
+                                        total = Number(total) + Number(packageItem.amount)
+                                    }else{
+                                        total = Number(total) + Number(packageItem.amount)
+                                    }
+                                }
+                            }
+
+                            for(const packageItem of listDocHaveToDone){
+                                if(packageItem._id.package.toString() === item._id.toString()){
+                                    total2 = Number(total2) + Number(packageItem.amount)
+                                }
+                            }
+
+                            workbook.sheet("Report").row(i).cell(1).value(`${index+1}`);
+                            workbook.sheet("Report").row(i).cell(2).value(item.name);         
+                            workbook.sheet("Report").row(i).cell(3).value(Number(total));   
+                            workbook.sheet("Report").row(i).cell(4).value(Number(total2));         
+                            workbook.sheet("Report").row(i).cell(5).value(Number(total1));         
+                            workbook.sheet("Report").row(i).cell(6).value(Number(total2-total1));       
+                            // workbook.sheet("Report").row(i).cell(7).value(Number(total2-total1));       
+                            workbook.sheet("Report").row(i).cell(8).value(item.note); 
+
+                            i++
+                        })
+
 
                         let indexExcel = 3;
                         const DATE_FORMAT = 'DD/MM/YYYY';
@@ -2106,8 +2233,70 @@ class Model extends BaseModel {
                                             }
 
                                             indexExcel++;
+
+                                             /**
+                                             * HỒ SƠ CẤP 4
+                                             */
+                                            listData4.map((subitem3, subindex3) => {
+                                                if(subitem3.parent && subitem3.parent.toString() === subitem2._id.toString()){
+                                                    workbook.sheet("Data").row(indexExcel).cell(1).value(`${index+1}.${subindex+1}.${subindex2+1}.${subindex3+1}`);
+                                                    workbook.sheet("Data").row(indexExcel).cell(4).value(subitem3.name);
+                                                    workbook.sheet("Data").row(indexExcel).cell(5).value(subitem3.sign);
+                                                    workbook.sheet("Data").row(indexExcel).cell(6).value(subitem3.storeSign);
+                                                    workbook.sheet("Data").row(indexExcel).cell(7).value(subitem3.date ? moment(subitem3.date).format(DATE_FORMAT) : "");
+                                                    workbook.sheet("Data").row(indexExcel).cell(8).value(subitem3.receivedDate ? moment(subitem3.receivedDate).format(DATE_FORMAT) : "");
+                                                    workbook.sheet("Data").row(indexExcel).cell(9).value(`${subitem3.style}`);
+                                                    workbook.sheet("Data").row(indexExcel).cell(10).value(subitem3.status);
+                                                    workbook.sheet("Data").row(indexExcel).cell(11).value(subitem3.amount);
+                                                    workbook.sheet("Data").row(indexExcel).cell(12).value(subitem3.amountDelivery);
+                                                    workbook.sheet("Data").row(indexExcel).cell(13).value(subitem3.note);
+                                                    switch (subitem3.direction) {
+                                                        case 1:
+                                                            workbook.sheet("Data").row(indexExcel).cell(14).value('Đến');
+                                                            break;
+                                                        case 2:
+                                                            workbook.sheet("Data").row(indexExcel).cell(14).value('Đi');
+                                                            break;
+                                                        case 3:
+                                                            workbook.sheet("Data").row(indexExcel).cell(14).value('Nội bộ');
+                                                            break;
+                                                        default:
+                                                            break;
+                                                    }
+                                                    workbook.sheet("Data").row(indexExcel).cell(15).value(subitem3.packageInfo ? subitem3.packageInfo.name : "");
+                                                    workbook.sheet("Data").row(indexExcel).cell(16).value(subitem3.datahubContact ? subitem3.datahubContact.name : "");
+                                                    workbook.sheet("Data").row(indexExcel).cell(17).value(subitem3.receiver ? subitem3.receiver.name : "");
+                                                    workbook.sheet("Data").row(indexExcel).cell(18).value(subitem3.publish ? subitem3.publish.name : "");
+                                                    workbook.sheet("Data").row(indexExcel).cell(19).value(subitem3.field ? subitem3.field.name : "");
+                                                    // Tính chất
+                                                    if(subitem3.type) {
+                                                        workbook.sheet("Data").row(indexExcel).cell(20).value(DOCUMENT_TYPES[Number(subitem3.type-1)].text);
+                                                    }
+                                                    workbook.sheet("Data").row(indexExcel).cell(21).value(subitem3.storage ? subitem3.storage.name : "");
+                                                    if(subitem3.deadline) {
+                                                        currRow.cell(22).value(moment(subitem3.deadline).format(DATE_FORMAT));
+                                                    }
+                                                    switch (subitem3.completeStatus) {
+                                                        case 0:
+                                                            currRow.cell(23).value('Chưa');
+                                                            break;
+                                                        case 1:
+                                                            currRow.cell(23).value('Hoàn thành');
+                                                            break;
+                                                        default:
+                                                            break;
+                                                    }
+                                                    if(subitem3.lastFile) {
+                                                        currRow.cell(25).value(`${subitem3.lastFile}`);
+                                                    }
+
+                                                    indexExcel++;
+                                                }
+                                            })
+                                            
                                         }
                                     })
+
                                 }
                             })
                             

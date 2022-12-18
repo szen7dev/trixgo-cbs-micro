@@ -35,43 +35,46 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code:
 	 */
-	insert({ documentID, fileID, userID }) {
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(documentID))
-                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+	// insert({ documentID, fileID, userID }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             /**
+    //              * BA
+    //              * 1-Upload File lên S3
+    //              * 2-Thêm file vào files[] của Document??? => xem addFileAttachment tại document.doc-model
+    //              * 3-Update lastFile của Document??? => xem addFileAttachment tại document.doc-model 
+    //              */
+    //             /**
+    //              * VALIDATION STEP (2)
+    //              *  - Kiểm tra valid từ các input
+    //              *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+    //              */
+    //             if(!checkObjectIDs(documentID))
+    //                 return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
 
-                if(!checkObjectIDs(fileID))
-                    return resolve({ error: true, message: 'Request params fileID invalid', status: 400 });
+    //             if(!checkObjectIDs(fileID))
+    //                 return resolve({ error: true, message: 'Request params fileID invalid', status: 400 });
 
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+    //             if(!checkObjectIDs(userID))
+    //                 return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                let infoAfterInsert = await this.insertData({ document: documentID, file: fileID, userCreate: userID });
+    //             /**
+    //              * LOGIC STEP (3)
+    //              * 3.1: Convert type + update name (ví dụ: string -> number)
+    //              * 3.2: Operation database
+    //              */
+    //             let infoAfterInsert = await this.insertData({ document: documentID, file: fileID, userCreate: userID });
 
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: "can't_insert", status: 403 });
+    //             if(!infoAfterInsert)
+    //                 return resolve({ error: true, message: "can't_insert", status: 403 });
 
 
-                return resolve({ error: false, data: infoAfterInsert, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoAfterInsert, status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
      /**
 	 * Name: delete doc file
