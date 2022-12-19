@@ -300,6 +300,14 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         ref: 'file',
     }],
     /**
+     * HỒ SƠ
+     */
+    //________ Tổng số hồ sơ trong hợp đồng
+    numberOfDocs: {
+        type: Number,
+        default: 0
+    },
+    /**
      * THÔNG TIN TRUY CẬP
      */
     //_________Chi tiết các công ty đã view
