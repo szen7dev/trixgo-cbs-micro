@@ -156,7 +156,7 @@ class Model extends BaseModel {
                 let dataUpdate = {
                     userUpdate: userID, modifyAt: new Date()
                 }
-
+                
                 if(name){
                     dataUpdate.name = namel
                 }

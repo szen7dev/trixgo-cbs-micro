@@ -196,15 +196,16 @@ class Model extends BaseModel {
                 if(!isNaN(unitPrice)){
                     dataInUpdate.unitPrice = Number(unitPrice);
                 }
-
-                if(!isNaN(amount)){
-                    dataInUpdate.amount = Number(amount);
+                if(!isNaN(quantity && !isNaN(unitPrice))){
+                    dataInUpdate.amount = quantity * unitPrice;
                 }
+                // if(!isNaN(amount)){
+                //     dataInUpdate.amount = Number(amount);
+                // }
 
                 if(!isNaN(vatAmount)){
                     dataInUpdate.vatAmount = Number(vatAmount);
                 }
-                console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataInUpdate, { new: true });
 
@@ -324,8 +325,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID})
+    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID }) {
+        console.log({fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -361,6 +362,12 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(parentID){
+                    conditionObj.parent = parentID;
+                }else{
+                    conditionObj.parent = { $exists: false };
+                }
+                console.log({conditionObj});
                 // Làm rõ mục đích để làm gì?
                 if (sortKey && typeof sortKey === 'string') {
                     if (!IsJsonString(sortKey))
