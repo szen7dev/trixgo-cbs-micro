@@ -204,7 +204,7 @@ class Model extends BaseModel {
 
 				let conditionObj    = { document: documentID };
                 let sortBy;
-                let keys	        = ['createAt__-1', '_id__-1'];
+                let keys	        = ['createAt__1', '_id__1'];
 
                 let conditionObjOrg = { ...conditionObj };
 				// PHÂN TRANG KIỂU MỚI
