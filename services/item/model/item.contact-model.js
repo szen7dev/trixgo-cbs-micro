@@ -48,8 +48,11 @@ class Model extends BaseModel {
         // })
         return new Promise(async resolve => {
             try {
-                // console.log(company)
-                // console.log(checkObjectIDs(company) )
+                /**
+                 * BA-Quy trình khởi tạo và quản lý khách hàng
+                 * 1-Khi tạo lần đầu/Mua hàng lần đầu => Khách hàng mới
+                 * 2-Khi mua hàng lần 2 trở đi => Khách hàng cũ => Đơn hàng cũ
+                 */
                 if(!name || !checkObjectIDs(company) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'param_not_valid' });
 

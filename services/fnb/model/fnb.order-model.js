@@ -50,6 +50,9 @@ class Model extends BaseModel {
                 /**
                  * BA
                  * Bước 1: Khởi tạo đơn hàng
+                 * - Cập nhật thuộc tính của Cơ sở
+                 * - Cập nhật thuộc tính của Ca làm việc
+                 * - Cập nhật thuộc tính của khách hàng
                  * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
                  * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
@@ -89,16 +92,19 @@ class Model extends BaseModel {
                 };
 
                 /**
-                 * Gán thuộc tính của đơn vị cơ sở vào đơn hàng
+                 * CẬP NHẬT THUỘC TÍNH CỦA CƠ SỞ
                  */
+                // Thuộc chiến dịch marketing hay không
                 if(infoFunda.campaign){
                     dataInsert.campaign = infoFunda.campaign
                 }
 
+                // Thong hoặc ngoài hệ thống
                 if(infoFunda.internal){
                     dataInsert.internal = infoFunda.internal
                 }
 
+                // Khu vực
                 if(infoFunda.area3){
                     dataInsert.area1 = infoFunda.area1
                     dataInsert.area2 = infoFunda.area2
@@ -106,7 +112,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Gán thuộc tính của ca làm việc vào đơn hàng
+                 * CẬP NHẬT THUỘC TÍNH CỦA CA LÀM VIỆC
                  */
                 // Mùa trong năm
                 if(infoShift.seasons){
@@ -123,7 +129,7 @@ class Model extends BaseModel {
                     dataInsert.assignee = infoShift.staffs;
 
                     // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
-                    dataInsert.avgTotalPerStaff = Number(total/Number(infoShift.staffs.length));
+                    dataInsert.avgTotalPerStaff = Number(total/Number(infoShift.staffs.length)).toFixed(0)
                 }else{
                     dataInsert.assignee = [userID];
 
@@ -132,13 +138,21 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Gán thuộc tính của khách hàng vào đơn hàng
+                 * CẬP NHẬT THUỘC TÍNH CỦA KHÁCH HÀNG
                  */
-                // Phân loại khách hàng
-                if(infoCustomer.customerType && !isNaN(infoCustomer.customerType)){
-                    dataInsert.customerType = Number(infoCustomer.customerType);
+                // Giới tính
+                if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
+                    dataInsert.gender = Number(infoCustomer.gender);
                 }
 
+                // Độ tuổi
+                if(infoCustomer.birthday){
+                    dataInsert.age = Number(getFullYear(new Date)) - Number(getFullYear(infoCustomer.birthday))
+                }
+
+                /**
+                 * KHÁC
+                 */
                 if(appOrderSign && appOrderSign != ""){
                     dataInsert.appOrderSign = appOrderSign;
                 }

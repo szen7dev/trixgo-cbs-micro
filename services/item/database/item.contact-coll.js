@@ -225,9 +225,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 1 
     },
-    /**
-     * _______Người ký xác nhận vào (Người ký nhận)
-     */
+    //_________Người ký xác nhận vào (Người ký nhận)
     signerIn: String,
     /**
     * _______Người ký xác nhận chấm dứt (Người ký xa thải)
@@ -290,18 +288,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     new: {
         type: Number,
         default: 1
-    },
-    /**
-     * Phân loại khách hàng
-     * 1-Học sinh
-     * 2-Sinh viên
-     * 3-Phụ nữ
-     * 4-Đàn ông
-     * 5-Người lớn (phụ nữ + đàn ông)
-     */
-    customerType: {
-        type: Number,
-        default : 3
     },
     //_________Ngày bắt đầu tham gia mua hàng
     joinedDate: { type: Date, default: Date.now },
