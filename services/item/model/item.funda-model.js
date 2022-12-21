@@ -158,7 +158,7 @@ class Model extends BaseModel {
                 }
                 
                 if(name){
-                    dataUpdate.name = namel
+                    dataUpdate.name = name
                 }
 
                 let dataAddToset = {};
