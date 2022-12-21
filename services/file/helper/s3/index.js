@@ -32,8 +32,6 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
             bucket = `${config.bucket}/files/db/companys`;
         }
 
-        console.log({ typeUpload })
-
         let signedUrl = s3Object.getSignedUrl('putObject', {
             Bucket: bucket,
             Key: fileName,

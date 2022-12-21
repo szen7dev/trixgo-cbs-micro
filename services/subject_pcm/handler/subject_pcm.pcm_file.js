@@ -147,4 +147,30 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: MinhVH
+     * Func: Download files
+     * Date: 21/12/2022
+     */
+    downloadFiles: {
+        auth: 'required',
+        params: {
+            taskID: { type: 'string' },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { taskID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                console.log({ taskID, userID })
+
+                const resultAfterCallHandler = null;
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }
