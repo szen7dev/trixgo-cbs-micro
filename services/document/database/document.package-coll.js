@@ -149,10 +149,6 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
-    // author: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : "user"
-    // },
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'

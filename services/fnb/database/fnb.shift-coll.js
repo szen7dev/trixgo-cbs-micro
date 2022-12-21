@@ -95,6 +95,77 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default: 1
     },
     /**
+     * BÀN GIAO CA
+     */
+    //______Tiền mặt
+    cash: {
+        type: Number,
+        default : 0
+    },
+    //______Số đơn Off
+    numberOfOrders: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Grab
+    numberOfApp2Products: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Shopee
+    numberOfApp3Products: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Gojek
+    numberOfApp4Products: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Baemin
+    numberOfApp5Products: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Loship
+    numberOfApp6Products: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Bee
+    numberOfApp7Products: {
+        type: Number,
+        default: 0
+    },
+    total1: {
+        type: Number,
+        default : 0
+    },
+    total2: {
+        type: Number,
+        default : 0
+    },
+    total3: {
+        type: Number,
+        default : 0
+    },
+    total4: {
+        type: Number,
+        default : 0
+    },
+    total5: {
+        type: Number,
+        default : 0
+    },
+    total6: {
+        type: Number,
+        default : 0
+    },
+    total7: {
+        type: Number,
+        default : 0
+    },
+    /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
     userCreate: {

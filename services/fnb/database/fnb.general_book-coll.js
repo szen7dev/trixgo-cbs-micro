@@ -46,8 +46,18 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
     },
     /**
      * Phân loại chi phí (tham khảo báo cáo)
+     * 1-Truyền thông và marketing....
      */
     expenseType: {
+        type: Number,
+        default: 1
+    },
+     /**
+     * Phân loại app
+     * 1-Offline
+     * 2-Grab
+     */
+    appExpenseType: {
         type: Number,
         default: 1
     },

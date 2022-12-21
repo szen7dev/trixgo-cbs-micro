@@ -38,6 +38,7 @@ const COMPANY_COLL                                  = require('../../auth/databa
 const DEPARTMENT_COLL                               = require('../../item/database/item.department-coll');
 const DOCTYPE_COLL                                  = require('../../item/database/item.doctype-coll');
 const STORAGE_COLL                                  = require('../../item/database/item.storage-coll');
+const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll');
 const DOCUMENT__DOC_COLL               				= require('../database/document.doc-coll');
 const DOCUMENT__FILE_COLL           				= require('../database/document.doc_file-coll');
 const DOCUMENT__PACKAGE_COLL           				= require('../database/document.package-coll');
@@ -122,7 +123,6 @@ class Model extends BaseModel {
                     author: userID,
                     company: companyID,
                     project: departmentID,
-                    contract: contractID,
                     package: packageID,
                     direction,
                     name,
@@ -141,17 +141,18 @@ class Model extends BaseModel {
                     completeStatus
                 }
 
-                amount          && (dataInsert.amount           = +amount || 1);
-                amountDelivery  && (dataInsert.amountDelivery   = +amountDelivery || 0);
+                amount               && (dataInsert.amount           = +amount || 1);
+                amountDelivery       && (dataInsert.amountDelivery   = +amountDelivery || 0);
 
-                (senderID            && checkObjectIDs(senderID))           && (dataInsert.sender            = senderID);
-                (propertyID          && checkObjectIDs(propertyID))         && (dataInsert.property          = propertyID);
-                (receiverID          && checkObjectIDs(receiverID))         && (dataInsert.receiver          = receiverID);
-                (fieldID             && checkObjectIDs(fieldID))            && (dataInsert.field             = fieldID);
-                (datahubContactID    && checkObjectIDs(datahubContactID))   && (dataInsert.datahubContact    = datahubContactID);
-                (otherID    && checkObjectIDs(otherID))     && (dataInsert.other    = otherID);
-                (storageID  && checkObjectIDs(storageID))   && (dataInsert.storage  = storageID);
-                (publishID  && checkObjectIDs(publishID))   && (dataInsert.publish  = publishID);
+                (contractID          && checkObjectIDs(contractID))         && (dataInsert.contract             = contractID);
+                (senderID            && checkObjectIDs(senderID))           && (dataInsert.sender               = senderID);
+                (propertyID          && checkObjectIDs(propertyID))         && (dataInsert.property             = propertyID);
+                (receiverID          && checkObjectIDs(receiverID))         && (dataInsert.receiver             = receiverID);
+                (fieldID             && checkObjectIDs(fieldID))            && (dataInsert.field                = fieldID);
+                (datahubContactID    && checkObjectIDs(datahubContactID))   && (dataInsert.datahubContact       = datahubContactID);
+                (otherID             && checkObjectIDs(otherID))            && (dataInsert.other                = otherID);
+                (storageID           && checkObjectIDs(storageID))          && (dataInsert.storage              = storageID);
+                (publishID           && checkObjectIDs(publishID))          && (dataInsert.publish              = publishID);
 
                 if(deadline){
                     dataInsert.deadline = deadline
@@ -205,6 +206,15 @@ class Model extends BaseModel {
                             }
                         });
                     }
+
+                    // Cập nhật số lượng document cho Hợp đồng
+                    if(contractID && checkObjectIDs(contractID)){
+                        await CONTRACT_COLL.findByIdAndUpdate(contractID, {
+                            $inc: {
+                                numberOfDocs: 1
+                            }
+                        });
+                    }
                 }else{
                     // Cập nhật số lượng document cho Dự án
                     await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
@@ -214,6 +224,15 @@ class Model extends BaseModel {
                     // Cập nhật số lượng document cho Gói thầu
                     if(packageID && checkObjectIDs(packageID)){
                         await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
+                            $inc: {
+                                numberOfDocs: 1
+                            }
+                        });
+                    }
+
+                    // Cập nhật số lượng document cho Hợp đồng
+                    if(contractID && checkObjectIDs(contractID)){
+                        await CONTRACT_COLL.findByIdAndUpdate(contractID, {
                             $inc: {
                                 numberOfDocs: 1
                             }
@@ -1904,7 +1923,7 @@ class Model extends BaseModel {
                 const listData1 = await DOCUMENT__DOC_COLL
                     .find(conditionObj1)
                     .populate({
-                        path: 'author package sender receiver datahubContact publish field property storage',
+                        path: 'author package publish receiver field storage',
                         select: '_id fullname name',
                     })
                     .sort(sortBy)
@@ -1913,7 +1932,7 @@ class Model extends BaseModel {
                 const listData2 = await DOCUMENT__DOC_COLL
                 .find(conditionObj2)
                 .populate({
-                    path: 'author package sender receiver datahubContact publish field property storage',
+                    path: 'author package publish receiver field storage',
                     select: '_id fullname name',
                 })
                 .sort(sortBy)
@@ -1922,7 +1941,7 @@ class Model extends BaseModel {
                 const listData3 = await DOCUMENT__DOC_COLL
                 .find(conditionObj3)
                 .populate({
-                    path: 'author package sender receiver datahubContact publish field property storage',
+                    path: 'author package publish receiver field storage',
                     select: '_id fullname name',
                 })
                 .sort(sortBy)
@@ -1931,7 +1950,7 @@ class Model extends BaseModel {
                 const listData4 = await DOCUMENT__DOC_COLL
                 .find(conditionObj4)
                 .populate({
-                    path: 'author package sender receiver datahubContact publish field property storage',
+                    path: 'author package publish receiver field storage',
                     select: '_id fullname name',
                 })
                 .sort(sortBy)
@@ -1997,7 +2016,7 @@ class Model extends BaseModel {
                             const {
                                 _id, name, sign, storeSign, date, receivedDate, style, author,
                                 amountDelivery, status, amount, modifyAt, note, direction,
-                                sender, receiver, datahubContact, publish, field, property, type, storage, package: packageInfo, deadline, completeStatus, lastFile
+                                receiver, approver, publish, field, type, storage, package: packageInfo, deadline, completeStatus, lastFile
                             } = document;
 
                             const currRow = workbook.sheet("Data").row(indexExcel);
@@ -2066,10 +2085,8 @@ class Model extends BaseModel {
                                 currRow.cell(15).value(packageInfo.name);
                             }
 
-                            // Chủ thế ban hành
-                            if(datahubContact) {
-                                currRow.cell(16).value(datahubContact.name);
-                            }
+                            // Người ký
+                            approver && currRow.cell(16).value(approver);
 
                             // Chủ thể nhận
                             if(receiver) {
@@ -2112,9 +2129,8 @@ class Model extends BaseModel {
                                     break;
                             }
 
-                            if(lastFile) {
-                                currRow.cell(25).value(`${lastFile}`);
-                            }
+                            // Link truy cập hồ sơ
+                            currRow.cell(25).value('Truy cập').hyperlink(`https://app.trixgo.com/document/home/${_id}`)
 
                             /**
                              * HỒ SƠ CẤP 2
@@ -2146,8 +2162,8 @@ class Model extends BaseModel {
                                         default:
                                             break;
                                     }
-                                    workbook.sheet("Data").row(indexExcel).cell(15).value(subitem.packageInfo ? subitem.packageInfo.name : "");
-                                    workbook.sheet("Data").row(indexExcel).cell(16).value(subitem.datahubContact ? subitem.datahubContact.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(15).value(subitem.package ? subitem.package.name : "");
+                                    workbook.sheet("Data").row(indexExcel).cell(16).value(subitem.approver ? subitem.approver : "");
                                     workbook.sheet("Data").row(indexExcel).cell(17).value(subitem.receiver ? subitem.receiver.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(18).value(subitem.publish ? subitem.publish.name : "");
                                     workbook.sheet("Data").row(indexExcel).cell(19).value(subitem.field ? subitem.field.name : "");
@@ -2158,21 +2174,19 @@ class Model extends BaseModel {
                                     workbook.sheet("Data").row(indexExcel).cell(21).value(subitem.storage ? subitem.storage.name : "");
 
                                     if(subitem.deadline) {
-                                        currRow.cell(22).value(moment(subitem.deadline).format(DATE_FORMAT));
+                                        workbook.sheet("Data").row(indexExcel).cell(22).value(moment(subitem.deadline).format(DATE_FORMAT));
                                     }
                                     switch (subitem.completeStatus) {
                                         case 0:
-                                            currRow.cell(23).value('Chưa');
+                                            workbook.sheet("Data").row(indexExcel).cell(23).value('Chưa');
                                             break;
                                         case 1:
-                                            currRow.cell(23).value('Hoàn thành');
+                                            workbook.sheet("Data").row(indexExcel).cell(23).value('Hoàn thành');
                                             break;
                                         default:
                                             break;
                                     }
-                                    if(subitem.lastFile) {
-                                        currRow.cell(25).value(`${subitem.lastFile}`);
-                                    }
+                                    workbook.sheet("Data").row(indexExcel).cell(25).value('Truy cập').hyperlink(`https://app.trixgo.com/document/home/${subitem._id}`)
 
                                     indexExcel++;
 
@@ -2205,8 +2219,8 @@ class Model extends BaseModel {
                                                 default:
                                                     break;
                                             }
-                                            workbook.sheet("Data").row(indexExcel).cell(15).value(subitem2.packageInfo ? subitem2.packageInfo.name : "");
-                                            workbook.sheet("Data").row(indexExcel).cell(16).value(subitem2.datahubContact ? subitem2.datahubContact.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(15).value(subitem2.package ? subitem2.package.name : "");
+                                            workbook.sheet("Data").row(indexExcel).cell(16).value(subitem2.approver ? subitem2.approver : "");
                                             workbook.sheet("Data").row(indexExcel).cell(17).value(subitem2.receiver ? subitem2.receiver.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(18).value(subitem2.publish ? subitem2.publish.name : "");
                                             workbook.sheet("Data").row(indexExcel).cell(19).value(subitem2.field ? subitem2.field.name : "");
@@ -2216,21 +2230,19 @@ class Model extends BaseModel {
                                             }
                                             workbook.sheet("Data").row(indexExcel).cell(21).value(subitem2.storage ? subitem2.storage.name : "");
                                             if(subitem2.deadline) {
-                                                currRow.cell(22).value(moment(subitem2.deadline).format(DATE_FORMAT));
+                                                workbook.sheet("Data").row(indexExcel).cell(22).value(moment(subitem2.deadline).format(DATE_FORMAT));
                                             }
                                             switch (subitem2.completeStatus) {
                                                 case 0:
-                                                    currRow.cell(23).value('Chưa');
+                                                    workbook.sheet("Data").row(indexExcel).cell(23).value('Chưa');
                                                     break;
                                                 case 1:
-                                                    currRow.cell(23).value('Hoàn thành');
+                                                    workbook.sheet("Data").row(indexExcel).cell(23).value('Hoàn thành');
                                                     break;
                                                 default:
                                                     break;
                                             }
-                                            if(subitem2.lastFile) {
-                                                currRow.cell(25).value(`${subitem2.lastFile}`);
-                                            }
+                                            workbook.sheet("Data").row(indexExcel).cell(25).value('Truy cập').hyperlink(`https://app.trixgo.com/document/home/${subitem2._id}`)
 
                                             indexExcel++;
 
@@ -2263,8 +2275,8 @@ class Model extends BaseModel {
                                                         default:
                                                             break;
                                                     }
-                                                    workbook.sheet("Data").row(indexExcel).cell(15).value(subitem3.packageInfo ? subitem3.packageInfo.name : "");
-                                                    workbook.sheet("Data").row(indexExcel).cell(16).value(subitem3.datahubContact ? subitem3.datahubContact.name : "");
+                                                    workbook.sheet("Data").row(indexExcel).cell(15).value(subitem3.package ? subitem3.package.name : "");
+                                                    workbook.sheet("Data").row(indexExcel).cell(16).value(subitem3.approver ? subitem3.approver : "");
                                                     workbook.sheet("Data").row(indexExcel).cell(17).value(subitem3.receiver ? subitem3.receiver.name : "");
                                                     workbook.sheet("Data").row(indexExcel).cell(18).value(subitem3.publish ? subitem3.publish.name : "");
                                                     workbook.sheet("Data").row(indexExcel).cell(19).value(subitem3.field ? subitem3.field.name : "");
@@ -2274,21 +2286,19 @@ class Model extends BaseModel {
                                                     }
                                                     workbook.sheet("Data").row(indexExcel).cell(21).value(subitem3.storage ? subitem3.storage.name : "");
                                                     if(subitem3.deadline) {
-                                                        currRow.cell(22).value(moment(subitem3.deadline).format(DATE_FORMAT));
+                                                        workbook.sheet("Data").row(indexExcel).cell(22).value(moment(subitem3.deadline).format(DATE_FORMAT));
                                                     }
                                                     switch (subitem3.completeStatus) {
                                                         case 0:
-                                                            currRow.cell(23).value('Chưa');
+                                                            workbook.sheet("Data").row(indexExcel).cell(23).value('Chưa');
                                                             break;
                                                         case 1:
-                                                            currRow.cell(23).value('Hoàn thành');
+                                                            workbook.sheet("Data").row(indexExcel).cell(23).value('Hoàn thành');
                                                             break;
                                                         default:
                                                             break;
                                                     }
-                                                    if(subitem3.lastFile) {
-                                                        currRow.cell(25).value(`${subitem3.lastFile}`);
-                                                    }
+                                                    workbook.sheet("Data").row(indexExcel).cell(25).value('Truy cập').hyperlink(`https://app.trixgo.com/document/home/${subitem3._id}`)
 
                                                     indexExcel++;
                                                 }

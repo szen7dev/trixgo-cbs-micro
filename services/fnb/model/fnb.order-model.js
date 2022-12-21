@@ -43,16 +43,23 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, customerType, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
+    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
+        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
                  * BA
                  * Bước 1: Khởi tạo đơn hàng
+                 * - Cập nhật thuộc tính của Cơ sở
+                 * - Cập nhật thuộc tính của Ca làm việc
+                 * - Cập nhật thuộc tính của khách hàng
                  * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
                  * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
+                 * Bước 5: Cập nhật thông số của đơn hàng ngược lại vào:
+                 * - Cơ sở
+                 * - Ca làm việc
+                 * - Khách hàng
                  */
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
@@ -89,16 +96,19 @@ class Model extends BaseModel {
                 };
 
                 /**
-                 * Gán thuộc tính của đơn vị cơ sở vào đơn hàng
+                 * B1. CẬP NHẬT THUỘC TÍNH CỦA CƠ SỞ
                  */
+                // Thuộc chiến dịch marketing hay không
                 if(infoFunda.campaign){
                     dataInsert.campaign = infoFunda.campaign
                 }
 
+                // Thong hoặc ngoài hệ thống
                 if(infoFunda.internal){
                     dataInsert.internal = infoFunda.internal
                 }
 
+                // Khu vực
                 if(infoFunda.area3){
                     dataInsert.area1 = infoFunda.area1
                     dataInsert.area2 = infoFunda.area2
@@ -106,7 +116,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Gán thuộc tính của ca làm việc vào đơn hàng
+                 * B2. CẬP NHẬT THUỘC TÍNH CỦA CA LÀM VIỆC
                  */
                 // Mùa trong năm
                 if(infoShift.seasons){
@@ -123,7 +133,7 @@ class Model extends BaseModel {
                     dataInsert.assignee = infoShift.staffs;
 
                     // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
-                    dataInsert.avgTotalPerStaff = Number(total/Number(infoShift.staffs.length));
+                    dataInsert.avgTotalPerStaff = Number(total/Number(infoShift.staffs.length)).toFixed(0)
                 }else{
                     dataInsert.assignee = [userID];
 
@@ -132,13 +142,22 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Gán thuộc tính của khách hàng vào đơn hàng
+                 * B3. CẬP NHẬT THUỘC TÍNH CỦA KHÁCH HÀNG
                  */
-                // Phân loại khách hàng
-                if(infoCustomer.customerType && !isNaN(infoCustomer.customerType)){
-                    dataInsert.customerType = Number(infoCustomer.customerType);
+                // Giới tính
+                if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
+                    dataInsert.gender = Number(infoCustomer.gender);
                 }
 
+                // Độ tuổi
+                if(infoCustomer.birthday){
+                    let dateNow = new Date
+                    dataInsert.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
+                }
+
+                /**
+                 * KHÁC
+                 */
                 if(appOrderSign && appOrderSign != ""){
                     dataInsert.appOrderSign = appOrderSign;
                 }
@@ -164,8 +183,8 @@ class Model extends BaseModel {
                 }
 
                 // Tính tổng khối lượng sản phẩm (cốc)
+                let totalQuantity = 0;
                 if(products && products.length){
-                    let totalQuantity = 0;
                     for (let item of products) {
                         totalQuantity = Number(totalQuantity) + Number(item.quantity);
                     }
@@ -241,7 +260,49 @@ class Model extends BaseModel {
                  */
 
                 /**
-                 * TÍCH ĐIỂM CHO KHÁCH HÀNG
+                 * B5. CẬP NHẬT THÔNG TIN ĐƠN HÀNG VÀO
+                 * - Cơ sở
+                 * - Ca làm việc
+                 * - Khách hàng
+                 */
+                
+                /**
+                 * Cập nhật vào Cơ sở
+                 * - Doanh số
+                 * - Giảm giá
+                 * - Triết khấu
+                 * - Doanh thu sau khi trừ giảm giá, triết khấu
+                 * - Số đơn hàng
+                 * - Số khách hàng
+                 */
+
+                /**
+                 * Cập nhật vào Ca làm việc
+                 * - Số lượng đơn hàng
+                 * - Doanh số
+                 * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
+                 * - Số lượng sản phẩm (để kiểm kê cốc)
+                 * - Tiền mặt, chuyển khoản
+                 */
+                let dataUpdateShift = {}
+
+                dataUpdateShift.$inc = { "numberOfOrders": 1 }
+                dataUpdateShift.total = Number(total)
+                dataUpdateShift.numberOfProducts = Number(totalQuantity)
+                if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
+                    dataUpdateShift.cash = Number(paymentMethod)
+                }
+
+                if(!isNaN(salesChannel) && Number(salesChannel) === 1){
+                    dataUpdateShift.cash = Number(paymentMethod)
+                }
+
+
+                /**
+                 * Cập nhật vào Khách hàng
+                 * - Doanh số
+                 * - Điểm tích lũy (tăng, giảm)
+                 * - Số đơn hàng
                  */
                 await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
                     $inc: { "totalLoyaltyPoints": Number(loyaltyPoints) }

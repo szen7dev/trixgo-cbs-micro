@@ -3523,6 +3523,7 @@ class Model extends BaseModel {
                             ...childTask,
                             suid,
                             status: 1,
+                            percentage: 0,
                             parent: parentTask._id,
                             startTime: new Date(),
                             actualStartTime: new Date(),
@@ -3530,6 +3531,10 @@ class Model extends BaseModel {
                             actualFinishTime: new Date(newExpiredTime),
                             draft: isDraftTask ? 1 : 0,
                             signatures: [],
+                            description: "",
+                            descriptioncv: "",
+                            note: "",
+                            notecv: ""
                         })
 
                         if(callback) {
