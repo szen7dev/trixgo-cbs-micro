@@ -301,7 +301,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 0
     },
-    //_________Giá trị tiền hàng đã mua
+    //_________Giá trị tiền hàng đã thanh toán
     purchasedValue: {
         type: Number,
         default: 0

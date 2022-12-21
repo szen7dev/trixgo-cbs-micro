@@ -195,7 +195,7 @@ class Model extends BaseModel {
                 /**
                  * TÍNH TOÁN GIÁ TRỊ
                  */
-                let loyaltyPoints = 0
+                let loyaltyPoints = 0, amount = 0
 
                 if(!isNaN(total)){
                     dataInsert.total = Number(total);
@@ -205,11 +205,15 @@ class Model extends BaseModel {
                 if(!isNaN(discount)){
                     dataInsert.discount = Number(discount);
                     dataInsert.amount -= Number(discount);
+
+                    amount = Number(total) - Number(discount)
                 }
 
                 if(!isNaN(salesoff)){
                     dataInsert.salesoff = Number(salesoff);
                     dataInsert.amount -= Number(salesoff);
+
+                    amount = Number(total) - Number(salesoff)
 
                     // Chính sách tích điểm
                     loyaltyPoints = Number(Number(total-discount-salesoff)*(5/100)).toFixed(0) // Tích điểm 5%
@@ -286,27 +290,126 @@ class Model extends BaseModel {
                  */
                 let dataUpdateShift = {}
 
-                dataUpdateShift.$inc = { "numberOfOrders": 1 }
-                dataUpdateShift.total = Number(total)
-                dataUpdateShift.numberOfProducts = Number(totalQuantity)
-                if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
-                    dataUpdateShift.cash = Number(paymentMethod)
+                if(!isNaN(salesChannel) && Number(salesChannel) === 1){
+                    dataUpdateShift.$inc = { 
+                        "total": total, 
+                        "amount": amount,
+                        // "cash": amount,
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders1": 1, 
+                        "total1": total, 
+                        
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 2){
+                    dataUpdateShift.$inc = { 
+                        "total": total, 
+                        "amount": amount,
+                        // "cash": amount,
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders2": 1, 
+                        "total2": total, 
+                        
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 3){
+                    dataUpdateShift.$inc = { 
+                        "total": total, 
+                        "amount": amount,
+                        // "cash": amount,
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders3": 1, 
+                        "total3": total, 
+                        
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 4){
+                    dataUpdateShift.$inc = { 
+                        "total": total, 
+                        "amount": amount,
+                        // "cash": amount,
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders4": 1, 
+                        "total4": total, 
+                        
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 5){
+                    dataUpdateShift.$inc = { 
+                        "total": total, 
+                        "amount": amount,
+                        // "cash": amount,
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders5": 1, 
+                        "total5": total, 
+                        
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 6){
+                    dataUpdateShift.$inc = { 
+                        "total": total, 
+                        "amount": amount,
+                        // "cash": amount,
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders6": 1, 
+                        "total6": total, 
+                        
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 7){
+                    dataUpdateShift.$inc = { 
+                        "total": total, 
+                        "amount": amount,
+                        // "cash": amount,
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders7": 1, 
+                        "total7": total, 
+                        
+                    }
                 }
 
-                if(!isNaN(salesChannel) && Number(salesChannel) === 1){
-                    dataUpdateShift.cash = Number(paymentMethod)
+                if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
+                    dataUpdateShift.$inc.cash = Number(amount)
                 }
+
+                console.log(dataUpdateShift)
+                await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataUpdateShift)
 
 
                 /**
                  * Cập nhật vào Khách hàng
+                 * - Khách hàng mới hay cũ
                  * - Doanh số
                  * - Điểm tích lũy (tăng, giảm)
                  * - Số đơn hàng
                  */
-                await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
-                    $inc: { "totalLoyaltyPoints": Number(loyaltyPoints) }
-                })
+                let number = await FNB_ORDER_COLL.count({customer: customerID})
+
+                if(number && number > 0){
+                    await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                        new: 2, // Khách hàng cũ
+                        $inc: { 
+                            "numberOfOrders": 1,
+                            "purchasedValue": Number(amount),
+                            "totalLoyaltyPoints": Number(loyaltyPoints),
+                        }
+                    })
+                }else{
+                    await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                        $inc: { 
+                            "numberOfOrders": 1,
+                            "purchasedValue": Number(amount),
+                            "totalLoyaltyPoints": Number(loyaltyPoints),
+                        }
+                    })
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {

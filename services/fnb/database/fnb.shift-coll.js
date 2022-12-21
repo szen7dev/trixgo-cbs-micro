@@ -31,24 +31,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default: 0
     },
     /**
-     * GIÁT TRỊ ĐƠN HÀNG CỦA CA
+     * GIÁT TRỊ
      */
-    /**
-     * Số đơn hàng
-     * => Không tính với product là Topping
-     */
-    numberOfOrders: {
-        type: Number,
-        default: 0
-    },
-    /**
-     * Số lượng sản phẩm
-     * => Không tính với product là Topping
-     */
-    numberOfProducts: {
-        type: Number,
-        default: 0
-    },
     //______Tổng giá theo các Product của đơn hàng
     total: {
         type: Number,
@@ -97,43 +81,59 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     /**
      * BÀN GIAO CA
      */
+    /**
+     * Số lượng sản phẩm
+     * => Không tính với product là Topping
+     */
+    numberOfProducts: {
+        type: Number,
+        default: 0
+    },
+    /**
+     * Số đơn hàng
+     * => Không tính với product là Topping
+     */
+    numberOfOrders: {
+        type: Number,
+        default: 0
+    },
     //______Tiền mặt
     cash: {
         type: Number,
         default : 0
     },
     //______Số đơn Off
-    numberOfOrders: {
+    numberOfOrders1: {
         type: Number,
         default: 0
     },
     //______Số đơn Grab
-    numberOfApp2Products: {
+    numberOfOrders2: {
         type: Number,
         default: 0
     },
     //______Số đơn Shopee
-    numberOfApp3Products: {
+    numberOfOrders3: {
         type: Number,
         default: 0
     },
     //______Số đơn Gojek
-    numberOfApp4Products: {
+    numberOfOrders4: {
         type: Number,
         default: 0
     },
     //______Số đơn Baemin
-    numberOfApp5Products: {
+    numberOfOrders5: {
         type: Number,
         default: 0
     },
     //______Số đơn Loship
-    numberOfApp6Products: {
+    numberOfOrders6: {
         type: Number,
         default: 0
     },
     //______Số đơn Bee
-    numberOfApp7Products: {
+    numberOfOrders7: {
         type: Number,
         default: 0
     },
