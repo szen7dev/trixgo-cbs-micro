@@ -51,6 +51,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    /**
+     * Khách mới hay cũ
+     * 1-Mới
+     * 2-Cũ
+     */
+    new: {
+        type: Number,
+        default: 1
+    },
     //_________Người thực hiện
     assignee: [{
         type: Schema.Types.ObjectId,

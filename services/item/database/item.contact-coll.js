@@ -283,6 +283,15 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         ref : "area"
     },
     /**
+     * Khách mới hay cũ
+     * 1-Mới
+     * 2-Cũ
+     */
+    new: {
+        type: Number,
+        default: 1
+    },
+    /**
      * Phân loại khách hàng
      * 1-Học sinh
      * 2-Sinh viên
@@ -294,14 +303,14 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default : 3
     },
-    // Ngày bắt đầu tham gia mua hàng
+    //_________Ngày bắt đầu tham gia mua hàng
     joinedDate: { type: Date, default: Date.now },
-    // Số đơn hàng đã mua
+    //_________Số đơn hàng đã mua
     numberOfOrders: {
         type: Number,
         default: 0
     },
-    // Giá trị tiền hàng đã mua
+    //_________Giá trị tiền hàng đã mua
     purchasedValue: {
         type: Number,
         default: 0
