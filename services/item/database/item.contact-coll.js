@@ -42,6 +42,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     subtype: { type: Number, default: 1 },
     //_________Trạng thái giao dịch (Chưa GD-1, Đang GD-2, Ngừng GD-3)
     status: { type: Number, default: 1 },
+    //_________Đơn vị cơ sở
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : 'funda' 
+    },
     //_________Thuộc phòng ban bộ phận
     department: {
         type: Schema.Types.ObjectId,
