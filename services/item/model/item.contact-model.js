@@ -185,7 +185,7 @@ class Model extends BaseModel {
                         }
 
                         if(infoFunda.area3){
-                            dataInsert.area = infoFunda.area3
+                            dataInsert.sector3 = infoFunda.area3
                         }
                     }
                 }

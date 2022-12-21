@@ -270,13 +270,18 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : 'funda' 
     },
-    //_________Tỉnh, Thành phố => lấy theo Area
+    //_________Tỉnh, Thành phố (lấy theo funda)
     sector1: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Huyện quận => lấy theo Area
+    //_________Huyện quận (lấy theo funda)
     sector2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Phường xã (lấy theo funda)
+    sector3: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
