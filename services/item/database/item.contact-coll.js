@@ -95,6 +95,21 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
+    //_________Tỉnh, Thành phố
+    sector1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện quận
+    sector2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Xã phường
+    sector3: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
     //_________Nơi sinh
     area1: {
         type: Schema.Types.ObjectId,
