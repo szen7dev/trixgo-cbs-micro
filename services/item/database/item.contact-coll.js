@@ -225,9 +225,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 1 
     },
-    /**
-     * _______Người ký xác nhận vào (Người ký nhận)
-     */
+    //_________Người ký xác nhận vào (Người ký nhận)
     signerIn: String,
     /**
     * _______Người ký xác nhận chấm dứt (Người ký xa thải)
@@ -267,26 +265,43 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     /**
      * FNB
      */
-    /**
-     * Phân loại khách hàng
-     * 1-Học sinh
-     * 2-Sinh viên
-     * 3-Phụ nữ
-     * 4-Đàn ông
-     * 5-Người lớn (phụ nữ + đàn ông)
-     */
-    customerType: {
-        type: Number,
-        default : 3
+    //_________Đơn vị cơ sở
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : 'funda' 
     },
-    // Ngày bắt đầu tham gia mua hàng
+    //_________Tỉnh, Thành phố (lấy theo funda)
+    sector1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện quận (lấy theo funda)
+    sector2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Phường xã (lấy theo funda)
+    sector3: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    /**
+     * Khách mới hay cũ
+     * 1-Mới
+     * 2-Cũ
+     */
+    new: {
+        type: Number,
+        default: 1
+    },
+    //_________Ngày bắt đầu tham gia mua hàng
     joinedDate: { type: Date, default: Date.now },
-    // Số đơn hàng đã mua
+    //_________Số đơn hàng đã mua
     numberOfOrders: {
         type: Number,
         default: 0
     },
-    // Giá trị tiền hàng đã mua
+    //_________Giá trị tiền hàng đã mua
     purchasedValue: {
         type: Number,
         default: 0

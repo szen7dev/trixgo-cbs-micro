@@ -4,6 +4,7 @@
  * ---Doanh số phân theo tổng doanh số/Doanh số đơn hủy
  * Tiêu đề CloudMSS: Đơn hàng Winggo Thái Thịnh
  * Đơn hàng T11225, mã hiệu 22556688, giá trị 42.000 VND, đã được thanh toán thành công bởi Winggo Thái Thịnh
+ * https://www.mongodb.com/docs/manual/reference/operator/aggregation/dayOfWeek/
  */
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
@@ -34,22 +35,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * THÔNG TIN
      */
-    /**
-     * Phân loại khách hàng
-     * 1-Học sinh
-     * 2-Sinh viên
-     * 3-Phụ nữ
-     * 4-Đàn ông
-     * 5-Người lớn (phụ nữ + đàn ông)
-     */
-    customerType: {
-        type: Number,
-        default : 1
-    },
     //_________Mã khách
     customer: {
         type: Schema.Types.ObjectId,
         ref: "contact"
+    },
+    /**
+     * Khách mới hay cũ
+     * 1-Mới
+     * 2-Cũ
+     */
+    new: {
+        type: Number,
+        default: 1
     },
     //_________Người thực hiện
     assignee: [{
@@ -220,14 +218,21 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
+    /**
+     * THƯỞNG DOANH SỐ
+     */
     //______Doanh số trung bình tính cho 1 nhân viên
     avgTotalPerStaff: {
         type: Number,
         default : 0
     },
     /**
-     * KHÁCH HÀNG THÂN THIẾT
+     * KHÁCH HÀNG
      */
+    //_________Giới tính
+    gender: { type: Number, default: 1 },
+    //______Độ tuổi: lấy Năm hiện tại (khi tạo đơn hàng) - Ngày sinh của khách hàng
+    age: { type: Number, default: 1 },
     //______Điểm tích lũy
     loyaltyPoints: {
         type: Number,

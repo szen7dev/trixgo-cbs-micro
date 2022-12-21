@@ -110,8 +110,19 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     utilityExpense: { type: Number, default: 0 },
     //_________Chi phí lương nhân viên
     humanExpense: { type: Number, default: 0 },
+    //_________Chi phí Food App
+    appExpense: { type: Number, default: 0 },
     //_________Chi phí khác
     otherExpense: { type: Number, default: 0 },
+    /**
+     * KHÁCH HÀNG
+     */
+    //_________Số lượng khách hàng của quán
+    numberOfCustomers: { type: Number, default: 0 },
+    //_________Số lượng khách hàng cũ
+    numberOfOldCustomers: { type: Number, default: 0 },
+    //_________Số lượng khách hàng mới
+    numberOfNewCustomers: { type: Number, default: 0 },
     /**
      * PHÂN QUYỀN TRUY CẬP
      */

@@ -23,7 +23,7 @@ module.exports = {
             address             : { type: "string", optional: true },
             initialDay          : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
-            area                : { type: "string", optional: true },
+            area                : { type: "string" },
             campaign            : { type: "number", optional: true },
             internal            : { type: "number", optional: true },
             materialExpenseRate : { type: "number", optional: true },

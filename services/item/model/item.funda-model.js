@@ -38,8 +38,8 @@ class Model extends BaseModel {
 	insert({ companyID, parentID, name, sign, description, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
         return new Promise(async resolve => {
             try {
-                if(!name)
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
+                if(!name || !checkObjectIDs(area))
+                    return resolve({ error: true, message: "Tên|Khu vực không hợp lệ", keyError: "Request params name invalid" });
 
                 let dataInsert = {
                     userCreate: userID,
