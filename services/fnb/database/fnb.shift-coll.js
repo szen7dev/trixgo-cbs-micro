@@ -33,7 +33,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     /**
      * GIÁT TRỊ
      */
-    //______Tổng giá theo các Product của đơn hàng
+    //______Tổng doanh số
     total: {
         type: Number,
         default : 0
@@ -79,20 +79,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default: 1
     },
     /**
-     * BÀN GIAO CA
+     * THỐNG KÊ
      */
-    /**
-     * Số lượng sản phẩm
-     * => Không tính với product là Topping
-     */
+    //______Số lượng sản phẩm (Không tính với product là Topping)
     numberOfProducts: {
         type: Number,
         default: 0
     },
-    /**
-     * Số đơn hàng
-     * => Không tính với product là Topping
-     */
+    //______Số đơn hàng
     numberOfOrders: {
         type: Number,
         default: 0

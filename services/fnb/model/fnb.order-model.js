@@ -79,6 +79,10 @@ class Model extends BaseModel {
                 if (!infoCustomer)
                     return resolve({ error: true, message: 'cannot_get_infoCustomer' });
 
+                // Lấy số đơn hàng khách đã mua
+                let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
+                console.log({numberOD})
+
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
                  */
@@ -158,6 +162,12 @@ class Model extends BaseModel {
                 /**
                  * KHÁC
                  */
+                if(numberOD && numberOD > 0){
+                    dataInsert.new = 2 // Đơn hàng khách cũ
+                }else{
+                    dataInsert.new = 1 // Đơn hàng khách mới
+                }
+
                 if(appOrderSign && appOrderSign != ""){
                     dataInsert.appOrderSign = appOrderSign;
                 }
@@ -269,119 +279,107 @@ class Model extends BaseModel {
                  * - Ca làm việc
                  * - Khách hàng
                  */
+                let dataUpdateFw = {}
+
+                if(!isNaN(salesChannel) && Number(salesChannel) === 1){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders1": 1, 
+                        "total1": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 2){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders2": 1, 
+                        "total2": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 3){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders3": 1, 
+                        "total3": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 4){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders4": 1, 
+                        "total4": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 5){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders5": 1, 
+                        "total5": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 6){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders6": 1, 
+                        "total6": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 7){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders7": 1, 
+                        "total7": Number(total), 
+                    }
+                }
+
+                // Tiền mặt
+                if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
+                    dataUpdateFw.$inc.cash = Number(amount)
+                }
+
+                console.log(dataUpdateFw)
                 
                 /**
                  * Cập nhật vào Cơ sở
+                 * - Số lượng đơn hàng
                  * - Doanh số
-                 * - Giảm giá
-                 * - Triết khấu
                  * - Doanh thu sau khi trừ giảm giá, triết khấu
-                 * - Số đơn hàng
-                 * - Số khách hàng
+                 * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
+                 * - Số lượng sản phẩm (để kiểm kê cốc)
+                 * - Tiền mặt, chuyển khoản
                  */
+                await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdateFw)
 
                 /**
                  * Cập nhật vào Ca làm việc
                  * - Số lượng đơn hàng
                  * - Doanh số
+                 * - Doanh thu sau khi trừ giảm giá, triết khấu
                  * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
                  * - Số lượng sản phẩm (để kiểm kê cốc)
                  * - Tiền mặt, chuyển khoản
                  */
-                let dataUpdateShift = {}
-
-                if(!isNaN(salesChannel) && Number(salesChannel) === 1){
-                    dataUpdateShift.$inc = { 
-                        "total": total, 
-                        "amount": amount,
-                        // "cash": amount,
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders1": 1, 
-                        "total1": total, 
-                        
-                    }
-                }
-                if(!isNaN(salesChannel) && Number(salesChannel) === 2){
-                    dataUpdateShift.$inc = { 
-                        "total": total, 
-                        "amount": amount,
-                        // "cash": amount,
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders2": 1, 
-                        "total2": total, 
-                        
-                    }
-                }
-                if(!isNaN(salesChannel) && Number(salesChannel) === 3){
-                    dataUpdateShift.$inc = { 
-                        "total": total, 
-                        "amount": amount,
-                        // "cash": amount,
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders3": 1, 
-                        "total3": total, 
-                        
-                    }
-                }
-                if(!isNaN(salesChannel) && Number(salesChannel) === 4){
-                    dataUpdateShift.$inc = { 
-                        "total": total, 
-                        "amount": amount,
-                        // "cash": amount,
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders4": 1, 
-                        "total4": total, 
-                        
-                    }
-                }
-                if(!isNaN(salesChannel) && Number(salesChannel) === 5){
-                    dataUpdateShift.$inc = { 
-                        "total": total, 
-                        "amount": amount,
-                        // "cash": amount,
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders5": 1, 
-                        "total5": total, 
-                        
-                    }
-                }
-                if(!isNaN(salesChannel) && Number(salesChannel) === 6){
-                    dataUpdateShift.$inc = { 
-                        "total": total, 
-                        "amount": amount,
-                        // "cash": amount,
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders6": 1, 
-                        "total6": total, 
-                        
-                    }
-                }
-                if(!isNaN(salesChannel) && Number(salesChannel) === 7){
-                    dataUpdateShift.$inc = { 
-                        "total": total, 
-                        "amount": amount,
-                        // "cash": amount,
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders7": 1, 
-                        "total7": total, 
-                        
-                    }
-                }
-
-                if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
-                    dataUpdateShift.$inc.cash = Number(amount)
-                }
-
-                console.log(dataUpdateShift)
-                await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataUpdateShift)
-
+                await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataUpdateFw)
 
                 /**
                  * Cập nhật vào Khách hàng
@@ -390,9 +388,7 @@ class Model extends BaseModel {
                  * - Điểm tích lũy (tăng, giảm)
                  * - Số đơn hàng
                  */
-                let number = await FNB_ORDER_COLL.count({customer: customerID})
-
-                if(number && number > 0){
+                if(numberOD && numberOD > 0){
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
                         new: 2, // Khách hàng cũ
                         $inc: { 
