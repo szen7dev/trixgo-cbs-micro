@@ -42,11 +42,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     subtype: { type: Number, default: 1 },
     //_________Trạng thái giao dịch (Chưa GD-1, Đang GD-2, Ngừng GD-3)
     status: { type: Number, default: 1 },
-    //_________Đơn vị cơ sở
-    funda: {
-        type: Schema.Types.ObjectId,
-        ref : 'funda' 
-    },
     //_________Thuộc phòng ban bộ phận
     department: {
         type: Schema.Types.ObjectId,
@@ -97,21 +92,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     address: String,
     //_________Khu vực thường chú
     area: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Tỉnh, Thành phố
-    sector1: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Huyện quận
-    sector2: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Xã phường
-    sector3: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
@@ -287,6 +267,21 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     /**
      * FNB
      */
+    //_________Đơn vị cơ sở
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : 'funda' 
+    },
+    //_________Tỉnh, Thành phố => lấy theo Area
+    sector1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện quận => lấy theo Area
+    sector2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
     /**
      * Phân loại khách hàng
      * 1-Học sinh

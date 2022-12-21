@@ -21,6 +21,7 @@ const { INSURANCE_STATUS }              = require('../../../tools/constants');
 /**
  * COLLECTIONS
  */
+const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll');
 const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll');
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
@@ -39,11 +40,11 @@ class Model extends BaseModel {
      */
     insert({ company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
     }) {
         // console.log({ company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
+        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
         // })
         return new Promise(async resolve => {
             try {
@@ -161,6 +162,29 @@ class Model extends BaseModel {
 
                 if(place){
                     dataInsert.place = place;
+                }
+
+                /**
+                 * ĐƠN VỊ CƠ SỞ
+                 */
+                if(fundaID && checkObjectIDs(fundaID)){
+                                    
+                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                    if(infoFunda){
+                        dataInsert.fundaID = fundaID;
+
+                        if(infoFunda.area1){
+                            dataInsert.sector1 = infoFunda.area1
+                        }
+
+                        if(infoFunda.area2){
+                            dataInsert.sector2 = infoFunda.area2
+                        }
+
+                        if(infoFunda.area3){
+                            dataInsert.area = infoFunda.area3
+                        }
+                    }
                 }
 
                 if(area){
