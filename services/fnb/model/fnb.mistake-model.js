@@ -17,6 +17,8 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
+const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
@@ -39,40 +41,42 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, mistakeID, executorID, type, amount, note, userID }) {
+    insert({ mistakeID, executorID, fundaID, orderID, type, amount, note, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderID) || !checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'orderID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(fundaID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'orderID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
-                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
-                if(!infoOrder)
-                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
 
                 let dataInsert = { 
-                    company: infoOrder.company, 
-                    funda: infoOrder.funda, 
-                    order: orderID,
+                    userCreate: userID,
                     mistake: mistakeID,
-                    customer: infoOrder.customer, 
-                    internal: infoOrder.internal, 
-                    area1: infoOrder.area1, 
-                    area2: infoOrder.area2,
-                    area3: infoOrder.area3, 
-                    seasons: infoOrder.seasons, 
-                    shift: infoOrder.shift, 
-                    shiftType: infoOrder.shiftType, 
-                    salesChannel: infoOrder.salesChannel, 
-                    service: infoOrder.service, 
-                    userCreate: userID 
+                    executor: executorID, 
+                    funda: fundaID, 
+                    company: infoFunda.company, 
+                    area1: infoFunda.area1, 
+                    area2: infoFunda.area2, 
+                    area3: infoFunda.area3
                 }
 
-                if(productID && checkObjectIDs(productID)){
-                    dataInsert.product = productID;
-                }
-
-                if(executorID && checkObjectIDs(executorID)){
-                    dataInsert.executor = executorID;
+                if(orderID && checkObjectIDs(orderID)){
+                    let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                    if(!infoOrder)
+                        return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                    
+                    let infoShift = await FNB_SHIFT_COLL.findById(infoOrder.shift)
+                    if(!infoShift)
+                        return resolve({ error: true, message: "Ca làm việc không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                    
+                    dataInsert.order            = orderID
+                    dataInsert.customer         = infoOrder.customer
+                    dataInsert.internal         = infoOrder.internal
+                    dataInsert.salesChannel     = infoOrder.salesChannel
+                    dataInsert.service          = infoOrder.service
+                    dataInsert.shift            = infoOrder.shift
+                    dataInsert.shiftType        = infoShift.shiftType
+                    dataInsert.seasons          = infoShift.seasons
                 }
 
                 if(!isNaN(type)){
@@ -103,72 +107,28 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderID, userID, 
-        mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount }) {
-        // console.log({ mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount })
+    update({ orderMistakeID, mistakeID, executorID, fundaID, orderID, type, amount, note, userID}) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(orderMistakeID))
+                    return resolve({ error: true, message: 'orderMistakeID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
-
-                if(name && name != ""){
-                    dataInUpdate.name =name;
+             
+                if(!isNaN(type)){
+                    dataInUpdate.type = Number(type);
                 }
 
-                if(appOrderSign && appOrderSign != ""){
-                    dataInUpdate.appOrderSign = appOrderSign;
+                if(!isNaN(amount)){
+                    dataInUpdate.amount = Number(amount);
                 }
 
                 if(note && note != ""){
                     dataInUpdate.note = note;
                 }
-
-                if(customerID && checkObjectIDs(customerID)){
-                    dataInUpdate.customer = customerID;
-                }
-
-                if(shiftID && checkObjectIDs(shiftID)){
-                    dataInUpdate.shift = shiftID;
-                }
-
-                if(mistakeID && checkObjectIDs(mistakeID)){
-                    dataInUpdate.mistake = mistakeID;
-                }
-
-                if(!isNaN(shiftType)){
-                    dataInUpdate.shiftType = Number(shiftType);
-                }
-
-                if(!isNaN(salesChannel)){
-                    dataInUpdate.salesChannel = Number(salesChannel);
-                }
-
-                if(!isNaN(paymentMethod)){
-                    dataInUpdate.paymentMethod = Number(paymentMethod);
-                }
-
-                if(!isNaN(total)){
-                    dataInUpdate.total = Number(total);
-                }
-
-                if(!isNaN(discount)){
-                    dataInUpdate.discount = Number(discount);
-                }
-
-                if(!isNaN(salesoff)){
-                    dataInUpdate.salesoff = Number(salesoff);
-                }
-
-                dataInUpdate.amount = Number(total)-Number(discount)-Number(salesoff);
-
-                if(!isNaN(vatAmount)){
-                    dataInUpdate.vatAmount = Number(vatAmount);
-                }
                 console.log({ dataInUpdate })
 
-                let infoAfterUpdate = await FNB_MISTAKE_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_MISTAKE_COLL.findByIdAndUpdate(orderMistakeID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
@@ -189,62 +149,6 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    updateValue({ orderID, userID }) {
-        console.log({ orderID, userID })
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-                let infoOrder = await FNB_MISTAKE_COLL.findById(orderID)
-
-                let total = infoOrder.total;
-                let discount = infoOrder.discount;
-                let salesoff = infoOrder.salesoff;
-                let amount = infoOrder.amount;
-
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
-
-                let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
-                    {
-                        $match: {
-                            order: ObjectID(orderID)
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            amount: { $sum: "$amount" },
-                        }
-                    }
-                ])
-                // console.log(listData)
-
-                if(listData && listData.length){
-                    total = Number(listData[0].amount)
-                    amount = Number(total)-Number(discount)-Number(salesoff)
-
-                    dataInUpdate.total = Number(total)
-                    dataInUpdate.amount = Number(amount)
-                }
-                // console.log({ dataInUpdate })
-                
-                let infoAfterUpdate = await FNB_MISTAKE_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                /**
-                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
-                 */
-
-                return resolve({ error: false, data: infoAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        });
-    }
-
 
     /**
      * Name: Remove 
@@ -295,7 +199,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
+        // console.log({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){

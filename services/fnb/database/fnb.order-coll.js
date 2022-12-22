@@ -91,17 +91,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         ref : "area"
     },
     /**
-     * Mùa trong năm (theo lịch âm)
-     * 1-Xuân
-     * 2-Hạ
-     * 3-Thu
-     * 4-Đông
-     */
-    seasons: {
-        type: Number,
-        default: 1
-    },
-    /**
      * Ca làm việc
      * - Chấm công theo ca
      * - Tính vật tư theo ca
@@ -111,12 +100,23 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         ref: "fnb_shift"
     },
     /**
-     * Phân loại ca làm việc (cập nhật theo funda)
+     * Phân loại ca làm việc (cập nhật theo Shift)
      * 1-Sáng
      * 2-Chiều
      * 3-Tối
      */
     shiftType: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Mùa trong năm (cập nhật theo Shift)
+     * 1-Xuân
+     * 2-Hạ
+     * 3-Thu
+     * 4-Đông
+     */
+    seasons: {
         type: Number,
         default: 1
     },
