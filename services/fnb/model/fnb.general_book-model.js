@@ -72,7 +72,10 @@ class Model extends BaseModel {
                 };
 
                 if(parentID && checkObjectIDs(parentID)){
-                    dataInsert.parent = parentID;
+                    let infoParent = await FNB_GENERAL_BOOK_COLL.findById(parentID)
+                    
+                    dataInsert.parent = parentID
+                    dataInsert.date = infoParent.date
                 }
 
                 if(customerID && checkObjectIDs(customerID)){
