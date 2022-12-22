@@ -35,7 +35,49 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         type: Number,
         default : 1
     },
-    //_________Sản phẩm phụ/Topping kèm theo
+    /**
+     * Đường
+     * 1-100
+     * 2-70
+     * 3-50
+     * 4-30
+     */
+    sugar: {
+        type: Number,
+        default : 1
+    },
+    /**
+     * Đá
+     * 1-100
+     * 2-70
+     * 3-50
+     * 4-30
+     */
+    ice: {
+        type: Number,
+        default : 1
+    },
+    /**
+     * Có up size hay không
+     * 1-Không upsize
+     * 2-Có upsize
+     */
+    upsize: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Có thêm topping hay không
+     * 1-Không topping
+     * 2-Có topping
+     */
+    topping: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Sản phẩm phụ/Topping kèm theo
+     */
     subProducts: [{
         type: Schema.Types.ObjectId,
         ref : "fnb_product"
@@ -125,24 +167,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
     },
     //_________Phương thức thanh toán
     paymentMethod: {
-        type: Number,
-        default: 1
-    },
-    /**
-     * Có up size hay không
-     * 1-Không upsize
-     * 2-Có upsize
-     */
-    upsize: {
-        type: Number,
-        default: 1
-    },
-    /**
-     * Có thêm topping hay không
-     * 1-Không topping
-     * 2-Có topping
-     */
-    topping: {
         type: Number,
         default: 1
     },
