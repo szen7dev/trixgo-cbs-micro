@@ -64,7 +64,7 @@ module.exports = {
             contractDate     : { type: "string", optional: true },
             contractValid    : { type: "string", optional: true },
             contractExpire   : { type: "string", optional: true },
-            fundaID          : { type: "string", optional: true }
+            fundaID          : { type: "string" }
         },
         async handler(ctx) {
             try {
@@ -77,7 +77,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
-                    company: company._id, authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+                    authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
                     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
                 });
