@@ -70,7 +70,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     description: String,
     //_________Ghi chú
     note: String,
-    //_________Giới tính
+    //_________Giới tính(1-nam/ 0 - nữ)
     gender: { type: Number, default: 1 },
     //_________Ngày sinh
     birthday: { type: Date, default: null },
@@ -301,7 +301,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 0
     },
-    //_________Giá trị tiền hàng đã mua
+    //_________Giá trị tiền hàng đã thanh toán
     purchasedValue: {
         type: Number,
         default: 0

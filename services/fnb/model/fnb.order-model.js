@@ -79,6 +79,10 @@ class Model extends BaseModel {
                 if (!infoCustomer)
                     return resolve({ error: true, message: 'cannot_get_infoCustomer' });
 
+                // Lấy số đơn hàng khách đã mua
+                let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
+                console.log({numberOD})
+
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
                  */
@@ -158,6 +162,12 @@ class Model extends BaseModel {
                 /**
                  * KHÁC
                  */
+                if(numberOD && numberOD > 0){
+                    dataInsert.new = 2 // Đơn hàng khách cũ
+                }else{
+                    dataInsert.new = 1 // Đơn hàng khách mới
+                }
+
                 if(appOrderSign && appOrderSign != ""){
                     dataInsert.appOrderSign = appOrderSign;
                 }
@@ -195,7 +205,7 @@ class Model extends BaseModel {
                 /**
                  * TÍNH TOÁN GIÁ TRỊ
                  */
-                let loyaltyPoints = 0
+                let loyaltyPoints = 0, amount = 0
 
                 if(!isNaN(total)){
                     dataInsert.total = Number(total);
@@ -205,11 +215,15 @@ class Model extends BaseModel {
                 if(!isNaN(discount)){
                     dataInsert.discount = Number(discount);
                     dataInsert.amount -= Number(discount);
+
+                    amount = Number(total) - Number(discount)
                 }
 
                 if(!isNaN(salesoff)){
                     dataInsert.salesoff = Number(salesoff);
                     dataInsert.amount -= Number(salesoff);
+
+                    amount = Number(total) - Number(salesoff)
 
                     // Chính sách tích điểm
                     loyaltyPoints = Number(Number(total-discount-salesoff)*(5/100)).toFixed(0) // Tích điểm 5%
@@ -265,48 +279,133 @@ class Model extends BaseModel {
                  * - Ca làm việc
                  * - Khách hàng
                  */
+                let dataUpdateFw = {}
+
+                if(!isNaN(salesChannel) && Number(salesChannel) === 1){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders1": 1, 
+                        "total1": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 2){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders2": 1, 
+                        "total2": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 3){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders3": 1, 
+                        "total3": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 4){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders4": 1, 
+                        "total4": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 5){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders5": 1, 
+                        "total5": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 6){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders6": 1, 
+                        "total6": Number(total), 
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 7){
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders7": 1, 
+                        "total7": Number(total), 
+                    }
+                }
+
+                // Tiền mặt
+                if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
+                    dataUpdateFw.$inc.cash = Number(amount)
+                }
+
+                console.log(dataUpdateFw)
                 
                 /**
                  * Cập nhật vào Cơ sở
+                 * - Số lượng đơn hàng
                  * - Doanh số
-                 * - Giảm giá
-                 * - Triết khấu
                  * - Doanh thu sau khi trừ giảm giá, triết khấu
-                 * - Số đơn hàng
-                 * - Số khách hàng
+                 * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
+                 * - Số lượng sản phẩm (để kiểm kê cốc)
+                 * - Tiền mặt, chuyển khoản
                  */
+                await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdateFw)
 
                 /**
                  * Cập nhật vào Ca làm việc
                  * - Số lượng đơn hàng
                  * - Doanh số
+                 * - Doanh thu sau khi trừ giảm giá, triết khấu
                  * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
                  * - Số lượng sản phẩm (để kiểm kê cốc)
                  * - Tiền mặt, chuyển khoản
                  */
-                let dataUpdateShift = {}
-
-                dataUpdateShift.$inc = { "numberOfOrders": 1 }
-                dataUpdateShift.total = Number(total)
-                dataUpdateShift.numberOfProducts = Number(totalQuantity)
-                if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
-                    dataUpdateShift.cash = Number(paymentMethod)
-                }
-
-                if(!isNaN(salesChannel) && Number(salesChannel) === 1){
-                    dataUpdateShift.cash = Number(paymentMethod)
-                }
-
+                await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataUpdateFw)
 
                 /**
                  * Cập nhật vào Khách hàng
+                 * - Khách hàng mới hay cũ
                  * - Doanh số
                  * - Điểm tích lũy (tăng, giảm)
                  * - Số đơn hàng
                  */
-                await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
-                    $inc: { "totalLoyaltyPoints": Number(loyaltyPoints) }
-                })
+                if(numberOD && numberOD > 0){
+                    await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                        new: 2, // Khách hàng cũ
+                        $inc: { 
+                            "numberOfOrders": 1,
+                            "purchasedValue": Number(amount),
+                            "totalLoyaltyPoints": Number(loyaltyPoints),
+                        }
+                    })
+                }else{
+                    await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                        $inc: { 
+                            "numberOfOrders": 1,
+                            "purchasedValue": Number(amount),
+                            "totalLoyaltyPoints": Number(loyaltyPoints),
+                        }
+                    })
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -330,6 +429,8 @@ class Model extends BaseModel {
                  * => Xóa định mức hao phí (fnb_order_material)
                  * => Cập nhật status cho order_product
                  * => Cập nhật khối lượng giao ca...
+                 * ***CẬP NHẬT LẠI MÃ KHÁCH
+                 * => Cập nhật lại thông tin của đơn hàng vào Khách mới => Xóa thông tin ở Khách cũ
                  */
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });

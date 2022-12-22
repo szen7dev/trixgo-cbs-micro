@@ -100,6 +100,8 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     /**
      * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
      */
+    //_________Chi phí Food App
+    appExpense: { type: Number, default: 0 },
     //_________Chi phí nguyên liệu (%)
     materialExpenseRate: { type: Number, default: 30 },
     //_________Chi phí nguyên liệu (giá trị)
@@ -110,12 +112,10 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     utilityExpense: { type: Number, default: 0 },
     //_________Chi phí lương nhân viên
     humanExpense: { type: Number, default: 0 },
-    //_________Chi phí Food App
-    appExpense: { type: Number, default: 0 },
     //_________Chi phí khác
     otherExpense: { type: Number, default: 0 },
     /**
-     * KHÁCH HÀNG
+     * THỐNG KÊ FNB
      */
     //_________Số lượng khách hàng của quán
     numberOfCustomers: { type: Number, default: 0 },
@@ -123,6 +123,99 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     numberOfOldCustomers: { type: Number, default: 0 },
     //_________Số lượng khách hàng mới
     numberOfNewCustomers: { type: Number, default: 0 },
+    //______Tổng doanh số
+    total: {
+        type: Number,
+        default : 0
+    },
+    //______Thành tiền (đã trừ giảm giá, triết khấu)
+    amount: {
+        type: Number,
+        default : 0
+    },
+    //______VAT thành tiền
+    vatAmount: {
+        type: Number,
+        default : 0
+    },
+    //______Số lượng sản phẩm (Không tính với product là Topping)
+    numberOfProducts: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn hàng
+    numberOfOrders: {
+        type: Number,
+        default: 0
+    },
+    //______Tiền mặt
+    cash: {
+        type: Number,
+        default : 0
+    },
+    //______Số đơn Off
+    numberOfOrders1: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Grab
+    numberOfOrders2: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Shopee
+    numberOfOrders3: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Gojek
+    numberOfOrders4: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Baemin
+    numberOfOrders5: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Loship
+    numberOfOrders6: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Bee
+    numberOfOrders7: {
+        type: Number,
+        default: 0
+    },
+    total1: {
+        type: Number,
+        default : 0
+    },
+    total2: {
+        type: Number,
+        default : 0
+    },
+    total3: {
+        type: Number,
+        default : 0
+    },
+    total4: {
+        type: Number,
+        default : 0
+    },
+    total5: {
+        type: Number,
+        default : 0
+    },
+    total6: {
+        type: Number,
+        default : 0
+    },
+    total7: {
+        type: Number,
+        default : 0
+    },
     /**
      * PHÂN QUYỀN TRUY CẬP
      */

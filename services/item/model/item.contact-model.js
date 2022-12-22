@@ -38,11 +38,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
     }) {
-        // console.log({ company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
         // })
@@ -53,12 +53,17 @@ class Model extends BaseModel {
                  * 1-Khi tạo lần đầu/Mua hàng lần đầu => Khách hàng mới
                  * 2-Khi mua hàng lần 2 trở đi => Khách hàng cũ => Đơn hàng cũ
                  */
-                if(!name || !checkObjectIDs(company) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'param_not_valid' });
+                if(!name || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
+                    return resolve({ error: true, message: 'name|fundaID|authorID_param_not_valid' });
+
+                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                if(!infoFunda)
+                    return resolve({ error: true, message: 'can_not_get_funda_info' });
+                // console.log(infoFunda)
 
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
-                    company: company
+                    company: infoFunda.company
                 };
 
                 if((sign && sign != "") || (taxid && taxid != "") || (phone && phone != "")){
@@ -79,7 +84,8 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
                 let dataInsert = {
-                    company,
+                    company: infoFunda.company,
+                    funda: fundaID,
                     inCRM: 1,
                     inHuman: 0,
                     inTimesheet: 0,
@@ -97,6 +103,18 @@ class Model extends BaseModel {
                     phone,
                     email,
                     status: status ? Number(status) : Number(1)
+                }
+
+                if(infoFunda.area1){
+                    dataInsert.sector1 = infoFunda.area1
+                }
+
+                if(infoFunda.area2){
+                    dataInsert.sector2 = infoFunda.area2
+                }
+
+                if(infoFunda.area3){
+                    dataInsert.sector3 = infoFunda.area3
                 }
 
                 if(gender && !isNaN(gender)){
@@ -165,29 +183,6 @@ class Model extends BaseModel {
 
                 if(place){
                     dataInsert.place = place;
-                }
-
-                /**
-                 * ĐƠN VỊ CƠ SỞ
-                 */
-                if(fundaID && checkObjectIDs(fundaID)){
-                                    
-                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                    if(infoFunda){
-                        dataInsert.fundaID = fundaID;
-
-                        if(infoFunda.area1){
-                            dataInsert.sector1 = infoFunda.area1
-                        }
-
-                        if(infoFunda.area2){
-                            dataInsert.sector2 = infoFunda.area2
-                        }
-
-                        if(infoFunda.area3){
-                            dataInsert.sector3 = infoFunda.area3
-                        }
-                    }
                 }
 
                 if(area){

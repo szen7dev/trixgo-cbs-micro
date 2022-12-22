@@ -5,14 +5,22 @@
  */
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment');
+const fs                                = require('fs');
+const AWS                               = require('aws-sdk');
+const s3                                = require('@auth0/s3');
+const compressing                       = require('compressing');
+const rimraf                            = require('rimraf');
+const path                              = require('path');
 
 /**
  * Tools
  */
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { config } 	                    = require('../../../tools/s3/config');
+const { downloadFileS3, uploadFileS3 }  = require('../../../tools/s3');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
@@ -28,6 +36,29 @@ class Model extends BaseModel {
 
     constructor() {
         super(PCM_FILE__COLL);
+
+        AWS.config.update({
+            accessKeyId : config.aws_access_key_id,
+            secretAccessKey : config.aws_secret_access_key,
+            region: config.aws_region,
+        })
+
+        this.s3Object = new AWS.S3({
+          signatureVersion: 'v2',
+        });
+
+        this.client = s3.createClient({
+            maxAsyncS3: 20,     // this is the default
+            s3RetryCount: 3,    // this is the default
+            s3RetryDelay: 1000, // this is the default
+            multipartUploadThreshold: 20971520, // this is the default (20 MB)
+            multipartUploadSize: 15728640, // this is the default (15 MB)
+            s3Options: {
+                accessKeyId : config.aws_access_key_id,
+                secretAccessKey : config.aws_secret_access_key,
+                region: config.aws_region,
+            },
+        });
     }
 
     /**
@@ -708,6 +739,66 @@ class Model extends BaseModel {
 		})
 	}
 
+    /**
+     * Dev: MinhVH
+     * Func: Download files
+     * Date: 21/12/2022
+     */
+    downloadFiles({ taskID }){
+		return new Promise(async resolve => {
+            try {
+                const filesTask = await PCM_FILE__COLL
+                    .find({ task: taskID })
+                    .select('nameOrg path')
+                    .limit(10)
+                    .lean();
+
+                /**
+                 * Create folder temp for save file download
+                 */
+                const pathDownload = path.join(__dirname, `../../../files/temporary_uploads/${taskID}`);
+                const pathZip = path.join(__dirname, `../../../files/temporary_uploads/${taskID}.zip`);
+
+                if(fs.existsSync(pathDownload)) {
+                    fs.mkdirSync(pathDownload);
+                }
+
+                /**
+                 * Do download all files on s3 to local
+                 */
+                const downloadFileAsync = filesTask.map(file => {
+                    const splits = file.path.split('/');
+                    const fileName = splits.pop();
+                    const filePath = splits.join('/').slice(1);
+                    const fileNameLocal = file.nameOrg;
+
+                    return downloadFileS3(pathDownload, fileName, filePath, fileNameLocal);
+                });
+                await Promise.all(downloadFileAsync);
+
+                /**
+                 * Zip all downloaded files
+                 */
+                await compressing.zip.compressDir(pathDownload, pathZip)
+                    .catch(err => console.log({ compress_error: err }))
+
+                /**
+                 * Upload zip file to s3
+                 */
+                const response = await uploadFileS3(pathZip, `${taskID}.zip`);
+
+                /**
+                 * Remove folder temp and zip file under local
+                 */
+                rimraf(pathZip, err => console.error(err));
+                rimraf(pathDownload, err => console.error(err));
+
+                return resolve({ error: false, data: response, status: 200 });
+            } catch(error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
