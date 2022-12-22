@@ -100,6 +100,8 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     /**
      * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
      */
+    //_________Chi phí Food App
+    appExpense: { type: Number, default: 0 },
     //_________Chi phí nguyên liệu (%)
     materialExpenseRate: { type: Number, default: 30 },
     //_________Chi phí nguyên liệu (giá trị)
@@ -110,8 +112,6 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     utilityExpense: { type: Number, default: 0 },
     //_________Chi phí lương nhân viên
     humanExpense: { type: Number, default: 0 },
-    //_________Chi phí Food App
-    appExpense: { type: Number, default: 0 },
     //_________Chi phí khác
     otherExpense: { type: Number, default: 0 },
     /**
