@@ -429,6 +429,8 @@ class Model extends BaseModel {
                  * => Xóa định mức hao phí (fnb_order_material)
                  * => Cập nhật status cho order_product
                  * => Cập nhật khối lượng giao ca...
+                 * ***CẬP NHẬT LẠI MÃ KHÁCH
+                 * => Cập nhật lại thông tin của đơn hàng vào Khách mới => Xóa thông tin ở Khách cũ
                  */
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });

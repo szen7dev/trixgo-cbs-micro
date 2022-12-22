@@ -25,6 +25,7 @@ const FNB_MISTAKE_COLL                         = require('../database/fnb.mistak
 const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
 const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.general_book-coll');
+const { takeRight } = require('lodash');
 
 /**
  * import inter-model, exter-model
@@ -43,7 +44,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID }) {
-        console.log({ fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID })
+        // console.log({ fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID })
+        const that = this
         return new Promise(async resolve => {
             try {
                 /**
@@ -61,11 +63,6 @@ class Model extends BaseModel {
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda)
                     return resolve({ error: true, message: 'cannot_get_info_funda' });
-
-                /**
-                 * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
-                 */
-                let numberOfOrder = await FNB_GENERAL_BOOK_COLL.count({})
 
                 let dataInsert = {
                     company: infoFunda.company,
@@ -133,6 +130,9 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA (KHI UPDATE CON)
                  */
+                if(parentID && checkObjectIDs(parentID)){
+                    await that.updateValue({ bookID: parentID, userID }) 
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -147,7 +147,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ userID,
-        bookID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount }) {
+        bookID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount }) {
+        const that = this
         return new Promise(async resolve => {
             try {
                 /**
@@ -158,7 +159,9 @@ class Model extends BaseModel {
                  * => Cập nhật khối lượng giao ca...
                  */
                 if(!checkObjectIDs(bookID))
-                    return resolve({ error: true, message: 'bookID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                    return resolve({ error: true, message: 'bookID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                
+                let infoBook = await FNB_GENERAL_BOOK_COLL.findById(bookID)
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
@@ -200,12 +203,10 @@ class Model extends BaseModel {
                 if(!isNaN(unitPrice)){
                     dataInUpdate.unitPrice = Number(unitPrice);
                 }
+
                 if(!isNaN(quantity && !isNaN(unitPrice))){
                     dataInUpdate.amount = quantity * unitPrice;
                 }
-                // if(!isNaN(amount)){
-                //     dataInUpdate.amount = Number(amount);
-                // }
 
                 if(!isNaN(vatAmount)){
                     dataInUpdate.vatAmount = Number(vatAmount);
@@ -217,8 +218,15 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
                 /**
-                 * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA HOẶC CÁC MẨU TIN CON
+                 * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA HOẶC CÁC MẨU TIN CON (KHI UPDATE CHA)
                  */
+
+                /**
+                 * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA (KHI UPDATE CON)
+                 */
+                if(infoBook && infoBook.parent){
+                    await that.updateValue({ bookID: infoBook.parent, userID }) 
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -232,54 +240,52 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    // updateValue({ orderID, userID }) {
-    //     console.log({ orderID, userID })
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!checkObjectIDs(orderID))
-    //                 return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+    updateValue({ bookID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(bookID))
+                    return resolve({ error: true, message: 'bookID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-    //             let infoOrder = await FNB_GENERAL_BOOK_COLL.findById(orderID)
+                let infoBook = await FNB_GENERAL_BOOK_COLL.findById(bookID)
+                // console.log('=============>>>>>>>>>>>>>>>>>>')
+                // console.log(infoBook)
 
-    //             let total = infoOrder.total;
-    //             let discount = infoOrder.discount;
-    //             let salesoff = infoOrder.salesoff;
-    //             let amount = infoOrder.amount;
+                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
-    //             let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let amount = 0;
+                let listData = await FNB_GENERAL_BOOK_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(bookID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+                ])
+                // console.log('=============>>>>>>>>>>>>>>>>>>')
+                // console.log(listData)
 
-    //             let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
-    //                 {
-    //                     $match: {
-    //                         order: ObjectID(orderID)
-    //                     }
-    //                 },
-    //                 {
-    //                     $group: {
-    //                         _id: { },
-    //                         amount: { $sum: "$amount" },
-    //                     }
-    //                 }
-    //             ])
+                if(listData && listData[0]){
+                    amount = Number(listData[0].amount)
+                    // console.log({amount})
+                }
 
-    //             if(listData && listData.length){
-    //                 total = Number(listData[0].amount)
-    //                 amount = Number(total)-Number(discount)-Number(salesoff)
+                dataInUpdate.amount = Number(amount)
 
-    //                 dataInUpdate.total = Number(total)
-    //                 dataInUpdate.amount = Number(amount)
-    //             }
+                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataInUpdate, { new: true });
+                if (!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
-    //             let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-    //             if (!infoAfterUpdate)
-    //                 return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-    //             return resolve({ error: false, data: infoAfterUpdate });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     });
-    // }
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
 
     /**
      * Name: Remove
@@ -341,7 +347,7 @@ class Model extends BaseModel {
 
                 let conditionObj = {}
                 let sortBy;
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['createAt__1', '_id__1'];
 
                 const validation = validateParamsObjectID({
                     fundasID            : { value: fundasID, isRequire: false },
