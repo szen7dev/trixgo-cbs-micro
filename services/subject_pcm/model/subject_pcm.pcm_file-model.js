@@ -750,7 +750,6 @@ class Model extends BaseModel {
                 const filesTask = await PCM_FILE__COLL
                     .find({ task: taskID })
                     .select('nameOrg path')
-                    .limit(10)
                     .lean();
 
                 /**
