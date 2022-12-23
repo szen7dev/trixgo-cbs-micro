@@ -40,8 +40,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, subProductsID, quantity, unitPrice, note, userID }) {
-        console.log({ orderID, productID, subProductsID, quantity, unitPrice, note, userID })
+    insert({ orderID, productID, size, sugar, ice, subProductsID, quantity, unitPrice, note, userID }) {
+        // console.log({ orderID, productID, subProductsID, quantity, unitPrice, note, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -70,11 +70,14 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Sản phẩm đã tồn tại trong đơn hàng", keyError: KEY_ERROR.ITEM_EXISTED })
 
                 let dataInsert = {
+                    userCreate: userID,
                     company: infoOrder.company,
                     funda: infoOrder.funda,
                     order: orderID,
                     product: productID,
-                    customerType: infoOrder.customerType,
+                    size,
+                    sugar,
+                    ice,
                     customer: infoOrder.customer,
                     assignee: infoOrder.assignee,
                     campaign: infoOrder.campaign,
@@ -87,12 +90,7 @@ class Model extends BaseModel {
                     shiftType: infoOrder.shiftType,
                     salesChannel: infoOrder.salesChannel,
                     paymentMethod: infoOrder.paymentMethod,
-                    service: infoOrder.service,
-                    userCreate: userID
-                };
-
-                if(infoProduct.size && !isNaN(infoProduct.size)){
-                    dataInsert.size = Number(infoProduct.size);
+                    service: infoOrder.service
                 }
 
                 if(subProductsID && checkObjectIDs(subProductsID)){

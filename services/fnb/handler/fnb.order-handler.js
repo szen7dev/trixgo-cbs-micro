@@ -28,7 +28,6 @@ module.exports = {
             salesChannel        : { type: "string" },
             paymentMethod       : { type: "string" },
             service             : { type: "string", optional: true },
-            customerType        : { type: "string", optional: true },
             total               : { type: "string", optional: true },
             discount            : { type: "string", optional: true },
             salesoff            : { type: "string", optional: true },
@@ -38,12 +37,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, customerType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
+                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, customerType, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
+                    fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -61,18 +60,19 @@ module.exports = {
         auth: "required",
         params: {
             orderID             : { type: "string" },
+            customerID          : { type: "string", optional: true },
             status              : { type: "number", optional: true },
             numberOfMistakes    : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, status, numberOfMistakes } = ctx.params;
+                let {  orderID, customerID, status, numberOfMistakes } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.update({
                     orderID, userID,
-                    status, numberOfMistakes
+                    customerID, status, numberOfMistakes
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

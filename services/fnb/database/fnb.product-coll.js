@@ -62,13 +62,23 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         type: Number,
         default : 0
     },
-    //______Đơn giá
+    //______Đơn giá: M, Off
     unitPrice: {
         type: Number,
         default : 0
     },
-    //______Đơn giá 2
+    //______Đơn giá 2: M, App
     unitPrice2: {
+        type: Number,
+        default : 0
+    },
+    //______Đơn giá 3: L, Off
+    unitPrice3: {
+        type: Number,
+        default : 0
+    },
+    //______Đơn giá 4: L, App
+    unitPrice4: {
         type: Number,
         default : 0
     },

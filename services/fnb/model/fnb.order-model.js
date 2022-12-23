@@ -249,8 +249,11 @@ class Model extends BaseModel {
                             userID,
                             orderID,
                             productID: product.productID,
-                            quantity: product.quantity ? Number(product.quantity) : 0,
+                            size: product.size ? Number(product.size) : 1,
+                            sugar: product.sugar ? Number(product.sugar) : 1,
+                            ice: product.ice ? Number(product.ice) : 1,
                             subProductsID: product.variantsID,
+                            quantity: product.quantity ? Number(product.quantity) : 0,
                             unitPrice: product.unitPrice,
                             note: product.note
                         }
@@ -265,7 +268,6 @@ class Model extends BaseModel {
                  * - Bỏ phần này đi, vì đã được tính ở Client rồi
                  * - Nếu sử dụng hàm này -> cần tính thêm cả giá thành của Topping nữa (subProductsID)
                  */
-                // await this.updateValue({orderID, userID})
 
                 /**
                  * BẮN SOCKET VÀ CLOUD MSS
@@ -420,7 +422,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        status, numberOfMistakes }) {
+        customerID, status, numberOfMistakes }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -439,6 +441,15 @@ class Model extends BaseModel {
 
                 if(!isNaN(status)){
                     dataInUpdate.status = Number(status);
+                }
+
+                /**
+                 * 1-Cập nhật mã khách
+                 * 2-Cập nhật doanh số khách cũ
+                 * 3-Cập nhật doanh số khách mới
+                 */
+                if(orderID && checkObjectIDs(orderID)){
+                    dataInUpdate.customer = customerID
                 }
 
                 if(!isNaN(numberOfMistakes)){
