@@ -49,13 +49,21 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default : 0
     },
     /**
-     * Bật chiến dịch truyền thông/marketing
+     * Bật chiến dịch truyền thông/marketing (được gán từ Funda)
      * 1-Không bật
      * 2-Bật
      */
     campaign: {
         type: Number,
         default: 1
+    }, 
+    /**
+     * Tên chiến dịch (type=20)
+     * - Gán chiến dịch đang hiện hành để đo lường (được gán từ Funda)
+     */
+    campaignName: {
+        type: Schema.Types.ObjectId,
+        ref : 'doctype'
     }, 
     /**
      * Mùa trong năm (theo lịch âm)

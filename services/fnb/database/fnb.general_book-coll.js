@@ -61,6 +61,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
         type: Number,
         default: 1
     },
+    /**
+     * Tên chiến dịch (type=20)
+     * - Gán chiến dịch đang hiện hành để đo lường
+     */
+    campaignName: {
+        type: Schema.Types.ObjectId,
+        ref : 'doctype'
+    }, 
     //_________Ngày hoạch toán
     date: { type: Date, default: Date.now },
     //_________Diễn giải nội dung

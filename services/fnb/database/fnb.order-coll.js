@@ -64,6 +64,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 1
     }, 
     /**
+     * Tên chiến dịch (type=20)
+     * - Gán chiến dịch đang hiện hành để đo lường
+     */
+    campaignName: {
+        type: Schema.Types.ObjectId,
+        ref : 'doctype'
+    }, 
+    /**
      * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
      * 1-Trong hệ thống
      * 2-Nhượng quyền => Setup theo tính chất của Funda
