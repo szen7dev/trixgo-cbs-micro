@@ -48,7 +48,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'productID|goodsID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 // Kiểm tra sự tồn tại của định mức
-                let checkExist = await FNB_QUOTA_COLL.findOne({ product: productID, goods: goodsID });
+                let checkExist = await FNB_QUOTA_COLL.findOne({ size, sugar, ice, product: productID, goods: goodsID });
                 if(checkExist)
                     return resolve({ error: true, message: "Định mức đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
@@ -101,6 +101,11 @@ class Model extends BaseModel {
                 let infoQuota = await FNB_QUOTA_COLL.findById(quotaID)
                 if(!infoQuota)
                     return resolve({ error: true, message: "quotaID invalid", keyError: KEY_ERROR.PARAMS_INVALID })
+
+                // Kiểm tra sự tồn tại của định mức
+                let checkExist = await FNB_QUOTA_COLL.findOne({ size, sugar, ice, product: infoQuota.product, goods: infoQuota.goods, _id: { $ne: quotaID } });
+                if(checkExist)
+                    return resolve({ error: true, message: "Định mức đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
                 /**
                  * Lấy thông tin của Nguyên liệu (giá căn bản)
