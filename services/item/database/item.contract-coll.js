@@ -20,6 +20,11 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         ref : "department",
         require: true,
     },
+    //_________Thuộc gói thầu nào
+    package: {
+        type: Schema.Types.ObjectId,
+        ref : "document_package",
+    },
     //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
