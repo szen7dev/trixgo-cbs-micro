@@ -21,16 +21,19 @@ module.exports = {
             goodsID             : { type: "string" },
             note                : { type: "string", optional: true },
             quantity            : { type: "number" },
+            size                : { type: "number" },
+            sugar               : { type: "number" },
+            ice                 : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  productID, goodsID, note, quantity } = ctx.params;
+                let {  productID, goodsID, note, quantity, size, sugar, ice } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_QUOTA_MODEL.insert({
-                    productID, goodsID, note, quantity, userID
+                    productID, goodsID, note, quantity, size, sugar, ice, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -51,16 +54,19 @@ module.exports = {
             quotaID             : { type: "string" },
             note                : { type: "string", optional: true },
             quantity            : { type: "number" },
+            size                : { type: "number" },
+            sugar               : { type: "number" },
+            ice                 : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  quotaID, note, quantity } = ctx.params;
+                let {  quotaID, note, quantity, size, sugar, ice } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_QUOTA_MODEL.update({
                     quotaID, userID,
-                    note, quantity
+                    note, quantity, size, sugar, ice
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

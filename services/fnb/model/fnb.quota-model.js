@@ -41,7 +41,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ productID, goodsID, quantity, note, userID }) {
+    insert({ productID, goodsID, quantity, size, sugar, ice, note, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID) || !checkObjectIDs(goodsID) || !checkObjectIDs(userID))
@@ -62,6 +62,9 @@ class Model extends BaseModel {
                 let dataInsert = { 
                     product: productID, 
                     goods: goodsID, 
+                    size: Number(size),  
+                    sugar: Number(sugar),  
+                    ice: Number(ice),  
                     quantity: Number(quantity).toFixed(3), 
                     unitPrice: Number(infoGoods.unitprice).toFixed(3), 
                     amount: Number(quantity*infoGoods.unitprice).toFixed(3), 
@@ -89,7 +92,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ quotaID, userID, 
-        note, quantity }) {
+        note, quantity, size, sugar, ice }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(quotaID))
@@ -110,6 +113,9 @@ class Model extends BaseModel {
                 let dataInUpdate = { 
                     userUpdate: userID,
                      modifyAt: new Date(),
+                     size: Number(size),  
+                     sugar: Number(sugar),  
+                     ice: Number(ice),  
                      quantity: Number(quantity).toFixed(3), 
                      unitPrice: Number(infoGoods.unitprice).toFixed(3), 
                      amount: Number(quantity*infoGoods.unitprice).toFixed(3), 
@@ -119,7 +125,7 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataInUpdate.note = note;
                 }
-                console.log({ dataInUpdate })
+                // console.log({ dataInUpdate })
                 
                 let infoAfterUpdate = await FNB_QUOTA_COLL.findByIdAndUpdate(quotaID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
