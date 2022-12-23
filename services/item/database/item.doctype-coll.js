@@ -63,7 +63,21 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     sign: String,
     //_________Mô tả
     description: String,
-    //_________Số phần tử tối
+    /**
+     * Phân loại kênh bán hàng
+     * 1-Offline
+     * 2-Grab
+     * 3-Shopee
+     * 4-Gojek
+     * 5-Baemin
+     * 6-Loship
+     * 7-Bee
+     */
+    salesChannel: {
+        type: Number,
+        default: 1
+    },
+    //_________Số phần tử con
     amountChilds:  {
         type: Number,
         default : 0

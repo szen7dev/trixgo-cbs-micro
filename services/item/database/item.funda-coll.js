@@ -101,10 +101,10 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
      * Tên chiến dịch (type=20)
      * - Gán chiến dịch đang hiện hành để đo lường
      */
-    campaignName: {
+    activeCampaign: [{
         type: Schema.Types.ObjectId,
         ref : 'doctype'
-    }, 
+    }], 
     /**
      * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
      */

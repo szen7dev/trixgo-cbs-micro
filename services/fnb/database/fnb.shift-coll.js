@@ -31,6 +31,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default: 0
     },
     /**
+     * SỐ LIỆU CA
+     */
+    //______Tiền đầu ca
+    openingCash: {
+        type: Number,
+        default : 0
+    },
+    //______Phát sinh trong ca
+    incurredCash: {
+        type: Number,
+        default : 0
+    },
+    /**
      * GIÁT TRỊ
      */
     //______Tổng doanh số

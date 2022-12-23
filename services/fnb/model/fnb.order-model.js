@@ -81,7 +81,7 @@ class Model extends BaseModel {
 
                 // Lấy số đơn hàng khách đã mua
                 let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
-                console.log({numberOD})
+                // console.log({numberOD})
 
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
@@ -117,6 +117,11 @@ class Model extends BaseModel {
                     dataInsert.area1 = infoFunda.area1
                     dataInsert.area2 = infoFunda.area2
                     dataInsert.area3 = infoFunda.area3
+                }
+
+                // Chiến dịch
+                if(infoFunda.campaignName && checkObjectIDs(infoFunda.campaignName)){
+                    dataInsert.campaignName = infoFunda.campaignName
                 }
 
                 /**
@@ -358,8 +363,7 @@ class Model extends BaseModel {
                 if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
                     dataUpdateFw.$inc.cash = Number(amount)
                 }
-
-                console.log(dataUpdateFw)
+                // console.log(dataUpdateFw)
                 
                 /**
                  * Cập nhật vào Cơ sở
