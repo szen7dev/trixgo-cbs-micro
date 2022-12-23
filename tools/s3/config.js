@@ -3,5 +3,6 @@ exports.config = {
     aws_secret_access_key   : process.env.AWS_SECRET_KEY || "",
     aws_region              : process.env.AWS_REGION     || "ap-southeast-1",
     bucket                  : process.env.AWS_BUCKET     || "trx-demo-003",
+    bucketDemo              : process.env.AWS_BUCKET_DEMO || "trx-demo-003",
     signedUrlExpireSeconds  : 60000
 }
