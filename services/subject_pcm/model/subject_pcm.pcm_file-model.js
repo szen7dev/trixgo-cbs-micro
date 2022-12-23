@@ -758,7 +758,7 @@ class Model extends BaseModel {
                 const pathDownload = path.join(__dirname, `../../../files/temporary_uploads/${taskID}`);
                 const pathZip = path.join(__dirname, `../../../files/temporary_uploads/${taskID}.zip`);
 
-                if(fs.existsSync(pathDownload)) {
+                if(!fs.existsSync(pathDownload)) {
                     fs.mkdirSync(pathDownload);
                 }
 
