@@ -6,7 +6,8 @@
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment');
 const uuidv4                            = require('uuid').v4;
-const fs                                = require('node:fs');
+// const fs                                = require('node:fs');
+const fs                                = require('fs');
 const AWS                               = require('aws-sdk');
 const s3                                = require('@auth0/s3');
 const compressing                       = require('compressing');

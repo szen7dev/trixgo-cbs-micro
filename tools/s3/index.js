@@ -1,6 +1,9 @@
-const fs            = require('node:fs');
-const stream        = require('node:stream');
-const path          = require('node:path');
+// const fs            = require('node:fs');
+const fs            = require('fs');
+// const stream        = require('node:stream');
+const stream        = require('stream');
+// const path          = require('node:path');
+const path          = require('path');
 const uuidv4        = require('uuid').v4;
 const AWS           = require('aws-sdk');
 const s3            = require('@auth0/s3');
