@@ -277,7 +277,7 @@ class Model extends BaseModel {
         contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
+        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, fundaID
     }){
         return new Promise(async (resolve) => {
             try {
@@ -539,6 +539,26 @@ class Model extends BaseModel {
                     dataUpdate.$pull = { documents: documentsRemove }
                 }
 
+                if(fundaID){
+                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                    dataUpdate.funda = fundaID;
+
+                    if(infoFunda.area1){
+                        dataUpdate.sector1 = infoFunda.area1
+                    }
+    
+                    if(infoFunda.area2){
+                        dataUpdate.sector2 = infoFunda.area2
+                    }
+    
+                    if(infoFunda.area3){
+                        dataUpdate.sector3 = infoFunda.area3
+                    }
+
+                    if(infoFunda.company){
+                        dataUpdate.company = infoFunda.company
+                    }
+                }
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cập nhật thất bại" });
