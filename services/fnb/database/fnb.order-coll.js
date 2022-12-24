@@ -230,6 +230,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * THƯỞNG DOANH SỐ
      */
+    //______Số lượng sản phẩm trung bình của mỗi nhân viên
+    avgQuantityPerStaff: {
+        type: Number,
+        default : 0
+    },
     //______Doanh số trung bình tính cho 1 nhân viên
     avgTotalPerStaff: {
         type: Number,

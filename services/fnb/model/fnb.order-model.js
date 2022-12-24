@@ -205,6 +205,9 @@ class Model extends BaseModel {
                     }
 
                     dataInsert.numberOfProducts = Number(totalQuantity)
+
+                    // Số lượng sản phẩm trung bình của mỗi nhân viên
+                    dataInsert.avgQuantityPerStaff = Number(totalQuantity/Number(infoShift.staffs.length)).toFixed(2)
                 }
 
                 /**
@@ -886,18 +889,11 @@ class Model extends BaseModel {
                      * Gom nhóm theo Nhân viên phục vụ
                      */
                     if(option && Number(option) == 5){
-                        // conditionObj.assignee = {$in: [userID]}
                         conditionObj.assignee = {$in: [ObjectID(userID)]}
                         conditionGroup = {
                             _id: { },
-                            // _id: { assignee: "$assignee" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
+                            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                            avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
                         }
                     }
 
@@ -938,6 +934,7 @@ class Model extends BaseModel {
                                 discount : 1,
                                 amount : 1,
                                 vatAmount : 1,
+                                avgQuantityPerStaff : 1,
                                 avgTotalPerStaff : 1,
                                 gender : 1,
                                 age : 1,

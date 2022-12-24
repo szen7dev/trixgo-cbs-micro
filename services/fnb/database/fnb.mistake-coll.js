@@ -12,8 +12,8 @@ const Schema                = require('mongoose').Schema;
 module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     /**
      * Phân loại lỗi
-     * 1-Do hệ thống kiểm soát phát hiện
-     * 2-Do khách hàng phát hiện
+     * 1-Hệ thống phát hiện
+     * 2-Khách hàng phát hiện
      */
     type: {
         type: Number,
@@ -33,7 +33,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     note: String,
     /**
      * Tình trạng xử lý
-     * 1-Khởi tạo ghi nhận
+     * 1-Ghi nhận/đang xử lý
      * 2-Hoàn thành
      */
     status: {

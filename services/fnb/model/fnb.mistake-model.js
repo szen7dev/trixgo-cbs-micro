@@ -198,7 +198,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         // console.log({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
@@ -231,6 +231,11 @@ class Model extends BaseModel {
                 // Gom nhóm theo lỗi cụ thể
                 if(mistakeID && checkObjectIDs(mistakeID)){
                     conditionObj.mistake = ObjectID(mistakeID)
+                }
+
+                // Gom nhóm theo Nhân sự mắc lỗi
+                if(executorID && checkObjectIDs(executorID)){
+                    conditionObj.executor = ObjectID(executorID)
                 }
 
                 // Phân loại kênh bán hàng
