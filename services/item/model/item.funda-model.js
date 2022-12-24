@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, description, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
+	insert({ companyID, parentID, name, sign, description, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
@@ -48,6 +48,10 @@ class Model extends BaseModel {
                     admins: [userID],
                     members: [userID],
                 }    
+
+                if(checkObjectIDs(activeCampaign)){
+                    dataInsert.activeCampaign = activeCampaign;
+                }
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
@@ -145,7 +149,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID }){
+	update({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(fundaID))
@@ -155,6 +159,10 @@ class Model extends BaseModel {
                 //     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
                 let dataUpdate = {
                     userUpdate: userID, modifyAt: new Date()
+                }
+
+                if(checkObjectIDs(activeCampaign)){
+                    dataUpdate.activeCampaign = activeCampaign;
                 }
                 
                 if(name){
