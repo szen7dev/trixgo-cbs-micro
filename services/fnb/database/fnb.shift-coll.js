@@ -43,6 +43,26 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default : 0
     },
+    //______
+    numberOfOpeningSizeM: {
+        type: Number,
+        default: 0
+    },
+    //______
+    numberOfEndSizeM: {
+        type: Number,
+        default: 0
+    },
+    //______
+    numberOfOpeningSizeL: {
+        type: Number,
+        default: 0
+    },
+    //______
+    numberOfEndSizeL: {
+        type: Number,
+        default: 0
+    },
     /**
      * GIÁT TRỊ
      */

@@ -198,7 +198,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         // console.log({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
@@ -231,6 +231,11 @@ class Model extends BaseModel {
                 // Gom nhóm theo lỗi cụ thể
                 if(mistakeID && checkObjectIDs(mistakeID)){
                     conditionObj.mistake = ObjectID(mistakeID)
+                }
+
+                // Gom nhóm theo Nhân sự mắc lỗi
+                if(executorID && checkObjectIDs(executorID)){
+                    conditionObj.executor = ObjectID(executorID)
                 }
 
                 // Phân loại kênh bán hàng
@@ -344,8 +349,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, mistakeID, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) { 
+    getListByProperty({ option, mistakeID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
         console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
@@ -470,6 +474,27 @@ class Model extends BaseModel {
                      /**
                      * Gom nhóm theo sản phẩm
                      */
+
+
+                    /**
+                     * Gom nhóm theo Nhân sự mắc lỗi
+                     */
+                    if(option && Number(option) == 5){
+                        conditionObj.executor = ObjectID(userID)
+
+                        conditionGroup = {
+                            _id: { mistake: "$mistake" },
+                            quantity: { $sum: 1 },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.mistake',
+                            select: '_id name sign',
+                            model: 'doctype'
+                        }
+                    }
+
                     console.log(conditionObj)
                     // console.log(conditionPopulate)
                     // console.log(conditionObjYear)
@@ -516,7 +541,7 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [1,3].includes(Number(option))){
+                    if(!isNaN(option) && [1,3,5].includes(Number(option))){
                         await FNB_MISTAKE_COLL.populate(listData, conditionPopulate)
                     }
 
