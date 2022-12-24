@@ -12,6 +12,37 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_quota", {
         type: Schema.Types.ObjectId,
         ref : "fnb_product"
     },
+    /**
+     * Kích cỡ
+     * 1-Size M
+     * 2-Size L
+     */
+    size: {
+        type: Number,
+        default : 1
+    },
+    /**
+     * Đường
+     * 1-100
+     * 2-70
+     * 3-50
+     * 4-30
+     */
+    sugar: {
+        type: Number,
+        default : 1
+    },
+    /**
+     * Đá
+     * 1-100
+     * 2-70
+     * 3-50
+     * 4-30
+     */
+    ice: {
+        type: Number,
+        default : 1
+    },
     //_________Nguyên liệu
     goods: {
         type: Schema.Types.ObjectId,

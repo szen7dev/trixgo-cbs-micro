@@ -164,7 +164,7 @@ module.exports = {
                 const { taskID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await PCM_FILE_MODEL.downloadFiles({
+                const resultAfterCallHandler = await PCM_FILE_MODEL.downloadFilesV2({
                     taskID, userID
                 });
 

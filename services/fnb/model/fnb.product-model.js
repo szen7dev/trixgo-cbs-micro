@@ -209,8 +209,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, parentID, type, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({ companyID, type, keyword, limit, lastestID, select, populates, sortKey, userID })
+    getList({ companyID, parentID, type, isParent, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        // console.log({ companyID, type, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -224,15 +224,21 @@ class Model extends BaseModel {
                 // let keys	 = ['createAt__-1'];
                 let keys	 = ['createAt__-1', '_id__-1'];
 
-                if(parentID && checkObjectIDs(parentID)){
-                    conditionObj.parent = ObjectID(parentID);
-                }
-
                 // Gom nhóm theo đơn vị cơ sở
                 if(companyID ){
                     conditionObj.company = ObjectID(companyID)
                 }
 
+                if(parentID && checkObjectIDs(parentID)){
+                    conditionObj.parent = ObjectID(parentID);
+                }
+
+                // Chỉ lấy danh mục
+                if(isParent && Number(isParent) == 1){
+                    conditionObj.parent = { $exists: false }
+                }
+
+                // Phân loại (sản phẩm chính/topping)
                 if(type && !isNaN(type)){
                     conditionObj.type = Number(type)
                 }
@@ -244,8 +250,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC

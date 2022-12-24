@@ -98,6 +98,14 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         default: 1
     },  
     /**
+     * Tên chiến dịch (type=20)
+     * - Gán chiến dịch đang hiện hành để đo lường
+     */
+    activeCampaign: [{
+        type: Schema.Types.ObjectId,
+        ref : 'doctype'
+    }], 
+    /**
      * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
      */
     //_________Chi phí Food App

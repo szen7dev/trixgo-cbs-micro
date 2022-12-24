@@ -45,6 +45,13 @@ module.exports  = DATABASE_MIDDLEWARE("document_file", {
     },
 
     /**
+     * Đánh dấu là file chính thức hay không
+     * 1-Thông thường
+     * 2-Chính thức
+     */
+    official: { type: Boolean, default: 1 },
+
+    /**
      * 1. Hình ảnh
      * 2. Audio
      * 3. file

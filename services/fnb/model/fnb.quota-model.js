@@ -41,14 +41,14 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ productID, goodsID, quantity, note, userID }) {
+    insert({ productID, goodsID, quantity, size, sugar, ice, note, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID) || !checkObjectIDs(goodsID) || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'productID|goodsID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 // Kiểm tra sự tồn tại của định mức
-                let checkExist = await FNB_QUOTA_COLL.findOne({ product: productID, goods: goodsID });
+                let checkExist = await FNB_QUOTA_COLL.findOne({ size, sugar, ice, product: productID, goods: goodsID });
                 if(checkExist)
                     return resolve({ error: true, message: "Định mức đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
@@ -62,6 +62,9 @@ class Model extends BaseModel {
                 let dataInsert = { 
                     product: productID, 
                     goods: goodsID, 
+                    size: Number(size),  
+                    sugar: Number(sugar),  
+                    ice: Number(ice),  
                     quantity: Number(quantity).toFixed(3), 
                     unitPrice: Number(infoGoods.unitprice).toFixed(3), 
                     amount: Number(quantity*infoGoods.unitprice).toFixed(3), 
@@ -89,7 +92,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ quotaID, userID, 
-        note, quantity }) {
+        note, quantity, size, sugar, ice }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(quotaID))
@@ -98,6 +101,11 @@ class Model extends BaseModel {
                 let infoQuota = await FNB_QUOTA_COLL.findById(quotaID)
                 if(!infoQuota)
                     return resolve({ error: true, message: "quotaID invalid", keyError: KEY_ERROR.PARAMS_INVALID })
+
+                // Kiểm tra sự tồn tại của định mức
+                let checkExist = await FNB_QUOTA_COLL.findOne({ size, sugar, ice, product: infoQuota.product, goods: infoQuota.goods, _id: { $ne: quotaID } });
+                if(checkExist)
+                    return resolve({ error: true, message: "Định mức đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
                 /**
                  * Lấy thông tin của Nguyên liệu (giá căn bản)
@@ -110,6 +118,9 @@ class Model extends BaseModel {
                 let dataInUpdate = { 
                     userUpdate: userID,
                      modifyAt: new Date(),
+                     size: Number(size),  
+                     sugar: Number(sugar),  
+                     ice: Number(ice),  
                      quantity: Number(quantity).toFixed(3), 
                      unitPrice: Number(infoGoods.unitprice).toFixed(3), 
                      amount: Number(quantity*infoGoods.unitprice).toFixed(3), 
@@ -119,7 +130,7 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataInUpdate.note = note;
                 }
-                console.log({ dataInUpdate })
+                // console.log({ dataInUpdate })
                 
                 let infoAfterUpdate = await FNB_QUOTA_COLL.findByIdAndUpdate(quotaID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)

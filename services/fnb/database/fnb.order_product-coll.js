@@ -58,25 +58,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         default : 1
     },
     /**
-     * Có up size hay không
-     * 1-Không upsize
-     * 2-Có upsize
-     */
-    upsize: {
-        type: Number,
-        default: 1
-    },
-    /**
-     * Có thêm topping hay không
-     * 1-Không topping
-     * 2-Có topping
-     */
-    topping: {
-        type: Number,
-        default: 1
-    },
-    /**
-     * Sản phẩm phụ/Topping kèm theo
+     * Sản phẩm phụ
+     * Topping kèm theo
      */
     subProducts: [{
         type: Schema.Types.ObjectId,
@@ -103,23 +86,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
     /**
      * THÔNG TIN PHÂN LOẠI (LẤY TỪ ORDER)
      */
-    /**
-     * Phân loại khách hàng
-     * 1-Học sinh
-     * 2-Sinh viên
-     * 3-Phụ nữ
-     * 4-Đàn ông
-     * 5-Người lớn (phụ nữ + đàn ông)
-     */
-    customerType: {
-        type: Number,
-        default : 1
-    },
     //_________Mã khách (để biết khách hay dùng đồ gì)
     customer: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    //_________Giới tính
+    gender: { type: Number, default: 1 },
+    //______Độ tuổi: lấy Năm hiện tại (khi tạo đơn hàng) - Ngày sinh của khách hàng
+    age: { type: Number, default: 1 },
     //_________Phân loại trong hệ thống hoặc nhượng quyền
     internal: {
         type: Number,

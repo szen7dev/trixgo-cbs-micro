@@ -5,6 +5,8 @@
  */
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment');
+const uuidv4                            = require('uuid').v4;
+// const fs                                = require('node:fs');
 const fs                                = require('fs');
 const AWS                               = require('aws-sdk');
 const s3                                = require('@auth0/s3');
@@ -16,11 +18,20 @@ const path                              = require('path');
  * Tools
  */
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { config } 	                    = require('../../../tools/s3/config');
-const { downloadFileS3, uploadFileS3 }  = require('../../../tools/s3');
+const {
+    checkObjectIDs,
+    IsJsonString,
+    validateParamsObjectID
+} = require('../../../tools/utils/utils');
+
+const {
+    downloadFileS3,
+    uploadFileS3,
+    zipFileToS3,
+} = require('../../../tools/s3');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
@@ -740,6 +751,7 @@ class Model extends BaseModel {
 	}
 
     /**
+     * @deprecated Use downloadFilesV2 instead
      * Dev: MinhVH
      * Func: Download files
      * Date: 21/12/2022
@@ -758,7 +770,7 @@ class Model extends BaseModel {
                 const pathDownload = path.join(__dirname, `../../../files/temporary_uploads/${taskID}`);
                 const pathZip = path.join(__dirname, `../../../files/temporary_uploads/${taskID}.zip`);
 
-                if(fs.existsSync(pathDownload)) {
+                if(!fs.existsSync(pathDownload)) {
                     fs.mkdirSync(pathDownload);
                 }
 
@@ -795,6 +807,23 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: response, status: 200 });
             } catch(error) {
 				return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    downloadFilesV2({ taskID }) {
+        return new Promise(async resolve => {
+            try {
+                const files = await PCM_FILE__COLL
+                    .find({ task: taskID })
+                    .select('nameOrg path')
+                    .lean();
+
+                const result = await zipFileToS3(files, `${taskID}-${uuidv4()}`);
+
+                return resolve({ error: false, data: result, status: 200 });
+            } catch(error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

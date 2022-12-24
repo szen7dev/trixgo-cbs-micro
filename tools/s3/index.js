@@ -1,6 +1,14 @@
+// const fs            = require('node:fs');
 const fs            = require('fs');
+// const stream        = require('node:stream');
+const stream        = require('stream');
+// const path          = require('node:path');
+const path          = require('path');
+const uuidv4        = require('uuid').v4;
 const AWS           = require('aws-sdk');
 const s3            = require('@auth0/s3');
+const archiver      = require('archiver');
+const PromisePool   = require('@supercharge/promise-pool');
 const { config }    = require('./config');
 
 AWS.config.update({
@@ -76,7 +84,61 @@ const downloadFileS3 = async (pathDownload, fileName, filePath, fileNameLocal) =
     })
 }
 
+const zipFileToS3 = async (files, key) => {
+    return new Promise(async (resolve, reject) => {
+        const archiveStream = archiver('zip');
+
+        archiveStream.on('error', (error) => {
+            console.error('Archival encountered an error:', error)
+            reject(error);
+        })
+
+        const passThrough = new stream.PassThrough();
+
+        const Bucket = `${config.bucketDemo}/files/temp`;
+        const Key = key ? `${key}.zip` : `${uuidv4()}-${Date.now()}.zip`; // File name you want to save as in S3
+
+        const params = {
+            Bucket,
+            Key,
+            Body: passThrough,
+            ACL: 'public-read',
+            ContentType: 'application/zip',
+        };
+
+        s3Object.upload(params, function(err, data) {
+            if (err) throw err;
+
+            console.log(`File uploaded successfully. ${data.Location}`);
+            resolve(data);
+        });
+
+        archiveStream.pipe(passThrough);
+
+        await PromisePool
+            .for(files)
+            .handleError(reject)
+            .withConcurrency(10)
+            .process(async file => {
+                const splits = file.path.split('/');
+                const fileName = splits.pop();
+                const filePath = splits.join('/').slice(1);
+
+                const params = {
+                  Bucket: config.bucket,
+                  Key: `${filePath}/${fileName}`,
+                };
+
+                const response = await s3Object.getObject(params).promise();
+                archiveStream.append(response.Body, { name: path.basename(file.path) })
+            });
+
+        archiveStream.finalize();
+    })
+}
+
 module.exports = {
     uploadFileS3,
-    downloadFileS3
+    downloadFileS3,
+    zipFileToS3,
 }
