@@ -41,6 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
      * 2-70
      * 3-50
      * 4-30
+     * 5-0
      */
     sugar: {
         type: Number,
@@ -52,6 +53,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
      * 2-70
      * 3-50
      * 4-30
+     * 5-0
      */
     ice: {
         type: Number,
