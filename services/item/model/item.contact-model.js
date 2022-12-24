@@ -5,6 +5,7 @@ const fs                                = require('fs');
 const path                              = require('path');
 const moment                            = require('moment');
 const _isValid                          = require('mongoose').Types.ObjectId;
+const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -625,10 +626,15 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        userID, companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
+        userID, companyID, fundaID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
         insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
         isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
         keyword, limit = 10, lastestID, select, populates = {} }) {
+            console.log({
+                userID, companyID, fundaID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
+                insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
+                isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
+                keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
@@ -686,6 +692,11 @@ class Model extends BaseModel {
                         // Lấy nhân sự theo công ty
                         if(checkObjectIDs(companyID)){
                             conditionObj.company = companyID
+                        }
+
+                        // Lấy nhân sự theo đơn vị cơ sở
+                        if(checkObjectIDs(fundaID)){
+                            conditionObj.funda = fundaID
                         }
 
                         if(checkObjectIDs(departmentID)){
@@ -1026,6 +1037,157 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Danh sách theo phân loại
+     * Author: HiepNH
+     * Code: 24/12/2022
+     */
+    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
+        console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
+        return new Promise(async (resolve) => {
+            try {
+                if(!option){
+                    // Danh sách
+
+                }else{
+                    let conditionObj = {
+                        // mistake: { $exists: true, $ne: null }
+                    }
+                    let conditionGroup = {}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
+
+                    /**
+                     * VALIDATION (1)
+                     */
+                    const validation = validateParamsObjectID({
+                        fundasID            : { value: fundasID, isRequire: false },
+                    });
+                    if(validation.error) return resolve(validation);
+
+                    // Gom nhóm theo đơn vị cơ sở
+                    if(fundasID && fundasID.length ){
+                        let arrFun = fundasID.map(item=>ObjectID(item))
+                        conditionObj.funda = { $in: arrFun }
+                    }
+
+                    // Phân loại theo thời khoảng
+                    if(fromDate && toDate){
+                        conditionObj.joinedDate = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    /**
+                     * Gom nhóm theo thời gian
+                     * - Số lượng đơn hàng
+                     * - Giá trị đơn hàng
+                     * - Số lượng sản phẩm
+                     */
+                    if(option && Number(option) == 1){
+                        // Theo năm
+                        if(optionTime && Number(optionTime) == 1){
+                            conditionGroup = {
+                                _id: { year: "$year" },
+                                quantity: { $sum: 1 },
+                            }
+                        }
+                        
+                        // Theo tháng trong năm
+                        if(optionTime && Number(optionTime) == 2){
+                            if(!isNaN(year) && Number(year) >= 0){
+                                conditionObjYear = {
+                                    "year": Number(year),
+                                }
+                            }
+    
+                            conditionGroup = {
+                                _id: { month: "$month", year: "$year" },
+                                quantity: { $sum: 1 },
+                            }
+                        }  
+
+                        // Theo giờ trong ngày
+                        if(optionTime && Number(optionTime) == 3){    
+                            conditionGroup = {
+                                _id: { hour: "$hour" },
+                                quantity: { $sum: 1 },
+                            }
+                        } 
+                    }
+
+                    /**
+                     * Gom nhóm theo đơn vị cơ sở
+                     */
+                    if(option && Number(option) == 2){
+                        conditionGroup = {
+                            _id: { funda: "$funda" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name sign image',
+                            model: 'funda'
+                        }
+                    }
+
+                    /**
+                     * Gom nhóm theo khách hàng cũ, mới
+                     */
+                    if(option && Number(option) == 3){
+                        conditionGroup = {
+                            _id: { new: "$new" },
+                            quantity: { $sum: 1 },
+                        }
+                    }
+
+                    // console.log(conditionObj)
+                    // console.log(conditionPopulate)
+                    // console.log(conditionObjYear)
+                    // console.log(conditionGroup)
+
+                    // Danh sách đang triển khai
+                    let listData = await ITEM__CONTACT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$joinedDate"},
+                                month : {$month : "$joinedDate"},
+                                hour : {$hour : "$joinedDate"},
+                                funda : 1,
+                                sector1 : 1,
+                                sector2 : 1,
+                                sector3 : 1,
+                                new : 1,
+                                joinedDate : 1
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: sortBy
+                        }
+                    ])
+
+                    if(!isNaN(option) && [2].includes(Number(option))){
+                        await ITEM__CONTACT_COLL.populate(listData, conditionPopulate)
+                    }
+
+                    return resolve({ error: false, data: listData });
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
