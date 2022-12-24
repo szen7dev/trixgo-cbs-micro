@@ -388,6 +388,7 @@ class Model extends BaseModel {
                         conditionGroup = {
                             _id: { mistake: "$mistake" },
                             quantity: { $sum: 1 },
+                            amount: { $sum: "$amount" },
                         }
 
                         conditionPopulate = {

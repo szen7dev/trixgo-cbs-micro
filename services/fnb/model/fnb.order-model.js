@@ -728,6 +728,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID }) {
+        // console.log({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -747,9 +748,11 @@ class Model extends BaseModel {
 
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
+                        console.log('============111111111111111111111111')
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
                     }else{
+                        console.log('============222222222222222222222222')
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
                         // conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
 
@@ -770,11 +773,11 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo các phân loại căn bản
+                     * Gom nhóm theo Phân loại căn bản
                      */
                     if(option && Number(option) == 1){
                         conditionGroup = {
-                            _id: { shiftType: "$shiftType", mistake: "$mistake", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod" },
+                            _id: { new: "$new", shiftType: "$shiftType", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod" },
                             quantity: { $sum: 1 },
                             total: { $sum: "$total" },
                             discount: { $sum: "$discount" },
@@ -786,7 +789,7 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo thời gian
+                     * Gom nhóm theo Thời gian
                      * - Số lượng đơn hàng
                      * - Giá trị đơn hàng
                      * - Số lượng sản phẩm
@@ -842,7 +845,7 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo đơn vị cơ sở
+                     * Gom nhóm theo Đơn vị cơ sở
                      */
                     if(option && Number(option) == 3){
                         conditionGroup = {
@@ -864,7 +867,7 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo khách hàng
+                     * Gom nhóm theo Khách hàng
                      */
                     if(option && Number(option) == 4){
                         conditionGroup = {
@@ -879,6 +882,28 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Nhân viên phục vụ
+                     */
+                    if(option && Number(option) == 5){
+                        // conditionObj.assignee = {$in: [userID]}
+                        conditionObj.assignee = {$in: [ObjectID(userID)]}
+                        conditionGroup = {
+                            _id: { },
+                            // _id: { assignee: "$assignee" },
+                            quantity: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                        }
+                    }
+
+                    // console.log(conditionObj)
+                    // console.log(conditionGroup)
+
                     // Danh sách đang triển khai
                     let listData = await FNB_ORDER_COLL.aggregate([
                         {
@@ -890,18 +915,33 @@ class Model extends BaseModel {
                                 month : {$month : "$createAt"},
                                 hour : {$hour : "$createAt"},
                                 funda : 1,
+                                customer : 1,
+                                new : 1,
+                                assignee : 1,
+                                campaign : 1,
+                                activeCampaign : 1,
+                                internal : 1,
+                                area1 : 1,
+                                area2 : 1,
+                                area3 : 1,
+                                shift : 1,
+                                shiftType : 1,
+                                seasons : 1,
+                                salesChannel : 1,
+                                paymentMethod : 1,
+                                service : 1,
+                                status : 1,
+                                numberOfMistakes : 1,
+                                numberOfProducts : 1,
                                 total : 1,
                                 salesoff : 1,
                                 discount : 1,
                                 amount : 1,
                                 vatAmount : 1,
-                                numberOfProducts : 1,
-                                internal : 1,
-                                shift : 1,
-                                mistake : 1,
-                                salesChannel : 1,
-                                paymentMethod : 1,
-                                customer : 1,
+                                avgTotalPerStaff : 1,
+                                gender : 1,
+                                age : 1,
+                                loyaltyPoints : 1,
                             }
                         },
                         {
