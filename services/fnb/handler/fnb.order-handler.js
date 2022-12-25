@@ -316,13 +316,14 @@ module.exports = {
     resetAllData: {
         auth: 'required',
         params: {
+            option: { type: "string" },
             password: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { password } = ctx.params;
+                let { option, password } = ctx.params;
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.resetAllData({
                     email, password, userID, companyID: company._id
