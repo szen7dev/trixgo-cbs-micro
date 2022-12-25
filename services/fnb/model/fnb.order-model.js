@@ -978,6 +978,7 @@ class Model extends BaseModel {
                 
                 // console.log({ email, password, userID, companyID })
 
+                // await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
                 // await FNB_ORDER_COLL.deleteMany({ company: companyID })
                 // await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
                 // await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
