@@ -132,6 +132,37 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code:
 	 */
+	update({ docFileID, official }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(docFileID))
+                    return resolve({ error: true, message: 'Request params docFileID invalid', status: 400 });
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterUpdate = await DOCUMENT__DOC_FILE_COLL.findByIdAndUpdate(docFileID, { official }, { new: true });
+                if(!infoAterUpdate)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+
+                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Name: get info doc file
+	 * Author: Depv
+	 * Code:
+	 */
 	getInfo({ docFileID, select, populates }) {
         return new Promise(async (resolve) => {
             try {

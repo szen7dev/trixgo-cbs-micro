@@ -49,7 +49,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_file", {
      * 1-Thông thường
      * 2-Chính thức
      */
-    official: { type: Boolean, default: 1 },
+    official: { type: Number, default: 1 },
 
     /**
      * 1. Hình ảnh

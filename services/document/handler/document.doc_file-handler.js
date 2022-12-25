@@ -42,6 +42,32 @@ module.exports = {
         }
     },
 
+     /**
+	 * Dev: Depv
+	 * Func: update
+	 */
+    update: {
+        auth: "required",
+        params: {
+			docFileID   : { type: "string" },
+            official    : { type: "number", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { docFileID, official } = ctx.params;
+                let resultAfterCallHandler = await DOCUMENT__DOC_FILE_MODEL.update({
+                    docFileID, official
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
     /**
 	 * Dev: Depv
 	 * Func: Xóa doc file
