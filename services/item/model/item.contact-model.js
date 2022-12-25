@@ -1636,10 +1636,12 @@ class Model extends BaseModel {
                             name: data?.__EMPTY,
                             phone: data?.__EMPTY_1,
                             address: data?.__EMPTY_2,
-                            note: data?.__EMPTY_3,
+                            gender: data?.__EMPTY_9, //
+                            birthday: data?.__EMPTY_10,//
+                            note: data?.__EMPTY_5,
+                            fundaID: data?.__EMPTY_11,//
                             type: 2
                         }
-
                         // console.log(dataInsert);
                     
                         let infoAfterInsert = await this.insert(dataInsert);
