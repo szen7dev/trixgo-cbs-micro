@@ -326,7 +326,7 @@ module.exports = {
                 let { option, password } = ctx.params;
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.resetAllData({
-                    email, password, userID, companyID: company._id
+                    option, email, password, userID, companyID: company._id
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
