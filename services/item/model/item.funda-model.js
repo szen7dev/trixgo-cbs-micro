@@ -159,23 +159,24 @@ class Model extends BaseModel {
                 let dataUpdate = {
                     name, userUpdate: userID, modifyAt: new Date()
                 }
-
-                //_________Khu vực (phường/xã)
-                let infoArea = await ITEM__AREA_COLL.findById(area).populate({
-                    path: 'parent',
-                    select: "_id name",
-                    populate: {
+                if(area){
+                    //_________Khu vực (phường/xã)
+                    let infoArea = await ITEM__AREA_COLL.findById(area).populate({
                         path: 'parent',
                         select: "_id name",
-                    }
-                })
-                console.log(infoArea)
-                if(Number(infoArea.level) != 3)
-                    return resolve({ error: true, message: "Khu vực chọn cần phải là Phường/Xã", keyError: "Request params name invalid" });
+                        populate: {
+                            path: 'parent',
+                            select: "_id name",
+                        }
+                    })
+                    console.log(infoArea)
+                    if(Number(infoArea.level) != 3)
+                        return resolve({ error: true, message: "Khu vực chọn cần phải là Phường/Xã", keyError: "Request params name invalid" });
 
-                dataUpdate.area3 = area
-                dataUpdate.area2 = infoArea.parent._id
-                dataUpdate.area1 = infoArea.parent.parent._id
+                    dataUpdate.area3 = area
+                    dataUpdate.area2 = infoArea.parent._id
+                    dataUpdate.area1 = infoArea.parent.parent._id
+                }
 
                 if(checkObjectIDs(activeCampaign)){
                     dataUpdate.activeCampaign = activeCampaign;
