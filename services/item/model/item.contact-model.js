@@ -55,12 +55,15 @@ class Model extends BaseModel {
                  * 2-Khi mua hàng lần 2 trở đi => Khách hàng cũ => Đơn hàng cũ
                  */
                 if(!name || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'name|fundaID|authorID_param_not_valid' });
+                    return resolve({ error: true, message: 'name|fundaID|authorID_param_not_valid' })
 
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if(!infoFunda)
-                    return resolve({ error: true, message: 'can_not_get_funda_info' });
+                    return resolve({ error: true, message: 'can_not_get_funda_info' })
                 // console.log(infoFunda)
+
+                if(!infoFunda.area1 || !infoFunda.area2 || !infoFunda.area3)
+                    return resolve({ error: true, message: 'Cơ sở chưa khai báo thuộc khu vực nào, cần bổ sung' })
 
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {

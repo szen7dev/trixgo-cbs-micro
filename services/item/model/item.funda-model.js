@@ -39,7 +39,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
-                    return resolve({ error: true, message: "Tên|Khu vực không hợp lệ", keyError: "Request params name invalid" });
+                    return resolve({ error: true, message: "Tên|Khu vực không hợp lệ", keyError: "Request params name invalid" })
 
                 let dataInsert = {
                     userCreate: userID,
@@ -48,7 +48,24 @@ class Model extends BaseModel {
                     admins: [userID],
                     members: [userID],
                 }    
+                
+                //_________Khu vực (phường/xã)
+                let infoArea = await ITEM__AREA_COLL.findById(area).populate({
+                    path: 'parent',
+                    select: "_id name",
+                    populate: {
+                        path: 'parent',
+                        select: "_id name",
+                    }
+                })
+                // console.log(infoArea)
+                if(Number(infoArea.level) != 3)
+                    return resolve({ error: true, message: "Khu vực chọn cần phải là Phường/Xã", keyError: "Request params name invalid" });
 
+                dataInsert.area3 = area
+                dataInsert.area2 = infoArea.parent._id
+                dataInsert.area1 = infoArea.parent.parent._id
+                
                 if(checkObjectIDs(activeCampaign)){
                     dataInsert.activeCampaign = activeCampaign;
                 }
@@ -81,23 +98,6 @@ class Model extends BaseModel {
                 //_________Phân loại trong hệ thống hoặc nhượng quyền
                 if(internal && !isNaN(internal) && [1, 2].includes(internal)){
                     dataInsert.internal = +internal;
-                }
-
-                //_________Khu vực (phường/xã)
-                if(checkObjectIDs(area)){
-                    let infoArea = await ITEM__AREA_COLL.findById(area).populate({
-                        path: 'parent',
-                        select: "_id name",
-                        populate: {
-                            path: 'parent',
-                            select: "_id name",
-                        }
-                    })
-                    // console.log(infoArea)
-
-                    dataInsert.area3 = area
-                    dataInsert.area2 = infoArea.parent._id
-                    dataInsert.area1 = infoArea.parent.parent._id
                 }
 
                  /**
@@ -150,23 +150,35 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	update({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
+        // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign })
         return new Promise(async resolve => { 
             try {
-                if(!checkObjectIDs(fundaID))
-                    return resolve({ error: true, message: "fundaID không hợp lệ", keyError: "Request params fundaID invalid" });
+                if(!name || !checkObjectIDs(fundaID))
+                    return resolve({ error: true, message: "name|fundaID không hợp lệ", keyError: "Request params fundaID invalid" })
 
-                // if(!name)
-                //     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
                 let dataUpdate = {
-                    userUpdate: userID, modifyAt: new Date()
+                    name, userUpdate: userID, modifyAt: new Date()
                 }
+
+                //_________Khu vực (phường/xã)
+                let infoArea = await ITEM__AREA_COLL.findById(area).populate({
+                    path: 'parent',
+                    select: "_id name",
+                    populate: {
+                        path: 'parent',
+                        select: "_id name",
+                    }
+                })
+                console.log(infoArea)
+                if(Number(infoArea.level) != 3)
+                    return resolve({ error: true, message: "Khu vực chọn cần phải là Phường/Xã", keyError: "Request params name invalid" });
+
+                dataUpdate.area3 = area
+                dataUpdate.area2 = infoArea.parent._id
+                dataUpdate.area1 = infoArea.parent.parent._id
 
                 if(checkObjectIDs(activeCampaign)){
                     dataUpdate.activeCampaign = activeCampaign;
-                }
-                
-                if(name){
-                    dataUpdate.name = name
                 }
 
                 let dataAddToset = {};
@@ -228,23 +240,6 @@ class Model extends BaseModel {
                     dataUpdate.internal = +internal;
                 }
 
-                //_________Khu vực (phường/xã)
-                if(checkObjectIDs(area)){
-                    let infoArea = await ITEM__AREA_COLL.findById(area).populate({
-                        path: 'parent',
-                        select: "_id name",
-                        populate: {
-                            path: 'parent',
-                            select: "_id name",
-                        }
-                    })
-                    // console.log(infoArea)
-
-                    dataUpdate.area3 = area
-                    dataUpdate.area2 = infoArea.parent._id
-                    dataUpdate.area1 = infoArea.parent.parent._id
-                }
-
                 /**
                  * Chi phí vận hành
                  */
@@ -286,7 +281,17 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
-                let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdate, { new: true });
+                let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdate, { new: true })
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" })
+
+                /**
+                 * CẬP NHẬT LẠI FNB
+                 * 1-Ca làm việc
+                 * 2-Đơn hàng
+                 * 3-Danh bạ
+                 */
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
