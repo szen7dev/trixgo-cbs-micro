@@ -92,6 +92,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
+    //_________Số lượng phần tử con
+    amountChilds: {
+        type: Number,
+        default: 0 
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
