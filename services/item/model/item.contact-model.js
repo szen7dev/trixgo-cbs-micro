@@ -18,6 +18,7 @@ const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 const { INSURANCE_STATUS }              = require('../../../tools/constants');
+const { CONTACT_GENDER }                = require('../helper/item.keys-constant');
 
 /**
  * COLLECTIONS
@@ -55,12 +56,15 @@ class Model extends BaseModel {
                  * 2-Khi mua hàng lần 2 trở đi => Khách hàng cũ => Đơn hàng cũ
                  */
                 if(!name || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'name|fundaID|authorID_param_not_valid' });
+                    return resolve({ error: true, message: 'name|fundaID|authorID_param_not_valid' })
 
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if(!infoFunda)
-                    return resolve({ error: true, message: 'can_not_get_funda_info' });
+                    return resolve({ error: true, message: 'can_not_get_funda_info' })
                 // console.log(infoFunda)
+
+                if(!infoFunda.area1 || !infoFunda.area2 || !infoFunda.area3)
+                    return resolve({ error: true, message: 'Cơ sở chưa khai báo thuộc khu vực nào, cần bổ sung' })
 
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
@@ -1556,10 +1560,16 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                .populate({
+                    path: 'funda',
+                    select:'_id  name'
+                })
                 // console.log(listData)
 
+                let listFunda = await ITEM__FUNDA_COLL.find({ company: companyID })
+
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
                 .then(async workbook => {
 
                     var i = 3;
@@ -1568,14 +1578,24 @@ class Model extends BaseModel {
                         workbook.sheet("Export").row(i).cell(2).value(item.name);
                         workbook.sheet("Export").row(i).cell(3).value(item.phone);
                         workbook.sheet("Export").row(i).cell(4).value(item.address);
-                        // workbook.sheet("Export").row(i).cell(5).value(item.description);
-                        workbook.sheet("Export").row(i).cell(5).value(item.note);
+                        workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
+                        workbook.sheet("Export").row(i).cell(6).value(item.birthday);
+                        workbook.sheet("Export").row(i).cell(7).value(item.note);
+                        workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
+                        i++
+                    });
+
+                    
+                    var i = 2;
+                    listFunda?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(1).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(2).value(item.name);
                         i++
                     });
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `Template_import_contact_${now.getTime()}.xlsx`;
+                    const fileName = `Template_import_contact_${now.getTime()}.xlsm`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);

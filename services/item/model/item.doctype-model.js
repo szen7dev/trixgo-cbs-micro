@@ -24,14 +24,16 @@ class Model extends BaseModel {
      * Func: Insert doctype
      * Date: 22/02/2022
      */
-    insert({ type, name, description, sign, companyID, parent, level, userID }) {
+    insert({ type, name, description, sign, companyID, parent, level, userID, salesChannel }) {
         return new Promise(async resolve => {
             try {
                 if(!name)
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
 
-                const dataInsert = { name, type, description, sign, company: companyID, userCreate: userID };
-
+                let dataInsert = { name, type, description, sign, company: companyID, userCreate: userID };
+                if(salesChannel){
+                    dataInsert.salesChannel = salesChannel;
+                }
                 /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -113,7 +115,7 @@ class Model extends BaseModel {
      * Func: Update doctype
      * Date: 22/02/2022
      */
-    update({ doctypeID, name, description, sign, userID }) {
+    update({ doctypeID, name, description, sign, userID, salesChannel }) {
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -138,6 +140,9 @@ class Model extends BaseModel {
                 name        && (dataUpdate.name = name);
                 description && (dataUpdate.description = description);
                 sign && (dataUpdate.sign = sign);
+                if(salesChannel){
+                    dataUpdate.salesChannel = salesChannel;
+                }
 
                 let infoAfterUpdate = await ITEM__DOCTYPE_COLL.findByIdAndUpdate(doctypeID, dataUpdate, { new: true });
 
