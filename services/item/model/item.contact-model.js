@@ -1588,8 +1588,8 @@ class Model extends BaseModel {
                     
                     var i = 2;
                     listFunda?.forEach((item, index) => {
-                        workbook.sheet("DanhMuc").row(i).cell(1).value(`${item._id}`);
-                        workbook.sheet("DanhMuc").row(i).cell(2).value(item.name);
+                        workbook.sheet("DanhMuc").row(i).cell(3).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(4).value(item.name);
                         i++
                     });
 
@@ -1636,10 +1636,12 @@ class Model extends BaseModel {
                             name: data?.__EMPTY,
                             phone: data?.__EMPTY_1,
                             address: data?.__EMPTY_2,
-                            note: data?.__EMPTY_3,
+                            gender: data?.__EMPTY_9, //
+                            birthday: data?.__EMPTY_10,//
+                            note: data?.__EMPTY_5,
+                            fundaID: data?.__EMPTY_11,//
                             type: 2
                         }
-
                         // console.log(dataInsert);
                     
                         let infoAfterInsert = await this.insert(dataInsert);
