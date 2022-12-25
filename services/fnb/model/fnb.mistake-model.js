@@ -41,7 +41,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ mistakeID, executorID, fundaID, orderID, type, amount, note, userID }) {
+    insert({ mistakeID, executorID, fundaID, orderID, type, amount, note, files, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(fundaID) || !checkObjectIDs(userID))
@@ -57,7 +57,7 @@ class Model extends BaseModel {
                     company: infoFunda.company, 
                     area1: infoFunda.area1, 
                     area2: infoFunda.area2, 
-                    area3: infoFunda.area3
+                    area3: infoFunda.area3,
                 }
 
                 if(orderID && checkObjectIDs(orderID)){
@@ -77,6 +77,10 @@ class Model extends BaseModel {
                     dataInsert.shift            = infoOrder.shift
                     dataInsert.shiftType        = infoShift.shiftType
                     dataInsert.seasons          = infoShift.seasons
+                }
+
+                if(checkObjectIDs(files)) {
+                    dataInsert.files = files;
                 }
 
                 if(!isNaN(type)){
