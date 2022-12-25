@@ -26,6 +26,7 @@ const FNB_SHIFT_COLL                           = require('../database/fnb.shift-
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
 const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
 const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
+const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.general_book-coll');
 
 /**
  * import inter-model, exter-model
@@ -963,6 +964,35 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name: Reset data
+     * Author: HiepNH
+     * Code: 25/12/2022
+     */
+    resetAllData({ email, password, userID, companyID }) {
+        console.log({ email, password, userID, companyID })
+        return new Promise(async (resolve) => {
+            try {
+                if(password.toString() != `noPass12345${email}`)
+                    return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
+                
+                // console.log({ email, password, userID, companyID })
+
+                // await FNB_ORDER_COLL.deleteMany({ company: companyID })
+                // await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
+                // await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
+                // await FNB_SHIFT_COLL.deleteMany({ company: companyID })
+                // await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
+                // await FNB_QUOTA_COLL.deleteMany({ company: companyID })
+                // await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
+                // await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+
+                return resolve({ error: false, message: 'Reset thành công'});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

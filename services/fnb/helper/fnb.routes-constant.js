@@ -23,6 +23,7 @@ const CF_ROUTINGS_FNB = {
     ORDER_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${ORDER}/download-template-excel`,
     ORDER_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${ORDER}/import-from-excel`,
     ORDER_EXPORT_EXCEL                      : `${BASE_ROUTE}${ORDER}/export-excel`,
+    ORDER_RESET_ALL_DATA                    : `${BASE_ROUTE}${ORDER}/reset-all-data`,
 
     //================================FNB_PRODUCT=======================================//
     PRODUCTS                                : `${BASE_ROUTE}${PRODUCT}`,
