@@ -980,10 +980,12 @@ class Model extends BaseModel {
 
                 // Fake giá tạm thời cho size L
                 if(option == 1){
+                    console.log('==============>>>>>>>>>>>>>>>>>111111111111')
                     await FNB_ORDER_PRODUCT_COLL.updateMany({ company: companyID },{$set:{ "unitPrice3":40000, "unitPrice4":50000 }})
                 }
 
                 if(option == 2){
+                    console.log('==============>>>>>>>>>>>>>>>>>22222222222222')
                     // await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
                     // await FNB_ORDER_COLL.deleteMany({ company: companyID })
                     // await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
