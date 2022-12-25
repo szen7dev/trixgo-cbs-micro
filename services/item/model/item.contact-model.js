@@ -1588,8 +1588,8 @@ class Model extends BaseModel {
                     
                     var i = 2;
                     listFunda?.forEach((item, index) => {
-                        workbook.sheet("DanhMuc").row(i).cell(1).value(`${item._id}`);
-                        workbook.sheet("DanhMuc").row(i).cell(2).value(item.name);
+                        workbook.sheet("DanhMuc").row(i).cell(3).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(4).value(item.name);
                         i++
                     });
 
