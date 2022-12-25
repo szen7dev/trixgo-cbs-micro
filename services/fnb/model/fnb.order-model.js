@@ -969,8 +969,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 25/12/2022
      */
-    resetAllData({ email, password, userID, companyID }) {
-        console.log({ email, password, userID, companyID })
+    resetAllData({ option, email, password, userID, companyID }) {
+        console.log({ option, email, password, userID, companyID })
         return new Promise(async (resolve) => {
             try {
                 if(password.toString() != `noPass12345${email}`)
@@ -978,15 +978,21 @@ class Model extends BaseModel {
                 
                 // console.log({ email, password, userID, companyID })
 
-                // await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                // await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                // await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                // await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                // await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                // await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                // await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                // await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                // await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+                if(option == 1){
+                    await FNB_ORDER_PRODUCT_COLL.updateMany({ company: companyID },{$set:{ "unitPrice3":40000, "unitPrice4":50000 }})
+                }
+
+                if(option == 2){
+                    // await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
+                    // await FNB_ORDER_COLL.deleteMany({ company: companyID })
+                    // await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
+                    // await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
+                    // await FNB_SHIFT_COLL.deleteMany({ company: companyID })
+                    // await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
+                    // await FNB_QUOTA_COLL.deleteMany({ company: companyID })
+                    // await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
+                    // await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+                }
 
                 return resolve({ error: false, message: 'Reset thành công'});
             } catch (error) {
