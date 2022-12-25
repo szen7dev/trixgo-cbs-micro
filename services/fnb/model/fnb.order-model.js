@@ -978,6 +978,7 @@ class Model extends BaseModel {
                 
                 // console.log({ email, password, userID, companyID })
 
+                // Fake giá tạm thời cho size L
                 if(option == 1){
                     await FNB_ORDER_PRODUCT_COLL.updateMany({ company: companyID },{$set:{ "unitPrice3":40000, "unitPrice4":50000 }})
                 }
