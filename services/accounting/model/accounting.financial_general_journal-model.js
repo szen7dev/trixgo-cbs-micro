@@ -1005,11 +1005,7 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message });
             }
         });
-    } 
-
-
-
-
+    }
 }
 
 exports.MODEL = new Model;
