@@ -46,7 +46,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type }) {
-        console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type })
+        // console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
@@ -73,7 +73,10 @@ class Model extends BaseModel {
                 }
 
                 if(parentID && checkObjectIDs(parentID)){
+                    let infoParent = await FNB_PRODUCT_COLL.findById(parentID);
+                    
                     dataInsert.parent = parentID;
+                    dataInsert.level = infoParent.level + 1;
                 }
 
                 if(unit && unit != ""){
@@ -98,7 +101,12 @@ class Model extends BaseModel {
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+
+                //______Cập nhật amountChilds cho phần tử cha
+                if(parentID && checkObjectIDs(parentID)){
+                    await FNB_PRODUCT_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
+                }                    
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {

@@ -57,7 +57,7 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref : "file"
     }],
-     // Số lượng phần tử con
+    //_________Số lượng phần tử con
     amountChilds: {
         type: Number,
         default: 0 

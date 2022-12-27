@@ -75,6 +75,8 @@ class Model extends BaseModel {
                     let infoParent = await FNB_GENERAL_BOOK_COLL.findById(parentID)
                     
                     dataInsert.parent = parentID
+                    dataInsert.level = infoParent.level + 1;
+
                     dataInsert.date = infoParent.date
                 }
 
@@ -136,6 +138,11 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     await that.updateValue({ bookID: parentID, userID }) 
                 }
+
+                //______Cập nhật amountChilds cho phần tử cha
+                if(parentID && checkObjectIDs(parentID)){
+                    await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
+                }    
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {

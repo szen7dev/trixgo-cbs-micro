@@ -51,8 +51,10 @@ class Model extends BaseModel {
                     name, 
                 }    
 
-                if(checkObjectIDs(parentID)){
+                if(parentID && checkObjectIDs(parentID)){
+                    let infoParent = await ITEM__GOODS_COLL.findById(parentID);
                     dataInsert.parent = parentID;
+                    dataInsert.level = infoParent.level + 1;
                 }
 
                 if(sign){
@@ -79,13 +81,12 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" });
 
-                // Cập nhật amountChilds cho phần tử cha
-                if(checkObjectIDs(parentID)){
+                //______Cập nhật amountChilds cho phần tử cha
+                if(parentID && checkObjectIDs(parentID)){
                     await ITEM__GOODS_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
-
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

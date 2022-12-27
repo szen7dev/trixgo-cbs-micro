@@ -307,5 +307,33 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: HiepNH
+     * Func: Reset All Data
+     * Date: 25/12/2022
+     */
+    resetAllData: {
+        auth: 'required',
+        params: {
+            option: { type: "string" },
+            password: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, email, company } = ctx.meta.infoUser;
+                let { option, password } = ctx.params;
+
+                const resultAfterCallHandler = await FNB_ORDER_MODEL.resetAllData({
+                    option, email, password, userID, companyID: company._id
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    }
     
 }

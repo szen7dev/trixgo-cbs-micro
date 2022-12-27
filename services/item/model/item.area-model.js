@@ -35,7 +35,7 @@ class Model extends BaseModel {
      * Code: 19/9/2022
      */
     insert({ name, sign, userID, parentID }) {
-        console.log({ name, sign, userID, parentID })
+        // console.log({ name, sign, userID, parentID })
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))

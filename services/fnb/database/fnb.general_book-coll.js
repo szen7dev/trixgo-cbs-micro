@@ -28,6 +28,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
         type: Number,
         default: 1
     },
+    //_________Link (Kho xuất xuống cửa hàng)
+    link: {
+        type: Schema.Types.ObjectId,
+        ref: "fnb_general_book"
+    },
     /**
      * Doanh thu, chi phí
      * 1-Doanh thu
@@ -108,6 +113,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
     credit: {
         type: Schema.Types.ObjectId,
         ref: 'account'
+    },
+    //_________Số lượng phần tử con
+    amountChilds: {
+        type: Number,
+        default: 0 
     },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
