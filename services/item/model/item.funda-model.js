@@ -345,8 +345,9 @@ class Model extends BaseModel {
     getList({
         companyID, parentID, isListParentOfListChilds, isMember,
         keyword, limit = 20, lastestID, select, populates= {}, userID } ) { 
-        console.log({companyID, parentID, isListParentOfListChilds, isMember,
-            keyword, limit, lastestID, select, populates, userID})  
+        // console.log({companyID, parentID, isListParentOfListChilds, isMember,
+        //     keyword, limit, lastestID, select, populates, userID})  
+        //     console.log('========================') 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
@@ -375,6 +376,7 @@ class Model extends BaseModel {
 
                 if(isMember && isMember == 1){
                     conditionObj.members = { $in: [userID] }
+                    conditionObj.company = companyID
                 }
 
                 if(companyID && checkObjectIDs(companyID)){

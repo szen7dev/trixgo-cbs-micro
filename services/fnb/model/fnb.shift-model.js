@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, userID }) {
+    insert({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -81,6 +81,18 @@ class Model extends BaseModel {
                 if(workingHours && !isNaN(workingHours)){
                     dataInsert.workingHours = Number(workingHours)
                 }
+
+                if(openingCash && !isNaN(openingCash)){
+                    dataInsert.openingCash = Number(openingCash)
+                }
+
+                if(incurredCash && !isNaN(incurredCash)){
+                    dataInsert.incurredCash = Number(incurredCash)
+                }
+
+                if(closingCash && !isNaN(closingCash)){
+                    dataInsert.closingCash = Number(closingCash)
+                }
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -98,7 +110,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ shiftID, staffsID, name, note, campaign, seasons, shiftType, workingHours, userID }) {
+    update({ shiftID, staffsID, name, note, campaign, seasons, shiftType, workingHours, openingCash, incurredCash, closingCash, userID }) {
+        console.log({ shiftID, staffsID, name, note, campaign, seasons, shiftType, workingHours, openingCash, incurredCash, closingCash, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -132,6 +145,18 @@ class Model extends BaseModel {
 
                 if(staffsID && checkObjectIDs(staffsID)){
                     dataInUpdate.staffs = staffsID;
+                }
+
+                if(openingCash && !isNaN(openingCash)){
+                    dataInUpdate.openingCash = Number(openingCash)
+                }
+
+                if(incurredCash && !isNaN(incurredCash)){
+                    dataInUpdate.incurredCash = Number(incurredCash)
+                }
+
+                if(closingCash && !isNaN(closingCash)){
+                    dataInUpdate.closingCash = Number(closingCash)
                 }
 
                 console.log({ dataInUpdate })

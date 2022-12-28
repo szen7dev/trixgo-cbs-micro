@@ -43,6 +43,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default : 0
     },
+    //______Kiểm kê cuối ca
+    closingCash: {
+        type: Number,
+        default : 0
+    },
     //______
     numberOfOpeningSizeM: {
         type: Number,
@@ -63,6 +68,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default: 0
     },
+    //_________Số lượng lỗi
+    numberOfMistakes: { type: Number, default: 0 },
+    //_________Giá trị bị phạt
+    amountOfMistakes: { type: Number, default: 0 },
     /**
      * GIÁT TRỊ
      */

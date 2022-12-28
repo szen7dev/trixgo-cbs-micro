@@ -125,6 +125,10 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     /**
      * THỐNG KÊ FNB
      */
+    //_________Số lượng lỗi
+    numberOfMistakes: { type: Number, default: 0 },
+    //_________Giá trị bị phạt
+    amountOfMistakes: { type: Number, default: 0 },
     //_________Số lượng khách hàng của quán
     numberOfCustomers: { type: Number, default: 0 },
     //_________Số lượng khách hàng cũ
