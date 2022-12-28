@@ -153,11 +153,11 @@ class Model extends BaseModel {
         // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign })
         return new Promise(async resolve => { 
             try {
-                if(!name || !checkObjectIDs(fundaID))
+                if(!checkObjectIDs(fundaID))
                     return resolve({ error: true, message: "name|fundaID không hợp lệ", keyError: "Request params fundaID invalid" })
 
                 let dataUpdate = {
-                    name, userUpdate: userID, modifyAt: new Date()
+                    userUpdate: userID, modifyAt: new Date()
                 }
                 if(area){
                     //_________Khu vực (phường/xã)
@@ -184,6 +184,10 @@ class Model extends BaseModel {
 
                 let dataAddToset = {};
                 let dataPullAll  = {};
+
+                if(name && name != ""){
+                    dataUpdate.name = name;
+                }
 
                 if(sign && sign != ""){
                     dataUpdate.sign = sign;
@@ -345,8 +349,9 @@ class Model extends BaseModel {
     getList({
         companyID, parentID, isListParentOfListChilds, isMember,
         keyword, limit = 20, lastestID, select, populates= {}, userID } ) { 
-        console.log({companyID, parentID, isListParentOfListChilds, isMember,
-            keyword, limit, lastestID, select, populates, userID})  
+        // console.log({companyID, parentID, isListParentOfListChilds, isMember,
+        //     keyword, limit, lastestID, select, populates, userID})  
+        //     console.log('========================') 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
@@ -375,6 +380,7 @@ class Model extends BaseModel {
 
                 if(isMember && isMember == 1){
                     conditionObj.members = { $in: [userID] }
+                    conditionObj.company = companyID
                 }
 
                 if(companyID && checkObjectIDs(companyID)){

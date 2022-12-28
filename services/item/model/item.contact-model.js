@@ -266,6 +266,11 @@ class Model extends BaseModel {
                     }, { new: true });
                 }
 
+                /**
+                 * CẬP NHẬT VÀO ĐƠN VỊ CƠ SỞ
+                 */
+                await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, { $inc: { numberOfCustomers: 1 }}, { new: true })
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });

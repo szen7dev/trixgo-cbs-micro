@@ -24,17 +24,20 @@
             shiftType   : { type: "number", optional: true },
             workingHours   : { type: "number", optional: true },
             staffsID    : { type: "array", optional: true },
+            openingCash     : { type: "number", optional: true },
+            incurredCash     : { type: "number", optional: true },
+            closingCash     : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID } = ctx.params;
+                 let { fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash } = ctx.params;
                 //  console.log({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID })
                  
                  const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.insert({
-                    fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, userID
+                    fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -59,15 +62,18 @@
             shiftType   : { type: "number", optional: true },
             workingHours   : { type: "number", optional: true },
             staffsID    : { type: "array", optional: true },
+            openingCash     : { type: "number", optional: true },
+            incurredCash     : { type: "number", optional: true },
+            closingCash     : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  shiftID, name, campaign, note, seasons, shiftType, workingHours, staffsID } = ctx.params;
+                 let {  shiftID, name, campaign, note, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.update({
-                    shiftID, name, note, staffsID, campaign, seasons, shiftType, workingHours
+                    shiftID, name, note, staffsID, campaign, seasons, shiftType, workingHours, openingCash, incurredCash, closingCash, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

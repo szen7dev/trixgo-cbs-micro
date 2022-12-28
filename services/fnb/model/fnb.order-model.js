@@ -45,7 +45,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
+        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -218,29 +218,29 @@ class Model extends BaseModel {
 
                 if(!isNaN(total)){
                     dataInsert.total = Number(total);
-                    dataInsert.amount = Number(total);
+                    amount = Number(total)
                 }
 
                 if(!isNaN(discount)){
-                    dataInsert.discount = Number(discount);
-                    dataInsert.amount -= Number(discount);
+                    dataInsert.discount = Number(discount)
 
-                    amount = Number(total) - Number(discount)
+                    amount = Number(amount) - Number(discount)
                 }
 
                 if(!isNaN(salesoff)){
-                    dataInsert.salesoff = Number(salesoff);
-                    dataInsert.amount -= Number(salesoff);
+                    dataInsert.salesoff = Number(salesoff)
 
-                    amount = Number(total) - Number(salesoff)
+                    amount = Number(amount) - Number(salesoff)
 
                     // Chính sách tích điểm
                     loyaltyPoints = Number(Number(total-discount-salesoff)*(5/100)).toFixed(0) // Tích điểm 5%
                     dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
+                dataInsert.amount = Number(amount)
+
                 if(!isNaN(vatAmount)){
-                    dataInsert.vatAmount = Number(vatAmount);
+                    dataInsert.vatAmount = Number(vatAmount)
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -285,7 +285,7 @@ class Model extends BaseModel {
                  */
 
                 /**
-                 * B5. CẬP NHẬT THÔNG TIN ĐƠN HÀNG VÀO
+                 * B5. CẬP NHẬT THÔNG TIN ĐƠN HÀNG VÀO:
                  * - Cơ sở
                  * - Ca làm việc
                  * - Khách hàng
@@ -365,9 +365,13 @@ class Model extends BaseModel {
 
                 // Tiền mặt
                 if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
-                    dataUpdateFw.$inc.cash = Number(amount)
+                    dataUpdateFw.$inc.cashAmount = Number(amount)
                 }
-                // console.log(dataUpdateFw)
+
+                if(!isNaN(paymentMethod) && Number(paymentMethod) === 2){
+                    dataUpdateFw.$inc.transferAmount = Number(amount)
+                }
+                console.log(dataUpdateFw)
                 
                 /**
                  * Cập nhật vào Cơ sở
