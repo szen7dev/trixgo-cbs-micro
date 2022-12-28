@@ -131,6 +131,16 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     /**
      * THỐNG KÊ
      */
+    //______Tiền mặt
+    cashAmount: {
+        type: Number,
+        default : 0
+    },
+    //______Chuyển khoản
+    transferAmount: {
+        type: Number,
+        default : 0
+    },
     //______Số lượng sản phẩm (Không tính với product là Topping)
     numberOfProducts: {
         type: Number,
@@ -140,11 +150,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     numberOfOrders: {
         type: Number,
         default: 0
-    },
-    //______Tiền mặt
-    cash: {
-        type: Number,
-        default : 0
     },
     //______Số đơn Off
     numberOfOrders1: {
@@ -181,6 +186,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default: 0
     },
+    //______Tổng doanh số Off
     total1: {
         type: Number,
         default : 0
