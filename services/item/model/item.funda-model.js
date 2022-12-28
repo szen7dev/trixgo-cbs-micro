@@ -153,11 +153,11 @@ class Model extends BaseModel {
         // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign })
         return new Promise(async resolve => { 
             try {
-                if(!name || !checkObjectIDs(fundaID))
+                if(!checkObjectIDs(fundaID))
                     return resolve({ error: true, message: "name|fundaID không hợp lệ", keyError: "Request params fundaID invalid" })
 
                 let dataUpdate = {
-                    name, userUpdate: userID, modifyAt: new Date()
+                    userUpdate: userID, modifyAt: new Date()
                 }
                 if(area){
                     //_________Khu vực (phường/xã)
@@ -184,6 +184,10 @@ class Model extends BaseModel {
 
                 let dataAddToset = {};
                 let dataPullAll  = {};
+
+                if(name && name != ""){
+                    dataUpdate.name = name;
+                }
 
                 if(sign && sign != ""){
                     dataUpdate.sign = sign;
