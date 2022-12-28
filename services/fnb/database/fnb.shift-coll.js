@@ -63,6 +63,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default: 0
     },
+    //_________Số lượng lỗi
+    numberOfMistakes: { type: Number, default: 0 },
+    //_________Giá trị bị phạt
+    amountOfMistakes: { type: Number, default: 0 },
     /**
      * GIÁT TRỊ
      */

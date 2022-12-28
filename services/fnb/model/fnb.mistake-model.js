@@ -60,8 +60,9 @@ class Model extends BaseModel {
                     area3: infoFunda.area3,
                 }
 
+                let infoOrder;
                 if(orderID && checkObjectIDs(orderID)){
-                    let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                    infoOrder = await FNB_ORDER_COLL.findById(orderID)
                     if(!infoOrder)
                         return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
                     
@@ -97,7 +98,16 @@ class Model extends BaseModel {
               
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+
+                /**
+                 * CẬP NHẬT SỐ LỖI VÀO ĐƠN VỊ CƠ SỞ, CA LÀM VIỆC
+                 */
+                await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
+
+                if(orderID && checkObjectIDs(orderID)){
+                    await FNB_ORDER_COLL.findByIdAndUpdate(infoOrder.shift, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
