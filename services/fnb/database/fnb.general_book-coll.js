@@ -96,6 +96,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
     date: { type: Date, default: Date.now },
     //_________Diễn giải nội dung
     name: String,
+    //_________Mã hiệu
+    sign: String,
     //_________Ghi chú
     note: String,  
     //_________Mã khách
