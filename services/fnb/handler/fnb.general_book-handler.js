@@ -20,10 +20,13 @@ module.exports = {
             fundaID             : { type: "string" },
             parentID            : { type: "string", optional: true },
             name                : { type: "string", optional: true },
+            sign                : { type: "string", optional: true },
+            campaignName        : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             outin               : { type: "number", optional: true },
             revenueType         : { type: "number", optional: true },
             expenseType         : { type: "number", optional: true },
+            appExpenseType      : { type: "number", optional: true },
             date                : { type: "string", optional: true },
             customerID          : { type: "string", optional: true },
             goodsID             : { type: "string", optional: true },
@@ -35,12 +38,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount } = ctx.params;
+                let { fundaID, parentID, outin, revenueType, expenseType, appExpenseType, date, name, note,
+                     customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.insert({
-                    fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID
+                    fundaID, parentID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName 
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -61,10 +65,12 @@ module.exports = {
             parentID            : { type: "string", optional: true },
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
+            campaignName        : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             outin               : { type: "number", optional: true },
             revenueType         : { type: "number", optional: true },
             expenseType         : { type: "number", optional: true },
+            appExpenseType      : { type: "number", optional: true },
             date                : { type: "string", optional: true },
             customerID          : { type: "string", optional: true },
             goodsID             : { type: "string", optional: true },
@@ -76,12 +82,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { bookID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount } = ctx.params;
+                let { bookID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.update({
                     userID,
-                    bookID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount
+                    bookID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
