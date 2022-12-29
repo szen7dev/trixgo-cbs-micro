@@ -45,8 +45,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type }) {
-        // console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type })
+    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type }) {
+        // console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
@@ -90,6 +90,8 @@ class Model extends BaseModel {
                 if(!isNaN(unitPrice)){
                     dataInsert.unitPrice = Number(unitPrice);
                     dataInsert.unitPrice2 = Number(unitPrice2);
+                    dataInsert.unitPrice3 = Number(unitPrice3);
+                    dataInsert.unitPrice4 = Number(unitPrice4);
 
                     if(!isNaN(quantity)){
                         dataInsert.quantity = Number(quantity);
@@ -120,7 +122,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID))
@@ -160,6 +162,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(unitPrice)){
                     dataInUpdate.unitPrice = Number(unitPrice);
+                    dataInUpdate.unitPrice2 = Number(unitPrice2);
+                    dataInUpdate.unitPrice3 = Number(unitPrice3);
+                    dataInUpdate.unitPrice4 = Number(unitPrice4);
+
                     dataInUpdate.amount = Number(quantity*unitPrice);
                 }
 
