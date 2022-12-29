@@ -141,9 +141,9 @@ class Model extends BaseModel {
 
                 //______Cập nhật amountChilds cho phần tử cha
                 if(parentID && checkObjectIDs(parentID)){
-                    await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
+                    await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true })
                 }    
-
+                
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -237,6 +237,13 @@ class Model extends BaseModel {
                 if(infoBook && infoBook.parent){
                     await that.updateValue({ bookID: infoBook.parent, userID }) 
                 }
+
+                /**
+                 * Cập nhật tổng chi phí cho Điểm bán
+                 * Xây dựng lại hàm tính chi phí (phân biệt chi phí kho, chi phí khác)
+                 */
+                // let info = await ITEM__FUNDA_COLL.findByIdAndUpdate(infoBook.funda, { $inc: { totalAccExpense: Number(quantity * unitPrice) }}, { new: true })   
+                // console.log(info)
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {

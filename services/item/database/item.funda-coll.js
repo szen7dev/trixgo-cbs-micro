@@ -79,6 +79,9 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
+     /**
+     * LIÊN QUAN TỚI FNB
+     */
     /**
      * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
      * 1-Trong hệ thống
@@ -105,26 +108,6 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : 'doctype'
     }], 
-    /**
-     * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
-     */
-    //_________Chi phí Food App
-    appExpense: { type: Number, default: 0 },
-    //_________Chi phí nguyên liệu (%)
-    materialExpenseRate: { type: Number, default: 30 },
-    //_________Chi phí nguyên liệu (giá trị)
-    materialExpense: { type: Number, default: 0 },
-    //_________Chi phí thuê mặt bằng
-    planExpense: { type: Number, default: 0 },
-    //_________Chi phí điện nước, internet
-    utilityExpense: { type: Number, default: 0 },
-    //_________Chi phí lương nhân viên
-    humanExpense: { type: Number, default: 0 },
-    //_________Chi phí khác
-    otherExpense: { type: Number, default: 0 },
-    /**
-     * THỐNG KÊ FNB
-     */
     //_________Số lượng lỗi
     numberOfMistakes: { type: Number, default: 0 },
     //_________Giá trị bị phạt
@@ -135,6 +118,10 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     numberOfOldCustomers: { type: Number, default: 0 },
     //_________Số lượng khách hàng mới
     numberOfNewCustomers: { type: Number, default: 0 },
+    /**
+     * Tổng chi phí lũy kế
+     */
+    totalAccExpense: { type: Number, default: 0 },
     //______Tổng doanh số
     total: {
         type: Number,
@@ -228,6 +215,25 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Number,
         default : 0
     },
+    /**
+     * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
+     */
+    //_________Chi phí Food App
+    appExpense: { type: Number, default: 0 },
+    //_________Chi phí Food App
+    appExpense: { type: Number, default: 0 },
+    //_________Chi phí nguyên liệu (%)
+    materialExpenseRate: { type: Number, default: 30 },
+    //_________Chi phí nguyên liệu (giá trị)
+    materialExpense: { type: Number, default: 0 },
+    //_________Chi phí thuê mặt bằng
+    planExpense: { type: Number, default: 0 },
+    //_________Chi phí điện nước, internet
+    utilityExpense: { type: Number, default: 0 },
+    //_________Chi phí lương nhân viên
+    humanExpense: { type: Number, default: 0 },
+    //_________Chi phí khác
+    otherExpense: { type: Number, default: 0 },
     /**
      * PHÂN QUYỀN TRUY CẬP
      */
