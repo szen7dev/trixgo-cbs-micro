@@ -451,22 +451,26 @@ class Model extends BaseModel {
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
+                /**
+                 * 1-Cập nhật mã khách mới
+                 * 2-Cập nhật doanh số vào Khách cũ
+                 * 3-Cập nhật doanh số vào Khách mới
+                 * 4-Cập nhật định mức
+                 * 5-Cập nhật....
+                 */
                 if(!isNaN(status)){
                     dataInUpdate.status = Number(status);
                 }
 
-                /**
-                 * 1-Cập nhật mã khách
-                 * 2-Cập nhật doanh số khách cũ
-                 * 3-Cập nhật doanh số khách mới
-                 */
-                if(orderID && checkObjectIDs(orderID)){
+                if(customerID && checkObjectIDs(customerID)){
                     dataInUpdate.customer = customerID
                 }
 
                 if(!isNaN(numberOfMistakes)){
                     dataInUpdate.numberOfMistakes = Number(numberOfMistakes);
                 }
+
+                // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
