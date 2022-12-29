@@ -71,6 +71,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Ca làm việc không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
                     
                     dataInsert.order            = orderID
+                    dataInsert.funda            = infoOrder.funda
                     dataInsert.customer         = infoOrder.customer
                     dataInsert.internal         = infoOrder.internal
                     dataInsert.salesChannel     = infoOrder.salesChannel

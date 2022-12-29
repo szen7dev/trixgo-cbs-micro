@@ -43,7 +43,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID }) {
+    insert({ fundaID, parentID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName }) {
         // console.log({ fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID })
         const that = this
         return new Promise(async resolve => {
@@ -56,7 +56,7 @@ class Model extends BaseModel {
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
                  */
 
-                if(!checkObjectIDs(fundaID) || !name || !checkObjectIDs(userID))
+                if(!checkObjectIDs(fundaID) || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'fundaID|name|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 // Thông tin cửa hàng
@@ -124,6 +124,18 @@ class Model extends BaseModel {
                     dataInsert.vatAmount = Number(vatAmount);
                 }
 
+                if(sign){
+                    dataInsert.sign = sign;
+                }
+
+                if(campaignName){
+                    dataInsert.campaignName = campaignName;
+                }
+
+                if(appExpenseType){
+                    dataInsert.appExpenseType = appExpenseType;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
@@ -157,7 +169,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ userID,
-        bookID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount }) {
+        bookID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -192,6 +204,18 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataInUpdate.note = note;
+                }
+
+                if(sign){
+                    dataInUpdate.sign = sign;
+                }
+                
+                if(campaignName){
+                    dataInUpdate.campaignName = campaignName;
+                }
+                 
+                if(appExpenseType){
+                    dataInUpdate.appExpenseType = appExpenseType;
                 }
 
                 if(!isNaN(outin)){
