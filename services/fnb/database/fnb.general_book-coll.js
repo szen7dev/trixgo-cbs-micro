@@ -43,7 +43,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
         default: 1
     },
     /**
-     * Phân loại doanh thu (tham khảo order)
+     * Phân loại doanh thu
+     * 1-Offline
+     * 2-Grab
+     * 3-Shopee
+     * 4-Gojek
+     * 5-Baemin
+     * 6-Loship
+     * 7-Bee
      */
     revenueType: {
         type: Number,
@@ -51,7 +58,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
     },
     /**
      * Phân loại chi phí (tham khảo báo cáo)
-     * 1-Truyền thông và marketing....
+     * 1-Truyền thông và marketing
+     * 2-Food App
+     * 3-Nguyên liệu
+     * 4-Thuê mặt bằng
+     * 5-Điện nước
+     * 6-Lương nhân viên
+     * 7-Khác
      */
     expenseType: {
         type: Number,
@@ -61,6 +74,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
      * Phân loại app
      * 1-Offline
      * 2-Grab
+     * 3-Shopee
+     * 4-Gojek
+     * 5-Baemin
+     * 6-Loship
+     * 7-Bee
      */
     appExpenseType: {
         type: Number,
