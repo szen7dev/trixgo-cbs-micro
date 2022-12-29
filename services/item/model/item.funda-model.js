@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, description, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
+	insert({ companyID, parentID, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
@@ -76,6 +76,14 @@ class Model extends BaseModel {
 
                 if(sign && sign != ""){
                     dataInsert.sign = sign;
+                }
+
+                if(phone && phone != ""){
+                    dataInsert.phone = phone;
+                }
+
+                if(bankAccount && bankAccount != ""){
+                    dataInsert.bankAccount = bankAccount;
                 }
 
                 if(description && description != ""){
@@ -149,7 +157,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
+	update({ fundaID, name, sign, description, phone, bankAccount, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
         // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign })
         return new Promise(async resolve => { 
             try {
@@ -191,6 +199,14 @@ class Model extends BaseModel {
 
                 if(sign && sign != ""){
                     dataUpdate.sign = sign;
+                }
+
+                if(phone && phone != ""){
+                    dataUpdate.phone = phone;
+                }
+
+                if(bankAccount && bankAccount != ""){
+                    dataUpdate.bankAccount = bankAccount;
                 }
 
                 if(description && description != ""){

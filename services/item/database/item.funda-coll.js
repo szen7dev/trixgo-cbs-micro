@@ -30,6 +30,10 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: String,
         default: 'Sign' 
     },
+    //_________Điện thoại
+    phone: String,
+    //_________TK ngân hàng
+    bankAccount: String,
     /**
      * Khóa dữ liệu trước khoảng thời gian không cho phép can thiệp:
      * - Thêm mới phiếu
