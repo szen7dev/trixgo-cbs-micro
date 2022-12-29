@@ -60,6 +60,7 @@ module.exports = {
             bookID              : { type: "string" },
             parentID            : { type: "string", optional: true },
             name                : { type: "string", optional: true },
+            sign                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             outin               : { type: "number", optional: true },
             revenueType         : { type: "number", optional: true },
