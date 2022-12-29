@@ -25,18 +25,20 @@
             note                : { type: "string", optional: true },
             quantity            : { type: "number", optional: true },
             unitPrice           : { type: "number", optional: true },
-            unitPrice2           : { type: "number", optional: true },
+            unitPrice2          : { type: "number", optional: true },
+            unitPrice3          : { type: "number", optional: true },
+            unitPrice4          : { type: "number", optional: true },
             type                : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type } = ctx.params;
+                let { fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_PRODUCT_MODEL.insert({
-                    userID, companyID: company._id, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, type
+                    userID, companyID: company._id, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -62,15 +64,18 @@
             imagesID        : { type: "array", optional: true },
             quantity        : { type: "number", optional: true },
             unitPrice       : { type: "number", optional: true },
+            unitPrice2       : { type: "number", optional: true },
+            unitPrice3          : { type: "number", optional: true },
+            unitPrice4          : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID } = ctx.params;
+                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await FNB_PRODUCT_MODEL.update({
-                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, imagesID
+                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
