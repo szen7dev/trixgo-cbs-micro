@@ -24,15 +24,15 @@
             shiftType   : { type: "number", optional: true },
             workingHours   : { type: "number", optional: true },
             staffsID    : { type: "array", optional: true },
-            openingCash     : { type: "number", optional: true },
-            incurredCash     : { type: "number", optional: true },
-            closingCash     : { type: "number", optional: true },
+            openingCash     : { type: "string", optional: true }, // Cần convert lại ở FE *******
+            incurredCash     : { type: "string", optional: true }, // Cần convert lại ở FE *******
+            closingCash     : { type: "string", optional: true }, // Cần convert lại ở FE *******
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
                  let { fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash } = ctx.params;
-                //  console.log({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID })
+                 console.log({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash  })
                  
                  const { _id: userID, company } = ctx.meta.infoUser;
  
