@@ -371,7 +371,7 @@ class Model extends BaseModel {
                 if(!isNaN(paymentMethod) && Number(paymentMethod) === 2){
                     dataUpdateFw.$inc.transferAmount = Number(amount)
                 }
-                console.log(dataUpdateFw)
+                // console.log(dataUpdateFw)
                 
                 /**
                  * Cập nhật vào Cơ sở
@@ -434,7 +434,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, status, numberOfMistakes }) {
+        customerID, status }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -447,27 +447,28 @@ class Model extends BaseModel {
                  * => Cập nhật lại thông tin của đơn hàng vào Khách mới => Xóa thông tin ở Khách cũ
                  */
                 if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                
+                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                if(!infoOrder)
+                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+
+                let oldCustomerID = infoOrder.customer;
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 /**
-                 * 1-Cập nhật mã khách mới
-                 * 2-Cập nhật doanh số vào Khách cũ
-                 * 3-Cập nhật doanh số vào Khách mới
-                 * 4-Cập nhật định mức
-                 * 5-Cập nhật....
+                 * 1-Cập nhật mã khách mới vào đơn hàng
+                 * 2-Cập nhật mã khách mới vào đơn hàng, sản phẩm
+                 * 3-Cập nhật doanh số vào Khách cũ
+                 * 4-Cập nhật doanh số vào Khách mới
                  */
-                if(!isNaN(status)){
-                    dataInUpdate.status = Number(status);
-                }
-
                 if(customerID && checkObjectIDs(customerID)){
                     dataInUpdate.customer = customerID
                 }
 
-                if(!isNaN(numberOfMistakes)){
-                    dataInUpdate.numberOfMistakes = Number(numberOfMistakes);
+                if(!isNaN(status)){
+                    dataInUpdate.status = Number(status);
                 }
 
                 // console.log(dataInUpdate)
@@ -475,7 +476,43 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                if(customerID && checkObjectIDs(customerID)){
+
+                    // 2-Cập nhật mã khách mới vào đơn hàng, sản phẩm
+                    await FNB_ORDER_PRODUCT_COLL.updateMany(
+                        {
+                            order: ObjectID(orderID),
+                            // customer: ObjectID(oldCustomerID),
+                        },
+                        {$set: {customer: customerID } }
+                     )
+
+                    /**
+                     * 3-Cập nhật doanh số vào Khách cũ
+                     */
+                    // Lấy số đơn hàng khách đã mua
+                    // let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
+                    // if(numberOD && numberOD > 0){
+                    //     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                    //         new: 2, // Khách hàng cũ
+                    //         $inc: { 
+                    //             "numberOfOrders": 1,
+                    //             "purchasedValue": Number(amount),
+                    //             "totalLoyaltyPoints": Number(loyaltyPoints),
+                    //         }
+                    //     })
+                    // }else{
+                    //     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
+                    //         $inc: { 
+                    //             "numberOfOrders": 1,
+                    //             "purchasedValue": Number(amount),
+                    //             "totalLoyaltyPoints": Number(loyaltyPoints),
+                    //         }
+                    //     })
+                    // }
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
