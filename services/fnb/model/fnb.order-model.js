@@ -191,7 +191,7 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                if(!isNaN(salesChannel) && [1,2,3,4,5,6].includes(Number(salesChannel))){
+                if(!isNaN(salesChannel) && [1,2,3,4,5,6,7].includes(Number(salesChannel))){
                     dataInsert.salesChannel = Number(salesChannel);
                 }
 
@@ -257,7 +257,24 @@ class Model extends BaseModel {
                  */
                 const orderID = infoAfterInsert._id;
 
+                let totalSizeM = 0, totalSizeL = 0
+
+                // console.log('============SỐ SẢN PHẨM=============')
+                // console.log({ products:  products.length})
+
                 if(products && products.length){
+
+                    // Thêm vào ca làm việc
+                    for(const prodSize of products){
+                        if(prodSize.size == 1){
+                            totalSizeM = Number(totalSizeM) + Number(prodSize.quantity)
+                        }
+                        if(prodSize.size == 2){
+                            totalSizeL = Number(totalSizeL) + Number(prodSize.quantity)
+                        }
+                    }
+
+                    // Thêm vào đơn hàng-sản phẩm
                     const productsAsync = products.map(product => {
                         const dataInsertProduct = {
                             userID,
@@ -276,6 +293,9 @@ class Model extends BaseModel {
 
                     await Promise.all(productsAsync);
                 }
+
+                // console.log('============SỐ SẢN PHẨM M, L=============')
+                // console.log({totalSizeM, totalSizeL})
 
                 /**
                  * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG SAU KHI CHỌN XONG SẢN PHẨM
@@ -305,6 +325,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders1": 1, 
                         "total1": Number(total), 
+                        "numberOfOpeningSizeM": Number(totalSizeM), 
+                        "numberOfOpeningSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 2){
@@ -315,6 +337,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders2": 1, 
                         "total2": Number(total), 
+                        "numberOfOpeningSizeM": Number(totalSizeM), 
+                        "numberOfOpeningSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 3){
@@ -325,6 +349,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders3": 1, 
                         "total3": Number(total), 
+                        "numberOfOpeningSizeM": Number(totalSizeM), 
+                        "numberOfOpeningSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 4){
@@ -335,6 +361,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders4": 1, 
                         "total4": Number(total), 
+                        "numberOfOpeningSizeM": Number(totalSizeM), 
+                        "numberOfOpeningSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 5){
@@ -345,6 +373,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders5": 1, 
                         "total5": Number(total), 
+                        "numberOfOpeningSizeM": Number(totalSizeM), 
+                        "numberOfOpeningSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 6){
@@ -355,6 +385,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders6": 1, 
                         "total6": Number(total), 
+                        "numberOfOpeningSizeM": Number(totalSizeM), 
+                        "numberOfOpeningSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 7){
@@ -365,6 +397,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders7": 1, 
                         "total7": Number(total), 
+                        "numberOfOpeningSizeM": Number(totalSizeM), 
+                        "numberOfOpeningSizeL": Number(totalSizeL), 
                     }
                 }
 
@@ -684,6 +718,8 @@ class Model extends BaseModel {
                     let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                     if(fundasIDIsMember.length) {
                         conditionObj.funda = { $in: fundasIDIsMember };
+                    }else{
+                        // Cần bổ sung điều kiện khi user không có cơ sở nào => data phải rỗng
                     }
                 }
 
