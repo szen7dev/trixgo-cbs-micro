@@ -1041,7 +1041,7 @@ class Model extends BaseModel {
      * Code: 25/12/2022
      */
     resetAllData({ option, email, password, userID, companyID }) {
-        // console.log({ option, email, password, userID, companyID })
+        console.log({ option, email, password, userID, companyID })
         return new Promise(async (resolve) => {
             try {
                 if(password.toString() != `noPass12345${email}`)
