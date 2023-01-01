@@ -27,6 +27,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         ref : "fnb_product"
     },
     /**
+     * Trân châu đen hay trắng
+     * 1-Đen
+     * 2-Trắng
+     */
+    black: {
+        type: Number,
+        default : 1
+    },
+    /**
      * Kích cỡ
      * 1-Size M
      * 2-Size L

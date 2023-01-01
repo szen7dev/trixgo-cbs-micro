@@ -42,11 +42,11 @@ class Model extends BaseModel {
      */
     insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID  
     }) {
         // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
+        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID  
         // })
         return new Promise(async resolve => {
             try {
@@ -258,6 +258,10 @@ class Model extends BaseModel {
                     dataInsert.contractExpire = contractExpire;
                 }
 
+                if(nonResident){
+                    dataInsert.nonResident = Number(nonResident);
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
                 if(parent) {
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
@@ -287,8 +291,14 @@ class Model extends BaseModel {
         contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, fundaID
+        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
     }){
+        console.log({
+            contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+            insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+            signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
+            amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
+        })
         return new Promise(async (resolve) => {
             try {
                 //___________Kiểm tra việc trùng mã hiệu
@@ -569,6 +579,11 @@ class Model extends BaseModel {
                         dataUpdate.company = infoFunda.company
                     }
                 }
+
+                if(nonResident){
+                    dataUpdate.nonResident = Number(nonResident);
+                }
+
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cập nhật thất bại" });

@@ -165,6 +165,11 @@ class Model extends BaseModel {
                     dataInsert.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
                 }
 
+                // Khách vãng lai hay không
+                if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
+                    dataInsert.nonResident = Number(infoCustomer.nonResident);
+                }
+
                 /**
                  * KHÁC
                  */
@@ -464,7 +469,28 @@ class Model extends BaseModel {
                  * 4-Cập nhật doanh số vào Khách mới
                  */
                 if(customerID && checkObjectIDs(customerID)){
+                    let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID)
+                    if(!infoCustomer)
+                        return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                        
                     dataInUpdate.customer = customerID
+                    dataInUpdate.name = `Đơn hàng ${infoCustomer.name}`
+
+                    // Giới tính
+                    if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
+                        dataInUpdate.gender = Number(infoCustomer.gender);
+                    }
+
+                    // Độ tuổi
+                    if(infoCustomer.birthday){
+                        let dateNow = new Date
+                        dataInUpdate.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
+                    }
+
+                    // Khách vãng lai hay không
+                    if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
+                        dataInUpdate.nonResident = Number(infoCustomer.nonResident);
+                    }
                 }
 
                 if(!isNaN(status)){
@@ -1020,14 +1046,6 @@ class Model extends BaseModel {
             try {
                 if(password.toString() != `noPass12345${email}`)
                     return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
-                
-                // console.log({ email, password, userID, companyID })
-
-                // Fake giá tạm thời cho size L
-                // if(option == 1){
-                //     console.log('==============>>>>>>>>>>>>>>>>>111111111111')
-                //     await FNB_PRODUCT_COLL.updateMany({ company: companyID },{$set:{ "unitPrice3":40000, "unitPrice4":50000 }})
-                // }
 
                 if(option == 1){
                     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
@@ -1072,6 +1090,10 @@ class Model extends BaseModel {
                     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
                     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
                     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+                }
+                
+                if(option == 10){
+                    await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
                 }
 
                 return resolve({ error: false, message: 'Reset thành công'});

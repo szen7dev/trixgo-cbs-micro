@@ -7,10 +7,14 @@ const Schema                = require('mongoose').Schema;
  * Mỗi nguyên liệu chỉ tồn tại trong 1 sản phẩm/mặt hàng 1 lần duy nhất
  */
 module.exports  = DATABASE_MIDDLEWARE("fnb_quota", {    
-    //_________Sản phẩm
-    product: {
-        type: Schema.Types.ObjectId,
-        ref : "fnb_product"
+    /**
+     * Trân châu đen hay trắng
+     * 1-Đen
+     * 2-Trắng
+     */
+    black: {
+        type: Number,
+        default : 1
     },
     /**
      * Kích cỡ
@@ -42,6 +46,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_quota", {
     ice: {
         type: Number,
         default : 1
+    },
+    //_________Sản phẩm
+    product: {
+        type: Schema.Types.ObjectId,
+        ref : "fnb_product"
     },
     //_________Nguyên liệu
     goods: {

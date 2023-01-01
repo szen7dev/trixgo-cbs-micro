@@ -64,6 +64,7 @@ module.exports = {
             contractDate     : { type: "string", optional: true },
             contractValid    : { type: "string", optional: true },
             contractExpire   : { type: "string", optional: true },
+            nonResident      : { type: "string", optional: true },
             fundaID          : { type: "string" }
         },
         async handler(ctx) {
@@ -72,14 +73,14 @@ module.exports = {
                 let {
                     parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property,
                     linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate,
-                    sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
+                    sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID 
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
                     authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
+                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID  
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -145,13 +146,13 @@ module.exports = {
             contractValid    : { type: "string", optional: true },
             contractExpire   : { type: "string", optional: true },
             image            : { type: "string", optional: true },
-
             amountWorkHistory        : { type: "string", optional: true },
             amountProjectHistory     : { type: "string", optional: true },
             amountContractHistory    : { type: "string", optional: true },
             amountEducationHistory   : { type: "string", optional: true },
             amountCertificateHistory : { type: "string", optional: true },
             documents                : { type: "string", optional: true },
+            nonResident              : { type: "string", optional: true },
             fundaID                  : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -161,7 +162,7 @@ module.exports = {
                     contactID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property,
                     linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate,
                     sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,
-                    amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove, fundaID
+                    amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove, nonResident, fundaID 
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -170,7 +171,7 @@ module.exports = {
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
                     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,
                     amountWorkHistory: +amountWorkHistory, amountProjectHistory: +amountProjectHistory, documents, documentsRemove,
-                    amountContractHistory: +amountContractHistory , amountEducationHistory: +amountEducationHistory, amountCertificateHistory: +amountCertificateHistory, fundaID, ctx
+                    amountContractHistory: +amountContractHistory , amountEducationHistory: +amountEducationHistory, amountCertificateHistory: +amountCertificateHistory, nonResident, fundaID , ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
