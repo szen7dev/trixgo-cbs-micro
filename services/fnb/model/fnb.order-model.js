@@ -1077,19 +1077,19 @@ class Model extends BaseModel {
      * Code: 25/12/2022
      */
     resetAllData({ option, email, password, userID, companyID }) {
-        console.log({ option, email, password, userID, companyID })
+        // console.log({ option, email, password, userID, companyID })
         return new Promise(async (resolve) => {
             try {
                 if(password.toString() != `noPass12345${email}`)
                     return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
 
-                if(option == 1){
-                    await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                }
+                // if(option == 1){
+                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
+                // }
 
-                if(option == 2){
-                    await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                }
+                // if(option == 2){
+                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
+                // }
 
                 if(option == 3){
                     await FNB_ORDER_COLL.deleteMany({ company: companyID })
@@ -1116,21 +1116,21 @@ class Model extends BaseModel {
                     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
                 }
 
-                if(option == 9){
-                    await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                    await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                    await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                    await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                    await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                    await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                    await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                    await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                    await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                }
+                // if(option == 9){
+                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
+                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
+                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
+                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
+                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
+                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+                // }
                 
-                if(option == 10){
-                    await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
-                }
+                // if(option == 10){
+                //     await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
+                // }
 
                 return resolve({ error: false, message: 'Reset thành công'});
             } catch (error) {
