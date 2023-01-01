@@ -293,12 +293,12 @@ class Model extends BaseModel {
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
     }){
-        console.log({
-            contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
-            insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-            signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-            amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
-        })
+        // console.log({
+        //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
+        //     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
+        // })
         return new Promise(async (resolve) => {
             try {
                 //___________Kiểm tra việc trùng mã hiệu
@@ -1073,7 +1073,7 @@ class Model extends BaseModel {
      * Code: 24/12/2022
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
-        console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
+        // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -1649,7 +1649,7 @@ class Model extends BaseModel {
                 // let parentID;
                 for (const data of dataImportJSON) {
                     // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                    if(index > 0){
+                    if(index > 0 && index < 200){
                         let dataInsert = {
                             company: companyID,
                             authorID: userID,
