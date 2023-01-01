@@ -102,12 +102,14 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
                 /**
-                 * CẬP NHẬT SỐ LỖI VÀO ĐƠN VỊ CƠ SỞ, CA LÀM VIỆC
+                 * CẬP NHẬT SỐ LỖI VÀO ĐƠN VỊ CƠ SỞ, CA LÀM VIỆC, ĐƠN HÀNG
                  */
                 await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
 
                 if(orderID && checkObjectIDs(orderID)){
-                    await FNB_ORDER_COLL.findByIdAndUpdate(infoOrder.shift, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
+                    await FNB_SHIFT_COLL.findByIdAndUpdate(infoOrder.shift, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
+
+                    await FNB_ORDER_COLL.findByIdAndUpdate(orderID, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });

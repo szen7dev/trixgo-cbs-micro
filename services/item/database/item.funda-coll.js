@@ -220,6 +220,17 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         default : 0
     },
     /**
+     * Số lượng Size M, L
+     */
+    numberOfOpeningSizeM: {
+        type: Number,
+        default: 0
+    },
+    numberOfOpeningSizeL: {
+        type: Number,
+        default: 0
+    },
+    /**
      * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
      */
     //_________Chi phí Food App
