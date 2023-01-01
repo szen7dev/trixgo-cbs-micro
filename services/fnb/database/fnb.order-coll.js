@@ -41,6 +41,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         ref: "contact"
     },
     /**
+     * Khách biết tên hay vãng lai
+     * 1-Biết tên
+     * 2-Vãng lai
+     */
+    nonResident: {
+        type: Number,
+        default: 1
+    },
+    /**
      * Khách mới hay cũ
      * 1-Mới
      * 2-Cũ

@@ -265,6 +265,15 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     /**
      * FNB
      */
+    /**
+     * Khách biết tên hay vãng lai
+     * 1-Biết tên
+     * 2-Vãng lai
+     */
+    nonResident: {
+        type: Number,
+        default: 1
+    },
     //_________Đơn vị cơ sở
     funda: {
         type: Schema.Types.ObjectId,

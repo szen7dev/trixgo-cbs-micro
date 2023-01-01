@@ -249,6 +249,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
+    //_________User đăng ký nhận thông báo
+    getNotification: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
