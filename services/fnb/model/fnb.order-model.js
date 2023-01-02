@@ -87,7 +87,7 @@ class Model extends BaseModel {
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
                  */
-                let numberOfOrder = await FNB_ORDER_COLL.count({})
+                let numberOfOrder = await FNB_ORDER_COLL.count({ company: infoFunda.company })
 
                 let dataInsert = {
                     company: infoFunda.company,
