@@ -886,7 +886,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID }) {
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID }) {
         // console.log({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
@@ -919,6 +919,17 @@ class Model extends BaseModel {
                         if(fundasIDIsMember.length) {
                             conditionObj.funda = { $in: fundasIDIsMember };
                         }
+                    }
+
+                    /**
+                     * Phân loại theo trạng thái đơn hàng
+                     * - Xử lý tình huống tạm thời
+                     */
+                    if(!optionStatus){
+                        conditionObj.status = { $in: [1,2,3,5] };
+                    }else{
+                        // Đơn hủy
+                        conditionObj.status = Number(4)
                     }
 
                     // Phân loại theo thời khoảng
