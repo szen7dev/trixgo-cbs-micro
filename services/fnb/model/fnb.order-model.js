@@ -238,7 +238,12 @@ class Model extends BaseModel {
                     amount = Number(amount) - Number(salesoff)
 
                     // Chính sách tích điểm
-                    loyaltyPoints = Number(Number(total-discount-salesoff)*(5/100)).toFixed(0) // Tích điểm 5%
+                    if(infoFunda.loyaltyPointsRate && infoFunda.loyaltyPointsRate != 0){
+                        loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate)).toFixed(0) // Tích điểm 10%
+                    }else{
+                        loyaltyPoints = Number(Number(total-discount-salesoff)*(10/100)).toFixed(0) // Tích điểm 10%
+                    }
+                    
                     dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
