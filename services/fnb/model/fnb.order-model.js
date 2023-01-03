@@ -539,14 +539,26 @@ class Model extends BaseModel {
                     if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
                         dataInUpdate.nonResident = Number(infoCustomer.nonResident);
                     }
-                }
 
+                    // Doanh số khách cũ, mới
+                    let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
+                    if(numberOD && numberOD > 0){
+                        dataInUpdate.new = 2 // Đơn hàng khách cũ
+                    }else{
+                        dataInUpdate.new = 1 // Đơn hàng khách mới
+                    }
+                }
                 // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                /**
+                 * CẬP NHẬT THÔNG TIN VÀO KHÁCH CŨ, MỚI
+                 * - Nên viết hàm đóng gói để gọi vào
+                 */
 
                 if(customerID && checkObjectIDs(customerID)){
 
@@ -583,10 +595,6 @@ class Model extends BaseModel {
                     //     })
                     // }
                 }
-
-                /**
-                 * CẬP NHẬT DOANH SỐ CŨ MỚI (DO ĐỔI TỪ NO NAME => TÊN CỤ THỂ: ))
-                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
