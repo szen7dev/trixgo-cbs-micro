@@ -112,6 +112,16 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : 'doctype'
     }], 
+    //______Tỷ lệ tích lũy
+    loyaltyPointsRate: {
+        type: Number,
+        default : 10
+    },
+    //______Điểm tích lũy
+    loyaltyPoints: {
+        type: Number,
+        default : 0
+    },
     //_________Số lượng lỗi
     numberOfMistakes: { type: Number, default: 0 },
     //_________Giá trị bị phạt
