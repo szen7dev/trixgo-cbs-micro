@@ -69,6 +69,7 @@ class Model extends BaseModel {
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda)
                     return resolve({ error: true, message: 'cannot_get_infoFunda' });
+                // console.log(infoFunda)
                     
                 // Thông tin ca làm việc
                 let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
@@ -232,14 +233,20 @@ class Model extends BaseModel {
                     amount = Number(amount) - Number(discount)
                 }
 
-                if(!isNaN(salesoff)){
+                /**
+                 * TÍCH ĐIỂM NẾU LÀ ĐƠN OFF VÀ KHÔNG CÓ GIẢM GIÁ
+                 */
+                if(salesChannel == 1 && !isNaN(salesoff)){
+                    // console.log('=============TÍCH ĐIỂM')
+
                     dataInsert.salesoff = Number(salesoff)
 
                     amount = Number(amount) - Number(salesoff)
 
                     // Chính sách tích điểm
                     if(infoFunda.loyaltyPointsRate && infoFunda.loyaltyPointsRate != 0){
-                        loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate)).toFixed(0) // Tích điểm 10%
+                        // console.log(infoFunda.loyaltyPointsRate)
+                        loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate/100)).toFixed(0) // Tích điểm 10%
                     }else{
                         loyaltyPoints = Number(Number(total-discount-salesoff)*(10/100)).toFixed(0) // Tích điểm 10%
                     }
