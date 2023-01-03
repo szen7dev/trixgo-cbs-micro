@@ -69,6 +69,7 @@ class Model extends BaseModel {
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda)
                     return resolve({ error: true, message: 'cannot_get_infoFunda' });
+                // console.log(infoFunda)
                     
                 // Thông tin ca làm việc
                 let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
@@ -232,13 +233,24 @@ class Model extends BaseModel {
                     amount = Number(amount) - Number(discount)
                 }
 
-                if(!isNaN(salesoff)){
+                /**
+                 * TÍCH ĐIỂM NẾU LÀ ĐƠN OFF VÀ KHÔNG CÓ GIẢM GIÁ
+                 */
+                if(salesChannel == 1 && !isNaN(salesoff)){
+                    // console.log('=============TÍCH ĐIỂM')
+
                     dataInsert.salesoff = Number(salesoff)
 
                     amount = Number(amount) - Number(salesoff)
 
                     // Chính sách tích điểm
-                    loyaltyPoints = Number(Number(total-discount-salesoff)*(5/100)).toFixed(0) // Tích điểm 5%
+                    if(infoFunda.loyaltyPointsRate && infoFunda.loyaltyPointsRate != 0){
+                        // console.log(infoFunda.loyaltyPointsRate)
+                        loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate/100)).toFixed(0) // Tích điểm 10%
+                    }else{
+                        loyaltyPoints = Number(Number(total-discount-salesoff)*(10/100)).toFixed(0) // Tích điểm 10%
+                    }
+                    
                     dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
@@ -473,7 +485,9 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, status, paymentMethod }) {
+        customerID, status, paymentMethod, salesChannel }) {
+        // console.log({ orderID, userID,
+        //     customerID, status, paymentMethod, salesChannel })
         return new Promise(async resolve => {
             try {
                 /**
@@ -505,9 +519,21 @@ class Model extends BaseModel {
             
                 /**
                  * CẬP NHẬT PHƯƠNG THỨC THANH TOÁN
+                 * 1-Cập nhật đơn hàng
+                 * 2-Cập nhật vào ca làm việc
                  */
                 if(!isNaN(paymentMethod)){
                     dataInUpdate.paymentMethod = Number(paymentMethod);
+                }
+
+                /**
+                 * CẬP NHẬT KÊNH BÁN HÀNG
+                 * 1-Cập nhật đơn hàng
+                 * 2-Cập nhật vào ca làm việc
+                 * 3-Cập nhật vào Điểm bán (Cơ sở)
+                 */
+                if(!isNaN(salesChannel)){
+                    dataInUpdate.salesChannel = Number(salesChannel);
                 }
 
                 /**
@@ -860,7 +886,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID }) {
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID }) {
         // console.log({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
@@ -893,6 +919,17 @@ class Model extends BaseModel {
                         if(fundasIDIsMember.length) {
                             conditionObj.funda = { $in: fundasIDIsMember };
                         }
+                    }
+
+                    /**
+                     * Phân loại theo trạng thái đơn hàng
+                     * - Xử lý tình huống tạm thời
+                     */
+                    if(!optionStatus){
+                        conditionObj.status = { $in: [1,2,3,5] };
+                    }else{
+                        // Đơn hủy
+                        conditionObj.status = Number(4)
                     }
 
                     // Phân loại theo thời khoảng

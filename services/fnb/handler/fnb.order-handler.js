@@ -63,16 +63,17 @@ module.exports = {
             customerID          : { type: "string", optional: true },
             status              : { type: "number", optional: true },
             paymentMethod       : { type: "number", optional: true },
+            salesChannel       : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, customerID, status, paymentMethod } = ctx.params;
+                let {  orderID, customerID, status, paymentMethod, salesChannel } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.update({
                     orderID, userID,
-                    customerID, status, paymentMethod
+                    customerID, status, paymentMethod, salesChannel
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -192,6 +193,7 @@ module.exports = {
             fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
             optionGroup     : { type: "string", optional: true },
+            optionStatus    : { type: "string", optional: true },
             optionTime      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
@@ -201,10 +203,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate } = ctx.params;
+                let { option, optionGroup, optionStatus, optionTime, fundasID, year, fromDate, toDate } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
-                    companyID: company._id, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID
+                    companyID: company._id, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
