@@ -473,7 +473,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, status }) {
+        customerID, status, paymentMethod }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -495,6 +495,20 @@ class Model extends BaseModel {
                 let oldCustomerID = infoOrder.customer;
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+
+                /**
+                 * CẬP NHẬT TRẠNG THÁI
+                 */
+                if(!isNaN(status)){
+                    dataInUpdate.status = Number(status);
+                }
+            
+                /**
+                 * CẬP NHẬT PHƯƠNG THỨC THANH TOÁN
+                 */
+                if(!isNaN(paymentMethod)){
+                    dataInUpdate.paymentMethod = Number(paymentMethod);
+                }
 
                 /**
                  * 1-Cập nhật mã khách mới vào đơn hàng
@@ -525,10 +539,6 @@ class Model extends BaseModel {
                     if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
                         dataInUpdate.nonResident = Number(infoCustomer.nonResident);
                     }
-                }
-
-                if(!isNaN(status)){
-                    dataInUpdate.status = Number(status);
                 }
 
                 // console.log(dataInUpdate)
@@ -573,6 +583,10 @@ class Model extends BaseModel {
                     //     })
                     // }
                 }
+
+                /**
+                 * CẬP NHẬT DOANH SỐ CŨ MỚI (DO ĐỔI TỪ NO NAME => TÊN CỤ THỂ: ))
+                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
