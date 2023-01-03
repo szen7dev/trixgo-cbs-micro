@@ -163,8 +163,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * Hình thức phục vụ
      * 1-Tại quán
-     * 2-Mang đi
-     * 3-Giao hàng
+     * 2-Giao hàng (App)
+     * 3-Mang đi (Mua mang đi)
      */
     service: {
         type: Number,

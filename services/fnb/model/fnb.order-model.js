@@ -473,7 +473,9 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, status, paymentMethod }) {
+        customerID, status, paymentMethod, salesChannel }) {
+        // console.log({ orderID, userID,
+        //     customerID, status, paymentMethod, salesChannel })
         return new Promise(async resolve => {
             try {
                 /**
@@ -505,9 +507,21 @@ class Model extends BaseModel {
             
                 /**
                  * CẬP NHẬT PHƯƠNG THỨC THANH TOÁN
+                 * 1-Cập nhật đơn hàng
+                 * 2-Cập nhật vào ca làm việc
                  */
                 if(!isNaN(paymentMethod)){
                     dataInUpdate.paymentMethod = Number(paymentMethod);
+                }
+
+                /**
+                 * CẬP NHẬT KÊNH BÁN HÀNG
+                 * 1-Cập nhật đơn hàng
+                 * 2-Cập nhật vào ca làm việc
+                 * 3-Cập nhật vào Điểm bán (Cơ sở)
+                 */
+                if(!isNaN(salesChannel)){
+                    dataInUpdate.salesChannel = Number(salesChannel);
                 }
 
                 /**

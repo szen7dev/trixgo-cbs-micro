@@ -40,8 +40,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash, userID }) {
-        console.log({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash, userID })
+    insert({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID }) {
+        console.log({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -67,6 +67,10 @@ class Model extends BaseModel {
                     dataInsert.staffs = staffsID;
                 }
 
+                if(subStaffsID && checkObjectIDs(subStaffsID)){
+                    dataInsert.subStaffs = subStaffsID;
+                }
+
                 if(campaign && !isNaN(campaign)){
                     dataInsert.campaign = Number(campaign)
                 }
@@ -79,8 +83,16 @@ class Model extends BaseModel {
                     dataInsert.shiftType = Number(shiftType)
                 }
 
+                if(paidStatus && !isNaN(paidStatus)){
+                    dataInsert.paidStatus = Number(paidStatus)
+                }
+
                 if(workingHours && !isNaN(workingHours)){
                     dataInsert.workingHours = Number(workingHours)
+                }
+
+                if(subWorkingHours && !isNaN(subWorkingHours)){
+                    dataInsert.subWorkingHours = Number(subWorkingHours)
                 }
 
                 if(openingCash && !isNaN(openingCash)){
@@ -111,8 +123,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ shiftID, staffsID, name, note, campaign, seasons, shiftType, workingHours, openingCash, incurredCash, closingCash, userID }) {
-        console.log({ shiftID, staffsID, name, note, campaign, seasons, shiftType, workingHours, openingCash, incurredCash, closingCash, userID })
+    update({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID }) {
+        console.log({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -128,6 +140,14 @@ class Model extends BaseModel {
                     dataInUpdate.note =note;
                 }
 
+                if(staffsID && checkObjectIDs(staffsID)){
+                    dataInUpdate.staffs = staffsID;
+                }
+
+                if(subStaffsID && checkObjectIDs(subStaffsID)){
+                    dataInUpdate.subStaffs = subStaffsID;
+                }
+
                 if(campaign && !isNaN(campaign)){
                     dataInUpdate.campaign = Number(campaign)
                 }
@@ -140,12 +160,16 @@ class Model extends BaseModel {
                     dataInUpdate.shiftType = Number(shiftType)
                 }
 
+                if(paidStatus && !isNaN(paidStatus)){
+                    dataInUpdate.paidStatus = Number(paidStatus)
+                }
+
                 if(workingHours && !isNaN(workingHours)){
                     dataInUpdate.workingHours = Number(workingHours)
                 }
 
-                if(staffsID && checkObjectIDs(staffsID)){
-                    dataInUpdate.staffs = staffsID;
+                if(subWorkingHours && !isNaN(subWorkingHours)){
+                    dataInUpdate.subWorkingHours = Number(subWorkingHours)
                 }
 
                 if(openingCash && !isNaN(openingCash)){
@@ -159,7 +183,6 @@ class Model extends BaseModel {
                 if(closingCash && !isNaN(closingCash)){
                     dataInUpdate.closingCash = Number(closingCash)
                 }
-
                 console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });

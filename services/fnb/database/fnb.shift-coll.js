@@ -20,13 +20,23 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     name: String,
     //_________Ghi chú
     note: String,
-    //_________Nhân viên ca trực
+    //_________Nhân viên ca chính
     staffs: [{
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
-    //_________Số giờ làm việc của ca
+    //_________Số giờ làm việc của ca chính
     workingHours: {
+        type: Number,
+        default: 0
+    },
+    //_________Nhân viên ca phụ
+    subStaffs: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    //_________Số giờ làm việc của ca phụ
+    subWorkingHours: {
         type: Number,
         default: 0
     },
@@ -54,17 +64,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default: 0
     },
     //______
-    numberOfEndSizeM: {
-        type: Number,
-        default: 0
-    },
-    //______
     numberOfOpeningSizeL: {
-        type: Number,
-        default: 0
-    },
-    //______
-    numberOfEndSizeL: {
         type: Number,
         default: 0
     },
@@ -131,6 +131,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     /**
      * THỐNG KÊ
      */
+    /**
+     * Tình trạng đã nộp tiền mặt về công ty hay chưa
+     * 1-Chưa
+     * 2-Đã nộp
+     */
+    paidStatus: {
+        type: Number,
+        default : 1
+    },
     //______Tiền mặt
     cashAmount: {
         type: Number,
