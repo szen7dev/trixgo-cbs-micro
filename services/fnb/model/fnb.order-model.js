@@ -473,7 +473,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, status }) {
+        customerID, status, paymentMethod }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -495,6 +495,20 @@ class Model extends BaseModel {
                 let oldCustomerID = infoOrder.customer;
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+
+                /**
+                 * CẬP NHẬT TRẠNG THÁI
+                 */
+                if(!isNaN(status)){
+                    dataInUpdate.status = Number(status);
+                }
+            
+                /**
+                 * CẬP NHẬT PHƯƠNG THỨC THANH TOÁN
+                 */
+                if(!isNaN(paymentMethod)){
+                    dataInUpdate.paymentMethod = Number(paymentMethod);
+                }
 
                 /**
                  * 1-Cập nhật mã khách mới vào đơn hàng
@@ -525,18 +539,26 @@ class Model extends BaseModel {
                     if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
                         dataInUpdate.nonResident = Number(infoCustomer.nonResident);
                     }
-                }
 
-                if(!isNaN(status)){
-                    dataInUpdate.status = Number(status);
+                    // Doanh số khách cũ, mới
+                    let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
+                    if(numberOD && numberOD > 0){
+                        dataInUpdate.new = 2 // Đơn hàng khách cũ
+                    }else{
+                        dataInUpdate.new = 1 // Đơn hàng khách mới
+                    }
                 }
-
                 // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                /**
+                 * CẬP NHẬT THÔNG TIN VÀO KHÁCH CŨ, MỚI
+                 * - Nên viết hàm đóng gói để gọi vào
+                 */
 
                 if(customerID && checkObjectIDs(customerID)){
 
