@@ -381,8 +381,8 @@ class Model extends BaseModel {
         //     console.log('========================') 
         return new Promise(async (resolve) => {
             try {
-                if(limit > 50){
-                    limit = 50
+                if(limit > 100){
+                    limit = 100
                 }else{
                     limit = +limit;
                 }
@@ -428,8 +428,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
-                console.log(conditionObj)
+                // console.log(conditionObj)
                 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
