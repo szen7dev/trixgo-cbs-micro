@@ -226,6 +226,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
+    //______Sử dụng credit (tích điểm quy đổi)
+    credit: {
+        type: Number,
+        default : 0
+    },
     //______Thành tiền (phải thanh toán)
     amount: {
         type: Number,

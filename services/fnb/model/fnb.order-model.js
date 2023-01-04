@@ -337,8 +337,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders1": 1, 
                         "total1": Number(total), 
-                        "numberOfOpeningSizeM": Number(totalSizeM), 
-                        "numberOfOpeningSizeL": Number(totalSizeL), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 2){
@@ -349,8 +349,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders2": 1, 
                         "total2": Number(total), 
-                        "numberOfOpeningSizeM": Number(totalSizeM), 
-                        "numberOfOpeningSizeL": Number(totalSizeL), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 3){
@@ -361,8 +361,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders3": 1, 
                         "total3": Number(total), 
-                        "numberOfOpeningSizeM": Number(totalSizeM), 
-                        "numberOfOpeningSizeL": Number(totalSizeL), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 4){
@@ -373,8 +373,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders4": 1, 
                         "total4": Number(total), 
-                        "numberOfOpeningSizeM": Number(totalSizeM), 
-                        "numberOfOpeningSizeL": Number(totalSizeL), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 5){
@@ -385,8 +385,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders5": 1, 
                         "total5": Number(total), 
-                        "numberOfOpeningSizeM": Number(totalSizeM), 
-                        "numberOfOpeningSizeL": Number(totalSizeL), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 6){
@@ -397,8 +397,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders6": 1, 
                         "total6": Number(total), 
-                        "numberOfOpeningSizeM": Number(totalSizeM), 
-                        "numberOfOpeningSizeL": Number(totalSizeL), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 7){
@@ -409,8 +409,8 @@ class Model extends BaseModel {
                         "numberOfOrders": 1, 
                         "numberOfOrders7": 1, 
                         "total7": Number(total), 
-                        "numberOfOpeningSizeM": Number(totalSizeM), 
-                        "numberOfOpeningSizeL": Number(totalSizeL), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
 
@@ -488,8 +488,20 @@ class Model extends BaseModel {
         customerID, status, paymentMethod, salesChannel }) {
         // console.log({ orderID, userID,
         //     customerID, status, paymentMethod, salesChannel })
+        const that = this
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * 1-CẬP NHẬT ĐƠN HÀNG: 
+                 * - Hủy đơn
+                 * - Phương thức thanh toán
+                 * - Kênh bán hàng => Đồng thời cập nhật Phương thức thanh toán
+                 * - Gán lỗi
+                 * 2.1-CẬP NHẬT THÔNG TIN NGƯỢC LẠI VÀO CA LÀM VIỆC
+                 * 2.2-CẬP NHẬT THÔNG TIN NGƯỢC LẠI VÀO ĐƠN VỊ CƠ SỞ
+                 * 2.3-CẬP NHẬT THÔNG TIN NGƯỢC LẠI VÀO KHÁCH HÀNG (CŨ, MỚI)
+                 */
                 /**
                  * BA
                  * - Nếu cập nhật Đơn hàng sang trạng thái hủy: status = 5 (Hoàn thành) -> 4 (Hủy)
@@ -505,13 +517,13 @@ class Model extends BaseModel {
                 let infoOrder = await FNB_ORDER_COLL.findById(orderID)
                 if(!infoOrder)
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-
+                
                 let oldCustomerID = infoOrder.customer;
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 /**
-                 * CẬP NHẬT TRẠNG THÁI
+                 * CẬP NHẬT TRẠNG THÁI-HỦY ĐƠN
                  */
                 if(!isNaN(status)){
                     dataInUpdate.status = Number(status);
@@ -522,9 +534,9 @@ class Model extends BaseModel {
                  * 1-Cập nhật đơn hàng
                  * 2-Cập nhật vào ca làm việc
                  */
-                if(!isNaN(paymentMethod)){
-                    dataInUpdate.paymentMethod = Number(paymentMethod);
-                }
+                // if(!isNaN(paymentMethod)){
+                //     dataInUpdate.paymentMethod = Number(paymentMethod) //=> Bỏ đi vì chỉ cần cập nhật kênh bán hàng là OK
+                // }
 
                 /**
                  * CẬP NHẬT KÊNH BÁN HÀNG
@@ -533,7 +545,17 @@ class Model extends BaseModel {
                  * 3-Cập nhật vào Điểm bán (Cơ sở)
                  */
                 if(!isNaN(salesChannel)){
-                    dataInUpdate.salesChannel = Number(salesChannel);
+                    dataInUpdate.salesChannel = Number(salesChannel)
+
+                    // Nếu cập nhật từ Off sang App
+                    if(salesChannel != 1){
+                        dataInUpdate.paymentMethod = Number(2) // Chuyển khoản
+                    }
+
+                    // Nếu cập nhật từ App về Off
+                    if(salesChannel == 1){
+                        dataInUpdate.paymentMethod = Number(1) // Tiền mặt
+                    }
                 }
 
                 /**
@@ -548,7 +570,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                         
                     dataInUpdate.customer = customerID
-                    dataInUpdate.name = `Đơn hàng ${infoCustomer.name}`
+                    dataInUpdate.name = `Đơn hàng ${infoCustomer.name} - ${infoCustomer.phone}`
 
                     // Giới tính
                     if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
@@ -577,7 +599,6 @@ class Model extends BaseModel {
                 // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
@@ -621,6 +642,16 @@ class Model extends BaseModel {
                     //     })
                     // }
                 }
+
+                /**
+                 * CẬP NHẬT VÀO CÁC COLL LIÊN QUAN
+                 */
+                // 1. Cập nhật vào ca làm việc
+                await that.updateShift({ shiftID: infoOrder.shift, userID })
+
+                // 2. Cập nhật vào đơn vị cơ sở
+
+                // 3. Cập nhật vào khách hàng
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -682,6 +713,170 @@ class Model extends BaseModel {
         });
     }
 
+    /**
+     * Name: Update value
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
+    updateShift({ shiftID, option, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(shiftID))
+                    return resolve({ error: true, message: 'shiftID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                
+                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+                let numberOfOrders = 0
+                let numberOfCancelOrders = 0
+                let totalOfCancelOrders = 0
+                let numberOfMistakes = 0
+                let amountOfMistakes = 0
+                let cashAmount = 0
+                let transferAmount = 0
+                let numberOfSizeM = 0
+                let numberOfSizeL = 0
+                let numberOfOrders1 = 0
+                let numberOfOrders2 = 0
+                let numberOfOrders3 = 0
+                let numberOfOrders4 = 0
+                let numberOfOrders5 = 0
+                let numberOfOrders6 = 0
+                let numberOfOrders7 = 0
+                let total = 0
+                let total1 = 0
+                let total2 = 0
+                let total3 = 0
+                let total4 = 0
+                let total5 = 0
+                let total6 = 0
+                let total7 = 0
+
+                // Tổng hợp thông tin từ các đơn hàng: Đơn HOÀN THÀNH
+                let listData = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: {
+                            shift: ObjectID(shiftID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { salesChannel: "$salesChannel", paymentMethod: "$paymentMethod", status: "$status" },
+                            quantity: { $sum: 1 },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+                ])
+                // console.log(listData)
+
+                if(listData && listData.length){
+                    for(const item of listData){
+                        // console.log(item)
+                        /**
+                         * ĐƠN HOÀN THÀNH
+                         */
+                        if(item._id.status && item._id.status == 5){
+                            // console.log('---------------------->>>>>>>>>>>>>>>>>>')
+                            numberOfOrders = Number(numberOfOrders) + Number(item.quantity)
+
+                            // Tiền mặt và chuyển khoản
+                            if(item._id.paymentMethod && item._id.paymentMethod == 1){
+                                // console.log('==========TIỀN MẶT============')
+                                cashAmount = Number(cashAmount) + Number(item.amount)
+
+                                console.log({cashAmount})
+                            }else{
+                                // console.log('==========CHUYỂN KHOẢN============')
+                                transferAmount = Number(transferAmount) + Number(item.amount)
+                            }
+
+                            // Kênh bán hàng
+                            if(item._id.salesChannel){
+                                total = Number(total) + Number(item.total)
+
+                                if(item._id.salesChannel && item._id.salesChannel == 1){
+                                    numberOfOrders1 = Number(numberOfOrders1) + Number(item.quantity)
+                                    total1 = Number(total1) + Number(item.total)
+                                }
+
+                                if(item._id.salesChannel && item._id.salesChannel == 2){
+                                    numberOfOrders2 = Number(numberOfOrders2) + Number(item.quantity)
+                                    total2 = Number(total2) + Number(item.total)
+                                }
+
+                                if(item._id.salesChannel && item._id.salesChannel == 3){
+                                    numberOfOrders3 = Number(numberOfOrders3) + Number(item.quantity)
+                                    total3 = Number(total3) + Number(item.total)
+                                }
+
+                                if(item._id.salesChannel && item._id.salesChannel == 4){
+                                    numberOfOrders4 = Number(numberOfOrders4) + Number(item.quantity)
+                                    total4 = Number(total4) + Number(item.total)
+                                }
+
+                                if(item._id.salesChannel && item._id.salesChannel == 5){
+                                    numberOfOrders5 = Number(numberOfOrders5) + Number(item.quantity)
+                                    total5 = Number(total5) + Number(item.total)
+                                }
+
+                                if(item._id.salesChannel && item._id.salesChannel == 6){
+                                    numberOfOrders6 = Number(numberOfOrders6) + Number(item.quantity)
+                                    total6 = Number(total6) + Number(item.total)
+                                }
+
+                                if(item._id.salesChannel && item._id.salesChannel == 7){
+                                    numberOfOrders7 = Number(numberOfOrders7) + Number(item.quantity)
+                                    total7 = Number(total7) + Number(item.total)
+                                }
+                            }
+                        }
+
+                        /**
+                         * ĐƠN HỦY
+                         */
+                        if(item._id.status && item._id.status == 4){
+                            numberOfCancelOrders = Number(numberOfCancelOrders) + Number(item.quantity)
+                            totalOfCancelOrders = Number(totalOfCancelOrders) + Number(item.total)
+                        }
+                    }
+                }
+
+                dataInUpdate.numberOfOrders = Number(numberOfOrders)
+                dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
+                dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
+                dataInUpdate.cashAmount = Number(cashAmount)
+                dataInUpdate.transferAmount = Number(transferAmount)
+                dataInUpdate.numberOfOrders1 = Number(numberOfOrders1)
+                dataInUpdate.numberOfOrders2 = Number(numberOfOrders2)
+                dataInUpdate.numberOfOrders3 = Number(numberOfOrders3)
+                dataInUpdate.numberOfOrders4 = Number(numberOfOrders4)
+                dataInUpdate.numberOfOrders5 = Number(numberOfOrders5)
+                dataInUpdate.numberOfOrders6 = Number(numberOfOrders6)
+                dataInUpdate.numberOfOrders7 = Number(numberOfOrders7)
+                dataInUpdate.total = Number(total)
+                dataInUpdate.total1 = Number(total1)
+                dataInUpdate.total2 = Number(total2)
+                dataInUpdate.total3 = Number(total3)
+                dataInUpdate.total4 = Number(total4)
+                dataInUpdate.total5 = Number(total5)
+                dataInUpdate.total6 = Number(total6)
+                dataInUpdate.total7 = Number(total7)                
+                
+                // console.log(dataInUpdate)
+
+                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });
+                if (!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                return resolve({ error: false, data: infoAfterUpdate });            
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
 
     /**
      * Name: Remove
