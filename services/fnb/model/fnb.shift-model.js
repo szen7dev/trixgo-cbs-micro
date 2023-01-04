@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID }) {
+    insert({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
         console.log({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
         return new Promise(async resolve => {
             try {
@@ -106,6 +106,22 @@ class Model extends BaseModel {
                 if(closingCash && !isNaN(closingCash)){
                     dataInsert.closingCash = Number(closingCash)
                 }
+
+                if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
+                    dataInsert.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
+                }
+
+                if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
+                    dataInsert.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
+                }
+
+                if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
+                    dataInsert.numberOfEotSizeM = Number(numberOfEotSizeM)
+                }
+
+                if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
+                    dataInsert.numberOfEotSizeL = Number(numberOfEotSizeL)
+                }
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -123,7 +139,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID }) {
+    update({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
         console.log({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
         return new Promise(async resolve => {
             try {
@@ -183,6 +199,23 @@ class Model extends BaseModel {
                 if(closingCash && !isNaN(closingCash)){
                     dataInUpdate.closingCash = Number(closingCash)
                 }
+
+                if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
+                    dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
+                }
+
+                if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
+                    dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
+                }
+
+                if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
+                    dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
+                }
+
+                if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
+                    dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
+                }
+
                 console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });

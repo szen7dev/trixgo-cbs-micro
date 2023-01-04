@@ -30,17 +30,21 @@
             openingCash         : { type: "string", optional: true }, // Cần convert lại ở FE *******
             incurredCash        : { type: "string", optional: true }, // Cần convert lại ở FE *******
             closingCash         : { type: "string", optional: true }, // Cần convert lại ở FE *******
+            numberOfOpeningSizeM         : { type: "string", optional: true }, // Cần convert lại ở FE *******
+            numberOfOpeningSizeL         : { type: "string", optional: true }, // Cần convert lại ở FE *******
+            numberOfEotSizeM         : { type: "string", optional: true }, // Cần convert lại ở FE *******
+            numberOfEotSizeL         : { type: "string", optional: true }, // Cần convert lại ở FE *******
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash } = ctx.params;
+                 let { fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL } = ctx.params;
                  console.log({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash  })
                  
                  const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.insert({
-                    fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID
+                    fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -71,15 +75,19 @@
             openingCash         : { type: "number", optional: true }, // Cần convert lại ở FE *******
             incurredCash        : { type: "number", optional: true }, // Cần convert lại ở FE *******
             closingCash         : { type: "number", optional: true }, // Cần convert lại ở FE *******
+            numberOfOpeningSizeM         : { type: "number", optional: true }, // Cần convert lại ở FE *******
+            numberOfOpeningSizeL         : { type: "number", optional: true }, // Cần convert lại ở FE *******
+            numberOfEotSizeM         : { type: "number", optional: true }, // Cần convert lại ở FE *******
+            numberOfEotSizeL         : { type: "number", optional: true }, // Cần convert lại ở FE *******
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  shiftID, name, campaign, note, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash } = ctx.params;
+                 let {  shiftID, name, campaign, note, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.update({
-                    shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID
+                    shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
