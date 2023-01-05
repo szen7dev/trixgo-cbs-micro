@@ -96,7 +96,7 @@ class Model extends BaseModel {
                     inTimesheet: 0,
                     inFinancial: 1,
                     inDocument: 1,
-                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
+                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 2, // Khách hàng
                     province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
                     name,
                     description,
@@ -293,6 +293,7 @@ class Model extends BaseModel {
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
     }){
+        // console.log('================THAM BIẾN CẬP NHẬT=================')
         // console.log({
         //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
@@ -654,11 +655,11 @@ class Model extends BaseModel {
         insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
         isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
         keyword, limit = 10, lastestID, select, populates = {} }) {
-            console.log({
-                userID, companyID, fundaID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
-                insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
-                isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
-                keyword, limit, lastestID, select, populates })
+            // console.log({
+            //     userID, companyID, fundaID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
+            //     insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
+            //     isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
+            //     keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
