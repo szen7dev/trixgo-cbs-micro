@@ -570,7 +570,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                         
                     dataInUpdate.customer = customerID
-                    dataInUpdate.name = `Đơn hàng ${infoCustomer.name} - ${infoCustomer.phone}`
+                    dataInUpdate.name = `Đơn hàng ${infoCustomer.name}-${infoCustomer.phone}`
 
                     // Giới tính
                     if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
@@ -1102,13 +1102,10 @@ class Model extends BaseModel {
 
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
-                        console.log('============111111111111111111111111')
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
                     }else{
-                        console.log('============222222222222222222222222')
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                        // conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
 
                         let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                         if(fundasIDIsMember.length) {
@@ -1121,7 +1118,8 @@ class Model extends BaseModel {
                      * - Xử lý tình huống tạm thời
                      */
                     if(!optionStatus){
-                        conditionObj.status = { $in: [1,2,3,5] };
+                        // conditionObj.status = { $in: [1,2,3,5] };
+                        conditionObj.status = Number(5)
                     }else{
                         // Đơn hủy
                         conditionObj.status = Number(4)
