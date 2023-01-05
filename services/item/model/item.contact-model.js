@@ -1580,11 +1580,11 @@ class Model extends BaseModel {
      downloadTemplateImportExcel({ companyID, userID }) {
         return new Promise(async resolve => {
             try {
-                let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-                .populate({
-                    path: 'funda',
-                    select:'_id  name'
-                })
+                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                // .populate({
+                //     path: 'funda',
+                //     select:'_id  name'
+                // })
                 // console.log(listData)
 
                 let listFunda = await ITEM__FUNDA_COLL.find({ company: companyID })
@@ -1593,18 +1593,18 @@ class Model extends BaseModel {
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
                 .then(async workbook => {
 
-                    var i = 3;
-                    listData?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Export").row(i).cell(2).value(item.name);
-                        workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                        workbook.sheet("Export").row(i).cell(4).value(item.address);
-                        workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
-                        workbook.sheet("Export").row(i).cell(6).value(item.birthday);
-                        workbook.sheet("Export").row(i).cell(7).value(item.note);
-                        workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
-                        i++
-                    });
+                    // var i = 3;
+                    // listData?.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
+                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
+                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
+                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
+                    //     workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
+                    //     workbook.sheet("Export").row(i).cell(6).value(item.birthday);
+                    //     workbook.sheet("Export").row(i).cell(7).value(item.note);
+                    //     workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
+                    //     i++
+                    // });
 
                     
                     var i = 2;

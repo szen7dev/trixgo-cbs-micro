@@ -255,28 +255,15 @@ class Model extends BaseModel {
                 }
 
                 dataInsert.amount = Number(amount)
-
                 if(!isNaN(vatAmount)){
                     dataInsert.vatAmount = Number(vatAmount)
                 }
 
-                let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
-
                 /**
-                 * GÁN SẢN PHẨM VÀO ORDER
+                 * Thêm size vào đơn hàng và ca làm việc
                  */
-                const orderID = infoAfterInsert._id;
-
                 let totalSizeM = 0, totalSizeL = 0
-
-                // console.log('============SỐ SẢN PHẨM=============')
-                // console.log({ products:  products.length})
-
                 if(products && products.length){
-
-                    // Thêm vào ca làm việc
                     for(const prodSize of products){
                         if(prodSize.size == 1){
                             totalSizeM = Number(totalSizeM) + Number(prodSize.quantity)
@@ -285,7 +272,20 @@ class Model extends BaseModel {
                             totalSizeL = Number(totalSizeL) + Number(prodSize.quantity)
                         }
                     }
+                }
 
+                dataInsert.numberOfSizeM = Number(totalSizeM)
+                dataInsert.numberOfSizeL = Number(totalSizeL)
+
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if (!infoAfterInsert)
+                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+
+                /**
+                 * GÁN SẢN PHẨM VÀO CA LÀM VIỆC
+                 */
+                const orderID = infoAfterInsert._id;
+                if(products && products.length){
                     // Thêm vào đơn hàng-sản phẩm
                     const productsAsync = products.map(product => {
                         const dataInsertProduct = {
@@ -305,9 +305,6 @@ class Model extends BaseModel {
 
                     await Promise.all(productsAsync);
                 }
-
-                // console.log('============SỐ SẢN PHẨM M, L=============')
-                // console.log({totalSizeM, totalSizeL})
 
                 /**
                  * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG SAU KHI CHỌN XONG SẢN PHẨM

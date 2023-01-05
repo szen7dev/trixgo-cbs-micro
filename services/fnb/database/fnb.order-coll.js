@@ -196,6 +196,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 0
     },  
     /**
+     * SẢN PHẨM VÀ SIZE
+     */
+    //______Số size M sử dụng trong ca
+    numberOfSizeM: {
+        type: Number,
+        default: 0
+    },
+    //______Số size L sử dụng trong ca
+    numberOfSizeL: {
+        type: Number,
+        default: 0
+    },
+    /**
      * Số lượng sản phẩm
      * => Không tính với product là Topping
      */
