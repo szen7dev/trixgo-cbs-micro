@@ -534,9 +534,9 @@ class Model extends BaseModel {
                  * 1-Cập nhật đơn hàng
                  * 2-Cập nhật vào ca làm việc
                  */
-                // if(!isNaN(paymentMethod)){
-                //     dataInUpdate.paymentMethod = Number(paymentMethod) //=> Bỏ đi vì chỉ cần cập nhật kênh bán hàng là OK
-                // }
+                if(!isNaN(paymentMethod)){
+                    dataInUpdate.paymentMethod = Number(paymentMethod) //=> Bỏ đi vì chỉ cần cập nhật kênh bán hàng là OK
+                }
 
                 /**
                  * CẬP NHẬT KÊNH BÁN HÀNG
@@ -550,11 +550,6 @@ class Model extends BaseModel {
                     // Nếu cập nhật từ Off sang App
                     if(salesChannel != 1){
                         dataInUpdate.paymentMethod = Number(2) // Chuyển khoản
-                    }
-
-                    // Nếu cập nhật từ App về Off
-                    if(salesChannel == 1){
-                        dataInUpdate.paymentMethod = Number(1) // Tiền mặt
                     }
                 }
 
