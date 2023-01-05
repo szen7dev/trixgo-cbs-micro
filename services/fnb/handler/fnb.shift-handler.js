@@ -164,6 +164,40 @@
          }
      },
 
+    /**
+     * Name: Danh sách theo phân loại
+     * Author: HiepNH
+     * Code: 14/10/2022
+     */
+    getListByProperty: {
+        params: {
+            fundasID        : { type: "array", optional: true },
+            option          : { type: "string", optional: true },
+            optionGroup     : { type: "string", optional: true },
+            optionStatus    : { type: "string", optional: true },
+            optionTime      : { type: "string", optional: true },
+            year            : { type: "string", optional: true },
+            fromDate        : { type: "string", optional: true },
+            toDate          : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let { option, optionGroup, optionStatus, optionTime, fundasID, year, fromDate, toDate } = ctx.params;
+
+                let resultAfterCallHandler = await FNB_SHIFT_MODEL.getListByProperty({
+                    companyID: company._id, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+
      /**
      * Dev: HiepNH
      * Func: Download Template Excel

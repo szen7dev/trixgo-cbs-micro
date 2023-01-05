@@ -86,6 +86,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
      /**
      * LIÊN QUAN TỚI FNB
      */
+    //_________Người quản lý
+    manager: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
     /**
      * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
      * 1-Trong hệ thống
