@@ -486,8 +486,8 @@ class Model extends BaseModel {
      */
     update({ orderID, userID,
         customerID, status, paymentMethod, salesChannel }) {
-        // console.log({ orderID, userID,
-        //     customerID, status, paymentMethod, salesChannel })
+        console.log({ orderID, userID,
+            customerID, status, paymentMethod, salesChannel })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -779,12 +779,12 @@ class Model extends BaseModel {
 
                             // Tiền mặt và chuyển khoản
                             if(item._id.paymentMethod && item._id.paymentMethod == 1){
-                                // console.log('==========TIỀN MẶT============')
+                                console.log('==========TIỀN MẶT============')
                                 cashAmount = Number(cashAmount) + Number(item.amount)
 
                                 console.log({cashAmount})
                             }else{
-                                // console.log('==========CHUYỂN KHOẢN============')
+                                console.log('==========CHUYỂN KHOẢN============')
                                 transferAmount = Number(transferAmount) + Number(item.amount)
                             }
 
