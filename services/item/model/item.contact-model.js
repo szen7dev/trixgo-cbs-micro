@@ -96,7 +96,7 @@ class Model extends BaseModel {
                     inTimesheet: 0,
                     inFinancial: 1,
                     inDocument: 1,
-                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
+                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 2, // Khách hàng
                     province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
                     name,
                     description,
@@ -293,13 +293,13 @@ class Model extends BaseModel {
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
     }){
-        console.log('================THAM BIẾN CẬP NHẬT=================')
-        console.log({
-            contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
-            insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-            signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-            amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
-        })
+        // console.log('================THAM BIẾN CẬP NHẬT=================')
+        // console.log({
+        //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
+        //     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
+        // })
         return new Promise(async (resolve) => {
             try {
                 //___________Kiểm tra việc trùng mã hiệu
