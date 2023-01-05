@@ -854,7 +854,8 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { size: "$size" },
-                            quantity: { $sum: 1 },
+                            quantity: { $sum: "$quantity" },
+                            // quantity: { $sum: 1 },
                         }
                     }
                 ])
