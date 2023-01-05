@@ -779,12 +779,12 @@ class Model extends BaseModel {
 
                             // Tiền mặt và chuyển khoản
                             if(item._id.paymentMethod && item._id.paymentMethod == 1){
-                                console.log('==========TIỀN MẶT============')
+                                // console.log('==========TIỀN MẶT============')
                                 cashAmount = Number(cashAmount) + Number(item.amount)
 
                                 console.log({cashAmount})
                             }else{
-                                console.log('==========CHUYỂN KHOẢN============')
+                                // console.log('==========CHUYỂN KHOẢN============')
                                 transferAmount = Number(transferAmount) + Number(item.amount)
                             }
 
@@ -839,9 +839,41 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * SỐ LƯỢNG SIZE M, L
+                 */
+                // Danh sách các đơn hàng hoàn thành
+                let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID, status: 5 })
+                let listData1 = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $match: {
+                            order: {$in: listOrders.map(item => ObjectID(item._id))},
+                            shift: ObjectID(shiftID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { size: "$size" },
+                            quantity: { $sum: 1 },
+                        }
+                    }
+                ])
+                // console.log(listData1)
+                if(listData1 && listData1.length){
+                    for(const item of listData1){
+                        if(item._id.size && item._id.size == 1){
+                            numberOfSizeM = Number(numberOfSizeM) + Number(item.quantity)
+                        }else{
+                            numberOfSizeL = Number(numberOfSizeL) + Number(item.quantity)
+                        }
+                    }
+                }
+
                 dataInUpdate.numberOfOrders = Number(numberOfOrders)
                 dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
                 dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
+                dataInUpdate.numberOfSizeM = Number(numberOfSizeM)
+                dataInUpdate.numberOfSizeL = Number(numberOfSizeL)
                 dataInUpdate.cashAmount = Number(cashAmount)
                 dataInUpdate.transferAmount = Number(transferAmount)
                 dataInUpdate.numberOfOrders1 = Number(numberOfOrders1)
