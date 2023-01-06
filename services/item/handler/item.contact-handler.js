@@ -212,6 +212,8 @@ module.exports = {
             certificateGrade    : { type: "string", optional: true },
             isPartner           : { type: "string", optional: true },
             isContractExpire4month: { type: "string", optional: true },
+            fromDate            : { type: "string", optional: true },
+            toDate              : { type: "string", optional: true },
             
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -228,7 +230,7 @@ module.exports = {
                     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
                     isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate,
                     certificateName, certificateGrade, isPartner, isContractExpire4month,
-                    keyword, limit, lastestID, select, populates
+                    keyword, limit, lastestID, select, populates, fromDate, toDate
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -246,7 +248,7 @@ module.exports = {
                         companyID, fundaID, type, departmentID, positionID, contractTypeID,
                         workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
                         parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
-                        lastestID, userID, keyword, limit, select, populates
+                        lastestID, userID, keyword, limit, select, populates, fromDate, toDate
                     });
                 }
 
