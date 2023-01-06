@@ -654,7 +654,7 @@ class Model extends BaseModel {
         userID, companyID, fundaID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
         insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
         isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
-        keyword, limit = 10, lastestID, select, populates = {} }) {
+        keyword, limit = 10, lastestID, select, populates = {}, fromDate, toDate }) {
             // console.log({
             //     userID, companyID, fundaID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
             //     insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
@@ -727,6 +727,14 @@ class Model extends BaseModel {
                         if(checkObjectIDs(departmentID)){
                             conditionObj.department = departmentID
                         }
+                    }
+                }
+
+                // Phân loại theo thời khoảng
+                if(fromDate && toDate){
+                    conditionObj.joinedDate = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
                     }
                 }
 
