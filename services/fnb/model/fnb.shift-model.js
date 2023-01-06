@@ -40,7 +40,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash, userID }) {
+    insert({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
+        // console.log({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -66,6 +67,10 @@ class Model extends BaseModel {
                     dataInsert.staffs = staffsID;
                 }
 
+                if(subStaffsID && checkObjectIDs(subStaffsID)){
+                    dataInsert.subStaffs = subStaffsID;
+                }
+
                 if(campaign && !isNaN(campaign)){
                     dataInsert.campaign = Number(campaign)
                 }
@@ -78,8 +83,16 @@ class Model extends BaseModel {
                     dataInsert.shiftType = Number(shiftType)
                 }
 
+                if(paidStatus && !isNaN(paidStatus)){
+                    dataInsert.paidStatus = Number(paidStatus)
+                }
+
                 if(workingHours && !isNaN(workingHours)){
                     dataInsert.workingHours = Number(workingHours)
+                }
+
+                if(subWorkingHours && !isNaN(subWorkingHours)){
+                    dataInsert.subWorkingHours = Number(subWorkingHours)
                 }
 
                 if(openingCash && !isNaN(openingCash)){
@@ -92,6 +105,22 @@ class Model extends BaseModel {
 
                 if(closingCash && !isNaN(closingCash)){
                     dataInsert.closingCash = Number(closingCash)
+                }
+
+                if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
+                    dataInsert.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
+                }
+
+                if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
+                    dataInsert.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
+                }
+
+                if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
+                    dataInsert.numberOfEotSizeM = Number(numberOfEotSizeM)
+                }
+
+                if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
+                    dataInsert.numberOfEotSizeL = Number(numberOfEotSizeL)
                 }
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -110,8 +139,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ shiftID, staffsID, name, note, campaign, seasons, shiftType, workingHours, openingCash, incurredCash, closingCash, userID }) {
-        console.log({ shiftID, staffsID, name, note, campaign, seasons, shiftType, workingHours, openingCash, incurredCash, closingCash, userID })
+    update({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
+        // console.log({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -127,6 +156,14 @@ class Model extends BaseModel {
                     dataInUpdate.note =note;
                 }
 
+                if(staffsID && checkObjectIDs(staffsID)){
+                    dataInUpdate.staffs = staffsID;
+                }
+
+                if(subStaffsID && checkObjectIDs(subStaffsID)){
+                    dataInUpdate.subStaffs = subStaffsID;
+                }
+
                 if(campaign && !isNaN(campaign)){
                     dataInUpdate.campaign = Number(campaign)
                 }
@@ -139,12 +176,16 @@ class Model extends BaseModel {
                     dataInUpdate.shiftType = Number(shiftType)
                 }
 
+                if(paidStatus && !isNaN(paidStatus)){
+                    dataInUpdate.paidStatus = Number(paidStatus)
+                }
+
                 if(workingHours && !isNaN(workingHours)){
                     dataInUpdate.workingHours = Number(workingHours)
                 }
 
-                if(staffsID && checkObjectIDs(staffsID)){
-                    dataInUpdate.staffs = staffsID;
+                if(subWorkingHours && !isNaN(subWorkingHours)){
+                    dataInUpdate.subWorkingHours = Number(subWorkingHours)
                 }
 
                 if(openingCash && !isNaN(openingCash)){
@@ -159,7 +200,23 @@ class Model extends BaseModel {
                     dataInUpdate.closingCash = Number(closingCash)
                 }
 
-                console.log({ dataInUpdate })
+                if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
+                    dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
+                }
+
+                if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
+                    dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
+                }
+
+                if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
+                    dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
+                }
+
+                if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
+                    dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
+                }
+
+                // console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });
 
@@ -228,7 +285,7 @@ class Model extends BaseModel {
      * Code  :
      */
      getList({ companyID, fundaID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({ companyID, fundaID, keyword, limit, lastestID, select, populates, sortKey, userID })
+        // console.log({ companyID, fundaID, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -347,111 +404,154 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/10/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) { 
-        // console.log({ option, fundasID,
-        //     keyword, limit, lastestID, select, populates, sortKey, userID })
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID }) { 
+        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
                     
                 }else{
-                    
-                    /**
-                     * VALIDATION (1)
-                     */
+                    let conditionObj = { company: ObjectID(companyID) }
+                    let conditionGroup = {}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"cashAmount": -1}
+
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
+
                     });
                     if(validation.error) return resolve(validation);
-
-                    let conditionObj = {}
-                    let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
 
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
-                    }
+                    }else{
+                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
 
-                    if(populates && typeof populates === 'string'){
-                        if(!IsJsonString(populates))
-                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-                        populates = JSON.parse(populates);
-                    } else{
-                        populates = {
-                            path: "",
-                            select: ""
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
                         }
                     }
 
                     /**
-                     * Tính tổng
+                     * Tính tổng TIỀN MẶT ĐANG TỒN Ở ĐIỂM BÁN CHƯA CHUYỂN VỀ
                      */
                     if(option && Number(option) == 1){
-                        if(optionGroup && Number(optionGroup) == 1){
-                            conditionGroup = {
-                                _id: { funda: "$funda", hour: "$hour", shift: "$shift", mistake: "$mistake", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod", customer: "$customer" },
-                                quantity: { $sum: 1 },
-                                amount: { $sum: "$amount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
-                            }
-
+                        conditionObj.paidStatus = 1 // Chưa nộp
+                        delete conditionObj.funda; // Tính tổng tại tất cả các điểm bán
+                        conditionGroup = {
+                            _id: {},
+                            quantity: { $sum: 1 },
+                            cashAmount: { $sum: "$cashAmount" },
                         }
                     }
 
                     /**
-                     * Gom nhóm theo thời gian
+                     * Tính tổng số lỗi mắc phải, thất thoát cốc M, L
                      */
                     if(option && Number(option) == 2){
-                        // Theo năm
-                        if(optionTime && Number(optionTime) == 1){
-                            conditionGroup = {
-                                _id: { year: "$year" },
-                                quantity: { $sum: 1 },
-                                amount: { $sum: "$amount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
+                        delete conditionObj.funda; // Tính tổng tại tất cả các điểm bán
+
+                        if(fromDate && toDate){
+                            conditionObj.createAt = {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
                             }
                         }
-                        
-                        // Theo tháng
-                        if(optionTime && Number(optionTime) == 2){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
-                            }
-    
-                            conditionGroup = {
-                                _id: { month: "$month", year: "$year" },
-                                quantity: { $sum: 1 },
-                                amount: { $sum: "$amount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
-                            }
-                        }  
 
-                        // Theo giờ
-                        if(optionTime && Number(optionTime) == 3){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
+                        conditionGroup = {
+                            _id: { },
+                            numberOfMistakes: { $sum: "$numberOfMistakes" },
+                            numberOfOpeningSizeM: { $sum: "$numberOfOpeningSizeM" },
+                            numberOfOpeningSizeL: { $sum: "$numberOfOpeningSizeL" },
+                            numberOfEotSizeM: { $sum: "$numberOfEotSizeM" },
+                            numberOfEotSizeL: { $sum: "$numberOfEotSizeL" },
+                            numberOfSizeM: { $sum: "$numberOfSizeM" },
+                            numberOfSizeL: { $sum: "$numberOfSizeL" },
+                        }
+                    }
+
+                    if(option && Number(option) == 3){
+                        conditionObj.paidStatus = 1 // Chưa nộp
+
+                        if(fromDate && toDate){
+                            conditionObj.createAt = {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
                             }
+                        }
+
+                        conditionGroup = {
+                            _id: { funda: "$funda" },
+                            cashAmount: { $sum: "$cashAmount" },
+                            numberOfMistakes: { $sum: "$numberOfMistakes" },
+                            numberOfOpeningSizeM: { $sum: "$numberOfOpeningSizeM" },
+                            numberOfOpeningSizeL: { $sum: "$numberOfOpeningSizeL" },
+                            numberOfEotSizeM: { $sum: "$numberOfEotSizeM" },
+                            numberOfEotSizeL: { $sum: "$numberOfEotSizeL" },
+                            numberOfSizeM: { $sum: "$numberOfSizeM" },
+                            numberOfSizeL: { $sum: "$numberOfSizeL" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name sign image',
+                            model: 'funda'
+                        }
+                    }
+
+                    /**
+                     * DANH 
+                     */
+                    if(option && Number(option) == 3){
+                        // // Theo năm
+                        // if(optionTime && Number(optionTime) == 1){
+                        //     conditionGroup = {
+                        //         _id: { year: "$year" },
+                        //         quantity: { $sum: 1 },
+                        //         amount: { $sum: "$amount" },
+                        //         numberOfProducts: { $sum: "$numberOfProducts" },
+                        //     }
+                        // }
+                        
+                        // // Theo tháng
+                        // if(optionTime && Number(optionTime) == 2){
+                        //     if(!isNaN(year) && Number(year) >= 0){
+                        //         conditionObjYear = {
+                        //             "year": Number(year),
+                        //         }
+                        //     }
     
-                            conditionGroup = {
-                                _id: { funda: "$funda", hour: "$hour" },
-                                quantity: { $sum: 1 },
-                                amount: { $sum: "$amount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
-                            }
-                        } 
+                        //     conditionGroup = {
+                        //         _id: { month: "$month", year: "$year" },
+                        //         quantity: { $sum: 1 },
+                        //         amount: { $sum: "$amount" },
+                        //         numberOfProducts: { $sum: "$numberOfProducts" },
+                        //     }
+                        // }  
+
+                        // // Theo giờ
+                        // if(optionTime && Number(optionTime) == 3){
+                        //     if(!isNaN(year) && Number(year) >= 0){
+                        //         conditionObjYear = {
+                        //             "year": Number(year),
+                        //         }
+                        //     }
+    
+                        //     conditionGroup = {
+                        //         _id: { funda: "$funda", hour: "$hour" },
+                        //         quantity: { $sum: 1 },
+                        //         amount: { $sum: "$amount" },
+                        //         numberOfProducts: { $sum: "$numberOfProducts" },
+                        //     }
+                        // } 
                     }
                 
-                    console.log(conditionObj)
-                    console.log(conditionObjYear)
-                    console.log(conditionGroup)
+                    // console.log(conditionObj)
+                    // console.log(conditionObjYear)
+                    // console.log(conditionPopulate)
+                    // console.log(conditionGroup)
 
                     // Danh sách đang triển khai
                     let listData = await FNB_SHIFT_COLL.aggregate([
@@ -466,13 +566,15 @@ class Model extends BaseModel {
                                 funda : 1,
                                 amount : 1,
                                 vatAmount : 1,
-                                numberOfProducts : 1,
-                                internal : 1,
-                                shift : 1,
-                                mistake : 1,
-                                salesChannel : 1,
-                                paymentMethod : 1,
-                                customer : 1,
+                                cashAmount : 1,
+                                paidStatus : 1,
+                                numberOfMistakes : 1,
+                                numberOfOpeningSizeM : 1,
+                                numberOfOpeningSizeL : 1,
+                                numberOfEotSizeM : 1,
+                                numberOfEotSizeL : 1,
+                                numberOfSizeM : 1,
+                                numberOfSizeL : 1,
                             }
                         },
                         {
@@ -486,9 +588,9 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    // if(!isNaN(option) && [3,4].includes(Number(option))){
-                    //     await INSPECTION__DOC_COLL.populate(listData, conditionPopulate)
-                    // }
+                    if(!isNaN(option) && [3].includes(Number(option))){
+                        await FNB_SHIFT_COLL.populate(listData, conditionPopulate)
+                    }
 
                     return resolve({ error: false, data: listData });
                 }

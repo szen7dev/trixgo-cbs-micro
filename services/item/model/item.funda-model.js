@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
+	insert({ companyID, parentID, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
@@ -108,6 +108,11 @@ class Model extends BaseModel {
                     dataInsert.internal = +internal;
                 }
 
+                //_________Tỷ lệ tích điểm
+                if(loyaltyPointsRate && !isNaN(loyaltyPointsRate)){
+                    dataInsert.loyaltyPointsRate = +loyaltyPointsRate;
+                }
+
                  /**
                  * Chi phí vận hành
                  */
@@ -157,7 +162,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, name, sign, description, phone, bankAccount, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign }){
+	update({ fundaID, name, sign, description, phone, bankAccount, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate }){
         // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign })
         return new Promise(async resolve => { 
             try {
@@ -260,6 +265,12 @@ class Model extends BaseModel {
                 if(internal && !isNaN(internal) && [1, 2].includes(internal)){
                     dataUpdate.internal = +internal;
                 }
+
+                //_________Tỷ lệ tích điểm
+                if(loyaltyPointsRate && !isNaN(loyaltyPointsRate)){
+                    dataUpdate.loyaltyPointsRate = +loyaltyPointsRate;
+                }
+
 
                 /**
                  * Chi phí vận hành
@@ -370,8 +381,8 @@ class Model extends BaseModel {
         //     console.log('========================') 
         return new Promise(async (resolve) => {
             try {
-                if(limit > 50){
-                    limit = 50
+                if(limit > 100){
+                    limit = 100
                 }else{
                     limit = +limit;
                 }
@@ -417,8 +428,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
-                console.log(conditionObj)
+                // console.log(conditionObj)
                 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){

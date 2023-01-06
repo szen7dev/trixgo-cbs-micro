@@ -42,11 +42,11 @@ class Model extends BaseModel {
      */
     insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID  
     }) {
         // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, fundaID 
+        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID  
         // })
         return new Promise(async resolve => {
             try {
@@ -96,7 +96,7 @@ class Model extends BaseModel {
                     inTimesheet: 0,
                     inFinancial: 1,
                     inDocument: 1,
-                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
+                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 2, // Khách hàng
                     province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
                     name,
                     description,
@@ -258,6 +258,10 @@ class Model extends BaseModel {
                     dataInsert.contractExpire = contractExpire;
                 }
 
+                if(nonResident){
+                    dataInsert.nonResident = Number(nonResident);
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
                 if(parent) {
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
@@ -287,8 +291,15 @@ class Model extends BaseModel {
         contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, fundaID
+        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
     }){
+        // console.log('================THAM BIẾN CẬP NHẬT=================')
+        // console.log({
+        //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+        //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
+        //     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
+        // })
         return new Promise(async (resolve) => {
             try {
                 //___________Kiểm tra việc trùng mã hiệu
@@ -569,6 +580,11 @@ class Model extends BaseModel {
                         dataUpdate.company = infoFunda.company
                     }
                 }
+
+                if(nonResident){
+                    dataUpdate.nonResident = Number(nonResident);
+                }
+
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cập nhật thất bại" });
@@ -639,11 +655,11 @@ class Model extends BaseModel {
         insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
         isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
         keyword, limit = 10, lastestID, select, populates = {} }) {
-            console.log({
-                userID, companyID, fundaID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
-                insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
-                isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
-                keyword, limit, lastestID, select, populates })
+            // console.log({
+            //     userID, companyID, fundaID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
+            //     insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember, realStatus, familyPolicy,
+            //     isExportExcel, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
+            //     keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
@@ -1058,7 +1074,7 @@ class Model extends BaseModel {
      * Code: 24/12/2022
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
-        console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
+        // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -1564,11 +1580,11 @@ class Model extends BaseModel {
      downloadTemplateImportExcel({ companyID, userID }) {
         return new Promise(async resolve => {
             try {
-                let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-                .populate({
-                    path: 'funda',
-                    select:'_id  name'
-                })
+                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                // .populate({
+                //     path: 'funda',
+                //     select:'_id  name'
+                // })
                 // console.log(listData)
 
                 let listFunda = await ITEM__FUNDA_COLL.find({ company: companyID })
@@ -1577,18 +1593,18 @@ class Model extends BaseModel {
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
                 .then(async workbook => {
 
-                    var i = 3;
-                    listData?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Export").row(i).cell(2).value(item.name);
-                        workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                        workbook.sheet("Export").row(i).cell(4).value(item.address);
-                        workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
-                        workbook.sheet("Export").row(i).cell(6).value(item.birthday);
-                        workbook.sheet("Export").row(i).cell(7).value(item.note);
-                        workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
-                        i++
-                    });
+                    // var i = 3;
+                    // listData?.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
+                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
+                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
+                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
+                    //     workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
+                    //     workbook.sheet("Export").row(i).cell(6).value(item.birthday);
+                    //     workbook.sheet("Export").row(i).cell(7).value(item.note);
+                    //     workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
+                    //     i++
+                    // });
 
                     
                     var i = 2;
@@ -1634,7 +1650,7 @@ class Model extends BaseModel {
                 // let parentID;
                 for (const data of dataImportJSON) {
                     // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                    if(index > 0){
+                    if(index > 0 && index < 200){
                         let dataInsert = {
                             company: companyID,
                             authorID: userID,

@@ -20,76 +20,32 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     name: String,
     //_________Ghi chú
     note: String,
-    //_________Nhân viên ca trực
+    /**
+     * CHẤM CÔNG, TÍNH LƯƠNG VÀ QUY TRÁCH NHIỆM
+     */
+    //_________Nhân viên ca chính
     staffs: [{
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
-    //_________Số giờ làm việc của ca
+    //_________Số giờ làm việc của ca chính
     workingHours: {
         type: Number,
         default: 0
     },
+    //_________Nhân viên ca phụ
+    subStaffs: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    //_________Số giờ làm việc của ca phụ
+    subWorkingHours: {
+        type: Number,
+        default: 0
+    },
     /**
-     * SỐ LIỆU CA
+     * PHÂN LOẠI THỐNG KÊ
      */
-    //______Tiền đầu ca
-    openingCash: {
-        type: Number,
-        default : 0
-    },
-    //______Phát sinh trong ca
-    incurredCash: {
-        type: Number,
-        default : 0
-    },
-    //______Kiểm kê cuối ca
-    closingCash: {
-        type: Number,
-        default : 0
-    },
-    //______
-    numberOfOpeningSizeM: {
-        type: Number,
-        default: 0
-    },
-    //______
-    numberOfEndSizeM: {
-        type: Number,
-        default: 0
-    },
-    //______
-    numberOfOpeningSizeL: {
-        type: Number,
-        default: 0
-    },
-    //______
-    numberOfEndSizeL: {
-        type: Number,
-        default: 0
-    },
-    //_________Số lượng lỗi
-    numberOfMistakes: { type: Number, default: 0 },
-    //_________Giá trị bị phạt
-    amountOfMistakes: { type: Number, default: 0 },
-    /**
-     * GIÁT TRỊ
-     */
-    //______Tổng doanh số
-    total: {
-        type: Number,
-        default : 0
-    },
-    //______Thành tiền (đã trừ giảm giá, triết khấu)
-    amount: {
-        type: Number,
-        default : 0
-    },
-    //______VAT thành tiền
-    vatAmount: {
-        type: Number,
-        default : 0
-    },
     /**
      * Bật chiến dịch truyền thông/marketing (được gán từ Funda)
      * 1-Không bật
@@ -103,10 +59,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
      * Tên chiến dịch (type=20)
      * - Gán chiến dịch đang hiện hành để đo lường (được gán từ Funda)
      */
-    campaignName: {
-        type: Schema.Types.ObjectId,
-        ref : 'doctype'
-    }, 
+    // campaignName: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : 'doctype'
+    // }, 
     /**
      * Mùa trong năm (theo lịch âm)
      * 1-Xuân
@@ -131,6 +87,67 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
     /**
      * THỐNG KÊ
      */
+    /**
+     * Tình trạng đã nộp tiền mặt về công ty hay chưa
+     * 1-Chưa
+     * 2-Đã nộp
+     */
+    paidStatus: {
+        type: Number,
+        default : 1
+    },
+    /**
+     * BÀN GIAO CA
+     */
+    //_________Số lượng lỗi
+    numberOfMistakes: { type: Number, default: 0 },
+    //_________Giá trị bị phạt
+    amountOfMistakes: { type: Number, default: 0 },
+    //______Tiền đầu ca
+    openingCash: {
+        type: Number,
+        default : 0
+    },
+    //______Kiểm kê cuối ca
+    closingCash: {
+        type: Number,
+        default : 0
+    },
+    //______Phát sinh trong ca
+    incurredCash: {
+        type: Number,
+        default : 0
+    },
+    //______Số size M đầu ca
+    numberOfOpeningSizeM: {
+        type: Number,
+        default: 0
+    },
+    //______Số size L đầu ca
+    numberOfOpeningSizeL: {
+        type: Number,
+        default: 0
+    },
+    //______Số size M cuối ca (End of Term)
+    numberOfEotSizeM: {
+        type: Number,
+        default: 0
+    },
+    //______Số size L cuối ca (End of Term)
+    numberOfEotSizeL: {
+        type: Number,
+        default: 0
+    },
+    //______Số size M sử dụng trong ca
+    numberOfSizeM: {
+        type: Number,
+        default: 0
+    },
+    //______Số size L sử dụng trong ca
+    numberOfSizeL: {
+        type: Number,
+        default: 0
+    },
     //______Tiền mặt
     cashAmount: {
         type: Number,
@@ -141,13 +158,44 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default : 0
     },
-    //______Số lượng sản phẩm (Không tính với product là Topping)
-    numberOfProducts: {
+    /**
+     * GIÁT TRỊ
+     */
+    //______Tổng doanh số
+    total: {
+        type: Number,
+        default : 0
+    },
+    //______Thành tiền (đã trừ giảm giá, triết khấu)
+    amount: {
+        type: Number,
+        default : 0
+    },
+    //______VAT thành tiền
+    vatAmount: {
+        type: Number,
+        default : 0
+    },
+    /**
+     * SỐ LƯỢNG SẢN PHẨM VÀ ĐƠN HÀNG
+     */
+    //______Số đơn hàng
+    numberOfOrders: {
         type: Number,
         default: 0
     },
-    //______Số đơn hàng
-    numberOfOrders: {
+    //______Số đơn hàng bị hủy
+    numberOfCancelOrders: {
+        type: Number,
+        default: 0
+    },
+    //______Doanh số đơn hàng bị hủy
+    totalOfCancelOrders: {
+        type: Number,
+        default: 0
+    },
+    //______Số lượng sản phẩm (Không tính với product là Topping)
+    numberOfProducts: {
         type: Number,
         default: 0
     },

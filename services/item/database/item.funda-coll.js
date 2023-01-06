@@ -86,6 +86,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
      /**
      * LIÊN QUAN TỚI FNB
      */
+    //_________Người quản lý
+    manager: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
     /**
      * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
      * 1-Trong hệ thống
@@ -112,6 +117,16 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : 'doctype'
     }], 
+    //______Tỷ lệ tích lũy
+    loyaltyPointsRate: {
+        type: Number,
+        default : 10
+    },
+    //______Điểm tích lũy
+    loyaltyPoints: {
+        type: Number,
+        default : 0
+    },
     //_________Số lượng lỗi
     numberOfMistakes: { type: Number, default: 0 },
     //_________Giá trị bị phạt
@@ -220,6 +235,17 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         default : 0
     },
     /**
+     * Số lượng Size M, L
+     */
+    numberOfOpeningSizeM: {
+        type: Number,
+        default: 0
+    },
+    numberOfOpeningSizeL: {
+        type: Number,
+        default: 0
+    },
+    /**
      * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
      */
     //_________Chi phí Food App
@@ -246,6 +272,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         ref : "user"
     }],
     members: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
+    //_________User đăng ký nhận thông báo
+    getNotification: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],

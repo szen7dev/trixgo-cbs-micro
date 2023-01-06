@@ -46,7 +46,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type }) {
-        // console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type })
+        console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
@@ -102,6 +102,7 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
+                console.log(infoAfterInsert)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
@@ -236,7 +237,7 @@ class Model extends BaseModel {
                 let conditionObj = {}
                 let sortBy;
                 // let keys	 = ['createAt__-1'];
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['createAt__1', '_id__1'];
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(companyID ){
@@ -420,9 +421,10 @@ class Model extends BaseModel {
                             unit: data?.__EMPTY_3,
                             unitPrice: data?.__EMPTY_4,
                             unitPrice2: data?.__EMPTY_5,
-                            note: data?.__EMPTY_6,
-                            parentID: data?.__EMPTY_7,
-                            
+                            unitPrice3: data?.__EMPTY_6,
+                            unitPrice4: data?.__EMPTY_7,
+                            note: data?.__EMPTY_8,
+                            parentID: data?.__EMPTY_9,
                         }
 
                         // console.log(dataInsert);

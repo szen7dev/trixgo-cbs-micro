@@ -41,6 +41,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         ref: "contact"
     },
     /**
+     * Khách biết tên hay vãng lai
+     * 1-Biết tên
+     * 2-Vãng lai
+     */
+    nonResident: {
+        type: Number,
+        default: 1
+    },
+    /**
      * Khách mới hay cũ
      * 1-Mới
      * 2-Cũ
@@ -154,8 +163,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * Hình thức phục vụ
      * 1-Tại quán
-     * 2-Mang đi
-     * 3-Giao hàng
+     * 2-Giao hàng (App)
+     * 3-Mang đi (Mua mang đi)
      */
     service: {
         type: Number,
@@ -187,6 +196,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 0
     },  
     /**
+     * SẢN PHẨM VÀ SIZE
+     */
+    //______Số size M sử dụng trong ca
+    numberOfSizeM: {
+        type: Number,
+        default: 0
+    },
+    //______Số size L sử dụng trong ca
+    numberOfSizeL: {
+        type: Number,
+        default: 0
+    },
+    /**
      * Số lượng sản phẩm
      * => Không tính với product là Topping
      */
@@ -214,6 +236,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     },
     //______Giảm giá
     salesoff: {
+        type: Number,
+        default : 0
+    },
+    //______Sử dụng credit (tích điểm quy đổi)
+    credit: {
         type: Number,
         default : 0
     },

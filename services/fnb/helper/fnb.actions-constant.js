@@ -59,6 +59,7 @@ const CF_ACTIONS_FNB = {
    SHIFT_UPDATE                                    : `${BASE_ACTIONS}_${SHIFT}_UPDATE`,
    SHIFT_REMOVE                                    : `${BASE_ACTIONS}_${SHIFT}_REMOVE`,
    SHIFT_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${SHIFT}_GET_INFO_AND_GET_LIST`,
+   SHIFT_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${SHIFT}_GET_LIST_BY_PROPERTY`,
    SHIFT_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${SHIFT}_DOWNLOAD_TEMPLATE_EXCEL`,
    SHIFT_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${SHIFT}_IMPORT_FROM_EXCEL`,
    SHIFT_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${SHIFT}_EXPORT_EXCEL`,
