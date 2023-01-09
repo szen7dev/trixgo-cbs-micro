@@ -61,7 +61,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
+        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -182,11 +182,6 @@ class Model extends BaseModel {
                     dataInsert.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
                 }
 
-                // Khách vãng lai hay không
-                if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
-                    dataInsert.nonResident = Number(infoCustomer.nonResident);
-                }
-
                 /**
                  * KHÁC
                  */
@@ -194,6 +189,16 @@ class Model extends BaseModel {
                     dataInsert.new = 2 // Đơn hàng khách cũ
                 }else{
                     dataInsert.new = 1 // Đơn hàng khách mới
+                }
+
+                // Khách vãng lai hay không
+                if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
+                    dataInsert.nonResident = Number(infoCustomer.nonResident);
+
+                    // Khách vãng lai
+                    if(infoCustomer.nonResident == 2){
+                        dataInsert.new = 3 // Khách vãng lai
+                    }
                 }
 
                 if(appOrderSign && appOrderSign != ""){
@@ -276,7 +281,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Thêm size vào đơn hàng và ca làm việc
+                 * THÊM SIZE VÀO ĐƠN HÀNG VÀ CA LÀM VIỆC
                  */
                 let totalSizeM = 0, totalSizeL = 0
                 if(products && products.length){
@@ -292,8 +297,10 @@ class Model extends BaseModel {
 
                 dataInsert.numberOfSizeM = Number(totalSizeM)
                 dataInsert.numberOfSizeL = Number(totalSizeL)
+                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
+                // console.log(infoAfterInsert)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
@@ -342,6 +349,7 @@ class Model extends BaseModel {
                  */
                 let dataUpdateFw = {}
 
+                // Kênh bán hàng, size, doanh số và số sản phẩm
                 if(!isNaN(salesChannel) && Number(salesChannel) === 1){
                     dataUpdateFw.$inc = { 
                         "total": Number(total), 
@@ -427,7 +435,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Tiền mặt
+                // Tiền mặt và chuyển khoản
                 if(!isNaN(paymentMethod) && Number(paymentMethod) === 1){
                     dataUpdateFw.$inc.cashAmount = Number(amount)
                 }
@@ -435,10 +443,11 @@ class Model extends BaseModel {
                 if(!isNaN(paymentMethod) && Number(paymentMethod) === 2){
                     dataUpdateFw.$inc.transferAmount = Number(amount)
                 }
+
                 // console.log(dataUpdateFw)
                 
                 /**
-                 * Cập nhật vào Cơ sở
+                 * CẬP NHẬT VÀO ĐIỂM BÁN/CƠ SỞ
                  * - Số lượng đơn hàng
                  * - Doanh số
                  * - Doanh thu sau khi trừ giảm giá, triết khấu
@@ -449,7 +458,7 @@ class Model extends BaseModel {
                 await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdateFw)
 
                 /**
-                 * Cập nhật vào Ca làm việc
+                 * CẬP NHẬT VÀO CA LÀM VIỆC
                  * - Số lượng đơn hàng
                  * - Doanh số
                  * - Doanh thu sau khi trừ giảm giá, triết khấu
@@ -460,7 +469,7 @@ class Model extends BaseModel {
                 await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataUpdateFw)
 
                 /**
-                 * Cập nhật vào Khách hàng
+                 * CẬP NHẬT VÀO KHÁCH HÀNG
                  * - Khách hàng mới hay cũ
                  * - Doanh số
                  * - Điểm tích lũy (tăng, giảm)
@@ -1298,6 +1307,28 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Khu vực
+                     */
+                    if(option && Number(option) == 6){
+                        conditionGroup = {
+                            _id: { area: "$area1" },
+                            quantity: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.area',
+                            select: '_id name sign',
+                            model: 'area'
+                        }
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
@@ -1352,7 +1383,7 @@ class Model extends BaseModel {
                             $sort: sortBy
                         }
                     ])
-                    if(!isNaN(option) && [3].includes(Number(option))){
+                    if(!isNaN(option) && [3,6].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
@@ -1382,6 +1413,8 @@ class Model extends BaseModel {
                     path: "shift",
                     select: "name sign",
                 })
+                .limit(1000)
+                .sort({createAt: -1})
                 // console.log(listData)
 
                 // Modify the workbook.
@@ -1438,6 +1471,77 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 25/12/2022
      */
+    resetAllData({ option, email, password, userID, companyID }) {
+        // console.log({ option, email, password, userID, companyID })
+        return new Promise(async (resolve) => {
+            try {
+                if(password.toString() != `noPass12345${email}`)
+                    return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
+
+                // if(option == 1){
+                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 2){
+                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 3){
+                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 4){
+                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 5){
+                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 6){
+                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 7){
+                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 8){
+                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 9){
+                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
+                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
+                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
+                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
+                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
+                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+                // }
+                
+                // if(option == 10){
+                //     await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
+                // }
+
+                if(option == 11){
+                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
+                        totalLoyaltyPoints: 0,
+                        usedLoyaltyPoints: 0,
+                        remainLoyaltyPoints: 0,
+                    }})
+                }
+
+                return resolve({ error: false, message: 'Reset thành công'});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;
