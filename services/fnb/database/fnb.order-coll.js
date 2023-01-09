@@ -53,6 +53,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * Khách mới hay cũ
      * 1-Mới
      * 2-Cũ
+     * 3-Khách vãng lai
      */
     new: {
         type: Number,
