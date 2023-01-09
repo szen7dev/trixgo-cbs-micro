@@ -1172,12 +1172,29 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo khách hàng cũ, mới
+                     * Gom nhóm theo khách hàng cũ, mới, vãng lai
                      */
                     if(option && Number(option) == 3){
                         conditionGroup = {
                             _id: { new: "$new" },
                             quantity: { $sum: 1 },
+                        }
+                    }
+
+                    /**
+                     * Gom nhóm theo Nhân viên
+                     */
+                    if(option && Number(option) == 4){
+                        conditionObj.funda = { $exists: true, $ne: null }
+                        conditionObj.type = 1 // 1-Nhân viên, 2-Khách hàng
+                        conditionGroup = {
+                            _id: { funda: "$funda" },
+                            quantity: { $sum: 1 },
+                        }
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name sign image',
+                            model: 'funda'
                         }
                     }
 
@@ -1215,7 +1232,7 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [2].includes(Number(option))){
+                    if(!isNaN(option) && [2,4].includes(Number(option))){
                         await ITEM__CONTACT_COLL.populate(listData, conditionPopulate)
                     }
 
