@@ -61,7 +61,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
-        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
+        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -284,16 +284,21 @@ class Model extends BaseModel {
                  * THÊM SIZE VÀO ĐƠN HÀNG VÀ CA LÀM VIỆC
                  */
                 let totalSizeM = 0, totalSizeL = 0
+                // console.log('=============1: SẢN PHẨM GIỎ HÀNG==========================>>>>>>>>>>>>>>>>>')
                 if(products && products.length){
                     for(const prodSize of products){
+                        // console.log('=============1.1: Bắt đầu SP==========================>>>>>>>>>>>>>>>>>')
+                        // console.log(prodSize)
                         if(prodSize.size == 1){
                             totalSizeM = Number(totalSizeM) + Number(prodSize.quantity)
                         }
                         if(prodSize.size == 2){
                             totalSizeL = Number(totalSizeL) + Number(prodSize.quantity)
                         }
+                        // console.log('=============1.2: Kết thúc SP==========================>>>>>>>>>>>>>>>>>')
                     }
                 }
+                // console.log('=============2: SẢN PHẨM GIỎ HÀNG==========================>>>>>>>>>>>>>>>>>')
 
                 dataInsert.numberOfSizeM = Number(totalSizeM)
                 dataInsert.numberOfSizeL = Number(totalSizeL)
@@ -311,6 +316,13 @@ class Model extends BaseModel {
                 if(products && products.length){
                     // Thêm vào đơn hàng-sản phẩm
                     const productsAsync = products.map(product => {
+
+                        // Tính giá sản phẩm trong trường hợp có cả Topping
+                        let newUnitPrice = product.unitPrice
+                        for(const subProd of product.variantsSelected){
+                            newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
+                        }
+
                         const dataInsertProduct = {
                             userID,
                             orderID,
@@ -320,7 +332,8 @@ class Model extends BaseModel {
                             ice: product.ice ? Number(product.ice) : 1,
                             subProductsID: product.variantsID,
                             quantity: product.quantity ? Number(product.quantity) : 0,
-                            unitPrice: product.unitPrice,
+                            // unitPrice: product.unitPrice,
+                            unitPrice: newUnitPrice,
                             note: product.note
                         }
                         return FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct);
@@ -342,7 +355,7 @@ class Model extends BaseModel {
                  */
 
                 /**
-                 * B5. CẬP NHẬT THÔNG TIN ĐƠN HÀNG VÀO:
+                 * B5. CẬP NHẬT THÔNG TIN SAU KHI TẠO XONG ĐƠN HÀNG:
                  * - Cơ sở
                  * - Ca làm việc
                  * - Khách hàng
