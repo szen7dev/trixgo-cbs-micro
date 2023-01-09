@@ -33,6 +33,22 @@ const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.genera
  */
 const FNB_ORDER_PRODUCT_MODEL                  = require('./fnb.order_product-model').MODEL;
 
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
+const { 
+    FNB_NEW,
+    FNB_NON_RESIDENT,
+    FNB_INTERNAL,
+    FNB_SHIFT_TYPES,
+    FNB_SEASONS,
+    FNB_SALES_CHANNEL,
+    FNB_PAYMENT_METHOD,
+    FNB_SERVICE,
+    FNB_STATUS
+ } = require('../helper/fnb.keys-constant');
 class Model extends BaseModel {
 
     constructor() {
@@ -1349,72 +1365,79 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Reset data
-     * Author: HiepNH
-     * Code: 25/12/2022
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 8/12/2022
      */
-    resetAllData({ option, email, password, userID, companyID }) {
-        // console.log({ option, email, password, userID, companyID })
-        return new Promise(async (resolve) => {
+    exportExcel({ companyID, userID }) {
+        // console.log({ companyID, userID })
+        return new Promise(async resolve => {
             try {
-                if(password.toString() != `noPass12345${email}`)
-                    return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
+                let listData  = await FNB_ORDER_COLL.find({ company: companyID })
+                .populate({
+                    path: "funda",
+                    select: "name sign",
+                })
+                .populate({
+                    path: "shift",
+                    select: "name sign",
+                })
+                // console.log(listData)
 
-                // if(option == 1){
-                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                // }
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_order_template.xlsx')))
+                .then(async workbook => {
 
-                // if(option == 2){
-                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                // }
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Order").row(i).cell(2).value(item?.funda.name);
+                        workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                        workbook.sheet("Order").row(i).cell(4).value(item?.shift.name);
+                        workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(6).value(item.name);
+                        workbook.sheet("Order").row(i).cell(7).value(item?.sign);
+                        workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
+                        workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
+                        workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
+                        workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
+                        workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
+                        workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
+                        workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
+                        workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
+                        workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
+                        workbook.sheet("Order").row(i).cell(20).value(item.note);
+                        i++
+                    });
 
-                if(option == 3){
-                    await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                    await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                }
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `export_order_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-                if(option == 4){
-                    await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                }
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
 
-                if(option == 5){
-                    await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                }
+                    fs.unlinkSync(pathWriteFile);
+                    // console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
 
-                if(option == 6){
-                    await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                }
-
-                if(option == 7){
-                    await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                }
-
-                if(option == 8){
-                    await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                }
-
-                // if(option == 9){
-                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                // }
-                
-                // if(option == 10){
-                //     await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
-                // }
-
-                return resolve({ error: false, message: 'Reset thành công'});
             } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
+    /**
+     * Name: Reset data
+     * Author: HiepNH
+     * Code: 25/12/2022
+     */
 }
 
 exports.MODEL = new Model;
