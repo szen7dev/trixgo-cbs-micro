@@ -182,9 +182,7 @@ class Model extends BaseModel {
                     dataInsert.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
                 }
 
-                /**
-                 * KHÁC
-                 */
+                // Doanh số khách cũ, mới
                 if(numberOD && numberOD > 0){
                     dataInsert.new = 2 // Đơn hàng khách cũ
                 }else{
@@ -597,6 +595,7 @@ class Model extends BaseModel {
                 }
 
                 /**
+                 * CẬP NHẬT KHÁCH HÀNG
                  * 1-Cập nhật mã khách mới vào đơn hàng
                  * 2-Cập nhật mã khách mới vào đơn hàng, sản phẩm
                  * 3-Cập nhật doanh số vào Khách cũ
@@ -606,9 +605,12 @@ class Model extends BaseModel {
                     let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID)
                     if(!infoCustomer)
                         return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-                        
-                    dataInUpdate.customer = customerID
+
+                    // Tên đơn hàng
                     dataInUpdate.name = `Đơn hàng ${infoCustomer.name}-${infoCustomer.phone}`
+
+                    // Mã khách
+                    dataInUpdate.customer = customerID
 
                     // Giới tính
                     if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
@@ -621,17 +623,22 @@ class Model extends BaseModel {
                         dataInUpdate.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
                     }
 
-                    // Khách vãng lai hay không
-                    if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
-                        dataInUpdate.nonResident = Number(infoCustomer.nonResident);
-                    }
-
                     // Doanh số khách cũ, mới
                     let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
                     if(numberOD && numberOD > 0){
                         dataInUpdate.new = 2 // Đơn hàng khách cũ
                     }else{
                         dataInUpdate.new = 1 // Đơn hàng khách mới
+                    }
+
+                    // Khách vãng lai hay không
+                    if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
+                        dataInUpdate.nonResident = Number(infoCustomer.nonResident);
+
+                        // Khách vãng lai
+                        if(infoCustomer.nonResident == 2){
+                            dataInUpdate.new = 3 // Khách vãng lai
+                        }
                     }
                 }
                 // console.log(dataInUpdate)
@@ -644,10 +651,9 @@ class Model extends BaseModel {
                  * CẬP NHẬT THÔNG TIN VÀO KHÁCH CŨ, MỚI
                  * - Nên viết hàm đóng gói để gọi vào
                  */
-
                 if(customerID && checkObjectIDs(customerID)){
 
-                    // 2-Cập nhật mã khách mới vào đơn hàng, sản phẩm
+                    // Cập nhật mã khách mới vào đơn hàng, sản phẩm
                     await FNB_ORDER_PRODUCT_COLL.updateMany(
                         {
                             order: ObjectID(orderID),
