@@ -528,7 +528,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, cancelNote, status, paymentMethod, salesChannel }) {
+        customerID, cancelNote, filesID, status, paymentMethod, salesChannel }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -565,6 +565,10 @@ class Model extends BaseModel {
 
                 if(cancelNote) {
                     dataInUpdate.note = cancelNote;
+                }
+
+                if(checkObjectIDs(filesID)) {
+                    dataInUpdate.$addToSet = { files: filesID };
                 }
 
                 /**
@@ -636,7 +640,6 @@ class Model extends BaseModel {
                         dataInUpdate.new = 1 // Đơn hàng khách mới
                     }
                 }
-                // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)

@@ -55,10 +55,6 @@ module.exports = {
         }
     },
 
-    /**
-	 * Dev: Depv
-	 * Func: update Group
-	 */
     update: {
         auth: "required",
         params: {
@@ -68,16 +64,17 @@ module.exports = {
             status              : { type: "number", optional: true },
             paymentMethod       : { type: "number", optional: true },
             salesChannel        : { type: "number", optional: true },
+            filesID             : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, customerID, cancelNote, status, paymentMethod, salesChannel } = ctx.params;
+                let {  orderID, customerID, cancelNote, filesID, status, paymentMethod, salesChannel } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.update({
                     orderID, userID,
-                    customerID, cancelNote, status, paymentMethod, salesChannel
+                    customerID, cancelNote, filesID, status, paymentMethod, salesChannel
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
