@@ -61,7 +61,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
+        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -319,9 +319,17 @@ class Model extends BaseModel {
 
                         // Tính giá sản phẩm trong trường hợp có cả Topping
                         let newUnitPrice = product.unitPrice
-                        for(const subProd of product.variantsSelected){
-                            newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
+                        // console.log('============Gía 11111111111111111111')
+                        // console.log({newUnitPrice})
+
+                        if(product.variantsSelected && product.variantsSelected.length){
+                            for(const subProd of product.variantsSelected){
+                                // console.log({subProd})
+                                newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
+                            }
                         }
+                        // console.log('============Gía 2222222222222222222')
+                        // console.log({newUnitPrice})
 
                         const dataInsertProduct = {
                             userID,

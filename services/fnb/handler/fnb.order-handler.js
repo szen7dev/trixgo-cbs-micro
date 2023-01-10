@@ -41,8 +41,8 @@ module.exports = {
 
                 const { _id: userID, company, email } = ctx.meta.infoUser;
 
-                if(email.toString () === "assistant.c686.trx@gmail.com")
-                    return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                // if(email.toString () === "assistant.c686.trx@gmail.com")
+                //     return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
                     fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
@@ -266,11 +266,11 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
 
-                console.log(dataImport)
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.importFromExcel({
                     taskID, dataImport, userID, ctx
