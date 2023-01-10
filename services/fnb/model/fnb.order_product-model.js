@@ -254,12 +254,12 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-     getList({ companyID, fundaID, orderID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
+     getList({ companyID, fundaID, orderID, keyword, limit = 50, lastestID, select, populates, sortKey, userID }) {
+        // console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 50){
-                    limit = 50;
+                if(Number(limit) > 200){
+                    limit = 200;
                 } else{
                     limit = +Number(limit);
                 }
@@ -287,7 +287,7 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -378,7 +378,7 @@ class Model extends BaseModel {
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) {
-            console.log({fundasID, fromDate, toDate})
+            // console.log({fundasID, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
