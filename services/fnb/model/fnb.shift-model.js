@@ -470,8 +470,11 @@ class Model extends BaseModel {
                             numberOfSizeM: { $sum: "$numberOfSizeM" },
                             numberOfSizeL: { $sum: "$numberOfSizeL" },
                         }
-                    }
+                    }   
 
+                    /**
+                     * Tính tổng tiền chưa nộp
+                     */
                     if(option && Number(option) == 3){
                         conditionObj.paidStatus = 1 // Chưa nộp
 
@@ -502,9 +505,9 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * DANH 
+                     * Phân loại theo năm
                      */
-                    if(option && Number(option) == 3){
+                    if(option && Number(option) == 4){
                         // // Theo năm
                         // if(optionTime && Number(optionTime) == 1){
                         //     conditionGroup = {
