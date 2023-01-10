@@ -526,9 +526,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, status, paymentMethod, salesChannel }) {
-        console.log({ orderID, userID,
-            customerID, status, paymentMethod, salesChannel })
+        customerID, cancelNote, filesID, status, paymentMethod, salesChannel }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -562,6 +560,14 @@ class Model extends BaseModel {
                 let oldCustomerID = infoOrder.customer;
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+
+                if(cancelNote) {
+                    dataInUpdate.note = cancelNote;
+                }
+
+                if(checkObjectIDs(filesID)) {
+                    dataInUpdate.$addToSet = { files: filesID };
+                }
 
                 /**
                  * CẬP NHẬT TRẠNG THÁI-HỦY ĐƠN
@@ -641,7 +647,6 @@ class Model extends BaseModel {
                         }
                     }
                 }
-                // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
@@ -1451,12 +1456,12 @@ class Model extends BaseModel {
                     var i = 3;
                     listData?.forEach((item, index) => {
                         workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Order").row(i).cell(2).value(item?.funda.name);
+                        workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
                         workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                        workbook.sheet("Order").row(i).cell(4).value(item?.shift.name);
+                        workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
                         workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
                         workbook.sheet("Order").row(i).cell(6).value(item.name);
-                        workbook.sheet("Order").row(i).cell(7).value(item?.sign);
+                        workbook.sheet("Order").row(i).cell(7).value(item.sign);
                         workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
                         workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
                         workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
