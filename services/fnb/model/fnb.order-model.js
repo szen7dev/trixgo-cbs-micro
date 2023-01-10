@@ -61,7 +61,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
-        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
+        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
