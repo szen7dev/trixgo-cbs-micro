@@ -1103,6 +1103,7 @@ class Model extends BaseModel {
                         conditionObj.funda = { $in: fundasIDIsMember };
                     }else{
                         // Cần bổ sung điều kiện khi user không có cơ sở nào => data phải rỗng
+                        conditionObj.funda = { $in: [] };
                     }
                 }
 
