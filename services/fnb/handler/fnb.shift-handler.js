@@ -39,7 +39,7 @@
              try {
                  await this.validateEntity(ctx.params);
                  let { fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL } = ctx.params;
-                 console.log({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash  })
+                //  console.log({ fundaID, name, note, campaign, seasons, shiftType, workingHours, staffsID, openingCash, incurredCash, closingCash  })
                  
                  const { _id: userID, company } = ctx.meta.infoUser;
  
