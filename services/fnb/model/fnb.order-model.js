@@ -182,9 +182,7 @@ class Model extends BaseModel {
                     dataInsert.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
                 }
 
-                /**
-                 * KHÁC
-                 */
+                // Doanh số khách cũ, mới
                 if(numberOD && numberOD > 0){
                     dataInsert.new = 2 // Đơn hàng khách cũ
                 }else{
@@ -278,6 +276,8 @@ class Model extends BaseModel {
                 dataInsert.amount = Number(amount)
                 if(!isNaN(vatAmount)){
                     dataInsert.vatAmount = Number(vatAmount)
+                }else{
+                    dataInsert.vatAmount = Number(amount)*10/100
                 }
 
                 /**
@@ -528,9 +528,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, status, paymentMethod, salesChannel }) {
-        console.log({ orderID, userID,
-            customerID, status, paymentMethod, salesChannel })
+        customerID, cancelNote, filesID, status, paymentMethod, salesChannel }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -565,6 +563,14 @@ class Model extends BaseModel {
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
+                if(cancelNote) {
+                    dataInUpdate.note = cancelNote;
+                }
+
+                if(checkObjectIDs(filesID)) {
+                    dataInUpdate.$addToSet = { files: filesID };
+                }
+
                 /**
                  * CẬP NHẬT TRẠNG THÁI-HỦY ĐƠN
                  */
@@ -597,6 +603,7 @@ class Model extends BaseModel {
                 }
 
                 /**
+                 * CẬP NHẬT KHÁCH HÀNG
                  * 1-Cập nhật mã khách mới vào đơn hàng
                  * 2-Cập nhật mã khách mới vào đơn hàng, sản phẩm
                  * 3-Cập nhật doanh số vào Khách cũ
@@ -606,9 +613,12 @@ class Model extends BaseModel {
                     let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID)
                     if(!infoCustomer)
                         return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-                        
-                    dataInUpdate.customer = customerID
+
+                    // Tên đơn hàng
                     dataInUpdate.name = `Đơn hàng ${infoCustomer.name}-${infoCustomer.phone}`
+
+                    // Mã khách
+                    dataInUpdate.customer = customerID
 
                     // Giới tính
                     if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
@@ -621,11 +631,6 @@ class Model extends BaseModel {
                         dataInUpdate.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
                     }
 
-                    // Khách vãng lai hay không
-                    if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
-                        dataInUpdate.nonResident = Number(infoCustomer.nonResident);
-                    }
-
                     // Doanh số khách cũ, mới
                     let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
                     if(numberOD && numberOD > 0){
@@ -633,53 +638,21 @@ class Model extends BaseModel {
                     }else{
                         dataInUpdate.new = 1 // Đơn hàng khách mới
                     }
+
+                    // Khách vãng lai hay không
+                    if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
+                        dataInUpdate.nonResident = Number(infoCustomer.nonResident);
+
+                        // Khách vãng lai
+                        if(infoCustomer.nonResident == 2){
+                            dataInUpdate.new = 3 // Khách vãng lai
+                        }
+                    }
                 }
-                // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
-
-                /**
-                 * CẬP NHẬT THÔNG TIN VÀO KHÁCH CŨ, MỚI
-                 * - Nên viết hàm đóng gói để gọi vào
-                 */
-
-                if(customerID && checkObjectIDs(customerID)){
-
-                    // 2-Cập nhật mã khách mới vào đơn hàng, sản phẩm
-                    await FNB_ORDER_PRODUCT_COLL.updateMany(
-                        {
-                            order: ObjectID(orderID),
-                            // customer: ObjectID(oldCustomerID),
-                        },
-                        {$set: {customer: customerID } }
-                     )
-
-                    /**
-                     * 3-Cập nhật doanh số vào Khách cũ
-                     */
-                    // Lấy số đơn hàng khách đã mua
-                    // let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
-                    // if(numberOD && numberOD > 0){
-                    //     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
-                    //         new: 2, // Khách hàng cũ
-                    //         $inc: { 
-                    //             "numberOfOrders": 1,
-                    //             "purchasedValue": Number(amount),
-                    //             "totalLoyaltyPoints": Number(loyaltyPoints),
-                    //         }
-                    //     })
-                    // }else{
-                    //     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
-                    //         $inc: { 
-                    //             "numberOfOrders": 1,
-                    //             "purchasedValue": Number(amount),
-                    //             "totalLoyaltyPoints": Number(loyaltyPoints),
-                    //         }
-                    //     })
-                    // }
-                }
 
                 /**
                  * CẬP NHẬT VÀO CÁC COLL LIÊN QUAN
@@ -689,7 +662,19 @@ class Model extends BaseModel {
 
                 // 2. Cập nhật vào đơn vị cơ sở
 
-                // 3. Cập nhật vào khách hàng
+                // 3. Cập nhật vào khách hàng: MỚI VÀ CŨ
+                if(customerID && checkObjectIDs(customerID)){
+                    await that.updateCustomer({ customerID, userID }) 
+                    await that.updateCustomer({ customerID: oldCustomerID, userID }) 
+
+                    // Cập nhật đơn hàng, sản phẩm
+                    await FNB_ORDER_PRODUCT_COLL.updateMany(
+                        {
+                            order: ObjectID(orderID),
+                        },
+                        {$set: {customer: customerID } }
+                     )
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -939,6 +924,90 @@ class Model extends BaseModel {
                 // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });
+                if (!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                return resolve({ error: false, data: infoAfterUpdate });            
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    /**
+     * Name: Update value
+     * Author: HiepNH
+     * Code: 24/11/2022
+     */
+    updateCustomer({ customerID, option, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(customerID))
+                    return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                
+                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+                let numberOfOrders = 0
+                let purchasedValue = 0
+                let totalLoyaltyPoints = 0
+                // let usedLoyaltyPoints = 0
+                // let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
+                let numberOfCancelOrders = 0
+                let totalOfCancelOrders = 0
+
+                // Tổng hợp thông tin từ các đơn hàng
+                let listData = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: {
+                            customer: ObjectID(customerID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { status: "$status" },
+                            quantity: { $sum: 1 },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$amount" },
+                            loyaltyPoints: { $sum: "$amount" },
+                        }
+                    }
+                ])
+                // console.log(listData)
+
+                if(listData && listData.length){
+                    for(const item of listData){
+                        /**
+                         * ĐƠN HOÀN THÀNH
+                         */
+                        if(item._id.status && item._id.status == 5){
+                            numberOfOrders = Number(numberOfOrders) + Number(item.quantity)
+                            purchasedValue = Number(purchasedValue) + Number(item.amount)
+                            totalLoyaltyPoints = Number(totalLoyaltyPoints) + Number(item.loyaltyPoints)
+                        }
+
+                        /**
+                         * ĐƠN HỦY
+                         */
+                        if(item._id.status && item._id.status == 4){
+                            numberOfCancelOrders = Number(numberOfCancelOrders) + Number(item.quantity)
+                            totalOfCancelOrders = Number(totalOfCancelOrders) + Number(item.total)
+                        }
+                    }
+                }
+
+                dataInUpdate.numberOfOrders = Number(numberOfOrders)
+                dataInUpdate.purchasedValue = Number(purchasedValue)
+                dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
+                dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
+                dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
+
+                // console.log(dataInUpdate)
+
+                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
@@ -1445,12 +1514,12 @@ class Model extends BaseModel {
                     var i = 3;
                     listData?.forEach((item, index) => {
                         workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Order").row(i).cell(2).value(item?.funda.name);
+                        workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
                         workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                        workbook.sheet("Order").row(i).cell(4).value(item?.shift.name);
+                        workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
                         workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
                         workbook.sheet("Order").row(i).cell(6).value(item.name);
-                        workbook.sheet("Order").row(i).cell(7).value(item?.sign);
+                        workbook.sheet("Order").row(i).cell(7).value(item.sign);
                         workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
                         workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
                         workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);

@@ -245,10 +245,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______Thành tiền (phải thanh toán)
+    //______Thành tiền (phải thanh toán) -  Chưa gồm VAT
     amount: {
         type: Number,
         default : 0
+    },
+    //______Tỷ lệ VAT
+    vatRate: {
+        type: Number,
+        default : 10
     },
     //______VAT thành tiền (10%*amount)
     vatAmount: {
