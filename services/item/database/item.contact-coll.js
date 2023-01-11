@@ -305,7 +305,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     },
     //_________Ngày bắt đầu tham gia mua hàng
     joinedDate: { type: Date, default: Date.now },
-    //_________Số đơn hàng đã mua
+    //_________Số đơn hàng đã Mua
     numberOfOrders: {
         type: Number,
         default: 0
@@ -315,20 +315,30 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 0
     },
-    //______Tổng điểm tích lũy
+    //______Tổng tiền tích lũy
     totalLoyaltyPoints: {
         type: Number,
         default : 0
     },
-    //______Điểm đã sử dụng
+    //______Tiền đã sử dụng
     usedLoyaltyPoints: {
         type: Number,
         default : 0
     },
-    //______Điểm còn lại
+    //______Tiền còn lại
     remainLoyaltyPoints: {
         type: Number,
         default : 0
+    },
+    //_________Số đơn hàng đã Hủy
+    numberOfCancelOrders: {
+        type: Number,
+        default: 0
+    },
+    //_________Giá trị đơn hàng đã Hủy
+    totalOfCancelOrders: {
+        type: Number,
+        default: 0
     },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
