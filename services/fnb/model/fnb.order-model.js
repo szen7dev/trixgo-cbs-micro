@@ -183,7 +183,8 @@ class Model extends BaseModel {
                 }
 
                 // Doanh số khách cũ, mới
-                if(numberOD && numberOD > 0){
+                // if(numberOD && numberOD > 0){
+                if((numberOD && numberOD > 0) || (infoCustomer.new && infoCustomer.new == 2)){
                     dataInsert.new = 2 // Đơn hàng khách cũ
                 }else{
                     dataInsert.new = 1 // Đơn hàng khách mới
@@ -639,7 +640,7 @@ class Model extends BaseModel {
 
                     // Doanh số khách cũ, mới
                     let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
-                    if(numberOD && numberOD > 0){
+                    if((numberOD && numberOD > 0) || (infoCustomer.new && infoCustomer.new == 2)){
                         dataInUpdate.new = 2 // Đơn hàng khách cũ
                     }else{
                         dataInUpdate.new = 1 // Đơn hàng khách mới
@@ -1629,6 +1630,12 @@ class Model extends BaseModel {
                         totalLoyaltyPoints: 0,
                         usedLoyaltyPoints: 0,
                         remainLoyaltyPoints: 0,
+                    }})
+                }
+
+                if(option == 12){
+                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
+                        new: 2
                     }})
                 }
 
