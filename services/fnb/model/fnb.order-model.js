@@ -60,8 +60,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, vatAmount, products, userID })
+    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
+        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -250,6 +250,12 @@ class Model extends BaseModel {
                     dataInsert.discount = Number(discount)
 
                     amount = Number(amount) - Number(discount)
+                }
+
+                if(!isNaN(credit)){
+                    dataInsert.credit = Number(credit)
+
+                    amount = Number(amount) - Number(credit)
                 }
 
                 /**

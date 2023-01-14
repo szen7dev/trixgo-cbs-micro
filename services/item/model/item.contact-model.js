@@ -27,7 +27,8 @@ const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll
 const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll');
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
-const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll')
+const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll');
+const { ObjectId } = require('mongodb');
 
 class Model extends BaseModel {
 
@@ -1081,7 +1082,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/12/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
+    getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
         // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
@@ -1090,7 +1091,7 @@ class Model extends BaseModel {
 
                 }else{
                     let conditionObj = {
-                        // mistake: { $exists: true, $ne: null }
+                        company: ObjectID(companyID)
                     }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}

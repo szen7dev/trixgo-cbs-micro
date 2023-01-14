@@ -31,13 +31,14 @@ module.exports = {
             total               : { type: "string", optional: true },
             discount            : { type: "string", optional: true },
             salesoff            : { type: "string", optional: true },
+            credit              : { type: "string", optional: true },
             vatAmount           : { type: "string", optional: true },
             products            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products } = ctx.params;
+                let { fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, vatAmount, products } = ctx.params;
 
                 const { _id: userID, company, email } = ctx.meta.infoUser;
 
@@ -45,7 +46,7 @@ module.exports = {
                 //     return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, vatAmount, products, userID
+                    fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, vatAmount, products, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
