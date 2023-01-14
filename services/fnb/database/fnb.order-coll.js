@@ -240,7 +240,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______Sử dụng credit (tích điểm quy đổi)
+    /**
+     * Sử dụng credit (tích điểm quy đổi)
+     * Giảm giá bằng Credit
+     */
     credit: {
         type: Number,
         default : 0
