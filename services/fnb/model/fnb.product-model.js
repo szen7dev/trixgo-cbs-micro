@@ -53,7 +53,12 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(companyID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { name, type, userCreate: userID };
+                let dataInsert = { 
+                    name, 
+                    namecv: stringUtils.removeAccents(name),
+                    type, 
+                    userCreate: userID 
+                };
                 if(sign && sign != ""){
                     let checkExist = await FNB_PRODUCT_COLL.findOne({ company: companyID, sign });
                     if(checkExist)
@@ -296,12 +301,12 @@ class Model extends BaseModel {
                     keywordCV = '.*' + keywordCV.join(".*") + '.*';
                     const regCVSearch = new RegExp(keywordCV, 'i');
 
-                    // conditionObj.namecv = regCVSearch
+                    conditionObj.namecv = regCVSearch
 
-                    conditionObj.$or = [
-                        { namecv: regCVSearch },
-                        { name: regSearch }, // sau bỏ đi
-                    ]
+                    // conditionObj.$or = [
+                    //     { namecv: regCVSearch },
+                    //     { name: regSearch }, // sau bỏ đi
+                    // ]
 
                     // console.log(conditionObj)
                 }
@@ -411,7 +416,7 @@ class Model extends BaseModel {
     /**
      * Dev: HiepNH
      * Func: importFromExcel
-     * Date: 8/12/2022
+     * Date: 8/1/2023
      */
     importFromExcel({ companyID, dataImport, userID, ctx }) {
         return new Promise(async resolve => {
@@ -459,6 +464,77 @@ class Model extends BaseModel {
                 // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
                 return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: exportExcel
+     * Date: 15/1/2023
+     */
+    exportExcel({ companyID, userID }) {
+        // console.log({ companyID, userID })
+        return new Promise(async resolve => {
+            try {
+                let listData  = await FNB_ORDER_COLL.find({ company: companyID })
+                .populate({
+                    path: "funda",
+                    select: "name sign",
+                })
+                .populate({
+                    path: "shift",
+                    select: "name sign",
+                })
+                .limit(1000)
+                .sort({createAt: -1})
+                // console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
+                .then(async workbook => {
+
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
+                        workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                        workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
+                        workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(6).value(item.name);
+                        workbook.sheet("Order").row(i).cell(7).value(item.sign);
+                        workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
+                        workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
+                        workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
+                        workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
+                        workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
+                        workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
+                        workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
+                        workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
+                        workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
+                        workbook.sheet("Order").row(i).cell(20).value(item.note);
+                        i++
+                    });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `fnb_shift_export_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    // console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
