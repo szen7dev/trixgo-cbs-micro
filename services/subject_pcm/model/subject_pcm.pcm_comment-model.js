@@ -189,8 +189,8 @@ class Model extends BaseModel {
     insertCommentTask({
         taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
     }) {
-        console.log('=======================insertCommentTask=====================')
-        console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
+        // console.log('=======================insertCommentTask=====================')
+        // console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
         return new Promise(async resolve => {
             try {
                 /**

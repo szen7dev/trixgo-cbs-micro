@@ -66,6 +66,7 @@ module.exports = {
             address             : { type: "string", optional: true },
             phone               : { type: "string", optional: true },
             bankAccount         : { type: "string", optional: true },
+            bankQrcode          : { type: "array", optional: true },
             loyaltyPointsRate   : { type: "string", optional: true },
             initialDay          : { type: "string", optional: true },
             area                : { type: "string", optional: true },
@@ -73,6 +74,7 @@ module.exports = {
             membersRemove       : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
             adminsRemove        : { type: "array", optional: true },
+            imagesID            : { type: "array", optional: true },
             campaign            : { type: "number", optional: true },
             internal            : { type: "number", optional: true },
             materialExpenseRate : { type: "number", optional: true },
@@ -87,12 +89,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, name, sign, description, phone, bankAccount, address, initialDay, members, admins, membersRemove, 
-                    adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate } = ctx.params;
+                const { fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
+                    adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, phone, bankAccount, address, initialDay, members, 
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, 
                     admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, 
-                    otherExpense, userID, activeCampaign, loyaltyPointsRate });
+                    otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

@@ -3,7 +3,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }
                                         = require('../../../tools/utils/utils');
-// const stringUtils					    = require('../../../tools/utils/string_utils');
+const stringUtils					    = require('../../../tools/utils/string_utils');
 // const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 
@@ -18,6 +18,7 @@ const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
+
 
 /**s
  * import inter-coll, exter-coll
@@ -46,7 +47,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type }) {
-        console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type })
+        // console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
@@ -136,7 +137,8 @@ class Model extends BaseModel {
                 }
 
                 if(name){
-                    dataInUpdate.name =name;
+                    dataInUpdate.name = name; 
+                    dataInUpdate.namecv = stringUtils.removeAccents(name); 
                 }
 
                 if(sign){
@@ -283,14 +285,25 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    let keywordCV =  stringUtils.removeAccents(keyword)
+                    // console.log({keywordCV})
+
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
+                    
+                    keywordCV = keywordCV.split(" ");
+                    keywordCV = '.*' + keywordCV.join(".*") + '.*';
+                    const regCVSearch = new RegExp(keywordCV, 'i');
+
+                    // conditionObj.namecv = regCVSearch
 
                     conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
+                        { namecv: regCVSearch },
+                        { name: regSearch }, // sau bỏ đi
                     ]
+
+                    // console.log(conditionObj)
                 }
 
                 if(select && typeof select === 'string'){

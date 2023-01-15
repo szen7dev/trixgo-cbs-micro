@@ -1404,6 +1404,13 @@ class Model extends BaseModel {
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
     }) {
+        console.log('=============DANH SÁCH CHỦ ĐỀ==========>>>>>>>>>>>>>>')
+        // console.log({
+        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
+        //     keyword, limit, unlimit, lastestID, select, populates, unlimited
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1787,6 +1794,12 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
         limit = 50, lastestID, select, populates, userID
     }) {
+        console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ==========>>>>>>>>>>>>>>')
+        // console.log({
+        //     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        //     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
+        //     limit, lastestID, select, populates, userID
+        // })
         return new Promise(async resolve => {
             try {
                 /**
