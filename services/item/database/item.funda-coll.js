@@ -34,6 +34,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     phone: String,
     //_________TK ngân hàng
     bankAccount: String,
+    //_________Ảnh đại diện tài khoản ngân hàng
+    bankQrcode: {
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    },
     /**
      * Khóa dữ liệu trước khoảng thời gian không cho phép can thiệp:
      * - Thêm mới phiếu
@@ -279,6 +284,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     getNotification: [{
         type: Schema.Types.ObjectId,
         ref : "user"
+    }],
+    //_________Ảnh đại diện
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
     }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT

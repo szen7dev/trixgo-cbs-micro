@@ -162,8 +162,8 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, name, sign, description, phone, bankAccount, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate }){
-        // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign })
+	update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID }){
+        console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(fundaID))
@@ -214,6 +214,10 @@ class Model extends BaseModel {
                     dataUpdate.bankAccount = bankAccount;
                 }
 
+                if(bankQrcode && bankQrcode.length){
+                    dataUpdate.bankQrcode = bankQrcode[0];
+                }
+
                 if(description && description != ""){
                     dataUpdate.description = description;
                 }
@@ -224,6 +228,13 @@ class Model extends BaseModel {
 
                 if(initialDay && initialDay != ""){
                     dataUpdate.initialDay = initialDay;
+                }
+
+                if(imagesID && imagesID.length) {
+                    dataAddToset = {
+                        ...dataAddToset,
+                        images: imagesID
+                    }
                 }
 
                 //_________Thêm thành viên
@@ -312,6 +323,8 @@ class Model extends BaseModel {
                 if(dataPullAll){
                     dataUpdate.$pullAll = dataPullAll;
                 }
+
+                console.log(dataUpdate)
 
                 let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
