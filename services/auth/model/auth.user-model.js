@@ -1141,8 +1141,8 @@ class Model extends BaseModel {
 	 * Date: 03/03/2022
 	 */
     insert({ email, fullname, level, departmentID, positionID, companyID, phone, storageUse }) {
-        console.log('====================>>>>>>>>>>>>>>>>>>>>')
-        console.log({ email, fullname, level, departmentID, positionID, companyID })
+        // console.log('====================>>>>>>>>>>>>>>>>>>>>')
+        // console.log({ email, fullname, level, departmentID, positionID, companyID })
         return new Promise(async resolve => {
             try {
                 if(!email || !fullname) {
@@ -1679,7 +1679,10 @@ class Model extends BaseModel {
      */
     getListV2({
         companyID, projectID, arrayID,
-        keyword, limit = 10, lastestID, select, populates= {}, ctx, isLoadAll,  }) {
+        keyword, limit = 10, lastestID, select, populates= {}, ctx, isLoadAll}) {
+            // console.log({
+            //     companyID, projectID, arrayID,
+            //     keyword, limit, lastestID, select, populates, isLoadAll})
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){

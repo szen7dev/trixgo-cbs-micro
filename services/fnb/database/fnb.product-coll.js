@@ -48,6 +48,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
     },
     //_________Nội dung
     name: String,
+    //_________Nội dung
+    namecv: String,
     //_________Mã hiệu
     sign: String,
     //_________Đơn vị tính
