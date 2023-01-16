@@ -625,8 +625,7 @@ class Model extends BaseModel {
                 let conditionGroup = {}
                 let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"day": 1}
 
-                // let fundaID = filterParams.fundaID
-                console.log({fundaID})
+                // console.log({fundaID})
                 let listDataShift  = await FNB_SHIFT_COLL.aggregate([
                     {
                         $match: {
@@ -646,14 +645,13 @@ class Model extends BaseModel {
                     },
                     {
                         $group: {
-                            _id: { staff: "$staff" },
-                            // amount: { $sum: "$amount" },
+                            _id: { staff: "$staff" }
                         }
                     }
                 ])
 
                 conditionGroup = {
-                    _id: { month: "$month", year: "$year" },
+                    _id: { day: "$day", month: "$month", year: "$year" },
                     workingHours: { $sum: "$workingHours" },
                     subWorkingHours: { $sum: "$subWorkingHours" },
                 }
@@ -690,29 +688,8 @@ class Model extends BaseModel {
                 ])
                 console.log(listDataTimesheet)
 
-                // conditionPopulate = {
-                //     path: '_id.staff',
-                //     select: '_id fullname image',
-                //     model: 'user'
-                // }
-
                 let listUser = await USER_COLL.find({_id: {$in: listDataShift.map(item=>item._id.staff)}}).select('_id fullname')
-                // console.log(listUser)
 
-                // await FNB_SHIFT_COLL.populate(listDataShift, conditionPopulate)
-                // console.log(listDataShift)
-
-                // let listData  = await FNB_ORDER_COLL.find({ company: companyID })
-                // .populate({
-                //     path: "funda",
-                //     select: "name sign",
-                // })
-                // .populate({
-                //     path: "shift",
-                //     select: "name sign",
-                // })
-                // .limit(1000)
-                // .sort({createAt: -1})
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
@@ -723,30 +700,26 @@ class Model extends BaseModel {
                         j++
                     });
 
-                    // var i = 3;
-                    // listData?.forEach((item, index) => {
-                    //     workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                    //     workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                    //     workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                    //     workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-                    //     workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-                    //     workbook.sheet("Order").row(i).cell(6).value(item.name);
-                    //     workbook.sheet("Order").row(i).cell(7).value(item.sign);
-                    //     workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-                    //     workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-                    //     workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-                    //     workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-                    //     workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-                    //     workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-                    //     workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                    //     workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
-                    //     workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
-                    //     workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
-                    //     workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
-                    //     workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
-                    //     workbook.sheet("Order").row(i).cell(20).value(item.note);
-                    //     i++
-                    // });
+                    var i = 5;
+                    listDataTimesheet?.forEach((item, index) => {
+                        let str = `${item._id.day}${item._id.month}${item._id.year}`
+                        let value = workbook.sheet("Timesheet").row(i).cell(19).value(); // Cột S
+
+                        console.log({str})
+                        console.log({value})
+                        // var j = 2
+                        // listUser?.forEach((item, index) => {
+                        //     workbook.sheet("Timesheet").row(3).cell(j).value(item.fullname);
+                        //     j++
+                        // });
+
+                        workbook.sheet("Timesheet").row(i).cell(2).value(item.workingHours)
+
+                        // if(Number(str) === Number(value)){
+                        //     workbook.sheet("Timesheet").row(i).cell(2).value(item.workingHours)
+                        // }
+                        i++
+                    });
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
