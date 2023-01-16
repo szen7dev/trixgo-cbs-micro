@@ -270,19 +270,20 @@
         auth: 'required',
         params: {
             companyID: { type: "string", optional: true },
+            fundaID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID, filterParams } = ctx.params;
+                let { companyID, fundaID } = ctx.params;
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await FNB_SHIFT_MODEL.exportExcel({
-                    userID, companyID, filterParams, ctx
+                    userID, companyID, fundaID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
