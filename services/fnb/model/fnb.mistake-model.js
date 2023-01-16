@@ -41,7 +41,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ mistakeID, executorID, fundaID, orderID, type, amount, note, files, userID }) {
+    insert({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID }) {
+        // console.log({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(fundaID) || !checkObjectIDs(userID))
@@ -93,6 +94,10 @@ class Model extends BaseModel {
                     dataInsert.amount = Number(amount);
                 }
 
+                if(!isNaN(bonus)){
+                    dataInsert.bonus = Number(bonus);
+                }
+
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
@@ -124,7 +129,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderMistakeID, mistakeID, executorID, fundaID, orderID, type, amount, note, userID}) {
+    update({ orderMistakeID, type, amount, bonus, note, userID}) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderMistakeID))
@@ -140,10 +145,14 @@ class Model extends BaseModel {
                     dataInUpdate.amount = Number(amount);
                 }
 
+                if(!isNaN(bonus)){
+                    dataInUpdate.bonus = Number(bonus);
+                }
+
                 if(note && note != ""){
                     dataInUpdate.note = note;
                 }
-                console.log({ dataInUpdate })
+                // console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await FNB_MISTAKE_COLL.findByIdAndUpdate(orderMistakeID, dataInUpdate, { new: true });
 
@@ -275,8 +284,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -333,7 +341,7 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
                     .lean();
-                    console.log(infoDataAfterGet)
+                    // console.log(infoDataAfterGet)
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });

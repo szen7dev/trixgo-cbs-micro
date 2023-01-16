@@ -40,10 +40,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 1
     },
-    /**
-     * Phạt lỗi
-     */
+    //_________Giá trị phạt
     amount: {
+        type: Number,
+        default: 0
+    },
+    //_________Giá trị thưởng
+    bonus: {
         type: Number,
         default: 0
     },

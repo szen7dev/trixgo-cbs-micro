@@ -23,17 +23,18 @@ module.exports = {
             orderID             : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             amount              : { type: "string", optional: true },
+            bonus               : { type: "string", optional: true },
             note                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { mistakeID, executorID, fundaID, orderID, type, amount, note, files } = ctx.params;
+                let { mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.insert({
-                    mistakeID, executorID, fundaID, orderID, type, amount, note, files, userID
+                    mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -57,17 +58,18 @@ module.exports = {
             orderID             : { type: "string", optional: true },
             type                : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
+            bonus               : { type: "number", optional: true },
             note                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderMistakeID, mistakeID, executorID, fundaID, orderID, type, amount, note } = ctx.params;
+                let {  orderMistakeID, mistakeID, executorID, fundaID, orderID, type, amount, bonus, note } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.update({
                     orderMistakeID, userID,
-                    executorID, fundaID, orderID, type, amount, note
+                    executorID, fundaID, orderID, type, amount, bonus, note
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -239,11 +241,11 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
 
-                console.log(dataImport)
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_MISTAKE_MODEL.importFromExcel({
                     taskID, dataImport, userID, ctx
