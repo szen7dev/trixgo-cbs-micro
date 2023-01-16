@@ -182,7 +182,7 @@ class Model extends BaseModel {
                             select: "_id name",
                         }
                     })
-                    console.log(infoArea)
+                    // console.log(infoArea)
                     if(Number(infoArea.level) != 3)
                         return resolve({ error: true, message: "Khu vực chọn cần phải là Phường/Xã", keyError: "Request params name invalid" });
 

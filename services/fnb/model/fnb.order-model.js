@@ -212,17 +212,29 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                if(!isNaN(salesChannel) && [1,2,3,4,5,6,7].includes(Number(salesChannel))){
-                    dataInsert.salesChannel = Number(salesChannel);
-                }
-
                 if(!isNaN(paymentMethod)&& [1,2].includes(Number(paymentMethod))){
                     dataInsert.paymentMethod = Number(paymentMethod);
                 }
 
+                if(!isNaN(salesChannel) && [1,2,3,4,5,6,7].includes(Number(salesChannel))){
+                    dataInsert.salesChannel = Number(salesChannel);
+
+                    if(salesChannel != 1){
+                        dataInsert.paymentMethod = Number(2) // Chuyển khoản
+                    }
+                }
+
                 if(!isNaN(service)&& [1,2,3].includes(Number(service))){
                     dataInsert.service = Number(service);
+
+                    // Kênh offline
+                    if(Number(service) === 1){
+                        // console.log('YYYYYYYYYYY>>>>>>>>>>>>>>>>>>>>>>')
+                        dataInsert.salesChannel = Number(1)
+                    }
                 }
+                // console.log('==============>>>>>>>>>>>>>>>>>>>>>>')
+                // console.log(dataInsert)
 
                 // Tính tổng khối lượng sản phẩm (cốc)
                 let totalQuantity = 0;

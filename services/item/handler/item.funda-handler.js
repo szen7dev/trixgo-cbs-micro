@@ -92,6 +92,9 @@ module.exports = {
                 const { fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
                     adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID } = ctx.params;
 
+                // console.log({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
+                //     adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID })
+
                 const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, 
                     admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, 
                     otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID });
