@@ -61,7 +61,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
+        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -329,7 +329,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
                 /**
-                 * GÁN SẢN PHẨM VÀO CA LÀM VIỆC
+                 * GÁN SẢN PHẨM VÀO ĐƠN HÀNG-SẢN PHẨM
                  */
                 const orderID = infoAfterInsert._id;
                 if(products && products.length){
@@ -344,7 +344,25 @@ class Model extends BaseModel {
                         if(product.variantsSelected && product.variantsSelected.length){
                             for(const subProd of product.variantsSelected){
                                 // console.log({subProd})
-                                newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
+                                // M-Off
+                                if(Number(product.size) == 1 && Number(salesChannel) == 1){
+                                    newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
+                                }
+
+                                // M-App
+                                if(Number(product.size) == 1 && Number(salesChannel) != 1){
+                                    newUnitPrice = Number(newUnitPrice) + subProd.unitPrice2
+                                }
+
+                                // L-Off
+                                if(Number(product.size) == 2 && Number(salesChannel) == 1){
+                                    newUnitPrice = Number(newUnitPrice) + subProd.unitPrice3
+                                }
+
+                                // L-App
+                                if(Number(product.size) == 2 && Number(salesChannel) != 1){
+                                    newUnitPrice = Number(newUnitPrice) + subProd.unitPrice4
+                                }
                             }
                         }
                         // console.log('============Gía 2222222222222222222')
@@ -359,7 +377,6 @@ class Model extends BaseModel {
                             ice: product.ice ? Number(product.ice) : 1,
                             subProductsID: product.variantsID,
                             quantity: product.quantity ? Number(product.quantity) : 0,
-                            // unitPrice: product.unitPrice,
                             unitPrice: newUnitPrice,
                             note: product.note
                         }
