@@ -17,6 +17,7 @@ const { template } = require('lodash');
 /**s
  * import inter-coll, exter-coll
  */
+const USER_COLL                                = require('../../auth/database/auth.user-coll');
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
@@ -613,26 +614,114 @@ class Model extends BaseModel {
      * Func: exportExcel
      * Date: 15/1/2023
      */
-    exportExcel({ companyID, userID }) {
-        // console.log({ companyID, userID })
+    exportExcel({ companyID, fundaID, fromDate, toDate, userID }) {
+        console.log({ companyID, fundaID, fromDate, toDate, userID  })
         return new Promise(async resolve => {
             try {
-                let listData  = await FNB_ORDER_COLL.find({ company: companyID })
-                .populate({
-                    path: "funda",
-                    select: "name sign",
-                })
-                .populate({
-                    path: "shift",
-                    select: "name sign",
-                })
-                .limit(1000)
-                .sort({createAt: -1})
-                // console.log(listData)
+                /**
+                 * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
+                 */
+                let conditionObj = { company: ObjectID(companyID) }
+                let conditionGroup = {}
+                let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"day": 1}
+
+                // let fundaID = filterParams.fundaID
+                console.log({fundaID})
+                let listDataShift  = await FNB_SHIFT_COLL.aggregate([
+                    {
+                        $match: {
+                            funda: ObjectID(fundaID)
+                        }
+                    },
+                    { 
+                        $lookup: {
+                            from: "users",
+                            localField: "staffs",
+                            foreignField: "_id",
+                            as: "staff"
+                        } 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: {
+                            _id: { staff: "$staff" },
+                            // amount: { $sum: "$amount" },
+                        }
+                    }
+                ])
+
+                conditionGroup = {
+                    _id: { month: "$month", year: "$year" },
+                    workingHours: { $sum: "$workingHours" },
+                    subWorkingHours: { $sum: "$subWorkingHours" },
+                }
+
+                let listDataTimesheet  = await FNB_SHIFT_COLL.aggregate([
+                    {
+                        $match: {
+                            funda: ObjectID(fundaID)
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            company : 1,
+                            funda : 1,
+                            staffs : 1,
+                            workingHours : 1,
+                            subStaffs : 1,
+                            subWorkingHours : 1,
+                            createAt: 1
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                console.log(listDataTimesheet)
+
+                // conditionPopulate = {
+                //     path: '_id.staff',
+                //     select: '_id fullname image',
+                //     model: 'user'
+                // }
+
+                let listUser = await USER_COLL.find({_id: {$in: listDataShift.map(item=>item._id.staff)}}).select('_id fullname')
+                // console.log(listUser)
+
+                // await FNB_SHIFT_COLL.populate(listDataShift, conditionPopulate)
+                // console.log(listDataShift)
+
+                // let listData  = await FNB_ORDER_COLL.find({ company: companyID })
+                // .populate({
+                //     path: "funda",
+                //     select: "name sign",
+                // })
+                // .populate({
+                //     path: "shift",
+                //     select: "name sign",
+                // })
+                // .limit(1000)
+                // .sort({createAt: -1})
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
                 .then(async workbook => {
+                    var j = 2
+                    listUser?.forEach((item, index) => {
+                        workbook.sheet("Timesheet").row(3).cell(j).value(item.fullname);
+                        j++
+                    });
 
                     // var i = 3;
                     // listData?.forEach((item, index) => {
