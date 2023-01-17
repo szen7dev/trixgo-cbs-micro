@@ -615,7 +615,7 @@ class Model extends BaseModel {
      * Date: 15/1/2023
      */
     exportExcel({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
-        console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
+        // console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -665,7 +665,9 @@ class Model extends BaseModel {
                 ])
 
                 conditionGroup = {
-                    _id: { day: "$day", month: "$month", year: "$year" },
+                    // _id: {  staff: "$staff", day: "$day", month: "$month", year: "$year" },
+                    _id: {  staff: "$staff._id", day: "$day", month: "$month", year: "$year" },
+                    number: { $sum: 1 },
                     workingHours: { $sum: "$workingHours" },
                     subWorkingHours: { $sum: "$subWorkingHours" },
                 }
@@ -690,6 +692,17 @@ class Model extends BaseModel {
                             createAt: 1
                         }
                     },
+                    { 
+                        $lookup: {
+                            from: "users",
+                            localField: "staffs",
+                            foreignField: "_id",
+                            as: "staff"
+                        } 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
                     {
                         $match: conditionObjYear
                     },
@@ -700,40 +713,47 @@ class Model extends BaseModel {
                         $sort: sortBy
                     }
                 ])
-                console.log(listDataTimesheet)
+                // console.log(listDataTimesheet)
+                // console.log(listDataTimesheet.length)
 
-                let listUser = await USER_COLL.find({_id: {$in: listDataShift.map(item=>item._id.staff)}}).select('_id fullname')
+                let listStaffs = await USER_COLL.find({_id: {$in: listDataShift.map(item=>item._id.staff)}}).select('_id fullname')
 
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
                 .then(async workbook => {
                     var j = 2
-                    listUser?.forEach((item, index) => {
+                    listStaffs?.forEach((item, index) => {
                         workbook.sheet("Timesheet").row(3).cell(j).value(item.fullname);
+                        workbook.sheet("Timesheet").row(4).cell(j).value(`${item._id}`);
                         j++
-                    });
+                    })
 
-                    var i = 5;
                     listDataTimesheet?.forEach((item, index) => {
-                        let str = `${item._id.day}${item._id.month}${item._id.year}`
-                        let value = workbook.sheet("Timesheet").row(i).cell(19).value(); // Cột S
+                        let str = `${item._id.day}/${item._id.month}/${item._id.year}`;
 
-                        console.log({str})
-                        console.log({value})
-                        // var j = 2
-                        // listUser?.forEach((item, index) => {
-                        //     workbook.sheet("Timesheet").row(3).cell(j).value(item.fullname);
-                        //     j++
-                        // });
+                        for(let i=5; i<=35; i++){
+                            // Ngày tháng
+                            let dateVal = `${Number(i-4)}/${Number(monthCurrent+1)}/${yearCurrent}`
+                            workbook.sheet("Timesheet").row(i).cell(1).value(dateVal)
 
-                        workbook.sheet("Timesheet").row(i).cell(2).value(item.workingHours)
+                            // Giờ làm
+                            for(let j=2; j<=Number(listStaffs.length + 1); j++){
+                                let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
 
-                        // if(Number(str) === Number(value)){
-                        //     workbook.sheet("Timesheet").row(i).cell(2).value(item.workingHours)
-                        // }
-                        i++
-                    });
+                                // console.log({j})
+                                // console.log({staffID})
+                                // console.log('===================')
+                                // console.log(item._id.staff.toString())
+                                // console.log(staffID.toString())
+                                // console.log('===================>>>>>>>>>>>')
+                                
+                                if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
+                                    workbook.sheet("Timesheet").row(i).cell(j).value(item.workingHours)
+                                }
+                            }
+                        }
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
@@ -744,7 +764,6 @@ class Model extends BaseModel {
                     const result = await uploadFileS3(pathWriteFile, fileName);
 
                     fs.unlinkSync(pathWriteFile);
-                    // console.log({ result })
                     return resolve({ error: false, data: result?.Location, status: 200 });
                 });
 
