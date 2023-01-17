@@ -614,18 +614,32 @@ class Model extends BaseModel {
      * Func: exportExcel
      * Date: 15/1/2023
      */
-    exportExcel({ companyID, fundaID, fromDate, toDate, userID }) {
-        console.log({ companyID, fundaID, fromDate, toDate, userID  })
+    exportExcel({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
+        console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
         return new Promise(async resolve => {
             try {
                 /**
                  * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
                  */
+                let yearCurrent = new Date().getFullYear()
+                let monthCurrent = new Date().getMonth()
+                console.log({ yearCurrent, monthCurrent })
+
                 let conditionObj = { company: ObjectID(companyID) }
                 let conditionGroup = {}
                 let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"day": 1}
 
-                // console.log({fundaID})
+                if(!isNaN(year) && Number(year) >= 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                    }
+                }else{
+                    conditionObjYear = {
+                        "year": Number(yearCurrent),
+                    }
+                }
+
+                // Danh sách nhân sự
                 let listDataShift  = await FNB_SHIFT_COLL.aggregate([
                     {
                         $match: {
