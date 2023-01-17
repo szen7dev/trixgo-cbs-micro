@@ -625,6 +625,8 @@ class Model extends BaseModel {
                 let monthCurrent = new Date().getMonth()
                 console.log({ yearCurrent, monthCurrent })
 
+                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+
                 let conditionObj = { company: ObjectID(companyID) }
                 let conditionGroup = {}
                 let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"day": 1}
@@ -722,6 +724,8 @@ class Model extends BaseModel {
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
                 .then(async workbook => {
+                    workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
+
                     var j = 2
                     listStaffs?.forEach((item, index) => {
                         workbook.sheet("Timesheet").row(3).cell(j).value(item.fullname);
