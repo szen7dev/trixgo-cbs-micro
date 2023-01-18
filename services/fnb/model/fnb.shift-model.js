@@ -623,7 +623,7 @@ class Model extends BaseModel {
                  */
                 let yearCurrent = new Date().getFullYear()
                 let monthCurrent = new Date().getMonth()
-                console.log({ yearCurrent, monthCurrent })
+                // console.log({ yearCurrent, monthCurrent })
 
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
 
@@ -641,8 +641,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Danh sách nhân sự
-                let listDataShift  = await FNB_SHIFT_COLL.aggregate([
+                // Danh sách nhân sự ca chính
+                let listData1  = await FNB_SHIFT_COLL.aggregate([
                     {
                         $match: {
                             funda: ObjectID(fundaID)
@@ -666,15 +666,39 @@ class Model extends BaseModel {
                     }
                 ])
 
+                 // Danh sách nhân sự ca phụ
+                let listData2  = await FNB_SHIFT_COLL.aggregate([
+                    {
+                        $match: {
+                            funda: ObjectID(fundaID)
+                        }
+                    },
+                    { 
+                        $lookup: {
+                            from: "users",
+                            localField: "subStaffs",
+                            foreignField: "_id",
+                            as: "staff"
+                        } 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: {
+                            _id: { staff: "$staff" }
+                        }
+                    }
+                ])
+
                 conditionGroup = {
-                    // _id: {  staff: "$staff", day: "$day", month: "$month", year: "$year" },
                     _id: {  staff: "$staff._id", day: "$day", month: "$month", year: "$year" },
                     number: { $sum: 1 },
                     workingHours: { $sum: "$workingHours" },
                     subWorkingHours: { $sum: "$subWorkingHours" },
                 }
 
-                let listDataTimesheet  = await FNB_SHIFT_COLL.aggregate([
+                let listDataTimesheet1  = await FNB_SHIFT_COLL.aggregate([
                     {
                         $match: {
                             funda: ObjectID(fundaID)
@@ -715,11 +739,58 @@ class Model extends BaseModel {
                         $sort: sortBy
                     }
                 ])
-                // console.log(listDataTimesheet)
+
+                let listDataTimesheet2  = await FNB_SHIFT_COLL.aggregate([
+                    {
+                        $match: {
+                            funda: ObjectID(fundaID)
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            company : 1,
+                            funda : 1,
+                            staffs : 1,
+                            workingHours : 1,
+                            subStaffs : 1,
+                            subWorkingHours : 1,
+                            createAt: 1
+                        }
+                    },
+                    { 
+                        $lookup: {
+                            from: "users",
+                            localField: "subStaffs",
+                            foreignField: "_id",
+                            as: "staff"
+                        } 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                // console.log(listDataTimesheet1)
+                // console.log(listDataTimesheet2)
                 // console.log(listDataTimesheet.length)
 
-                let listStaffs = await USER_COLL.find({_id: {$in: listDataShift.map(item=>item._id.staff)}}).select('_id fullname')
+                let listData3 = [...listData1, ...listData2]
+                // console.log(listData1.length)
+                // console.log(listData2.length)
+                // console.log(listData3.length)
 
+                let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
@@ -733,10 +804,9 @@ class Model extends BaseModel {
                         j++
                     })
 
-                    listDataTimesheet?.forEach((item, index) => {
-                        let str = `${item._id.day}/${item._id.month}/${item._id.year}`;
-
+                    listDataTimesheet1?.forEach((item, index) => {
                         for(let i=5; i<=35; i++){
+
                             // Ngày tháng
                             let dateVal = `${Number(i-4)}/${Number(monthCurrent+1)}/${yearCurrent}`
                             workbook.sheet("Timesheet").row(i).cell(1).value(dateVal)
@@ -744,16 +814,23 @@ class Model extends BaseModel {
                             // Giờ làm
                             for(let j=2; j<=Number(listStaffs.length + 1); j++){
                                 let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
-
-                                // console.log({j})
-                                // console.log({staffID})
-                                // console.log('===================')
-                                // console.log(item._id.staff.toString())
-                                // console.log(staffID.toString())
-                                // console.log('===================>>>>>>>>>>>')
                                 
                                 if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
                                     workbook.sheet("Timesheet").row(i).cell(j).value(item.workingHours)
+                                }
+                            }
+                        }
+                    })
+
+                    listDataTimesheet2?.forEach((item, index) => {
+                        for(let i=5; i<=35; i++){
+                            for(let j=2; j<=Number(listStaffs.length + 1); j++){
+                                let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
+                                
+                                if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
+                                    let timesheet = workbook.sheet("Timesheet").row(i).cell(j).value() | 0
+
+                                    workbook.sheet("Timesheet").row(i).cell(j).value(Number(timesheet) + Number(item.subWorkingHours))
                                 }
                             }
                         }
