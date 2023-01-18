@@ -292,7 +292,7 @@ class Model extends BaseModel {
         contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
+        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, fundaID 
     }){
         // console.log('================THAM BIẾN CẬP NHẬT=================')
         // console.log({
@@ -580,6 +580,19 @@ class Model extends BaseModel {
                     if(infoFunda.company){
                         dataUpdate.company = infoFunda.company
                     }
+                }
+
+                if(purchasedValue && !isNaN(purchasedValue)){
+                    dataUpdate.purchasedValue = Number(purchasedValue);
+                }
+                if(totalLoyaltyPoints && !isNaN(totalLoyaltyPoints)){
+                    dataUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints);
+                }
+                if(usedLoyaltyPoints && !isNaN(usedLoyaltyPoints)){
+                    dataUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints);
+                }
+                if(remainLoyaltyPoints && !isNaN(remainLoyaltyPoints)){
+                    dataUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints);
                 }
 
                 if(nonResident){
