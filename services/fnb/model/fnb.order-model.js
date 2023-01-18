@@ -261,38 +261,39 @@ class Model extends BaseModel {
 
                 if(!isNaN(discount)){
                     dataInsert.discount = Number(discount)
-
                     amount = Number(amount) - Number(discount)
-                }
-
-                if(!isNaN(credit)){
-                    dataInsert.credit = Number(credit)
-
-                    amount = Number(amount) - Number(credit)
                 }
 
                 /**
                  * TÍCH ĐIỂM NẾU LÀ ĐƠN OFF VÀ KHÔNG CÓ GIẢM GIÁ
                  */
-                if(salesChannel == 1 && !isNaN(salesoff)){
-                    // console.log('=============TÍCH ĐIỂM')
-
-                    dataInsert.salesoff = Number(salesoff)
-
-                    amount = Number(amount) - Number(salesoff)
-
-                    // Chính sách tích điểm
-                    if(infoFunda.loyaltyPointsRate && infoFunda.loyaltyPointsRate != 0){
-                        // console.log(infoFunda.loyaltyPointsRate)
-                        loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate/100)).toFixed(0) // Tích điểm 10%
+                if(salesChannel == 1){
+                    if(!isNaN(salesoff) && Number(salesoff) > 0){
+                        // console.log('=1111111111111111111111111111')
+                        // Nếu đã giảm giá thì không được tích điểm
+                        dataInsert.salesoff = Number(salesoff)
+                        amount = Number(amount) - Number(salesoff)
                     }else{
-                        loyaltyPoints = Number(Number(total-discount-salesoff)*(10/100)).toFixed(0) // Tích điểm 10%
+                        // console.log('=22222222222222222222222222')
+
+                        // Nếu có tích điểm
+                        if(!isNaN(credit)){
+                            dataInsert.credit = Number(credit)
+                            amount = Number(amount) - Number(credit)
+                        }
+
+                        // Chính sách tích điểm
+                        if(infoFunda.loyaltyPointsRate && infoFunda.loyaltyPointsRate != 0){
+                            loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate/100)).toFixed(0) // Tích điểm 10%
+                        }else{
+                            loyaltyPoints = Number(Number(total-discount-salesoff)*(10/100)).toFixed(0) // Tích điểm 10%
+                        }
+                        dataInsert.loyaltyPoints = Number(loyaltyPoints)
                     }
-                    
-                    dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
                 dataInsert.amount = Number(amount)
+
                 if(!isNaN(vatAmount)){
                     dataInsert.vatAmount = Number(vatAmount)
                 }else{
