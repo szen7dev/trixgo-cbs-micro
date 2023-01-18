@@ -269,10 +269,12 @@ class Model extends BaseModel {
                  */
                 if(salesChannel == 1){
                     if(!isNaN(salesoff) && Number(salesoff) > 0){
+                        // console.log('=1111111111111111111111111111')
                         // Nếu đã giảm giá thì không được tích điểm
                         dataInsert.salesoff = Number(salesoff)
                         amount = Number(amount) - Number(salesoff)
                     }else{
+                        // console.log('=22222222222222222222222222')
 
                         // Nếu có tích điểm
                         if(!isNaN(credit)){
