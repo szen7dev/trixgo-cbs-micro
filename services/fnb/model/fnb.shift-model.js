@@ -615,15 +615,15 @@ class Model extends BaseModel {
      * Date: 15/1/2023
      */
     exportExcel({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
-        // console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
+        console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
         return new Promise(async resolve => {
             try {
                 /**
                  * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
                  */
-                let yearCurrent = new Date().getFullYear()
-                let monthCurrent = new Date().getMonth()
-                // console.log({ yearCurrent, monthCurrent })
+                let currentYear = new Date().getFullYear()
+                let currentMonth = new Date().getMonth()
+                // console.log({ currentYear, currentMonth })
 
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
 
@@ -634,12 +634,15 @@ class Model extends BaseModel {
                 if(!isNaN(year) && Number(year) >= 0){
                     conditionObjYear = {
                         "year": Number(year),
+                        "month": Number(month + 1),
                     }
                 }else{
                     conditionObjYear = {
-                        "year": Number(yearCurrent),
+                        "year": Number(currentYear),
+                        "month": Number(currentMonth + 1),
                     }
                 }
+                console.log(conditionObjYear)
 
                 // Danh sách nhân sự ca chính
                 let listData1  = await FNB_SHIFT_COLL.aggregate([
@@ -831,63 +834,64 @@ class Model extends BaseModel {
                         $sort: sortBy
                     }
                 ])
+                console.log('===========>>>>>>>>>>>>>>>>')
                 console.log(listMistakes)
 
-                // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
-                .then(async workbook => {
-                    workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
+                // // Modify the workbook.
+                // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
+                // .then(async workbook => {
+                //     workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
 
-                    var j = 2
-                    listStaffs?.forEach((item, index) => {
-                        workbook.sheet("Timesheet").row(3).cell(j).value(item.fullname);
-                        workbook.sheet("Timesheet").row(4).cell(j).value(`${item._id}`);
-                        j++
-                    })
+                //     var j = 2
+                //     listStaffs?.forEach((item, index) => {
+                //         workbook.sheet("Timesheet").row(3).cell(j).value(item.fullname);
+                //         workbook.sheet("Timesheet").row(4).cell(j).value(`${item._id}`);
+                //         j++
+                //     })
 
-                    listDataTimesheet1?.forEach((item, index) => {
-                        for(let i=5; i<=35; i++){
+                //     listDataTimesheet1?.forEach((item, index) => {
+                //         for(let i=5; i<=35; i++){
 
-                            // Ngày tháng
-                            let dateVal = `${Number(i-4)}/${Number(monthCurrent+1)}/${yearCurrent}`
-                            workbook.sheet("Timesheet").row(i).cell(1).value(dateVal)
+                //             // Ngày tháng
+                //             let dateVal = `${Number(i-4)}/${Number(currentMonth+1)}/${currentYear}`
+                //             workbook.sheet("Timesheet").row(i).cell(1).value(dateVal)
 
-                            // Giờ làm
-                            for(let j=2; j<=Number(listStaffs.length + 1); j++){
-                                let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
+                //             // Giờ làm
+                //             for(let j=2; j<=Number(listStaffs.length + 1); j++){
+                //                 let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
                                 
-                                if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
-                                    workbook.sheet("Timesheet").row(i).cell(j).value(item.workingHours)
-                                }
-                            }
-                        }
-                    })
+                //                 if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
+                //                     workbook.sheet("Timesheet").row(i).cell(j).value(item.workingHours)
+                //                 }
+                //             }
+                //         }
+                //     })
 
-                    listDataTimesheet2?.forEach((item, index) => {
-                        for(let i=5; i<=35; i++){
-                            for(let j=2; j<=Number(listStaffs.length + 1); j++){
-                                let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
+                //     listDataTimesheet2?.forEach((item, index) => {
+                //         for(let i=5; i<=35; i++){
+                //             for(let j=2; j<=Number(listStaffs.length + 1); j++){
+                //                 let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
                                 
-                                if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
-                                    let timesheet = workbook.sheet("Timesheet").row(i).cell(j).value() | 0
+                //                 if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
+                //                     let timesheet = workbook.sheet("Timesheet").row(i).cell(j).value() | 0
 
-                                    workbook.sheet("Timesheet").row(i).cell(j).value(Number(timesheet) + Number(item.subWorkingHours))
-                                }
-                            }
-                        }
-                    })
+                //                     workbook.sheet("Timesheet").row(i).cell(j).value(Number(timesheet) + Number(item.subWorkingHours))
+                //                 }
+                //             }
+                //         }
+                //     })
 
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `fnb_shift_export_${now.getTime()}.xlsx`;
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                //     const now = new Date();
+                //     const filePath = '../../../files/temporary_uploads/';
+                //     const fileName = `fnb_shift_export_${now.getTime()}.xlsx`;
+                //     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-                    await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
+                //     await workbook.toFileAsync(pathWriteFile);
+                //     const result = await uploadFileS3(pathWriteFile, fileName);
 
-                    fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
-                });
+                //     fs.unlinkSync(pathWriteFile);
+                //     return resolve({ error: false, data: result?.Location, status: 200 });
+                // });
 
             } catch (error) {
                 console.log({ error })
