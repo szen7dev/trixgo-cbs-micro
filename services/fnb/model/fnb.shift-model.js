@@ -792,6 +792,47 @@ class Model extends BaseModel {
 
                 let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')
 
+                /**
+                 * DANH SÁCH LỖI CỦA ĐIỂM BÁN
+                 */
+                let listMistakes  = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
+                            funda: ObjectID(fundaID)
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            company : 1,
+                            funda : 1,
+                            mistake : 1,
+                            order : 1,
+                            executor : 1,
+                            amount : 1,
+                            bonus : 1,
+                            createAt: 1
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: {
+                            _id: {  executor: "$executor" },
+                            number: { $sum: 1 },
+                            amount: { $sum: "$amount" },
+                            bonus: { $sum: "$bonus" },
+                        }
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                console.log(listMistakes)
+
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
                 .then(async workbook => {
