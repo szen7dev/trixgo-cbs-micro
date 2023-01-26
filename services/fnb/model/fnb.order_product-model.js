@@ -266,7 +266,7 @@ class Model extends BaseModel {
 
                 let conditionObj = {}
                 let sortBy;
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['createAt__1', '_id__1'];
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(orderID ){
