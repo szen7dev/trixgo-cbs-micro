@@ -17,6 +17,7 @@ const moment = require("moment");
 /**s
  * import inter-coll, exter-coll
  */
+const USER_COLL                                = require('../../auth/database/auth.user-coll');
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
 const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
@@ -157,10 +158,23 @@ class Model extends BaseModel {
 
                 // Nhân viên thực hiện
                 if(infoShift.staffs && infoShift.staffs.length){
-                    dataInsert.assignee = infoShift.staffs;
+                    let numberStaff = infoShift.staffs.length
+                    let arrStaffs = infoShift.staffs
+
+                    if(infoShift.subStaffs && infoShift.subStaffs.length){
+                        arrStaffs = [...arrStaffs,...infoShift.subStaffs]
+
+                        numberStaff = Number(numberStaff) + Number(infoShift.subStaffs.length)
+                    }
+
+                    // Nhân viên ca chính
+                    // dataInsert.assignee = infoShift.staffs;
+                    dataInsert.assignee = arrStaffs;
 
                     // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
-                    dataInsert.avgTotalPerStaff = Number(total/Number(infoShift.staffs.length)).toFixed(0)
+                    // dataInsert.avgTotalPerStaff = Number(total/Number(infoShift.staffs.length)).toFixed(0)
+                    dataInsert.avgTotalPerStaff = Number(total/Number(numberStaff)).toFixed(0)
+
                 }else{
                     dataInsert.assignee = [userID];
 
@@ -1528,7 +1542,7 @@ class Model extends BaseModel {
      * Func: Download Template Excel
      * Date: 8/12/2022
      */
-    exportExcel({ companyID, userID }) {
+    exportExcel({ companyID, year, month, userID }) {
         // console.log({ companyID, userID })
         return new Promise(async resolve => {
             try {
@@ -1544,6 +1558,136 @@ class Model extends BaseModel {
                 .limit(1000)
                 .sort({createAt: -1})
                 // console.log(listData)
+
+                // // Danh sách nhân sự ca chính
+                // let listData1  = await FNB_SHIFT_COLL.aggregate([
+                //     {
+                //         $match: {
+                //             company: ObjectID(companyID)
+                //         }
+                //     },
+                //     { 
+                //         $lookup: {
+                //             from: "users",
+                //             localField: "staffs",
+                //             foreignField: "_id",
+                //             as: "staff"
+                //         } 
+                //     },
+                //     {
+                //         $unwind: "$staff"
+                //     },
+                //     {
+                //         $group: {
+                //             _id: { staff: "$staff" }
+                //         }
+                //     }
+                // ])
+
+                //  // Danh sách nhân sự ca phụ
+                // let listData2  = await FNB_SHIFT_COLL.aggregate([
+                //     {
+                //         $match: {
+                //             company: ObjectID(companyID)
+                //         }
+                //     },
+                //     { 
+                //         $lookup: {
+                //             from: "users",
+                //             localField: "subStaffs",
+                //             foreignField: "_id",
+                //             as: "staff"
+                //         } 
+                //     },
+                //     {
+                //         $unwind: "$staff"
+                //     },
+                //     {
+                //         $group: {
+                //             _id: { staff: "$staff" }
+                //         }
+                //     }
+                // ])
+
+                // let listData3 = [...listData1, ...listData2]
+                // let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')
+
+                let listStaffs = await USER_COLL.find({ company: companyID }).select('_id fullname')
+
+                let currentYear = new Date().getFullYear()
+                let currentMonth = new Date().getMonth()
+                // console.log({ currentYear, currentMonth })
+
+                let conditionObj = { company: ObjectID(companyID) }
+                let conditionGroup = {}
+                let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": -1}
+
+                if(!isNaN(year) && Number(year) >= 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                        // "month": Number(month + 1),
+                    }
+                }else{
+                    conditionObjYear = {
+                        "year": Number(currentYear),
+                        // "month": Number(currentMonth + 1),
+                    }
+                }
+                console.log({conditionObjYear})
+
+                conditionGroup = {
+                    _id: {  staff: "$staff._id" },
+                    number: { $sum: 1 },
+                    amount: { $sum: "$amount" },
+                }
+
+                conditionPopulate = {
+                    path: '_id.staff',
+                    select: '_id fullname',
+                    model: 'user'
+                }
+
+                let listDataRevenue = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID)
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            company : 1,
+                            funda : 1,
+                            assignee : 1,
+                            total: 1,
+                            amount: 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    { 
+                        $lookup: {
+                            from: "users",
+                            localField: "assignee",
+                            foreignField: "_id",
+                            as: "staff"
+                        } 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataRevenue, conditionPopulate)
+                // console.log(listDataRevenue)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_order_template.xlsx')))
@@ -1571,6 +1715,20 @@ class Model extends BaseModel {
                         workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
                         workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
                         workbook.sheet("Order").row(i).cell(20).value(item.note);
+                        i++
+                    });
+
+                    var i = 3;
+                    // listStaffs?.forEach((item, index) => {
+                    //     workbook.sheet("GNH").row(i).cell(1).value(Number(index+1));
+                    //     workbook.sheet("GNH").row(i).cell(2).value(item?.fullname);
+                    //     i++
+                    // });
+                    listDataRevenue?.forEach((item, index) => {
+                        workbook.sheet("GNH").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("GNH").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("GNH").row(i).cell(3).value(item?.number);
+                        workbook.sheet("GNH").row(i).cell(4).value(item?.amount);
                         i++
                     });
 

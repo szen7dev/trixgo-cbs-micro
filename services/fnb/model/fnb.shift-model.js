@@ -642,7 +642,7 @@ class Model extends BaseModel {
                         "month": Number(currentMonth + 1),
                     }
                 }
-                console.log(conditionObjYear)
+                // console.log(conditionObjYear)
 
                 // Danh sách nhân sự ca chính
                 let listData1  = await FNB_SHIFT_COLL.aggregate([
