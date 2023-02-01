@@ -1624,7 +1624,7 @@ class Model extends BaseModel {
 
                 let conditionObj = { company: ObjectID(companyID) }
                 let conditionGroup = {}
-                let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": -1}
+                let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"avgQuantityPerStaff": -1}
 
                 if(!isNaN(year) && Number(year) >= 0){
                     conditionObjYear = {
@@ -1660,7 +1660,9 @@ class Model extends BaseModel {
                 let listDataRevenue = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: {
-                            company: ObjectID(companyID)
+                            company: ObjectID(companyID),
+                            avgTotalPerStaff: {$gte: 0},
+                            avgQuantityPerStaff: {$gte: 0},
                         }
                     },
                     {
@@ -1705,30 +1707,33 @@ class Model extends BaseModel {
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_order_template.xlsx')))
                 .then(async workbook => {
 
-                    var i = 3;
-                    listData?.forEach((item, index) => {
-                        workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                        workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                        workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-                        workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(6).value(item.name);
-                        workbook.sheet("Order").row(i).cell(7).value(item.sign);
-                        workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-                        workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-                        workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-                        workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                        workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
-                        workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
-                        workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
-                        workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
-                        workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
-                        workbook.sheet("Order").row(i).cell(20).value(item.note);
-                        i++
-                    });
+                    /**
+                     * DANH SÁCH ĐƠN HÀNG
+                     */
+                    // var i = 3;
+                    // listData?.forEach((item, index) => {
+                    //     workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
+                    //     workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
+                    //     workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                    //     workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
+                    //     workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
+                    //     workbook.sheet("Order").row(i).cell(6).value(item.name);
+                    //     workbook.sheet("Order").row(i).cell(7).value(item.sign);
+                    //     workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
+                    //     workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
+                    //     workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
+                    //     workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
+                    //     workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
+                    //     workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
+                    //     workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
+                    //     workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
+                    //     workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
+                    //     workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
+                    //     workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
+                    //     workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
+                    //     workbook.sheet("Order").row(i).cell(20).value(item.note);
+                    //     i++
+                    // });
 
                     var i = 3;
                     listDataRevenue?.forEach((item, index) => {
@@ -1736,8 +1741,8 @@ class Model extends BaseModel {
                         workbook.sheet("GNH").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("GNH").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("GNH").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("GNH").row(i).cell(4).value(item?.number);
-                        workbook.sheet("GNH").row(i).cell(5).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("GNH").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("GNH").row(i).cell(5).value(item?.number);
                         workbook.sheet("GNH").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
                         i++
