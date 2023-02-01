@@ -62,7 +62,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
-        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
+        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -1704,6 +1704,9 @@ class Model extends BaseModel {
                     },
                     {
                         $group: conditionGroupErr
+                    },
+                    {
+                        $sort: {"_id.month": -1}
                     }
                 ])
                 await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr)
@@ -1904,7 +1907,7 @@ class Model extends BaseModel {
                         workbook.sheet("T1").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T1").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T1").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T1").row(i).cell(5).value(item?.number);
                         workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -1917,7 +1920,7 @@ class Model extends BaseModel {
                         workbook.sheet("T2").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T2").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T2").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T2").row(i).cell(5).value(item?.number);
                         workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -1930,7 +1933,7 @@ class Model extends BaseModel {
                         workbook.sheet("T3").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T3").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T3").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T3").row(i).cell(5).value(item?.number);
                         workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -1943,7 +1946,7 @@ class Model extends BaseModel {
                         workbook.sheet("T4").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T4").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T4").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T4").row(i).cell(5).value(item?.number);
                         workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -1956,7 +1959,7 @@ class Model extends BaseModel {
                         workbook.sheet("T5").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T5").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T5").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T5").row(i).cell(5).value(item?.number);
                         workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -1969,7 +1972,7 @@ class Model extends BaseModel {
                         workbook.sheet("T6").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T6").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T6").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T6").row(i).cell(5).value(item?.number);
                         workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
