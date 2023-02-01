@@ -1597,6 +1597,10 @@ class Model extends BaseModel {
                 let conditionGroup = {}
                 let conditionPopulate = {}, sortBy = {"avgQuantityPerStaff": -1}
 
+                let conditionObjYear = {
+                    "year": Number(yearFilter),
+                }
+
                 let conditionObjYear1 = {
                     "year": Number(yearFilter),
                     "month": Number(1),
@@ -1640,6 +1644,32 @@ class Model extends BaseModel {
                     },
                     model: 'user'
                 }
+
+                /**
+                 * DANH BẠ ĐIỂM BÁN
+                 */
+                let conditionGroupContact = {
+                    _id: {  funda: "$funda", month: "$month" },
+                    number: { $sum: 1 },
+                }
+                let listDataFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID)}).select('_id name')
+                let listDataContact = await ITEM__CONTACT_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: conditionGroupContact
+                    }
+                ])
+                console.log(listDataContact)
 
                 let listDataR1 = await FNB_ORDER_COLL.aggregate([
                     {
@@ -1904,6 +1934,38 @@ class Model extends BaseModel {
                         
                         i++
                     });
+
+                    /**
+                     * DANH BẠ ĐIỂM BÁN
+                     */
+                    var i = 3;
+                    listDataFunda?.forEach((item, index) => {
+                        workbook.sheet("Contact").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Contact").row(i).cell(2).value(item?.name);
+
+                        for(var m=1; m<=12; m++){
+                            listDataContact?.forEach((contact) => {
+                                if(contact._id.funda.toString() === item._id.toString() && Number(contact._id.month) === Number(m)){
+                                    workbook.sheet("Contact").row(i).cell(m+2).value(contact?.number); 
+                                }
+                            })
+                        }
+                        
+                        i++
+                    });
+
+                    // for(m=1; m<=12; m++){
+                    //     var i = 3
+                    //     listDataContact?.forEach((item, index) => {
+                    //         if(){
+
+                    //         }
+                    //         workbook.sheet("Contact").row(i).cell(1).value(Number(index+1));
+                    //         workbook.sheet("Contact").row(i).cell(2).value(item?.name);
+                            
+                    //         i++
+                    //     })
+                    // }
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
