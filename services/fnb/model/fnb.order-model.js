@@ -1587,6 +1587,7 @@ class Model extends BaseModel {
                     amount: 1,
                     avgTotalPerStaff: 1,
                     avgQuantityPerStaff: 1,
+                    executor: 1,
                 }
                 let lookupObj = {
                     from: "users",
@@ -1669,8 +1670,48 @@ class Model extends BaseModel {
                         $group: conditionGroupContact
                     }
                 ])
-                console.log(listDataContact)
+                // console.log(listDataContact)
 
+                /**
+                 * LỖI MẮC PHẢI
+                 */
+                let conditionGroupErr = {
+                    _id: {  executor: "$executor", month: "$month" },
+                    number: { $sum: 1 },
+                    amount: { $sum: "$amount" },
+                }
+                let conditionPopulateErr = {
+                    path: '_id.executor',
+                    select: '_id fullname department',
+                    populate: {
+                        path: 'department',
+                        select: '_id name',
+                        model: 'department',
+                    },
+                    model: 'user'
+                }
+                let listDataErr = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: conditionGroupErr
+                    }
+                ])
+                await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr)
+                // console.log(listDataErr)
+
+                /**
+                 * DOANH SỐ
+                 */
                 let listDataR1 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -1954,18 +1995,20 @@ class Model extends BaseModel {
                         i++
                     });
 
-                    // for(m=1; m<=12; m++){
-                    //     var i = 3
-                    //     listDataContact?.forEach((item, index) => {
-                    //         if(){
-
-                    //         }
-                    //         workbook.sheet("Contact").row(i).cell(1).value(Number(index+1));
-                    //         workbook.sheet("Contact").row(i).cell(2).value(item?.name);
-                            
-                    //         i++
-                    //     })
-                    // }
+                    /**
+                     * PHẠT LỖI VI PHẠM
+                     */
+                    var i = 3;
+                    listDataErr?.forEach((item, index) => {
+                        workbook.sheet("Err").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Err").row(i).cell(2).value(item?._id?.executor.fullname);
+                        workbook.sheet("Err").row(i).cell(3).value(`${item?._id.executor?.department?.name}`);
+                        workbook.sheet("Err").row(i).cell(4).value(item?._id.month);
+                        workbook.sheet("Err").row(i).cell(5).value(item?.number);
+                        workbook.sheet("Err").row(i).cell(6).value(item?.amount);
+                        
+                        i++
+                    });
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
