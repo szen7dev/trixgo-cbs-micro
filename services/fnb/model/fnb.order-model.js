@@ -156,32 +156,6 @@ class Model extends BaseModel {
                     dataInsert.shiftType = Number(infoShift.shiftType);
                 }
 
-                // Nhân viên thực hiện
-                if(infoShift.staffs && infoShift.staffs.length){
-                    let numberStaff = infoShift.staffs.length
-                    let arrStaffs = infoShift.staffs
-
-                    if(infoShift.subStaffs && infoShift.subStaffs.length){
-                        arrStaffs = [...arrStaffs,...infoShift.subStaffs]
-
-                        numberStaff = Number(numberStaff) + Number(infoShift.subStaffs.length)
-                    }
-
-                    // Nhân viên ca chính
-                    // dataInsert.assignee = infoShift.staffs;
-                    dataInsert.assignee = arrStaffs;
-
-                    // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
-                    // dataInsert.avgTotalPerStaff = Number(total/Number(infoShift.staffs.length)).toFixed(0)
-                    dataInsert.avgTotalPerStaff = Number(total/Number(numberStaff)).toFixed(0)
-
-                }else{
-                    dataInsert.assignee = [userID];
-
-                    // Doanh số trung bình/đầu nhân viên (1 nhân viên)
-                    dataInsert.avgTotalPerStaff = Number(total);
-                }
-
                 /**
                  * B3. CẬP NHẬT THUỘC TÍNH CỦA KHÁCH HÀNG
                  */
@@ -250,19 +224,6 @@ class Model extends BaseModel {
                 // console.log('==============>>>>>>>>>>>>>>>>>>>>>>')
                 // console.log(dataInsert)
 
-                // Tính tổng khối lượng sản phẩm (cốc)
-                let totalQuantity = 0;
-                if(products && products.length){
-                    for (let item of products) {
-                        totalQuantity = Number(totalQuantity) + Number(item.quantity);
-                    }
-
-                    dataInsert.numberOfProducts = Number(totalQuantity)
-
-                    // Số lượng sản phẩm trung bình của mỗi nhân viên
-                    dataInsert.avgQuantityPerStaff = Number(totalQuantity/Number(infoShift.staffs.length)).toFixed(2)
-                }
-
                 /**
                  * TÍNH TOÁN GIÁ TRỊ
                  */
@@ -312,6 +273,49 @@ class Model extends BaseModel {
                     dataInsert.vatAmount = Number(vatAmount)
                 }else{
                     dataInsert.vatAmount = Number(amount)*10/100
+                }
+
+                /**
+                 * NHÂN VIÊN THỰC HIỆN
+                 */
+                let numberStaff = 0
+                if(infoShift.staffs && infoShift.staffs.length){
+                    numberStaff = infoShift.staffs.length
+                    let arrStaffs = infoShift.staffs
+
+                    if(infoShift.subStaffs && infoShift.subStaffs.length){
+                        arrStaffs = [...arrStaffs,...infoShift.subStaffs]
+
+                        numberStaff = Number(numberStaff) + Number(infoShift.subStaffs.length)
+                    }
+
+                    // Nhân viên thực hiện
+                    dataInsert.assignee = arrStaffs;
+
+                    // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
+                    dataInsert.avgTotalPerStaff = Number(amount/Number(numberStaff)).toFixed(0)
+
+                }else{
+                    numberStaff = 1
+                    dataInsert.assignee = [userID];
+
+                    // Doanh số trung bình/đầu nhân viên (1 nhân viên)
+                    dataInsert.avgTotalPerStaff = Number(amount/Number(numberStaff)).toFixed(0)
+                }
+
+                /**
+                 * KHỐI LƯỢNG SẢN PHẨM
+                 */
+                let totalQuantity = 0;
+                if(products && products.length){
+                    for (let item of products) {
+                        totalQuantity = Number(totalQuantity) + Number(item.quantity);
+                    }
+
+                    dataInsert.numberOfProducts = Number(totalQuantity)
+
+                    // Số lượng sản phẩm trung bình của mỗi nhân viên
+                    dataInsert.avgQuantityPerStaff = Number(totalQuantity/Number(numberStaff)).toFixed(2)
                 }
 
                 /**
@@ -1612,7 +1616,7 @@ class Model extends BaseModel {
                 // let listData3 = [...listData1, ...listData2]
                 // let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')
 
-                let listStaffs = await USER_COLL.find({ company: companyID }).select('_id fullname')
+                // let listStaffs = await USER_COLL.find({ company: companyID }).select('_id fullname')
 
                 let currentYear = new Date().getFullYear()
                 let currentMonth = new Date().getMonth()
@@ -1633,17 +1637,23 @@ class Model extends BaseModel {
                         // "month": Number(currentMonth + 1),
                     }
                 }
-                console.log({conditionObjYear})
+                // console.log({conditionObjYear})
 
                 conditionGroup = {
                     _id: {  staff: "$staff._id" },
                     number: { $sum: 1 },
-                    amount: { $sum: "$amount" },
+                    avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                    avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
                 }
 
                 conditionPopulate = {
                     path: '_id.staff',
-                    select: '_id fullname',
+                    select: '_id fullname department',
+                    populate: {
+                        path: 'department',
+                        select: '_id name',
+                        model: 'department',
+                    },
                     model: 'user'
                 }
 
@@ -1663,6 +1673,8 @@ class Model extends BaseModel {
                             assignee : 1,
                             total: 1,
                             amount: 1,
+                            avgTotalPerStaff: 1,
+                            avgQuantityPerStaff: 1,
                         }
                     },
                     {
@@ -1719,16 +1731,15 @@ class Model extends BaseModel {
                     });
 
                     var i = 3;
-                    // listStaffs?.forEach((item, index) => {
-                    //     workbook.sheet("GNH").row(i).cell(1).value(Number(index+1));
-                    //     workbook.sheet("GNH").row(i).cell(2).value(item?.fullname);
-                    //     i++
-                    // });
                     listDataRevenue?.forEach((item, index) => {
+                        // console.log(item._id.staff)
                         workbook.sheet("GNH").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("GNH").row(i).cell(2).value(item?._id?.staff.fullname);
-                        workbook.sheet("GNH").row(i).cell(3).value(item?.number);
-                        workbook.sheet("GNH").row(i).cell(4).value(item?.amount);
+                        workbook.sheet("GNH").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("GNH").row(i).cell(4).value(item?.number);
+                        workbook.sheet("GNH").row(i).cell(5).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("GNH").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
                         i++
                     });
 
