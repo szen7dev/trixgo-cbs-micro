@@ -1550,96 +1550,80 @@ class Model extends BaseModel {
         // console.log({ companyID, userID })
         return new Promise(async resolve => {
             try {
-                let listData  = await FNB_ORDER_COLL.find({ company: companyID })
-                .populate({
-                    path: "funda",
-                    select: "name sign",
-                })
-                .populate({
-                    path: "shift",
-                    select: "name sign",
-                })
-                .limit(1000)
-                .sort({createAt: -1})
+                // let listData  = await FNB_ORDER_COLL.find({ company: companyID })
+                // .populate({
+                //     path: "funda",
+                //     select: "name sign",
+                // })
+                // .populate({
+                //     path: "shift",
+                //     select: "name sign",
+                // })
+                // .limit(1000)
+                // .sort({createAt: -1})
                 // console.log(listData)
 
-                // // Danh sách nhân sự ca chính
-                // let listData1  = await FNB_SHIFT_COLL.aggregate([
-                //     {
-                //         $match: {
-                //             company: ObjectID(companyID)
-                //         }
-                //     },
-                //     { 
-                //         $lookup: {
-                //             from: "users",
-                //             localField: "staffs",
-                //             foreignField: "_id",
-                //             as: "staff"
-                //         } 
-                //     },
-                //     {
-                //         $unwind: "$staff"
-                //     },
-                //     {
-                //         $group: {
-                //             _id: { staff: "$staff" }
-                //         }
-                //     }
-                // ])
-
-                //  // Danh sách nhân sự ca phụ
-                // let listData2  = await FNB_SHIFT_COLL.aggregate([
-                //     {
-                //         $match: {
-                //             company: ObjectID(companyID)
-                //         }
-                //     },
-                //     { 
-                //         $lookup: {
-                //             from: "users",
-                //             localField: "subStaffs",
-                //             foreignField: "_id",
-                //             as: "staff"
-                //         } 
-                //     },
-                //     {
-                //         $unwind: "$staff"
-                //     },
-                //     {
-                //         $group: {
-                //             _id: { staff: "$staff" }
-                //         }
-                //     }
-                // ])
-
-                // let listData3 = [...listData1, ...listData2]
-                // let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')
-
-                // let listStaffs = await USER_COLL.find({ company: companyID }).select('_id fullname')
-
+                let yearFilter
                 let currentYear = new Date().getFullYear()
-                let currentMonth = new Date().getMonth()
-                // console.log({ currentYear, currentMonth })
-
-                let conditionObj = { company: ObjectID(companyID) }
-                let conditionGroup = {}
-                let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"avgQuantityPerStaff": -1}
-
-                if(!isNaN(year) && Number(year) >= 0){
-                    conditionObjYear = {
-                        "year": Number(year),
-                        // "month": Number(month + 1),
-                    }
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
                 }else{
-                    conditionObjYear = {
-                        "year": Number(currentYear),
-                        // "month": Number(currentMonth + 1),
-                    }
+                    yearFilter = Number(currentYear)
                 }
-                // console.log({conditionObjYear})
+
+                let conditionObj = { 
+                    company: ObjectID(companyID),
+                    avgTotalPerStaff: {$gte: 0},
+                    avgQuantityPerStaff: {$gte: 0},
+                }
+                let projectObj =  {
+                    year : {$year : "$createAt"},
+                    month : {$month : "$createAt"},
+                    // day: { $dayOfMonth: "$createAt" },
+                    company : 1,
+                    funda : 1,
+                    assignee : 1,
+                    total: 1,
+                    amount: 1,
+                    avgTotalPerStaff: 1,
+                    avgQuantityPerStaff: 1,
+                }
+                let lookupObj = {
+                    from: "users",
+                    localField: "assignee",
+                    foreignField: "_id",
+                    as: "staff"
+                } 
+                let conditionGroup = {}
+                let conditionPopulate = {}, sortBy = {"avgQuantityPerStaff": -1}
+
+                let conditionObjYear1 = {
+                    "year": Number(yearFilter),
+                    "month": Number(1),
+                }
+                let conditionObjYear2 = {
+                    "year": Number(yearFilter),
+                    "month": Number(2),
+                }
+                let  conditionObjYear3 = {
+                    "year": Number(yearFilter),
+                    "month": Number(3),
+                }
+                let conditionObjYear4 = {
+                    "year": Number(yearFilter),
+                    "month": Number(4),
+                }
+                let conditionObjYear5 = {
+                    "year": Number(yearFilter),
+                    "month": Number(5),
+                }
+                let conditionObjYear6 = {
+                    "year": Number(yearFilter),
+                    "month": Number(6),
+                }
 
                 conditionGroup = {
+                    // _id: {  staff: "$staff._id", month: "$month", year: "$year" },
                     _id: {  staff: "$staff._id" },
                     number: { $sum: 1 },
                     avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
@@ -1657,38 +1641,18 @@ class Model extends BaseModel {
                     model: 'user'
                 }
 
-                let listDataRevenue = await FNB_ORDER_COLL.aggregate([
+                let listDataR1 = await FNB_ORDER_COLL.aggregate([
                     {
-                        $match: {
-                            company: ObjectID(companyID),
-                            avgTotalPerStaff: {$gte: 0},
-                            avgQuantityPerStaff: {$gte: 0},
-                        }
+                        $match: conditionObj
                     },
                     {
-                        $project : {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            day: { $dayOfMonth: "$createAt" },
-                            company : 1,
-                            funda : 1,
-                            assignee : 1,
-                            total: 1,
-                            amount: 1,
-                            avgTotalPerStaff: 1,
-                            avgQuantityPerStaff: 1,
-                        }
+                        $project : projectObj
                     },
                     {
-                        $match: conditionObjYear
+                        $match: conditionObjYear1
                     },
                     { 
-                        $lookup: {
-                            from: "users",
-                            localField: "assignee",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -1700,8 +1664,133 @@ class Model extends BaseModel {
                         $sort: sortBy
                     }
                 ])
-                await FNB_SHIFT_COLL.populate(listDataRevenue, conditionPopulate)
-                // console.log(listDataRevenue)
+                await FNB_SHIFT_COLL.populate(listDataR1, conditionPopulate)
+                // console.log(listDataR1)
+                
+                let listDataR2 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear2
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR2, conditionPopulate)
+                
+                let listDataR3 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear3
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR3, conditionPopulate)
+                
+                let listDataR4 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear4
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR4, conditionPopulate)
+                
+                let listDataR5 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear5
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR5, conditionPopulate)
+
+                let listDataR6 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear6
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR6, conditionPopulate)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_order_template.xlsx')))
@@ -1735,15 +1824,83 @@ class Model extends BaseModel {
                     //     i++
                     // });
 
+                    /**
+                     * DOANH SỐ NHÂN VIÊN
+                     */
                     var i = 3;
-                    listDataRevenue?.forEach((item, index) => {
+                    listDataR1?.forEach((item, index) => {
+                        // console.log(item._id)
+                        workbook.sheet("T1").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T1").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T1").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T1").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR2?.forEach((item, index) => {
                         // console.log(item._id.staff)
-                        workbook.sheet("GNH").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("GNH").row(i).cell(2).value(item?._id?.staff.fullname);
-                        workbook.sheet("GNH").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("GNH").row(i).cell(4).value(item?.avgQuantityPerStaff);
-                        workbook.sheet("GNH").row(i).cell(5).value(item?.number);
-                        workbook.sheet("GNH").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        workbook.sheet("T2").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T2").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T2").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T2").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR3?.forEach((item, index) => {
+                        // console.log(item._id.staff)
+                        workbook.sheet("T3").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T3").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T3").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T3").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR4?.forEach((item, index) => {
+                        // console.log(item._id.staff)
+                        workbook.sheet("T4").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T4").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T4").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T4").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR5?.forEach((item, index) => {
+                        // console.log(item._id.staff)
+                        workbook.sheet("T5").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T5").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T5").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T5").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR6?.forEach((item, index) => {
+                        // console.log(item._id.staff)
+                        workbook.sheet("T6").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T6").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T6").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff);
+                        workbook.sheet("T6").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
                         i++
                     });
