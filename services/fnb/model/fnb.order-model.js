@@ -1704,6 +1704,9 @@ class Model extends BaseModel {
                     },
                     {
                         $group: conditionGroupErr
+                    },
+                    {
+                        $sort: {"_id.month": -1}
                     }
                 ])
                 await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr)
