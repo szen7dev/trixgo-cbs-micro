@@ -1279,7 +1279,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID }) {
-        // console.log({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID })
+        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -1569,7 +1569,11 @@ class Model extends BaseModel {
                                     assignee : 1,
                                     executor: 1,
                                     total: 1,
+                                    discount: 1,
+                                    salesoff: 1,
                                     amount: 1,
+                                    vatAmount: 1,
+                                    numberOfProducts: 1,
                                     avgTotalPerStaff: 1,
                                     avgQuantityPerStaff: 1
                                 }
@@ -1612,7 +1616,7 @@ class Model extends BaseModel {
      * Date: 8/12/2022
      */
     exportExcel({ companyID, year, month, userID }) {
-        // console.log({ companyID, userID })
+        // console.log({ companyID, year, month, userID })
         return new Promise(async resolve => {
             try {
                 let listData  = await FNB_ORDER_COLL.find({ company: companyID })
