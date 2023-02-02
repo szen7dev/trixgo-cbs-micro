@@ -1476,6 +1476,24 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Người tạo đơn
+                     */
+                    if(option && Number(option) == 7){
+                        conditionGroup = {
+                            _id: { assignee: "$assignee._id" },
+                            quantity: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                            avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                        }
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
@@ -1530,8 +1548,54 @@ class Model extends BaseModel {
                             $sort: sortBy
                         }
                     ])
+
                     if(!isNaN(option) && [3,6].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+                    }
+
+                    if(option && Number(option) == 7){
+                        listData = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : {
+                                    year : {$year : "$createAt"},
+                                    month : {$month : "$createAt"},
+                                    day: { $dayOfMonth: "$createAt" },
+                                    company : 1,
+                                    funda : 1,
+                                    createAt: 1,
+                                    assignee : 1,
+                                    executor: 1,
+                                    total: 1,
+                                    amount: 1,
+                                    avgTotalPerStaff: 1,
+                                    avgQuantityPerStaff: 1
+                                }
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            { 
+                                $lookup: {
+                                    from: "users",
+                                    localField: "assignee",
+                                    foreignField: "_id",
+                                    as: "assignee"
+                                }  
+                            },
+                            {
+                                $unwind: "$assignee"
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            }
+                        ])
+    
                     }
 
                     return resolve({ error: false, data: listData });
