@@ -1121,7 +1121,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, fundasID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         // console.log({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
@@ -1162,6 +1162,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                assigneesID && assigneesID.length           && (conditionObj.assignee = { $in: assigneesID });
                 shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
                 salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
                 services && services.length                 && (conditionObj.service = { $in: services });
@@ -1278,7 +1279,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID }) {
-        // console.log({ companyID, fundasID, option, optionGroup, optionTime, year, fromDate, toDate, userID })
+        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -1475,6 +1476,24 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Người tạo đơn
+                     */
+                    if(option && Number(option) == 7){
+                        conditionGroup = {
+                            _id: { assignee: "$assignee._id" },
+                            quantity: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                            avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                        }
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
@@ -1529,8 +1548,58 @@ class Model extends BaseModel {
                             $sort: sortBy
                         }
                     ])
+
                     if(!isNaN(option) && [3,6].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+                    }
+
+                    if(option && Number(option) == 7){
+                        listData = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : {
+                                    year : {$year : "$createAt"},
+                                    month : {$month : "$createAt"},
+                                    day: { $dayOfMonth: "$createAt" },
+                                    company : 1,
+                                    funda : 1,
+                                    createAt: 1,
+                                    assignee : 1,
+                                    executor: 1,
+                                    total: 1,
+                                    discount: 1,
+                                    salesoff: 1,
+                                    amount: 1,
+                                    vatAmount: 1,
+                                    numberOfProducts: 1,
+                                    avgTotalPerStaff: 1,
+                                    avgQuantityPerStaff: 1
+                                }
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            { 
+                                $lookup: {
+                                    from: "users",
+                                    localField: "assignee",
+                                    foreignField: "_id",
+                                    as: "assignee"
+                                }  
+                            },
+                            {
+                                $unwind: "$assignee"
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            }
+                        ])
+    
                     }
 
                     return resolve({ error: false, data: listData });
@@ -1547,7 +1616,7 @@ class Model extends BaseModel {
      * Date: 8/12/2022
      */
     exportExcel({ companyID, year, month, userID }) {
-        // console.log({ companyID, userID })
+        // console.log({ companyID, year, month, userID })
         return new Promise(async resolve => {
             try {
                 let listData  = await FNB_ORDER_COLL.find({ company: companyID })
@@ -1573,21 +1642,23 @@ class Model extends BaseModel {
 
                 let conditionObj = { 
                     company: ObjectID(companyID),
-                    avgTotalPerStaff: {$gte: 0},
+                    status: 5,
+                    avgQuantityPerStaff: {$gte: 0},
                     avgQuantityPerStaff: {$gte: 0},
                 }
                 let projectObj =  {
                     year : {$year : "$createAt"},
                     month : {$month : "$createAt"},
-                    // day: { $dayOfMonth: "$createAt" },
+                    day: { $dayOfMonth: "$createAt" },
                     company : 1,
                     funda : 1,
+                    createAt: 1,
                     assignee : 1,
+                    executor: 1,
                     total: 1,
                     amount: 1,
                     avgTotalPerStaff: 1,
-                    avgQuantityPerStaff: 1,
-                    executor: 1,
+                    avgQuantityPerStaff: 1
                 }
                 let lookupObj = {
                     from: "users",
@@ -1625,6 +1696,30 @@ class Model extends BaseModel {
                 let conditionObjYear6 = {
                     "year": Number(yearFilter),
                     "month": Number(6),
+                }
+                let conditionObjYear7 = {
+                    "year": Number(yearFilter),
+                    "month": Number(7),
+                }
+                let conditionObjYear8 = {
+                    "year": Number(yearFilter),
+                    "month": Number(8),
+                }
+                let  conditionObjYear9 = {
+                    "year": Number(yearFilter),
+                    "month": Number(9),
+                }
+                let conditionObjYear10 = {
+                    "year": Number(yearFilter),
+                    "month": Number(10),
+                }
+                let conditionObjYear11 = {
+                    "year": Number(yearFilter),
+                    "month": Number(11),
+                }
+                let conditionObjYear12 = {
+                    "year": Number(yearFilter),
+                    "month": Number(12),
                 }
 
                 conditionGroup = {
@@ -1865,6 +1960,155 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR6, conditionPopulate)
+                let listDataR7 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear7
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR7, conditionPopulate)
+                
+                let listDataR8 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear8
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR8, conditionPopulate)
+                
+                let listDataR9 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear9
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR9, conditionPopulate)
+                
+                let listDataR10 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear10
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR10, conditionPopulate)
+                
+                let listDataR11 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear11
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR11, conditionPopulate)
+
+                let listDataR12 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear12
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR12, conditionPopulate)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_order_template.xlsx')))
@@ -1903,7 +2147,6 @@ class Model extends BaseModel {
                      */
                     var i = 3;
                     listDataR1?.forEach((item, index) => {
-                        // console.log(item._id)
                         workbook.sheet("T1").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T1").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T1").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
@@ -1916,7 +2159,6 @@ class Model extends BaseModel {
 
                     var i = 3;
                     listDataR2?.forEach((item, index) => {
-                        // console.log(item._id.staff)
                         workbook.sheet("T2").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T2").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T2").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
@@ -1929,7 +2171,6 @@ class Model extends BaseModel {
 
                     var i = 3;
                     listDataR3?.forEach((item, index) => {
-                        // console.log(item._id.staff)
                         workbook.sheet("T3").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T3").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T3").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
@@ -1942,7 +2183,6 @@ class Model extends BaseModel {
 
                     var i = 3;
                     listDataR4?.forEach((item, index) => {
-                        // console.log(item._id.staff)
                         workbook.sheet("T4").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T4").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T4").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
@@ -1955,7 +2195,6 @@ class Model extends BaseModel {
 
                     var i = 3;
                     listDataR5?.forEach((item, index) => {
-                        // console.log(item._id.staff)
                         workbook.sheet("T5").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T5").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T5").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
@@ -1968,7 +2207,78 @@ class Model extends BaseModel {
 
                     var i = 3;
                     listDataR6?.forEach((item, index) => {
-                        // console.log(item._id.staff)
+                        workbook.sheet("T6").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T6").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T6").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T6").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR7?.forEach((item, index) => {
+                        workbook.sheet("T1").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T1").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T1").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T1").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR8?.forEach((item, index) => {
+                        workbook.sheet("T2").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T2").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T2").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T2").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR9?.forEach((item, index) => {
+                        workbook.sheet("T3").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T3").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T3").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T3").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR10?.forEach((item, index) => {
+                        workbook.sheet("T4").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T4").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T4").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T4").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR11?.forEach((item, index) => {
+                        workbook.sheet("T5").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("T5").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("T5").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T5").row(i).cell(5).value(item?.number);
+                        workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        
+                        i++
+                    });
+
+                    var i = 3;
+                    listDataR12?.forEach((item, index) => {
                         workbook.sheet("T6").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T6").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T6").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
@@ -2022,7 +2332,6 @@ class Model extends BaseModel {
                     const result = await uploadFileS3(pathWriteFile, fileName);
 
                     fs.unlinkSync(pathWriteFile);
-                    // console.log({ result })
                     return resolve({ error: false, data: result?.Location, status: 200 });
                 });
 
