@@ -1492,6 +1492,12 @@ class Model extends BaseModel {
                             avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
                             avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
                         }
+
+                        conditionPopulate = {
+                            path: '_id.assignee',
+                            select: '_id fullname',
+                            model: 'user'
+                        }
                     }
 
                     // console.log(conditionObj)
@@ -1549,10 +1555,6 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [3,6].includes(Number(option))){
-                        await FNB_ORDER_COLL.populate(listData, conditionPopulate)
-                    }
-
                     if(option && Number(option) == 7){
                         listData = await FNB_ORDER_COLL.aggregate([
                             {
@@ -1599,7 +1601,10 @@ class Model extends BaseModel {
                                 $sort: sortBy
                             }
                         ])
-    
+                    }
+
+                    if(!isNaN(option) && [3,6,7].includes(Number(option))){
+                        await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
                     return resolve({ error: false, data: listData });
