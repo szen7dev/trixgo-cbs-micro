@@ -293,8 +293,11 @@ class Model extends BaseModel {
                     dataInsert.assignee = arrStaffs;
 
                     // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
-                    dataInsert.avgTotalPerStaff = Number(amount/Number(numberStaff)).toFixed(0)
-
+                    if(Number(numberStaff) != 0){
+                        dataInsert.avgTotalPerStaff = Number(amount/Number(numberStaff)).toFixed(0)
+                    }else{
+                        dataInsert.avgTotalPerStaff = 1
+                    }
                 }else{
                     numberStaff = 1
                     dataInsert.assignee = [userID];
@@ -302,6 +305,8 @@ class Model extends BaseModel {
                     // Doanh số trung bình/đầu nhân viên (1 nhân viên)
                     dataInsert.avgTotalPerStaff = Number(amount/Number(numberStaff)).toFixed(0)
                 }
+                // console.log({numberStaff})
+                // console.log(Number(amount/Number(numberStaff)).toFixed(0))
 
                 /**
                  * KHỐI LƯỢNG SẢN PHẨM
@@ -1648,8 +1653,10 @@ class Model extends BaseModel {
                 let conditionObj = { 
                     company: ObjectID(companyID),
                     status: 5,
-                    avgQuantityPerStaff: {$gte: 0},
-                    avgQuantityPerStaff: {$gte: 0},
+                    // avgTotalPerStaff: {$exists: true, $ne: null, $gte: 0},
+                    // avgQuantityPerStaff: {$exists: true, $ne: null, $gte: 0},
+                    avgTotalPerStaff: {$exists: true, $ne: null},
+                    avgQuantityPerStaff: {$exists: true, $ne: null},
                 }
                 let projectObj =  {
                     year : {$year : "$createAt"},
