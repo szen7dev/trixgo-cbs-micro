@@ -866,7 +866,7 @@ class Model extends BaseModel {
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
                 .then(async workbook => {
-                    workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
+                    // workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
