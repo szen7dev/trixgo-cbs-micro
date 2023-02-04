@@ -611,7 +611,7 @@ class Model extends BaseModel {
 
     /**
      * Dev: HiepNH
-     * Func: exportExcel-Tải bảng lương
+     * Func: Tải Bảng chấm công
      * Date: 15/1/2023
      */
     exportExcel({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
@@ -839,6 +839,11 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Dev: HiepNH
+     * Func: Tải Báo cáo doanh số
+     * Date: 15/1/2023
+     */
     exportExcel2({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
         return new Promise(async resolve => {
             try {

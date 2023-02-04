@@ -263,7 +263,7 @@
 
     /**
      * Dev: HiepNH
-     * Func: Download Template Excel
+     * Func: Tải Bảng chấm công
      * Date: 9/12/2022
      */
     exportExcel: {
@@ -283,6 +283,38 @@
                 }
 
                 const resultAfterCallHandler = await FNB_SHIFT_MODEL.exportExcel({
+                    userID, companyID, fundaID, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Tải Báo cáo doanh số
+     * Date: 9/12/2022
+     */
+    exportExcel2: {
+        auth: 'required',
+        params: {
+            companyID: { type: "string", optional: true },
+            fundaID: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let { companyID, fundaID } = ctx.params;
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await FNB_SHIFT_MODEL.exportExcel2({
                     userID, companyID, fundaID, ctx
                 })
 

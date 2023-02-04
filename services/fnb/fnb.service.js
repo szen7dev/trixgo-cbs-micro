@@ -66,6 +66,7 @@ module.exports = {
 		[CF_ACTIONS_FNB.ORDER_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__ORDER_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.ORDER_IMPORT_FROM_EXCEL]						: FNB__ORDER_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.ORDER_EXPORT_EXCEL]								: FNB__ORDER_HANDLER.exportExcel,
+		[CF_ACTIONS_FNB.ORDER_EXPORT_EXCEL2]							: FNB__ORDER_HANDLER.exportExcel2,
 		[CF_ACTIONS_FNB.ORDER_RESET_ALL_DATA]							: FNB__ORDER_HANDLER.resetAllData,
 
 		//========================================== FNB_PRODUCT ==============================================//
@@ -96,6 +97,7 @@ module.exports = {
 		[CF_ACTIONS_FNB.SHIFT_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__SHIFT_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.SHIFT_IMPORT_FROM_EXCEL]						: FNB__SHIFT_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.SHIFT_EXPORT_EXCEL]								: FNB__SHIFT_HANDLER.exportExcel,
+		[CF_ACTIONS_FNB.SHIFT_EXPORT_EXCEL2]							: FNB__SHIFT_HANDLER.exportExcel2,
 
 		//========================================== FNB_MISTAKE ==============================================//
 		[CF_ACTIONS_FNB.MISTAKE_INSERT]									: FNB__MISTAKE_HANDLER.insert,
