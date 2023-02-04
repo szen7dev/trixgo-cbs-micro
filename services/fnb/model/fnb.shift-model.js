@@ -611,53 +611,83 @@ class Model extends BaseModel {
 
     /**
      * Dev: HiepNH
-     * Func: exportExcel
+     * Func: Tải Bảng chấm công
      * Date: 15/1/2023
      */
     exportExcel({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
-        console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
+        // console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
         return new Promise(async resolve => {
             try {
                 /**
                  * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
                  */
-                let currentYear = new Date().getFullYear()
-                let currentMonth = new Date().getMonth()
-                // console.log({ currentYear, currentMonth })
-
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                .select('_id name sign company')
+                .populate({
+                    path: 'company',
+                    select: 'name sign'
+                })
+                // console.log(infoFunda)
 
-                let conditionObj = { company: ObjectID(companyID) }
-                let conditionGroup = {}
-                let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"day": 1}
-
-                if(!isNaN(year) && Number(year) >= 0){
-                    conditionObjYear = {
-                        "year": Number(year),
-                        "month": Number(month + 1),
-                    }
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
                 }else{
-                    conditionObjYear = {
-                        "year": Number(currentYear),
-                        "month": Number(currentMonth + 1),
-                    }
+                    yearFilter = Number(currentYear)
                 }
-                // console.log(conditionObjYear)
+
+                let conditionObj = { 
+                    funda: ObjectID(fundaID)
+                }
+
+                let projectObj =  {
+                    year : {$year : "$createAt"},
+                    month : {$month : "$createAt"},
+                    day: { $dayOfMonth: "$createAt" },
+                    company : 1,
+                    funda : 1,
+                    staffs : 1,
+                    workingHours : 1,
+                    subStaffs : 1,
+                    subWorkingHours : 1,
+                    createAt: 1
+                }
+                
+                let lookupObj = {
+                    from: "users",
+                    localField: "staffs",
+                    foreignField: "_id",
+                    as: "staff"
+                } 
+
+                let lookupSubObj = {
+                    from: "users",
+                    localField: "subStaffs",
+                    foreignField: "_id",
+                    as: "staff"
+                } 
+                
+                let conditionObjYear = {
+                    "year": Number(yearFilter),
+                }
+
+                let conditionPopulate = {}, sortBy = {"day": 1}
+
+                let conditionGroup = {
+                    _id: {  staff: "$staff._id", day: "$day", month: "$month", year: "$year" },
+                    number: { $sum: 1 },
+                    workingHours: { $sum: "$workingHours" },
+                    subWorkingHours: { $sum: "$subWorkingHours" },
+                }
 
                 // Danh sách nhân sự ca chính
                 let listData1  = await FNB_SHIFT_COLL.aggregate([
                     {
-                        $match: {
-                            funda: ObjectID(fundaID)
-                        }
+                        $match: conditionObj
                     },
                     { 
-                        $lookup: {
-                            from: "users",
-                            localField: "staffs",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+                        $lookup: lookupObj
                     },
                     {
                         $unwind: "$staff"
@@ -672,17 +702,10 @@ class Model extends BaseModel {
                  // Danh sách nhân sự ca phụ
                 let listData2  = await FNB_SHIFT_COLL.aggregate([
                     {
-                        $match: {
-                            funda: ObjectID(fundaID)
-                        }
+                        $match: conditionObj
                     },
                     { 
-                        $lookup: {
-                            from: "users",
-                            localField: "subStaffs",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+                        $lookup: lookupSubObj
                     },
                     {
                         $unwind: "$staff"
@@ -694,40 +717,15 @@ class Model extends BaseModel {
                     }
                 ])
 
-                conditionGroup = {
-                    _id: {  staff: "$staff._id", day: "$day", month: "$month", year: "$year" },
-                    number: { $sum: 1 },
-                    workingHours: { $sum: "$workingHours" },
-                    subWorkingHours: { $sum: "$subWorkingHours" },
-                }
-
                 let listDataTimesheet1  = await FNB_SHIFT_COLL.aggregate([
                     {
-                        $match: {
-                            funda: ObjectID(fundaID)
-                        }
+                        $match: conditionObj
                     },
                     {
-                        $project : {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            day: { $dayOfMonth: "$createAt" },
-                            company : 1,
-                            funda : 1,
-                            staffs : 1,
-                            workingHours : 1,
-                            subStaffs : 1,
-                            subWorkingHours : 1,
-                            createAt: 1
-                        }
+                        $project : projectObj
                     },
                     { 
-                        $lookup: {
-                            from: "users",
-                            localField: "staffs",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+                        $lookup: lookupObj
                     },
                     {
                         $unwind: "$staff"
@@ -745,31 +743,13 @@ class Model extends BaseModel {
 
                 let listDataTimesheet2  = await FNB_SHIFT_COLL.aggregate([
                     {
-                        $match: {
-                            funda: ObjectID(fundaID)
-                        }
+                        $match: conditionObj
                     },
                     {
-                        $project : {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            day: { $dayOfMonth: "$createAt" },
-                            company : 1,
-                            funda : 1,
-                            staffs : 1,
-                            workingHours : 1,
-                            subStaffs : 1,
-                            subWorkingHours : 1,
-                            createAt: 1
-                        }
+                        $project : projectObj
                     },
                     { 
-                        $lookup: {
-                            from: "users",
-                            localField: "subStaffs",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+                        $lookup: lookupSubObj
                     },
                     {
                         $unwind: "$staff"
@@ -786,112 +766,119 @@ class Model extends BaseModel {
                 ])
                 // console.log(listDataTimesheet1)
                 // console.log(listDataTimesheet2)
-                // console.log(listDataTimesheet.length)
 
                 let listData3 = [...listData1, ...listData2]
-                // console.log(listData1.length)
-                // console.log(listData2.length)
-                // console.log(listData3.length)
+                let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')               
 
-                let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_sallary.xlsx')))
+                .then(async workbook => {
+                    // Lặp qua 12 tháng
+                    for(var m = 1; m<=12; m++){
+                        workbook.sheet(`T${m}`).row(1).cell(4).value(Number(yearFilter))
+                        workbook.sheet(`T${m}`).row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`)
 
-                /**
-                 * DANH SÁCH LỖI CỦA ĐIỂM BÁN
-                 */
-                let listMistakes  = await FNB_MISTAKE_COLL.aggregate([
-                    {
-                        $match: {
-                            funda: ObjectID(fundaID)
-                        }
-                    },
-                    {
-                        $project : {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            day: { $dayOfMonth: "$createAt" },
-                            company : 1,
-                            funda : 1,
-                            mistake : 1,
-                            order : 1,
-                            executor : 1,
-                            amount : 1,
-                            bonus : 1,
-                            createAt: 1
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    },
-                    {
-                        $group: {
-                            _id: {  executor: "$executor" },
-                            number: { $sum: 1 },
-                            amount: { $sum: "$amount" },
-                            bonus: { $sum: "$bonus" },
-                        }
-                    },
-                    {
-                        $sort: sortBy
+                        var j = 2
+                        listStaffs?.forEach((item, index) => {
+                            workbook.sheet(`T${m}`).row(3).cell(j).value(item.fullname);
+                            workbook.sheet(`T${m}`).row(4).cell(j).value(`${item._id}`);
+                            j++
+                        })
                     }
-                ])
-                console.log('===========>>>>>>>>>>>>>>>>')
-                console.log(listMistakes)
 
-                // // Modify the workbook.
-                // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
-                // .then(async workbook => {
-                //     workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
+                    listDataTimesheet1?.forEach((item, index) => {
+                        for(var m = 1; m<=12; m++){
+                            if(Number(item._id.month) === Number(m)){
+                                for(let i=5; i<=35; i++){
+                                    for(let j=2; j<=Number(listStaffs.length + 1); j++){
+                                        let staffID = workbook.sheet(`T${m}`).row(4).cell(j).value()
+                                        
+                                        if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
+                                            workbook.sheet(`T${m}`).row(i).cell(j).value(item.workingHours)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
 
-                //     var j = 2
-                //     listStaffs?.forEach((item, index) => {
-                //         workbook.sheet("Timesheet").row(3).cell(j).value(item.fullname);
-                //         workbook.sheet("Timesheet").row(4).cell(j).value(`${item._id}`);
-                //         j++
-                //     })
+                    listDataTimesheet2?.forEach((item, index) => {
+                        for(var m = 1; m<=12; m++){
+                            if(Number(item._id.month) === Number(m)){
+                                for(let i=5; i<=35; i++){
+                                    for(let j=2; j<=Number(listStaffs.length + 1); j++){
+                                        let staffID = workbook.sheet(`T${m}`).row(4).cell(j).value()
+                                        
+                                        if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
+                                            let timesheet = workbook.sheet(`T${m}`).row(i).cell(j).value() | 0
+        
+                                            workbook.sheet(`T${m}`).row(i).cell(j).value(Number(timesheet) + Number(item.subWorkingHours))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
 
-                //     listDataTimesheet1?.forEach((item, index) => {
-                //         for(let i=5; i<=35; i++){
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BangChamCong_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-                //             // Ngày tháng
-                //             let dateVal = `${Number(i-4)}/${Number(currentMonth+1)}/${currentYear}`
-                //             workbook.sheet("Timesheet").row(i).cell(1).value(dateVal)
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
 
-                //             // Giờ làm
-                //             for(let j=2; j<=Number(listStaffs.length + 1); j++){
-                //                 let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
-                                
-                //                 if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
-                //                     workbook.sheet("Timesheet").row(i).cell(j).value(item.workingHours)
-                //                 }
-                //             }
-                //         }
-                //     })
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
 
-                //     listDataTimesheet2?.forEach((item, index) => {
-                //         for(let i=5; i<=35; i++){
-                //             for(let j=2; j<=Number(listStaffs.length + 1); j++){
-                //                 let staffID = workbook.sheet("Timesheet").row(4).cell(j).value()
-                                
-                //                 if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
-                //                     let timesheet = workbook.sheet("Timesheet").row(i).cell(j).value() | 0
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
-                //                     workbook.sheet("Timesheet").row(i).cell(j).value(Number(timesheet) + Number(item.subWorkingHours))
-                //                 }
-                //             }
-                //         }
-                //     })
+    /**
+     * Dev: HiepNH
+     * Func: Tải Báo cáo doanh số
+     * Date: 15/1/2023
+     */
+    exportExcel2({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
+        return new Promise(async resolve => {
+            try {
+                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                .select('_id name sign company')
+                .populate({
+                    path: 'company',
+                    select: 'name sign'
+                })
+                // console.log(infoFunda)
 
-                //     const now = new Date();
-                //     const filePath = '../../../files/temporary_uploads/';
-                //     const fileName = `fnb_shift_export_${now.getTime()}.xlsx`;
-                //     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
 
-                //     await workbook.toFileAsync(pathWriteFile);
-                //     const result = await uploadFileS3(pathWriteFile, fileName);
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
+                .then(async workbook => {
+                    workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
 
-                //     fs.unlinkSync(pathWriteFile);
-                //     return resolve({ error: false, data: result?.Location, status: 200 });
-                // });
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
 
             } catch (error) {
                 console.log({ error })

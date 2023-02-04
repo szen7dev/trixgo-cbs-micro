@@ -27,6 +27,7 @@ const CF_ACTIONS_FNB = {
    ORDER_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${ORDER}_DOWNLOAD_TEMPLATE_EXCEL`,
    ORDER_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${ORDER}_IMPORT_FROM_EXCEL`,
    ORDER_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL`,
+   ORDER_EXPORT_EXCEL2                             : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL2`,
    ORDER_RESET_ALL_DATA                            : `${BASE_ACTIONS}_${ORDER}_RESET_ALL_DATA`,
 
    /**
@@ -63,6 +64,7 @@ const CF_ACTIONS_FNB = {
    SHIFT_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${SHIFT}_DOWNLOAD_TEMPLATE_EXCEL`,
    SHIFT_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${SHIFT}_IMPORT_FROM_EXCEL`,
    SHIFT_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${SHIFT}_EXPORT_EXCEL`,
+   SHIFT_EXPORT_EXCEL2                             : `${BASE_ACTIONS}_${SHIFT}_EXPORT_EXCEL2`,
 
    /**
    * MISTAKE

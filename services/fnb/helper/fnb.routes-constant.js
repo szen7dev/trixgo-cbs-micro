@@ -23,6 +23,7 @@ const CF_ROUTINGS_FNB = {
     ORDER_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${ORDER}/download-template-excel`,
     ORDER_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${ORDER}/import-from-excel`,
     ORDER_EXPORT_EXCEL                      : `${BASE_ROUTE}${ORDER}/export-excel`,
+    ORDER_EXPORT_EXCEL2                      : `${BASE_ROUTE}${ORDER}/export-excel2`,
     ORDER_RESET_ALL_DATA                    : `${BASE_ROUTE}${ORDER}/reset-all-data`,
 
     //================================FNB_PRODUCT=======================================//
@@ -44,6 +45,7 @@ const CF_ROUTINGS_FNB = {
     SHIFT_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${SHIFT}/download-template-excel`,
     SHIFT_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${SHIFT}/import-from-excel`,
     SHIFT_EXPORT_EXCEL                      : `${BASE_ROUTE}${SHIFT}/export-excel`,
+    SHIFT_EXPORT_EXCEL2                      : `${BASE_ROUTE}${SHIFT}/export-excel2`,
 
     //================================FNB_MISTAKE=======================================//
     MISTAKES                                : `${BASE_ROUTE}${MISTAKE}`,

@@ -1622,26 +1622,13 @@ class Model extends BaseModel {
 
     /**
      * Dev: HiepNH
-     * Func: Download Template Excel
+     * Func: Tải KPI
      * Date: 8/12/2022
      */
     exportExcel({ companyID, year, month, userID }) {
         // console.log({ companyID, year, month, userID })
         return new Promise(async resolve => {
             try {
-                let listData  = await FNB_ORDER_COLL.find({ company: companyID })
-                .populate({
-                    path: "funda",
-                    select: "name sign",
-                })
-                .populate({
-                    path: "shift",
-                    select: "name sign",
-                })
-                .limit(3000)
-                .sort({createAt: -1})
-                // console.log(listData)
-
                 let yearFilter
                 let currentYear = new Date().getFullYear()
                 if(year && !isNaN(year)){
@@ -2123,46 +2110,14 @@ class Model extends BaseModel {
                 await FNB_SHIFT_COLL.populate(listDataR12, conditionPopulate)
 
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_order_template.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_kpi.xlsx')))
                 .then(async workbook => {
-
-                    /**
-                     * DANH SÁCH ĐƠN HÀNG
-                     */
-                    var i = 3;
-                    listData?.forEach((item, index) => {
-                        workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                        workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                        workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-                        workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(6).value(item.name);
-                        workbook.sheet("Order").row(i).cell(7).value(item.sign);
-                        workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-                        workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-                        workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-                        workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                        workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
-                        workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
-                        workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
-                        workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
-                        workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
-                        workbook.sheet("Order").row(i).cell(20).value(item.note);
-                        i++
-                    });
-
-                    /**
-                     * DOANH SỐ NHÂN VIÊN
-                     */
                     var i = 3;
                     listDataR1?.forEach((item, index) => {
                         workbook.sheet("T1").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T1").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T1").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T1").row(i).cell(5).value(item?.number);
                         workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2174,7 +2129,7 @@ class Model extends BaseModel {
                         workbook.sheet("T2").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T2").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T2").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T2").row(i).cell(5).value(item?.number);
                         workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2186,7 +2141,7 @@ class Model extends BaseModel {
                         workbook.sheet("T3").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T3").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T3").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T3").row(i).cell(5).value(item?.number);
                         workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2198,7 +2153,7 @@ class Model extends BaseModel {
                         workbook.sheet("T4").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T4").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T4").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T4").row(i).cell(5).value(item?.number);
                         workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2210,7 +2165,7 @@ class Model extends BaseModel {
                         workbook.sheet("T5").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T5").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T5").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T5").row(i).cell(5).value(item?.number);
                         workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2222,7 +2177,7 @@ class Model extends BaseModel {
                         workbook.sheet("T6").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T6").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T6").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T6").row(i).cell(5).value(item?.number);
                         workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2234,7 +2189,7 @@ class Model extends BaseModel {
                         workbook.sheet("T1").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T1").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T1").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T1").row(i).cell(5).value(item?.number);
                         workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2246,7 +2201,7 @@ class Model extends BaseModel {
                         workbook.sheet("T2").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T2").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T2").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T2").row(i).cell(5).value(item?.number);
                         workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2258,7 +2213,7 @@ class Model extends BaseModel {
                         workbook.sheet("T3").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T3").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T3").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T3").row(i).cell(5).value(item?.number);
                         workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2270,7 +2225,7 @@ class Model extends BaseModel {
                         workbook.sheet("T4").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T4").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T4").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T4").row(i).cell(5).value(item?.number);
                         workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2282,7 +2237,7 @@ class Model extends BaseModel {
                         workbook.sheet("T5").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T5").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T5").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T5").row(i).cell(5).value(item?.number);
                         workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2294,7 +2249,7 @@ class Model extends BaseModel {
                         workbook.sheet("T6").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("T6").row(i).cell(2).value(item?._id?.staff.fullname);
                         workbook.sheet("T6").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
-                        workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff !=0 ? Number(item?.avgQuantityPerStaff) : 0)
+                        workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T6").row(i).cell(5).value(item?.number);
                         workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
                         
@@ -2337,7 +2292,84 @@ class Model extends BaseModel {
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `export_order_${now.getTime()}.xlsx`;
+                    const fileName = `BaoCaoKPI_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: Tải Đơn hàng
+     * Date: 4/2/2023
+     */
+    exportExcel2({ companyID, year, month, userID }) {
+        // console.log({ companyID, year, month, userID })
+        return new Promise(async resolve => {
+            try {
+                let listData  = await FNB_ORDER_COLL.find({ company: companyID })
+                .populate({
+                    path: "funda",
+                    select: "name sign",
+                })
+                .populate({
+                    path: "shift",
+                    select: "name sign",
+                })
+                .limit(5000)
+                .sort({createAt: -1})
+                // console.log(listData)
+
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
+                .then(async workbook => {
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
+                        workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                        workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
+                        workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(6).value(item.name);
+                        workbook.sheet("Order").row(i).cell(7).value(item.sign);
+                        workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
+                        workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
+                        workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
+                        workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
+                        workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
+                        workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
+                        workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
+                        workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
+                        workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
+                        workbook.sheet("Order").row(i).cell(20).value(item.note);
+                        i++
+                    });
+                   
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
