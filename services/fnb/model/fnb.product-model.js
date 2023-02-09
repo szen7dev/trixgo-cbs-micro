@@ -46,14 +46,15 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type }) {
-        // console.log({ userID, companyID, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type })
+    insert({ userID, companyID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type }) {
+        // console.log({ userID, companyID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name)
-                    return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                    return resolve({ error: true, message: 'companyID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataInsert = { 
+                    company: companyID,
                     name, 
                     namecv: stringUtils.removeAccents(name),
                     type, 
@@ -65,17 +66,6 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
                     dataInsert.sign = sign
-                }
-
-                if(fundaID && checkObjectIDs(fundaID)){
-                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                    if (!infoFunda)
-                        return resolve({ error: true, message: 'cannot_get_info_funda' });
-
-                    dataInsert.funda = fundaID
-                    dataInsert.company = infoFunda.company
-                }else{
-                    dataInsert.company = companyID
                 }
 
                 if(parentID && checkObjectIDs(parentID)){
@@ -108,7 +98,7 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                console.log(infoAfterInsert)
+                // console.log(infoAfterInsert)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
@@ -129,7 +119,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID }) {
+    update({ productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(productID))
@@ -153,6 +143,12 @@ class Model extends BaseModel {
                 if(imagesID && imagesID.length) {
                     dataInUpdate.$addToSet = {
                         images: imagesID,
+                    }
+                }
+
+                if(fundasID && fundasID.length) {
+                    dataInUpdate.$addToSet = {
+                        fundas: fundasID,
                     }
                 }
 
@@ -231,7 +227,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, parentID, type, isParent, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, parentID, fundaID, type, isParent, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         // console.log({ companyID, type, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
@@ -241,14 +237,13 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = { company : ObjectID(companyID) }
                 let sortBy;
                 // let keys	 = ['createAt__-1'];
                 let keys	 = ['createAt__1', '_id__1'];
 
-                // Gom nhóm theo đơn vị cơ sở
-                if(companyID ){
-                    conditionObj.company = ObjectID(companyID)
+                if(fundaID && checkObjectIDs(fundaID)){
+                    conditionObj.funda = {$in: [fundaID]}
                 }
 
                 if(parentID && checkObjectIDs(parentID)){
@@ -302,13 +297,6 @@ class Model extends BaseModel {
                     const regCVSearch = new RegExp(keywordCV, 'i');
 
                     conditionObj.namecv = regCVSearch
-
-                    // conditionObj.$or = [
-                    //     { namecv: regCVSearch },
-                    //     { name: regSearch }, // sau bỏ đi
-                    // ]
-
-                    // console.log(conditionObj)
                 }
 
                 if(select && typeof select === 'string'){

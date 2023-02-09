@@ -17,7 +17,6 @@
      insert: {
          auth: "required",
          params: {
-            fundaID             : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
             name                : { type: "string" },
             sign                : { type: "string", optional: true },
@@ -33,12 +32,12 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type } = ctx.params;
+                let { parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_PRODUCT_MODEL.insert({
-                    userID, companyID: company._id, fundaID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type
+                    userID, companyID: company._id, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -62,6 +61,7 @@
             unit            : { type: "string", optional: true },
             note            : { type: "string", optional: true },
             imagesID        : { type: "array", optional: true },
+            fundasID        : { type: "array", optional: true },
             quantity        : { type: "number", optional: true },
             unitPrice       : { type: "number", optional: true },
             unitPrice2       : { type: "number", optional: true },
@@ -71,11 +71,11 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID } = ctx.params;
+                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await FNB_PRODUCT_MODEL.update({
-                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID
+                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -118,6 +118,7 @@
          auth: "required",
          params: {
             productID   : { type: "string", optional: true },
+            fundaID     : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
             type        : { type: "string", optional: true },
             isParent    : { type: "string", optional: true },
@@ -132,7 +133,7 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { productID, parentID, type, isParent, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let { productID, parentID, fundaID, type, isParent, keyword, limit, lastestID, select, populates } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -143,7 +144,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_PRODUCT_MODEL.getList({
-                         companyID: company._id, parentID, type, isParent, keyword, limit, lastestID, select, populates, userID
+                         companyID: company._id, parentID, fundaID, type, isParent, keyword, limit, lastestID, select, populates, userID
                      });
                  }
 

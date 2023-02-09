@@ -12,10 +12,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         ref: 'company'
     },
     //_________Đơn vị cơ sở/Cửa hàng
-    funda: {
+    fundas: [{
         type: Schema.Types.ObjectId,
         ref : "funda"
-    },
+    }],
     //_________Cha
     parent: {
         type: Schema.Types.ObjectId,
