@@ -1126,8 +1126,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log({ fundasID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
+    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        // console.log({ fundasID, shiftsID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -1167,6 +1167,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                shiftsID && shiftsID.length                 && (conditionObj.shift = { $in: shiftsID });
                 assigneesID && assigneesID.length           && (conditionObj.assignee = { $in: assigneesID });
                 shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
                 salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });

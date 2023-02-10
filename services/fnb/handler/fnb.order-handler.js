@@ -146,6 +146,7 @@ module.exports = {
         params: {
             orderID             : { type: "string", optional: true },
             fundasID            : { type: "array", optional: true },
+            shiftsID            : { type: "array", optional: true },
             assigneesID         : { type: "array", optional: true },
             shiftTypes          : { type: "array", optional: true },
             salesChannels       : { type: "array", optional: true },
@@ -165,7 +166,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -175,7 +176,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        companyID: company._id, fundasID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID
+                        companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
