@@ -40,6 +40,7 @@ const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
 const { 
+    FNB_FACTOR,
     FNB_NEW,
     FNB_NON_RESIDENT,
     FNB_INTERNAL,
@@ -243,13 +244,17 @@ class Model extends BaseModel {
                  * TÍCH ĐIỂM NẾU LÀ ĐƠN OFF VÀ KHÔNG CÓ GIẢM GIÁ
                  */
                 if(salesChannel == 1){
+                    // Nếu có giảm giá
                     if(!isNaN(salesoff) && Number(salesoff) > 0){
-                        // console.log('=1111111111111111111111111111')
+                        // console.log('1111111111111111111111111111')
                         // Nếu đã giảm giá thì không được tích điểm
                         dataInsert.salesoff = Number(salesoff)
                         amount = Number(amount) - Number(salesoff)
-                    }else{
-                        // console.log('=22222222222222222222222222')
+                    }
+                    
+                    // Nếu không có giảm giá
+                    else{
+                        // console.log('22222222222222222222222222')
 
                         // Nếu có tích điểm
                         if(!isNaN(credit)){
@@ -259,9 +264,15 @@ class Model extends BaseModel {
 
                         // Chính sách tích điểm
                         if(infoFunda.loyaltyPointsRate && infoFunda.loyaltyPointsRate != 0){
-                            loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate/100)).toFixed(0) // Tích điểm 10%
+                            // console.log('3333333333333333')
+                            // console.log({_______:infoFunda })
+                            // console.log({_______:infoFunda.loyaltyPointsRate })
+                            loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate/100)).toFixed(0) // Tích điểm
                         }else{
-                            loyaltyPoints = Number(Number(total-discount-salesoff)*(10/100)).toFixed(0) // Tích điểm 10%
+                            // console.log('4444444444444')
+                            // console.log( Number(FNB_FACTOR.credit))
+                            // console.log( Number(FNB_FACTOR.credit/100))
+                            loyaltyPoints = Number(Number(total-discount-salesoff)*(Number(FNB_FACTOR.credit)/100)).toFixed(0) // Tích điểm
                         }
                         dataInsert.loyaltyPoints = Number(loyaltyPoints)
                     }
@@ -270,9 +281,13 @@ class Model extends BaseModel {
                 dataInsert.amount = Number(amount)
 
                 if(!isNaN(vatAmount)){
+                    // console.log('55555555555555555')
                     dataInsert.vatAmount = Number(vatAmount)
                 }else{
-                    dataInsert.vatAmount = Number(amount)*10/100
+                    // console.log('66666666666666666666666')
+                    // console.log( Number(FNB_FACTOR.vatRate))
+                    // console.log( Number(FNB_FACTOR.vatRate/100))
+                    dataInsert.vatAmount = Number(amount*Number(FNB_FACTOR.vatRate/100)/(Number(1 + Number(FNB_FACTOR.vatRate/100)))).toFixed(0)
                 }
 
                 /**

@@ -1,3 +1,8 @@
+exports.FNB_FACTOR = {
+    credit: 2, // Tỷ lệ tích điểm cho đơn off (%)
+    vatRate: 10, // Thuế VAT (%)
+}
+
 exports.FNB_NEW = [
     { value: 1, text: 'Mới' },
     { value: 2, text: 'Cũ' },
