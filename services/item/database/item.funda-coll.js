@@ -124,8 +124,7 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     }], 
     //______Tỷ lệ tích lũy
     loyaltyPointsRate: {
-        type: Number,
-        default : 10
+        type: Number
     },
     //______Điểm tích lũy
     loyaltyPoints: {
