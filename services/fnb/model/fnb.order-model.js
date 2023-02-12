@@ -97,7 +97,7 @@ class Model extends BaseModel {
                 // Thông tin khách hàng
                 let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID)
                 if (!infoCustomer)
-                    return resolve({ error: true, message: 'cannot_get_infoCustomer' });
+                    return resolve({ error: true, message: 'cannot_get_infoCustomer' })
 
                 // Lấy số đơn hàng khách đã mua
                 let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
@@ -246,7 +246,6 @@ class Model extends BaseModel {
                 if(salesChannel == 1){
                     // Nếu có giảm giá
                     if(!isNaN(salesoff) && Number(salesoff) > 0){
-                        // console.log('1111111111111111111111111111')
                         // Nếu đã giảm giá thì không được tích điểm
                         dataInsert.salesoff = Number(salesoff)
                         amount = Number(amount) - Number(salesoff)
@@ -254,26 +253,33 @@ class Model extends BaseModel {
                     
                     // Nếu không có giảm giá
                     else{
-                        // console.log('22222222222222222222222222')
-
                         // Nếu có tích điểm
                         if(!isNaN(credit)){
                             dataInsert.credit = Number(credit)
                             amount = Number(amount) - Number(credit)
                         }
 
-                        // Chính sách tích điểm
-                        if(infoFunda.loyaltyPointsRate && infoFunda.loyaltyPointsRate != 0){
-                            // console.log('3333333333333333')
-                            // console.log({_______:infoFunda })
-                            // console.log({_______:infoFunda.loyaltyPointsRate })
-                            loyaltyPoints = Number(Number(total-discount-salesoff)*(infoFunda.loyaltyPointsRate/100)).toFixed(0) // Tích điểm
+                        /**
+                         * Chính sách tích điểm => Mở chính thức vào 1/3/2023
+                         */
+                        let factor = 0
+                        if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level2.purchasedValue)){
+                            factor = Number(FNB_FACTOR.credit.level1.factor)
                         }else{
-                            // console.log('4444444444444')
-                            // console.log( Number(FNB_FACTOR.credit))
-                            // console.log( Number(FNB_FACTOR.credit/100))
-                            loyaltyPoints = Number(Number(total-discount-salesoff)*(Number(FNB_FACTOR.credit)/100)).toFixed(0) // Tích điểm
+                            if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level3.purchasedValue)){
+                                factor = Number(FNB_FACTOR.credit.level2.factor)
+                            }else{
+                                if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level4.purchasedValue)){
+                                    factor = Number(FNB_FACTOR.credit.level3.factor)
+                                }else{
+                                    factor = Number(FNB_FACTOR.credit.level4.factor)
+                                }
+                            }
                         }
+                        // console.log({factor})
+
+                        loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
+
                         dataInsert.loyaltyPoints = Number(loyaltyPoints)
                     }
                 }
@@ -571,22 +577,36 @@ class Model extends BaseModel {
                  * - Điểm tích lũy (tăng, giảm)
                  * - Số đơn hàng
                  */
+                // console.log(infoCustomer)
+                let oldNumberOfOrders = infoCustomer.numberOfOrders | 0
+                let oldPurchasedValue = infoCustomer.purchasedValue | 0
+                // let oldTotalLoyaltyPoints = infoCustomer.totalLoyaltyPoints | 0
+                // let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0
+                // let oldRemainLoyaltyPoints = infoCustomer.remainLoyaltyPoints | 0
+
+                let newNumberOfOrders = Number(oldNumberOfOrders) + Number(1)
+                let newPurchasedValue = Number(oldPurchasedValue) + Number(amount)
+                // let newTotalLoyaltyPoints = Number(oldTotalLoyaltyPoints) + Number(loyaltyPoints)
+                // let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0)
+                // let newRemainLoyaltyPoints = Number(newTotalLoyaltyPoints) - Number(newUsedLoyaltyPoints)
+                // console.log({newRemainLoyaltyPoints})
+
                 if(numberOD && numberOD > 0){
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
                         new: 2, // Khách hàng cũ
-                        $inc: { 
-                            "numberOfOrders": 1,
-                            "purchasedValue": Number(amount),
-                            "totalLoyaltyPoints": Number(loyaltyPoints),
-                        }
+                        numberOfOrders: Number(newNumberOfOrders),
+                        purchasedValue: Number(newPurchasedValue),
+                        // totalLoyaltyPoints: Number(newTotalLoyaltyPoints),
+                        // usedLoyaltyPoints: Number(newUsedLoyaltyPoints),
+                        // remainLoyaltyPoints: Number(newRemainLoyaltyPoints),
                     })
                 }else{
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
-                        $inc: { 
-                            "numberOfOrders": 1,
-                            "purchasedValue": Number(amount),
-                            "totalLoyaltyPoints": Number(loyaltyPoints),
-                        }
+                        numberOfOrders: Number(newNumberOfOrders),
+                        purchasedValue: Number(newPurchasedValue),
+                        // totalLoyaltyPoints: Number(newTotalLoyaltyPoints),
+                        // usedLoyaltyPoints: Number(newUsedLoyaltyPoints),
+                        // remainLoyaltyPoints: Number(newRemainLoyaltyPoints),
                     })
                 }
 
@@ -636,7 +656,7 @@ class Model extends BaseModel {
                 
                 let oldCustomerID = infoOrder.customer;
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 if(cancelNote) {
                     dataInUpdate.note = cancelNote;
@@ -1656,8 +1676,6 @@ class Model extends BaseModel {
                 let conditionObj = { 
                     company: ObjectID(companyID),
                     status: 5,
-                    // avgTotalPerStaff: {$exists: true, $ne: null, $gte: 0},
-                    // avgQuantityPerStaff: {$exists: true, $ne: null, $gte: 0},
                     avgTotalPerStaff: {$exists: true, $ne: null},
                     avgQuantityPerStaff: {$exists: true, $ne: null},
                 }

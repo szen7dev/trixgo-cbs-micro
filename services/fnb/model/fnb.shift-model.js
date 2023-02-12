@@ -146,11 +146,16 @@ class Model extends BaseModel {
      * Code:
      */
     update({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        // console.log({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
+        // console.log({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
-                    return resolve({ error: true, message: 'shiftID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                    return resolve({ error: true, message: 'shiftID__invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                
+                // let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
+                // let number1 = infoShift.staffs.length
+                // let number2 = infoShift.subStaffs.length
+                // console.log({ number1, number2 })
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
@@ -221,13 +226,54 @@ class Model extends BaseModel {
                 if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
                     dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
                 }
-
                 // console.log({ dataInUpdate })
 
-                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });
-
+                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                /**
+                 * CẬP NHẬT LẠI DOANH SỐ CỦA NHÂN VIÊN
+                 */
+                let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
+                for(const item of listOrders){
+                    let dataOrderUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+                    let numberStaff = 0
+                    if(staffsID && staffsID.length){
+                        numberStaff = staffsID.length
+                        let arrStaffs = staffsID
+
+                        if(subStaffsID && subStaffsID.length){
+                            arrStaffs = [...arrStaffs,...subStaffsID]
+
+                            numberStaff = Number(numberStaff) + Number(subStaffsID.length)
+                        }
+
+                        // Nhân viên thực hiện
+                        dataOrderUpdate.assignee = arrStaffs;
+
+                        // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
+                        if(Number(numberStaff) != 0){
+                            dataOrderUpdate.avgTotalPerStaff = Number(item.amount/Number(numberStaff)).toFixed(0)
+                        }else{
+                            dataOrderUpdate.avgTotalPerStaff = 1
+                        }
+
+                        dataOrderUpdate.avgQuantityPerStaff = Number(item.numberOfProducts/numberStaff).toFixed(2)   
+                    }else{
+                        numberStaff = 1
+                        dataOrderUpdate.assignee = [userID];
+
+                        // Doanh số trung bình/đầu nhân viên (1 nhân viên)
+                        dataOrderUpdate.avgTotalPerStaff = Number(item.amount/Number(numberStaff)).toFixed(0)
+
+                        dataOrderUpdate.avgQuantityPerStaff = Number(item.numberOfProducts/numberStaff).toFixed(2) 
+                    }
+
+                    // console.log(dataOrderUpdate)
+                    let infoOrder = await FNB_ORDER_COLL.findByIdAndUpdate(item._id, dataOrderUpdate, { new: true })
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
