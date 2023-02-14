@@ -125,6 +125,7 @@
             parentID    : { type: "string", optional: true },
             type        : { type: "string", optional: true },
             isParent    : { type: "string", optional: true },
+            convertOption    : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -136,7 +137,7 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { productID, parentID, fundaID, type, isParent, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let { productID, parentID, fundaID, type, isParent, convertOption, keyword, limit, lastestID, select, populates } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -147,7 +148,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_PRODUCT_MODEL.getList({
-                         companyID: company._id, parentID, fundaID, type, isParent, keyword, limit, lastestID, select, populates, userID
+                         companyID: company._id, parentID, fundaID, type, isParent, convertOption, keyword, limit, lastestID, select, populates, userID
                      });
                  }
 

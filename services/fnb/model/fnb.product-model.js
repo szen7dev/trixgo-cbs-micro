@@ -243,7 +243,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, parentID, fundaID, type, isParent, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, parentID, fundaID, type, isParent, convertOption, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
         // console.log('========DANH MỤC SẢN PHẨM===============>>>>>>>>>>>>>>>>')
         // console.log({ companyID, parentID, fundaID, type, isParent, keyword })
         return new Promise(async (resolve) => {
@@ -275,6 +275,10 @@ class Model extends BaseModel {
                 // Phân loại (sản phẩm chính/topping)
                 if(type && !isNaN(type)){
                     conditionObj.type = Number(type)
+                }
+
+                if(convertOption){
+                    conditionObj.convertOption = Number(convertOption)
                 }
 
                 // Làm rõ mục đích để làm gì?
