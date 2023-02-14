@@ -54,7 +54,7 @@
      update: {
          auth: "required",
          params: {
-            productID       : { type: "string" },
+            productID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
@@ -67,15 +67,17 @@
             unitPrice2       : { type: "number", optional: true },
             unitPrice3          : { type: "number", optional: true },
             unitPrice4          : { type: "number", optional: true },
+            option          : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID } = ctx.params;
-                 const { _id: userID } = ctx.meta.infoUser;
+                 let {  productID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option } = ctx.params;
+                 
+                 const { _id: userID, company } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await FNB_PRODUCT_MODEL.update({
-                     productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID
+                    companyID: company._id, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
