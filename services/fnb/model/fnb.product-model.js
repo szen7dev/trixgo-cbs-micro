@@ -58,7 +58,7 @@ class Model extends BaseModel {
                     name, 
                     namecv: stringUtils.removeAccents(name),
                     type, 
-                    convertOption: 2, 
+                    // convertOption: 2, //Truyền tham biến
                     userCreate: userID 
                 };
                 if(sign && sign != ""){
@@ -121,7 +121,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption }) {
-        console.log({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption })
+        // console.log({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption })
         return new Promise(async resolve => {
             try {
                 if(!option){
