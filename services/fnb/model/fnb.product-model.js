@@ -228,7 +228,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, parentID, fundaID, type, isParent, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log({ companyID, type, keyword, limit, lastestID, select, populates, sortKey, userID })
+        // console.log('========DANH MỤC SẢN PHẨM===============>>>>>>>>>>>>>>>>')
+        // console.log({ companyID, parentID, fundaID, type, isParent, keyword })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -243,7 +244,7 @@ class Model extends BaseModel {
                 let keys	 = ['createAt__1', '_id__1'];
 
                 if(fundaID && checkObjectIDs(fundaID)){
-                    conditionObj.funda = {$in: [fundaID]}
+                    conditionObj.fundas = {$in: [fundaID]}
                 }
 
                 if(parentID && checkObjectIDs(parentID)){
