@@ -120,8 +120,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption }) {
-        // console.log({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption })
+    update({ companyID, productID, userID, parentID, type, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption }) {
+        // console.log({ companyID, productID, userID, parentID, type, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption })
         return new Promise(async resolve => {
             try {
                 if(!option){
@@ -132,6 +132,10 @@ class Model extends BaseModel {
 
                     if(checkObjectIDs(parentID)){
                         dataInUpdate.parent = parentID;
+                    }
+
+                    if(type){
+                        dataInUpdate.type = Number(type);
                     }
 
                     if(name){
