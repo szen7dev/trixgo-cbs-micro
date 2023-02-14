@@ -58,6 +58,7 @@ class Model extends BaseModel {
                     name, 
                     namecv: stringUtils.removeAccents(name),
                     type, 
+                    convertOption: 2, 
                     userCreate: userID 
                 };
                 if(sign && sign != ""){
@@ -119,8 +120,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option }) {
-        // console.log({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option })
+    update({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption }) {
+        console.log({ companyID, productID, userID, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption })
         return new Promise(async resolve => {
             try {
                 if(!option){
@@ -183,7 +184,8 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: infoAfterUpdate });
                 }else{
                     let infoAfterUpdate = await FNB_PRODUCT_COLL.updateMany(
-                        { company: companyID}, 
+                        // { company: companyID}, 
+                        { company: companyID, convertOption: convertOption}, 
                         { $set: { fundas: fundasID } }, 
                         { new: true}
                     );
