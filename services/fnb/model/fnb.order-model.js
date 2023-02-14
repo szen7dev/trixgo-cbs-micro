@@ -79,6 +79,9 @@ class Model extends BaseModel {
                  * - Cơ sở
                  * - Ca làm việc
                  * - Khách hàng
+                 * Sử dụng Credit:
+                 * - Nếu mà chọn Không sử dụng -> Truyền credit = 0
+                 * - Nếu mà chọn Có sử dụng -> Truyền credit = theo mặc định đang có ở Client
                  */
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
