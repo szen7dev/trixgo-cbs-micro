@@ -580,33 +580,33 @@ class Model extends BaseModel {
                 // console.log(infoCustomer)
                 let oldNumberOfOrders = infoCustomer.numberOfOrders | 0
                 let oldPurchasedValue = infoCustomer.purchasedValue | 0
-                // let oldTotalLoyaltyPoints = infoCustomer.totalLoyaltyPoints | 0
-                // let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0
-                // let oldRemainLoyaltyPoints = infoCustomer.remainLoyaltyPoints | 0
+                let oldTotalLoyaltyPoints = infoCustomer.totalLoyaltyPoints | 0
+                let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0
+                let oldRemainLoyaltyPoints = infoCustomer.remainLoyaltyPoints | 0
 
                 let newNumberOfOrders = Number(oldNumberOfOrders) + Number(1)
                 let newPurchasedValue = Number(oldPurchasedValue) + Number(amount)
-                // let newTotalLoyaltyPoints = Number(oldTotalLoyaltyPoints) + Number(loyaltyPoints)
-                // let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0)
-                // let newRemainLoyaltyPoints = Number(newTotalLoyaltyPoints) - Number(newUsedLoyaltyPoints)
-                // console.log({newRemainLoyaltyPoints})
+                let newTotalLoyaltyPoints = Number(oldTotalLoyaltyPoints) + Number(loyaltyPoints)
+                let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0)
+                let newRemainLoyaltyPoints = Number(newTotalLoyaltyPoints) - Number(newUsedLoyaltyPoints)
+                console.log({newRemainLoyaltyPoints})
 
                 if(numberOD && numberOD > 0){
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
                         new: 2, // Khách hàng cũ
                         numberOfOrders: Number(newNumberOfOrders),
                         purchasedValue: Number(newPurchasedValue),
-                        // totalLoyaltyPoints: Number(newTotalLoyaltyPoints),
-                        // usedLoyaltyPoints: Number(newUsedLoyaltyPoints),
-                        // remainLoyaltyPoints: Number(newRemainLoyaltyPoints),
+                        totalLoyaltyPoints: Number(newTotalLoyaltyPoints),
+                        usedLoyaltyPoints: Number(newUsedLoyaltyPoints),
+                        remainLoyaltyPoints: Number(newRemainLoyaltyPoints),
                     })
                 }else{
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
                         numberOfOrders: Number(newNumberOfOrders),
                         purchasedValue: Number(newPurchasedValue),
-                        // totalLoyaltyPoints: Number(newTotalLoyaltyPoints),
-                        // usedLoyaltyPoints: Number(newUsedLoyaltyPoints),
-                        // remainLoyaltyPoints: Number(newRemainLoyaltyPoints),
+                        totalLoyaltyPoints: Number(newTotalLoyaltyPoints),
+                        usedLoyaltyPoints: Number(newUsedLoyaltyPoints),
+                        remainLoyaltyPoints: Number(newRemainLoyaltyPoints),
                     })
                 }
 
