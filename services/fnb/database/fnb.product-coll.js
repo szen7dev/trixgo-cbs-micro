@@ -100,6 +100,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         default: 0 
     },
     /**
+     * 1-Khu Hà Nội
+     * 2-Hồ Chí Minh
+     */
+    convertOption: {
+        type: Number,
+        default : 1
+    },
+    /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
     userCreate: {
