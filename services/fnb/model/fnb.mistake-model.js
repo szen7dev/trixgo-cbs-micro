@@ -30,6 +30,11 @@ const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_
 /**
  * import inter-model, exter-model
  */
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 class Model extends BaseModel {
 
     constructor() {
@@ -224,8 +229,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log({ fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
+    getList({ companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        console.log({ companyID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -234,7 +239,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = {company: companyID}
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1'];
 
@@ -284,7 +289,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -573,6 +578,98 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData });
                 }
             } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: Tải dữ liệu
+     * Date: 15/2/2023
+     */
+    exportExcel({ companyID, year, month, userID }) {
+        // console.log({ companyID, year, month, userID })
+        return new Promise(async resolve => {
+            try {
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                let conditionObjYear = {
+                    "year": Number(yearFilter)
+                }
+              
+                let listDataErr = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project :  {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            createAt: 1,
+                            company : 1,
+                            funda : 1,
+                            mistake : 1,
+                            executor: 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    }
+                ])
+
+                let listData  = await FNB_MISTAKE_COLL.find({ _id: listDataErr.map(item=>item._id) })
+                .populate({
+                    path: "funda mistake executor funda userCreate",
+                    select: "name sign fullname note",
+                })
+                // .limit(5000)
+                .sort({createAt: -1})
+                console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_mistake.xlsx')))
+                .then(async workbook => {
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("ErrorReport").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("ErrorReport").row(i).cell(2).value(item.createAt);
+                        workbook.sheet("ErrorReport").row(i).cell(3).value(item?.executor?.fullname);
+                        workbook.sheet("ErrorReport").row(i).cell(4).value(item?.funda?.name);
+                        workbook.sheet("ErrorReport").row(i).cell(5).value();
+                        workbook.sheet("ErrorReport").row(i).cell(6).value(item.name);
+                        workbook.sheet("ErrorReport").row(i).cell(7).value(item?.userCreate?.fullname);
+                        workbook.sheet("ErrorReport").row(i).cell(8).value(item.type);
+                        workbook.sheet("ErrorReport").row(i).cell(9).value(item.status);
+                        workbook.sheet("ErrorReport").row(i).cell(10).value(Number(item?.amount));
+                        workbook.sheet("ErrorReport").row(i).cell(11).value(Number(item?.number));
+                        workbook.sheet("ErrorReport").row(i).cell(2).value(item.note);
+                        i++
+                    });
+                   
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `BaoCaoLoi_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
