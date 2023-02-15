@@ -29,6 +29,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
+    //_________Lần mắc lỗi/cùng một lỗi
+    number: {
+        type: Number,
+        default: 1
+    },
     //_________Ghi chú xử lý lỗi
     note: String,
     /**

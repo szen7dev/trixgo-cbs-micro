@@ -132,7 +132,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { orderMistakeID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 if(orderMistakeID){
@@ -141,7 +141,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_MISTAKE_MODEL.getList({
-                        fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                        companyID: company._id, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
                 }
 
@@ -206,9 +206,8 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                await this.validateEntity(ctx.params);
-                // const { projectID } = ctx.params;
-				const { _id: userID, company } = ctx.meta.infoUser;
+                await this.validateEntity(ctx.params)
+				const { _id: userID, company } = ctx.meta.infoUser
 
                 // console.log('====================HERE===================')
                 // console.log('====================HERE===================')
@@ -244,15 +243,15 @@ module.exports = {
                 // console.log('====================HERE===================')
                 // console.log('====================HERE===================')
                 // console.log('====================HERE===================')
-
                 // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_MISTAKE_MODEL.importFromExcel({
                     taskID, dataImport, userID, ctx
                 })
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx })
             }
         }
     },
@@ -265,18 +264,24 @@ module.exports = {
     exportExcel: {
         auth: 'required',
         params: {
-            companyID: { type: "string", optional: true },
+            year: { type: "string", optional: true },
+            month: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID, filterParams } = ctx.params;
+                let { companyID, filterParams, year, month } = ctx.params;
+
+                // console.log({ companyID, filterParams })
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
+                console.log('====================HERE===================')
                 const resultAfterCallHandler = await FNB_MISTAKE_MODEL.exportExcel({
                     userID, companyID, filterParams, ctx
                 })

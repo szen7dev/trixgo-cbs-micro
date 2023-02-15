@@ -2484,6 +2484,10 @@ class Model extends BaseModel {
                 //     await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
                 // }
 
+                /**
+                 * CẬP NHẬT TÍCH ĐIỂM
+                 * - 15/2/2023: Hiệp chưa hoàn thiện (!!!)
+                 */
                 if(option == 11){
                     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
                         totalLoyaltyPoints: 0,
@@ -2492,10 +2496,47 @@ class Model extends BaseModel {
                     }})
                 }
 
+                /**
+                 * CẬP NHẬT TÍCH ĐIỂM
+                 */
                 if(option == 12){
                     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
                         new: 2
                     }})
+                }
+
+                 /**
+                 * CẬP NHẬT LỖI
+                 */
+                if(option == 13){
+                    // Reset về 0
+                    await ITEM__FUNDA_COLL.updateMany(
+                        {
+                            company: ObjectID(companyID),
+                        },
+                        {$set: {numberOfMistakes: 0 } }
+                     )
+
+                    let listData = await FNB_MISTAKE_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { funda: "$funda" },
+                                quantity: { $sum: 1 },
+                            }
+                        }
+                    ])
+                    console.log(listData)
+
+                    for(const item of listData){
+                        let infoFunda = await ITEM__FUNDA_COLL.findByIdAndUpdate(item._id.funda, {
+                            numberOfMistakes: Number(item.quantity)
+                        })
+                    }
                 }
 
                 return resolve({ error: false, message: 'Reset thành công'});

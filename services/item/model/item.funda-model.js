@@ -162,8 +162,8 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID }){
-        console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
+	update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager }){
+        // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(fundaID))
@@ -193,6 +193,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(activeCampaign)){
                     dataUpdate.activeCampaign = activeCampaign;
+                }
+
+                if(manager && checkObjectIDs(manager)){
+                    dataUpdate.manager = manager;
                 }
 
                 let dataAddToset = {};
