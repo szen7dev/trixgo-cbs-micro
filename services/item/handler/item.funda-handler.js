@@ -70,6 +70,7 @@ module.exports = {
             loyaltyPointsRate   : { type: "string", optional: true },
             initialDay          : { type: "string", optional: true },
             area                : { type: "string", optional: true },
+            manager             : { type: "string", optional: true },
             members             : { type: "array", optional: true },
             membersRemove       : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
@@ -90,14 +91,14 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const { fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
-                    adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID } = ctx.params;
+                    adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager } = ctx.params;
 
                 // console.log({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
                 //     adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID })
 
                 const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, 
                     admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, 
-                    otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID });
+                    otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

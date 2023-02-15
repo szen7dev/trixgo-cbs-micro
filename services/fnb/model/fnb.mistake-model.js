@@ -629,12 +629,12 @@ class Model extends BaseModel {
 
                 let listData  = await FNB_MISTAKE_COLL.find({ _id: listDataErr.map(item=>item._id) })
                 .populate({
-                    path: "funda mistake executor funda userCreate",
+                    path: "funda mistake executor funda userCreate manager",
                     select: "name sign fullname note",
                 })
                 // .limit(5000)
                 .sort({createAt: -1})
-                console.log(listData)
+                // console.log(listData)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_mistake.xlsx')))
@@ -645,7 +645,7 @@ class Model extends BaseModel {
                         workbook.sheet("ErrorReport").row(i).cell(2).value(item.createAt);
                         workbook.sheet("ErrorReport").row(i).cell(3).value(item?.executor?.fullname);
                         workbook.sheet("ErrorReport").row(i).cell(4).value(item?.funda?.name);
-                        workbook.sheet("ErrorReport").row(i).cell(5).value();
+                        workbook.sheet("ErrorReport").row(i).cell(5).value((item?.manager?.fullname));
                         workbook.sheet("ErrorReport").row(i).cell(6).value(item.name);
                         workbook.sheet("ErrorReport").row(i).cell(7).value(item?.userCreate?.fullname);
                         workbook.sheet("ErrorReport").row(i).cell(8).value(item.type);
