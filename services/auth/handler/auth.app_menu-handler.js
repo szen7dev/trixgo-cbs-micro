@@ -163,13 +163,65 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let appID = "61e04971fdebf77b072d1b0f";
+
+                let appID = "61e04971fdebf77b072d1b0f"; // FNB_APP
+                let arrUser = ["63ed0debc0d91500123495d3","63ed0e083f7a130012d41058","63ed0e1d3f7a130012d41059","63ed0e303f7a130012d4105a","63ed0e860e2f4d00119e52fa"]
+                    // MenuID cho Khách hàng
+                    // MenuID cho Nhân viên
+                    // MenuID cho Quản lý
+                    // MenuID cho Ban lãnh đạo
+                    // MenuID cho Nhà đầu tư
+                // {
+                //     "_id": {
+                //         "menu": "63af82764faba60012595520"
+                //     },
+                //     "read": 1,
+                //     "create": 1,
+                //     "update": 1,
+                //     "delete": 0
+                // },
 
                 const { _id: userID, company } = ctx.meta.infoUser;
+                let accessApp = {}
 
                 // console.log({ userID, company })
                 let resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getPermissionToAccessListMenuOfApp({ user: userID, app: appID, company, type: 1 })
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                if(!resultAfterCallHandler.error){
+                    // let arrMenu = resultAfterCallHandler.data.map(item=>item._id.menu.toString())
+                    for(const item of resultAfterCallHandler.data){
+                        if(item._id.menu.toString() === arrUser[0].toString()){
+                            accessApp.read = Number(item.read);
+                            accessApp.create = Number(item.create);
+                            accessApp.update = Number(item.update);
+                            accessApp.delete = Number(item.delete);
+                        }else{
+                            if(item._id.menu.toString() === arrUser[1].toString()){
+                                accessApp.read = Number(item.read);
+                                accessApp.create = Number(item.create);
+                                accessApp.update = Number(item.update);
+                                accessApp.delete = Number(item.delete);
+                            }else{
+                                if(item._id.menu.toString() === arrUser[2].toString()){
+                                    accessApp.read = Number(item.read);
+                                    accessApp.create = Number(item.create);
+                                    accessApp.update = Number(item.update);
+                                    accessApp.delete = Number(item.delete);
+                                }else{
+                                    if(item._id.menu.toString() === arrUser[3].toString()){
+                                        accessApp.read = Number(item.read);
+                                        accessApp.create = Number(item.create);
+                                        accessApp.update = Number(item.update);
+                                        accessApp.delete = Number(item.delete);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                console.log(accessApp)
+
+                // return renderStatusCodeAndResponse({ accessApp, ctx })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, accessApp, ctx })
             } catch (error) {
                 return { error:  true, message: error.message };
             }
