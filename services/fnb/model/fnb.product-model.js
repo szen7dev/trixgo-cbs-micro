@@ -153,10 +153,14 @@ class Model extends BaseModel {
                         }
                     }
 
-                    if(fundasID && fundasID.length) {
-                        // dataInUpdate.$addToSet = {
-                        //     fundas: fundasID,
-                        // }
+                    // if(fundasID && fundasID.length) {
+                    //     // dataInUpdate.$addToSet = {
+                    //     //     fundas: fundasID,
+                    //     // }
+                    //     dataInUpdate.fundas = fundasID
+                    // }
+
+                    if(fundasID) {
                         dataInUpdate.fundas = fundasID
                     }
 
