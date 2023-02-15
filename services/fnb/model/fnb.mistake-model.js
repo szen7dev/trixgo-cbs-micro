@@ -604,7 +604,18 @@ class Model extends BaseModel {
                     "year": Number(yearFilter)
                 }
 
-                let listDataErrCombine = await FNB_MISTAKE_COLL.aggregate([
+                let conditionPopulate = {
+                    path: '_id.executor',
+                    select: '_id fullname department',
+                    populate: {
+                        path: 'department',
+                        select: '_id name',
+                        model: 'department',
+                    },
+                    model: 'user'
+                }
+
+                let listDataErrCombine1 = await FNB_MISTAKE_COLL.aggregate([
                     {
                         $match: {
                             company: ObjectID(companyID),
@@ -614,20 +625,134 @@ class Model extends BaseModel {
                         $project :  {
                             year : {$year : "$createAt"},
                             month : {$month : "$createAt"},
-                            day: { $dayOfMonth: "$createAt" },
                             createAt: 1,
                             company : 1,
                             funda : 1,
                             mistake : 1,
                             executor: 1,
+                            amount: 1,
                         }
                     },
                     {
                         $match: conditionObjYear
+                    },
+                    {
+                        $group: {
+                            _id: {  executor: "$executor"},
+                            number: { $sum: 1 },
+                            amount: { $sum: "$amount"},
+                        }
+                    },
+                    {
+                        $sort: { "number": -1, "_id.executor": -1}
                     }
                 ])
+                await FNB_MISTAKE_COLL.populate(listDataErrCombine1, conditionPopulate)
 
-              
+                let listDataErrCombine2 = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project :  {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            createAt: 1,
+                            company : 1,
+                            funda : 1,
+                            mistake : 1,
+                            executor: 1,
+                            amount: 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: {
+                            _id: {  executor: "$executor", month: "$month" },
+                            number: { $sum: 1 },
+                            amount: { $sum: "$amount"},
+                        }
+                    }
+                ])
+                await FNB_MISTAKE_COLL.populate(listDataErrCombine2, conditionPopulate)
+                // console.log(listDataErrCombine2)
+                
+                let listDataErrCombine3 = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project :  {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            createAt: 1,
+                            company : 1,
+                            funda : 1,
+                            mistake : 1,
+                            executor: 1,
+                            amount: 1,
+                            userCreate: 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: {
+                            _id: { executor: "$userCreate" },
+                            number: { $sum: 1 },
+                            amount: { $sum: "$amount"},
+                        }
+                    },
+                    {
+                        $sort: { "number": -1, "_id.executor": -1}
+                    }
+                ])
+                await FNB_MISTAKE_COLL.populate(listDataErrCombine3, conditionPopulate)
+                // console.log(listDataErrCombine3)
+
+                let listDataErrCombine4 = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project :  {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            createAt: 1,
+                            company : 1,
+                            funda : 1,
+                            mistake : 1,
+                            executor: 1,
+                            amount: 1,
+                            userCreate: 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: {
+                            _id: { executor: "$userCreate", month: "$month" },
+                            number: { $sum: 1 },
+                            amount: { $sum: "$amount"},
+                        }
+                    },
+                    {
+                        $sort: { "number": -1, "_id.executor": -1}
+                    }
+                ])
+                await FNB_MISTAKE_COLL.populate(listDataErrCombine4, conditionPopulate)
+                // console.log(listDataErrCombine4)
+
                 let listDataErr = await FNB_MISTAKE_COLL.aggregate([
                     {
                         $match: {
@@ -666,6 +791,48 @@ class Model extends BaseModel {
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_mistake.xlsx')))
                 .then(async workbook => {
+                    var i = 4;
+                    listDataErrCombine1?.forEach((item, index) => {
+                        workbook.sheet("DashBoard1").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("DashBoard1").row(i).cell(2).value(item?._id?.executor?.fullname);
+                        workbook.sheet("DashBoard1").row(i).cell(3).value(item?._id?.executor?.department?.name);
+                        i++
+                    });
+
+                    var i = 4;
+                    listDataErrCombine1?.forEach((item, index) => {
+                        for(var m=1; m<=12; m++){
+                            listDataErrCombine2?.forEach((mistake) => {
+                                if(mistake._id.executor._id.toString() === item._id.executor._id.toString() && Number(mistake._id.month) === Number(m)){
+                                    workbook.sheet("DashBoard1").row(i).cell(m*2+2).value(mistake?.number)
+                                    workbook.sheet("DashBoard1").row(i).cell(m*2+3).value(mistake?.amount)
+                                }
+                            })
+                        }
+                        i++
+                    });
+
+                    var i = 4;
+                    listDataErrCombine3?.forEach((item, index) => {
+                        workbook.sheet("DashBoard2").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("DashBoard2").row(i).cell(2).value(item?._id?.executor?.fullname);
+                        // workbook.sheet("DashBoard2").row(i).cell(3).value(item?._id?.executor?.department?.name);
+                        i++
+                    });
+
+                    var i = 4;
+                    listDataErrCombine3?.forEach((item, index) => {
+                        for(var m=1; m<=12; m++){
+                            listDataErrCombine4?.forEach((mistake) => {
+                                if(mistake._id.executor._id.toString() === item._id.executor._id.toString() && Number(mistake._id.month) === Number(m)){
+                                    workbook.sheet("DashBoard2").row(i).cell(m*2+2).value(mistake?.number)
+                                    workbook.sheet("DashBoard2").row(i).cell(m*2+3).value(mistake?.amount)
+                                }
+                            })
+                        }
+                        i++
+                    });
+
                     var i = 3;
                     listData?.forEach((item, index) => {
                         workbook.sheet("ErrorReport").row(i).cell(1).value(Number(index+1));
