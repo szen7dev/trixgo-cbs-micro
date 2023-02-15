@@ -191,35 +191,40 @@ module.exports = {
                     // let arrMenu = resultAfterCallHandler.data.map(item=>item._id.menu.toString())
                     for(const item of resultAfterCallHandler.data){
                         if(item._id.menu.toString() === arrUser[0].toString()){
+                            console.log('========>>>>>>>>>>>>>11111111111')
                             accessApp.level = Number(1);
                             accessApp.read = Number(item.read);
                             accessApp.create = Number(item.create);
                             accessApp.update = Number(item.update);
                             accessApp.delete = Number(item.delete);
-                        }else{
-                            if(item._id.menu.toString() === arrUser[1].toString()){
-                                accessApp.level = Number(2);
-                                accessApp.read = Number(item.read);
-                                accessApp.create = Number(item.create);
-                                accessApp.update = Number(item.update);
-                                accessApp.delete = Number(item.delete);
-                            }else{
-                                if(item._id.menu.toString() === arrUser[2].toString()){
-                                    accessApp.level = Number(3);
-                                    accessApp.read = Number(item.read);
-                                    accessApp.create = Number(item.create);
-                                    accessApp.update = Number(item.update);
-                                    accessApp.delete = Number(item.delete);
-                                }else{
-                                    if(item._id.menu.toString() === arrUser[3].toString()){
-                                        accessApp.level = Number(4);
-                                        accessApp.read = Number(item.read);
-                                        accessApp.create = Number(item.create);
-                                        accessApp.update = Number(item.update);
-                                        accessApp.delete = Number(item.delete);
-                                    }
-                                }
-                            }
+                            return;
+                        }
+                        if(item._id.menu.toString() === arrUser[1].toString()){
+                            console.log('========>>>>>>>>>>>>>22222222222')
+                            accessApp.level = Number(2);
+                            accessApp.read = Number(item.read);
+                            accessApp.create = Number(item.create);
+                            accessApp.update = Number(item.update);
+                            accessApp.delete = Number(item.delete);
+                            return;
+                        }
+                        if(item._id.menu.toString() === arrUser[2].toString()){
+                            console.log('========>>>>>>>>>>>>>3333333333')
+                            accessApp.level = Number(3);
+                            accessApp.read = Number(item.read);
+                            accessApp.create = Number(item.create);
+                            accessApp.update = Number(item.update);
+                            accessApp.delete = Number(item.delete);
+                            return;
+                        }
+                        if(item._id.menu.toString() === arrUser[3].toString()){
+                            console.log('========>>>>>>>>>>>>>444444444444444')
+                            accessApp.level = Number(4);
+                            accessApp.read = Number(item.read);
+                            accessApp.create = Number(item.create);
+                            accessApp.update = Number(item.update);
+                            accessApp.delete = Number(item.delete);
+                            return;
                         }
                     }
                 }
