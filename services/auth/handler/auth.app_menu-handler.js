@@ -182,32 +182,37 @@ module.exports = {
                 // },
 
                 const { _id: userID, company } = ctx.meta.infoUser;
-                let accessApp = {}
+                let accessApp = {level: 0, read: 0, create: 0, update: 0, delete: 0}
 
                 // console.log({ userID, company })
                 let resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getPermissionToAccessListMenuOfApp({ user: userID, app: appID, company, type: 1 })
+                // console.log(resultAfterCallHandler)
                 if(!resultAfterCallHandler.error){
                     // let arrMenu = resultAfterCallHandler.data.map(item=>item._id.menu.toString())
                     for(const item of resultAfterCallHandler.data){
                         if(item._id.menu.toString() === arrUser[0].toString()){
+                            accessApp.level = Number(1);
                             accessApp.read = Number(item.read);
                             accessApp.create = Number(item.create);
                             accessApp.update = Number(item.update);
                             accessApp.delete = Number(item.delete);
                         }else{
                             if(item._id.menu.toString() === arrUser[1].toString()){
+                                accessApp.level = Number(2);
                                 accessApp.read = Number(item.read);
                                 accessApp.create = Number(item.create);
                                 accessApp.update = Number(item.update);
                                 accessApp.delete = Number(item.delete);
                             }else{
                                 if(item._id.menu.toString() === arrUser[2].toString()){
+                                    accessApp.level = Number(3);
                                     accessApp.read = Number(item.read);
                                     accessApp.create = Number(item.create);
                                     accessApp.update = Number(item.update);
                                     accessApp.delete = Number(item.delete);
                                 }else{
                                     if(item._id.menu.toString() === arrUser[3].toString()){
+                                        accessApp.level = Number(4);
                                         accessApp.read = Number(item.read);
                                         accessApp.create = Number(item.create);
                                         accessApp.update = Number(item.update);
@@ -218,10 +223,12 @@ module.exports = {
                         }
                     }
                 }
-                console.log(accessApp)
+                // console.log(accessApp)
+                // return(accessApp)
+                return ({ error: false, accessApp});
 
                 // return renderStatusCodeAndResponse({ accessApp, ctx })
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, accessApp, ctx })
+                // return renderStatusCodeAndResponse({ resultAfterCallHandler, accessApp, ctx })
             } catch (error) {
                 return { error:  true, message: error.message };
             }
