@@ -154,9 +154,10 @@ class Model extends BaseModel {
                     }
 
                     if(fundasID && fundasID.length) {
-                        dataInUpdate.$addToSet = {
-                            fundas: fundasID,
-                        }
+                        // dataInUpdate.$addToSet = {
+                        //     fundas: fundasID,
+                        // }
+                        dataInUpdate.fundas = fundasID
                     }
 
                     if(unit && unit != ""){
