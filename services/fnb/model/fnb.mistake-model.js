@@ -55,10 +55,14 @@ class Model extends BaseModel {
 
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
 
+                let countMistake = await FNB_MISTAKE_COLL.count({executor: executorID, mistake: mistakeID})
+                // console.log({countMistake})
+
                 let dataInsert = { 
                     userCreate: userID,
                     mistake: mistakeID,
                     executor: executorID, 
+                    number: countMistake | 1, 
                     funda: fundaID, 
                     company: infoFunda.company, 
                     area1: infoFunda.area1, 
