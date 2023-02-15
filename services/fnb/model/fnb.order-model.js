@@ -583,15 +583,15 @@ class Model extends BaseModel {
                 // console.log(infoCustomer)
                 let oldNumberOfOrders = infoCustomer.numberOfOrders | 0
                 let oldPurchasedValue = infoCustomer.purchasedValue | 0
-                let oldTotalLoyaltyPoints = infoCustomer.totalLoyaltyPoints | 0 // credit
-                let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0 // credit
-                let oldRemainLoyaltyPoints = infoCustomer.remainLoyaltyPoints | 0 // credit
+                // let oldTotalLoyaltyPoints = infoCustomer.totalLoyaltyPoints | 0 // credit
+                // let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0 // credit
+                // let oldRemainLoyaltyPoints = infoCustomer.remainLoyaltyPoints | 0 // credit
 
                 let newNumberOfOrders = Number(oldNumberOfOrders) + Number(1)
                 let newPurchasedValue = Number(oldPurchasedValue) + Number(amount)
-                let newTotalLoyaltyPoints = Number(oldTotalLoyaltyPoints) + Number(loyaltyPoints) // credit
-                let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0) // credit
-                let newRemainLoyaltyPoints = Number(newTotalLoyaltyPoints) - Number(newUsedLoyaltyPoints) // credit
+                // let newTotalLoyaltyPoints = Number(oldTotalLoyaltyPoints) + Number(loyaltyPoints) // credit
+                // let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0) // credit
+                // let newRemainLoyaltyPoints = Number(newTotalLoyaltyPoints) - Number(newUsedLoyaltyPoints) // credit
                 // console.log({newRemainLoyaltyPoints})
 
                 if(numberOD && numberOD > 0){
@@ -599,17 +599,17 @@ class Model extends BaseModel {
                         new: 2, // Khách hàng cũ
                         numberOfOrders: Number(newNumberOfOrders),
                         purchasedValue: Number(newPurchasedValue),
-                        totalLoyaltyPoints: Number(newTotalLoyaltyPoints), // credit
-                        usedLoyaltyPoints: Number(newUsedLoyaltyPoints), // credit
-                        remainLoyaltyPoints: Number(newRemainLoyaltyPoints), // credit
+                        // totalLoyaltyPoints: Number(newTotalLoyaltyPoints), // credit
+                        // usedLoyaltyPoints: Number(newUsedLoyaltyPoints), // credit
+                        // remainLoyaltyPoints: Number(newRemainLoyaltyPoints), // credit
                     })
                 }else{
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
                         numberOfOrders: Number(newNumberOfOrders),
                         purchasedValue: Number(newPurchasedValue),
-                        totalLoyaltyPoints: Number(newTotalLoyaltyPoints), // credit
-                        usedLoyaltyPoints: Number(newUsedLoyaltyPoints), // credit
-                        remainLoyaltyPoints: Number(newRemainLoyaltyPoints), // credit
+                        // totalLoyaltyPoints: Number(newTotalLoyaltyPoints), // credit
+                        // usedLoyaltyPoints: Number(newUsedLoyaltyPoints), // credit
+                        // remainLoyaltyPoints: Number(newRemainLoyaltyPoints), // credit
                     })
                 }
 
@@ -1165,7 +1165,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log({ fundasID, shiftsID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
+        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -1204,6 +1204,7 @@ class Model extends BaseModel {
                         conditionObj.funda = { $in: [] };
                     }
                 }
+                // console.log(conditionObj)
 
                 shiftsID && shiftsID.length                 && (conditionObj.shift = { $in: shiftsID });
                 assigneesID && assigneesID.length           && (conditionObj.assignee = { $in: assigneesID });
