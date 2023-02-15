@@ -132,7 +132,7 @@ module.exports = {
                 let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, isMember } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(userID)
+                // console.log(userID)
                 
                 if(!companyID){
                     companyID = company._id

@@ -13,6 +13,7 @@ const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_cod
  * MODELS
  */
 const AUTH__APP_MENU = require('../model/auth.app_menu').MODEL;
+const AUTH__APP_ROLE_MENU = require('../model/auth.app_role_menu').MODEL;
  
 module.exports = {
     /**
@@ -145,6 +146,32 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Name: Danh sách các màn hình của user khi truy cập vào ứng dụng
+     * Dev: HiepNH
+     * Date: 15/2/2023
+     */
+    getMobileFnbMenu: {
+        auth: "required",
+        params: {
+
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let appID = "61e04971fdebf77b072d1b0f";
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                // console.log({ userID, company })
+                let resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getPermissionToAccessListMenuOfApp({ user: userID, app: appID, company, type: 1 })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return { error:  true, message: error.message };
             }
         }
     },
