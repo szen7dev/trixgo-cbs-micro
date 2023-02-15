@@ -603,6 +603,30 @@ class Model extends BaseModel {
                 let conditionObjYear = {
                     "year": Number(yearFilter)
                 }
+
+                let listDataErrCombine = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project :  {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            createAt: 1,
+                            company : 1,
+                            funda : 1,
+                            mistake : 1,
+                            executor: 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    }
+                ])
+
               
                 let listDataErr = await FNB_MISTAKE_COLL.aggregate([
                     {
@@ -629,10 +653,13 @@ class Model extends BaseModel {
 
                 let listData  = await FNB_MISTAKE_COLL.find({ _id: listDataErr.map(item=>item._id) })
                 .populate({
-                    path: "funda mistake executor funda userCreate manager",
-                    select: "name sign fullname note",
+                    path: "funda mistake executor userCreate",
+                    select: "name sign fullname note manager",
+                    populate:{
+                        path: "manager",
+                        select: "fullname"
+                    }
                 })
-                // .limit(5000)
                 .sort({createAt: -1})
                 // console.log(listData)
 
@@ -645,14 +672,14 @@ class Model extends BaseModel {
                         workbook.sheet("ErrorReport").row(i).cell(2).value(item.createAt);
                         workbook.sheet("ErrorReport").row(i).cell(3).value(item?.executor?.fullname);
                         workbook.sheet("ErrorReport").row(i).cell(4).value(item?.funda?.name);
-                        workbook.sheet("ErrorReport").row(i).cell(5).value((item?.manager?.fullname));
-                        workbook.sheet("ErrorReport").row(i).cell(6).value(item.name);
+                        workbook.sheet("ErrorReport").row(i).cell(5).value((item?.funda?.manager?.fullname));
+                        workbook.sheet("ErrorReport").row(i).cell(6).value(item?.mistake?.name);
                         workbook.sheet("ErrorReport").row(i).cell(7).value(item?.userCreate?.fullname);
                         workbook.sheet("ErrorReport").row(i).cell(8).value(item.type);
                         workbook.sheet("ErrorReport").row(i).cell(9).value(item.status);
                         workbook.sheet("ErrorReport").row(i).cell(10).value(Number(item?.amount));
                         workbook.sheet("ErrorReport").row(i).cell(11).value(Number(item?.number));
-                        workbook.sheet("ErrorReport").row(i).cell(2).value(item.note);
+                        workbook.sheet("ErrorReport").row(i).cell(12).value(item.note);
                         i++
                     });
                    
