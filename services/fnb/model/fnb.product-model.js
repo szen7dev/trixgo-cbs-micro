@@ -126,11 +126,11 @@ class Model extends BaseModel {
             try {
                 if(!option){
                     if(!checkObjectIDs(productID))
-                    return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                        return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                     let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
-                    if(checkObjectIDs(parentID)){
+                    if(parentID && checkObjectIDs(parentID)){
                         dataInUpdate.parent = parentID;
                     }
 
@@ -138,12 +138,12 @@ class Model extends BaseModel {
                         dataInUpdate.type = Number(type);
                     }
 
-                    if(name){
+                    if(name && name != ""){
                         dataInUpdate.name = name; 
                         dataInUpdate.namecv = stringUtils.removeAccents(name); 
                     }
 
-                    if(sign){
+                    if(sign && sign != ""){
                         dataInUpdate.sign =sign;
                     }
 
@@ -172,11 +172,11 @@ class Model extends BaseModel {
                         dataInUpdate.note = note;
                     }
 
-                    if(!isNaN(quantity)){
+                    if(quantity && !isNaN(quantity)){
                         dataInUpdate.quantity = Number(quantity);
                     }
 
-                    if(!isNaN(unitPrice)){
+                    if(unitPrice && !isNaN(unitPrice)){
                         dataInUpdate.unitPrice = Number(unitPrice);
                         dataInUpdate.unitPrice2 = Number(unitPrice2);
                         dataInUpdate.unitPrice3 = Number(unitPrice3);
@@ -186,7 +186,6 @@ class Model extends BaseModel {
                     }
 
                     let infoAfterUpdate = await FNB_PRODUCT_COLL.findByIdAndUpdate(productID, dataInUpdate, { new: true });
-
                     if (!infoAfterUpdate)
                         return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
