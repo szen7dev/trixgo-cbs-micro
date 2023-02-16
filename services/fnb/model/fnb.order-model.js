@@ -355,7 +355,8 @@ class Model extends BaseModel {
                 if(products && products.length){
                     for(const prodSize of products){
                         // console.log('=============1.1: Bắt đầu SP==========================>>>>>>>>>>>>>>>>>')
-                        // console.log(prodSize)
+                        // console.log(prodSize.variants)
+                        // console.log(prodSize.fundas)
                         if(prodSize.size == 1){
                             totalSizeM = Number(totalSizeM) + Number(prodSize.quantity)
                         }
@@ -391,7 +392,6 @@ class Model extends BaseModel {
 
                         if(product.variantsSelected && product.variantsSelected.length){
                             for(const subProd of product.variantsSelected){
-                                // console.log({subProd})
                                 // M-Off
                                 if(Number(product.size) == 1 && Number(salesChannel) == 1){
                                     newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
@@ -585,7 +585,6 @@ class Model extends BaseModel {
                 let oldPurchasedValue = infoCustomer.purchasedValue | 0
                 // let oldTotalLoyaltyPoints = infoCustomer.totalLoyaltyPoints | 0 // credit
                 // let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0 // credit
-                // let oldRemainLoyaltyPoints = infoCustomer.remainLoyaltyPoints | 0 // credit
 
                 let newNumberOfOrders = Number(oldNumberOfOrders) + Number(1)
                 let newPurchasedValue = Number(oldPurchasedValue) + Number(amount)
@@ -1545,6 +1544,31 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Khách hàng tiềm năng/Thời gian
+                     */
+                    if(option && Number(option) == 8){
+                        conditionGroup = {
+                            _id: { customer: "$customer" },
+                            numberOfOrders: { $sum: 1 },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.customer',
+                            select: '_id name phone address',
+                            model: 'contact'
+                        }
+
+                        sortBy = {"amount": -1}
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
@@ -1580,6 +1604,7 @@ class Model extends BaseModel {
                                 total : 1,
                                 salesoff : 1,
                                 discount : 1,
+                                credit : 1,
                                 amount : 1,
                                 vatAmount : 1,
                                 avgQuantityPerStaff : 1,
@@ -1648,7 +1673,7 @@ class Model extends BaseModel {
                         ])
                     }
 
-                    if(!isNaN(option) && [3,6,7].includes(Number(option))){
+                    if(!isNaN(option) && [3,6,7,8].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
@@ -2435,81 +2460,44 @@ class Model extends BaseModel {
             try {
                 if(password.toString() != `noPass12345${email}`)
                     return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
-
-                // if(option == 1){
-                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 2){
-                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 3){
-                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 4){
-                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 5){
-                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 6){
-                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 7){
-                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 8){
-                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 9){
-                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                // }
-                
-                // if(option == 10){
-                //     await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
-                // }
-
                 /**
                  * CẬP NHẬT TÍCH ĐIỂM
+                 * Convert dữ liệu cũ, mới
                  * - 15/2/2023: Hiệp chưa hoàn thiện (!!!)
                  */
-                if(option == 11){
-                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
-                        totalLoyaltyPoints: 0,
-                        usedLoyaltyPoints: 0,
-                        remainLoyaltyPoints: 0,
-                    }})
+                if(option == 1){
+                    await FNB_ORDER_COLL.updateMany({ company: companyID }, 
+                        [{
+                            $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
+                        }], 
+                        {"multi": true}
+                    )
+
+                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
+                        [{
+                            $set: {
+                                totalLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]},
+                                usedLoyaltyPoints: 0,
+                                remainLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]},
+                            }
+                        }], 
+                        {"multi": true}
+                    )
                 }
 
                 /**
-                 * CẬP NHẬT TÍCH ĐIỂM
+                 * CẬP NHẬT KHÁCH CŨ MỚI SAU KHI CHUYỂN ĐỔI SANG
                  */
-                if(option == 12){
-                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
-                        new: 2
-                    }})
-                }
+                // if(option == 2){
+                //     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
+                //         new: 2
+                //     }})
+                // }
 
                  /**
                  * CẬP NHẬT LỖI
                  */
-                if(option == 13){
+                if(option == 3){
                     // Reset về 0
                     await ITEM__FUNDA_COLL.updateMany(
                         {
@@ -2531,7 +2519,7 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    console.log(listData)
+                    // console.log(listData)
 
                     for(const item of listData){
                         let infoFunda = await ITEM__FUNDA_COLL.findByIdAndUpdate(item._id.funda, {
