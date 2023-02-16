@@ -63,7 +63,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
+        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -355,7 +355,8 @@ class Model extends BaseModel {
                 if(products && products.length){
                     for(const prodSize of products){
                         // console.log('=============1.1: Bắt đầu SP==========================>>>>>>>>>>>>>>>>>')
-                        // console.log(prodSize)
+                        // console.log(prodSize.variants)
+                        // console.log(prodSize.fundas)
                         if(prodSize.size == 1){
                             totalSizeM = Number(totalSizeM) + Number(prodSize.quantity)
                         }
@@ -391,7 +392,6 @@ class Model extends BaseModel {
 
                         if(product.variantsSelected && product.variantsSelected.length){
                             for(const subProd of product.variantsSelected){
-                                // console.log({subProd})
                                 // M-Off
                                 if(Number(product.size) == 1 && Number(salesChannel) == 1){
                                     newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
