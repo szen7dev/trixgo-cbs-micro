@@ -585,7 +585,6 @@ class Model extends BaseModel {
                 let oldPurchasedValue = infoCustomer.purchasedValue | 0
                 // let oldTotalLoyaltyPoints = infoCustomer.totalLoyaltyPoints | 0 // credit
                 // let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0 // credit
-                // let oldRemainLoyaltyPoints = infoCustomer.remainLoyaltyPoints | 0 // credit
 
                 let newNumberOfOrders = Number(oldNumberOfOrders) + Number(1)
                 let newPurchasedValue = Number(oldPurchasedValue) + Number(amount)
