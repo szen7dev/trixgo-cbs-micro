@@ -2435,81 +2435,44 @@ class Model extends BaseModel {
             try {
                 if(password.toString() != `noPass12345${email}`)
                     return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
-
-                // if(option == 1){
-                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 2){
-                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 3){
-                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 4){
-                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 5){
-                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 6){
-                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 7){
-                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 8){
-                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 9){
-                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                // }
-                
-                // if(option == 10){
-                //     await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
-                // }
-
                 /**
                  * CẬP NHẬT TÍCH ĐIỂM
+                 * Convert dữ liệu cũ, mới
                  * - 15/2/2023: Hiệp chưa hoàn thiện (!!!)
                  */
-                if(option == 11){
-                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
-                        totalLoyaltyPoints: 0,
-                        usedLoyaltyPoints: 0,
-                        remainLoyaltyPoints: 0,
-                    }})
+                if(option == 1){
+                    await FNB_ORDER_COLL.updateMany({ company: companyID }, 
+                        [{
+                            $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
+                        }], 
+                        {"multi": true}
+                    )
+
+                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
+                        [{
+                            $set: {
+                                totalLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]},
+                                usedLoyaltyPoints: 0,
+                                remainLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]},
+                            }
+                        }], 
+                        {"multi": true}
+                    )
                 }
 
                 /**
-                 * CẬP NHẬT TÍCH ĐIỂM
+                 * CẬP NHẬT KHÁCH CŨ MỚI SAU KHI CHUYỂN ĐỔI SANG
                  */
-                if(option == 12){
-                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
-                        new: 2
-                    }})
-                }
+                // if(option == 2){
+                //     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
+                //         new: 2
+                //     }})
+                // }
 
                  /**
                  * CẬP NHẬT LỖI
                  */
-                if(option == 13){
+                if(option == 3){
                     // Reset về 0
                     await ITEM__FUNDA_COLL.updateMany(
                         {
@@ -2531,7 +2494,7 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    console.log(listData)
+                    // console.log(listData)
 
                     for(const item of listData){
                         let infoFunda = await ITEM__FUNDA_COLL.findByIdAndUpdate(item._id.funda, {
