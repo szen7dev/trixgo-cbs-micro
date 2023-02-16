@@ -1544,6 +1544,31 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Khách hàng tiềm năng/Thời gian
+                     */
+                    if(option && Number(option) == 8){
+                        conditionGroup = {
+                            _id: { customer: "$customer" },
+                            numberOfOrders: { $sum: 1 },
+                            numberOfProducts: { $sum: "$numberOfProducts" },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.customer',
+                            select: '_id name phone address',
+                            model: 'contact'
+                        }
+
+                        sortBy = {"amount": -1}
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
@@ -1579,6 +1604,7 @@ class Model extends BaseModel {
                                 total : 1,
                                 salesoff : 1,
                                 discount : 1,
+                                credit : 1,
                                 amount : 1,
                                 vatAmount : 1,
                                 avgQuantityPerStaff : 1,
@@ -1647,7 +1673,7 @@ class Model extends BaseModel {
                         ])
                     }
 
-                    if(!isNaN(option) && [3,6,7].includes(Number(option))){
+                    if(!isNaN(option) && [3,6,7,8].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
