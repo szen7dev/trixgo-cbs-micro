@@ -668,7 +668,7 @@ class Model extends BaseModel {
                  * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
                  */
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                .select('_id name sign company')
+                // .select('_id name sign company')
                 .populate({
                     path: 'company',
                     select: 'name sign'
@@ -817,8 +817,13 @@ class Model extends BaseModel {
                 let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')               
 
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_sallary.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_salary.xlsx')))
                 .then(async workbook => {
+                    workbook.sheet(`QuyCheLuong`).row(3).cell(3).value(infoFunda?.trainStaffSalar)
+                    workbook.sheet(`QuyCheLuong`).row(4).cell(3).value(infoFunda?.trialStaffSalary)
+                    workbook.sheet(`QuyCheLuong`).row(5).cell(3).value(infoFunda?.officialStaffSalar)
+                    workbook.sheet(`QuyCheLuong`).row(6).cell(3).value(infoFunda?.lunchStaffAllowance)
+
                     // Lặp qua 12 tháng
                     for(var m = 1; m<=12; m++){
                         workbook.sheet(`T${m}`).row(1).cell(4).value(Number(yearFilter))
