@@ -347,6 +347,37 @@ module.exports = {
 
     /**
      * Dev: HiepNH
+     * Func: Tải Đơn hàng
+     * Date: 4/2/2023
+     */
+    exportExcel3: {
+        auth: 'required',
+        params: {
+            companyID: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let { companyID, filterParams } = ctx.params;
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel3({
+                    userID, companyID, filterParams, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: HiepNH
      * Func: Reset All Data
      * Date: 25/12/2022
      */
