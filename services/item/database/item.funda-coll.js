@@ -252,6 +252,14 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     /**
      * CẤU TRÚC CHI PHÍ DỰ TRÙ/THÁNG
      */
+    //_________Lương đào tạo/giờ
+    trainStaffSalar: { type: Number, default: 0 },
+    //_________Lương thử việc/giờ
+    trialStaffSalary: { type: Number, default: 0 },
+    //_________Lương chính thức/giờ
+    officialStaffSalar: { type: Number, default: 0 },
+    //_________Phụ cấp ăn trưa/bữa
+    lunchStaffAllowance: { type: Number, default: 0 },
     //_________Chi phí Food App
     appExpense: { type: Number, default: 0 },
     //_________Chi phí Food App

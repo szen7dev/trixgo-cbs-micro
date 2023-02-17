@@ -2571,6 +2571,25 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * CẬP NHẬT LƯƠNG CĂN BẢN
+                 */
+                if(option == 3){
+                    // Cập nhật cho Điểm bán
+                    await ITEM__FUNDA_COLL.updateMany(
+                        {
+                            company: ObjectID(companyID),
+                        },
+                        {$set: {
+                            trainStaffSalar: 10000,
+                            trialStaffSalary: 15000,
+                            officialStaffSalar: 20000,
+                            lunchStaffAllowance: 30000,
+                        } }
+                     )
+                }
+
+
                 return resolve({ error: false, message: 'Reset thành công'});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

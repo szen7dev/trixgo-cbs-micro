@@ -85,20 +85,24 @@ module.exports = {
             humanExpense        : { type: "number", optional: true },
             otherExpense        : { type: "number", optional: true },
             activeCampaign      : { type: "array", optional: true },
+            trainStaffSalar         : { type: "number", optional: true },
+            trialStaffSalary         : { type: "number", optional: true },
+            officialStaffSalar         : { type: "number", optional: true },
+            lunchStaffAllowance         : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const { fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
-                    adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager } = ctx.params;
+                    adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  } = ctx.params;
 
                 // console.log({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
                 //     adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID })
 
                 const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, 
                     admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, 
-                    otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager });
+                    otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

@@ -162,7 +162,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager }){
+	update({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance }){
         // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
         return new Promise(async resolve => { 
             try {
@@ -286,7 +286,6 @@ class Model extends BaseModel {
                     dataUpdate.loyaltyPointsRate = +loyaltyPointsRate;
                 }
 
-
                 /**
                  * Chi phí vận hành
                  */
@@ -314,6 +313,22 @@ class Model extends BaseModel {
                     dataUpdate.otherExpense = Number(otherExpense);
                 }
 
+                if(trainStaffSalar && !isNaN(trainStaffSalar)){
+                    dataUpdate.trainStaffSalar = Number(trainStaffSalar)
+                }
+
+                if(trialStaffSalary && !isNaN(trialStaffSalary)){
+                    dataUpdate.trialStaffSalary = Number(trialStaffSalary)
+                }
+
+                if(officialStaffSalar && !isNaN(officialStaffSalar)){
+                    dataUpdate.officialStaffSalar = Number(officialStaffSalar)
+                }
+
+                if(lunchStaffAllowance && !isNaN(lunchStaffAllowance)){
+                    dataUpdate.lunchStaffAllowance = Number(lunchStaffAllowance)
+                }
+
                 /**
                  * Cập nhật nhiều dữ liệu addToSet cùng 1 lúc
                  */
@@ -327,8 +342,7 @@ class Model extends BaseModel {
                 if(dataPullAll){
                     dataUpdate.$pullAll = dataPullAll;
                 }
-
-                console.log(dataUpdate)
+                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
