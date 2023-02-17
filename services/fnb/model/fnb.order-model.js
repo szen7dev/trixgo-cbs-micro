@@ -2453,6 +2453,58 @@ class Model extends BaseModel {
     }
 
     /**
+     * Dev: HiepNH
+     * Func: Tải Khách hàng tiềm năng
+     * Date: 4/2/2023
+     */
+    exportExcel3({ companyID, year, month, userID }) {
+        // console.log({ companyID, year, month, userID })
+        const that = this
+        return new Promise(async resolve => {
+            try {
+                let { data: listData } = await that.getListByProperty({ companyID, option: 8, userID })
+                // console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_loyalty_customer.xlsx')))
+                .then(async workbook => {
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Customer").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Customer").row(i).cell(2).value(item?._id?.customer?.name);
+                        workbook.sheet("Customer").row(i).cell(3).value(item?._id?.customer?.address);
+                        workbook.sheet("Customer").row(i).cell(4).value(item?._id?.customer?.phone);
+                        workbook.sheet("Customer").row(i).cell(5).value(item?.numberOfOrders);
+                        workbook.sheet("Customer").row(i).cell(6).value(item?.numberOfProducts);
+                        workbook.sheet("Customer").row(i).cell(7).value(item?.total);
+                        workbook.sheet("Customer").row(i).cell(8).value(item?.discount);
+                        workbook.sheet("Customer").row(i).cell(9).value(item?.salesoff);
+                        workbook.sheet("Customer").row(i).cell(10).value(item?.credit);
+                        workbook.sheet("Customer").row(i).cell(11).value(item?.amount);
+                        workbook.sheet("Customer").row(i).cell(12).value(item?._id?.customer?.note);
+                        i++
+                    });
+                   
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Name: Reset data
      * Author: HiepNH
      * Code: 25/12/2022
@@ -2488,27 +2540,17 @@ class Model extends BaseModel {
                     )
                 }
 
-                /**
-                 * CẬP NHẬT KHÁCH CŨ MỚI SAU KHI CHUYỂN ĐỔI SANG
-                 */
-                // if(option == 2){
-                //     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, {$set: {
-                //         new: 2
-                //     }})
-                // }
-
                  /**
                  * CẬP NHẬT LỖI
                  */
-                if(option == 3){
-                    // Reset về 0
+                if(option == 2){
+                    // Cập nhật cho Điểm bán
                     await ITEM__FUNDA_COLL.updateMany(
                         {
                             company: ObjectID(companyID),
                         },
                         {$set: {numberOfMistakes: 0 } }
                      )
-
                     let listData = await FNB_MISTAKE_COLL.aggregate([
                         {
                             $match: {
@@ -2522,8 +2564,6 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    // console.log(listData)
-
                     for(const item of listData){
                         let infoFunda = await ITEM__FUNDA_COLL.findByIdAndUpdate(item._id.funda, {
                             numberOfMistakes: Number(item.quantity)
@@ -2540,4 +2580,4 @@ class Model extends BaseModel {
 
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model

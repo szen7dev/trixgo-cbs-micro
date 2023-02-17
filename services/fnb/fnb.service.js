@@ -67,6 +67,7 @@ module.exports = {
 		[CF_ACTIONS_FNB.ORDER_IMPORT_FROM_EXCEL]						: FNB__ORDER_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.ORDER_EXPORT_EXCEL]								: FNB__ORDER_HANDLER.exportExcel,
 		[CF_ACTIONS_FNB.ORDER_EXPORT_EXCEL2]							: FNB__ORDER_HANDLER.exportExcel2,
+		[CF_ACTIONS_FNB.ORDER_EXPORT_EXCEL3]							: FNB__ORDER_HANDLER.exportExcel3,
 		[CF_ACTIONS_FNB.ORDER_RESET_ALL_DATA]							: FNB__ORDER_HANDLER.resetAllData,
 
 		//========================================== FNB_PRODUCT ==============================================//
