@@ -1042,17 +1042,21 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                 
+                let infoContact = ITEM__CONTACT_COLL.findById(customerID)
+                
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
                 let purchasedValue = 0
                 let totalLoyaltyPoints = 0
-                // let usedLoyaltyPoints = 0
-                // let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
-                let numberOfCancelOrders = 0
-                let totalOfCancelOrders = 0
+                let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
+                let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
+                let numberOfCancelOrders = 0 // Số đơn hủy
+                let totalOfCancelOrders = 0 // Giá trị đơn hủy
 
-                // Tổng hợp thông tin từ các đơn hàng
+                /**
+                 * Tổng hợp thông tin đơn hàng mà khách hàng đã từng mua
+                 */
                 let listData = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: {
@@ -1068,8 +1072,8 @@ class Model extends BaseModel {
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
                             amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$amount" },
-                            loyaltyPoints: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            loyaltyPoints: { $sum: "$loyaltyPoints" },
                         }
                     }
                 ])
@@ -1077,18 +1081,15 @@ class Model extends BaseModel {
 
                 if(listData && listData.length){
                     for(const item of listData){
-                        /**
-                         * ĐƠN HOÀN THÀNH
-                         */
+
+                        // Đơn hoàn thành
                         if(item._id.status && item._id.status == 5){
                             numberOfOrders = Number(numberOfOrders) + Number(item.quantity)
                             purchasedValue = Number(purchasedValue) + Number(item.amount)
                             totalLoyaltyPoints = Number(totalLoyaltyPoints) + Number(item.loyaltyPoints)
                         }
 
-                        /**
-                         * ĐƠN HỦY
-                         */
+                        // Đơn hủy
                         if(item._id.status && item._id.status == 4){
                             numberOfCancelOrders = Number(numberOfCancelOrders) + Number(item.quantity)
                             totalOfCancelOrders = Number(totalOfCancelOrders) + Number(item.total)
@@ -1096,19 +1097,21 @@ class Model extends BaseModel {
                     }
                 }
 
+                // remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints) // Điểm còn lại
+
                 dataInUpdate.numberOfOrders = Number(numberOfOrders)
                 dataInUpdate.purchasedValue = Number(purchasedValue)
                 dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
                 dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
                 dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
 
-                // console.log(dataInUpdate)
+                // dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints) // Điểm còn lại
 
-                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                return resolve({ error: false, data: infoAfterUpdate });            
+                return resolve({ error: false, data: infoAfterUpdate }) 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
