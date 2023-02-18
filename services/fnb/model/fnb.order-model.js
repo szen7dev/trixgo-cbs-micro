@@ -1565,13 +1565,17 @@ class Model extends BaseModel {
 
                         conditionPopulate = {
                             path: '_id.customer',
-                            select: '_id name phone address',
-                            model: 'contact'
+                            select: '_id name phone address funda',
+                            model: 'contact',
+                            populate:{
+                                path: 'funda',
+                                select: 'name sign',
+                                model: 'funda',
+                            }
                         }
 
                         sortBy = {"amount": -1}
                     }
-
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
@@ -2472,7 +2476,7 @@ class Model extends BaseModel {
                     listData?.forEach((item, index) => {
                         workbook.sheet("Customer").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("Customer").row(i).cell(2).value(item?._id?.customer?.name);
-                        workbook.sheet("Customer").row(i).cell(3).value(item?._id?.customer?.address);
+                        workbook.sheet("Customer").row(i).cell(3).value(item?._id?.customer?.funda?.name);
                         workbook.sheet("Customer").row(i).cell(4).value(item?._id?.customer?.phone);
                         workbook.sheet("Customer").row(i).cell(5).value(item?.numberOfOrders);
                         workbook.sheet("Customer").row(i).cell(6).value(item?.numberOfProducts);
