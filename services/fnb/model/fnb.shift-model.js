@@ -1108,39 +1108,63 @@ class Model extends BaseModel {
     exportExcel2({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
         return new Promise(async resolve => {
             try {
-                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                .select('_id name sign company')
-                .populate({
-                    path: 'company',
-                    select: 'name sign'
-                })
-                // console.log(infoFunda)
-
-                let yearFilter
-                let currentYear = new Date().getFullYear()
-                if(year && !isNaN(year)){
-                    yearFilter = Number(year)
+                if(fundaID){
+                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                    .select('_id name sign company')
+                    .populate({
+                        path: 'company',
+                        select: 'name sign'
+                    })
+    
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
+    
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
+                    .then(async workbook => {
+                        // workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
+    
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+    
+                        await workbook.toFileAsync(pathWriteFile)
+                        const result = await uploadFileS3(pathWriteFile, fileName)
+    
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 })
+                    })    
                 }else{
-                    yearFilter = Number(currentYear)
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
+    
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
+                    .then(async workbook => {
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `TongHopBaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+    
+                        await workbook.toFileAsync(pathWriteFile)
+                        const result = await uploadFileS3(pathWriteFile, fileName)
+    
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 })
+                    })
+    
                 }
-
-                // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
-                .then(async workbook => {
-                    // workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
-
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BaoCaoDoanhSo_${now.getTime()}.xlsx`;
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
-                });
-
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
