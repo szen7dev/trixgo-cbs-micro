@@ -406,14 +406,15 @@ class Model extends BaseModel {
      */
     getList({
         companyID, parentID, isListParentOfListChilds, isMember,
-        keyword, limit = 20, lastestID, select, populates= {}, userID } ) { 
+        keyword, limit = 300, lastestID, select, populates= {}, userID } ) { 
         // console.log({companyID, parentID, isListParentOfListChilds, isMember,
         //     keyword, limit, lastestID, select, populates, userID})  
         //     console.log('========================') 
+        // console.log('ĐƠN VỊ CƠ SỞ========================') 
         return new Promise(async (resolve) => {
             try {
-                if(limit > 100){
-                    limit = 100
+                if(limit > 300){
+                    limit = 300
                 }else{
                     limit = +limit;
                 }
@@ -439,11 +440,14 @@ class Model extends BaseModel {
                 if(isMember && isMember == 1){
                     conditionObj.members = { $in: [userID] }
                     conditionObj.company = companyID
+                }else{
+                    conditionObj.members = { $in: [userID] }
+                    conditionObj.company = companyID
                 }
 
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = companyID;
-                }
+                // if(companyID && checkObjectIDs(companyID)){
+                //     conditionObj.company = companyID;
+                // }
 
                 // Chỉ lấy danh sách cha hoặc con
                 if(isListParentOfListChilds == 1){
