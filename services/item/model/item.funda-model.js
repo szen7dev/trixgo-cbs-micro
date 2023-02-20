@@ -422,7 +422,8 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let sortBy;
-                let conditionObj = { };
+                // let conditionObj = { };
+                let conditionObj = { company: ObjectID(companyID) }
                 let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
@@ -436,13 +437,15 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(isMember && isMember == 1){
-                    conditionObj.members = { $in: [userID] }
-                    conditionObj.company = companyID
-                }
-
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
+                }else{
+                    if(isMember && isMember == 1){
+                        conditionObj.members = { $in: [userID] }
+                        // conditionObj.company = companyID
+                    }else{
+                        conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] } ///
+                    }
                 }
 
                 // Chỉ lấy danh sách cha hoặc con

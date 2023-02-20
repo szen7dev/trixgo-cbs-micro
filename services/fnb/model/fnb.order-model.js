@@ -1176,8 +1176,8 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {  }
-                // let conditionObj = { company: ObjectID(companyID) }
+                // let conditionObj = {  }
+                let conditionObj = { company: ObjectID(companyID) }
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1'];
 
@@ -1204,7 +1204,7 @@ class Model extends BaseModel {
                         conditionObj.funda = { $in: fundasIDIsMember };
                     }else{
                         // Cần bổ sung điều kiện khi user không có cơ sở nào => data phải rỗng
-                        conditionObj.funda = { $in: [] }
+                        conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
                     }
                 }
                 // console.log(conditionObj)
@@ -1333,8 +1333,8 @@ class Model extends BaseModel {
                 if(!option){
                     // Danh sách
                 }else{
-                    let conditionObj = {  }
-                    // let conditionObj = { company: ObjectID(companyID) }
+                    // let conditionObj = {  }
+                    let conditionObj = { company: ObjectID(companyID) }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"total": -1}
 
@@ -1357,7 +1357,7 @@ class Model extends BaseModel {
                         if(fundasIDIsMember.length) {
                             conditionObj.funda = { $in: fundasIDIsMember };
                         }else{
-                            conditionObj.funda = { $in: [] }
+                            conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
                         }
                     }
 
