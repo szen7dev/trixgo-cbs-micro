@@ -386,15 +386,16 @@ module.exports = {
         params: {
             option: { type: "string" },
             password: { type: "string" },
+            fundaID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { option, password } = ctx.params;
+                let { option, password, fundaID } = ctx.params;
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.resetAllData({
-                    option, email, password, userID, companyID: company._id
+                    option, email, password, userID, fundaID, companyID: company._id
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

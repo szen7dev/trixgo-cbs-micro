@@ -315,6 +315,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 0
     },
+    //_________Giá trị đơn hàng Off
+    purchasedOffValue: {
+        type: Number,
+        default: 0
+    },
     //______Tổng tiền tích lũy
     totalLoyaltyPoints: {
         type: Number,

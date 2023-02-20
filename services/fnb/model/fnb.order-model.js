@@ -63,7 +63,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
-        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
+        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
+        const that = this
         return new Promise(async resolve => {
             try {
                 /**
@@ -580,37 +581,34 @@ class Model extends BaseModel {
                  * - Điểm tích lũy (tăng, giảm)
                  * - Số đơn hàng
                  */
-                // console.log(infoCustomer)
-                let oldNumberOfOrders = infoCustomer.numberOfOrders | 0
-                let oldPurchasedValue = infoCustomer.purchasedValue | 0
-                let oldTotalLoyaltyPoints = infoCustomer.totalLoyaltyPoints | 0 // credit
-                let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0 // credit
-
-                let newNumberOfOrders = Number(oldNumberOfOrders) + Number(1)
-                let newPurchasedValue = Number(oldPurchasedValue) + Number(amount)
-                let newTotalLoyaltyPoints = Number(oldTotalLoyaltyPoints) + Number(loyaltyPoints) // credit
-                let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0) // credit
-                let newRemainLoyaltyPoints = Number(newTotalLoyaltyPoints) - Number(newUsedLoyaltyPoints) // credit
-                // console.log({newRemainLoyaltyPoints})
-
-                if(numberOD && numberOD > 0){
-                    await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
-                        new: 2, // Khách hàng cũ
-                        numberOfOrders: Number(newNumberOfOrders),
-                        purchasedValue: Number(newPurchasedValue),
-                        totalLoyaltyPoints: Number(newTotalLoyaltyPoints), // credit
-                        usedLoyaltyPoints: Number(newUsedLoyaltyPoints), // credit
-                        remainLoyaltyPoints: Number(newRemainLoyaltyPoints), // credit
-                    })
-                }else{
-                    await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, {
-                        numberOfOrders: Number(newNumberOfOrders),
-                        purchasedValue: Number(newPurchasedValue),
-                        totalLoyaltyPoints: Number(newTotalLoyaltyPoints), // credit
-                        usedLoyaltyPoints: Number(newUsedLoyaltyPoints), // credit
-                        remainLoyaltyPoints: Number(newRemainLoyaltyPoints), // credit
-                    })
+                let dataContactUpdate = {
+                    userUpdate: userID
                 }
+
+                // Cập nhật khách cũ, mới vào đơn hàng
+                if(numberOD && numberOD > 0){
+                    dataContactUpdate.new = 2
+                }else{
+                    dataContactUpdate.new = 1
+                }
+
+                // Cập nhật sử dụng Credit của khách hàng
+                // Sử dụng Credit (chỉ áp dụng cho đơn Off)
+                if(salesChannel == 1){
+                    // Nếu có giảm giá
+                    if(!isNaN(salesoff) && Number(salesoff) > 0){
+                        // Nếu đã giảm giá thì không được tích điểm
+                    }else{
+                        // console.log(infoCustomer.usedLoyaltyPoints)
+                        let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0
+                        let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0)
+                        dataContactUpdate.usedLoyaltyPoints = Number(newUsedLoyaltyPoints)
+                    }
+                }
+                await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataContactUpdate, { new: true })
+
+                // Tổng hợp lịch sử mua hàng
+                await that.updateCustomer({ customerID, userID })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -761,7 +759,10 @@ class Model extends BaseModel {
 
                 // 3. Cập nhật vào khách hàng: MỚI VÀ CŨ
                 if(customerID && checkObjectIDs(customerID)){
+                    console.log('============111111111111111-KHÁCH HÀNG MỚI=============>>>>>>>>>')
                     await that.updateCustomer({ customerID, userID }) 
+
+                    console.log('============222222222222222-KHÁCH HÀNG CŨ=============>>>>>>>>>')
                     await that.updateCustomer({ customerID: oldCustomerID, userID }) 
 
                     // Cập nhật đơn hàng, sản phẩm
@@ -1037,6 +1038,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     updateCustomer({ customerID, option, userID }) {
+        console.log({ customerID, option, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerID))
@@ -1050,62 +1052,96 @@ class Model extends BaseModel {
                 let purchasedValue = 0
                 let totalLoyaltyPoints = 0
                 let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
+                console.log({usedLoyaltyPoints})
+                
                 let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
                 let numberOfCancelOrders = 0 // Số đơn hủy
                 let totalOfCancelOrders = 0 // Giá trị đơn hủy
 
-                /**
-                 * Tổng hợp thông tin đơn hàng mà khách hàng đã từng mua
-                 */
-                let listData = await FNB_ORDER_COLL.aggregate([
+                // Đơn hàng hoàn thành
+                let listData1 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: {
-                            customer: ObjectID(customerID)
+                            customer: ObjectID(customerID),
+                            status: 5
                         }
                     },
                     {
                         $group: {
-                            _id: { status: "$status" },
+                            _id: { },
                             quantity: { $sum: 1 },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            loyaltyPoints: { $sum: "$loyaltyPoints" },
+                            amount: { $sum: "$amount" }
                         }
                     }
                 ])
-                // console.log(listData)
 
-                if(listData && listData.length){
-                    for(const item of listData){
-
-                        // Đơn hoàn thành
-                        if(item._id.status && item._id.status == 5){
-                            numberOfOrders = Number(numberOfOrders) + Number(item.quantity)
-                            purchasedValue = Number(purchasedValue) + Number(item.amount)
-                            totalLoyaltyPoints = Number(totalLoyaltyPoints) + Number(item.loyaltyPoints)
+                // Đơn hàng hủy
+                let listData2 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: {
+                            customer: ObjectID(customerID),
+                            status: 4
                         }
-
-                        // Đơn hủy
-                        if(item._id.status && item._id.status == 4){
-                            numberOfCancelOrders = Number(numberOfCancelOrders) + Number(item.quantity)
-                            totalOfCancelOrders = Number(totalOfCancelOrders) + Number(item.total)
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: 1 },
+                            total: { $sum: "$total" }
                         }
                     }
+                ])
+
+                // Đơn hàng được tích điểm (đơn off và không giảm giá)
+                let listData3 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: {
+                            customer: ObjectID(customerID),
+                            status: 5, // Đơn đã hoàn thành
+                            salesChannel: 1, // Kênh offline
+                            // loyaltyPoints: { $gt: 0 }, // Giá trị tích điểm > 0
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            loyaltyPoints: { $sum: "$loyaltyPoints" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+                ])
+
+                // console.log(listData)
+                console.log(listData1)
+                console.log(listData2)
+                console.log(listData3)
+
+                if(listData1 && listData1.length){
+                    numberOfOrders = Number(numberOfOrders) + Number(listData1[0].quantity)
+                    purchasedValue = Number(purchasedValue) + Number(listData1[0].amount)
+
+                    dataInUpdate.numberOfOrders = Number(numberOfOrders)
+                    dataInUpdate.purchasedValue = Number(purchasedValue)
                 }
 
-                remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints) // Điểm còn lại
+                if(listData2 && listData2.length){
+                    numberOfCancelOrders = Number(numberOfCancelOrders) + Number(listData2[0].quantity)
+                    totalOfCancelOrders = Number(totalOfCancelOrders) + Number(listData2[0].total)
 
-                dataInUpdate.numberOfOrders = Number(numberOfOrders)
-                dataInUpdate.purchasedValue = Number(purchasedValue)
-                dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
-                dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
-                dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
+                    dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
+                    dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
+                }
 
-                dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints) // Điểm còn lại
+                if(listData3 && listData3.length){
+                    // Giá trị thanh toán đơn Off hoàn thành
+                    dataInUpdate.purchasedOffValue = Number(listData3[0].amount)
+
+                    totalLoyaltyPoints = Number(listData3[0].loyaltyPoints)
+                    remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
+
+                    dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
+                    dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
+                }
 
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)
@@ -1325,8 +1361,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID }) {
-        console.log('DANH SÁCH CƠ SỞ =================>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID})
+        // console.log('DANH SÁCH CƠ SỞ =================>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -2519,7 +2555,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 25/12/2022
      */
-    resetAllData({ option, email, password, userID, companyID }) {
+    resetAllData({ option, email, password, userID, fundaID, companyID }) {
+        const that = this
         // console.log({ option, email, password, userID, companyID })
         return new Promise(async (resolve) => {
             try {
@@ -2531,19 +2568,38 @@ class Model extends BaseModel {
                  * - 15/2/2023: Hiệp chưa hoàn thiện (!!!)
                  */
                 if(option == 1){
-                    await FNB_ORDER_COLL.updateMany({ company: companyID }, 
+                    await FNB_ORDER_COLL.updateMany(
+                        { 
+                            company: companyID,
+                            status: 5, // Chỉ đơn hoàn thành
+                            salesChannel: 1, // Kênh offline
+                            loyaltyPoints: { $gt: 0 }, // Giá trị tích điểm > 0
+                         }, 
                         [{
                             $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
                         }], 
                         {"multi": true}
                     )
 
+                    // Bỏ câu lệnh cũ
+                    // await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
+                    //     [{
+                    //         $set: {
+                    //             totalLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]}, // Sai vì bao gồm cả các đơn App
+                    //             usedLoyaltyPoints: 0,
+                    //             remainLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]},
+                    //         }
+                    //     }], 
+                    //     {"multi": true}
+                    // )
+
+                    // Reset về 0 -> Bắt đầu từ đầu
                     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
                         [{
                             $set: {
-                                totalLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]},
+                                totalLoyaltyPoints: 0, // Sai vì bao gồm cả các đơn App
                                 usedLoyaltyPoints: 0,
-                                remainLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]},
+                                remainLoyaltyPoints: 0,
                             }
                         }], 
                         {"multi": true}
@@ -2599,6 +2655,16 @@ class Model extends BaseModel {
                      )
                 }
 
+                /**
+                 * CẬP NHẬT TÍCH ĐIỂM
+                 * Convert dữ liệu cũ, mới
+                 */
+                // if(option == 4 && fundaID){
+                //     let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID }).select('_id')
+                //     for(const item of listData){
+                //         await that.updateCustomer({ customerID: item._id, userID }) 
+                //     }
+                // }
 
                 return resolve({ error: false, message: 'Reset thành công'});
             } catch (error) {
