@@ -594,21 +594,22 @@ class Model extends BaseModel {
 
                 // Cập nhật sử dụng Credit của khách hàng
                 // Sử dụng Credit (chỉ áp dụng cho đơn Off)
-                if(salesChannel == 1){
-                    // Nếu có giảm giá
-                    if(!isNaN(salesoff) && Number(salesoff) > 0){
-                        // Nếu đã giảm giá thì không được tích điểm
-                    }else{
-                        // console.log(infoCustomer.usedLoyaltyPoints)
-                        let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0
-                        let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0)
-                        dataContactUpdate.usedLoyaltyPoints = Number(newUsedLoyaltyPoints)
-                    }
-                }
+                // if(salesChannel == 1){
+                //     // Nếu có giảm giá
+                //     if(!isNaN(salesoff) && Number(salesoff) > 0){
+                //         // Nếu đã giảm giá thì không được tích điểm
+                //     }else{
+                //         // console.log(infoCustomer.usedLoyaltyPoints)
+                //         let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0
+                //         let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0)
+                //         dataContactUpdate.usedLoyaltyPoints = Number(newUsedLoyaltyPoints)
+                //     }
+                // }
+
                 await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataContactUpdate, { new: true })
 
                 // Tổng hợp lịch sử mua hàng
-                await that.updateCustomer({ customerID, userID })
+                // await that.updateCustomer({ customerID, userID })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
