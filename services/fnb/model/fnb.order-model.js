@@ -1113,9 +1113,9 @@ class Model extends BaseModel {
                 ])
 
                 // console.log(listData)
-                console.log(listData1)
-                console.log(listData2)
-                console.log(listData3)
+                // console.log(listData1)
+                // console.log(listData2)
+                // console.log(listData3)
 
                 if(listData1 && listData1.length){
                     numberOfOrders = Number(numberOfOrders) + Number(listData1[0].quantity)
