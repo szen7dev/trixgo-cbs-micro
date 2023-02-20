@@ -1133,16 +1133,16 @@ class Model extends BaseModel {
                     dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
                 }
 
-                if(listData3 && listData3.length){
-                    // Giá trị thanh toán đơn Off hoàn thành
-                    dataInUpdate.purchasedOffValue = Number(listData3[0].amount)
+                // if(listData3 && listData3.length){
+                //     // Giá trị thanh toán đơn Off hoàn thành
+                //     dataInUpdate.purchasedOffValue = Number(listData3[0].amount)
 
-                    totalLoyaltyPoints = Number(listData3[0].loyaltyPoints)
-                    remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
+                //     totalLoyaltyPoints = Number(listData3[0].loyaltyPoints)
+                //     remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
 
-                    dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
-                    dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
-                }
+                //     dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
+                //     dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
+                // }
 
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)
