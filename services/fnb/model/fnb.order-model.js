@@ -1176,7 +1176,6 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                // let conditionObj = {  }
                 let conditionObj = { company: ObjectID(companyID) }
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1'];
@@ -1188,23 +1187,22 @@ class Model extends BaseModel {
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundasID && fundasID.length ){
-                    console.log('==============Chọn đơn vị cơ sở')
+                    console.log('==============Trường hợp 1111111111===============>')
                     let arrFun = fundasID.map(item=>ObjectID(item))
 
                     if(arrFun.length) {
                         conditionObj.funda = { $in: arrFun };
                     }
                 }else{
-                    console.log('==============Không chọn đơn vị cơ sở')
                     let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-                    // console.log(listFundaIsMember)
-
                     let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                     if(fundasIDIsMember.length) {
+                        console.log('==============Trường hợp 222222===============>')
                         conditionObj.funda = { $in: fundasIDIsMember };
                     }else{
-                        // Cần bổ sung điều kiện khi user không có cơ sở nào => data phải rỗng
-                        conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
+                        console.log('==============Trường hợp 333333333===============>')
+                        // conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
+                        conditionObj.funda = { $in: [] }
                     }
                 }
                 // console.log(conditionObj)
@@ -1236,7 +1234,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                // console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
+                console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
                 // console.log(conditionObj)
 
                 /**
@@ -1327,13 +1325,13 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID }) {
-        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID})
+        console.log('DANH SÁCH CƠ SỞ =================>>>>>>>>>>>>>>>>>>>>>>>>>')
+        console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
                     // Danh sách
                 }else{
-                    // let conditionObj = {  }
                     let conditionObj = { company: ObjectID(companyID) }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"total": -1}
@@ -1348,16 +1346,19 @@ class Model extends BaseModel {
 
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
+                        console.log('==============Trường hợp 1111111111===============>')
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
                     }else{
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-
                         let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                         if(fundasIDIsMember.length) {
+                            console.log('==============Trường hợp 222222===============>')
                             conditionObj.funda = { $in: fundasIDIsMember };
-                        }else{
-                            conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
+                        } else{
+                            console.log('==============Trường hợp 333333333===============>')
+                            // conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
+                            conditionObj.funda = { $in: [] }
                         }
                     }
 
@@ -1635,6 +1636,7 @@ class Model extends BaseModel {
                             $sort: sortBy
                         }
                     ])
+                    // console.log(listData.length)
 
                     if(option && Number(option) == 7){
                         listData = await FNB_ORDER_COLL.aggregate([
