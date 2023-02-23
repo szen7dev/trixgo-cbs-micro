@@ -234,7 +234,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        console.log({ companyID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
+        // console.log({ companyID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -293,7 +293,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -383,8 +383,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, mistakeID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
-        console.log({fromDate, toDate})
+    getListByProperty({ option, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
+        console.log({ option, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -506,12 +506,32 @@ class Model extends BaseModel {
                     }
 
                      /**
-                     * Gom nhóm theo sản phẩm
+                     * Gom nhóm theo Nhân sự + Lỗi mắc phải
                      */
+                     if(option && Number(option) == 4){
+                        if(mistakeID){
+                            conditionObj.mistake = ObjectID(mistakeID)
+                        }
 
+                        if(executorID){
+                            conditionObj.executor = ObjectID(executorID)
+                        }
+
+                        conditionGroup = {
+                            _id: { mistake: "$mistake" },
+                            quantity: { $sum: 1 },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.mistake',
+                            select: '_id name sign',
+                            model: 'doctype'
+                        }
+                    }
 
                     /**
-                     * Gom nhóm theo Nhân sự mắc lỗi
+                     * Gom nhóm theo Nhân sự mắc lỗi/Lỗi của tôi
                      */
                     if(option && Number(option) == 5){
                         conditionObj.executor = ObjectID(userID)
@@ -575,7 +595,7 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [1,3,5].includes(Number(option))){
+                    if(!isNaN(option) && [1,3,4,5].includes(Number(option))){
                         await FNB_MISTAKE_COLL.populate(listData, conditionPopulate)
                     }
 

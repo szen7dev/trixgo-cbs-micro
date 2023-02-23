@@ -468,10 +468,9 @@ class Model extends BaseModel {
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"cashAmount": -1}
 
                     const validation = validateParamsObjectID({
-                        fundasID            : { value: fundasID, isRequire: false },
-
-                    });
-                    if(validation.error) return resolve(validation);
+                        fundasID            : { value: fundasID, isRequire: false }
+                    })
+                    if(validation.error) return resolve(validation)
 
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
@@ -482,7 +481,9 @@ class Model extends BaseModel {
 
                         let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                         if(fundasIDIsMember.length) {
-                            conditionObj.funda = { $in: fundasIDIsMember };
+                            conditionObj.funda = { $in: fundasIDIsMember }
+                        }else{
+                            conditionObj.funda = { $in: [] }
                         }
                     }
 
