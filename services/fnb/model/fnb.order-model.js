@@ -646,9 +646,6 @@ class Model extends BaseModel {
                  */
                 if(!isNaN(status)){
                     dataInUpdate.status = Number(status)
-
-                    // Cập nhật thông tin cho khách hàng
-                    await that.updateCustomer({ customerID: oldCustomerID, userID }) 
                 }
             
                 /**
@@ -720,7 +717,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
@@ -748,6 +745,11 @@ class Model extends BaseModel {
                         {$set: {customer: customerID } }
                      )
                 }
+
+                // Cập nhật thông tin cho khách hàng
+                if(!isNaN(status)){
+                    await that.updateCustomer({ customerID: oldCustomerID, userID }) 
+                }         
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
