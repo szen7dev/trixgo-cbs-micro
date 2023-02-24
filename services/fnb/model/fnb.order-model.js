@@ -581,35 +581,7 @@ class Model extends BaseModel {
                  * - Điểm tích lũy (tăng, giảm)
                  * - Số đơn hàng
                  */
-                let dataContactUpdate = {
-                    userUpdate: userID
-                }
-
-                // Cập nhật khách cũ, mới vào đơn hàng
-                if(numberOD && numberOD > 0){
-                    dataContactUpdate.new = 2
-                }else{
-                    dataContactUpdate.new = 1
-                }
-
-                // Cập nhật sử dụng Credit của khách hàng
-                // Sử dụng Credit (chỉ áp dụng cho đơn Off)
-                // if(salesChannel == 1){
-                //     // Nếu có giảm giá
-                //     if(!isNaN(salesoff) && Number(salesoff) > 0){
-                //         // Nếu đã giảm giá thì không được tích điểm
-                //     }else{
-                //         // console.log(infoCustomer.usedLoyaltyPoints)
-                //         let oldUsedLoyaltyPoints = infoCustomer.usedLoyaltyPoints | 0
-                //         let newUsedLoyaltyPoints = Number(oldUsedLoyaltyPoints) + Number(credit | 0)
-                //         dataContactUpdate.usedLoyaltyPoints = Number(newUsedLoyaltyPoints)
-                //     }
-                // }
-
-                await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataContactUpdate, { new: true })
-
-                // Tổng hợp lịch sử mua hàng
-                // await that.updateCustomer({ customerID, userID })
+                await that.updateCustomer({ customerID, userID })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -1039,7 +1011,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     updateCustomer({ customerID, option, userID }) {
-        console.log({ customerID, option, userID })
+        // console.log({ customerID, option, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerID))
@@ -1052,8 +1024,7 @@ class Model extends BaseModel {
                 let numberOfOrders = 0
                 let purchasedValue = 0
                 let totalLoyaltyPoints = 0
-                let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
-                console.log({usedLoyaltyPoints})
+                let usedLoyaltyPoints = 0
                 
                 let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
                 let numberOfCancelOrders = 0 // Số đơn hủy
@@ -1100,14 +1071,15 @@ class Model extends BaseModel {
                             customer: ObjectID(customerID),
                             status: 5, // Đơn đã hoàn thành
                             salesChannel: 1, // Kênh offline
-                            // loyaltyPoints: { $gt: 0 }, // Giá trị tích điểm > 0
+                            salesoff: 0 // Tức không lấy đơn hàng đã được giảm giá
                         }
                     },
                     {
                         $group: {
                             _id: { },
-                            loyaltyPoints: { $sum: "$loyaltyPoints" },
-                            amount: { $sum: "$amount" }
+                            amount: { $sum: "$amount" },
+                            credit: { $sum: "$credit" }, // Điểm đã sử dụng
+                            loyaltyPoints: { $sum: "$loyaltyPoints" }, // Điểm tích lũy
                         }
                     }
                 ])
@@ -1121,6 +1093,12 @@ class Model extends BaseModel {
                     numberOfOrders = Number(numberOfOrders) + Number(listData1[0].quantity)
                     purchasedValue = Number(purchasedValue) + Number(listData1[0].amount)
 
+                    if(numberOfOrders > 1){
+                        dataInUpdate.new = 2
+                    }else{
+                        dataInUpdate.new = 1
+                    }
+
                     dataInUpdate.numberOfOrders = Number(numberOfOrders)
                     dataInUpdate.purchasedValue = Number(purchasedValue)
                 }
@@ -1133,18 +1111,79 @@ class Model extends BaseModel {
                     dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
                 }
 
-                // if(listData3 && listData3.length){
-                //     // Giá trị thanh toán đơn Off hoàn thành
-                //     dataInUpdate.purchasedOffValue = Number(listData3[0].amount)
+                if(listData3 && listData3.length){
+                    // Giá trị thanh toán đơn Off hoàn thành
+                    dataInUpdate.purchasedOffValue = Number(listData3[0].amount)
+                    
+                    totalLoyaltyPoints = Number(listData3[0].loyaltyPoints)
+                    usedLoyaltyPoints =  Number(listData3[0].credit)
+                    remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
 
-                //     totalLoyaltyPoints = Number(listData3[0].loyaltyPoints)
-                //     remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
-
-                //     dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
-                //     dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
-                // }
+                    dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
+                    dataInUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints)
+                    dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
+                }
+                // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataInUpdate, { new: true })
+                if (!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                return resolve({ error: false, data: infoAfterUpdate }) 
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertDataCustomer({ customerID, option, userID }) {
+        // console.log({ customerID, option, userID })
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(customerID))
+                    return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                
+                let infoContact = ITEM__CONTACT_COLL.findById(customerID)
+                
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+                let totalLoyaltyPoints = 0
+                let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
+                let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
+
+
+                // Đơn hàng được tích điểm (đơn off và không giảm giá)
+                let listData = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: {
+                            customer: ObjectID(customerID),
+                            status: 5, // Đơn đã hoàn thành
+                            salesChannel: 1, // Kênh offline
+                            salesoff: 0 // Tức không lấy đơn hàng đã được giảm giá
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            loyaltyPoints: { $sum: "$loyaltyPoints" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+                ])
+                // console.log(listData)
+
+                if(listData && listData.length){
+                    // Giá trị thanh toán đơn Off hoàn thành
+                    dataUpdate.purchasedOffValue = Number(listData[0].amount)
+
+                    totalLoyaltyPoints = Number(listData[0].loyaltyPoints)
+                    remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
+
+                    dataUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
+                    dataUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
+                }
+
+                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
@@ -2558,7 +2597,7 @@ class Model extends BaseModel {
      */
     resetAllData({ option, email, password, userID, fundaID, companyID }) {
         const that = this
-        // console.log({ option, email, password, userID, companyID })
+        // console.log({ option, email, password, userID, fundaID, companyID })
         return new Promise(async (resolve) => {
             try {
                 if(password.toString() != `noPass12345${email}`)
@@ -2574,6 +2613,7 @@ class Model extends BaseModel {
                             company: companyID,
                             status: 5, // Chỉ đơn hoàn thành
                             salesChannel: 1, // Kênh offline
+                            salesoff: 0, // Tức không lấy đơn hàng đã được giảm giá
                             loyaltyPoints: { $gt: 0 }, // Giá trị tích điểm > 0
                          }, 
                         [{
@@ -2582,23 +2622,11 @@ class Model extends BaseModel {
                         {"multi": true}
                     )
 
-                    // Bỏ câu lệnh cũ
-                    // await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
-                    //     [{
-                    //         $set: {
-                    //             totalLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]}, // Sai vì bao gồm cả các đơn App
-                    //             usedLoyaltyPoints: 0,
-                    //             remainLoyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$purchasedValue"]},
-                    //         }
-                    //     }], 
-                    //     {"multi": true}
-                    // )
-
                     // Reset về 0 -> Bắt đầu từ đầu
                     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
                         [{
                             $set: {
-                                totalLoyaltyPoints: 0, // Sai vì bao gồm cả các đơn App
+                                totalLoyaltyPoints: 0,
                                 usedLoyaltyPoints: 0,
                                 remainLoyaltyPoints: 0,
                             }
@@ -2607,10 +2635,23 @@ class Model extends BaseModel {
                     )
                 }
 
+                /**
+                 * CẬP NHẬT TÍCH ĐIỂM
+                 * Convert dữ liệu cũ, mới
+                 */
+                if(option == 2 && fundaID){
+                    // Chỉ lấy các khách hàng đã mua hàng
+                    let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID, purchasedValue: {$gt: 0} }).select('_id')
+                    for(const item of listData){
+                        let info = await that.convertDataCustomer({ customerID: item._id, userID })
+                        // console.log(info)
+                    }
+                }
+
                  /**
                  * CẬP NHẬT LỖI
                  */
-                if(option == 2){
+                if(option == 3){
                     // Cập nhật cho Điểm bán
                     await ITEM__FUNDA_COLL.updateMany(
                         {
@@ -2641,7 +2682,7 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT LƯƠNG CĂN BẢN
                  */
-                if(option == 3){
+                if(option == 4){
                     // Cập nhật cho Điểm bán
                     await ITEM__FUNDA_COLL.updateMany(
                         {
@@ -2655,17 +2696,6 @@ class Model extends BaseModel {
                         } }
                      )
                 }
-
-                /**
-                 * CẬP NHẬT TÍCH ĐIỂM
-                 * Convert dữ liệu cũ, mới
-                 */
-                // if(option == 4 && fundaID){
-                //     let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID }).select('_id')
-                //     for(const item of listData){
-                //         await that.updateCustomer({ customerID: item._id, userID }) 
-                //     }
-                // }
 
                 return resolve({ error: false, message: 'Reset thành công'});
             } catch (error) {
