@@ -83,6 +83,24 @@ module.exports = {
         }
     },
 
+    downloadFileByURL: {
+        params: {
+            link: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { link } = ctx.params;
+
+                ctx.meta.$responseType = "image/*";
+                ctx.meta.$location = link;
+                return;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
     generateLinkS3: {
         params: {
             mimeType        : { type: "string" },
@@ -117,13 +135,11 @@ module.exports = {
                     fileName: name,
                     typeUpload
                 });
-                console.log({ generatePathS3 })
                 if(generatePathS3.error) return generatePathS3;
 
                 let { newFileName, pathS3 } = generatePathS3.data;
 
                 let infoGenerateLink = await GENERATE_LINK_S3(newFileName, mimeType, typeUpload, pathS3);
-                console.log({ infoGenerateLink })
                 /**
                  * Nếu có app thì đang insert file trong app
                  * Nếu không có app thì đang insert trong user(image, signature)
