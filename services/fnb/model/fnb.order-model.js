@@ -51,6 +51,7 @@ const {
     FNB_SERVICE,
     FNB_STATUS
  } = require('../helper/fnb.keys-constant');
+const e = require('express');
 class Model extends BaseModel {
 
     constructor() {
@@ -628,6 +629,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                 
                 let oldCustomerID = infoOrder.customer;
+                let oldSalesChannel = infoOrder.salesChannel
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
@@ -643,31 +645,31 @@ class Model extends BaseModel {
                  * CẬP NHẬT TRẠNG THÁI-HỦY ĐƠN
                  */
                 if(!isNaN(status)){
-                    dataInUpdate.status = Number(status);
+                    dataInUpdate.status = Number(status)
+
+                    // Cập nhật thông tin cho khách hàng
+                    await that.updateCustomer({ customerID: oldCustomerID, userID }) 
                 }
             
                 /**
                  * CẬP NHẬT PHƯƠNG THỨC THANH TOÁN
-                 * 1-Cập nhật đơn hàng
-                 * 2-Cập nhật vào ca làm việc
                  */
                 if(!isNaN(paymentMethod)){
-                    dataInUpdate.paymentMethod = Number(paymentMethod) //=> Bỏ đi vì chỉ cần cập nhật kênh bán hàng là OK
+                    if(Number(oldSalesChannel) >= 2){
+                        dataInUpdate.paymentMethod = Number(2) // Đơn App
+                    }else{
+                        // Đơn Off
+                        dataInUpdate.paymentMethod = Number(paymentMethod)
+                    }
                 }
 
                 /**
                  * CẬP NHẬT KÊNH BÁN HÀNG
-                 * 1-Cập nhật đơn hàng
-                 * 2-Cập nhật vào ca làm việc
-                 * 3-Cập nhật vào Điểm bán (Cơ sở)
+                 * Chỉ áp dụng cho chuyển đổi giữa các App
                  */
-                if(!isNaN(salesChannel)){
+                if(!isNaN(salesChannel) && Number(salesChannel) >= 2){
                     dataInUpdate.salesChannel = Number(salesChannel)
-
-                    // Nếu cập nhật từ Off sang App
-                    if(salesChannel != 1){
-                        dataInUpdate.paymentMethod = Number(2) // Chuyển khoản
-                    }
+                    dataInUpdate.paymentMethod = Number(2) // Chuyển khoản
                 }
 
                 /**
@@ -732,10 +734,10 @@ class Model extends BaseModel {
 
                 // 3. Cập nhật vào khách hàng: MỚI VÀ CŨ
                 if(customerID && checkObjectIDs(customerID)){
-                    console.log('============111111111111111-KHÁCH HÀNG MỚI=============>>>>>>>>>')
+                    // console.log('============111111111111111-KHÁCH HÀNG MỚI=============>>>>>>>>>')
                     await that.updateCustomer({ customerID, userID }) 
 
-                    console.log('============222222222222222-KHÁCH HÀNG CŨ=============>>>>>>>>>')
+                    // console.log('============222222222222222-KHÁCH HÀNG CŨ=============>>>>>>>>>')
                     await that.updateCustomer({ customerID: oldCustomerID, userID }) 
 
                     // Cập nhật đơn hàng, sản phẩm
