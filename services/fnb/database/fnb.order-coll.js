@@ -191,6 +191,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     appOrderSign: String,
     //_________Ghi chú
     note: String,
+    //_________Số sao đánh giá đơn app
+    starRating: {
+        type: Number,
+        default: 5
+    },
     //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
     numberOfMistakes: {
         type: Number,
