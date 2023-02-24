@@ -385,6 +385,7 @@ module.exports = {
         auth: 'required',
         params: {
             option: { type: "string" },
+            page: { type: "string" },
             password: { type: "string" },
             fundaID: { type: "string", optional: true },
         },
@@ -392,10 +393,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { option, password, fundaID } = ctx.params;
+                let { option, password, fundaID, page } = ctx.params;
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.resetAllData({
-                    option, email, password, userID, fundaID, companyID: company._id
+                    option, email, password, userID, fundaID, companyID: company._id, page
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

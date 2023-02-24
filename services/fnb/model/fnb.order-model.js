@@ -2595,7 +2595,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 25/12/2022
      */
-    resetAllData({ option, email, password, userID, fundaID, companyID }) {
+    resetAllData({ option, email, password, userID, fundaID, companyID, page }) {
         const that = this
         // console.log({ option, email, password, userID, fundaID, companyID })
         return new Promise(async (resolve) => {
@@ -2641,10 +2641,46 @@ class Model extends BaseModel {
                  */
                 if(option == 2 && fundaID){
                     // Chỉ lấy các khách hàng đã mua hàng
-                    let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID, purchasedValue: {$gt: 0} }).select('_id')
+                    let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID, purchasedValue: {$gt: 0} }).select('_id').sort({_id: 1})
+                    // console.log(listData.length)
+                    /**
+                     * Phân theo tháng 1, tháng 2
+                     */
+                    var i = 1
                     for(const item of listData){
-                        let info = await that.convertDataCustomer({ customerID: item._id, userID })
-                        // console.log(info)
+                        if(page == 1){
+                            if(i<=500){
+                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            }
+                        }
+                        if(page == 2){
+                            if(i>500 && i<=1000){
+                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            }
+                        }
+                        if(page == 3){
+                            if(i>1000 && i<=1500){
+                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            }
+                        }
+                        if(page == 4){
+                            if(i>1500 && i<=2000){
+                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            }
+                        }
+                        if(page == 5){
+                            if(i>2000 && i<=2500){
+                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            }
+                        }
+                        if(page == 6){
+                            if(i>2500){
+                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            }
+                        }
+                       
+                        i++
+                        // console.log({__________chiso:i})
                     }
                 }
 
