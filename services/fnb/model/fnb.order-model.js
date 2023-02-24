@@ -2650,39 +2650,42 @@ class Model extends BaseModel {
                      */
                     var i = 1
                     for(const item of listData){
-                        if(page == 1){
-                            if(i<=500){
-                                await that.convertDataCustomer({ customerID: item._id, userID })
+                        if(page && Number(page)>0){
+                            if(page == 1){
+                                if(i<=500){
+                                    await that.convertDataCustomer({ customerID: item._id, userID })
+                                }
                             }
-                        }
-                        if(page == 2){
-                            if(i>500 && i<=1000){
-                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            if(page == 2){
+                                if(i>500 && i<=1000){
+                                    await that.convertDataCustomer({ customerID: item._id, userID })
+                                }
                             }
-                        }
-                        if(page == 3){
-                            if(i>1000 && i<=1500){
-                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            if(page == 3){
+                                if(i>1000 && i<=1500){
+                                    await that.convertDataCustomer({ customerID: item._id, userID })
+                                }
                             }
-                        }
-                        if(page == 4){
-                            if(i>1500 && i<=2000){
-                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            if(page == 4){
+                                if(i>1500 && i<=2000){
+                                    await that.convertDataCustomer({ customerID: item._id, userID })
+                                }
                             }
-                        }
-                        if(page == 5){
-                            if(i>2000 && i<=2500){
-                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            if(page == 5){
+                                if(i>2000 && i<=2500){
+                                    await that.convertDataCustomer({ customerID: item._id, userID })
+                                }
                             }
-                        }
-                        if(page == 6){
-                            if(i>2500){
-                                await that.convertDataCustomer({ customerID: item._id, userID })
+                            if(page == 6){
+                                if(i>2500){
+                                    await that.convertDataCustomer({ customerID: item._id, userID })
+                                }
                             }
+                           
+                            i++
+                        }else{
+                            await that.convertDataCustomer({ customerID: item._id, userID })
                         }
-                       
-                        i++
-                        // console.log({__________chiso:i})
                     }
                 }
 
