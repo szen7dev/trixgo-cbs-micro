@@ -92,7 +92,6 @@ class Model extends BaseModel {
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda)
                     return resolve({ error: true, message: 'cannot_get_infoFunda' });
-                // console.log(infoFunda)
                     
                 // Thông tin ca làm việc
                 let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
@@ -106,7 +105,6 @@ class Model extends BaseModel {
 
                 // Lấy số đơn hàng khách đã mua
                 let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
-                // console.log({numberOD})
 
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
@@ -176,8 +174,7 @@ class Model extends BaseModel {
                     dataInsert.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
                 }
 
-                // Doanh số khách cũ, mới
-                // if(numberOD && numberOD > 0){
+                // Doanh số khách cũ, mới và khách vãng lai
                 if((numberOD && numberOD > 0) || (infoCustomer.new && infoCustomer.new == 2)){
                     dataInsert.new = 2 // Đơn hàng khách cũ
                 }else{
@@ -246,7 +243,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * TÍCH ĐIỂM NẾU LÀ ĐƠN OFF VÀ KHÔNG CÓ GIẢM GIÁ
+                 * TÍCH ĐIỂM NẾU LÀ ĐƠN OFF -> Không tích điểm cho đơn App
                  */
                 if(salesChannel == 1){
                     // Nếu có giảm giá
@@ -255,49 +252,45 @@ class Model extends BaseModel {
                         dataInsert.salesoff = Number(salesoff)
                         amount = Number(amount) - Number(salesoff)
                     }
-                    
-                    // Nếu không có giảm giá
-                    else{
-                        // Nếu có tích điểm
-                        if(!isNaN(credit)){
-                            dataInsert.credit = Number(credit)
-                            amount = Number(amount) - Number(credit)
-                        }
 
-                        /**
-                         * Chính sách tích điểm => Mở chính thức vào 1/3/2023
-                         */
-                        let factor = 0
-                        if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level2.purchasedValue)){
-                            factor = Number(FNB_FACTOR.credit.level1.factor)
+                    // // Khách biết thông tin
+                    // if(infoCustomer.nonResident == 1){
+                      
+                    // }
+
+                    // Nếu có tích điểm
+                    if(!isNaN(credit)){
+                        dataInsert.credit = Number(credit)
+                        amount = Number(amount) - Number(credit)
+                    }
+
+                    /**
+                     * Chính sách tích điểm => Mở chính thức vào 1/3/2023
+                     */
+                    let factor = 0
+                    if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level2.purchasedValue)){
+                        factor = Number(FNB_FACTOR.credit.level1.factor)
+                    }else{
+                        if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level3.purchasedValue)){
+                            factor = Number(FNB_FACTOR.credit.level2.factor)
                         }else{
-                            if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level3.purchasedValue)){
-                                factor = Number(FNB_FACTOR.credit.level2.factor)
+                            if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level4.purchasedValue)){
+                                factor = Number(FNB_FACTOR.credit.level3.factor)
                             }else{
-                                if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level4.purchasedValue)){
-                                    factor = Number(FNB_FACTOR.credit.level3.factor)
-                                }else{
-                                    factor = Number(FNB_FACTOR.credit.level4.factor)
-                                }
+                                factor = Number(FNB_FACTOR.credit.level4.factor)
                             }
                         }
-                        // console.log({factor})
-
-                        loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
-
-                        dataInsert.loyaltyPoints = Number(loyaltyPoints)
                     }
+
+                    loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
+                    dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
                 dataInsert.amount = Number(amount)
 
                 if(!isNaN(vatAmount)){
-                    // console.log('55555555555555555')
                     dataInsert.vatAmount = Number(vatAmount)
                 }else{
-                    // console.log('66666666666666666666666')
-                    // console.log( Number(FNB_FACTOR.vatRate))
-                    // console.log( Number(FNB_FACTOR.vatRate/100))
                     dataInsert.vatAmount = Number(amount*Number(FNB_FACTOR.vatRate/100)/(Number(1 + Number(FNB_FACTOR.vatRate/100)))).toFixed(0)
                 }
 
@@ -746,7 +739,7 @@ class Model extends BaseModel {
                      )
                 }
 
-                // Cập nhật thông tin cho khách hàng
+                // Cập nhật thông tin cho khách hàng (áp dụng khi cập nhật trạng thái)
                 if(!isNaN(status)){
                     await that.updateCustomer({ customerID: oldCustomerID, userID }) 
                 }         
@@ -763,53 +756,53 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    updateValue({ orderID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+    // updateValue({ orderID, userID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!checkObjectIDs(orderID))
+    //                 return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+    //             let infoOrder = await FNB_ORDER_COLL.findById(orderID)
 
-                let total = infoOrder.total;
-                let discount = infoOrder.discount;
-                let salesoff = infoOrder.salesoff;
-                let amount = infoOrder.amount;
+    //             let total = infoOrder.total;
+    //             let discount = infoOrder.discount;
+    //             let salesoff = infoOrder.salesoff;
+    //             let amount = infoOrder.amount;
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+    //             let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
 
-                let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
-                    {
-                        $match: {
-                            order: ObjectID(orderID)
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            amount: { $sum: "$amount" },
-                        }
-                    }
-                ])
+    //             let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
+    //                 {
+    //                     $match: {
+    //                         order: ObjectID(orderID)
+    //                     }
+    //                 },
+    //                 {
+    //                     $group: {
+    //                         _id: { },
+    //                         amount: { $sum: "$amount" },
+    //                     }
+    //                 }
+    //             ])
 
-                if(listData && listData.length){
-                    total = Number(listData[0].amount)
-                    amount = Number(total)-Number(discount)-Number(salesoff)
+    //             if(listData && listData.length){
+    //                 total = Number(listData[0].amount)
+    //                 amount = Number(total)-Number(discount)-Number(salesoff)
 
-                    dataInUpdate.total = Number(total)
-                    dataInUpdate.amount = Number(amount)
-                }
+    //                 dataInUpdate.total = Number(total)
+    //                 dataInUpdate.amount = Number(amount)
+    //             }
 
-                let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+    //             let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
+    //             if (!infoAfterUpdate)
+    //                 return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
-                return resolve({ error: false, data: infoAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        });
-    }
+    //             return resolve({ error: false, data: infoAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     });
+    // }
 
     /**
      * Name: Update value
@@ -1021,15 +1014,13 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                 
-                let infoContact = ITEM__CONTACT_COLL.findById(customerID)
-                
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
                 let purchasedValue = 0
+                let purchasedOffValue = 0
                 let totalLoyaltyPoints = 0
                 let usedLoyaltyPoints = 0
-                
                 let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
                 let numberOfCancelOrders = 0 // Số đơn hủy
                 let totalOfCancelOrders = 0 // Giá trị đơn hủy
@@ -1068,14 +1059,14 @@ class Model extends BaseModel {
                     }
                 ])
 
-                // Đơn hàng được tích điểm (đơn off và không giảm giá)
+                // Đơn hàng được tích điểm (đơn off)
                 let listData3 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: {
                             customer: ObjectID(customerID),
                             status: 5, // Đơn đã hoàn thành
-                            salesChannel: 1, // Kênh offline
-                            salesoff: 0 // Tức không lấy đơn hàng đã được giảm giá
+                            salesChannel: 1, // Kênh offline 
+                            // nonResident: 1, // Khách biết thông tin
                         }
                     },
                     {
@@ -1087,15 +1078,14 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-
                 // console.log(listData)
                 // console.log(listData1)
                 // console.log(listData2)
                 // console.log(listData3)
 
                 if(listData1 && listData1.length){
-                    numberOfOrders = Number(numberOfOrders) + Number(listData1[0].quantity)
-                    purchasedValue = Number(purchasedValue) + Number(listData1[0].amount)
+                    numberOfOrders = Number(listData1[0].quantity)
+                    purchasedValue = Number(listData1[0].amount)
 
                     if(numberOfOrders > 1){
                         dataInUpdate.new = 2
@@ -1108,8 +1098,8 @@ class Model extends BaseModel {
                 }
 
                 if(listData2 && listData2.length){
-                    numberOfCancelOrders = Number(numberOfCancelOrders) + Number(listData2[0].quantity)
-                    totalOfCancelOrders = Number(totalOfCancelOrders) + Number(listData2[0].total)
+                    numberOfCancelOrders = Number(listData2[0].quantity)
+                    totalOfCancelOrders = Number(listData2[0].total)
 
                     dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
                     dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
@@ -1117,12 +1107,12 @@ class Model extends BaseModel {
 
                 if(listData3 && listData3.length){
                     // Giá trị thanh toán đơn Off hoàn thành
-                    dataInUpdate.purchasedOffValue = Number(listData3[0].amount)
-                    
+                    purchasedOffValue = Number(listData3[0].amount)
                     totalLoyaltyPoints = Number(listData3[0].loyaltyPoints)
                     usedLoyaltyPoints =  Number(listData3[0].credit)
                     remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
 
+                    dataInUpdate.purchasedOffValue = Number(purchasedOffValue)
                     dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
                     dataInUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints)
                     dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
@@ -1140,8 +1130,10 @@ class Model extends BaseModel {
         });
     }
 
-    convertDataCustomer({ customerID, option, userID }) {
-        // console.log({ customerID, option, userID })
+    /**
+     * Convert số liệu tích điểm cho khách hàng
+     */
+    convertDataCustomer({ customerID, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerID))
@@ -1155,15 +1147,14 @@ class Model extends BaseModel {
                 let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
                 let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
 
-
-                // Đơn hàng được tích điểm (đơn off và không giảm giá)
+                // Đơn hàng được tích điểm (đơn off)
                 let listData = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: {
                             customer: ObjectID(customerID),
                             status: 5, // Đơn đã hoàn thành
                             salesChannel: 1, // Kênh offline
-                            salesoff: 0 // Tức không lấy đơn hàng đã được giảm giá
+                            // nonResident: 1, // Khách biết thông tin
                         }
                     },
                     {
@@ -1197,12 +1188,6 @@ class Model extends BaseModel {
             }
         });
     }
-
-    /**
-     * Name: Remove
-     * Author: HiepNH
-     * Code: 24/11/2022
-     */
 
     /**
      * Name: Get info
@@ -2427,6 +2412,8 @@ class Model extends BaseModel {
                                 }
                             })
                         }
+
+                        workbook.sheet("Contact").row(i).cell(16).value(`${item._id}`);
                         
                         i++
                     });
@@ -2609,7 +2596,7 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT TÍCH ĐIỂM
                  * Convert dữ liệu cũ, mới
-                 * - 15/2/2023: Hiệp chưa hoàn thiện (!!!)
+                 * Từ đơn hàng sẽ tính ra được Credit mà khách đã sử dụng -> Tổng hợp theo mã khách -> Cập nhật vào danh bạ
                  */
                 if(option == 1){
                     await FNB_ORDER_COLL.updateMany(
@@ -2617,8 +2604,7 @@ class Model extends BaseModel {
                             company: companyID,
                             status: 5, // Chỉ đơn hoàn thành
                             salesChannel: 1, // Kênh offline
-                            salesoff: 0, // Tức không lấy đơn hàng đã được giảm giá
-                            loyaltyPoints: { $gt: 0 }, // Giá trị tích điểm > 0
+                            // nonResident: 1, // Khách biết thông tin
                          }, 
                         [{
                             $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
@@ -2630,6 +2616,7 @@ class Model extends BaseModel {
                     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
                         [{
                             $set: {
+                                purchasedOffValue: 0,
                                 totalLoyaltyPoints: 0,
                                 usedLoyaltyPoints: 0,
                                 remainLoyaltyPoints: 0,
@@ -2640,16 +2627,12 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * CẬP NHẬT TÍCH ĐIỂM
+                 * CẬP NHẬT TÍCH ĐIỂM THEO TỪNG CƠ SỞ
                  * Convert dữ liệu cũ, mới
                  */
                 if(option == 2 && fundaID){
                     // Chỉ lấy các khách hàng đã mua hàng
                     let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID, purchasedValue: {$gt: 0} }).select('_id').sort({_id: 1})
-                    // console.log(listData.length)
-                    /**
-                     * Phân theo tháng 1, tháng 2
-                     */
                     var i = 1
                     for(const item of listData){
                         if(page && Number(page)>0){
