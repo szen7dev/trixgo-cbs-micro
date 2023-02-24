@@ -645,7 +645,10 @@ class Model extends BaseModel {
                  * CẬP NHẬT TRẠNG THÁI-HỦY ĐƠN
                  */
                 if(!isNaN(status)){
-                    dataInUpdate.status = Number(status);
+                    dataInUpdate.status = Number(status)
+
+                    // Cập nhật thông tin cho khách hàng
+                    await that.updateCustomer({ customerID: oldCustomerID, userID }) 
                 }
             
                 /**
