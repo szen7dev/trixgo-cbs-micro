@@ -385,7 +385,7 @@ module.exports = {
         auth: 'required',
         params: {
             option: { type: "string" },
-            page: { type: "string" },
+            page: { type: "string", optional: true },
             password: { type: "string" },
             fundaID: { type: "string", optional: true },
         },
