@@ -1444,8 +1444,6 @@ class Model extends BaseModel {
                         conditionObj.createAt = {
                             $gte: new Date(fromDate),
                             $lte: new Date(toDate),
-                            // $gte: moment(fromDate).startOf('day')._d,
-                            // $lte: moment(toDate).endOf('day')._d,
                         }
                     }
 
@@ -1459,6 +1457,7 @@ class Model extends BaseModel {
                             total: { $sum: "$total" },
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1480,6 +1479,7 @@ class Model extends BaseModel {
                                 total: { $sum: "$total" },
                                 discount: { $sum: "$discount" },
                                 salesoff: { $sum: "$salesoff" },
+                                credit: { $sum: "$credit" },
                                 amount: { $sum: "$amount" },
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1500,6 +1500,7 @@ class Model extends BaseModel {
                                 total: { $sum: "$total" },
                                 discount: { $sum: "$discount" },
                                 salesoff: { $sum: "$salesoff" },
+                                credit: { $sum: "$credit" },
                                 amount: { $sum: "$amount" },
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1514,6 +1515,37 @@ class Model extends BaseModel {
                                 total: { $sum: "$total" },
                                 discount: { $sum: "$discount" },
                                 salesoff: { $sum: "$salesoff" },
+                                credit: { $sum: "$credit" },
+                                amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
+                                numberOfProducts: { $sum: "$numberOfProducts" },
+                            }
+                        }
+
+                        // Theo ngày trong tuần
+                        if(optionTime && Number(optionTime) == 4){
+                            conditionGroup = {
+                                _id: { dayOfWeek: "$dayOfWeek" },
+                                quantity: { $sum: 1 },
+                                total: { $sum: "$total" },
+                                discount: { $sum: "$discount" },
+                                salesoff: { $sum: "$salesoff" },
+                                credit: { $sum: "$credit" },
+                                amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
+                                numberOfProducts: { $sum: "$numberOfProducts" },
+                            }
+                        }
+
+                        // Theo ngày trong tháng
+                        if(optionTime && Number(optionTime) == 5){
+                            conditionGroup = {
+                                _id: { day: "$day" },
+                                quantity: { $sum: 1 },
+                                total: { $sum: "$total" },
+                                discount: { $sum: "$discount" },
+                                salesoff: { $sum: "$salesoff" },
+                                credit: { $sum: "$credit" },
                                 amount: { $sum: "$amount" },
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1531,6 +1563,7 @@ class Model extends BaseModel {
                             total: { $sum: "$total" },
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1581,6 +1614,7 @@ class Model extends BaseModel {
                             total: { $sum: "$total" },
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1603,6 +1637,7 @@ class Model extends BaseModel {
                             total: { $sum: "$total" },
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1658,6 +1693,8 @@ class Model extends BaseModel {
                             $project : {
                                 year : {$year : "$createAt"},
                                 month : {$month : "$createAt"},
+                                day: { $dayOfMonth: "$createAt" },
+                                dayOfWeek: { $dayOfWeek: "$createAt" },
                                 hour : {$hour : "$createAt"},
                                 funda : 1,
                                 customer : 1,
