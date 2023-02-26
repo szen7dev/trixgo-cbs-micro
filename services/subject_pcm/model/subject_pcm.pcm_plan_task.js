@@ -511,6 +511,12 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
+        // console.log({ typeUpdate,
+        //     taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -2522,6 +2528,7 @@ class Model extends BaseModel {
      * Depv
      */
     sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, emails, userID, ctx }) {
+        console.log({ taskID, title, notice, sender, receivers, emails, userID })
         return new Promise(async resolve => {
             try {
                 let infoTask = await PCM_PLAN_TASK_COLL
