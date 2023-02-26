@@ -18,8 +18,8 @@ const moment = require("moment");
  * import inter-coll, exter-coll
  */
 const USER_COLL                                = require('../../auth/database/auth.user-coll');
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
-const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll');
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
+const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
@@ -39,7 +39,7 @@ const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
-const {
+const { 
     FNB_FACTOR,
     FNB_NEW,
     FNB_NON_RESIDENT,
@@ -64,6 +64,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
+        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -91,8 +92,7 @@ class Model extends BaseModel {
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda)
                     return resolve({ error: true, message: 'cannot_get_infoFunda' });
-                // console.log(infoFunda)
-
+                    
                 // Thông tin ca làm việc
                 let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
                 if (!infoShift)
@@ -252,14 +252,6 @@ class Model extends BaseModel {
                         dataInsert.salesoff = Number(salesoff)
                         amount = Number(amount) - Number(salesoff)
                     }
-
-                    // Nếu không có giảm giá
-                    else{
-                        // Nếu có tích điểm
-                        if(!isNaN(credit)){
-                            dataInsert.credit = Number(credit)
-                            amount = Number(amount) - Number(credit)
-                        }
 
                     // // Khách biết thông tin
                     // if(infoCustomer.nonResident == 1){
@@ -459,87 +451,87 @@ class Model extends BaseModel {
 
                 // Kênh bán hàng, size, doanh số và số sản phẩm
                 if(!isNaN(salesChannel) && Number(salesChannel) === 1){
-                    dataUpdateFw.$inc = {
-                        "total": Number(total),
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity,
-                        "numberOfOrders": 1,
-                        "numberOfOrders1": 1,
-                        "total1": Number(total),
-                        "numberOfSizeM": Number(totalSizeM),
-                        "numberOfSizeL": Number(totalSizeL),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders1": 1, 
+                        "total1": Number(total), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 2){
-                    dataUpdateFw.$inc = {
-                        "total": Number(total),
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity,
-                        "numberOfOrders": 1,
-                        "numberOfOrders2": 1,
-                        "total2": Number(total),
-                        "numberOfSizeM": Number(totalSizeM),
-                        "numberOfSizeL": Number(totalSizeL),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders2": 1, 
+                        "total2": Number(total), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 3){
-                    dataUpdateFw.$inc = {
-                        "total": Number(total),
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity,
-                        "numberOfOrders": 1,
-                        "numberOfOrders3": 1,
-                        "total3": Number(total),
-                        "numberOfSizeM": Number(totalSizeM),
-                        "numberOfSizeL": Number(totalSizeL),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders3": 1, 
+                        "total3": Number(total), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 4){
-                    dataUpdateFw.$inc = {
-                        "total": Number(total),
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity,
-                        "numberOfOrders": 1,
-                        "numberOfOrders4": 1,
-                        "total4": Number(total),
-                        "numberOfSizeM": Number(totalSizeM),
-                        "numberOfSizeL": Number(totalSizeL),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders4": 1, 
+                        "total4": Number(total), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 5){
-                    dataUpdateFw.$inc = {
-                        "total": Number(total),
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity,
-                        "numberOfOrders": 1,
-                        "numberOfOrders5": 1,
-                        "total5": Number(total),
-                        "numberOfSizeM": Number(totalSizeM),
-                        "numberOfSizeL": Number(totalSizeL),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders5": 1, 
+                        "total5": Number(total), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 6){
-                    dataUpdateFw.$inc = {
-                        "total": Number(total),
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity,
-                        "numberOfOrders": 1,
-                        "numberOfOrders6": 1,
-                        "total6": Number(total),
-                        "numberOfSizeM": Number(totalSizeM),
-                        "numberOfSizeL": Number(totalSizeL),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders6": 1, 
+                        "total6": Number(total), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 7){
-                    dataUpdateFw.$inc = {
-                        "total": Number(total),
+                    dataUpdateFw.$inc = { 
+                        "total": Number(total), 
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity,
-                        "numberOfOrders": 1,
-                        "numberOfOrders7": 1,
-                        "total7": Number(total),
-                        "numberOfSizeM": Number(totalSizeM),
-                        "numberOfSizeL": Number(totalSizeL),
+                        "numberOfProducts": totalQuantity, 
+                        "numberOfOrders": 1, 
+                        "numberOfOrders7": 1, 
+                        "total7": Number(total), 
+                        "numberOfSizeM": Number(totalSizeM), 
+                        "numberOfSizeL": Number(totalSizeL), 
                     }
                 }
 
@@ -553,7 +545,7 @@ class Model extends BaseModel {
                 }
 
                 // console.log(dataUpdateFw)
-
+                
                 /**
                  * CẬP NHẬT VÀO ĐIỂM BÁN/CƠ SỞ
                  * - Số lượng đơn hàng
@@ -586,9 +578,8 @@ class Model extends BaseModel {
                 await that.updateCustomer({ customerID, userID })
 
                 return resolve({ error: false, data: infoAfterInsert });
-                }
-            } catch(error) {
-                return resolve({ error: true, message: error.message });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
             }
         });
     }
@@ -605,7 +596,7 @@ class Model extends BaseModel {
             try {
                 /**
                  * BA
-                 * 1-CẬP NHẬT ĐƠN HÀNG:
+                 * 1-CẬP NHẬT ĐƠN HÀNG: 
                  * - Hủy đơn
                  * - Phương thức thanh toán
                  * - Kênh bán hàng => Đồng thời cập nhật Phương thức thanh toán
@@ -625,11 +616,11 @@ class Model extends BaseModel {
                  */
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-
+                
                 let infoOrder = await FNB_ORDER_COLL.findById(orderID)
                 if(!infoOrder)
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-
+                
                 let oldCustomerID = infoOrder.customer;
                 let oldSalesChannel = infoOrder.salesChannel
 
@@ -649,7 +640,7 @@ class Model extends BaseModel {
                 if(!isNaN(status)){
                     dataInUpdate.status = Number(status)
                 }
-
+            
                 /**
                  * CẬP NHẬT PHƯƠNG THỨC THANH TOÁN
                  */
@@ -733,8 +724,11 @@ class Model extends BaseModel {
 
                 // 3. Cập nhật vào khách hàng: MỚI VÀ CŨ
                 if(customerID && checkObjectIDs(customerID)){
-                    await that.updateCustomer({ customerID, userID })
-                    await that.updateCustomer({ customerID: oldCustomerID, userID })
+                    // console.log('============111111111111111-KHÁCH HÀNG MỚI=============>>>>>>>>>')
+                    await that.updateCustomer({ customerID, userID }) 
+
+                    // console.log('============222222222222222-KHÁCH HÀNG CŨ=============>>>>>>>>>')
+                    await that.updateCustomer({ customerID: oldCustomerID, userID }) 
 
                     // Cập nhật đơn hàng, sản phẩm
                     await FNB_ORDER_PRODUCT_COLL.updateMany(
@@ -820,7 +814,7 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(shiftID))
                     return resolve({ error: true, message: 'shiftID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-
+                
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
@@ -993,15 +987,15 @@ class Model extends BaseModel {
                 dataInUpdate.total4 = Number(total4)
                 dataInUpdate.total5 = Number(total5)
                 dataInUpdate.total6 = Number(total6)
-                dataInUpdate.total7 = Number(total7)
-
+                dataInUpdate.total7 = Number(total7)                
+                
                 // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
-                return resolve({ error: false, data: infoAfterUpdate });
+                return resolve({ error: false, data: infoAfterUpdate });            
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -1019,6 +1013,7 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
@@ -1128,7 +1123,7 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                return resolve({ error: false, data: infoAfterUpdate });
+                return resolve({ error: false, data: infoAfterUpdate }) 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -1356,7 +1351,6 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                console.log({ conditionObj, funda: conditionObj.funda.$in })
                 let infoDataAfterGet = await FNB_ORDER_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
@@ -1774,13 +1768,13 @@ class Model extends BaseModel {
                             {
                                 $match: conditionObjYear
                             },
-                            {
+                            { 
                                 $lookup: {
                                     from: "users",
                                     localField: "assignee",
                                     foreignField: "_id",
                                     as: "assignee"
-                                }
+                                }  
                             },
                             {
                                 $unwind: "$assignee"
@@ -1823,7 +1817,7 @@ class Model extends BaseModel {
                     yearFilter = Number(currentYear)
                 }
 
-                let conditionObj = {
+                let conditionObj = { 
                     company: ObjectID(companyID),
                     status: 5,
                     avgTotalPerStaff: {$exists: true, $ne: null},
@@ -1848,7 +1842,7 @@ class Model extends BaseModel {
                     localField: "assignee",
                     foreignField: "_id",
                     as: "staff"
-                }
+                } 
                 let conditionGroup = {}
                 let conditionPopulate = {}, sortBy = {"avgQuantityPerStaff": -1}
 
@@ -2003,8 +1997,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear1
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2018,7 +2012,7 @@ class Model extends BaseModel {
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR1, conditionPopulate)
                 // console.log(listDataR1)
-
+                
                 let listDataR2 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -2029,8 +2023,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear2
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2043,7 +2037,7 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR2, conditionPopulate)
-
+                
                 let listDataR3 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -2054,8 +2048,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear3
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2068,7 +2062,7 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR3, conditionPopulate)
-
+                
                 let listDataR4 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -2079,8 +2073,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear4
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2093,7 +2087,7 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR4, conditionPopulate)
-
+                
                 let listDataR5 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -2104,8 +2098,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear5
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2129,8 +2123,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear6
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2153,8 +2147,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear7
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2167,7 +2161,7 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR7, conditionPopulate)
-
+                
                 let listDataR8 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -2178,8 +2172,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear8
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2192,7 +2186,7 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR8, conditionPopulate)
-
+                
                 let listDataR9 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -2203,8 +2197,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear9
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2217,7 +2211,7 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR9, conditionPopulate)
-
+                
                 let listDataR10 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -2228,8 +2222,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear10
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2242,7 +2236,7 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_SHIFT_COLL.populate(listDataR10, conditionPopulate)
-
+                
                 let listDataR11 = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -2253,8 +2247,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear11
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2278,8 +2272,8 @@ class Model extends BaseModel {
                     {
                         $match: conditionObjYear12
                     },
-                    {
-                        $lookup: lookupObj
+                    { 
+                        $lookup: lookupObj 
                     },
                     {
                         $unwind: "$staff"
@@ -2304,7 +2298,7 @@ class Model extends BaseModel {
                         workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T1").row(i).cell(5).value(item?.number);
                         workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2316,7 +2310,7 @@ class Model extends BaseModel {
                         workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T2").row(i).cell(5).value(item?.number);
                         workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2328,7 +2322,7 @@ class Model extends BaseModel {
                         workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T3").row(i).cell(5).value(item?.number);
                         workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2340,7 +2334,7 @@ class Model extends BaseModel {
                         workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T4").row(i).cell(5).value(item?.number);
                         workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2352,7 +2346,7 @@ class Model extends BaseModel {
                         workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T5").row(i).cell(5).value(item?.number);
                         workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2364,7 +2358,7 @@ class Model extends BaseModel {
                         workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T6").row(i).cell(5).value(item?.number);
                         workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2376,7 +2370,7 @@ class Model extends BaseModel {
                         workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T1").row(i).cell(5).value(item?.number);
                         workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2388,7 +2382,7 @@ class Model extends BaseModel {
                         workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T2").row(i).cell(5).value(item?.number);
                         workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2400,7 +2394,7 @@ class Model extends BaseModel {
                         workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T3").row(i).cell(5).value(item?.number);
                         workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2412,7 +2406,7 @@ class Model extends BaseModel {
                         workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T4").row(i).cell(5).value(item?.number);
                         workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2424,7 +2418,7 @@ class Model extends BaseModel {
                         workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T5").row(i).cell(5).value(item?.number);
                         workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2436,7 +2430,7 @@ class Model extends BaseModel {
                         workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
                         workbook.sheet("T6").row(i).cell(5).value(item?.number);
                         workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
-
+                        
                         i++
                     });
 
@@ -2451,11 +2445,13 @@ class Model extends BaseModel {
                         for(var m=1; m<=12; m++){
                             listDataContact?.forEach((contact) => {
                                 if(contact._id.funda.toString() === item._id.toString() && Number(contact._id.month) === Number(m)){
-                                    workbook.sheet("Contact").row(i).cell(m+2).value(contact?.number);
+                                    workbook.sheet("Contact").row(i).cell(m+2).value(contact?.number); 
                                 }
                             })
                         }
 
+                        workbook.sheet("Contact").row(i).cell(16).value(`${item._id}`);
+                        
                         i++
                     });
 
@@ -2470,7 +2466,7 @@ class Model extends BaseModel {
                         workbook.sheet("Err").row(i).cell(4).value(item?._id.month);
                         workbook.sheet("Err").row(i).cell(5).value(item?.number);
                         workbook.sheet("Err").row(i).cell(6).value(item?.amount);
-
+                        
                         i++
                     });
 
@@ -2550,7 +2546,7 @@ class Model extends BaseModel {
                         workbook.sheet("Order").row(i).cell(20).value(item.note);
                         i++
                     });
-
+                   
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
                     const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
@@ -2634,56 +2630,6 @@ class Model extends BaseModel {
             try {
                 if(password.toString() != `noPass12345${email}`)
                     return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
-
-                // if(option == 1){
-                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 2){
-                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 3){
-                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 4){
-                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 5){
-                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 6){
-                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 7){
-                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 8){
-                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 9){
-                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
-                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
-                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
-                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
-                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
-                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
-                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
-                // }
-
-                // if(option == 10){
-                //     await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
-                // }
-
                 /**
                  * CẬP NHẬT TÍCH ĐIỂM
                  * Convert dữ liệu cũ, mới
