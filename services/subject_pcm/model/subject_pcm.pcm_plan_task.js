@@ -1035,12 +1035,13 @@ class Model extends BaseModel {
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
                 }
+                let { name: taskName } = infoAfterUpdate;
 
                 if(status) {
                     const { author, assignee, related } = infoTask;
                     const relatedIDs = related?.map(userId => userId.toString());
                     const receivers = [...new Set([author?.toString(), assignee._id?.toString(), ...relatedIDs])]
-                    receiversNoti = receivers.filter(userId => userId !== userID.toString());
+                    const receiversNoti = receivers.filter(userId => userId !== userID.toString());
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: receiversNoti,
@@ -1071,7 +1072,6 @@ class Model extends BaseModel {
                      * Thêm người liên quan trong công việc
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
-                    let { name: taskName } = infoAfterUpdate;
 
                     const amountNoti = await this.getAmountNotification({ userID });
 

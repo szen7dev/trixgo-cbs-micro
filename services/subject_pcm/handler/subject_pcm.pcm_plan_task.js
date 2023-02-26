@@ -103,13 +103,6 @@ module.exports = {
             assigneeAttachs     : { type: "array", optional: true },
             milestone           : { type: "number", optional: true },
             subType             : { type: "number", optional: true },
-            // unit                : { type: "string", optional: true },
-            // unitPrice           : { type: "string", optional: true },
-            // quantity            : { type: "string", optional: true },
-            // amountoftime        : { type: "string", optional: true },
-            // ontime              : { type: "number", optional: true },
-            // quality             : { type: "number", optional: true },
-            // judgement           : { type: "string", optional: true },
             isUpdateNews        : { type: "boolean", optional: true },
         },
         async handler(ctx) {
@@ -121,18 +114,9 @@ module.exports = {
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, amountoftime,
-                    ontime, quality
+                    ontime, quality, usersDeleteID
                  } = ctx.params;
 				const { _id: userID, bizfullname, fullname, email, company } = ctx.meta.infoUser;
-                // console.log({ userID,bizfullname, fullnameUpdate, email, company });
-                console.log('========================Update cong viec============')
-
-                // console.log(typeUpdate,
-                //     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
-                //     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
-                //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
-                //     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, amountoftime,
-                //     ontime, quality)
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
@@ -140,7 +124,7 @@ module.exports = {
                     contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email }, unit, unitPrice, quantity,
-                    companyOfUser: company._id, milestone, alert, groupID, ontime, quality, fullnameUpdate: fullname, ctx
+                    companyOfUser: company._id, milestone, alert, groupID, ontime, quality, fullnameUpdate: fullname, usersDeleteID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
