@@ -14,6 +14,7 @@ const CF_ACTIONS_FILE = {
     GET_INFO_FILE                      : `${BASE_ACTIONS}_${CORE}_GET_INFO_FILE`,
     
     GENERATE_LINK_S3                   : `${BASE_ACTIONS}_${CORE}_GENERATE_LINK_S3`,
+    DOWNLOAD_FILE_BY_URL               : `${BASE_ACTIONS}_${CORE}_DOWNLOAD_FILE_BY_URL`,
 } 
 
 exports.CF_ACTIONS_FILE = CF_ACTIONS_FILE;

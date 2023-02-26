@@ -56,7 +56,7 @@ class Model extends BaseModel {
                  //let usernameValid   = username.toLowerCase().trim();
                  let objectExitsUser = {};
 
-                 let listPlatformValid                    = [PLATFORM_TRIXGO, PLATFORM_WYNDIX];
+                 let listPlatformValid                    = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB];
                  let listLevelValid                       = [LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE];
                  /**
                  * VALIDATION STEP (2)
@@ -401,7 +401,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let listPlatformValid = [PLATFORM_TRIXGO, PLATFORM_WYNDIX];
+                let listPlatformValid = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB];
 
                 /**
                  * VALIDATION STEP (2)
