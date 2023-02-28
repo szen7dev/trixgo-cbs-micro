@@ -2498,7 +2498,8 @@ class Model extends BaseModel {
         console.log({ companyID, option, year, month, userID })
         return new Promise(async resolve => {
             try {
-                if(!option){
+                if(!option || option == undefined){
+                    console.log('=========11111111111111=============')
                     let listData  = await FNB_ORDER_COLL.find({ company: companyID })
                     .populate({
                         path: "funda",
@@ -2521,7 +2522,7 @@ class Model extends BaseModel {
                     }
     
                     // Modify the workbook.
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
                     .then(async workbook => {
                         var i = 3;
                         listData?.forEach((item, index) => {
@@ -2560,6 +2561,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     })
                 }else{
+                    console.log('=========2222222222222=============')
                     if(option == 1){
                         // console.log('=========Hồ sơ thanh toán=============')
                         let yearFilter
@@ -2626,7 +2628,7 @@ class Model extends BaseModel {
                                 $sort: sortBy
                             }
                         ])
-                        console.log(listData)
+                        // console.log(listData)
                         let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
                         // console.log(listFuda)
                         // console.log( listFuda.length)
