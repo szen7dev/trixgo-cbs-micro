@@ -1019,7 +1019,7 @@ class Model extends BaseModel {
                             $sort: sortBy
                         }
                     ])
-                    console.log(listDataTimesheet1)
+                    // console.log(listDataTimesheet1)
                     // console.log(listDataTimesheet2)
     
                     let listData3 = [...listData1, ...listData2]
@@ -1029,7 +1029,7 @@ class Model extends BaseModel {
                         path: 'department',
                         select: '_id name',
                     })
-                    console.log(listStaffs)   
+                    // console.log(listStaffs)   
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary.xlsx')))

@@ -324,13 +324,13 @@ module.exports = {
         auth: 'required',
         params: {
             companyID: { type: "string", optional: true },
-            // option: { type: "string", optional: true },
+            option: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID, option } = ctx.params;
+                let { companyID, option, month, year } = ctx.params;
                 // console.log({ companyID, option })
 
                 if(!companyID) {
@@ -338,7 +338,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel2({
-                    userID, companyID, option, ctx
+                    userID, companyID, option, month, year, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

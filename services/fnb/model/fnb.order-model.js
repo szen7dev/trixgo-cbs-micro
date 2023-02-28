@@ -2778,80 +2778,80 @@ class Model extends BaseModel {
                  * Convert dữ liệu cũ, mới
                  * Từ đơn hàng sẽ tính ra được Credit mà khách đã sử dụng -> Tổng hợp theo mã khách -> Cập nhật vào danh bạ
                  */
-                if(option == 1){
-                    await FNB_ORDER_COLL.updateMany(
-                        { 
-                            company: companyID,
-                            status: 5, // Chỉ đơn hoàn thành
-                            salesChannel: 1, // Kênh offline
-                         }, 
-                        [{
-                            $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
-                        }], 
-                        {"multi": true}
-                    )
+                // if(option == 1){
+                //     await FNB_ORDER_COLL.updateMany(
+                //         { 
+                //             company: companyID,
+                //             status: 5, // Chỉ đơn hoàn thành
+                //             salesChannel: 1, // Kênh offline
+                //          }, 
+                //         [{
+                //             $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
+                //         }], 
+                //         {"multi": true}
+                //     )
 
-                    // Reset về 0 -> Bắt đầu từ đầu
-                    await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
-                        [{
-                            $set: {
-                                purchasedOffValue: 0,
-                                totalLoyaltyPoints: 0,
-                                usedLoyaltyPoints: 0,
-                                remainLoyaltyPoints: 0,
-                            }
-                        }], 
-                        {"multi": true}
-                    )
-                }
+                //     // Reset về 0 -> Bắt đầu từ đầu
+                //     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
+                //         [{
+                //             $set: {
+                //                 purchasedOffValue: 0,
+                //                 totalLoyaltyPoints: 0,
+                //                 usedLoyaltyPoints: 0,
+                //                 remainLoyaltyPoints: 0,
+                //             }
+                //         }], 
+                //         {"multi": true}
+                //     )
+                // }
 
                 /**
                  * CẬP NHẬT TÍCH ĐIỂM THEO TỪNG CƠ SỞ
                  * Convert dữ liệu cũ, mới
                  */
-                if(option == 2 && fundaID){
-                    // Chỉ lấy các khách hàng đã mua hàng
-                    let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID, purchasedValue: {$gt: 0} }).select('_id').sort({_id: 1})
-                    var i = 1
-                    for(const item of listData){
-                        if(page && Number(page)>0){
-                            if(page == 1){
-                                if(i<=500){
-                                    await that.convertDataCustomer({ customerID: item._id, userID })
-                                }
-                            }
-                            if(page == 2){
-                                if(i>500 && i<=1000){
-                                    await that.convertDataCustomer({ customerID: item._id, userID })
-                                }
-                            }
-                            if(page == 3){
-                                if(i>1000 && i<=1500){
-                                    await that.convertDataCustomer({ customerID: item._id, userID })
-                                }
-                            }
-                            if(page == 4){
-                                if(i>1500 && i<=2000){
-                                    await that.convertDataCustomer({ customerID: item._id, userID })
-                                }
-                            }
-                            if(page == 5){
-                                if(i>2000 && i<=2500){
-                                    await that.convertDataCustomer({ customerID: item._id, userID })
-                                }
-                            }
-                            if(page == 6){
-                                if(i>2500){
-                                    await that.convertDataCustomer({ customerID: item._id, userID })
-                                }
-                            }
+                // if(option == 2 && fundaID){
+                //     // Chỉ lấy các khách hàng đã mua hàng
+                //     let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID, purchasedValue: {$gt: 0} }).select('_id').sort({_id: 1})
+                //     var i = 1
+                //     for(const item of listData){
+                //         if(page && Number(page)>0){
+                //             if(page == 1){
+                //                 if(i<=500){
+                //                     await that.convertDataCustomer({ customerID: item._id, userID })
+                //                 }
+                //             }
+                //             if(page == 2){
+                //                 if(i>500 && i<=1000){
+                //                     await that.convertDataCustomer({ customerID: item._id, userID })
+                //                 }
+                //             }
+                //             if(page == 3){
+                //                 if(i>1000 && i<=1500){
+                //                     await that.convertDataCustomer({ customerID: item._id, userID })
+                //                 }
+                //             }
+                //             if(page == 4){
+                //                 if(i>1500 && i<=2000){
+                //                     await that.convertDataCustomer({ customerID: item._id, userID })
+                //                 }
+                //             }
+                //             if(page == 5){
+                //                 if(i>2000 && i<=2500){
+                //                     await that.convertDataCustomer({ customerID: item._id, userID })
+                //                 }
+                //             }
+                //             if(page == 6){
+                //                 if(i>2500){
+                //                     await that.convertDataCustomer({ customerID: item._id, userID })
+                //                 }
+                //             }
                            
-                            i++
-                        }else{
-                            await that.convertDataCustomer({ customerID: item._id, userID })
-                        }
-                    }
-                }
+                //             i++
+                //         }else{
+                //             await that.convertDataCustomer({ customerID: item._id, userID })
+                //         }
+                //     }
+                // }
 
                  /**
                  * CẬP NHẬT LỖI
