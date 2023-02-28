@@ -324,7 +324,7 @@ module.exports = {
         auth: 'required',
         params: {
             companyID: { type: "string", optional: true },
-            option: { type: "string", optional: true },
+            // option: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
