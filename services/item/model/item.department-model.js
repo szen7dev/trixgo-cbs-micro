@@ -1015,7 +1015,7 @@ class Model extends BaseModel {
      */
     getListByMembers({ companyID, keyword, type, userID, limit = 20, isBudget, unLimit, lastestID, select, populates={} }) {
         console.log('==============Danh mục dự án mà user là MEMBER')
-        // console.log({ companyID, keyword, type, userID, isBudget, limit, lastestID, select, populates })
+        // console.log({ companyID, keyword, type, userID, isBudget, limit })
         return new Promise(async (resolve) => {
             try {
                 /**

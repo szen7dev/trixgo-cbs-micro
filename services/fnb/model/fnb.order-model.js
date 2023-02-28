@@ -2494,71 +2494,188 @@ class Model extends BaseModel {
      * Func: Tải Đơn hàng
      * Date: 4/2/2023
      */
-    exportExcel2({ companyID, year, month, userID }) {
-        // console.log({ companyID, year, month, userID })
+    exportExcel2({ companyID, option, year, month, userID }) {
+        console.log({ companyID, option, year, month, userID })
         return new Promise(async resolve => {
             try {
-                let listData  = await FNB_ORDER_COLL.find({ company: companyID })
-                .populate({
-                    path: "funda",
-                    select: "name sign",
-                })
-                .populate({
-                    path: "shift",
-                    select: "name sign",
-                })
-                .limit(5000)
-                .sort({createAt: -1})
-                // console.log(listData)
-
-                let yearFilter
-                let currentYear = new Date().getFullYear()
-                if(year && !isNaN(year)){
-                    yearFilter = Number(year)
+                if(!option){
+                    let listData  = await FNB_ORDER_COLL.find({ company: companyID })
+                    .populate({
+                        path: "funda",
+                        select: "name sign",
+                    })
+                    .populate({
+                        path: "shift",
+                        select: "name sign",
+                    })
+                    .limit(5000)
+                    .sort({createAt: -1})
+                    // console.log(listData)
+    
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
+    
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
+                    .then(async workbook => {
+                        var i = 3;
+                        listData?.forEach((item, index) => {
+                            workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
+                            workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                            workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
+                            workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
+                            workbook.sheet("Order").row(i).cell(6).value(item.name);
+                            workbook.sheet("Order").row(i).cell(7).value(item.sign);
+                            workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
+                            workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
+                            workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
+                            workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
+                            workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
+                            workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
+                            workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
+                            workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
+                            workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
+                            workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
+                            workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
+                            workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
+                            workbook.sheet("Order").row(i).cell(20).value(item.note);
+                            i++
+                        });
+                       
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    })
                 }else{
-                    yearFilter = Number(currentYear)
+                    if(option == 1){
+                        // console.log('=========Hồ sơ thanh toán=============')
+                        let yearFilter
+                        let currentYear = new Date().getFullYear()
+                        if(year && !isNaN(year)){
+                            yearFilter = Number(year)
+                        }else{
+                            yearFilter = Number(currentYear)
+                        }
+                        let conditionObjYear = {
+                            "year": Number(yearFilter),
+                        }
+                        let conditionObj = { 
+                            company: ObjectID(companyID),
+                            status: 5
+                        }
+                        let projectObj =  {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            company : 1,
+                            funda : 1,
+                            createAt: 1,
+                            total: 1,
+                            discount: 1,
+                            salesoff: 1,
+                            credit: 1,
+                            amount: 1,
+                            salesChannel: 1
+                        }
+                        let sortBy = {"_id.salesChannel": 1}
+                        let conditionGroup = {}, conditionPopulate = {}
+
+                        conditionGroup = {
+                            _id: {  salesChannel: "$salesChannel", funda: "$funda", month: "$month" },
+                            number: { $sum: 1 },
+                            total: { $sum: "$total" },
+                        }
+        
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name',
+                            model: 'funda'
+                        }
+                        
+                        let listData = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : projectObj
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            }
+                        ])
+                        // console.log(listData)
+                        let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
+                        // console.log(listFuda)
+                        // console.log( listFuda.length)
+
+                        // Modify the workbook.
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
+                        .then(async workbook => {
+                            for(var m = 1; m<=12; m++){
+                                var i = 3
+                                    listFuda?.forEach((item, index) => {
+                                    workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet(`T${m}`).row(i).cell(2).value(item.name)
+                                    workbook.sheet(`T${m}`).row(i).cell(3).value(`${item._id}`)
+                                    i++
+                                })
+                            }
+
+                            listData?.forEach((item, index) => {
+                                for(var m = 1; m<=12; m++){
+                                    if(Number(item._id.month) === Number(m)){
+                                        for(var i=3; i<=Number(listFuda.length + 2); i++){
+                                            
+                                            let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
+                                            // console.log( fundaID.toString())
+                                            // console.log( fundaID)
+                                            
+                                            if((item._id.funda.toString() === fundaID.toString())){      
+                                                
+                                                // Food App
+                                                for(var j=4; j<=10; j++){                                                
+                                                    if((Number(item._id.salesChannel) === Number(j-3))){        
+                                                        workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.total))
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                        
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `BaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+        
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+        
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
+                    }
                 }
-
-                // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
-                .then(async workbook => {
-                    var i = 3;
-                    listData?.forEach((item, index) => {
-                        workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                        workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                        workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-                        workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(6).value(item.name);
-                        workbook.sheet("Order").row(i).cell(7).value(item.sign);
-                        workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-                        workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-                        workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-                        workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-                        workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                        workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
-                        workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
-                        workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
-                        workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
-                        workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
-                        workbook.sheet("Order").row(i).cell(20).value(item.note);
-                        i++
-                    });
-                   
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
-                });
-
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
