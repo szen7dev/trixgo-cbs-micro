@@ -2654,7 +2654,7 @@ class Model extends BaseModel {
                                             
                                             if((item._id.funda.toString() === fundaID.toString())){  
                                                 
-                                                amount = Number(amount) + Number(item.amount)
+                                                // amount = Number(amount) + Number(item.amount)
                                                 
                                                 // Tổng hợp số liệu
                                                 // discount = Number(discount) + Number(item.discount)

@@ -383,8 +383,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
-        console.log({ option, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
+    getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
+        // console.log({ option, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -392,6 +392,7 @@ class Model extends BaseModel {
 
                 }else{
                     let conditionObj = {
+                        company: ObjectID(companyID),
                         mistake: { $exists: true, $ne: null }
                     }
                     let conditionGroup = {}
@@ -549,7 +550,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    console.log(conditionObj)
+                    // console.log(conditionObj)
                     // console.log(conditionPopulate)
                     // console.log(conditionObjYear)
                     // console.log(conditionGroup)
