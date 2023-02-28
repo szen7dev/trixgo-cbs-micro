@@ -253,11 +253,6 @@ class Model extends BaseModel {
                         amount = Number(amount) - Number(salesoff)
                     }
 
-                    // // Khách biết thông tin
-                    // if(infoCustomer.nonResident == 1){
-                      
-                    // }
-
                     // Nếu có tích điểm
                     if(!isNaN(credit)){
                         dataInsert.credit = Number(credit)
@@ -268,13 +263,13 @@ class Model extends BaseModel {
                      * Chính sách tích điểm => Mở chính thức vào 1/3/2023
                      */
                     let factor = 0
-                    if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level2.purchasedValue)){
+                    if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level2.purchasedOffValue)){
                         factor = Number(FNB_FACTOR.credit.level1.factor)
                     }else{
-                        if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level3.purchasedValue)){
+                        if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level3.purchasedOffValue)){
                             factor = Number(FNB_FACTOR.credit.level2.factor)
                         }else{
-                            if(Number(infoCustomer.purchasedValue) < Number(FNB_FACTOR.credit.level4.purchasedValue)){
+                            if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level4.purchasedOffValue)){
                                 factor = Number(FNB_FACTOR.credit.level3.factor)
                             }else{
                                 factor = Number(FNB_FACTOR.credit.level4.factor)
@@ -543,7 +538,6 @@ class Model extends BaseModel {
                 if(!isNaN(paymentMethod) && Number(paymentMethod) === 2){
                     dataUpdateFw.$inc.transferAmount = Number(amount)
                 }
-
                 // console.log(dataUpdateFw)
                 
                 /**
@@ -739,7 +733,7 @@ class Model extends BaseModel {
                      )
                 }
 
-                // Cập nhật thông tin cho khách hàng (áp dụng khi cập nhật trạng thái)
+                // 4. Cập nhật thông tin cho khách hàng (áp dụng khi cập nhật trạng thái)
                 if(!isNaN(status)){
                     await that.updateCustomer({ customerID: oldCustomerID, userID }) 
                 }         
@@ -1017,6 +1011,7 @@ class Model extends BaseModel {
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
+                let total = 0
                 let purchasedValue = 0
                 let purchasedOffValue = 0
                 let totalLoyaltyPoints = 0
@@ -1037,7 +1032,8 @@ class Model extends BaseModel {
                         $group: {
                             _id: { },
                             quantity: { $sum: 1 },
-                            amount: { $sum: "$amount" }
+                            total: { $sum: "$total" },
+                            amount: { $sum: "$amount" },
                         }
                     }
                 ])
@@ -1065,16 +1061,15 @@ class Model extends BaseModel {
                         $match: {
                             customer: ObjectID(customerID),
                             status: 5, // Đơn đã hoàn thành
-                            salesChannel: 1, // Kênh offline 
-                            // nonResident: 1, // Khách biết thông tin
+                            salesChannel: 1, // Kênh offline
                         }
                     },
                     {
                         $group: {
                             _id: { },
                             amount: { $sum: "$amount" },
-                            credit: { $sum: "$credit" }, // Điểm đã sử dụng
-                            loyaltyPoints: { $sum: "$loyaltyPoints" }, // Điểm tích lũy
+                            loyaltyPoints: { $sum: "$loyaltyPoints" }, // Điểm tích lũy sau mỗi đơn hàng
+                            credit: { $sum: "$credit" }, // Điểm đã sử dụng để trừ giảm giá
                         }
                     }
                 ])
@@ -1083,8 +1078,10 @@ class Model extends BaseModel {
                 // console.log(listData2)
                 // console.log(listData3)
 
+                // Đơn hàng đã mua
                 if(listData1 && listData1.length){
                     numberOfOrders = Number(listData1[0].quantity)
+                    total = Number(listData1[0].total)
                     purchasedValue = Number(listData1[0].amount)
 
                     if(numberOfOrders > 1){
@@ -1094,9 +1091,11 @@ class Model extends BaseModel {
                     }
 
                     dataInUpdate.numberOfOrders = Number(numberOfOrders)
+                    dataInUpdate.total = Number(total)
                     dataInUpdate.purchasedValue = Number(purchasedValue)
                 }
 
+                // Đơn hàng đã hủy
                 if(listData2 && listData2.length){
                     numberOfCancelOrders = Number(listData2[0].quantity)
                     totalOfCancelOrders = Number(listData2[0].total)
@@ -1105,6 +1104,7 @@ class Model extends BaseModel {
                     dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
                 }
 
+                // Tích điểm
                 if(listData3 && listData3.length){
                     // Giá trị thanh toán đơn Off hoàn thành
                     purchasedOffValue = Number(listData3[0].amount)
@@ -1127,7 +1127,7 @@ class Model extends BaseModel {
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
-        });
+        })
     }
 
     /**
@@ -1147,21 +1147,20 @@ class Model extends BaseModel {
                 let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
                 let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
 
-                // Đơn hàng được tích điểm (đơn off)
+                // Chỉ lấy đơn hàng Off đã hoàn thành để cập nhật tích điểm cho khách hàng
                 let listData = await FNB_ORDER_COLL.aggregate([
                     {
                         $match: {
                             customer: ObjectID(customerID),
                             status: 5, // Đơn đã hoàn thành
                             salesChannel: 1, // Kênh offline
-                            // nonResident: 1, // Khách biết thông tin
                         }
                     },
                     {
                         $group: {
                             _id: { },
-                            loyaltyPoints: { $sum: "$loyaltyPoints" },
-                            amount: { $sum: "$amount" }
+                            amount: { $sum: "$amount" },
+                            loyaltyPoints: { $sum: "$loyaltyPoints" }
                         }
                     }
                 ])
@@ -2785,7 +2784,6 @@ class Model extends BaseModel {
                             company: companyID,
                             status: 5, // Chỉ đơn hoàn thành
                             salesChannel: 1, // Kênh offline
-                            // nonResident: 1, // Khách biết thông tin
                          }, 
                         [{
                             $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
@@ -2797,6 +2795,8 @@ class Model extends BaseModel {
                     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
                         [{
                             $set: {
+                                total: 0, //
+                                purchasedValue: 0, //
                                 purchasedOffValue: 0,
                                 totalLoyaltyPoints: 0,
                                 usedLoyaltyPoints: 0,

@@ -1,10 +1,10 @@
 exports.FNB_FACTOR = {
     // Tỷ lệ tích điểm cho đơn off (%)
     credit: {
-        level1: { purchasedValue: 0, factor: 3 }, // Thông thường
-        level2: { purchasedValue: 1000000, factor: 3 }, // Bạc (tuần mua 1 lần/mua trong 6 tháng)
-        level3: { purchasedValue: 2000000, factor: 3 }, // Vàng (tuần mua 2 lần/mua trong 6 tháng)
-        level4: { purchasedValue: 5000000, factor: 3 }, // Kim Cương (ngày mua 1 lần/mua trong 6 tháng)
+        level1: { purchasedOffValue: 0, factor: 3 }, // Thông thường
+        level2: { purchasedOffValue: 1000000, factor: 3 }, // Bạc (tuần mua 1 lần/mua trong 6 tháng)
+        level3: { purchasedOffValue: 2000000, factor: 3 }, // Vàng (tuần mua 2 lần/mua trong 6 tháng)
+        level4: { purchasedOffValue: 5000000, factor: 3 }, // Kim Cương (ngày mua 1 lần/mua trong 6 tháng)
     },
     vatRate: 10, // Thuế VAT (%)
 }
