@@ -2597,6 +2597,10 @@ class Model extends BaseModel {
                             _id: {  salesChannel: "$salesChannel", funda: "$funda", month: "$month" },
                             number: { $sum: 1 },
                             total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            amount: { $sum: "$amount" },
                         }
         
                         conditionPopulate = {
@@ -2622,7 +2626,7 @@ class Model extends BaseModel {
                                 $sort: sortBy
                             }
                         ])
-                        // console.log(listData)
+                        console.log(listData)
                         let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
                         // console.log(listFuda)
                         // console.log( listFuda.length)
@@ -2645,19 +2649,40 @@ class Model extends BaseModel {
                                     if(Number(item._id.month) === Number(m)){
                                         for(var i=3; i<=Number(listFuda.length + 2); i++){
                                             
+                                            let discount = 0, salesoff = 0, credit = 0, amount = 0
                                             let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
-                                            // console.log( fundaID.toString())
-                                            // console.log( fundaID)
                                             
-                                            if((item._id.funda.toString() === fundaID.toString())){      
+                                            if((item._id.funda.toString() === fundaID.toString())){  
+                                                
+                                                // amount = Number(amount) + Number(item.amount)
+                                                
+                                                // Tổng hợp số liệu
+                                                // discount = Number(discount) + Number(item.discount)
+                                                // salesoff = Number(salesoff) + Number(item.salesoff)
+                                                // credit = Number(credit) + Number(item.credit)
+                                                // amount = Number(amount) + Number(item.amount)
                                                 
                                                 // Food App
                                                 for(var j=4; j<=10; j++){                                                
                                                     if((Number(item._id.salesChannel) === Number(j-3))){        
                                                         workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.total))
+                                                        // workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.amount))
+                                                        // amount = Number(amount) + Number(item.amount)
                                                     }
+                                                    // console.log(amount)
                                                 }
+                                                // console.log(amount)
+
+                                                
                                             }
+
+                                            // console.log(amount)
+                                            // workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
+
+                                            // workbook.sheet(`T${m}`).row(i).cell(11).value(Number(discount))
+                                            // workbook.sheet(`T${m}`).row(i).cell(12).value(Number(salesoff))
+                                            // workbook.sheet(`T${m}`).row(i).cell(13).value(Number(credit))
+                                            // workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
                                         }
                                     }
                                 }

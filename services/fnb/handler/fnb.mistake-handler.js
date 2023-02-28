@@ -178,11 +178,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
                 let { option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.getListByProperty({
+                    companyID: company._id,
                     option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      userID
