@@ -2795,8 +2795,6 @@ class Model extends BaseModel {
                     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
                         [{
                             $set: {
-                                total: 0, //
-                                purchasedValue: 0, //
                                 purchasedOffValue: 0,
                                 totalLoyaltyPoints: 0,
                                 usedLoyaltyPoints: 0,
