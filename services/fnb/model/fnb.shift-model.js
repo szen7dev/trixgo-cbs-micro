@@ -668,6 +668,7 @@ class Model extends BaseModel {
                 /**
                  * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
                  */
+                // Bảng chấm công theo từng điểm bán
                 if(fundaID){
                     let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                     .populate({
@@ -883,7 +884,6 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     });
                 }else{
-                    // console.log('=============2222222222222222222======================')
                     let yearFilter
                     let currentYear = new Date().getFullYear()
                     if(year && !isNaN(year)){
