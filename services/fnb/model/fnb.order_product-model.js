@@ -503,7 +503,13 @@ class Model extends BaseModel {
                         yearFilter = Number(currentYear)
                     }
 
-                    let conditionObj = {company: ObjectID(companyID)}
+                    let listOrders = await FNB_ORDER_COLL.find({company: ObjectID(companyID), status: 5}).select('_id')
+
+                    let conditionObj = { 
+                        company: ObjectID(companyID),
+                        order: {$in: listOrders.map(item=>ObjectID(item._id))}
+                    }
+
                     let conditionGroup = {}
                     let conditionPopulate = {}, sortBy = {"quantity": -1}
                     let conditionObjYear = {
