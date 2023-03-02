@@ -14,10 +14,12 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
 const moment = require("moment");
+
 /**s
  * import inter-coll, exter-coll
  */
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
 const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
@@ -28,7 +30,22 @@ const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_
 /**
  * import inter-model, exter-model
  */
-const FNB_ORDER_MATERIAL_MODEL                 = require('./fnb.order_material-model').MODEL;
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+const { 
+    FNB_FACTOR,
+    FNB_NEW,
+    FNB_NON_RESIDENT,
+    FNB_INTERNAL,
+    FNB_SHIFT_TYPES,
+    FNB_SEASONS,
+    FNB_SALES_CHANNEL,
+    FNB_PAYMENT_METHOD,
+    FNB_SERVICE,
+    FNB_STATUS
+ } = require('../helper/fnb.keys-constant');
 class Model extends BaseModel {
 
     constructor() {
@@ -254,7 +271,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-     getList({ companyID, fundaID, orderID, keyword, limit = 50, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, fundaID, orderID, keyword, limit = 50, lastestID, select, populates, sortKey, userID }) {
         // console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
@@ -467,6 +484,146 @@ class Model extends BaseModel {
             }
         })
     }
+
+        /**
+     * Dev: HiepNH
+     * Func: Tải Đơn hàng
+     * Date: 4/2/2023
+     */
+    exportExcel({ companyID, option, year, month, userID }) {
+        // console.log({ companyID, option, year, month, userID })
+        return new Promise(async resolve => {
+            try {
+                if(!option || option == undefined){
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
+
+                    let listOrders = await FNB_ORDER_COLL.find({company: ObjectID(companyID), status: 5}).select('_id')
+
+                    let conditionObj = { 
+                        company: ObjectID(companyID),
+                        order: {$in: listOrders.map(item=>ObjectID(item._id))}
+                    }
+
+                    let conditionGroup = {}
+                    let conditionPopulate = {}, sortBy = {"quantity": -1}
+                    let conditionObjYear = {
+                        "year": Number(yearFilter),
+                    }
+
+                    conditionGroup = {
+                        _id: { product: "$product", funda: "$funda", month: "$month" },
+                        quantity: { $sum: "$quantity" },
+                    }
+
+                    // conditionGroup = {
+                    //     _id: { },
+                    //     quantity: { $sum: "$quantity" },
+                    // }
+
+                    // console.log(conditionObjYear)
+
+                    // Danh sách đang triển khai
+                    let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                funda : 1,
+                                product : 1,
+                                quantity : 1,
+                                ice : 1,
+                                sugar : 1,
+                                size : 1
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: sortBy
+                        }
+                    ])
+                    // console.log(listData)
+
+                    let listProducts = await FNB_PRODUCT_COLL.find({_id: {$in: listData.map(item=>item._id.product)}}).select("_id name unit")
+                    let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
+
+                     // Modify the workbook.
+                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_order_product.xlsx')))
+                     .then(async workbook => {
+                         for(var m = 1; m<=12; m++){
+                             var i = 4
+                             listProducts?.forEach((item, index) => {
+                                 workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index + 1))
+                                 workbook.sheet(`T${m}`).row(i).cell(2).value(item.name)
+                                 workbook.sheet(`T${m}`).row(i).cell(3).value(`${item._id}`)
+                                 i++
+                             })
+                         }
+
+                         for(var m = 1; m<=12; m++){
+                            var i = 4
+                            listFuda?.forEach((item, index) => {
+                                workbook.sheet(`T${m}`).row(2).cell(i).value(`${item._id}`)
+                                workbook.sheet(`T${m}`).row(3).cell(i).value(item.name)
+                                i++
+                            })
+                        }
+
+                         listData?.forEach((item, index) => {
+                             for(var m = 1; m<=12; m++){
+                                 if(Number(item._id.month) === Number(m)){
+
+                                     for(var i=4; i<=Number(listProducts.length + 3); i++){
+
+                                        let productID = workbook.sheet(`T${m}`).row(i).cell(3).value()
+
+                                        for(var j=4; j<=Number(listFuda.length + 3); j++){
+
+                                            let fundaID = workbook.sheet(`T${m}`).row(2).cell(j).value()
+
+                                            if(item._id.product.toString() === productID.toString() && item._id.funda.toString() === fundaID.toString()){        
+                                                workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.quantity))
+                                            }
+
+                                        }
+                                     }
+                                 }
+                             }
+                         })
+                     
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `BaoCaoSanPham_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                     })
+                }else{
+                    
+                }
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model

@@ -264,19 +264,20 @@ module.exports = {
         auth: 'required',
         params: {
             companyID: { type: "string", optional: true },
+            option: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID, filterParams } = ctx.params;
+                let { companyID, option, month, year } = ctx.params;
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.exportExcel({
-                    userID, companyID, filterParams, ctx
+                    userID, companyID, option, month, year, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
