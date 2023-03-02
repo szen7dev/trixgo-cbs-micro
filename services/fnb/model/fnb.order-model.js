@@ -2539,12 +2539,15 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
                             workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
                             workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                            workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
-                            workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
-                            workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
-                            workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
-                            workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
-                            workbook.sheet("Order").row(i).cell(20).value(item.note);
+                            workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
+                            workbook.sheet("Order").row(i).cell(16).value(Number(item.amount));
+                            workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeM));
+                            workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfSizeL));
+                            workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfProducts));
+                            workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfMistakes));
+                            workbook.sheet("Order").row(i).cell(21).value(item.note);
+                            workbook.sheet("Order").row(i).cell(22).value(Number(item.loyaltyPoints));
+                            workbook.sheet("Order").row(i).cell(23).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
                             i++
                         });
                        
