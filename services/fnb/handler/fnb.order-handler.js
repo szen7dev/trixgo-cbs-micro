@@ -350,7 +350,7 @@ module.exports = {
 
     /**
      * Dev: HiepNH
-     * Func: Tải Đơn hàng
+     * Func: Tải khách hàng tiềm năng
      * Date: 4/2/2023
      */
     exportExcel3: {
@@ -361,7 +361,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID, company } = ctx.meta.infoUser;
+				const { _id: userID, email, company } = ctx.meta.infoUser;
                 let { companyID, filterParams } = ctx.params;
 
                 if(!companyID) {
@@ -369,7 +369,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel3({
-                    userID, companyID, filterParams, ctx
+                    userID, email, companyID, filterParams, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

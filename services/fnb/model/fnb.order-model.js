@@ -40,6 +40,7 @@ const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
 const { 
+    FNB_ACC,
     FNB_FACTOR,
     FNB_NEW,
     FNB_NON_RESIDENT,
@@ -1410,17 +1411,17 @@ class Model extends BaseModel {
 
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
-                        console.log('==============Trường hợp 1111111111===============>')
+                        // console.log('==============Trường hợp 1111111111===============>')
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
                     }else{
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
                         let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                         if(fundasIDIsMember.length) {
-                            console.log('==============Trường hợp 222222===============>')
+                            // console.log('==============Trường hợp 222222===============>')
                             conditionObj.funda = { $in: fundasIDIsMember };
                         } else{
-                            console.log('==============Trường hợp 333333333===============>')
+                            // console.log('==============Trường hợp 333333333===============>')
                             // conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
                             conditionObj.funda = { $in: [] }
                         }
@@ -2717,46 +2718,51 @@ class Model extends BaseModel {
      * Func: Tải Khách hàng tiềm năng
      * Date: 4/2/2023
      */
-    exportExcel3({ companyID, year, month, userID }) {
-        // console.log({ companyID, year, month, userID })
+    exportExcel3({ companyID, email, year, month, userID }) {
+        // console.log({ companyID, email, year, month, userID })
         const that = this
         return new Promise(async resolve => {
             try {
-                let { data: listData } = await that.getListByProperty({ companyID, option: 8, userID })
-                // console.log(listData)
+                if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+                // if(FNB_ACC.cskh.includes(email.toString()) ){
+                    console.log('1111111111111')
+                    let { data: listData } = await that.getListByProperty({ companyID, option: 8, userID })
 
-                // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_loyalty_customer.xlsx')))
-                .then(async workbook => {
-                    var i = 3;
-                    listData?.forEach((item, index) => {
-                        workbook.sheet("Customer").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Customer").row(i).cell(2).value(item?._id?.customer?.name);
-                        workbook.sheet("Customer").row(i).cell(3).value(item?._id?.customer?.funda?.name);
-                        workbook.sheet("Customer").row(i).cell(4).value(item?._id?.customer?.phone);
-                        workbook.sheet("Customer").row(i).cell(5).value(item?.numberOfOrders);
-                        workbook.sheet("Customer").row(i).cell(6).value(item?.numberOfProducts);
-                        workbook.sheet("Customer").row(i).cell(7).value(item?.total);
-                        workbook.sheet("Customer").row(i).cell(8).value(item?.discount);
-                        workbook.sheet("Customer").row(i).cell(9).value(item?.salesoff);
-                        workbook.sheet("Customer").row(i).cell(10).value(item?.credit);
-                        workbook.sheet("Customer").row(i).cell(11).value(item?.amount);
-                        workbook.sheet("Customer").row(i).cell(12).value(item?._id?.customer?.note);
-                        i++
-                    });
-                   
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
-                });
-
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_loyalty_customer.xlsx')))
+                    .then(async workbook => {
+                        var i = 3;
+                        listData?.forEach((item, index) => {
+                            workbook.sheet("Customer").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Customer").row(i).cell(2).value(item?._id?.customer?.name);
+                            workbook.sheet("Customer").row(i).cell(3).value(item?._id?.customer?.funda?.name);
+                            workbook.sheet("Customer").row(i).cell(4).value(item?._id?.customer?.phone);
+                            workbook.sheet("Customer").row(i).cell(5).value(item?.numberOfOrders);
+                            workbook.sheet("Customer").row(i).cell(6).value(item?.numberOfProducts);
+                            workbook.sheet("Customer").row(i).cell(7).value(item?.total);
+                            workbook.sheet("Customer").row(i).cell(8).value(item?.discount);
+                            workbook.sheet("Customer").row(i).cell(9).value(item?.salesoff);
+                            workbook.sheet("Customer").row(i).cell(10).value(item?.credit);
+                            workbook.sheet("Customer").row(i).cell(11).value(item?.amount);
+                            workbook.sheet("Customer").row(i).cell(12).value(item?._id?.customer?.note);
+                            i++
+                        });
+                       
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    })
+                }else{
+                    console.log('2222222222222222')
+                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 });
+                }
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });

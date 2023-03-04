@@ -884,6 +884,9 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     });
                 }else{
+                    /**
+                     * BẢNG CHẤM CÔNG TOÀN BỘ NHÂN SỰ
+                     */
                     let yearFilter
                     let currentYear = new Date().getFullYear()
                     if(year && !isNaN(year)){
