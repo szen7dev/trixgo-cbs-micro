@@ -84,10 +84,10 @@
              try {
                  await this.validateEntity(ctx.params);
                  let {  shiftID, name, campaign, note, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL } = ctx.params;
-                 const { _id: userID } = ctx.meta.infoUser;
+                 const { _id: userID, email } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler = await FNB_SHIFT_MODEL.update({
-                    shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID
+                    email, shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID
                  });
  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -30,7 +30,11 @@ const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_
 const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
-const { uploadFileS3 }                  = require('../../../tools/s3');
+const { uploadFileS3 }                  = require('../../../tools/s3')
+
+const { 
+    FNB_ACC,
+ } = require('../helper/fnb.keys-constant')
 
 /**
  * import inter-model, exter-model
@@ -141,12 +145,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update group 
-     * Author: Depv
+     * Name: update 
+     * Author: 
      * Code:
      */
-    update({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        // console.log({ shiftID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
+    update({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
+        console.log({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -167,14 +171,6 @@ class Model extends BaseModel {
                     dataInUpdate.note =note;
                 }
 
-                if(staffsID && checkObjectIDs(staffsID)){
-                    dataInUpdate.staffs = staffsID;
-                }
-
-                if(subStaffsID && checkObjectIDs(subStaffsID)){
-                    dataInUpdate.subStaffs = subStaffsID;
-                }
-
                 if(campaign && !isNaN(campaign)){
                     dataInUpdate.campaign = Number(campaign)
                 }
@@ -191,14 +187,6 @@ class Model extends BaseModel {
                     dataInUpdate.paidStatus = Number(paidStatus)
                 }
 
-                if(workingHours && !isNaN(workingHours)){
-                    dataInUpdate.workingHours = Number(workingHours)
-                }
-
-                if(subWorkingHours && !isNaN(subWorkingHours)){
-                    dataInUpdate.subWorkingHours = Number(subWorkingHours)
-                }
-
                 if(openingCash && !isNaN(openingCash)){
                     dataInUpdate.openingCash = Number(openingCash)
                 }
@@ -211,20 +199,55 @@ class Model extends BaseModel {
                     dataInUpdate.closingCash = Number(closingCash)
                 }
 
-                if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
-                    dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
-                }
+                // Nếu là Quản lý => Cập nhật nhân viên ca làm việc
+                if(FNB_ACC.man.includes(email.toString())){
+                    if(staffsID && checkObjectIDs(staffsID)){
+                        dataInUpdate.staffs = staffsID;
+                    }
+    
+                    if(subStaffsID && checkObjectIDs(subStaffsID)){
+                        dataInUpdate.subStaffs = subStaffsID;
+                    }
 
-                if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
-                    dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
-                }
+                    if(workingHours && !isNaN(workingHours)){
+                        dataInUpdate.workingHours = Number(workingHours)
+                    }
+    
+                    if(subWorkingHours && !isNaN(subWorkingHours)){
+                        dataInUpdate.subWorkingHours = Number(subWorkingHours)
+                    }
 
-                if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
-                    dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
-                }
-
-                if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
-                    dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
+                    if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
+                        dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
+                    }
+    
+                    if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
+                        dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
+                    }
+    
+                    if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
+                        dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
+                    }
+    
+                    if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
+                        dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
+                    }
+                }else{
+                    if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
+                        dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
+                    }
+    
+                    if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
+                        dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
+                    }
+    
+                    if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
+                        dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
+                    }
+    
+                    if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
+                        dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
+                    }
                 }
                 // console.log({ dataInUpdate })
 
@@ -232,47 +255,50 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                /**
-                 * CẬP NHẬT LẠI DOANH SỐ CỦA NHÂN VIÊN
-                 */
-                let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
-                for(const item of listOrders){
-                    let dataOrderUpdate = { userUpdate: userID, modifyAt: new Date() }
+                // Nếu là Quản lý => Cập nhật nhân viên ca làm việc
+                if(FNB_ACC.man.includes(email.toString())){
+                    /**
+                     * CẬP NHẬT LẠI DOANH SỐ CỦA NHÂN VIÊN
+                     */
+                    let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
+                    for(const item of listOrders){
+                        let dataOrderUpdate = { userUpdate: userID, modifyAt: new Date() }
 
-                    let numberStaff = 0
-                    if(staffsID && staffsID.length){
-                        numberStaff = staffsID.length
-                        let arrStaffs = staffsID
+                        let numberStaff = 0
+                        if(staffsID && staffsID.length){
+                            numberStaff = staffsID.length
+                            let arrStaffs = staffsID
 
-                        if(subStaffsID && subStaffsID.length){
-                            arrStaffs = [...arrStaffs,...subStaffsID]
+                            if(subStaffsID && subStaffsID.length){
+                                arrStaffs = [...arrStaffs,...subStaffsID]
 
-                            numberStaff = Number(numberStaff) + Number(subStaffsID.length)
-                        }
+                                numberStaff = Number(numberStaff) + Number(subStaffsID.length)
+                            }
 
-                        // Nhân viên thực hiện
-                        dataOrderUpdate.assignee = arrStaffs;
+                            // Nhân viên thực hiện
+                            dataOrderUpdate.assignee = arrStaffs;
 
-                        // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
-                        if(Number(numberStaff) != 0){
-                            dataOrderUpdate.avgTotalPerStaff = Number(item.amount/Number(numberStaff)).toFixed(0)
+                            // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
+                            if(Number(numberStaff) != 0){
+                                dataOrderUpdate.avgTotalPerStaff = Number(item.amount/Number(numberStaff)).toFixed(0)
+                            }else{
+                                dataOrderUpdate.avgTotalPerStaff = 1
+                            }
+
+                            dataOrderUpdate.avgQuantityPerStaff = Number(item.numberOfProducts/numberStaff).toFixed(2)   
                         }else{
-                            dataOrderUpdate.avgTotalPerStaff = 1
+                            numberStaff = 1
+                            dataOrderUpdate.assignee = [userID];
+
+                            // Doanh số trung bình/đầu nhân viên (1 nhân viên)
+                            dataOrderUpdate.avgTotalPerStaff = Number(item.amount/Number(numberStaff)).toFixed(0)
+
+                            dataOrderUpdate.avgQuantityPerStaff = Number(item.numberOfProducts/numberStaff).toFixed(2) 
                         }
 
-                        dataOrderUpdate.avgQuantityPerStaff = Number(item.numberOfProducts/numberStaff).toFixed(2)   
-                    }else{
-                        numberStaff = 1
-                        dataOrderUpdate.assignee = [userID];
-
-                        // Doanh số trung bình/đầu nhân viên (1 nhân viên)
-                        dataOrderUpdate.avgTotalPerStaff = Number(item.amount/Number(numberStaff)).toFixed(0)
-
-                        dataOrderUpdate.avgQuantityPerStaff = Number(item.numberOfProducts/numberStaff).toFixed(2) 
+                        // console.log(dataOrderUpdate)
+                        let infoOrder = await FNB_ORDER_COLL.findByIdAndUpdate(item._id, dataOrderUpdate, { new: true })
                     }
-
-                    // console.log(dataOrderUpdate)
-                    let infoOrder = await FNB_ORDER_COLL.findByIdAndUpdate(item._id, dataOrderUpdate, { new: true })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
@@ -282,20 +308,9 @@ class Model extends BaseModel {
         });
     }
 
-    /**
-     * Name: remove group 
-     * Author: Depv
-     * Code:
-     */
 
     /**
-     * Name: remove many 
-     * Author: Depv
-     * Code:
-     */
-
-    /**
-     * Name: get info user_pcm_plan_group 
+     * Name: 
      * Author: Depv
      * Code:
      */
@@ -332,8 +347,8 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách user_pcm_plan_group 
-     * Author: Depv
+     * Name  : Danh sách 
+     * Author: HiepNH
      * Code  :
      */
      getList({ companyID, fundaID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
@@ -1044,7 +1059,7 @@ class Model extends BaseModel {
     
                         // Lặp qua 12 tháng
                         for(var m = 1; m<=12; m++){
-                            workbook.sheet(`T${m}`).row(1).cell(4).value(Number(yearFilter))
+                            workbook.sheet(`T${m}`).row(1).cell(5).value(Number(yearFilter)) //
     
                             var i = 4
                             listStaffs?.forEach((item, index) => {

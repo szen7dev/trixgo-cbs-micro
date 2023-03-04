@@ -51,8 +51,8 @@ const {
     FNB_PAYMENT_METHOD,
     FNB_SERVICE,
     FNB_STATUS
- } = require('../helper/fnb.keys-constant');
-const e = require('express');
+ } = require('../helper/fnb.keys-constant')
+
 class Model extends BaseModel {
 
     constructor() {
