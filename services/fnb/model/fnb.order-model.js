@@ -256,8 +256,15 @@ class Model extends BaseModel {
 
                     // Nếu có tích điểm
                     if(!isNaN(credit)){
-                        dataInsert.credit = Number(credit)
-                        amount = Number(amount) - Number(credit)
+                        // console.log({credit})
+                        let creditRound = 1000*Math.round(credit/ 1000)
+                        // console.log({creditRound})
+
+                        // dataInsert.credit = Number(credit)
+                        // amount = Number(amount) - Number(credit)
+
+                        dataInsert.credit = Number(creditRound)
+                        amount = Number(amount) - Number(creditRound)
                     }
 
                     /**
