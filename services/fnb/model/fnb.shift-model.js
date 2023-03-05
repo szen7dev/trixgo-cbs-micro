@@ -19,6 +19,7 @@ const { template } = require('lodash');
  */
 const USER_COLL                                = require('../../auth/database/auth.user-coll');
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
+const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
@@ -740,7 +741,7 @@ class Model extends BaseModel {
                         _id: {  staff: "$staff._id", day: "$day", month: "$month", year: "$year" },
                         number: { $sum: 1 },
                         workingHours: { $sum: "$workingHours" },
-                        subWorkingHours: { $sum: "$subWorkingHours" },
+                        subWorkingHours: { $sum: "$subWorkingHours" }
                     }
     
                     // Danh sách nhân sự ca chính
@@ -945,7 +946,7 @@ class Model extends BaseModel {
                         "year": Number(yearFilter),
                     }
     
-                    let conditionPopulate = {}, sortBy = {"day": 1}
+                    let conditionPopulate = {}, sortBy = {"day": 1}, sortByMonth = {"_id.month": -1}
     
                     let conditionGroup = {
                         _id: {  staff: "$staff._id", month: "$month", year: "$year" },
@@ -953,6 +954,149 @@ class Model extends BaseModel {
                         workingHours: { $sum: "$workingHours" },
                         subWorkingHours: { $sum: "$subWorkingHours" },
                     }
+                    
+                    /**
+                     * DOANH SỐ CÁ NHÂN
+                     */
+                    let conditionOrderObj = { 
+                        company: ObjectID(companyID),
+                        status: 5,
+                        avgTotalPerStaff: {$exists: true, $ne: null, $gte: 0},
+                    }
+                    let projectOrderObj =  {
+                        year : {$year : "$createAt"},
+                        month : {$month : "$createAt"},
+                        company : 1,
+                        funda : 1,
+                        createAt: 1,
+                        assignee : 1,
+                        executor: 1,
+                        total: 1,
+                        amount: 1,
+                        avgTotalPerStaff: 1,
+                        avgQuantityPerStaff: 1
+                    }
+                    let lookupOrderObj = {
+                        from: "users",
+                        localField: "assignee",
+                        foreignField: "_id",
+                        as: "staff"
+                    } 
+                    let conditionOrderGroup = {
+                        _id: {  staff: "$staff._id", month: "$month" },
+                        number: { $sum: 1 },
+                        avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                    }
+                    let conditionOrderPopulate = {
+                        path: '_id.staff',
+                        select: '_id fullname department',
+                        populate: {
+                            path: 'department',
+                            select: '_id name',
+                            model: 'department',
+                        },
+                        model: 'user'
+                    }
+                    let conditionFundaPopulate = {
+                        path: '_id.funda',
+                        select: '_id name department',
+                        model: 'funda'
+                    }
+
+                    let listDataRevenue = await FNB_ORDER_COLL.aggregate([
+                        {
+                            $match: conditionOrderObj
+                        },
+                        {
+                            $project : projectOrderObj
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        { 
+                            $lookup: lookupOrderObj 
+                        },
+                        {
+                            $unwind: "$staff"
+                        },
+                        {
+                            $group: conditionOrderGroup
+                        },
+                        {
+                            $sort: sortByMonth
+                        }
+                    ])
+                    await FNB_ORDER_COLL.populate(listDataRevenue, conditionOrderPopulate)
+                    // console.log(listDataRevenue)
+
+                    /**
+                     * DANH BẠ ĐIỂM BÁN
+                     */
+                    let conditionGroupContact = {
+                        _id: {  funda: "$funda", month: "$month" },
+                        number: { $sum: 1 },
+                    }
+                    let listDataContact = await ITEM__CONTACT_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                            }
+                        },
+                        {
+                            $project : projectOrderObj
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroupContact
+                        },
+                        {
+                            $sort: sortByMonth
+                        }
+                    ])
+                    await ITEM__CONTACT_COLL.populate(listDataContact, conditionFundaPopulate)
+                    // console.log(listDataContact)
+
+                    /**
+                     * THƯỞNG PHẠT
+                     */
+                    let conditionGroupErr = {
+                        _id: {  executor: "$executor", month: "$month" },
+                        number: { $sum: 1 },
+                        amount: { $sum: "$amount" },
+                    }
+                    let conditionPopulateErr = {
+                        path: '_id.executor',
+                        select: '_id fullname',
+                        populate: {
+                            path: 'department',
+                            select: '_id name',
+                            model: 'department',
+                        },
+                        model: 'user'
+                    }
+                    let listDataErr = await FNB_MISTAKE_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                            }
+                        },
+                        {
+                            $project : projectOrderObj
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroupErr
+                        },
+                        {
+                            $sort: {"_id.month": -1}
+                        }
+                    ])
+                    await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr)
+                    // console.log(listDataErr)
     
                     // Danh sách nhân sự ca chính
                     let listData1  = await FNB_SHIFT_COLL.aggregate([
@@ -1052,10 +1196,48 @@ class Model extends BaseModel {
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary.xlsx')))
                     .then(async workbook => {
-                        // workbook.sheet(`QuyCheLuong`).row(3).cell(3).value(infoFunda?.trainStaffSalar)
-                        // workbook.sheet(`QuyCheLuong`).row(4).cell(3).value(infoFunda?.trialStaffSalary)
-                        // workbook.sheet(`QuyCheLuong`).row(5).cell(3).value(infoFunda?.officialStaffSalar)
-                        // workbook.sheet(`QuyCheLuong`).row(6).cell(3).value(infoFunda?.lunchStaffAllowance)
+                        /**
+                         * DOANH SỐ CÁ NHÂN
+                         */
+                        var i = 3
+                        listDataRevenue?.forEach((item, index) => {
+                            workbook.sheet(`DoanhSo`).row(i).cell(1).value(Number(index+1));
+                            workbook.sheet(`DoanhSo`).row(i).cell(2).value(item._id.staff.fullname);
+                            workbook.sheet(`DoanhSo`).row(i).cell(3).value(item._id.staff?.department?.name);
+                            workbook.sheet(`DoanhSo`).row(i).cell(4).value(Number(item._id.month));
+                            workbook.sheet(`DoanhSo`).row(i).cell(5).value(Number(item.number));
+                            workbook.sheet(`DoanhSo`).row(i).cell(6).value(Number(item.avgTotalPerStaff));
+                            workbook.sheet(`DoanhSo`).row(i).cell(7).value(`${item._id.staff._id}`);
+                            i++
+                        })
+
+                        /**
+                         * DANH BẠ ĐIỂM BÁN
+                         */
+                        var i = 3
+                        listDataContact?.forEach((item, index) => {
+                            workbook.sheet(`DanhBa`).row(i).cell(1).value(Number(index+1));
+                            workbook.sheet(`DanhBa`).row(i).cell(2).value(item._id.funda.name);
+                            workbook.sheet(`DanhBa`).row(i).cell(3).value(Number(item._id.month));
+                            workbook.sheet(`DanhBa`).row(i).cell(4).value(Number(item.number));
+                            workbook.sheet(`DanhBa`).row(i).cell(5).value(`${item._id.funda._id}`);
+                            i++
+                        })
+
+                         /**
+                         * THƯỞNG PHẠT
+                         */
+                        var i = 3
+                        listDataErr?.forEach((item, index) => {
+                            workbook.sheet(`ThuongPhat`).row(i).cell(1).value(Number(index+1));
+                            workbook.sheet(`ThuongPhat`).row(i).cell(2).value(item._id.executor.fullname);
+                            workbook.sheet(`ThuongPhat`).row(i).cell(3).value(item._id.executor.department.name);
+                            workbook.sheet(`ThuongPhat`).row(i).cell(4).value(Number(item._id.month));
+                            workbook.sheet(`ThuongPhat`).row(i).cell(5).value(Number(item.number));
+                            workbook.sheet(`ThuongPhat`).row(i).cell(7).value(Number(item.amount));
+                            workbook.sheet(`ThuongPhat`).row(i).cell(8).value(`${item._id.executor._id}`);
+                            i++
+                        })
     
                         // Lặp qua 12 tháng
                         for(var m = 1; m<=12; m++){
