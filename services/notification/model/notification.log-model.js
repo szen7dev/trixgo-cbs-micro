@@ -465,7 +465,11 @@ class Model extends BaseModel {
                                 dataForMobilePushCBS.ios_badgeCount = objDataForSend.amountNoti;
                             }
                             console.info('MOBILE PUSH (CBS)')
-                            sendNotificationviaOneSignal(dataForMobilePushCBS)
+
+                            if(dataForMobilePushCBS.include_player_ids.length) {
+                                dataForMobilePushCBS.include_player_ids = [...new Set(dataForMobilePushCBS.include_player_ids)];
+                                sendNotificationviaOneSignal(dataForMobilePushCBS)
+                            }
 
                             //  =================== MOBILE PUSH (TEASER) ===================
                             let dataForMobilePushTeaser = {
@@ -484,7 +488,11 @@ class Model extends BaseModel {
                                 dataForMobilePushTeaser.ios_badgeCount = objDataForSend.amountNoti;
                             }
                             console.info('MOBILE PUSH (TEASER)')
-                            sendNotificationviaOneSignal(dataForMobilePushTeaser)
+
+                            if(dataForMobilePushTeaser.include_player_ids.length) {
+                                dataForMobilePushTeaser.include_player_ids = [...new Set(dataForMobilePushTeaser.include_player_ids)];
+                                sendNotificationviaOneSignal(dataForMobilePushTeaser)
+                            }
 
                             //  =================== MOBILE PUSH (FNB) ===================
                             let dataForMobilePushFNB = {
@@ -502,8 +510,12 @@ class Model extends BaseModel {
                                 dataForMobilePushFNB.ios_badgeType = 'SetTo';
                                 dataForMobilePushFNB.ios_badgeCount = objDataForSend.amountNoti;
                             }
-                            console.info('MOBILE PUSH (FNB)')
-                            sendNotificationviaOneSignal(dataForMobilePushFNB)
+                            console.info('MOBILE PUSH (FNB)');
+
+                            if(dataForMobilePushFNB.include_player_ids.length) {
+                                dataForMobilePushFNB.include_player_ids = [...new Set(dataForMobilePushFNB.include_player_ids)];
+                                sendNotificationviaOneSignal(dataForMobilePushFNB);
+                            }
                         }
 
                         if (listDeviceFromWebBrowser.length) {

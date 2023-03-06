@@ -12,15 +12,13 @@ const { CF_ACTIONS_ITEM }                       = require('../item/helper/item.a
 const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
 const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notification.keys-constant');
 
-// const FNB_ORDER_COLL                		    = require('./database/fnb.order-coll');
-
- exports.FNB_SOCKET = {
+exports.FNB_SOCKET = {
 
     /**
      * Tạo mới đơn hàng
      */
     [EVENT_SOCKET_CONSTANT_FNB.FNB_CSS_ADD_NEW_ORDER]: async function(data) {
-         try {
+        try {
             let socket                          = this;
 			let broker                          = socket.$service.broker;
             let listUserActive                  = socket.$service.listUserConnected;
@@ -39,6 +37,10 @@ const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notificat
 
             let fundaResponse = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`, {
                 fundaID
+            }, {
+                meta: {
+                    infoUser: { _id: userID, company: { _id: companyID } }
+                }
             });
             if(!fundaResponse || fundaResponse.error) {
                 return sendDataToMultilSocketsOfListUser({
@@ -76,7 +78,7 @@ const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notificat
             }
 
             const usersID = users.data?.map(user => user._id);
-            const receivers = usersID.filter(receiverID => receiverID !== userID.toString());
+            const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
             const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
             const contentMSS = `Đơn hàng ${orderInfo?.name}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công bởi ${user.data?.bizfullname}`;
 
@@ -86,7 +88,7 @@ const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notificat
 				title: titleMSS,
 				description: contentMSS,
 				dataSend: {
-                    orderID: orderInfo._id,
+                    orderID: orderInfo?._id,
 				},
 				web_url: ``,
 				env: ENV_DEVICE_APP_FNB
@@ -103,9 +105,9 @@ const { ENV_DEVICE_APP_FNB } 				    = require('../notification/helper/notificat
                     }
                 }, event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
             });
-         } catch (error) {
-             console.info('======EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER=====');
-             console.error(error);
-         }
+        } catch (error) {
+            console.info('======EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER=====');
+            console.error(error);
+        }
     },
  }
