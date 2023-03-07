@@ -16,6 +16,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Thuộc dự án phòng ban
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "department"
+    },
     //_________Ngày bắt đầu
     initialDay: {
         type: Date,

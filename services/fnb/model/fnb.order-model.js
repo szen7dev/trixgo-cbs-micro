@@ -2764,11 +2764,11 @@ class Model extends BaseModel {
                         const result = await uploadFileS3(pathWriteFile, fileName);
     
                         fs.unlinkSync(pathWriteFile);
-                        return resolve({ error: false, data: result?.Location, status: 200 });
+                        return resolve({ error: false, data: result?.Location, status: 200 })
                     })
                 }else{
                     console.log('2222222222222222')
-                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 });
+                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }
             } catch (error) {
                 console.log({ error })
