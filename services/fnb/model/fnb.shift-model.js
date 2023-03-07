@@ -1265,9 +1265,10 @@ class Model extends BaseModel {
                              */
                             var i = 4
                             listStaffs?.forEach((item, index) => {
-                                workbook.sheet(`NhanVien`).row(i).cell(1).value(Number(index+1));
-                                workbook.sheet(`NhanVien`).row(i).cell(2).value(item.fullname);
-                                workbook.sheet(`NhanVien`).row(i).cell(3).value(item?.department?.name);
+                                workbook.sheet(`NhanVien`).row(i).cell(1).value(Number(index+1))
+                                workbook.sheet(`NhanVien`).row(i).cell(2).value(item.fullname)
+                                workbook.sheet(`NhanVien`).row(i).cell(3).value(item?.department?.name)
+                                workbook.sheet(`NhanVien`).row(i).cell(6).value(`${item._id}`)
                                 i++
                             })
 
@@ -1318,7 +1319,7 @@ class Model extends BaseModel {
                              * BẢNG CHẤM CÔNG THEO NGÀY
                              */
                             for(var m = 1; m<=2; m++){
-                                workbook.sheet(`TS${m}`).row(1).cell(5).value(Number(yearFilter)) //
+                                workbook.sheet(`TS${m}`).row(1).cell(5).value(Number(yearFilter))
         
                                 var i = 4
                                 listStaffs?.forEach((item, index) => {
@@ -1375,11 +1376,11 @@ class Model extends BaseModel {
         
                                 var i = 4
                                 listStaffs?.forEach((item, index) => {
-                                    workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index+1));
-                                    workbook.sheet(`T${m}`).row(i).cell(2).value(item.fullname);
-                                    workbook.sheet(`T${m}`).row(i).cell(3).value(item?.department?.name);
-                                    workbook.sheet(`T${m}`).row(i).cell(19).value(`${item._id}`);
-                                    workbook.sheet(`T${m}`).row(i).cell(20).value(`${item?.department?._id}`);
+                                    workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index+1))
+                                    workbook.sheet(`T${m}`).row(i).cell(2).value(item.fullname)
+                                    workbook.sheet(`T${m}`).row(i).cell(3).value(item?.department?.name)
+                                    workbook.sheet(`T${m}`).row(i).cell(19).value(`${item._id}`)
+                                    workbook.sheet(`T${m}`).row(i).cell(20).value(`${item?.department?._id}`)
                                     i++
                                 })
                             }
@@ -1414,24 +1415,24 @@ class Model extends BaseModel {
                                 }
                             })
         
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `TongHopBangLuong_${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                            const now = new Date()
+                            const filePath = '../../../files/temporary_uploads/'
+                            const fileName = `TongHopBangLuong_${now.getTime()}.xlsx`
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
         
-                            await workbook.toFileAsync(pathWriteFile);
-                            const result = await uploadFileS3(pathWriteFile, fileName);
+                            await workbook.toFileAsync(pathWriteFile)
+                            const result = await uploadFileS3(pathWriteFile, fileName)
         
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 });
-                        });
+                            fs.unlinkSync(pathWriteFile)
+                            return resolve({ error: false, data: result?.Location, status: 200 })
+                        })
                     }else{
                         return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                     }
                 }
             } catch (error) {
                 console.log({ error })
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
