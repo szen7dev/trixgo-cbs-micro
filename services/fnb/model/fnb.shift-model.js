@@ -1318,7 +1318,7 @@ class Model extends BaseModel {
                             /**
                              * BẢNG CHẤM CÔNG THEO NGÀY
                              */
-                            for(var m = 1; m<=2; m++){
+                            for(var m = 1; m<=12; m++){
                                 workbook.sheet(`TS${m}`).row(1).cell(5).value(Number(yearFilter))
         
                                 var i = 4
@@ -1332,7 +1332,7 @@ class Model extends BaseModel {
                             }
 
                             listDataTimesheet11?.forEach((item, index) => {
-                                for(var m = 1; m<=2; m++){
+                                for(var m = 1; m<=12; m++){
                                     if(Number(item._id.month) === Number(m)){
                                         for(let i=4; i<=Number(listStaffs.length + 3); i++){
                                             // Mã nhân viên
@@ -1349,7 +1349,7 @@ class Model extends BaseModel {
                             })
 
                             listDataTimesheet12?.forEach((item, index) => {
-                                for(var m = 1; m<=2; m++){
+                                for(var m = 1; m<=12; m++){
                                     if(Number(item._id.month) === Number(m)){
                                         for(let i=4; i<=Number(listStaffs.length + 3); i++){
                                             // Mã nhân viên
@@ -1366,7 +1366,6 @@ class Model extends BaseModel {
                                     }
                                 }
                             })
-        
 
                             /**
                              * BẢNG CHẤM CÔNG THEO THÁNG
