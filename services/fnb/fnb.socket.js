@@ -42,6 +42,7 @@ exports.FNB_SOCKET = {
                     infoUser: { _id: userID, company: { _id: companyID } }
                 }
             });
+            console.log({ fundaResponse })
             if(!fundaResponse || fundaResponse.error) {
                 return sendDataToMultilSocketsOfListUser({
                     listUserConnected: listUserActive,
@@ -65,9 +66,10 @@ exports.FNB_SOCKET = {
             }
 
             const users = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                companyID,
+                companyID, //fundaResponse?.data?.company?.toString(),
                 isLoadAll: true,
             });
+            console.log({ users })
             if(!users || users.error) {
                 return sendDataToMultilSocketsOfListUser({
                     listUserConnected: listUserActive,
@@ -81,6 +83,7 @@ exports.FNB_SOCKET = {
             const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
             const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
             const contentMSS = `Đơn hàng ${orderInfo?.name}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công bởi ${user.data?.bizfullname}`;
+            console.log({ usersID, receivers })
 
             // Cloud messaging
             broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
@@ -110,4 +113,4 @@ exports.FNB_SOCKET = {
             console.error(error);
         }
     },
- }
+}

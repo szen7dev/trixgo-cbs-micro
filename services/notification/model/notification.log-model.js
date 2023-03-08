@@ -510,7 +510,7 @@ class Model extends BaseModel {
                                 dataForMobilePushFNB.ios_badgeType = 'SetTo';
                                 dataForMobilePushFNB.ios_badgeCount = objDataForSend.amountNoti;
                             }
-                            console.info('MOBILE PUSH (FNB)');
+                            console.info('MOBILE PUSH (FNB)', dataForMobilePushFNB.include_player_ids);
 
                             if(dataForMobilePushFNB.include_player_ids.length) {
                                 dataForMobilePushFNB.include_player_ids = [...new Set(dataForMobilePushFNB.include_player_ids)];
