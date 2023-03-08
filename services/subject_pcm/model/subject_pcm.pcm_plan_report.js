@@ -57,7 +57,7 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                dataInsert = { company: companyID, project: projectID, author: userID, userUpdate: userID };
+                dataInsert = { company: companyID, author: userID, userUpdate: userID };
 
                 if(type){
                     dataInsert.type = type;
@@ -506,4 +506,4 @@ class Model extends BaseModel {
 
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model

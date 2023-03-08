@@ -4,28 +4,21 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
-    //_________Mã hiệu bằng số do hệ thống tự phát sinh
-    // suid : {
-    //     type   : String,
-    //     require:  true,
-    //     unique : true
-    // },
+    //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
+    //_________Dự án phòng ban
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
     },
-    /**
-     * THÔNG TIN CĂN BẢN
-     */
-    //_________Tên/thư mục/chủ đề
+    //_________Tên
     name: String,
-    //_________Mô tả (sử dụng dạng form editor để biên soạn)
+    //_________Mô tả
     description: String,
-    //_________Công việc chứa trong báo cáo
+    //_________Công việc
     tasks: [{
         task :  {
             type: Schema.Types.ObjectId,
@@ -33,8 +26,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
         },
         order: { type: Number, default: 1 }
     }],
-
-    //_________tài liệu chứa trong báo cáo
+    //_________Tài liệu
     documents: [{
         document :  {
             type: Schema.Types.ObjectId,
@@ -42,8 +34,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
         },
         order: { type: Number, default: 1 }
     }],
-
-    // Highlight task
+    //_________Highlight task
     active: [{
         type: Schema.Types.ObjectId,
         ref: 'pcm_plan_task',
@@ -70,14 +61,14 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
     },
     /**
      * Phân loại báo cáo và ghim kết quả tìm kiếm
-     * 1-Báo cáo
+     * 1-Báo cáo/Thẻ phân loại
      * 2-Ghim kết quả tìm kiếm công việc
      * 3-Ghim kết quả tìm kiếm checklist
      * 4-Ghim kết quả tìm kiếm Document
      * 5-Ghim kết quả tìm kiếm hợp đồng
      * 6-Ghim kết quả tìm kiếm comment
      * ----------------NEW-----------------
-     * 7- Nhóm(Thư mục chủ đề) micro
+     * 7- Nhóm (Thư mục chủ đề) micro
      */
     type: { type: Number, default: 1 },
 
@@ -88,9 +79,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
     conditionPin: {
         type: Object,
     },
-    
     /**
-     * Xử dụng xóa công việc trong báo cáo động
+     * Sử dụng xóa công việc trong Báo cáo động
      */
     tasksRemove: [
         {
@@ -98,9 +88,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
             ref: "pcm_plan_task"
         }
     ],
-
     /**
-     * Xử dụng xóa checklist trong báo cáo động
+     * Sử dụng xóa Checklist trong Báo cáo động
      */
     checklistsRemove: [
         {
@@ -108,9 +97,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
             ref: "pcm_plan_checklist"
         }
     ],
-
     /**
-     * Xử dụng xóa document trong báo cáo động
+     * Sử dụng xóa Document trong báo cáo động
      */
     documentRemove: [
         {
@@ -118,7 +106,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
             ref: "pcm_plan_checklist"
         }
     ],
-
     /**
      * Dùng để lưu 1 mảng tìm kiếm động trong báo cáo
      */
@@ -128,7 +115,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
             ref: 'pcm_plan_report',
         }
     ],
-
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
@@ -140,4 +126,4 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }
-});
+})
