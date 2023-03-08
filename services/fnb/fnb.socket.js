@@ -25,6 +25,7 @@ exports.FNB_SOCKET = {
             let userID                          = socket.client.user;
             let io                              = socket.$service.io;
             let { companyID, fundaID, orderInfo } = data;
+            console.log({ 'EVENT_SOCKET_CONSTANT_FNB.FNB_CSS_ADD_NEW_ORDER': data });
 
             if(!companyID){
                 return sendDataToMultilSocketsOfListUser({
