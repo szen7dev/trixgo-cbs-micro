@@ -43,7 +43,7 @@ exports.FNB_SOCKET = {
                     infoUser: { _id: userID, company: { _id: companyID } }
                 }
             });
-            console.log({ fundaResponse })
+            console.log({ fundaResponse, fundaID })
             if(!fundaResponse || fundaResponse.error) {
                 return sendDataToMultilSocketsOfListUser({
                     listUserConnected: listUserActive,
