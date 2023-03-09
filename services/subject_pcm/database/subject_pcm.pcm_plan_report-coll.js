@@ -18,7 +18,12 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
     name: String,
     //_________Mô tả
     description: String,
-    //_________Công việc
+    //_________Chủ đề
+    subjects: [{
+        type: Schema.Types.ObjectId,
+        ref: 'pcm_plan_task',
+    }],
+    //_________Công việc (sử dụng cho Kanban/báo cáo)
     tasks: [{
         task :  {
             type: Schema.Types.ObjectId,
@@ -26,7 +31,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
         },
         order: { type: Number, default: 1 }
     }],
-    //_________Tài liệu
+    //_________Tài liệu (sử dụng cho Kanban/báo cáo)
     documents: [{
         document :  {
             type: Schema.Types.ObjectId,

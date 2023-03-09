@@ -96,86 +96,101 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ reportID, name, type, description, userID, select, members, conditionPin }) {
+    update({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID }) {
+        // console.log({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataUpdate = { userUpdate: userID };
+                if(!option){
+                    /**
+                     * DECALARTION VARIABLE (1)
+                     */
+                    let dataUpdate = { userUpdate: userID };
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+                    /**
+                     * VALIDATION STEP (2)
+                     *  - Kiểm tra valid từ các input
+                     *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                     */
+                    if(!checkObjectIDs(userID))
+                        return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(!checkObjectIDs(reportID))
-                    return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
+                    if(!checkObjectIDs(reportID))
+                        return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                const infoReport = await PCM_PLAN_REPORT_COLL
-                    .findById(reportID)
-                    .select('author')
-                    .lean();
+                    /**
+                     * LOGIC STEP (3)
+                     *  3.1: Convert type + update name (ví dụ: string -> number)
+                     *  3.2: Operation database
+                     */
+                    const infoReport = await PCM_PLAN_REPORT_COLL
+                        .findById(reportID)
+                        .select('author')
+                        .lean();
 
-                if(!infoReport) {
-                    return resolve({
-                        error: true,
-                        message: 'Report không tồn tại',
-                        keyError: 'report_not_exists',
-                        status: 403
-                    });
-                }
-
-                if(infoReport.author?.toString() === userID.toString()) {
-                    if(members && members.length) {
-                        if(checkObjectIDs(members)) {
-                            members = [...new Set(members)];
-                            dataUpdate.members = members;
-                        } else{
-                            dataUpdate.members = [];
-                        }
+                    if(!infoReport) {
+                        return resolve({
+                            error: true,
+                            message: 'Report không tồn tại',
+                            keyError: 'report_not_exists',
+                            status: 403
+                        });
                     }
-                } else if(checkObjectIDs(members)){
-                    return resolve({
-                        error: true,
-                        message: 'Bạn không có quyền chia sẻ',
-                        keyError: "permission_denined",
-                        status: 403
-                    });
+
+                    if(infoReport.author?.toString() === userID.toString()) {
+                        if(members && members.length) {
+                            if(checkObjectIDs(members)) {
+                                members = [...new Set(members)];
+                                dataUpdate.members = members;
+                            } else{
+                                dataUpdate.members = [];
+                            }
+                        }
+                    } else if(checkObjectIDs(members)){
+                        return resolve({
+                            error: true,
+                            message: 'Bạn không có quyền chia sẻ',
+                            keyError: "permission_denined",
+                            status: 403
+                        });
+                    }
+
+                    if(name){
+                        dataUpdate.name = name;
+                    }
+
+                    if(description) {
+                        dataUpdate.description = description;
+                    }
+
+                    if(type){
+                        dataUpdate.type = type;
+                    }
+
+                    if(conditionPin){
+                        dataUpdate.conditionPin = conditionPin;
+                    }
+
+                    let infoAfterUpdate = await PCM_PLAN_REPORT_COLL
+                        .findByIdAndUpdate(reportID, dataUpdate, { new: true })
+                        .select(select);
+
+                    if(!infoAfterUpdate)
+                        return resolve({ error: true, message: "Can't update pcm plan report", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+
+                    return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+                }else{
+                    // console.log('================OKKKKKKKKKKKKKKKKKKKKK')
+                    for(const item of reportsID){
+                        // console.log(item)
+                        let info = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(item, {
+                            $addToSet: {
+                                subjects: taskID
+                            }
+                        }, { new: true })
+                    }
+
+                    return resolve({ error: false, data: {option, taskID, reportsID}, status: 200 });
                 }
-
-                if(name){
-                    dataUpdate.name = name;
-                }
-
-                if(description) {
-                    dataUpdate.description = description;
-                }
-
-                if(type){
-                    dataUpdate.type = type;
-                }
-
-                if(conditionPin){
-                    dataUpdate.conditionPin = conditionPin;
-                }
-
-                let infoAfterUpdate = await PCM_PLAN_REPORT_COLL
-                    .findByIdAndUpdate(reportID, dataUpdate, { new: true })
-                    .select(select);
-
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Can't update pcm plan report", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -503,7 +518,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 }
 
 exports.MODEL = new Model

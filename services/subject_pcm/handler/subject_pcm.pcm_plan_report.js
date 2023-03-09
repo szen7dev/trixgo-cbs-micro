@@ -45,7 +45,7 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            subjectID         : { type: "string" },
+            subjectID         : { type: "string", optional: true },
             name              : { type: "string", optional: true },
             description       : { type: "string", optional: true },
             type              : { type: "number", optional: true },
@@ -56,11 +56,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, name, description, type, select, members, conditionPin } = ctx.params;
+                let { subjectID, name, description, type, select, members, conditionPin, option, taskID, reportsID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.update({
-                    reportID: subjectID, name, description, type, userID, select, members, conditionPin
+                    reportID: subjectID, name, description, type, userID, select, members, conditionPin, option, taskID, reportsID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
