@@ -38,7 +38,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -47,9 +47,9 @@ class Model extends BaseModel {
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
         goods, warehouse, contract, project, budgetWork,
-        note, 
-        ctx 
-    }) { 
+        note,
+        ctx
+    }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -70,18 +70,18 @@ class Model extends BaseModel {
                     return resolve({ error: false, message: 'debit/credit is duplicated', status: 400 });
 
                 // Lấy thông tin của hợp đồng => Gán kèm dự án
-                
+
                 // TẠO CHI TIẾT CHỨNG TỪ
                 const dataInsert = {
-                    userCreate: authorID, 
-                    company: companyID, 
-                    funda: fundaID, 
+                    userCreate: authorID,
+                    company: companyID,
+                    funda: fundaID,
                     voucher: voucherID,
                     date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
                     goods, warehouse, contract, project, budgetWork,
-                    note, 
+                    note,
                 }
 
                 /**
@@ -132,7 +132,7 @@ class Model extends BaseModel {
                         option: 2,
                         workID: `${budgetWork}`
                     })
-                    console.log('1. Update Budget Work==========================>>>>>')
+                    // console.log('1. Update Budget Work==========================>>>>>')
                     // console.log(infoBudgetWork)
 
                     if(infoBudgetWork){
@@ -141,7 +141,7 @@ class Model extends BaseModel {
                             groupID: `${budgetGroup}`
                         })
 
-                        console.log('2. Update Budget Group==========================>>>>>')
+                        // console.log('2. Update Budget Group==========================>>>>>')
                         // console.log(infoBudgetGroup)
 
                         if(infoBudgetGroup){
@@ -150,7 +150,7 @@ class Model extends BaseModel {
                                 itemID: `${budgetItem}`
                             })
 
-                            console.log('3. Update Budget Item==========================>>>>>')
+                            // console.log('3. Update Budget Item==========================>>>>>')
                             // console.log(infoBudgetItem)
 
                             if(infoBudgetItem){
@@ -159,7 +159,7 @@ class Model extends BaseModel {
                                     budgetID: `${budget}`
                                 })
 
-                                console.log('4. Update Budget==========================>>>>>')
+                                // console.log('4. Update Budget==========================>>>>>')
                                 // console.log(infoBudget)
                             }
                         }
@@ -174,20 +174,19 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update 
+     * Name: Update
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ 
+    update({
         authorID, journalID,
         date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
         goods, warehouse, contract, project, budgetWork,
-        note, 
+        note,
         ctx
      }) {
-        const that = this
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -211,17 +210,17 @@ class Model extends BaseModel {
                     return resolve({ error: false, message: 'finacial_journal_exit', status: 400 })
 
                 let voucherID = infoJournal.voucher
-                
+
                 /**
                  * CẬP NHẬT CHI TIẾT CHỨNG TỪ
                  */
                 const dataUpdate = {
-                    userUpdate: authorID, 
+                    userUpdate: authorID,
                     date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
                     goods, warehouse, contract, project, budgetWork,
-                    note, 
+                    note,
                 }
 
                 /**
@@ -235,7 +234,7 @@ class Model extends BaseModel {
                     budgetItemOld = infoJournal.budgetItem
                     budgetGroupOld = infoJournal.budgetGroup
                     budgetWorkOld = infoJournal.budgetWork
-                }   
+                }
 
                 /**
                  * GÁN MÃ NGÂN SÁCH: MỚI VÀ CŨ
@@ -379,7 +378,7 @@ class Model extends BaseModel {
      */
 
     /**
-     * Name: Get info 
+     * Name: Get info
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -414,7 +413,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Get list 
+     * Name  : Get list
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -491,33 +490,33 @@ class Model extends BaseModel {
                     conditionObj = {
                         budget: budgetID
                     }
-                }  
+                }
                 if(checkObjectIDs(budgetItemID)){
                     conditionObj = {
                         budgetItem: budgetItemID
                     }
-                }  
+                }
                 if(checkObjectIDs(budgetGroupID)){
                     conditionObj = {
                         budgetGroup: budgetGroupID
                     }
-                }  
+                }
                 if(checkObjectIDs(budgetWorkID)){
                     conditionObj = {
                         budgetWork: budgetWorkID
                     }
-                } 
+                }
 
                 /**
                  * THEO TÀI KHOẢN
                  */
                 if(checkObjectIDs(accountID)){
                     //_________Get nestedArray of account
-                    let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
-                
+                    let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true });
+
                     arrObjectID = arrObjectID.data || []
                     console.log(arrObjectID)
-                    
+
                     conditionObj.$or = [
                         { debit:   {
                             $in: arrObjectID
@@ -528,7 +527,7 @@ class Model extends BaseModel {
                     ]
 
                     if(fromDate && toDate){
-                        conditionObj.date = { 
+                        conditionObj.date = {
                             $gte: moment(fromDate).toDate(),
                             $lte: moment(toDate).toDate(),
                         }
@@ -599,15 +598,15 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
-     * Name  : Tổng hợp ngân sách đã thực hiện 
+     * Name  : Tổng hợp ngân sách đã thực hiện
      * Author: Hiepnh
-     * Date  : 10/4/2022 
+     * Date  : 10/4/2022
      */
-    calImpleBudget({ 
+    calImpleBudget({
         workID, groupID, itemID, budgetID, userID, ctx
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -617,7 +616,7 @@ class Model extends BaseModel {
                  * 3-Tổng hợp ngân sách đã thực hiện của hạng mục-budgetItem
                  * 4-Tổng hợp ngân sách đã thực hiện của ngân sách-budget
                  */
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -645,13 +644,13 @@ class Model extends BaseModel {
                     conditionObjUp.budget = ObjectID(budgetID)
                     conditionObjDown.budget = ObjectID(budgetID)
                 }
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-             
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -661,28 +660,28 @@ class Model extends BaseModel {
                 let listDataUp = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
                         $match: conditionObjUp
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
                             quantity: { $sum: "$quantity" },
                             amount: { $sum: "$amount" },
                         }
-                    }, 
+                    },
                 ])
 
                 // Dữ liệu giảm ngân sách thực hiện
                 let listDataDown = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
                         $match: conditionObjDown
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
                             quantity: { $sum: "$quantity" },
                             amount: { $sum: "$amount" },
                         }
-                    }, 
+                    },
                 ])
                 // console.log(conditionObjUp)
                 // console.log(conditionObjDown)
@@ -709,16 +708,15 @@ class Model extends BaseModel {
 
     /**
      * CÁC BÁO CÁO
-     */    
+     */
     /**
      * Name: Số dư của 1 tài khoản (opening balance, closing balance)
-     * Usage: 
+     * Usage:
      * - Sổ chi tiết tài khoản
      * Author: Hiepnh
      * Date: 03/5/2022
      */
     getAccountBalance({ companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
-        console.log({ companyID, fundaID, contractID, accountID, fromDate, toDate, userID })
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -735,8 +733,8 @@ class Model extends BaseModel {
                  */
 
                 //_________Get nestedArray of account
-                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
-               
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true });
+
                 arrObjectID = arrObjectID.data || []
                 // console.log(arrObjectID)
 
@@ -745,13 +743,13 @@ class Model extends BaseModel {
                         $in: arrObjectID
                     }
                 }
-                
+
                 let conditionObj2 = {
                     credit: {
                         $in: arrObjectID
                     }
                 }
-                
+
                 if(contractID && checkObjectIDs(contractID)){
                     console.log('============1')
                     conditionObj1.contract = ObjectID(contractID) // Do sử dụng Aggregate nên phải đưa vào dạng ObjectID()
@@ -776,7 +774,7 @@ class Model extends BaseModel {
 
                 console.log(conditionObj1)
                 console.log(conditionObj2)
-               
+
                 /**
                  * Lấy năm của ngày đầu kỳ
                  * !!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm) !!!
@@ -795,9 +793,9 @@ class Model extends BaseModel {
                             _debit:[
                                 {
                                     $match: conditionObj1
-                                }, 
+                                },
                                 {
-                                    $project : { 
+                                    $project : {
                                         year : {$year : "$date"},
                                         forward: '$forward',
                                         cancel: '$cancel',
@@ -810,21 +808,21 @@ class Model extends BaseModel {
                                         "forward": 1,
                                         "cancel": 0
                                     }
-                                }, 
+                                },
                                 {
                                     $group: {
                                         _id: { },
                                         amountPrice: { $sum: "$amount" }
                                     }
-                                }                    
+                                }
                             ],
-                            
+
                             _credit:[
                                 {
                                     $match: conditionObj2
-                                }, 
+                                },
                                 {
-                                    $project : { 
+                                    $project : {
                                         year : {$year : "$date"},
                                         forward: '$forward',
                                         cancel: '$cancel',
@@ -838,17 +836,17 @@ class Model extends BaseModel {
                                         "cancel": 0
                                     }
                                 },
- 
+
                                 {
                                     $group: {
                                         _id: { },
                                         amountPrice: { $sum: "$amount" }
                                     }
-                                }   
-                            ],            
-                            
+                                }
+                            ],
+
                         }
-                    } 
+                    }
                 ]);
                 console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
                 console.log({_____PSNo:listDataOpeningS[0]._debit})
@@ -864,34 +862,12 @@ class Model extends BaseModel {
                             _debit:[
                                 {
                                     $match: conditionObj1
-                                }, 
+                                },
                                 {
                                     $match: {
                                         "forward": 0,
                                         "cancel": 0,
-                                        "date": { 
-                                            $gte: moment(firstDayOfYear).toDate(),
-                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
-                                        },
-                                    }
-                                }, 
-                                {
-                                    $group: {
-                                        _id: { },
-                                        amountPrice: { $sum: "$amount" }
-                                    }
-                                }                    
-                            ],
-                            
-                            _credit:[
-                                {
-                                    $match: conditionObj2
-                                }, 
-                                {
-                                    $match: {
-                                        "forward": 0,
-                                        "cancel": 0,
-                                        "date": { 
+                                        "date": {
                                             $gte: moment(firstDayOfYear).toDate(),
                                             $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
                                         },
@@ -902,11 +878,33 @@ class Model extends BaseModel {
                                         _id: { },
                                         amountPrice: { $sum: "$amount" }
                                     }
-                                }   
-                            ],            
-                            
+                                }
+                            ],
+
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                },
+                                {
+                                    $match: {
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": {
+                                            $gte: moment(firstDayOfYear).toDate(),
+                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                                        },
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }
+                            ],
+
                         }
-                    } 
+                    }
                 ]);
                 console.log('=========SỐ ĐẦU KỲ-1: MỐC ĐẦU NĂM->FROMDATE=========')
                 console.log({_____PSNo:listDataOpening[0]._debit})
@@ -922,34 +920,12 @@ class Model extends BaseModel {
                             _debit:[
                                 {
                                     $match: conditionObj1
-                                }, 
+                                },
                                 {
                                     $match: {
                                         "forward": 0,
                                         "cancel": 0,
-                                        "date": { 
-                                            $gte: moment(fromDate).toDate(),
-                                            $lte: moment(toDate).toDate(),
-                                        },
-                                    }
-                                }, 
-                                {
-                                    $group: {
-                                        _id: { },
-                                        amountPrice: { $sum: "$amount" }
-                                    }
-                                }                    
-                            ],
-                            
-                            _credit:[
-                                {
-                                    $match: conditionObj2
-                                }, 
-                                {
-                                    $match: {
-                                        "forward": 0,
-                                        "cancel": 0,
-                                        "date": { 
+                                        "date": {
                                             $gte: moment(fromDate).toDate(),
                                             $lte: moment(toDate).toDate(),
                                         },
@@ -960,17 +936,39 @@ class Model extends BaseModel {
                                         _id: { },
                                         amountPrice: { $sum: "$amount" }
                                     }
-                                }   
-                            ],            
-                            
+                                }
+                            ],
+
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                },
+                                {
+                                    $match: {
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": {
+                                            $gte: moment(fromDate).toDate(),
+                                            $lte: moment(toDate).toDate(),
+                                        },
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }
+                            ],
+
                         }
-                    } 
+                    }
                 ]);
                 console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
                 console.log({_____PSNo:listDataIncurred[0]._debit})
                 console.log({_____PSCo: listDataIncurred[0]._credit})
 
-                
+
                 let openingBalanceS = listDataOpeningS[0], openingBalance = listDataOpening[0], incurredBalance = listDataIncurred[0]
 
                 let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0, totalIncurredDebit = 0, totaIncurredCredit = 0

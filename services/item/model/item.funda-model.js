@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -25,7 +25,7 @@ const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
 const ITEM__AREA_COLL            				= require('../database/item.area-coll');
 
 class Model extends BaseModel {
-    
+
     constructor() {
         super(ITEM__FUNDA_COLL);
     }
@@ -44,11 +44,11 @@ class Model extends BaseModel {
                 let dataInsert = {
                     userCreate: userID,
                     company: companyID,
-                    name, 
+                    name,
                     admins: [userID],
                     members: [userID],
-                }    
-                
+                }
+
                 //_________Khu vực (phường/xã)
                 let infoArea = await ITEM__AREA_COLL.findById(area).populate({
                     path: 'parent',
@@ -65,7 +65,7 @@ class Model extends BaseModel {
                 dataInsert.area3 = area
                 dataInsert.area2 = infoArea.parent._id
                 dataInsert.area1 = infoArea.parent.parent._id
-                
+
                 if(checkObjectIDs(activeCampaign)){
                     dataInsert.activeCampaign = activeCampaign;
                 }
@@ -102,7 +102,7 @@ class Model extends BaseModel {
                 if(campaign && !isNaN(campaign) && [1, 2].includes(campaign)){
                     dataInsert.campaign = +campaign;
                 }
-                
+
                 //_________Phân loại trong hệ thống hoặc nhượng quyền
                 if(internal && !isNaN(internal) && [1, 2].includes(internal)){
                     dataInsert.internal = +internal;
@@ -164,7 +164,7 @@ class Model extends BaseModel {
 	 */
 	update({ fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance }){
         // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
-        return new Promise(async resolve => { 
+        return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
                     return resolve({ error: true, message: "name|fundaID không hợp lệ", keyError: "Request params fundaID invalid" })
@@ -367,23 +367,22 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info funda 
+     * Name: get info funda
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ fundaID, select, populates }) { 
+    getInfo({ fundaID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(fundaID))
                     return resolve({ error: true, message: 'Request params fundaID invalid', status: 400 });
-                
-                 // populates
-                 if(populates && typeof populates === 'string'){
+
+                if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -395,26 +394,26 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /**
-     * Name  : Danh sách funda 
+     * Name  : Danh sách funda
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({
         companyID, parentID, isListParentOfListChilds, isMember,
-        keyword, limit = 300, lastestID, select, populates= {}, userID } ) { 
+        keyword, limit = 300, lastestID, select, populates= {}, userID } ) {
         // console.log({companyID, parentID, isListParentOfListChilds, isMember,
-        //     keyword, limit, lastestID, select, populates, userID})  
-        //     console.log('========================') 
-        // console.log('ĐƠN VỊ CƠ SỞ========================') 
+        //     keyword, limit, lastestID, select, populates, userID})
+        //     console.log('========================')
+        // console.log('ĐƠN VỊ CƠ SỞ========================')
         return new Promise(async (resolve) => {
             try {
                 if(limit > 300){
@@ -461,14 +460,14 @@ class Model extends BaseModel {
                         conditionObj.parent = { $exists: false };
                     }
                 }
-                
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 // console.log(conditionObj)
-                
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__FUNDA_COLL.findById(lastestID);
@@ -485,13 +484,13 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await ITEM__FUNDA_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -514,7 +513,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

@@ -24,7 +24,6 @@ class Model extends BaseModel {
      * Date: 25/03/2022
      */
     insert({ companyID, projectID, coll, title, note, authorID }) {
-        console.log({ companyID, projectID, coll, title, note, authorID })
         return new Promise(async resolve => {
             try {
                 const dataInsert = {
