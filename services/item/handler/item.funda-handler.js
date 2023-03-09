@@ -133,11 +133,10 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                // await this.validateEntity(ctx.params);
+                await this.validateEntity(ctx.params);
                 let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, isMember } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
-                console.log({ PARAMS: ctx.params, meta: ctx.meta })
                 
                 if(!companyID){
                     companyID = company._id
