@@ -56,10 +56,10 @@ module.exports = {
      * Dev: Depv ✅
      * Func: Cập nhật funda
      */
-    update:{  
+    update:{
         auth: "required",
         params: {
-            fundaID             : { type: "string" }, 
+            fundaID             : { type: "string" },
             projectID           : { type: "string", optional: true },
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
@@ -95,14 +95,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
+                const { fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
                     adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  } = ctx.params;
 
-                // console.log({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, 
+                // console.log({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
                 //     adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID })
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, 
-                    admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, 
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members,
+                    admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense,
                     otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -110,9 +110,9 @@ module.exports = {
             }
         },
     },
-    
+
    /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Danh sách funda
 	 */
     getInfoAndGetList: {
@@ -123,7 +123,7 @@ module.exports = {
             parentID                    : { type: "string", optional: true },
             isListParentOfListChilds    : { type: "string", optional: true },
             isMember                    : { type: "string", optional: true },
-            
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -135,14 +135,13 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, isMember } = ctx.params;
-                
+
                 const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log(userID)
-                
+
                 if(!companyID){
                     companyID = company._id
                 }
-                
+
                 let resultAfterCallHandler;
                 if(fundaID){
                     resultAfterCallHandler = await ITEM__FUNDA_MODEL.getInfo({
@@ -155,7 +154,7 @@ module.exports = {
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error: true, message: error.message }; 
+                return { error: true, message: error.message };
             }
         }
     },

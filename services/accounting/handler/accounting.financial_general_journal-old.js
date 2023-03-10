@@ -41,10 +41,10 @@ module.exports = {
                    cash, vat, note, updown, advancePayment , 
                     date, subtype, budgetWork, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][INSERT_FULL] ${error}`);
+                // console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][INSERT_FULL] ${error}`);
                 return { error: true, message: error.message };
             }
         }

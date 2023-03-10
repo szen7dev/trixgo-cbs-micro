@@ -2502,11 +2502,9 @@ class Model extends BaseModel {
      * Date: 4/2/2023
      */
     exportExcel2({ companyID, option, year, month, userID }) {
-        // console.log({ companyID, option, year, month, userID })
         return new Promise(async resolve => {
             try {
                 if(!option || option == undefined){
-                    // console.log('=========11111111111111=============')
                     let listData  = await FNB_ORDER_COLL.find({ company: companyID })
                     .populate({
                         path: "funda",
@@ -2518,8 +2516,7 @@ class Model extends BaseModel {
                     })
                     .limit(5000)
                     .sort({createAt: -1})
-                    // console.log(listData)
-    
+
                     let yearFilter
                     let currentYear = new Date().getFullYear()
                     if(year && !isNaN(year)){
