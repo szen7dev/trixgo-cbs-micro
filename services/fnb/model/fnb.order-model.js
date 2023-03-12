@@ -2581,10 +2581,21 @@ class Model extends BaseModel {
                         let conditionObjYear = {
                             "year": Number(yearFilter),
                         }
+
                         let conditionObj = { 
                             company: ObjectID(companyID),
                             status: 5
                         }
+
+                        // Địa điểm cơ sở được quyền truy cập
+                        let listFuda = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}}).select("_id name sign").sort({_id: 1})
+                        let fundasIDIsMember = listFuda.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }else{
+                            conditionObj.funda = { $in: [] }
+                        }
+                                             
                         let projectObj =  {
                             year : {$year : "$createAt"},
                             month : {$month : "$createAt"},
@@ -2646,9 +2657,8 @@ class Model extends BaseModel {
                             }
                         ])
                         // console.log(listData)
-                        let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
-                        // console.log(listFuda)
-                        // console.log( listFuda.length)
+                        // let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
+
 
                         let listData2 = await FNB_ORDER_COLL.aggregate([
                             {
