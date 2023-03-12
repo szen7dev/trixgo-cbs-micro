@@ -2617,6 +2617,16 @@ class Model extends BaseModel {
                             select: '_id name',
                             model: 'funda'
                         }
+
+                        let conditionGroupDay = {
+                            _id: {  salesChannel: "$salesChannel", day: "$day", month: "$month" },
+                            number: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            amount: { $sum: "$amount" },
+                        }
                         
                         let listData = await FNB_ORDER_COLL.aggregate([
                             {
@@ -2640,6 +2650,25 @@ class Model extends BaseModel {
                         // console.log(listFuda)
                         // console.log( listFuda.length)
 
+                        let listData2 = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : projectObj
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroupDay
+                            },
+                            {
+                                $sort: {"_id.month": 1, "_id.day": 1}
+                            }
+                        ])
+                        // console.log(listData2)
+
                         // Modify the workbook.
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
                         .then(async workbook => {
@@ -2662,40 +2691,80 @@ class Model extends BaseModel {
                                             let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
                                             
                                             if((item._id.funda.toString() === fundaID.toString())){  
-                                                
-                                                // amount = Number(amount) + Number(item.amount)
-                                                
-                                                // Tổng hợp số liệu
-                                                // discount = Number(discount) + Number(item.discount)
-                                                // salesoff = Number(salesoff) + Number(item.salesoff)
-                                                // credit = Number(credit) + Number(item.credit)
-                                                // amount = Number(amount) + Number(item.amount)
-                                                
-                                                // Food App
                                                 for(var j=4; j<=10; j++){                                                
                                                     if((Number(item._id.salesChannel) === Number(j-3))){        
                                                         workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.total))
-                                                        // workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.amount))
-                                                        // amount = Number(amount) + Number(item.amount)
                                                     }
-                                                    // console.log(amount)
-                                                }
-                                                // console.log(amount)
-
-                                                
+                                                }                                                
                                             }
-
-                                            // console.log(amount)
-                                            // workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
-
-                                            // workbook.sheet(`T${m}`).row(i).cell(11).value(Number(discount))
-                                            // workbook.sheet(`T${m}`).row(i).cell(12).value(Number(salesoff))
-                                            // workbook.sheet(`T${m}`).row(i).cell(13).value(Number(credit))
-                                            // workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
                                         }
                                     }
                                 }
                             })
+
+                            for(var m = 1; m<=12; m++){
+                                for(var i=3; i<=Number(listFuda.length + 2); i++){
+
+                                    let discount = 0, salesoff = 0, credit = 0, amount = 0
+
+                                    let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
+
+                                    listData?.forEach((item, index) => {
+                                        if((item._id.funda.toString() === fundaID.toString()) && Number(item._id.month) === Number(m)){       
+
+                                            discount = Number(discount) + Number(item.discount)
+                                            salesoff = Number(salesoff) + Number(item.salesoff)
+                                            credit = Number(credit) + Number(item.credit)
+                                            amount = Number(amount) + Number(item.amount)
+                                        }
+                                    })
+                                    
+                                    workbook.sheet(`T${m}`).row(i).cell(11).value(Number(discount))
+                                    workbook.sheet(`T${m}`).row(i).cell(12).value(Number(salesoff))
+                                    workbook.sheet(`T${m}`).row(i).cell(13).value(Number(credit))
+                                    workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
+                                }
+                            }
+                            
+                            
+                            workbook.sheet(`BaoCaoNgay`).row(1).cell(2).value(Number(currentYear))
+                            listData2?.forEach((item, index) => {
+
+                                for(var i = 3; i<=379; i++){
+                                    
+                                    let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
+                                    let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
+
+                                    for(var j=5; j<=11; j++){                                                
+                                        if((Number(item._id.salesChannel) === Number(j-4)) && Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){        
+                                            workbook.sheet(`BaoCaoNgay`).row(i).cell(j).value(Number(item.total))
+                                        }
+                                    }
+                                }
+                            })
+                            
+                            for(var i = 3; i<=379; i++){
+                                let discount = 0, salesoff = 0, credit = 0, amount = 0
+                                let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
+                                let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
+
+                                if(!isNaN(xlsDay)){
+                                    // console.log({xlsDay, xlsMonth})
+                                    listData2?.forEach((item, index) => {
+                                        if(Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){        
+                                            discount = Number(discount) + Number(item.discount)
+                                            salesoff = Number(salesoff) + Number(item.salesoff)
+                                            credit = Number(credit) + Number(item.credit)
+                                            amount = Number(amount) + Number(item.amount)
+                                        }
+                                    })
+                                    
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(12).value(Number(discount))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(13).value(Number(salesoff))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(14).value(Number(credit))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(15).value(Number(amount))
+                                }
+                            }
                         
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
