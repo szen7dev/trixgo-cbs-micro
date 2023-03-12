@@ -330,15 +330,15 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID, option, month, year } = ctx.params;
-                // console.log({ companyID, option })
+                let { companyID, option, month, year, filterParams } = ctx.params;
+                // console.log({ companyID, option, filterParams })
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel2({
-                    userID, companyID, option, month, year, ctx
+                    userID, companyID, option, month, year, filterParams, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

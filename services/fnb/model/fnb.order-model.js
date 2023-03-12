@@ -2501,11 +2501,76 @@ class Model extends BaseModel {
      * Func: Tải Đơn hàng
      * Date: 4/2/2023
      */
-    exportExcel2({ companyID, option, year, month, userID }) {
+    exportExcel2({ companyID, option, year, month, filterParams, userID }) {
+        // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
                 if(!option || option == undefined){
-                    let listData  = await FNB_ORDER_COLL.find({ company: companyID })
+                    // let fundasID = filterParams.fundasID
+                    // console.log(fundasID)
+
+                    let conditionObj = { company: companyID }
+
+                    let str = '{"name": "John", "age": 30, "city": "New York"}';
+                    let obj = JSON.parse(filterParams);
+                    // console.log(obj);
+
+                    let fundasID = obj.fundasID
+                    let shiftTypes = obj.shiftTypes
+                    let salesChannels = obj.salesChannels
+                    let statuss = obj.statuss
+                    let isMistake = obj.isMistake
+                    let fromDate = obj.fromDate
+                    let toDate = obj.toDate
+                    let keyword = obj.keyword
+
+                    if(fundasID && fundasID.length ){
+                        let arrFun = fundasID.map(item=>ObjectID(item))
+    
+                        if(arrFun.length) {
+                            conditionObj.funda = { $in: arrFun };
+                        }
+                    }else{
+                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }else{
+                            conditionObj.funda = { $in: [] }
+                        }
+                    }
+
+                    shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
+                    salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
+                    statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
+
+                    // Phân loại có lỗi hay không
+                    if(isMistake && isMistake == 1){
+                        conditionObj.numberOfMistakes = { $gt: 0 }
+                    }
+
+                    // Phân loại theo thời khoảng
+                    if(fromDate && toDate){
+                        conditionObj.createAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        const regSearch = new RegExp(keyword, 'i');
+    
+                        conditionObj.$or = [
+                            { name: regSearch },
+                            { sign: regSearch },
+                        ]
+                    }
+
+                    // console.log(conditionObj)
+
+                    let listData  = await FNB_ORDER_COLL.find(conditionObj)
                     .populate({
                         path: "funda",
                         select: "name sign",
@@ -2553,6 +2618,7 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(21).value(item.note);
                             workbook.sheet("Order").row(i).cell(22).value(Number(item.loyaltyPoints));
                             workbook.sheet("Order").row(i).cell(23).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
+                            workbook.sheet("Order").row(i).cell(24).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
                             i++
                         });
                        
