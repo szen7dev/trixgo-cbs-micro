@@ -1332,6 +1332,7 @@ class Model extends BaseModel {
                     conditionObj.$or = [
                         { name: regSearch },
                         { sign: regSearch },
+                        { note: regSearch },
                     ]
                 }
 
@@ -1812,7 +1813,7 @@ class Model extends BaseModel {
      * Func: Tải KPI
      * Date: 8/12/2022
      */
-    exportExcel({ companyID, year, month, userID }) {
+    exportExcel({ companyID, year, month, email, userID }) {
         // console.log({ companyID, year, month, userID })
         return new Promise(async resolve => {
             try {
@@ -2501,7 +2502,7 @@ class Model extends BaseModel {
      * Func: Tải Đơn hàng
      * Date: 4/2/2023
      */
-    exportExcel2({ companyID, option, year, month, filterParams, userID }) {
+    exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
         // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
@@ -2636,7 +2637,6 @@ class Model extends BaseModel {
                 }else{
                     // console.log('=========2222222222222=============')
                     if(option == 1){
-                        // console.log('=========Hồ sơ thanh toán=============')
                         let yearFilter
                         let currentYear = new Date().getFullYear()
                         if(year && !isNaN(year)){
@@ -2722,9 +2722,6 @@ class Model extends BaseModel {
                                 $sort: sortBy
                             }
                         ])
-                        // console.log(listData)
-                        // let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
-
 
                         let listData2 = await FNB_ORDER_COLL.aggregate([
                             {
@@ -2856,103 +2853,110 @@ class Model extends BaseModel {
                     }
 
                     if(option == 2){
-                        let yearFilter
-                        let currentYear = new Date().getFullYear()
-                        if(year && !isNaN(year)){
-                            yearFilter = Number(year)
-                        }else{
-                            yearFilter = Number(currentYear)
-                        }
-                        let conditionObjYear = {
-                            "year": Number(yearFilter),
-                        }
-                        let conditionObj = { 
-                            company: ObjectID(companyID),
-                            status: 5
-                        }
-                        let projectObj =  {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            company : 1,
-                            funda : 1,
-                            createAt: 1,
-                            customer: 1,
-                            total: 1,
-                            discount: 1,
-                            salesoff: 1,
-                            credit: 1,
-                            amount: 1,
-                            // salesChannel: 1
-                        }
-                        let conditionGroup = {}, conditionPopulate = {}
-
-                        conditionPopulate = {
-                            path: '_id.customer',
-                            select: '_id name phone note',
-                            model: 'contact'
-                        }
-
-                        conditionGroup = {
-                            _id: {  customer: "$customer", month: "$month" },
-                            number: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            // discount: { $sum: "$discount" },
-                            // salesoff: { $sum: "$salesoff" },
-                            // credit: { $sum: "$credit" },
-                            amount: { $sum: "$amount" },
-                        }
-                        
-                        let listData = await FNB_ORDER_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : projectObj
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
+                        if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+                            let yearFilter
+                            let currentYear = new Date().getFullYear()
+                            if(year && !isNaN(year)){
+                                yearFilter = Number(year)
+                            }else{
+                                yearFilter = Number(currentYear)
                             }
-                        ])
-                        await FNB_ORDER_COLL.populate(listData, conditionPopulate)
-                        // let listContact = await ITEM__CONTACT_COLL.find({_id: {$in: listData.map(item=>item._id.customer)}}).select('_id name phone note').sort({_id: 1})
-                        // console.log(listData)
+                            let conditionObjYear = {
+                                "year": Number(yearFilter),
+                            }
+                            let conditionObj = { 
+                                company: ObjectID(companyID),
+                                status: 5
+                            }
+                            let projectObj =  {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                company : 1,
+                                funda : 1,
+                                createAt: 1,
+                                customer: 1,
+                                total: 1,
+                                discount: 1,
+                                salesoff: 1,
+                                credit: 1,
+                                amount: 1,
+                                // salesChannel: 1
+                            }
+                            let conditionGroup = {}, conditionPopulate = {}
 
-                        // Modify the workbook.
-                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
-                        .then(async workbook => {
+                            conditionPopulate = {
+                                path: '_id.customer',
+                                select: '_id name phone note',
+                                model: 'contact'
+                            }
+
+                            conditionGroup = {
+                                _id: {  customer: "$customer", month: "$month" },
+                                number: { $sum: 1 },
+                                total: { $sum: "$total" },
+                                // discount: { $sum: "$discount" },
+                                // salesoff: { $sum: "$salesoff" },
+                                // credit: { $sum: "$credit" },
+                                amount: { $sum: "$amount" },
+                            }
                             
-                            var i = 3
-                            listData?.forEach((item, index) => {
-                                workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
-                                workbook.sheet(`Report`).row(i).cell(2).value(item._id.customer.name)
-                                workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
-                                workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.note)
-                                workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
-                                workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
-                                workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
-                                workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
-                                workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
-                                i++
+                            let listData = await FNB_ORDER_COLL.aggregate([
+                                {
+                                    $match: conditionObj
+                                },
+                                {
+                                    $project : projectObj
+                                },
+                                {
+                                    $match: conditionObjYear
+                                },
+                                {
+                                    $group: conditionGroup
+                                },
+                                {
+                                    $sort: {
+                                        "_id.month": -1, "total": -1
+                                    }
+                                }
+                            ])
+                            await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+
+                            // Modify the workbook.
+                            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
+                            .then(async workbook => {
+                                
+                                var i = 3
+                                listData?.forEach((item, index) => {
+                                    workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
+                                    workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name} - ${item._id.customer.phone}` )
+                                    workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
+                                    workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.note)
+                                    workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
+                                    workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
+                                    workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
+                                    workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
+                                    workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
+                                    i++
+                                })
+                            
+                                const now = new Date();
+                                const filePath = '../../../files/temporary_uploads/';
+                                const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
+                                const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+            
+                                await workbook.toFileAsync(pathWriteFile);
+                                const result = await uploadFileS3(pathWriteFile, fileName);
+            
+                                fs.unlinkSync(pathWriteFile);
+                                return resolve({ error: false, data: result?.Location, status: 200 });
                             })
-                        
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-        
-                            await workbook.toFileAsync(pathWriteFile);
-                            const result = await uploadFileS3(pathWriteFile, fileName);
-        
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 });
-                        })
+                        }else{
+                            return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                        }
                     }                    
                 }
             } catch (error) {
-                console.log({ error })
+                // console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -2970,7 +2974,7 @@ class Model extends BaseModel {
             try {
                 if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
                 // if(FNB_ACC.cskh.includes(email.toString()) ){
-                    console.log('1111111111111')
+                    // console.log('1111111111111')
                     let { data: listData } = await that.getListByProperty({ companyID, option: 8, userID })
 
                     // Modify the workbook.
@@ -3005,7 +3009,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: result?.Location, status: 200 })
                     })
                 }else{
-                    console.log('2222222222222222')
+                    // console.log('2222222222222222')
                     return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }
             } catch (error) {
