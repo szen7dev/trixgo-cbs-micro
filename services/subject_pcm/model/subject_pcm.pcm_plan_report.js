@@ -57,7 +57,7 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                dataInsert = { company: companyID, author: userID, userUpdate: userID };
+                dataInsert = { company: companyID, author: userID, userUpdate: userID, members: [userID] };
 
                 if(type){
                     dataInsert.type = type;
@@ -298,6 +298,7 @@ class Model extends BaseModel {
      * Code:
      */
     getList({ keyword, limit = 10, lastestID, type, parentID, userID, select, populates= {} }) {
+        // console.log({ keyword, limit, lastestID, type, parentID, userID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -309,7 +310,12 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { author: userID };
+                let conditionObj = {  }
+                conditionObj.$or = [
+                    { author: userID },
+                    { members: {$in: [userID]} },
+                ]
+
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1'];
 
