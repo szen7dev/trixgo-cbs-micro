@@ -2606,6 +2606,8 @@ class Model extends BaseModel {
      * Code: 23/9/2022
      */
     getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, projectID, keyword, subtype, ctx }){
+        console.log('========CÔNG VIỆC PHÂN LOẠI THEO DỰ ÁN PHÒNG BAN==============')
+        // console.log({ option, companyID, projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(companyID))
