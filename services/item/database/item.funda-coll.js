@@ -155,7 +155,7 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Number,
         default : 0
     },
-    //______Thành tiền (đã trừ giảm giá, triết khấu)
+    //______Thành tiền (đã trừ giảm giá, Chiết khấu)
     amount: {
         type: Number,
         default : 0
