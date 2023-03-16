@@ -76,7 +76,7 @@ class Model extends BaseModel {
                  * - Cập nhật thuộc tính của Ca làm việc
                  * - Cập nhật thuộc tính của khách hàng
                  * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
-                 * Bước 3: Tính triết khấu, giảm giá => cập nhật giá đơn hàng
+                 * Bước 3: Tính Chiết khấu, giảm giá => cập nhật giá đơn hàng
                  * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
                  * Bước 5: Cập nhật thông số của đơn hàng ngược lại vào:
                  * - Cơ sở
@@ -557,7 +557,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO ĐIỂM BÁN/CƠ SỞ
                  * - Số lượng đơn hàng
                  * - Doanh số
-                 * - Doanh thu sau khi trừ giảm giá, triết khấu
+                 * - Doanh thu sau khi trừ giảm giá, Chiết khấu
                  * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
                  * - Số lượng sản phẩm (để kiểm kê cốc)
                  * - Tiền mặt, chuyển khoản
@@ -568,7 +568,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO CA LÀM VIỆC
                  * - Số lượng đơn hàng
                  * - Doanh số
-                 * - Doanh thu sau khi trừ giảm giá, triết khấu
+                 * - Doanh thu sau khi trừ giảm giá, Chiết khấu
                  * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
                  * - Số lượng sản phẩm (để kiểm kê cốc)
                  * - Tiền mặt, chuyển khoản
