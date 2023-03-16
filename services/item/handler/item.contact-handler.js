@@ -152,7 +152,7 @@ module.exports = {
             amountEducationHistory   : { type: "string", optional: true },
             amountCertificateHistory : { type: "string", optional: true },
             documents                : { type: "string", optional: true },
-            nonResident              : { type: "string", optional: true },
+            // nonResident              : { type: "string", optional: true },
             fundaID                  : { type: "string", optional: true },
             purchasedValue              : { type: "string", optional: true },
             totalLoyaltyPoints          : { type: "string", optional: true },
