@@ -164,6 +164,11 @@ class Model extends BaseModel {
                 /**
                  * B3. CẬP NHẬT THUỘC TÍNH CỦA KHÁCH HÀNG
                  */
+                // Phân loại nhân viên
+                if(infoCustomer.type && !isNaN(infoCustomer.type)){
+                    dataInsert.customerType = Number(infoCustomer.type)
+                }
+                
                 // Giới tính
                 if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
                     dataInsert.gender = Number(infoCustomer.gender);
@@ -681,6 +686,11 @@ class Model extends BaseModel {
 
                     // Mã khách
                     dataInUpdate.customer = customerID
+
+                    // Phân loại nhân viên
+                    if(infoCustomer.type && !isNaN(infoCustomer.type)){
+                        dataInUpdate.customerType = Number(infoCustomer.type);
+                    }
 
                     // Giới tính
                     if(infoCustomer.gender && !isNaN(infoCustomer.gender)){

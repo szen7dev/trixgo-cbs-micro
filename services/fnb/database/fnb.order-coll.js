@@ -59,6 +59,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
+    /**
+     * Phân biệt khách hàng hay nhân viên
+     * 1-Nhân viên
+     * 2-Khách hàng
+     */
+    customerType: {
+        type: Number,
+        default: 2
+    },
     //_________Người thực hiện
     assignee: [{
         type: Schema.Types.ObjectId,
