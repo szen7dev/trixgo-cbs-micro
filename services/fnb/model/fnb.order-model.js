@@ -2630,6 +2630,9 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(22).value(Number(item.loyaltyPoints));
                             workbook.sheet("Order").row(i).cell(23).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
                             workbook.sheet("Order").row(i).cell(24).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
+                            if(item.customerType && Number(item.customerType) === 1){
+                                workbook.sheet("Order").row(i).cell(25).value('Đơn nhân viên');
+                            }
                             i++
                         });
                        
