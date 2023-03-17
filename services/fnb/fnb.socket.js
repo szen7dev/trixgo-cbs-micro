@@ -36,22 +36,22 @@ exports.FNB_SOCKET = {
                 });
             }
 
-            // let fundaResponse = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`, {
-            //     fundaID
-            // }, {
-            //     meta: {
-            //         infoUser: { _id: userID, company: { _id: companyID } }
-            //     }
-            // });
-            // console.log({ fundaResponse, fundaID })
-            // if(!fundaResponse || fundaResponse.error) {
-            //     return sendDataToMultilSocketsOfListUser({
-            //         listUserConnected: listUserActive,
-            //         arrReceiver: [userID],
-            //         data: { error: true, message: "Tham số fundaID không hợp lệ" },
-            //         event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
-            //     });
-            // }
+            let fundaResponse = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`, {
+                fundaID
+            }, {
+                meta: {
+                    infoUser: { _id: userID, company: { _id: companyID } }
+                }
+            });
+            console.log({ fundaResponse, fundaID })
+            if(!fundaResponse || fundaResponse.error) {
+                return sendDataToMultilSocketsOfListUser({
+                    listUserConnected: listUserActive,
+                    arrReceiver: [userID],
+                    data: { error: true, message: "Tham số fundaID không hợp lệ" },
+                    event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
+                });
+            }
 
             const user = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                 userID,
@@ -88,28 +88,28 @@ exports.FNB_SOCKET = {
             console.log({ usersID, receivers })
 
             // Cloud messaging
-            broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-				users: receivers,
-				title: titleMSS,
-				description: contentMSS,
-				dataSend: {
-                    orderID: orderInfo?._id,
-				},
-				web_url: ``,
-				env: ENV_DEVICE_APP_FNB
-			});
+            // broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+			// 	users: receivers,
+			// 	title: titleMSS,
+			// 	description: contentMSS,
+			// 	dataSend: {
+            //         orderID: orderInfo?._id,
+			// 	},
+			// 	web_url: ``,
+			// 	env: ENV_DEVICE_APP_FNB
+			// });
 
             // Socket
-            sendDataToMultilSocketsOfListUser({
-                listUserConnected: listUserActive,
-                arrReceiver: receivers,
-                data: {
-                    error: false,
-                    data: {
-                        orderID: orderInfo._id,
-                    }
-                }, event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
-            });
+            // sendDataToMultilSocketsOfListUser({
+            //     listUserConnected: listUserActive,
+            //     arrReceiver: receivers,
+            //     data: {
+            //         error: false,
+            //         data: {
+            //             orderID: orderInfo._id,
+            //         }
+            //     }, event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
+            // });
         } catch (error) {
             console.info('======EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER=====');
             console.error(error);
