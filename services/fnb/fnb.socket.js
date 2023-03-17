@@ -73,16 +73,16 @@ exports.FNB_SOCKET = {
             console.log({ receivers, titleMSS, contentMSS })
 
             // Cloud messaging
-            broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-				users: receivers,
-				title: titleMSS,
-				description: contentMSS,
-				dataSend: {
-                    orderID: orderInfo?._id,
-				},
-				web_url: `https://app.trixgo.com/fnb/home/${orderInfo?._id}`,
-				env: ENV_DEVICE_APP_FNB
-			});
+            // broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+			// 	users: receivers,
+			// 	title: titleMSS,
+			// 	description: contentMSS,
+			// 	dataSend: {
+            //         orderID: orderInfo?._id,
+			// 	},
+			// 	web_url: `https://app.trixgo.com/fnb/home/${orderInfo?._id}`,
+			// 	env: ENV_DEVICE_APP_FNB
+			// });
 
             // Socket
             sendDataToMultilSocketsOfListUser({
