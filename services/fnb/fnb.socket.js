@@ -36,14 +36,14 @@ exports.FNB_SOCKET = {
                 });
             }
 
-            let fundaResponse = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`, {
-                fundaID
-            }, {
-                meta: {
-                    infoUser: { _id: userID, company: { _id: companyID } }
-                }
-            });
-            console.log({ fundaResponse, fundaID })
+            // let fundaResponse = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`, {
+            //     fundaID
+            // }, {
+            //     meta: {
+            //         infoUser: { _id: userID, company: { _id: companyID } }
+            //     }
+            // });
+            // console.log({ fundaResponse, fundaID })
             // if(!fundaResponse || fundaResponse.error) {
             //     return sendDataToMultilSocketsOfListUser({
             //         listUserConnected: listUserActive,
@@ -82,7 +82,8 @@ exports.FNB_SOCKET = {
 
             const usersID = users.data?.map(user => user._id);
             const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
-            const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
+            const titleMSS = `Đơn hàng ${companyID}`;
+            // const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
             const contentMSS = `Đơn hàng ${orderInfo?.name}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công bởi ${user.data?.bizfullname}`;
             console.log({ usersID, receivers })
 
