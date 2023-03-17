@@ -25,7 +25,7 @@ exports.FNB_SOCKET = {
             let userID                          = socket.client.user;
             let io                              = socket.$service.io;
             let { companyID, fundaID, orderInfo } = data;
-            console.log({ 'EVENT_SOCKET_CONSTANT_FNB.FNB_CSS_ADD_NEW_ORDER': data });
+            // console.log({ 'EVENT_SOCKET_CONSTANT_FNB.FNB_CSS_ADD_NEW_ORDER': data });
 
             if(!companyID){
                 return sendDataToMultilSocketsOfListUser({
@@ -43,7 +43,6 @@ exports.FNB_SOCKET = {
                     infoUser: { _id: userID, company: { _id: companyID } }
                 }
             });
-            console.log({ fundaResponse, fundaID })
             if(!fundaResponse || fundaResponse.error) {
                 return sendDataToMultilSocketsOfListUser({
                     listUserConnected: listUserActive,
@@ -66,51 +65,36 @@ exports.FNB_SOCKET = {
                 });
             }
 
-            // const users = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-            //     companyID, //fundaResponse?.data?.company?.toString(),
-            //     isLoadAll: true,
-            // });
-            // console.log({ users })
-            // if(!users || users.error) {
-            //     return sendDataToMultilSocketsOfListUser({
-            //         listUserConnected: listUserActive,
-            //         arrReceiver: [userID],
-            //         data: { error: true, message: "Tham số company không hợp lệ" },
-            //         event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
-            //     });
-            // }
-
-            const usersID = fundaResponse.data?.members?.map?.(userId => userId.toString());
+            const usersID = fundaResponse.data?.members?.map?.(userId => userId.toString()) || [];
             const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
             const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
             const contentMSS = `Đơn hàng ${orderInfo?.name}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công bởi ${user.data?.bizfullname}`;
 
             console.log({ receivers, titleMSS, contentMSS })
-            // console.log({ usersID, receivers })
 
             // Cloud messaging
-            // broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-			// 	users: receivers,
-			// 	title: titleMSS,
-			// 	description: contentMSS,
-			// 	dataSend: {
-            //         orderID: orderInfo?._id,
-			// 	},
-			// 	web_url: ``,
-			// 	env: ENV_DEVICE_APP_FNB
-			// });
+            broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+				users: receivers,
+				title: titleMSS,
+				description: contentMSS,
+				dataSend: {
+                    orderID: orderInfo?._id,
+				},
+				web_url: `https://app.trixgo.com/fnb/home/${orderInfo?._id}`,
+				env: ENV_DEVICE_APP_FNB
+			});
 
             // Socket
-            // sendDataToMultilSocketsOfListUser({
-            //     listUserConnected: listUserActive,
-            //     arrReceiver: receivers,
-            //     data: {
-            //         error: false,
-            //         data: {
-            //             orderID: orderInfo._id,
-            //         }
-            //     }, event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
-            // });
+            sendDataToMultilSocketsOfListUser({
+                listUserConnected: listUserActive,
+                arrReceiver: receivers,
+                data: {
+                    error: false,
+                    data: {
+                        orderID: orderInfo._id,
+                    }
+                }, event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
+            });
         } catch (error) {
             console.info('======EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER=====');
             console.error(error);
