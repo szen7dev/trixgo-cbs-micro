@@ -108,29 +108,29 @@ module.exports = {
                         ...SUBJECT_SOCKET,
                         ...FNB_SOCKET,
 
-                        'CLIENT_SEND_CHATTING_TEST': async function(data) {
-                            let socket                      = this;
-                            let userID                      = socket.client.user;
-                            let listUserActive              = socket.$service.listUserConnected;
-                            let io                          = socket.$service.io;
+                        // 'CLIENT_SEND_CHATTING_TEST': async function(data) {
+                        //     let socket                      = this;
+                        //     let userID                      = socket.client.user;
+                        //     let listUserActive              = socket.$service.listUserConnected;
+                        //     let io                          = socket.$service.io;
 
-                            const allUsers = await USER_COLL.find({}).select('_id').lean();
-                            const listUserID = allUsers.map(user => user._id);
-                            console.log({ data })
+                        //     const allUsers = await USER_COLL.find({}).select('_id').lean();
+                        //     const listUserID = allUsers.map(user => user._id);
+                        //     console.log({ data })
 
-                            // this.emit('HELLO_WORLD', data);
-                            sendDataToMultilSocketsOfListUser({
-                                listUserConnected: listUserActive,
-                                arrReceiver: listUserID,
-                                data: {
-                                    data,
-                                    message: "Hi Client!! I'm server...",
-                                    userID,
-                                    listUserActive
-                                },
-                                event: 'SERVER_SEND_CHATTING_TEST', io
-                            })
-                        },
+                        //     // this.emit('HELLO_WORLD', data);
+                        //     sendDataToMultilSocketsOfListUser({
+                        //         listUserConnected: listUserActive,
+                        //         arrReceiver: listUserID,
+                        //         data: {
+                        //             data,
+                        //             message: "Hi Client!! I'm server...",
+                        //             userID,
+                        //             listUserActive
+                        //         },
+                        //         event: 'SERVER_SEND_CHATTING_TEST', io
+                        //     })
+                        // },
 
                         'disconnect': async function() {
                             const socketDisconnectID = this.id;
