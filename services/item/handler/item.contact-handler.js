@@ -248,12 +248,16 @@ module.exports = {
                         contactID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        companyID, fundaID, type, departmentID, positionID, contractTypeID,
-                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
-                        parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
-                        lastestID, userID, keyword, limit, select, populates, fromDate, toDate
-                    });
+                    // resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
+                    //     companyID, fundaID, type, departmentID, positionID, contractTypeID,
+                    //     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
+                    //     parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month,
+                    //     lastestID, userID, keyword, limit, select, populates, fromDate, toDate
+                    // });
+
+                    resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListV2({
+                        companyID, fundaID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID
+                    })
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
