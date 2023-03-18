@@ -15,7 +15,13 @@ const Schema                = require('mongoose').Schema;
  * 4. Báo cáo hiệu quả tuyển dụng
  */
 module.exports  = DATABASE_MIDDLEWARE("contact", {
-    // Công ty   
+    //_________Mã hiệu
+    // suid : {
+    //     type   : String,
+    //     require:  true,
+    //     unique : true
+    // },
+    //_________Công ty   
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -265,6 +271,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     /**
      * FNB
      */
+    //_________Người giới thiệu
+    referrer: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact' 
+    },
     /**
      * Khách biết tên hay vãng lai
      * 1-Biết tên
@@ -349,6 +360,16 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     remainLoyaltyPoints: {
         type: Number,
         default : 0
+    },
+    /**
+     * Hạng thành viên
+     * 1-Bạc
+     * 2-Vàng
+     * 3-Kim Cương
+     */
+    membershipLevel: {
+        type: Number,
+        default: 1 
     },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
