@@ -239,6 +239,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * GIÁT TRỊ
      */
+    //_________Có sử dụng Voucher hay không
+    voucher: {
+        type: Schema.Types.ObjectId,
+        ref: "fnb_voucher"
+    },
     //______Tổng giá theo các Product của đơn hàng (tổng doanh số)
     total: {
         type: Number,
@@ -262,7 +267,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______Thành tiền (phải thanh toán) -  Chưa gồm VAT
+    //______Sử dụng offer từ voucher
+    offer: {
+        type: Number,
+        default : 0
+    },
+    /**
+     * Thành tiền (phải thanh toán) -  Chưa gồm VAT
+     * amount = total - discount - salesoff - credit - offer
+     */
     amount: {
         type: Number,
         default : 0
