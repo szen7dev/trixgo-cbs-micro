@@ -490,7 +490,7 @@ class Model extends BaseModel {
      * Func: Tải Đơn hàng
      * Date: 4/2/2023
      */
-    exportExcel({ companyID, option, year, month, userID }) {
+    exportExcel({ companyID, option, year, month, filterParams, userID }) {
         // console.log({ companyID, option, year, month, userID })
         return new Promise(async resolve => {
             try {
