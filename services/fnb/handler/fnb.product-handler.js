@@ -232,12 +232,14 @@
         auth: 'required',
         params: {
             companyID: { type: "string", optional: true },
+            option: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { companyID, filterParams } = ctx.params;
+                // console.log({ companyID, option, filterParams })
 
                 if(!companyID) {
                     companyID = company._id;
