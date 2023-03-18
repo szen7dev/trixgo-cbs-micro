@@ -1252,8 +1252,8 @@ class Model extends BaseModel {
         // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 50){
-                    limit = 50;
+                if(Number(limit) > 20){
+                    limit = 20;
                 } else{
                     limit = +Number(limit);
                 }
@@ -1269,7 +1269,7 @@ class Model extends BaseModel {
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundasID && fundasID.length ){
-                    console.log('==============Trường hợp 1111111111===============>')
+                    // console.log('==============Trường hợp 1111111111===============>')
                     let arrFun = fundasID.map(item=>ObjectID(item))
 
                     if(arrFun.length) {
@@ -1279,11 +1279,10 @@ class Model extends BaseModel {
                     let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
                     let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                     if(fundasIDIsMember.length) {
-                        console.log('==============Trường hợp 222222===============>')
+                        // console.log('==============Trường hợp 222222===============>')
                         conditionObj.funda = { $in: fundasIDIsMember };
                     }else{
-                        console.log('==============Trường hợp 333333333===============>')
-                        // conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
+                        // console.log('==============Trường hợp 333333333===============>')
                         conditionObj.funda = { $in: [] }
                     }
                 }
@@ -1316,7 +1315,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
+                // console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
                 // console.log(conditionObj)
 
                 /**
