@@ -15,6 +15,7 @@ module.exports = {
      * Func: Thêm contact
      */
     insert: {
+        auth: "required",
         params: {
             parent           : { type: "string", optional: true },
             type             : { type: "string", optional: true },
@@ -95,6 +96,7 @@ module.exports = {
      * Func: Cập nhật contact
      */
     update: {
+        auth: "required",
         params: {
             contactID        : { type: "string" },
             parent           : { type: "string", optional: true },
@@ -190,6 +192,7 @@ module.exports = {
 	 * Func: Danh sách contact
 	 */
     getInfoAndGetList: {
+        // auth: "required",
         params: {
             // Field bổ sung
             contactID           : { type: "string", optional: true },
@@ -238,6 +241,12 @@ module.exports = {
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
+                // console.log({companyID, fundaID, contactID, type, departmentID, positionID, contractTypeID,
+                //     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
+                //     isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate,
+                //     certificateName, certificateGrade, isPartner, isContractExpire4month,
+                //     keyword, limit, lastestID, select, populates, fromDate, toDate})
+
                 if(!companyID){
                     companyID = company._id
                 }
@@ -273,6 +282,7 @@ module.exports = {
      * Code: 24/12/2022
      */
     getListByProperty: {
+        auth: "required",
         params: {
             fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
@@ -314,6 +324,7 @@ module.exports = {
 	 * Func: Danh sách danh bạ của hệ thống
 	 */
     getListOfSystem: {
+        auth: "required",
         params: {
             // Field mặc định
             limit           : { type: "string", optional: true },
