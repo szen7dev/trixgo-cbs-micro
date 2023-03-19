@@ -38,7 +38,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     note: String,
     /**
      * Tình trạng xử lý
-     * 1-Ghi nhận/đang xử lý
+     * 1-Chưa xử lý
      * 2-Hoàn thành
      */
     status: {

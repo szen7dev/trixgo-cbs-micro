@@ -162,8 +162,8 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance }){
-        // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
+	update({ fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance }){
+        // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -260,6 +260,13 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(checkObjectIDs(getNotification)){
+                    dataAddToset = {
+                        ...dataAddToset,
+                        getNotification
+                    }
+                }
+
                 //_________Xoá thành viên
                 if(checkObjectIDs(membersRemove)){
                     dataPullAll = {
@@ -272,6 +279,13 @@ class Model extends BaseModel {
                     dataPullAll = {
                         ...dataPullAll,
                         admins: adminsRemove
+                    }
+                }
+
+                if(checkObjectIDs(getNotificationRemove)){
+                    dataPullAll = {
+                        ...dataPullAll,
+                        admins: getNotificationRemove
                     }
                 }
 

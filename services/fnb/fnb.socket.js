@@ -65,12 +65,13 @@ exports.FNB_SOCKET = {
                 });
             }
 
-            const usersID = fundaResponse.data?.members?.map?.(userId => userId.toString()) || [];
+            // Bắn về các user đăng ký nhận thông báo
+            const usersID = fundaResponse.data?.getNotification?.map?.(userId => userId.toString()) || [];
+
             const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
             const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
             const contentMSS = `Đơn hàng ${orderInfo?.name}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công bởi ${user.data?.bizfullname}`;
-
-            console.log({ receivers, titleMSS, contentMSS })
+            // console.log({ receivers, titleMSS, contentMSS })
 
             // Cloud messaging
             // broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
@@ -95,6 +96,104 @@ exports.FNB_SOCKET = {
                     }
                 }, event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
             });
+        } catch (error) {
+            console.info('======EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER=====');
+            console.error(error);
+        }
+    },
+
+    /**
+     * Tạo một lỗi mới
+     */
+    [EVENT_SOCKET_CONSTANT_FNB.FNB_CSS_ADD_NEW_MISTAKE]: async function(data) {
+        try {
+            let socket                          = this;
+			let broker                          = socket.$service.broker;
+            let listUserActive                  = socket.$service.listUserConnected;
+            let userID                          = socket.client.user;
+            let io                              = socket.$service.io;
+            let { companyID, fundaID, mistakeInfo } = data;
+            // console.log({ 'EVENT_SOCKET_CONSTANT_FNB.FNB_CSS_ADD_NEW_MISTAKE': data });
+
+            /**
+             * Kiểm tra và check event nếu có lỗi
+             */
+            if(!companyID){
+                return sendDataToMultilSocketsOfListUser({
+                    listUserConnected: listUserActive,
+                    arrReceiver: [userID],
+                    data: { error: true, message: "Tham số companyID không hợp lệ" },
+                    event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_MISTAKE], io
+                });
+            }
+
+            let fundaResponse = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`, {
+                fundaID
+            }, {
+                meta: {
+                    infoUser: { _id: userID, company: { _id: companyID } }
+                }
+            })
+            
+            if(!fundaResponse || fundaResponse.error) {
+                return sendDataToMultilSocketsOfListUser({
+                    listUserConnected: listUserActive,
+                    arrReceiver: [userID],
+                    data: { error: true, message: "Tham số fundaID không hợp lệ" },
+                    event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_MISTAKE], io
+                });
+            }
+
+            const user = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                userID,
+                select: '_id bizfullname'
+            });
+
+            // Lấy hàm get thông tin của Lỗi
+
+            if(!user || user.error) {
+                return sendDataToMultilSocketsOfListUser({
+                    listUserConnected: listUserActive,
+                    arrReceiver: [userID],
+                    data: { error: true, message: "Tham số userID không hợp lệ" },
+                    event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_MISTAKE], io
+                });
+            }
+
+            const usersID = fundaResponse.data?.members?.map?.(userId => userId.toString()) || [];
+            const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
+            const titleMSS = `Gán lỗi vi phạm ${fundaResponse?.data?.name}`;
+            const contentMSS = `${user.data?.bizfullname} đã gán lỗi mistake.name cho bạn, giá trị phạt là amount`;
+            // console.log({ receivers, titleMSS, contentMSS })
+
+            /**
+             * Bắn Cloud messaging về mobile
+             */
+            broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+				users: receivers,
+				title: titleMSS,
+				description: contentMSS,
+				dataSend: {
+                    orderID: orderInfo?._id,
+				},
+				web_url: `https://app.trixgo.com/fnb/home/${orderInfo?._id}`,
+				env: ENV_DEVICE_APP_FNB
+			})
+
+            /**
+             * Bắn thông báo socket về phía Client
+             */
+            sendDataToMultilSocketsOfListUser({
+                listUserConnected: listUserActive,
+                arrReceiver: receivers,
+                data: {
+                    error: false,
+                    data: {
+                        orderID: orderInfo._id,
+                    }
+                }, event: [EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER], io
+            })
+
         } catch (error) {
             console.info('======EVENT_SOCKET_CONSTANT_FNB.FNB_SSC_ADD_NEW_ORDER=====');
             console.error(error);
