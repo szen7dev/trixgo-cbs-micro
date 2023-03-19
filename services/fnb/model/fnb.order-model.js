@@ -3175,6 +3175,75 @@ class Model extends BaseModel {
                      )
                 }
 
+                /**
+                 * CẬP NHẬT DANH BẠ => BỔ SUNG SUID
+                 */
+                // if(option == 5){
+                //     /**
+                //      * db.contacts.updateMany({company: {$ne: ObjectId("6046bedeb55525368b11c5c3")}},{$set:{email:"",phone:""}})
+                //      */
+                //     let listContacts = await ITEM__CONTACT_COLL.find({funda: fundaID}).select('_id').sort({_id: 1})
+
+                //     var i = 1
+                //     for(const item of listContacts){
+                //         let suid = await stringUtils.randomAndCheckExists(ITEM__CONTACT_COLL, 'suid')
+
+                //         if(page && Number(page)>0){
+                //             if(page == 1){
+                //                 if(i<=500){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+                //             if(page == 2){
+                //                 if(i>500 && i<=1000){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+                //             if(page == 3){
+                //                 if(i>1000 && i<=1500){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+                //             if(page == 4){
+                //                 if(i>1500 && i<=2000){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+                //             if(page == 5){
+                //                 if(i>2000 && i<=2500){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+                //             if(page == 6){
+                //                 if(i>2500 && i<=3000){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+                //             if(page == 7){
+                //                 if(i>3000 && i<=3500){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+                //             if(page == 8){
+                //                 if(i>3500 && i<=4000){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+                //             if(page == 9){
+                //                 if(i>4000 && i<=4500){
+                //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //                 }
+                //             }
+
+                //             i++
+                //         }else{
+                //             await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
+                //         }
+                //     }
+
+                //     return resolve({ error: false, message: 'Reset thành công', data: listContacts.length });
+                // }
+
                 return resolve({ error: false, message: 'Reset thành công'});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
