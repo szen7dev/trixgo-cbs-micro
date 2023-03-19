@@ -955,15 +955,16 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, assigneeAttachs };
                 }
 
-                // Cập nhật nhắc hẹn expired time task
+                // Cập nhật nhắc hẹn expired time Task
                 if(alert >= 0) {
                     dataUpdate.alert = alert;
 
-                    // xóa tất cả job reminder
+                    // Xóa tất cả job reminder cũ (đã setup trước đó đi)
                     await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK}`, {
                         taskID
                     })
 
+                    // Setup con crontab mới
                     if(alert > 0) {
                         ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
                             alert,

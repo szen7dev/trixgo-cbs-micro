@@ -139,6 +139,9 @@ module.exports = {
 				done();
 			});
 
+			/**
+			 * Kịch bản thông báo thời hạn công việc
+			 */
 			agenda.define('add_reminder_expired_task', async (job, done) => {
 				try {
 					console.log(`========================================`);
@@ -152,6 +155,7 @@ module.exports = {
 						senderMail,
 					} = job.attrs.data;
 
+					// Call service để làm việc
 					const infoTask = await this.broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
 						taskID
 					}, {
@@ -167,13 +171,22 @@ module.exports = {
 
 					const description = `Thông báo trước ${message} khi tới hạn`;
 					const receivers = [assignee];
+
+					/**
+					 * VÍ DỤ CHẠY 1 API -> ĐƯA SANG BÊN KHÁC
+					 * {{LOCALHOST}}/api/auth/users/login
+					 */
+
+					/**
+					 * Cấu trúc data send tới Cloud MSS cho Mobile
+					 */
 					const dataSend = {
-						app: APP_KEYS.PCM_PLAN_TASK,
-						languageKey: LANGUAGE_KEYS.REMINDER_EXPIRED_TASK,
-						mainColl: {
+						app: APP_KEYS.PCM_PLAN_TASK, // Do mobile yêu cầu gửi sang
+						languageKey: LANGUAGE_KEYS.REMINDER_EXPIRED_TASK, // Phân biệt ngôn ngữ
+						mainColl: { // Bấm vào để truy cập vào chi tiết Task
 							kind: 'pcm_plan_task',
 							item: { _id: taskID }
-						},
+						}
 					}
 
 					// SEND MAIL
@@ -186,7 +199,7 @@ module.exports = {
 						meta: {
 							infoUser: { _id: userID, ...senderMail }
 						}
-					});
+					})
 
 					// SEND CLOUD-MSG
 					this.broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
@@ -198,11 +211,11 @@ module.exports = {
 						env: ENV_DEVICE_WEB_CBS
 					});
 
-					done();
+					done()
 				} catch(err) {
 					console.error(err)
 				}
-			});
+			})
 
 			// agenda.on("success:add_reminder_expired_task", (job) => {
 			// 	console.log({ __SUCCESS_REMINDER_EXPIRED_TASK: job.attrs });;
@@ -220,6 +233,9 @@ module.exports = {
 			agenda.start();
 		}
 
+		/**
+		 * Kết nối với DB và tạo coll jobs để lưu các sự kiện về cronTab
+		 */
 		const connectionOpts = {
 			db: {
 				address: MONGODB_URL,
@@ -239,4 +255,4 @@ module.exports = {
 	* Service stopped lifecycle event handler
 	*/
 	async stopped() { }
-};
+}

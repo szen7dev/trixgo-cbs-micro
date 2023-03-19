@@ -284,18 +284,14 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+				// Tham biến bên PCM truyền sang
                 const { alert, actualFinishTime, status, taskID, userID, senderMail } = ctx.params;
                 let timeScheduler = '', message = '';
-
-				// const infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
-				// 	taskID
-				// });
-				// if(infoTask.error) throw new Error("Can't get info task");
-				// const { status } = infoTask.data;
 
 				if(status === 3)
 					return { error: true, message: "task is done" };
 
+				// Thời hạn hoàn thành của Task
 				timeScheduler = new Date(actualFinishTime).getTime();
 				// timeScheduler = moment(timeScheduler).subtract(1, 'minute');
 
@@ -324,11 +320,13 @@ module.exports = {
 						break;
 				}
 
+				// Convert thành Timestamp để cho con Cron nó nhận
 				timeScheduler = new Date(timeScheduler).getTime();
 
 				if(!message)
                 	return { error: true, message: "Not found alert time" };
 
+				// Gọi thư viện Agenda để lên lịch theo key: add_reminder_expired_task
 				agenda.schedule(timeScheduler, 'add_reminder_expired_task', {
 					taskID,
 					userID,
