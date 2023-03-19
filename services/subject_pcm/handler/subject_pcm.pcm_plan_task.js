@@ -326,13 +326,13 @@ module.exports = {
                 const {
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
-                    limit, lastestID, select, populates
+                    limit, lastestID, select, populates, reportID
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
-                    limit, lastestID, select, populates, userID
+                    limit, lastestID, select, populates, userID, reportID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
