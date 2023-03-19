@@ -43,6 +43,7 @@ const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_p
 const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll');
 const CONTRACT_COLL                     = require('../../item/database/item.contract-coll');
 const USER_COLL                         = require('../../auth/database/auth.user-coll');
+const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll');
 // const { email } = require('../../../tools/mailer/config/cf_mailer');
 
 const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll');
@@ -1480,7 +1481,6 @@ class Model extends BaseModel {
                     conditionObj.status = { $in: [status] }
                 }
 
-
                 /**
                  * Quá hạn
                  */
@@ -1799,7 +1799,7 @@ class Model extends BaseModel {
     getListByFilter({
         fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
-        limit = 50, lastestID, select, populates, userID
+        limit = 50, lastestID, select, populates, userID, reportID
     }) {
         console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ==========>>>>>>>>>>>>>>')
         // console.log({
@@ -1970,10 +1970,12 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i')
-                    // conditionObj.$or = [
-                    //     { name  :  new RegExp(keyword, 'i') },
-                    //     { description  :  new RegExp(keyword, 'i') }
-                    // ]
+                }
+
+                // Tìm theo báo cáo
+                if(reportID && checkObjectIDs(reportID)){
+                    let infoReport = await PCM_PLAN_REPORT_COLL.findById(reportID).select('subjects')
+                    conditionObj._id = {$in: infoReport.subjects}
                 }
 
                 let conditionObjOrg = {...conditionObj};
