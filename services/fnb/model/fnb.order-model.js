@@ -17,17 +17,18 @@ const moment = require("moment");
 /**s
  * import inter-coll, exter-coll
  */
-const USER_COLL                                = require('../../auth/database/auth.user-coll');
+// const USER_COLL                                = require('../../auth/database/auth.user-coll');
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
 const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
-const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
+// const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
 const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
-const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
-const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.general_book-coll');
+// const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
+// const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
+// const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.general_book-coll');
+const FNB_VOUCHER_COLL                          = require('../database/fnb.voucher-coll');
 
 /**
  * import inter-model, exter-model
@@ -64,7 +65,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
+    insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
         // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
         const that = this
         return new Promise(async resolve => {
@@ -234,7 +235,7 @@ class Model extends BaseModel {
                 // console.log(dataInsert)
 
                 /**
-                 * TÍNH TOÁN GIÁ TRỊ
+                 * TÍNH TOÁN GIÁ TRỊ ĐƠN HÀNG
                  */
                 let loyaltyPoints = 0, amount = 0
 
@@ -243,12 +244,14 @@ class Model extends BaseModel {
                     amount = Number(total)
                 }
 
+                // Chiết khấu
                 if(!isNaN(discount)){
                     dataInsert.discount = Number(discount)
                     amount = Number(amount) - Number(discount)
                 }
 
                 /**
+                 * Tích điểm, giảm giá
                  * TÍCH ĐIỂM NẾU LÀ ĐƠN OFF -> Không tích điểm cho đơn App
                  */
                 if(salesChannel == 1){
@@ -294,6 +297,46 @@ class Model extends BaseModel {
                     dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
+                // Offer giảm giá từ Voucher
+                if(voucherID && checkObjectIDs(voucherID)){
+                    /**
+                     * Voucher Không có giá trị quy đổi thành tiền mặt
+                        Chỉ áp dụng dành riêng đối với đơn hàng tiếp theo
+                        Voucher chỉ sử dụng một lần cho một hóa đơn
+                        Mỗi đơn hàng chỉ được sử dụng một Voucher giảm giá duy nhất
+                        Voucher mệnh giá có thể sử dụng chung cho cùng một đơn hàng
+                        Không trả lại tiền thừa nếu giá trị Voucher lớn hơn giá trị đơn hàng
+                        Voucher chỉ có giá trị trong thời gian được ghi trên thẻ.
+                        Voucher không áp dụng chung với các chương trình khuyến mãi khác (trường hợp quý khách muốn sử dụng voucher để áp dụng mua các sản phẩm đang khuyến mãi thì voucher chỉ áp dụng cho giá gốc chưa khuyến mãi của sản phẩm đó).
+                     */
+                   
+                    let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
+                    if (!infoVoucher)
+                        return resolve({ error: true, message: 'cannot_get_infoVoucher' })
+
+                    // Kiểm tra xem đúng VoucherID của customerID hay không
+
+                    // Kiểm tra thời hạn VoucherID
+                    // if(infoVoucher.expired){
+
+                    // }
+
+                    // Kiểm tra giá trị đơn hàng xem có được áp dụng Voucher hay không (so sánh với amount hay total?)
+
+                    // Kiểm tra nếu Giá trị Voucher > giá trị thanh toán -> lấy bằng giá trị thanh toán
+
+                    // Kiểm tra VoucherID đã sử dụng cho đơn hàng nào hay chưa, nếu rồi -> Bỏ
+
+                    // Voucher không áp dụng chung với các chương trình khuyến mãi khác 
+
+                    dataInsert.voucher = voucherID
+                    dataInsert.voucherType = Number(infoVoucher.type)
+                    dataInsert.offer = Number(infoVoucher.salesoffAmount)
+
+                    amount = Number(amount) - Number(infoVoucher.salesoffAmount)
+                }
+
+                // Giá trị thanh toán
                 dataInsert.amount = Number(amount)
 
                 if(!isNaN(vatAmount)){
@@ -375,6 +418,11 @@ class Model extends BaseModel {
                 dataInsert.numberOfSizeL = Number(totalSizeL)
                 // console.log(dataInsert)
 
+                /**
+                 * =====================TIẾN HÀNH TẠO ĐƠN HÀNG================
+                 * =====================TIẾN HÀNH TẠO ĐƠN HÀNG================
+                 * =====================TIẾN HÀNH TẠO ĐƠN HÀNG================
+                 */
                 let infoAfterInsert = await this.insertData(dataInsert);
                 // console.log(infoAfterInsert)
                 if (!infoAfterInsert)
