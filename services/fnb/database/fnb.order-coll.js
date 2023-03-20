@@ -244,6 +244,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref: "fnb_voucher"
     },
+    /**
+     * Phân loại voucher
+     * 1-Thông thường/các dịp lễ tết
+     * 2-Tặng người giới thiệu
+     * 3-Tặng người nhận giới thiệu
+     * 4-Tổ chức các sự kiện
+     * 5-Tặng cho nhân viên, cán bộ
+     * 6-Tri ân đối tác
+     */
+    voucherType: {
+        type: Number,
+        default: 1
+    }, 
     //______Tổng giá theo các Product của đơn hàng (tổng doanh số)
     total: {
         type: Number,
