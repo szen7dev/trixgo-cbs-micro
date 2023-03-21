@@ -14,6 +14,7 @@ const FNB__QUOTA_HANDLER  			 		= require('./handler/fnb.quota-handler');
 const FNB__ORDER_MATERIAL_HANDLER  			= require('./handler/fnb.order_material-handler');
 const FNB__SHIFT_HANDOVER_HANDLER  			= require('./handler/fnb.shift_handover-handler');
 const FNB__GENERAL_BOOK_HANDLER  			= require('./handler/fnb.general_book-handler');
+const FNB__VOUCHER_HANDLER  				= require('./handler/fnb.voucher-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
@@ -24,6 +25,7 @@ const FNB__QUOTA_COLL  			 			= require('./database/fnb.quota-coll');
 const FNB__ORDER_MATERIAL_COLL  			= require('./database/fnb.order_material-coll');
 const FNB__SHIFT_HANDOVER_COLL  			= require('./database/fnb.shift_handover-coll');
 const FNB__GENERAL_BOOK_COLL  				= require('./database/fnb.general_book-coll');
+const FNB__VOUCHER_BOOK_COLL  				= require('./database/fnb.voucher-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FNB,
@@ -37,6 +39,7 @@ module.exports = {
 		DbService(FNB__ORDER_MATERIAL_COLL),
 		DbService(FNB__SHIFT_HANDOVER_COLL),
 		DbService(FNB__GENERAL_BOOK_COLL),
+		DbService(FNB__VOUCHER_BOOK_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -147,6 +150,15 @@ module.exports = {
 		[CF_ACTIONS_FNB.GENERAL_BOOK_DOWNLOAD_TEMPLATE_EXCEL]			: FNB__GENERAL_BOOK_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.GENERAL_BOOK_IMPORT_FROM_EXCEL]					: FNB__GENERAL_BOOK_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.GENERAL_BOOK_EXPORT_EXCEL]						: FNB__GENERAL_BOOK_HANDLER.exportExcel,
+
+		//========================================== FNB_VOUCHER ==============================================//
+		[CF_ACTIONS_FNB.VOUCHER_INSERT]									: FNB__VOUCHER_HANDLER.insert,
+		[CF_ACTIONS_FNB.VOUCHER_UPDATE]									: FNB__VOUCHER_HANDLER.update,
+		[CF_ACTIONS_FNB.VOUCHER_REMOVE]									: FNB__VOUCHER_HANDLER.remove,
+		[CF_ACTIONS_FNB.VOUCHER_GET_INFO_AND_GET_LIST]					: FNB__VOUCHER_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.VOUCHER_DOWNLOAD_TEMPLATE_EXCEL]				: FNB__VOUCHER_HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_FNB.VOUCHER_IMPORT_FROM_EXCEL]						: FNB__VOUCHER_HANDLER.importFromExcel,
+		[CF_ACTIONS_FNB.VOUCHER_EXPORT_EXCEL]							: FNB__VOUCHER_HANDLER.exportExcel,
 	},
 
 	/**

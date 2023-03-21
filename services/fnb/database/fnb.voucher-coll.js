@@ -6,11 +6,43 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
+    //_________Mã hiệu voucher
+    suid : {
+        type   : String,
+        require:  true,
+        unique : true
+    },
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
+    /**
+     * Template
+     * 1-Thông thường
+     * 2-Template
+     */
+    template: {
+        type: Number,
+        default: 1
+    }, 
+    /**
+     * Phân loại
+     * 1-Thông thường/các dịp lễ tết
+     * 2-Tặng người giới thiệu
+     * 3-Tặng người nhận giới thiệu
+     * 4-Tổ chức các sự kiện
+     * 5-Tặng cho nhân viên, cán bộ
+     * 6-Tri ân đối tác
+     */
+    type: {
+        type: Number,
+        default: 1
+    }, 
+    //_________Nội dung
+    name: String,
+    //_________Ghi chú đặc tính
+    note: String,
     //_________Người giới thiệu (nếu có)
     referrer: {
         type: Schema.Types.ObjectId,
@@ -21,32 +53,22 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    //_________Mã hiệu voucher
-    suid : {
-        type   : String,
-        require:  true,
-        unique : true
-    },
-    //_________Nội dung
-    name: String,
-    //_________Ghi chú đặc tính
-    note: String,
-    //_________Giá trị đơn hàng tối thiểu
+    //_________Giá trị đơn hàng tối thiểu để được áp dụng voucher
     minOrderAmount: {
         type: Number,
         default: 0
     },  
-    //______Giá trị giảm giá
+    //______Giá trị giảm giá của voucher/amount đơn hàng
     salesoffAmount: {
         type: Number,
         default : 0
     },
-    //______Tỷ lệ giảm giá (%)
+    //______Tỷ lệ giảm giá (%)/amount đơn hàng
     salesoffRate: {
         type: Number,
         default : 0
     },
-    //_________Thời hạn Voucher
+    //_________Thời hạn sử dụng Voucher
     expired: Date,
     /**
      * Trạng thái đơn

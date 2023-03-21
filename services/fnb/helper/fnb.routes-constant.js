@@ -12,6 +12,7 @@ const QUOTA                 = '/quotas';
 const ORDER_MATERIAL        = '/order_materials';
 const SHIFT_HANDOVER        = '/shift_handovers';
 const GENERAL_BOOK          = '/general_books';
+const VOUCHER               = '/vouchers';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -80,6 +81,12 @@ const CF_ROUTINGS_FNB = {
     GENERAL_BOOK_DOWNLOAD_TEMPLATE_EXCEL    : `${BASE_ROUTE}${GENERAL_BOOK}/download-template-excel`,
     GENERAL_BOOK_IMPORT_FROM_EXCEL          : `${BASE_ROUTE}${GENERAL_BOOK}/import-from-excel`,
     GENERAL_BOOK_EXPORT_EXCEL               : `${BASE_ROUTE}${GENERAL_BOOK}/export-excel`,
+
+    //================================FNB_VOUCHER=======================================//
+    VOUCHERS                                : `${BASE_ROUTE}${VOUCHER}`,
+    VOUCHER_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${VOUCHER}/download-template-excel`,
+    VOUCHER_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${VOUCHER}/import-from-excel`,
+    VOUCHER_EXPORT_EXCEL                    : `${BASE_ROUTE}${VOUCHER}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;

@@ -12,6 +12,7 @@ const QUOTA                      = 'QUOTA';
 const ORDER_MATERIAL             = 'ORDER_MATERIAL';
 const SHIFT_HANDOVER             = 'SHIFT_HANDOVER';
 const GENERAL_BOOK               = 'GENERAL_BOOK';
+const VOUCHER                    = 'VOUCHER';
 
 const CF_ACTIONS_FNB = {
   
@@ -125,6 +126,17 @@ const CF_ACTIONS_FNB = {
    GENERAL_BOOK_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${GENERAL_BOOK}_DOWNLOAD_TEMPLATE_EXCEL`,
    GENERAL_BOOK_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${GENERAL_BOOK}_IMPORT_FROM_EXCEL`,
    GENERAL_BOOK_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${GENERAL_BOOK}_EXPORT_EXCEL`,
+
+   /**
+   * VOUCHER
+   */
+   VOUCHER_INSERT                                    : `${BASE_ACTIONS}_${VOUCHER}_INSERT`,
+   VOUCHER_UPDATE                                    : `${BASE_ACTIONS}_${VOUCHER}_UPDATE`,
+   VOUCHER_REMOVE                                    : `${BASE_ACTIONS}_${VOUCHER}_REMOVE`,
+   VOUCHER_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${VOUCHER}_GET_INFO_AND_GET_LIST`,
+   VOUCHER_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${VOUCHER}_DOWNLOAD_TEMPLATE_EXCEL`,
+   VOUCHER_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${VOUCHER}_IMPORT_FROM_EXCEL`,
+   VOUCHER_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${VOUCHER}_EXPORT_EXCEL`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;
