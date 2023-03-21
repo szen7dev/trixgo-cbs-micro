@@ -329,6 +329,11 @@ class Model extends BaseModel {
 
                     // Voucher không áp dụng chung với các chương trình khuyến mãi khác 
 
+                    /**
+                     * Kiểm tra nếu voucherID mà có thông tin người giới thiệu -> Tạo voucher để tặng Người giới thiệu
+                     * 
+                     */
+
                     dataInsert.voucher = voucherID
                     dataInsert.voucherType = Number(infoVoucher.type)
                     dataInsert.offer = Number(infoVoucher.salesoffAmount)
