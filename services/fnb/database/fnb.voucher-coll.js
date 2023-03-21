@@ -43,16 +43,26 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
     name: String,
     //_________Ghi chú đặc tính
     note: String,
-    //_________Người giới thiệu (nếu có)
+    //_________Người giới thiệu (BỎ)
     referrer: {
         type: Schema.Types.ObjectId,
         ref : 'contact' 
     },
-    //_________Dành cho khách hàng
+    //_________Dành cho khách hàng (BỎ)
     customer: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    //_________Người nhận
+    receivers: [{
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    }],
+    //_________Người sử dụng
+    buyers: [{
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    }],
     //_________Giá trị đơn hàng tối thiểu để được áp dụng voucher
     minOrderAmount: {
         type: Number,
@@ -71,7 +81,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
     //_________Thời hạn sử dụng Voucher
     expired: Date,
     /**
-     * Trạng thái đơn
+     * Trạng thái đơn (BỎ)
      * 1-Đang mở
      * 2-Đã sử dụng
      */
