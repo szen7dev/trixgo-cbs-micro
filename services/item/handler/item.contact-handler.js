@@ -66,6 +66,7 @@ module.exports = {
             contractValid    : { type: "string", optional: true },
             contractExpire   : { type: "string", optional: true },
             nonResident      : { type: "string", optional: true },
+            referrerID          : { type: "string", optional: true },
             fundaID          : { type: "string" }
         },
         async handler(ctx) {
@@ -74,14 +75,14 @@ module.exports = {
                 let {
                     parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property,
                     linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate,
-                    sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID 
+                    sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID 
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
                     authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID  
+                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID  
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
