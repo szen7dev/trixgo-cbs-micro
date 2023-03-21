@@ -331,7 +331,6 @@ class Model extends BaseModel {
 
                     /**
                      * Kiểm tra nếu voucherID mà có thông tin người giới thiệu -> Tạo voucher để tặng Người giới thiệu
-                     * 
                      */
 
                     dataInsert.voucher = voucherID

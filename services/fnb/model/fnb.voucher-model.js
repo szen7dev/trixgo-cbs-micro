@@ -21,6 +21,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
  */
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
+const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 // const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 // const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
 // const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
@@ -174,32 +175,53 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getInfo({ voucherID, select, populates={} }) {
+    getInfo({ voucherID, suid, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(voucherID))
-                    return resolve({ error: true, message: 'param_invalid' });
+                if(voucherID){
+                    if(!checkObjectIDs(voucherID))
+                        return resolve({ error: true, message: 'param_invalid' });
 
-                // populate
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    // populate
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
+                        populates = JSON.parse(populates);
+                    }else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
                     }
+
+                    let info = await FNB_VOUCHER_COLL.findById(voucherID)
+                                        .select(select)
+                                        .populate(populates)
+                    if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
+
+                    return resolve({ error: false, data: info })
+                }else{
+                    // populate
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                        populates = JSON.parse(populates);
+                    }else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
+                    }
+
+                    let info = await FNB_VOUCHER_COLL.findOne({ suid: suid })
+                                        .select(select)
+                                        .populate(populates)
+                    if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
+
+                    return resolve({ error: false, data: info })
                 }
-
-                let infoPlanGroup = await FNB_VOUCHER_COLL.findById(voucherID)
-                                    .select(select)
-                                    .populate(populates)
-
-                if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
-
-                return resolve({ error: false, data: infoPlanGroup });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -268,6 +290,9 @@ class Model extends BaseModel {
                     select = JSON.parse(select);
                 }
 
+                // console.log(populates)
+                // console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await FNB_VOUCHER_COLL.findById(lastestID);
@@ -325,27 +350,27 @@ class Model extends BaseModel {
     downloadTemplateExcel({ companyID, userID }) {
         return new Promise(async resolve => {
             try {
-                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                let listData  = await ITEM__CONTACT_COLL.find({ company: companyID }).select('name phone address note')
+                .limit(200)
                 // console.log(listData)
 
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_product_template_import.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_voucher_template_import.xlsx')))
                 .then(async workbook => {
 
-                    // var i = 3;
-                    // listData?.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
-                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
-                    //     // workbook.sheet("Export").row(i).cell(5).value(item.description);
-                    //     workbook.sheet("Export").row(i).cell(5).value(item.note);
-                    //     i++
-                    // });
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Contact").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Contact").row(i).cell(2).value(item.name);
+                        workbook.sheet("Contact").row(i).cell(3).value(item.phone);
+                        workbook.sheet("Contact").row(i).cell(4).value(item.note);
+                        workbook.sheet("Contact").row(i).cell(5).value(`${item._id}`);
+                        i++
+                    });
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `Template_import_product_${now.getTime()}.xlsx`;
+                    const fileName = `template_import_voucher_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
@@ -383,25 +408,23 @@ class Model extends BaseModel {
                         let dataInsert = {
                             companyID,
                             userID,
-                            name: data?.__EMPTY,
-                            sign: data?.__EMPTY_1,
-                            type: data?.__EMPTY_2,
-                            unit: data?.__EMPTY_3,
-                            unitPrice: data?.__EMPTY_4,
-                            unitPrice2: data?.__EMPTY_5,
-                            unitPrice3: data?.__EMPTY_6,
-                            unitPrice4: data?.__EMPTY_7,
-                            note: data?.__EMPTY_8,
-                            parentID: data?.__EMPTY_9,
+                            template: data?.__EMPTY,
+                            type: data?.__EMPTY_1,
+                            name: data?.__EMPTY_2,
+                            customerID: data?.__EMPTY_3,
+                            expired: data?.__EMPTY_4,
+                            minOrderAmount: data?.__EMPTY_5,
+                            salesoffAmount: data?.__EMPTY_6,
+                            salesoffRate: data?.__EMPTY_7,
+                            referrerID: data?.__EMPTY_8,
+                            note: data?.__EMPTY_9,
                         }
-
                         // console.log(dataInsert);
                     
                         let infoAfterInsert = await this.insert(dataInsert);
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
-
                     }
                     index ++;
                 }

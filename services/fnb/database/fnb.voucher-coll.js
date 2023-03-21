@@ -73,7 +73,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
     /**
      * Trạng thái đơn
      * 1-Đang mở
-     * 2-Đã hết hạn
+     * 2-Đã sử dụng
      */
     status: {
         type: Number,
