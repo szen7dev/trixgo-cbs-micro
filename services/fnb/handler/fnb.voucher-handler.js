@@ -72,8 +72,10 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let {  voucherID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status } = ctx.params;
+                 let { voucherID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status } = ctx.params;
                  
+                //  console.log({voucherID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status})
+
                  const { _id: userID, company } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await FNB_VOUCHER_MODEL.update({
@@ -149,6 +151,7 @@
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getList({
                          companyID: company._id, userID, customerID, template, type, keyword, limit, lastestID, select, populates
                      });
+                    //  console.log(resultAfterCallHandler.data.listRecords)
                  }
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
