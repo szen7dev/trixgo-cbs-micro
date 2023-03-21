@@ -175,32 +175,53 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getInfo({ voucherID, select, populates={} }) {
+    getInfo({ voucherID, suid, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(voucherID))
-                    return resolve({ error: true, message: 'param_invalid' });
+                if(voucherID){
+                    if(!checkObjectIDs(voucherID))
+                        return resolve({ error: true, message: 'param_invalid' });
 
-                // populate
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    // populate
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
+                        populates = JSON.parse(populates);
+                    }else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
                     }
+
+                    let info = await FNB_VOUCHER_COLL.findById(voucherID)
+                                        .select(select)
+                                        .populate(populates)
+                    if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
+
+                    return resolve({ error: false, data: info })
+                }else{
+                    // populate
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                        populates = JSON.parse(populates);
+                    }else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
+                    }
+
+                    let info = await FNB_VOUCHER_COLL.findOne({ suid: suid })
+                                        .select(select)
+                                        .populate(populates)
+                    if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
+
+                    return resolve({ error: false, data: info })
                 }
-
-                let infoPlanGroup = await FNB_VOUCHER_COLL.findById(voucherID)
-                                    .select(select)
-                                    .populate(populates)
-
-                if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
-
-                return resolve({ error: false, data: infoPlanGroup });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
