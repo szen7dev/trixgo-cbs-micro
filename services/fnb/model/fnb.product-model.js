@@ -153,13 +153,6 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // if(fundasID && fundasID.length) {
-                    //     // dataInUpdate.$addToSet = {
-                    //     //     fundas: fundasID,
-                    //     // }
-                    //     dataInUpdate.fundas = fundasID
-                    // }
-
                     if(fundasID) {
                         dataInUpdate.fundas = fundasID
                     }
@@ -252,8 +245,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, parentID, fundaID, type, isParent, convertOption, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log('========DANH MỤC SẢN PHẨM===============>>>>>>>>>>>>>>>>')
-        // console.log({ companyID, parentID, fundaID, type, isParent, keyword })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
