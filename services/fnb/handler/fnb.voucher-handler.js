@@ -128,6 +128,7 @@
             customerID  : { type: "string", optional: true },
             template    : { type: "string", optional: true },
             type        : { type: "string", optional: true },
+            status      : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -139,7 +140,7 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { voucherID, suid, customerID, template, type, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let { voucherID, suid, customerID, template, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -150,7 +151,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getList({
-                         companyID: company._id, userID, customerID, template, type, keyword, limit, lastestID, select, populates
+                         companyID: company._id, userID, customerID, template,  type, status, keyword, limit, lastestID, select, populates
                      });
                     //  console.log(resultAfterCallHandler.data.listRecords)
                  }
