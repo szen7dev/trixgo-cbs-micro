@@ -32,6 +32,7 @@
              try {
                 await this.validateEntity(ctx.params);
                 let { template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired } = ctx.params;
+                // console.log({ template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired })
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 

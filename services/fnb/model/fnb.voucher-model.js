@@ -292,7 +292,13 @@ class Model extends BaseModel {
                 let keys	 = ['createAt__1', '_id__1'];
 
                 if(customerID && checkObjectIDs(customerID)){
-                    conditionObj.customer = ObjectID(customerID)
+
+                    // Danh sách các voucher của customerID chưa sử dụng và Còn thời hạn
+                    conditionObj.expired = {
+                        $gt: new Date()
+                    }
+                    conditionObj.receivers = { $in: [customerID]}
+                    conditionObj.buyers = { $nin: [customerID]}
                 }else{
                     conditionObj.company = ObjectID(companyID)
                 }
@@ -305,9 +311,7 @@ class Model extends BaseModel {
                     conditionObj.template = Number(template)
                 }
 
-                if(status && !isNaN(status)){
-                    conditionObj.status = Number(status)
-                }
+                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
