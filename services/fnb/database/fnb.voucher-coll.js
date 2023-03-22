@@ -41,6 +41,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
     }, 
     //_________Nội dung
     name: String,
+    //_________Mã hiệu
+    sign: String,
     //_________Ghi chú đặc tính
     note: String,
     //_________Người giới thiệu (BỎ)

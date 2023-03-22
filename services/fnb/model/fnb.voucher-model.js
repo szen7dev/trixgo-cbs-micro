@@ -44,12 +44,16 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    insert({  userID, companyID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status }) {
-        // console.log({ userID, companyID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status })
+    insert({  userID, companyID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign }) {
+        // console.log({ userID, companyID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(companyID) || !name)
-                    return resolve({ error: true, message: 'companyID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                if(!checkObjectIDs(companyID) || !name || !sign || !expired )
+                    return resolve({ error: true, message: 'companyID|name|expired invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+
+                let infoVoucher = await FNB_VOUCHER_COLL.findOne({ company: companyID, sign: sign })
+                if(infoVoucher)
+                    return resolve({ error: true, message: 'Mã hiệu đã tồn tại' })
 
                 let suid = await stringUtils.randomAndCheckExists(FNB_VOUCHER_COLL, 'suid')
 
@@ -58,24 +62,14 @@ class Model extends BaseModel {
                     company: companyID,
                     template, 
                     type,
-                    name, 
+                    name,
+                    sign,
+                    expired, 
                     userCreate: userID 
                 }
 
                 if(note && note != ""){
                     dataInsert.note = note
-                }
-
-                if(expired && expired != ""){
-                    dataInsert.expired = expired
-                }
-
-                if(referrerID && checkObjectIDs(referrerID)){
-                    dataInsert.referrer = referrerID
-                }
-
-                if(customerID && checkObjectIDs(customerID)){
-                    dataInsert.customer = customerID
                 }
 
                 if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
@@ -107,59 +101,86 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    update({ userID, voucherID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status }) {
-        // console.log({ userID, voucherID, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status })
+    update({ companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers }) {
+        // console.log({ userID, voucherID, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(voucherID))
-                        return resolve({ error: true, message: 'voucherID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                    return resolve({ error: true, message: 'voucherID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                    let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                    let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                    let dataAddToset = {};
+                    let dataPullAll  = {};
 
                     if(name && name != ""){
-                        dataInUpdate.name = name
+                        dataUpdate.name = name
+                    }
+
+                    if(sign && sign != ""){
+                        let infoVoucher = await FNB_VOUCHER_COLL.findOne({ 
+                            _id: { $ne: voucherID },
+                            company: companyID, 
+                            sign: sign 
+                        })
+                        if(infoVoucher)
+                            return resolve({ error: true, message: 'Mã hiệu đã tồn tại' })
+
+                        dataUpdate.sign = sign
                     }
 
                     if(note && note != ""){
-                        dataInUpdate.note = note
+                        dataUpdate.note = note
                     }
     
                     if(expired && expired != ""){
-                        dataInUpdate.expired = expired
-                    }
-    
-                    if(referrerID && checkObjectIDs(referrerID)){
-                        dataInUpdate.referrer = referrerID
-                    }
-    
-                    if(customerID && checkObjectIDs(customerID)){
-                        dataInUpdate.customer = customerID
+                        dataUpdate.expired = expired
                     }
 
                     if(!isNaN(template) && Number(template) > 0){
-                        dataInUpdate.template = Number(template)
+                        dataUpdate.template = Number(template)
                     }
                     if(!isNaN(type) && Number(type) > 0){
-                        dataInUpdate.type = Number(type)
-                    }
-                    if(!isNaN(status) && Number(status) > 0){
-                        dataInUpdate.status = Number(status)
+                        dataUpdate.type = Number(type)
                     }
     
                     if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
-                        dataInUpdate.minOrderAmount = Number(minOrderAmount)
+                        dataUpdate.minOrderAmount = Number(minOrderAmount)
                     }
                     if(!isNaN(salesoffAmount) && Number(salesoffAmount) >= 0){
-                        dataInUpdate.salesoffAmount = Number(salesoffAmount)
+                        dataUpdate.salesoffAmount = Number(salesoffAmount)
                     }
                     if(!isNaN(salesoffRate) && Number(salesoffRate) >= 0){
-                        dataInUpdate.salesoffRate = Number(salesoffRate)
+                        dataUpdate.salesoffRate = Number(salesoffRate)
                     }
                     if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
-                        dataInUpdate.minOrderAmount = Number(minOrderAmount)
+                        dataUpdate.minOrderAmount = Number(minOrderAmount)
                     }
 
-                    let infoAfterUpdate = await FNB_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataInUpdate, { new: true });
+                    /**
+                     * QUẢN LÝ KHÁCH HÀNG
+                     */
+                    //_________Thêm người nhận voucher
+                    if(checkObjectIDs(receivers)){
+                        dataAddToset = {
+                            ...dataAddToset,
+                            receivers
+                        }
+                    }
+
+                    //_________Người đã sử dụng voucher
+                    if(checkObjectIDs(buyers)){
+                        dataAddToset = {
+                            ...dataAddToset,
+                            buyers
+                        }
+                    }
+
+                    if(dataAddToset){
+                        dataUpdate.$addToSet = dataAddToset;
+                    }
+                    // console.log(dataUpdate)
+
+                    let infoAfterUpdate = await FNB_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate, { new: true });
                     if (!infoAfterUpdate)
                         return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
@@ -402,38 +423,24 @@ class Model extends BaseModel {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
                 // console.log('=============Log data===================');
-                // return console.log({ dataImportJSON });
+                // console.log({ dataImportJSON });
                 let index = 0;
-                let errorNumber = 0;
-                // let parentID;
-                for (const data of dataImportJSON) {
+
+                let receivers = []
+                let voucherID = dataImportJSON[0].__EMPTY_3
+                
+                for (const item of dataImportJSON) {
                     // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                     if(index > 0){
-                        let dataInsert = {
-                            companyID,
-                            userID,
-                            template: data?.__EMPTY,
-                            type: data?.__EMPTY_1,
-                            name: data?.__EMPTY_2,
-                            customerID: data?.__EMPTY_3,
-                            expired: data?.__EMPTY_4,
-                            minOrderAmount: data?.__EMPTY_5,
-                            salesoffAmount: data?.__EMPTY_6,
-                            salesoffRate: data?.__EMPTY_7,
-                            referrerID: data?.__EMPTY_8,
-                            note: data?.__EMPTY_9,
-                        }
-                        // console.log(dataInsert);
-                    
-                        let infoAfterInsert = await this.insert(dataInsert);
-                        if(infoAfterInsert.error){
-                            errorNumber++;
-                        }
+                        receivers.push(item?.__EMPTY_3)
                     }
+
                     index ++;
                 }
-                if(errorNumber != 0)
-                    return resolve({ error: true, message: "Import failed" })
+                // console.log({voucherID})
+                // console.log(receivers)
+
+                await this.update({ userID, voucherID, receivers })
 
                 return resolve({ error: false, message: "Import successfull" });
             } catch (error) {
