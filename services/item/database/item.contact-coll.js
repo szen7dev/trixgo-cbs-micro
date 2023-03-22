@@ -276,6 +276,16 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : 'contact' 
     },
+    //_________Voucher nhận được
+    getVouchers: [{
+        type: Schema.Types.ObjectId,
+        ref: "fnb_voucher"
+    }],
+    //_________Voucher đã sử dụng
+    usedVouchers: [{
+        type: Schema.Types.ObjectId,
+        ref: "fnb_voucher"
+    }],
     /**
      * Khách biết tên hay vãng lai
      * 1-Biết tên

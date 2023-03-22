@@ -20,9 +20,8 @@
             template            : { type: "number", optional: true },
             type                : { type: "number", optional: true },
             name                : { type: "string" },
+            sign                : { type: "string" },
             note                : { type: "string", optional: true },
-            referrerID          : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
             minOrderAmount      : { type: "number", optional: true },
             salesoffAmount      : { type: "number", optional: true },
             salesoffRate        : { type: "number", optional: true },
@@ -32,12 +31,13 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status } = ctx.params;
+                let { template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired } = ctx.params;
+                // console.log({ template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired })
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_VOUCHER_MODEL.insert({
-                    userID, companyID: company._id, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status
+                    userID, companyID: company._id, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -60,26 +60,27 @@
             template            : { type: "number", optional: true },
             type                : { type: "number", optional: true },
             name                : { type: "string" },
+            sign                : { type: "string" },
             note                : { type: "string", optional: true },
-            referrerID          : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
             minOrderAmount      : { type: "number", optional: true },
             salesoffAmount      : { type: "number", optional: true },
             salesoffRate        : { type: "number", optional: true },
-            expired             : { type: "string", optional: true },
-            status              : { type: "number", optional: true }
+            expired             : { type: "string" },
+            status              : { type: "number", optional: true },
+            receivers           : { type: "array", optional: true },
+            buyers              : { type: "array", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { voucherID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status } = ctx.params;
+                 let { voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers } = ctx.params;
                  
-                //  console.log({voucherID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status})
+                //  console.log({voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers })
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await FNB_VOUCHER_MODEL.update({
-                    userID, voucherID, template, type, name, note, referrerID, customerID, minOrderAmount, salesoffAmount, salesoffRate, expired, status
+                    companyID: company._id, userID, voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
