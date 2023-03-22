@@ -311,7 +311,7 @@ class Model extends BaseModel {
                      */
                    
                     let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
-                    console.log(infoVoucher)
+                    // console.log(infoVoucher)
                     if (!infoVoucher)
                         return resolve({ error: true, message: 'cannot_get_infoVoucher' })
 
