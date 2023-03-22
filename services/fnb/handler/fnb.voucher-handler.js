@@ -125,7 +125,7 @@
          auth: "required",
          params: {
             voucherID   : { type: "string", optional: true },
-            suid        : { type: "string", optional: true },
+            sign        : { type: "string", optional: true },
             customerID  : { type: "string", optional: true },
             template    : { type: "string", optional: true },
             type        : { type: "string", optional: true },
@@ -141,14 +141,14 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { voucherID, suid, customerID, template, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let { voucherID, sign, customerID, template, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler;
-                 if(voucherID || suid){
+                 if(voucherID || sign){
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getInfo({
-                        voucherID, suid, select, populates,
+                        voucherID, sign, select, populates,
                      });
                  }else{
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getList({
