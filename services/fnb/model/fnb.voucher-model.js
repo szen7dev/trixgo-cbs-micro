@@ -184,6 +184,29 @@ class Model extends BaseModel {
                     if (!infoAfterUpdate)
                         return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
+                    if(dataAddToset){
+
+                        // Cập nhật vào Người nhận
+                        if(checkObjectIDs(receivers)){
+                            await ITEM__CONTACT_COLL.updateMany(
+                                {_id: { $in: receivers }},
+                                { $addToSet:
+                                    { getVouchers: voucherID },
+                                },
+                            )
+                        }
+
+                        // Cập nhật vào Người sử dụng
+                        if(checkObjectIDs(buyers)){
+                            await ITEM__CONTACT_COLL.updateMany(
+                                {_id: { $in: buyers }},
+                                { $addToSet:
+                                    { usedVouchers: voucherID },
+                                },
+                            )
+                        }
+                    }
+
                     return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message })

@@ -297,7 +297,7 @@ class Model extends BaseModel {
         contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, fundaID 
+        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, fundaID, getVouchers, usedVouchers
     }){
         // console.log('================THAM BIẾN CẬP NHẬT=================')
         // console.log({
@@ -340,6 +340,7 @@ class Model extends BaseModel {
                     modifyAt: new Date(),
                     userUpdate: authorID
                 }
+                let dataAddToset = {};
 
                 if(type){
                     dataUpdate.type = type;
@@ -602,6 +603,25 @@ class Model extends BaseModel {
 
                 if(nonResident){
                     dataUpdate.nonResident = Number(nonResident);
+                }
+
+                /**
+                 * QUẢN LÝ VOUCHER
+                 */
+                //_________Thêm voucher
+                if(checkObjectIDs(getVouchers)){
+                    dataAddToset = {
+                        ...dataAddToset,
+                        getVouchers
+                    }
+                }
+
+                //_________Sử dụng voucher
+                if(checkObjectIDs(usedVouchers)){
+                    dataAddToset = {
+                        ...dataAddToset,
+                        usedVouchers
+                    }
                 }
 
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
