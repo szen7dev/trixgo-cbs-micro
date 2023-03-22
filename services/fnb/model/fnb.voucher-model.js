@@ -219,7 +219,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getInfo({ voucherID, suid, select, populates={} }) {
+    getInfo({ voucherID, sign, select, populates={} }) {
         return new Promise(async resolve => {
             try {
                 if(voucherID){
@@ -259,7 +259,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    let info = await FNB_VOUCHER_COLL.findOne({ suid: suid })
+                    let info = await FNB_VOUCHER_COLL.findOne({ sign: sign })
                                         .select(select)
                                         .populate(populates)
                     if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
