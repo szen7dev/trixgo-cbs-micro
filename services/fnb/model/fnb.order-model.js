@@ -311,15 +311,13 @@ class Model extends BaseModel {
                      */
                    
                     let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
+                    console.log(infoVoucher)
                     if (!infoVoucher)
                         return resolve({ error: true, message: 'cannot_get_infoVoucher' })
 
                     // Kiểm tra xem đúng VoucherID của customerID hay không
 
                     // Kiểm tra thời hạn VoucherID
-                    // if(infoVoucher.expired){
-
-                    // }
 
                     // Kiểm tra giá trị đơn hàng xem có được áp dụng Voucher hay không (so sánh với amount hay total?)
 
