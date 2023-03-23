@@ -285,6 +285,7 @@ class Model extends BaseModel {
                 /**
                  * Người giới thiệu
                  * Tạo Voucher cho người nhận giới thiệu
+                 * Chỉ áp dụng trong khoảng thời gian được khống chế
                  */
                 if(referrerID && checkObjectIDs(referrerID)){
                     // Tạo voucher cho người được giới thiệu (type=3)
