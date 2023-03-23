@@ -296,79 +296,93 @@ class Model extends BaseModel {
 
                     loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
                     dataInsert.loyaltyPoints = Number(loyaltyPoints)
-                }
 
-                // Offer giảm giá từ Voucher
-                if(voucherID && checkObjectIDs(voucherID)){
-                    /**
-                     * Voucher Không có giá trị quy đổi thành tiền mặt
-                        Chỉ áp dụng dành riêng đối với đơn hàng tiếp theo
-                        Voucher chỉ sử dụng một lần cho một hóa đơn/1 khách hàng
-                        Mỗi đơn hàng chỉ được sử dụng một Voucher giảm giá duy nhất
-                        Voucher mệnh giá có thể sử dụng chung cho cùng một đơn hàng
-                        Không trả lại tiền thừa nếu giá trị Voucher lớn hơn giá trị đơn hàng
-                        Voucher chỉ có giá trị trong thời gian được ghi trên thẻ.
-                        Voucher không áp dụng chung với các chương trình khuyến mãi khác (trường hợp quý khách muốn sử dụng voucher để áp dụng mua các sản phẩm đang khuyến mãi thì voucher chỉ áp dụng cho giá gốc chưa khuyến mãi của sản phẩm đó).
-                     */
-                    let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
-                    // console.log(infoVoucher)
-                    if (!infoVoucher)
-                        return resolve({ error: true, message: 'cannot_get_infoVoucher' })
+                    // Offer giảm giá từ Voucher
+                    if(voucherID && checkObjectIDs(voucherID)){
+                        /**
+                         * Voucher Không có giá trị quy đổi thành tiền mặt
+                            Chỉ áp dụng dành riêng đối với đơn hàng tiếp theo
+                            Voucher chỉ sử dụng một lần cho một hóa đơn/1 khách hàng
+                            Mỗi đơn hàng chỉ được sử dụng một Voucher giảm giá duy nhất
+                            Voucher mệnh giá có thể sử dụng chung cho cùng một đơn hàng
+                            Không trả lại tiền thừa nếu giá trị Voucher lớn hơn giá trị đơn hàng
+                            Voucher chỉ có giá trị trong thời gian được ghi trên thẻ.
+                            Voucher không áp dụng chung với các chương trình khuyến mãi khác (trường hợp quý khách muốn sử dụng voucher để áp dụng mua các sản phẩm đang khuyến mãi thì voucher chỉ áp dụng cho giá gốc chưa khuyến mãi của sản phẩm đó).
+                        */
+                        let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
+                        // console.log(infoVoucher)
+                        if (!infoVoucher)
+                            return resolve({ error: true, message: 'cannot_get_infoVoucher' })
 
-                    // Kiểm tra xem đúng VoucherID của customerID hay không
-                    // console.log({VoucherIDcustomerID:!infoVoucher.receivers.includes(customerID)})
-                    if(!infoVoucher.receivers.includes(customerID))
-                        return resolve({ error: true, message: 'Voucher không áp dụng cho khách hàng này' })
+                        // Kiểm tra xem đúng VoucherID của customerID hay không
+                        // console.log({VoucherIDcustomerID:!infoVoucher.receivers.includes(customerID)})
+                        if(!infoVoucher.receivers.includes(customerID))
+                            return resolve({ error: true, message: 'Voucher không áp dụng cho khách hàng này' })
 
-                    // Kiểm tra thời hạn VoucherID
-                    let currentTime = new Date();
-                    let checkExpired = compareTwoTime(currentTime, infoVoucher.expired)
-                    // console.log({checkExpired:checkExpired})
-                    if(checkExpired == 1)
-                        return resolve({ error: true, message: 'Voucher đã hết hạn' })
+                        // Kiểm tra thời hạn VoucherID
+                        let currentTime = new Date();
+                        let checkExpired = compareTwoTime(currentTime, infoVoucher.expired)
+                        // console.log({checkExpired:checkExpired})
+                        if(checkExpired == 1)
+                            return resolve({ error: true, message: 'Voucher đã hết hạn' })
 
-                    /**
-                     * Kiểm tra giá trị đơn hàng xem có được áp dụng Voucher hay không
-                     */
-                    if( Number(total) < Number(infoVoucher.minOrderAmount))
-                        return resolve({ error: true, message: `Đơn hàng không đủ điều kiện áp dụng (Giá trị phải >= ${infoVoucher.minOrderAmount})` })
+                        /**
+                         * Kiểm tra giá trị đơn hàng xem có được áp dụng Voucher hay không
+                         */
+                        if( Number(total) < Number(infoVoucher.minOrderAmount))
+                            return resolve({ error: true, message: `Đơn hàng không đủ điều kiện áp dụng (Giá trị phải >= ${infoVoucher.minOrderAmount})` })
 
-                    /**
-                     * Voucher không áp dụng chung với các chương trình khuyến mãi khác
-                     * - Không kèm giảm giá
-                     * - Không kèm tích điểm
-                     */
+                        /**
+                         * Voucher không áp dụng chung với các chương trình khuyến mãi khác
+                         * - Không kèm giảm giá
+                         * - Không kèm tích điểm
+                         */
 
-                    /**
-                     * Kiểm tra xem khách hàng đã sử dụng voucherID hay chưa
-                     */
-                    if(infoVoucher.buyers.includes(customerID))
-                        return resolve({ error: true, message: 'Khách hàng đã sử dụng Voucher này' })
+                        /**
+                         * Kiểm tra xem khách hàng đã sử dụng voucherID hay chưa
+                         */
+                        if(infoVoucher.buyers.includes(customerID))
+                            return resolve({ error: true, message: 'Khách hàng đã sử dụng Voucher này' })
 
-                    /**
-                     * Kiểm tra nếu customerID có thông tin người giới thiệu -> Tạo voucher để tặng Người giới thiệu
-                     */
-                    // console.log({infoCustomer:infoCustomer.referrer})
+                        /**
+                         * Kiểm tra nếu customerID có thông tin người giới thiệu -> Tạo voucher để tặng Người giới thiệu -> Chỉ tặng 1 lần cho 1 người giới thiệu
+                         */
+                        // console.log({infoCustomer:infoCustomer.referrer})
+                        if(infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
+                            // Tạo voucher cho người giới thiệu (type=2)
+                            let infoOffer = await FNB_VOUCHER_COLL.findOne({ type: 2 })
+                            .sort({_id: -1 })
+                            .select("_id name sign")
+                            // console.log(infoOffer)
+                            if(infoOffer){
+                                await FNB_ORDER_VOUCHER_MODEL.update({
+                                    userID, 
+                                    voucherID: infoOffer._id, 
+                                    receivers:[infoCustomer.referrer]
+                                })
+                            }
+                        }
 
-                    /**
-                     * Kiểm tra nếu Giá trị Voucher
-                     */
-                    let offer = 0
-                    if(Number(infoVoucher.salesoffAmount) > 0){
-                        offer = Number(infoVoucher.salesoffAmount)
-                    }else{
-                        offer = Number(Number(infoVoucher.salesoffRate) * Number(total)/100).toFixed(0)
+                        /**
+                         * Kiểm tra nếu Giá trị Voucher
+                         */
+                        let offer = 0
+                        if(Number(infoVoucher.salesoffAmount) > 0){
+                            offer = Number(infoVoucher.salesoffAmount)
+                        }else{
+                            offer = Number(Number(infoVoucher.salesoffRate) * Number(total)/100).toFixed(0)
+                        }
+
+                        dataInsert.voucher = voucherID
+                        dataInsert.voucherType = Number(infoVoucher.type)
+                        dataInsert.offer = Number(offer)
+
+                        if(Number(amount) <= Number(offer)){
+                            amount = 0
+                        }else{
+                            amount = Number(amount) - Number(offer)
+                        } 
                     }
-
-                    dataInsert.voucher = voucherID
-                    dataInsert.voucherType = Number(infoVoucher.type)
-                    dataInsert.offer = Number(offer)
-
-                    if(Number(amount) <= Number(offer)){
-                        amount = 0
-                    }else{
-                        amount = Number(amount) - Number(offer)
-                    } 
                 }
 
                 // Giá trị thanh toán
@@ -670,7 +684,7 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT VÀO VOUCHER
                  */
-                if(voucherID && checkObjectIDs(voucherID)){
+                if(salesChannel == 1 && voucherID && checkObjectIDs(voucherID)){
                     await FNB_ORDER_VOUCHER_MODEL.update({ userID, voucherID, buyers: [customerID] })
                 }
 
