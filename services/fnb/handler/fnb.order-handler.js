@@ -155,9 +155,13 @@ module.exports = {
             salesChannels       : { type: "array", optional: true },
             services            : { type: "array", optional: true },
             statuss             : { type: "array", optional: true },
-            isMistake           : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
+            isMistake           : { type: "string", optional: true },
+            isDiscount          : { type: "string", optional: true },
+            isSalesoff           : { type: "string", optional: true },
+            isCredit            : { type: "string", optional: true },
+            isOffer             : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -169,7 +173,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, customerID } = ctx.params;
+                let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, customerID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -179,7 +183,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, customerID
+                        companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, userID, customerID
                     });
                 }
 
