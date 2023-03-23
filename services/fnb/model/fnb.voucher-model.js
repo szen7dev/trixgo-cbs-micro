@@ -185,6 +185,10 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
                     if(dataAddToset){
+                        /**
+                         * KIỂM TRA ĐỂ ĐẢM BẢO
+                         * 1-Khách hàng chỉ đc nhận và sử dụng VoucherID 1 lần
+                         */
 
                         // Cập nhật vào Người nhận
                         if(checkObjectIDs(receivers)){

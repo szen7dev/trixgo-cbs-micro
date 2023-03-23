@@ -14,23 +14,24 @@ const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-co
 /**
  * TOOLS
  */
-const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { uploadFileS3 }                  = require('../../../tools/s3');
-const { INSURANCE_STATUS }              = require('../../../tools/constants');
-const { CONTACT_GENDER }                = require('../helper/item.keys-constant');
-// const stringUtils					    = require('../../../tools/utils/string_utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils')
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
+const { uploadFileS3 }                  = require('../../../tools/s3')
+const { INSURANCE_STATUS }              = require('../../../tools/constants')
+const { CONTACT_GENDER }                = require('../helper/item.keys-constant')
+// const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
  * COLLECTIONS
  */
-const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll');
-const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll');
-const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
-const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
-const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll');
-const { ObjectId } = require('mongodb');
+const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll')
+const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll')
+const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll')
+const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
+const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll')
 
+const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll')
+const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL;
 class Model extends BaseModel {
 
     constructor() {
@@ -57,8 +58,8 @@ class Model extends BaseModel {
                  * 1-Khi tạo lần đầu/Mua hàng lần đầu => Khách hàng mới
                  * 2-Khi mua hàng lần 2 trở đi => Khách hàng cũ => Đơn hàng cũ
                  */
-                if(!name || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'name|fundaID|authorID_param_not_valid' })
+                if(!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
+                    return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })
 
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if(!infoFunda)
@@ -112,6 +113,11 @@ class Model extends BaseModel {
                     status: status ? Number(status) : Number(1)
                 }
 
+                // Người giới thiệu
+                if(referrerID && checkObjectIDs(referrerID)){
+                    dataInsert.referrer = referrerID;
+                }
+
                 if(infoFunda.area1){
                     dataInsert.sector1 = infoFunda.area1
                 }
@@ -128,9 +134,6 @@ class Model extends BaseModel {
                     dataInsert.gender = gender;
                 }
 
-                if(referrerID && checkObjectIDs(referrerID)){
-                    dataInsert.referrer = referrerID;
-                }
                 if(department && checkObjectIDs(department)){
                     dataInsert.department = department;
                 }
@@ -273,17 +276,35 @@ class Model extends BaseModel {
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
                         $addToSet: { childs: infoAfterInsert._id },
                         $inc: { amountChilds: 1 }
-                    }, { new: true });
+                    }, { new: true })
                 }
 
-                /**
-                 * CẬP NHẬT VÀO ĐƠN VỊ CƠ SỞ
-                 */
+                // Cập nhật vào đơn vị cơ sở
                 await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, { $inc: { numberOfCustomers: 1 }}, { new: true })
 
-                return resolve({ error: false, data: infoAfterInsert });
+                /**
+                 * Người giới thiệu
+                 * Tạo Voucher cho người nhận giới thiệu
+                 */
+                if(referrerID && checkObjectIDs(referrerID)){
+                    // Tạo voucher cho người được giới thiệu (type=3)
+                    let infoVoucher = await FNB_VOUCHER_COLL.findOne({ type: 3 })
+                    .sort({_id: -1 })
+                    .select("_id name sign")
+                    // console.log(infoVoucher)
+                    if(infoVoucher){
+                        let infoVoucherAfterUpdate = await FNB_ORDER_VOUCHER_MODEL.update({
+                            userID: authorID, 
+                            voucherID: infoVoucher._id, 
+                            receivers:[infoAfterInsert._id]
+                        })
+                        // console.log(infoVoucherAfterUpdate)
+                    }
+                }
+
+                return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message })
             }
         })
     }

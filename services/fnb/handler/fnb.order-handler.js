@@ -44,7 +44,7 @@ module.exports = {
                 const { _id: userID, company, email } = ctx.meta.infoUser;
 
                 // let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                //     voucherID: "64189fb756ef0d42a8d4572b", fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, vatAmount, products, userID
+                //     voucherID: "641bbc252698e555940e5b88", fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, vatAmount, products, userID
                 // });
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
