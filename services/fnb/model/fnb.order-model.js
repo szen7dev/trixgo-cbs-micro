@@ -1360,8 +1360,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
-        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, isMistake, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
+    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
+        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -1419,6 +1419,22 @@ class Model extends BaseModel {
                 // Phân loại có lỗi hay không
                 if(isMistake && isMistake == 1){
                     conditionObj.numberOfMistakes = { $gt: 0 }
+                }
+
+                if(isDiscount && isDiscount == 1){
+                    conditionObj.discount = { $gt: 0 }
+                }
+
+                if(isSalesoff && isSalesoff == 1){
+                    conditionObj.salesoff = { $gt: 0 }
+                }
+
+                if(isCredit && isCredit == 1){
+                    conditionObj.credit = { $gt: 0 }
+                }
+
+                if(isOffer && isOffer == 1){
+                    conditionObj.offer = { $gt: 0 }
                 }
 
                 // Phân loại theo thời khoảng
@@ -1596,6 +1612,7 @@ class Model extends BaseModel {
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
                             credit: { $sum: "$credit" },
+                            offer: { $sum: "$offer" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1618,6 +1635,7 @@ class Model extends BaseModel {
                                 discount: { $sum: "$discount" },
                                 salesoff: { $sum: "$salesoff" },
                                 credit: { $sum: "$credit" },
+                                offer: { $sum: "$offer" },
                                 amount: { $sum: "$amount" },
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1639,6 +1657,7 @@ class Model extends BaseModel {
                                 discount: { $sum: "$discount" },
                                 salesoff: { $sum: "$salesoff" },
                                 credit: { $sum: "$credit" },
+                                offer: { $sum: "$offer" },
                                 amount: { $sum: "$amount" },
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1654,6 +1673,7 @@ class Model extends BaseModel {
                                 discount: { $sum: "$discount" },
                                 salesoff: { $sum: "$salesoff" },
                                 credit: { $sum: "$credit" },
+                                offer: { $sum: "$offer" },
                                 amount: { $sum: "$amount" },
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1669,6 +1689,7 @@ class Model extends BaseModel {
                                 discount: { $sum: "$discount" },
                                 salesoff: { $sum: "$salesoff" },
                                 credit: { $sum: "$credit" },
+                                offer: { $sum: "$offer" },
                                 amount: { $sum: "$amount" },
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1684,6 +1705,7 @@ class Model extends BaseModel {
                                 discount: { $sum: "$discount" },
                                 salesoff: { $sum: "$salesoff" },
                                 credit: { $sum: "$credit" },
+                                offer: { $sum: "$offer" },
                                 amount: { $sum: "$amount" },
                                 vatAmount: { $sum: "$vatAmount" },
                                 numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1702,6 +1724,7 @@ class Model extends BaseModel {
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
                             credit: { $sum: "$credit" },
+                            offer: { $sum: "$offer" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1724,6 +1747,8 @@ class Model extends BaseModel {
                             total: { $sum: "$total" },
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            offer: { $sum: "$offer" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1753,6 +1778,7 @@ class Model extends BaseModel {
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
                             credit: { $sum: "$credit" },
+                            offer: { $sum: "$offer" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1776,6 +1802,7 @@ class Model extends BaseModel {
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
                             credit: { $sum: "$credit" },
+                            offer: { $sum: "$offer" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
@@ -1802,6 +1829,7 @@ class Model extends BaseModel {
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
                             credit: { $sum: "$credit" },
+                            offer: { $sum: "$offer" },
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                         }
@@ -1857,6 +1885,7 @@ class Model extends BaseModel {
                                 salesoff : 1,
                                 discount : 1,
                                 credit : 1,
+                                offer : 1,
                                 amount : 1,
                                 vatAmount : 1,
                                 avgQuantityPerStaff : 1,
@@ -1896,6 +1925,8 @@ class Model extends BaseModel {
                                     total: 1,
                                     discount: 1,
                                     salesoff: 1,
+                                    credit: 1,
+                                    offer: 1,
                                     amount: 1,
                                     vatAmount: 1,
                                     numberOfProducts: 1,
