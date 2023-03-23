@@ -297,7 +297,9 @@ class Model extends BaseModel {
                     loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
                     dataInsert.loyaltyPoints = Number(loyaltyPoints)
 
-                    // Offer giảm giá từ Voucher
+                    /**
+                     * OFFER GIẢM GIÁ TỪ VOUCHER
+                     */
                     if(voucherID && checkObjectIDs(voucherID)){
                         /**
                          * Voucher Không có giá trị quy đổi thành tiền mặt
@@ -343,25 +345,6 @@ class Model extends BaseModel {
                          */
                         if(infoVoucher.buyers.includes(customerID))
                             return resolve({ error: true, message: 'Khách hàng đã sử dụng Voucher này' })
-
-                        /**
-                         * Kiểm tra nếu customerID có thông tin người giới thiệu -> Tạo voucher để tặng Người giới thiệu -> Chỉ tặng 1 lần cho 1 người giới thiệu
-                         */
-                        // console.log({infoCustomer:infoCustomer.referrer})
-                        if(infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
-                            // Tạo voucher cho người giới thiệu (type=2)
-                            let infoOffer = await FNB_VOUCHER_COLL.findOne({ type: 2 })
-                            .sort({_id: -1 })
-                            .select("_id name sign")
-                            // console.log(infoOffer)
-                            if(infoOffer){
-                                await FNB_ORDER_VOUCHER_MODEL.update({
-                                    userID, 
-                                    voucherID: infoOffer._id, 
-                                    receivers:[infoCustomer.referrer]
-                                })
-                            }
-                        }
 
                         /**
                          * Kiểm tra nếu Giá trị Voucher
@@ -685,7 +668,32 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO VOUCHER
                  */
                 if(salesChannel == 1 && voucherID && checkObjectIDs(voucherID)){
+                    // Cập nhật thông tin Người sử dụng voucher
                     await FNB_ORDER_VOUCHER_MODEL.update({ userID, voucherID, buyers: [customerID] })
+
+                    /**
+                     * Kiểm tra nếu customerID có thông tin người giới thiệu
+                     * -> Tạo voucher để tặng Người giới thiệu 
+                     * -> Chỉ tặng 1 lần cho 1 người giới thiệu => Tức số đơn hàng của khách mua lần đầu (trước đó = 0)
+                     * -> Một người có thể giới thiệu cho nhiều người, tức cần được nhận nhiều voucher -> Cần tạo bộ
+                     * voucher type=2 lên tới tối đa 20 cái
+                     * -> Lấy các voucher type=2 và còn thời hạn để tặng cho người giới thiệu
+                     */
+                    // console.log({infoCustomer:infoCustomer.referrer})
+                    if(numberOD == 0 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
+                        // Tạo voucher cho người giới thiệu (type=2)
+                        let infoOffer = await FNB_VOUCHER_COLL.findOne({ type: 2, receivers: {$nin: [infoCustomer.referrer]}, expired: {$gt: new Date()} })
+                        .sort({_id: -1 })
+                        .select("_id name sign")
+                        // console.log(infoOffer)
+                        if(infoOffer){
+                            await FNB_ORDER_VOUCHER_MODEL.update({
+                                userID, 
+                                voucherID: infoOffer._id, 
+                                receivers:[infoCustomer.referrer]
+                            })
+                        }
+                    }
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });

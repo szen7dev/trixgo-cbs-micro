@@ -281,7 +281,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getList({ companyID, userID, status, customerID, template, type, keyword, limit=10, lastestID, select, populates }) {
+    getList({ companyID, userID, customerID, template, type, keyword, limit=10, lastestID, select, populates }) {
         // console.log({ companyID, userID, customerID, template, type, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
