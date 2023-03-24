@@ -56,11 +56,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, name, description, type, select, members, conditionPin, option, taskID, reportsID } = ctx.params;
+                let { subjectID, name, description, type, select, members, conditionPin, option, taskID, reportsID, reportsRemoveID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.update({
-                    reportID: subjectID, name, description, type, userID, select, members, conditionPin, option, taskID, reportsID
+                    reportID: subjectID, name, description, type, userID, select, members, conditionPin, option, taskID, reportsID, reportsRemoveID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

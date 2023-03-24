@@ -96,8 +96,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID }) {
-        // console.log({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID })
+    update({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID, reportsRemoveID }) {
+        // console.log({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID, reportsRemoveID })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -184,6 +184,15 @@ class Model extends BaseModel {
                         // console.log(item)
                         let info = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(item, {
                             $addToSet: {
+                                subjects: taskID
+                            }
+                        }, { new: true })
+                    }
+
+                    for(const item of reportsRemoveID){
+                        // console.log(item)
+                        let info = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(item, {
+                            $pull: {
                                 subjects: taskID
                             }
                         }, { new: true })
