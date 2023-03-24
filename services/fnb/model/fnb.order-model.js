@@ -1371,8 +1371,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
-        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
+    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
+        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -1381,10 +1381,6 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                // console.log(isValidDate(fromDate))
-                // console.log(isValidDate(toDate))
-
-                // let conditionObj = { company: ObjectID(companyID) }
                 let conditionObj = { }
 
                  // Tìm theo khách hàng
@@ -1430,9 +1426,13 @@ class Model extends BaseModel {
                 services && services.length                 && (conditionObj.service = { $in: services });
                 statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
 
-                // Phân loại có lỗi hay không
+                // Phân loại khác
                 if(isMistake && isMistake == 1){
                     conditionObj.numberOfMistakes = { $gt: 0 }
+                }
+
+                if(isNonResident && isNonResident == 1){
+                    conditionObj.nonResident = 2
                 }
 
                 if(isDiscount && isDiscount == 1){
