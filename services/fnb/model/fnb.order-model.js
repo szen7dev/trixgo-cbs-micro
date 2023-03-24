@@ -1371,8 +1371,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
-        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
+    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
+        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -1381,10 +1381,6 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                // console.log(isValidDate(fromDate))
-                // console.log(isValidDate(toDate))
-
-                // let conditionObj = { company: ObjectID(companyID) }
                 let conditionObj = { }
 
                  // Tìm theo khách hàng
@@ -1430,9 +1426,13 @@ class Model extends BaseModel {
                 services && services.length                 && (conditionObj.service = { $in: services });
                 statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
 
-                // Phân loại có lỗi hay không
+                // Phân loại khác
                 if(isMistake && isMistake == 1){
                     conditionObj.numberOfMistakes = { $gt: 0 }
+                }
+
+                if(isNonResident && isNonResident == 1){
+                    conditionObj.nonResident = 2
                 }
 
                 if(isDiscount && isDiscount == 1){
@@ -1450,6 +1450,14 @@ class Model extends BaseModel {
                 if(isOffer && isOffer == 1){
                     conditionObj.offer = { $gt: 0 }
                 }
+
+                if(isCustomerType && isCustomerType == 1){
+                    conditionObj.customerType = 1
+                }
+                if(isCustomerType && isCustomerType == 2){
+                    conditionObj.customerType = 2
+                }
+                // console.log(conditionObj)
 
                 // Phân loại theo thời khoảng
                 if(isValidDate(fromDate) && isValidDate(fromDate)){
@@ -2682,8 +2690,6 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!option || option == undefined){
-                    // let fundasID = filterParams.fundasID
-                    // console.log(fundasID)
 
                     let conditionObj = { company: companyID }
 
@@ -2693,12 +2699,18 @@ class Model extends BaseModel {
 
                     let fundasID = obj.fundasID
                     let shiftTypes = obj.shiftTypes
-                    let salesChannels = obj.salesChannels
-                    let statuss = obj.statuss
-                    let isMistake = obj.isMistake
                     let fromDate = obj.fromDate
                     let toDate = obj.toDate
                     let keyword = obj.keyword
+                    let salesChannels = obj.salesChannels
+                    let statuss = obj.statuss
+                    let isMistake = obj.isMistake
+                    let isDiscount = obj.isDiscount
+                    let isSalesoff = obj.isSalesoff
+                    let isCredit = obj.isCredit
+                    let isOffer = obj.isOffer
+                    let isNonResident = obj.isNonResident
+                    let isCustomerType = obj.isCustomerType
 
                     if(fundasID && fundasID.length ){
                         let arrFun = fundasID.map(item=>ObjectID(item))
@@ -2720,10 +2732,38 @@ class Model extends BaseModel {
                     salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
                     statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
 
-                    // Phân loại có lỗi hay không
+                    // Phân loại khác
                     if(isMistake && isMistake == 1){
                         conditionObj.numberOfMistakes = { $gt: 0 }
                     }
+
+                    if(isNonResident && isNonResident == 1){
+                        conditionObj.nonResident = 2
+                    }
+    
+                    if(isDiscount && isDiscount == 1){
+                        conditionObj.discount = { $gt: 0 }
+                    }
+    
+                    if(isSalesoff && isSalesoff == 1){
+                        conditionObj.salesoff = { $gt: 0 }
+                    }
+    
+                    if(isCredit && isCredit == 1){
+                        conditionObj.credit = { $gt: 0 }
+                    }
+    
+                    if(isOffer && isOffer == 1){
+                        conditionObj.offer = { $gt: 0 }
+                    }
+
+                    if(isCustomerType && isCustomerType == 1){
+                        conditionObj.customerType = 1
+                    }
+                    if(isCustomerType && isCustomerType == 2){
+                        conditionObj.customerType = 2
+                    }
+                    // console.log(conditionObj)
 
                     // Phân loại theo thời khoảng
                     if(fromDate && toDate){
@@ -2743,8 +2783,6 @@ class Model extends BaseModel {
                             { sign: regSearch },
                         ]
                     }
-
-                    // console.log(conditionObj)
 
                     let listData  = await FNB_ORDER_COLL.find(conditionObj)
                     .populate({
@@ -2786,20 +2824,21 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
                             workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
                             workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
-                            workbook.sheet("Order").row(i).cell(16).value(Number(item.amount));
-                            workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeM));
-                            workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfSizeL));
-                            workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfProducts));
-                            workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfMistakes));
-                            workbook.sheet("Order").row(i).cell(21).value(item.note);
-                            workbook.sheet("Order").row(i).cell(22).value(Number(item.loyaltyPoints));
-                            workbook.sheet("Order").row(i).cell(23).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
-                            workbook.sheet("Order").row(i).cell(24).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
+                            workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
+                            workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
+                            workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfSizeM));
+                            workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfSizeL));
+                            workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfProducts));
+                            workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfMistakes));
+                            workbook.sheet("Order").row(i).cell(22).value(item.note);
+                            workbook.sheet("Order").row(i).cell(23).value(Number(item.loyaltyPoints));
+                            workbook.sheet("Order").row(i).cell(24).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
+                            workbook.sheet("Order").row(i).cell(25).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
                             if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
-                                workbook.sheet("Order").row(i).cell(25).value('Đơn nhân viên');
+                                workbook.sheet("Order").row(i).cell(26).value('Đơn nhân viên');
                             }
                             if(Number(item.nonResident) === 2){
-                                workbook.sheet("Order").row(i).cell(26).value('Khách vãng lai');
+                                workbook.sheet("Order").row(i).cell(27).value('Khách vãng lai');
                             }
                             i++
                         });
