@@ -33,22 +33,19 @@ module.exports = {
             discount            : { type: "string", optional: true },
             salesoff            : { type: "string", optional: true },
             credit              : { type: "string", optional: true },
+            offer               : { type: "string", optional: true },
             vatAmount           : { type: "string", optional: true },
             products            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, vatAmount, products } = ctx.params;
+                let { voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, offer, vatAmount, products } = ctx.params;
 
                 const { _id: userID, company, email } = ctx.meta.infoUser;
 
-                // let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                //     voucherID: "641c0d6289c13244a0c56358", fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, vatAmount, products, userID
-                // })
-
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, vatAmount, products, userID
+                    voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, offer, vatAmount, products, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

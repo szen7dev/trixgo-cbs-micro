@@ -1,18 +1,21 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, validateParamsObjectID }
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { compareTwoTime  }                  = require('../../../tools/utils/time_utils');
-const { KEY_ERROR }			            = require('../../../tools/keys');
+const BaseModel                         = require('../../../tools/db/base_model')
+const ObjectID                          = require('mongoose').Types.ObjectId
+const { KEY_ERROR }			            = require('../../../tools/keys')
+const { 
+    checkObjectIDs, 
+    IsJsonString, 
+    validateParamsObjectID 
+}
+                                        = require('../../../tools/utils/utils')
+const { compareTwoTime, isValidDate }   = require('../../../tools/utils/time_utils')
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const moment = require("moment");
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
+// const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant')
+// const moment = require("moment")
+// const stringUtils					= require('../../../tools/utils/string_utils')
+// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page')
 
 /**s
  * import inter-coll, exter-coll
@@ -66,8 +69,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
+    insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID }) {
+        // console.log({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -294,9 +297,6 @@ class Model extends BaseModel {
                         }
                     }
 
-                    loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
-                    dataInsert.loyaltyPoints = Number(loyaltyPoints)
-
                     /**
                      * OFFER GIẢM GIÁ TỪ VOUCHER
                      */
@@ -356,16 +356,23 @@ class Model extends BaseModel {
                             offer = Number(Number(infoVoucher.salesoffRate) * Number(total)/100).toFixed(0)
                         }
 
-                        dataInsert.voucher = voucherID
-                        dataInsert.voucherType = Number(infoVoucher.type)
-                        dataInsert.offer = Number(offer)
-
                         if(Number(amount) <= Number(offer)){
-                            amount = 0
+                            offer = amount // Set Offer
+                            amount = 0 // Set Amount về 0
                         }else{
                             amount = Number(amount) - Number(offer)
                         } 
-                    }
+
+                        dataInsert.voucher = voucherID
+                        dataInsert.voucherType = Number(infoVoucher.type)
+                        dataInsert.offer = Number(offer)
+                    }   
+
+                    /**
+                     * ĐIỂM TRUNG THÀNH
+                     */
+                    loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
+                    dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
                 // Giá trị thanh toán
@@ -467,6 +474,8 @@ class Model extends BaseModel {
                 if(products && products.length){
                     // Thêm vào đơn hàng-sản phẩm
                     const productsAsync = products.map(product => {
+                        // console.log('============Sản phẩm===============')
+                        // console.log({variantsID:product.variantsID})
 
                         // Tính giá sản phẩm trong trường hợp có cả Topping
                         let newUnitPrice = product.unitPrice
@@ -475,6 +484,7 @@ class Model extends BaseModel {
 
                         if(product.variantsSelected && product.variantsSelected.length){
                             for(const subProd of product.variantsSelected){
+                                // console.log(subProd)
                                 // M-Off
                                 if(Number(product.size) == 1 && Number(salesChannel) == 1){
                                     newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
@@ -503,6 +513,7 @@ class Model extends BaseModel {
                             userID,
                             orderID,
                             productID: product.productID,
+                            black: product.black ? Number(product.size) : 1,
                             size: product.size ? Number(product.size) : 1,
                             sugar: product.sugar ? Number(product.sugar) : 1,
                             ice: product.ice ? Number(product.ice) : 1,
@@ -1370,6 +1381,9 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
+                // console.log(isValidDate(fromDate))
+                // console.log(isValidDate(toDate))
+
                 // let conditionObj = { company: ObjectID(companyID) }
                 let conditionObj = { }
 
@@ -1438,7 +1452,7 @@ class Model extends BaseModel {
                 }
 
                 // Phân loại theo thời khoảng
-                if(fromDate && toDate){
+                if(isValidDate(fromDate) && isValidDate(fromDate)){
                     conditionObj.createAt = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
