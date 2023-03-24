@@ -297,9 +297,6 @@ class Model extends BaseModel {
                         }
                     }
 
-                    loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
-                    dataInsert.loyaltyPoints = Number(loyaltyPoints)
-
                     /**
                      * OFFER GIẢM GIÁ TỪ VOUCHER
                      */
@@ -359,16 +356,23 @@ class Model extends BaseModel {
                             offer = Number(Number(infoVoucher.salesoffRate) * Number(total)/100).toFixed(0)
                         }
 
-                        dataInsert.voucher = voucherID
-                        dataInsert.voucherType = Number(infoVoucher.type)
-                        dataInsert.offer = Number(offer)
-
                         if(Number(amount) <= Number(offer)){
-                            amount = 0
+                            offer = amount // Set Offer
+                            amount = 0 // Set Amount về 0
                         }else{
                             amount = Number(amount) - Number(offer)
                         } 
-                    }
+
+                        dataInsert.voucher = voucherID
+                        dataInsert.voucherType = Number(infoVoucher.type)
+                        dataInsert.offer = Number(offer)
+                    }   
+
+                    /**
+                     * ĐIỂM TRUNG THÀNH
+                     */
+                    loyaltyPoints = Number(Number(amount)*(Number(factor/100))).toFixed(0)
+                    dataInsert.loyaltyPoints = Number(loyaltyPoints)
                 }
 
                 // Giá trị thanh toán
