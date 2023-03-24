@@ -70,7 +70,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID })
+        console.log({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -470,6 +470,8 @@ class Model extends BaseModel {
                 if(products && products.length){
                     // Thêm vào đơn hàng-sản phẩm
                     const productsAsync = products.map(product => {
+                        // console.log('============Sản phẩm===============')
+                        // console.log({variantsID:product.variantsID})
 
                         // Tính giá sản phẩm trong trường hợp có cả Topping
                         let newUnitPrice = product.unitPrice
@@ -478,6 +480,7 @@ class Model extends BaseModel {
 
                         if(product.variantsSelected && product.variantsSelected.length){
                             for(const subProd of product.variantsSelected){
+                                // console.log(subProd)
                                 // M-Off
                                 if(Number(product.size) == 1 && Number(salesChannel) == 1){
                                     newUnitPrice = Number(newUnitPrice) + subProd.unitPrice
@@ -506,6 +509,7 @@ class Model extends BaseModel {
                             userID,
                             orderID,
                             productID: product.productID,
+                            black: product.black ? Number(product.size) : 1,
                             size: product.size ? Number(product.size) : 1,
                             sugar: product.sugar ? Number(product.sugar) : 1,
                             ice: product.ice ? Number(product.ice) : 1,
