@@ -69,8 +69,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID }) {
-        // console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, vatAmount, products, userID })
+    insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID }) {
+        console.log({ fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -1364,7 +1364,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
-        console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
+        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
