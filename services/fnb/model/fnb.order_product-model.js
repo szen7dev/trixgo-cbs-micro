@@ -477,7 +477,9 @@ class Model extends BaseModel {
                     if(!isNaN(option) && [1].includes(Number(option))){
                         await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
                     }
-                    return resolve({ error: false, data: listData });
+
+                    // return resolve({ error: false, data: listData })
+                    return resolve({ error: false, data: [] })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
