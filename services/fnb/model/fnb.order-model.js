@@ -1,18 +1,21 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, validateParamsObjectID }
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { compareTwoTime  }                  = require('../../../tools/utils/time_utils');
-const { KEY_ERROR }			            = require('../../../tools/keys');
+const BaseModel                         = require('../../../tools/db/base_model')
+const ObjectID                          = require('mongoose').Types.ObjectId
+const { KEY_ERROR }			            = require('../../../tools/keys')
+const { 
+    checkObjectIDs, 
+    IsJsonString, 
+    validateParamsObjectID 
+}
+                                        = require('../../../tools/utils/utils')
+const { compareTwoTime, isValidDate }   = require('../../../tools/utils/time_utils')
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const moment = require("moment");
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
+// const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant')
+// const moment = require("moment")
+// const stringUtils					= require('../../../tools/utils/string_utils')
+// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page')
 
 /**s
  * import inter-coll, exter-coll
@@ -1361,7 +1364,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
-        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
+        console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -1369,6 +1372,9 @@ class Model extends BaseModel {
                 } else{
                     limit = +Number(limit);
                 }
+
+                // console.log(isValidDate(fromDate))
+                // console.log(isValidDate(toDate))
 
                 // let conditionObj = { company: ObjectID(companyID) }
                 let conditionObj = { }
@@ -1438,7 +1444,7 @@ class Model extends BaseModel {
                 }
 
                 // Phân loại theo thời khoảng
-                if(fromDate && toDate){
+                if(isValidDate(fromDate) && isValidDate(fromDate)){
                     conditionObj.createAt = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
