@@ -173,7 +173,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, customerID } = ctx.params;
-				const { _id: userID, company } = ctx.meta.infoUser;
+				const { _id: userID, email, fullname, company } = ctx.meta.infoUser;
+                // console.log({ email, fullname})
 
                 let resultAfterCallHandler;
                 if(orderID){
