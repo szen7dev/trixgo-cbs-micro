@@ -1382,41 +1382,41 @@ class Model extends BaseModel {
                 }
 
                 let conditionObj = { }
+                let sortBy;
+                let keys	 = ['createAt__-1', '_id__-1']
 
                  // Tìm theo khách hàng
                  if(customerID && checkObjectIDs(customerID)){
+                    // Sử dụng cho Profile khách hàng -> Không cần Login
                     conditionObj.customer = ObjectID(customerID) 
                  }else{
                     conditionObj.company = ObjectID(companyID) 
-                 }
 
-                let sortBy;
-                let keys	 = ['createAt__-1', '_id__-1'];
-
-                const validation = validateParamsObjectID({
-                    fundasID            : { value: fundasID, isRequire: false },
-                });
-                if(validation.error) return resolve(validation);
-
-                // Gom nhóm theo đơn vị cơ sở
-                if(fundasID && fundasID.length ){
-                    // console.log('==============Trường hợp 1111111111===============>')
-                    let arrFun = fundasID.map(item=>ObjectID(item))
-
-                    if(arrFun.length) {
-                        conditionObj.funda = { $in: arrFun };
-                    }
-                }else{
-                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
-                    if(fundasIDIsMember.length) {
-                        // console.log('==============Trường hợp 222222===============>')
-                        conditionObj.funda = { $in: fundasIDIsMember };
+                    const validation = validateParamsObjectID({
+                        fundasID            : { value: fundasID, isRequire: false },
+                    });
+                    if(validation.error) return resolve(validation);
+    
+                    // Gom nhóm theo đơn vị cơ sở
+                    if(fundasID && fundasID.length ){
+                        // console.log('==============Trường hợp 1111111111===============>')
+                        let arrFun = fundasID.map(item=>ObjectID(item))
+    
+                        if(arrFun.length) {
+                            conditionObj.funda = { $in: arrFun };
+                        }
                     }else{
-                        // console.log('==============Trường hợp 333333333===============>')
-                        conditionObj.funda = { $in: [] }
+                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            // console.log('==============Trường hợp 222222===============>')
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }else{
+                            // console.log('==============Trường hợp 333333333===============>')
+                            conditionObj.funda = { $in: [] }
+                        }
                     }
-                }
+                 }
                 // console.log(conditionObj)
 
                 shiftsID && shiftsID.length                 && (conditionObj.shift = { $in: shiftsID });
@@ -3455,7 +3455,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 }
 
 exports.MODEL = new Model
