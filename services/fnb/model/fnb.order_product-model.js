@@ -425,7 +425,6 @@ class Model extends BaseModel {
                             $lte: new Date(toDate),
                             // $gte: moment(fromDate).startOf('day')._d,
                             // $lte: moment(toDate).endOf('day')._d,
-
                         }
                     }
 
@@ -478,8 +477,8 @@ class Model extends BaseModel {
                         await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
                     }
 
-                    // return resolve({ error: false, data: listData })
-                    return resolve({ error: false, data: [] })
+                    return resolve({ error: false, data: listData })
+                    // return resolve({ error: false, data: [] })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -487,7 +486,7 @@ class Model extends BaseModel {
         })
     }
 
-        /**
+    /**
      * Dev: HiepNH
      * Func: Tải Đơn hàng
      * Date: 4/2/2023
