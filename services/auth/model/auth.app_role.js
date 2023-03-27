@@ -250,6 +250,8 @@ class Model extends BaseModel {
      */
     getList({ type, company, app, isMember, userID,
         keyword, limit = 10, lastestID, select, populates = {} }) { 
+            // console.log({type, company, app, isMember, userID,
+            //     keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -309,6 +311,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI

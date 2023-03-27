@@ -1,9 +1,5 @@
-/*******************************************************
- *    TÊN MODULE : MENU ỨNG DỤNG                       *
- *    NGƯỜI VIÊT : PHAN VĂN ĐỆ                         *
- *    LIỆN HỆ    : lucdeit1997@gmail.com - 0393553224  *
- *    THỜI GIAN  : 27/01/2022                          *
-********************************************************/
+const ObjectID                          = require('mongoose').Types.ObjectId;
+
 /**
  * TOOLS
  */
@@ -166,76 +162,96 @@ module.exports = {
 
                 let appID = "61e04971fdebf77b072d1b0f"; // FNB_APP
                 let arrUser = ["63ed0debc0d91500123495d3","63ed0e083f7a130012d41058","63ed0e1d3f7a130012d41059","63ed0e303f7a130012d4105a","63ed0e860e2f4d00119e52fa"]
-                    // MenuID cho Khách hàng
-                    // MenuID cho Nhân viên
-                    // MenuID cho Quản lý
-                    // MenuID cho Ban lãnh đạo
-                    // MenuID cho Nhà đầu tư
-                // {
-                //     "_id": {
-                //         "menu": "63af82764faba60012595520"
-                //     },
-                //     "read": 1,
-                //     "create": 1,
-                //     "update": 1,
-                //     "delete": 0
-                // },
+                    // MenuID cho Khách hàng (1)
+                    // MenuID cho Nhân viên (2)
+                    // MenuID cho Quản lý (3)
+                    // MenuID cho Ban lãnh đạo (4)
+                    // MenuID cho Nhà đầu tư (5)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
                 let accessApp = {level: 0, read: 0, create: 0, update: 0, delete: 0}
+                // console.log({company: company._id})
 
-                let resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getPermissionToAccessListMenuOfApp({ user: userID, app: appID, company, type: 1 })
-                // console.log(resultAfterCallHandler)
-                if(!resultAfterCallHandler.error){
-                    let arrMenu = resultAfterCallHandler.data.map(item=>item._id.menu.toString())
+                let info = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
+                    type: 1, 
+                    menu: ObjectID(arrUser[0]), 
+                    user: ObjectID(userID), 
+                    app: ObjectID(appID), 
+                    company: ObjectID(company._id) 
+                })
+                // console.log(info)
+                if(!info || info.error){
+                    let info1 = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
+                        type: 1, 
+                        menu: ObjectID(arrUser[1]), 
+                        user: ObjectID(userID), 
+                        app: ObjectID(appID), 
+                        company: ObjectID(company._id) 
+                    })
 
-                    if(arrMenu.includes(arrUser[0].toString())){
-                        accessApp.level = 1
-                        for(const item of resultAfterCallHandler.data){
-                            if(item._id.menu.toString() === arrUser[0].toString()){
-                                accessApp.read = Number(item.read)
-                                accessApp.create = Number(item.create)
-                                accessApp.update = Number(item.update)
-                                accessApp.delete = Number(item.delete)
-                            }
-                        }
-                    }else{
-                        if(arrMenu.includes(arrUser[1].toString())){
-                            accessApp.level = 2
-                            for(const item of resultAfterCallHandler.data){
-                                if(item._id.menu.toString() === arrUser[1].toString()){
-                                    accessApp.read = Number(item.read)
-                                    accessApp.create = Number(item.create)
-                                    accessApp.update = Number(item.update)
-                                    accessApp.delete = Number(item.delete)
-                                }
-                            }
-                        }else{
-                            if(arrMenu.includes(arrUser[2].toString())){
-                                accessApp.level = 3
-                                for(const item of resultAfterCallHandler.data){
-                                    if(item._id.menu.toString() === arrUser[2].toString()){
-                                        accessApp.read = Number(item.read)
-                                        accessApp.create = Number(item.create)
-                                        accessApp.update = Number(item.update)
-                                        accessApp.delete = Number(item.delete)
-                                    }
+                    if(!info1 || info1.error){
+                        let info2 = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
+                            type: 1, 
+                            menu: ObjectID(arrUser[2]), 
+                            user: ObjectID(userID), 
+                            app: ObjectID(appID), 
+                            company: ObjectID(company._id) 
+                        })
+                        
+                        if(!info2 || info2.error){
+                            let info3 = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
+                                type: 1, 
+                                menu: ObjectID(arrUser[3]), 
+                                user: ObjectID(userID), 
+                                app: ObjectID(appID), 
+                                company: ObjectID(company._id) 
+                            })
+                            
+                            if(!info3 || info3.error){
+                                let info4 = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
+                                    type: 1, 
+                                    menu: ObjectID(arrUser[4]), 
+                                    user: ObjectID(userID), 
+                                    app: ObjectID(appID), 
+                                    company: ObjectID(company._id) 
+                                })
+
+                                if(!info4 || info4.error){
+                                                                       
+                                }else{
+                                    accessApp.level = 5
+                                    accessApp.read = Number(info4.data.read)
+                                    accessApp.create = Number(info4.data.create)
+                                    accessApp.update = Number(info4.data.update)
+                                    accessApp.delete = Number(info4.data.delete)
                                 }
                             }else{
-                                if(arrMenu.includes(arrUser[3].toString())){
-                                    accessApp.level = 4
-                                    for(const item of resultAfterCallHandler.data){
-                                        if(item._id.menu.toString() === arrUser[3].toString()){
-                                            accessApp.read = Number(item.read)
-                                            accessApp.create = Number(item.create)
-                                            accessApp.update = Number(item.update)
-                                            accessApp.delete = Number(item.delete)
-                                        }
-                                    }
-                                }
+                                accessApp.level = 4
+                                accessApp.read = Number(info3.data.read)
+                                accessApp.create = Number(info3.data.create)
+                                accessApp.update = Number(info3.data.update)
+                                accessApp.delete = Number(info3.data.delete)
                             }
+                        }else{
+                            accessApp.level = 3
+                            accessApp.read = Number(info2.data.read)
+                            accessApp.create = Number(info2.data.create)
+                            accessApp.update = Number(info2.data.update)
+                            accessApp.delete = Number(info2.data.delete)
                         }
-                    }                    
+                    }else{
+                        accessApp.level = 2
+                        accessApp.read = Number(info1.data.read)
+                        accessApp.create = Number(info1.data.create)
+                        accessApp.update = Number(info1.data.update)
+                        accessApp.delete = Number(info1.data.delete)
+                    }
+                }else{
+                    accessApp.level = 1
+                    accessApp.read = Number(info.data.read)
+                    accessApp.create = Number(info.data.create)
+                    accessApp.update = Number(info.data.update)
+                    accessApp.delete = Number(info.data.delete)
                 }
                 return ({ error: false, accessApp})
             } catch (error) {

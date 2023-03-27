@@ -28,11 +28,15 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID, company } = ctx.meta.infoUser;
+                // console.log({company})
+
                 let { type, companyID, appID, name, description } = ctx.params;
+                // console.log({companyID})
                 
                 if(!companyID){
                     companyID = company._id;
                 }
+                // console.log({companyID})
 
                 let resultAfterCallHandler = await AUTH__APP_ROLE.insert({ type, company: companyID, app: appID, name, description, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
