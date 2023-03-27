@@ -188,6 +188,7 @@ class Model extends BaseModel {
                     members:  { $in: [user] }
                 })
                 .select('_id name')
+                // console.log(listRoles)
                 
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
@@ -210,6 +211,8 @@ class Model extends BaseModel {
                 if (!listData) 
                     return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
 
+                // console.log(listData)
+
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -223,6 +226,7 @@ class Model extends BaseModel {
      * [x] Đã check ok
      */
     getPermissionToAccessOneMenuOfApp({ type=1, menu, user, app, company }) {
+        // console.log({ type, menu, user, app, company })
         return new Promise(async resolve => {
             try {
                 let listRoles = await AUTH__APP_ROLE_COLL.find({
