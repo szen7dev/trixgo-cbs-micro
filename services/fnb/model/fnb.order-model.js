@@ -1814,20 +1814,20 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo Người tạo đơn
+                     * Gom nhóm theo Nhân viên phục vụ
                      */
                     if(option && Number(option) == 7){
                         conditionGroup = {
                             _id: { assignee: "$assignee._id" },
                             quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            credit: { $sum: "$credit" },
-                            offer: { $sum: "$offer" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
+                            // total: { $sum: "$total" },
+                            // discount: { $sum: "$discount" },
+                            // salesoff: { $sum: "$salesoff" },
+                            // credit: { $sum: "$credit" },
+                            // offer: { $sum: "$offer" },
+                            // amount: { $sum: "$amount" },
+                            // vatAmount: { $sum: "$vatAmount" },
+                            // numberOfProducts: { $sum: "$numberOfProducts" },
                             avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
                             avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
                         }
@@ -1837,6 +1837,8 @@ class Model extends BaseModel {
                             select: '_id fullname',
                             model: 'user'
                         }
+
+                        sortBy = {"avgQuantityPerStaff": -1}
                     }
 
                     /**
@@ -1872,63 +1874,9 @@ class Model extends BaseModel {
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
-                    // Danh sách đang triển khai
-                    let listData = await FNB_ORDER_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project : {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
-                                day: { $dayOfMonth: "$createAt" },
-                                dayOfWeek: { $dayOfWeek: "$createAt" },
-                                hour : {$hour : "$createAt"},
-                                funda : 1,
-                                customer : 1,
-                                new : 1,
-                                assignee : 1,
-                                campaign : 1,
-                                activeCampaign : 1,
-                                internal : 1,
-                                area1 : 1,
-                                area2 : 1,
-                                area3 : 1,
-                                shift : 1,
-                                shiftType : 1,
-                                seasons : 1,
-                                salesChannel : 1,
-                                paymentMethod : 1,
-                                service : 1,
-                                status : 1,
-                                numberOfMistakes : 1,
-                                numberOfProducts : 1,
-                                total : 1,
-                                salesoff : 1,
-                                discount : 1,
-                                credit : 1,
-                                offer : 1,
-                                amount : 1,
-                                vatAmount : 1,
-                                avgQuantityPerStaff : 1,
-                                avgTotalPerStaff : 1,
-                                gender : 1,
-                                age : 1,
-                                loyaltyPoints : 1,
-                            }
-                        },
-                        {
-                            $match: conditionObjYear
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        }
-                    ])
-                    // console.log(listData.length)
+                    let listData
 
+                    // Danh sách đang triển khai
                     if(option && Number(option) == 7){
                         listData = await FNB_ORDER_COLL.aggregate([
                             {
@@ -1944,13 +1892,13 @@ class Model extends BaseModel {
                                     createAt: 1,
                                     assignee : 1,
                                     executor: 1,
-                                    total: 1,
-                                    discount: 1,
-                                    salesoff: 1,
-                                    credit: 1,
-                                    offer: 1,
-                                    amount: 1,
-                                    vatAmount: 1,
+                                    // total: 1,
+                                    // discount: 1,
+                                    // salesoff: 1,
+                                    // credit: 1,
+                                    // offer: 1,
+                                    // amount: 1,
+                                    // vatAmount: 1,
                                     numberOfProducts: 1,
                                     avgTotalPerStaff: 1,
                                     avgQuantityPerStaff: 1
@@ -1977,7 +1925,63 @@ class Model extends BaseModel {
                                 $sort: sortBy
                             }
                         ])
+                    }else{
+                        listData = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : {
+                                    year : {$year : "$createAt"},
+                                    month : {$month : "$createAt"},
+                                    day: { $dayOfMonth: "$createAt" },
+                                    dayOfWeek: { $dayOfWeek: "$createAt" },
+                                    hour : {$hour : "$createAt"},
+                                    funda : 1,
+                                    customer : 1,
+                                    new : 1,
+                                    assignee : 1,
+                                    campaign : 1,
+                                    activeCampaign : 1,
+                                    internal : 1,
+                                    area1 : 1,
+                                    area2 : 1,
+                                    area3 : 1,
+                                    shift : 1,
+                                    shiftType : 1,
+                                    seasons : 1,
+                                    salesChannel : 1,
+                                    paymentMethod : 1,
+                                    service : 1,
+                                    status : 1,
+                                    numberOfMistakes : 1,
+                                    numberOfProducts : 1,
+                                    total : 1,
+                                    salesoff : 1,
+                                    discount : 1,
+                                    credit : 1,
+                                    offer : 1,
+                                    amount : 1,
+                                    vatAmount : 1,
+                                    avgQuantityPerStaff : 1,
+                                    avgTotalPerStaff : 1,
+                                    gender : 1,
+                                    age : 1,
+                                    loyaltyPoints : 1,
+                                }
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            }
+                        ])
                     }
+                    // console.log(listData.length)
 
                     if(!isNaN(option) && [3,6,7,8].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)

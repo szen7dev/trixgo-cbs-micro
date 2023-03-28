@@ -51,6 +51,7 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_MISTAKE=======================================//
     MISTAKES                                : `${BASE_ROUTE}${MISTAKE}`,
+    MISTAKE_UPDATE_KPI                      : `${BASE_ROUTE}${MISTAKE}/update-kpi`,
     MISTAKE_GET_LIST_BY_PROPERTY            : `${BASE_ROUTE}${MISTAKE}/get-list-by-property`,
     MISTAKE_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${MISTAKE}/download-template-excel`,
     MISTAKE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${MISTAKE}/import-from-excel`,

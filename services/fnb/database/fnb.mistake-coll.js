@@ -55,6 +55,29 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 0
     },
+    /**
+     * KPI NHÂN VIÊN
+     */
+    //_________Tháng
+    month: {
+        type: Number,
+        default: 0
+    },
+    //_________Năm
+    year: {
+        type: Number,
+        default: 0
+    },
+    //_________Số lượng
+    quantity: {
+        type: Number,
+        default: 0
+    },
+    //_________Điểm số
+    score: {
+        type: Number,
+        default: 0
+    },
     //_________Công ty (Lấy từ orderID)
     company: {
         type: Schema.Types.ObjectId,

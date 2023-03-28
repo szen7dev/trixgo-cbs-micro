@@ -79,6 +79,37 @@ module.exports = {
         }
     },
 
+    updateKpi: {
+        auth: "required",
+        params: {
+            // orderMistakeID      : { type: "string", optional: true },
+            // mistakeID           : { type: "string" },
+            // executorID          : { type: "string" },
+            // fundaID             : { type: "string" },
+            // orderID             : { type: "string", optional: true },
+            // type                : { type: "number", optional: true },
+            // amount              : { type: "number", optional: true },
+            // bonus               : { type: "number", optional: true },
+            // note                : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params)
+                let {  month, year, executorID, quantity, score } = ctx.params
+				const { _id: userID, company } = ctx.meta.infoUser
+
+                let resultAfterCallHandler = await FNB_MISTAKE_MODEL.updateKpi({
+                    userID, companyID: company._id,
+                    month, year, executorID, quantity, score
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return { error:  true, message: error.message }
+            }
+        }
+    },
+
     /**
 	 * Dev: Depv
 	 * Func: remove Group
@@ -131,7 +162,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderMistakeID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { orderMistakeID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, month, year } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -141,7 +172,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_MISTAKE_MODEL.getList({
-                        companyID: company._id, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                        companyID: company._id, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID, month, year
                     });
                 }
 
