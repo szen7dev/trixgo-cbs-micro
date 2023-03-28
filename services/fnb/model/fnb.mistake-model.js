@@ -180,6 +180,75 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Cập nhật KPI 
+     * Author: HiepNH
+     * Code: 28/3/2023
+     */
+    updateKpi({ month, year, executorID, quantity, score, userID, companyID }) {
+        // console.log({ month, year, executorID, quantity, score, userID, companyID })
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(executorID))
+                    return resolve({ error: true, message: 'executorID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+
+                let dataInsert, dataUpdate
+                let info = await FNB_MISTAKE_COLL.findOne({ company: companyID, month, year, executor: executorID })
+                
+                // Thêm mới mẩu tin
+                if(!info){
+                    console.log('==========TẠO MỚI KPI============')
+                    dataInsert = { 
+                        userCreate: userID,
+                        company: companyID,
+                        month,
+                        year,
+                        executor: executorID
+                    }
+
+                    if(!isNaN(quantity)){
+                        dataInsert.quantity = Number(quantity)
+                    }
+
+                    if(!isNaN(score)){
+                        dataInsert.score = Number(score)
+                    }
+
+                    let infoAfterInsert = await this.insertData(dataInsert)
+                    if (!infoAfterInsert)
+                        return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+
+                    return resolve({ error: false, data: infoAfterInsert })
+                }
+
+                // Cập nhật mẩu tin
+                else{
+                    console.log('==========CẬP NHẬT KPI============')
+                    dataUpdate = { 
+                        userUpdate: userID, 
+                        modifyAt: new Date() 
+                    }
+                        
+                    if(!isNaN(quantity)){
+                        dataUpdate.quantity = Number(quantity)
+                    }
+
+                    if(!isNaN(score)){
+                        dataUpdate.score = Number(score)
+                    }
+
+                    let infoAfterUpdate = await FNB_MISTAKE_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    if (!infoAfterUpdate)
+                        return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                    return resolve({ error: false, data: infoAfterUpdate })
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
      * Name: Update value
      * Author: HiepNH
      * Code: 24/11/2022
@@ -233,7 +302,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, month, year, userID }) {
         // console.log({ companyID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
@@ -245,7 +314,7 @@ class Model extends BaseModel {
 
                 let conditionObj = {company: companyID}
                 let sortBy;
-                let keys	 = ['amount__-1', '_id__-1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
                 // console.log(keys)
                 // keys = JSON.parse(sortKey)
                 // console.log(keys)
@@ -287,6 +356,13 @@ class Model extends BaseModel {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
                     }
+                }
+
+                // Phân loại theo thời khoảng
+                if(month && year){
+                    keys	 = ['score__-1']
+                    conditionObj.month = Number(month)
+                    conditionObj.year = Number(year)
                 }
 
                 // Làm rõ mục đích để làm gì?

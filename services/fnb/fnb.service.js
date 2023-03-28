@@ -106,6 +106,7 @@ module.exports = {
 		//========================================== FNB_MISTAKE ==============================================//
 		[CF_ACTIONS_FNB.MISTAKE_INSERT]									: FNB__MISTAKE_HANDLER.insert,
 		[CF_ACTIONS_FNB.MISTAKE_UPDATE]									: FNB__MISTAKE_HANDLER.update,
+		[CF_ACTIONS_FNB.MISTAKE_UPDATE_KPI]								: FNB__MISTAKE_HANDLER.updateKpi,
 		[CF_ACTIONS_FNB.MISTAKE_REMOVE]									: FNB__MISTAKE_HANDLER.remove,
 		[CF_ACTIONS_FNB.MISTAKE_GET_INFO_AND_GET_LIST]					: FNB__MISTAKE_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_FNB.MISTAKE_GET_LIST_BY_PROPERTY]					: FNB__MISTAKE_HANDLER.getListByProperty,

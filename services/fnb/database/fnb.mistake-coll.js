@@ -58,7 +58,17 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     /**
      * KPI NHÂN VIÊN
      */
-    //_________Số lượng sản phẩm
+    //_________Tháng
+    month: {
+        type: Number,
+        default: 0
+    },
+    //_________Năm
+    year: {
+        type: Number,
+        default: 0
+    },
+    //_________Số lượng
     quantity: {
         type: Number,
         default: 0
