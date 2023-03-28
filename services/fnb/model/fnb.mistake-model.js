@@ -245,7 +245,10 @@ class Model extends BaseModel {
 
                 let conditionObj = {company: companyID}
                 let sortBy;
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['amount__-1', '_id__-1'];
+                // console.log(keys)
+                // keys = JSON.parse(sortKey)
+                // console.log(keys)
 
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundasID && fundasID.length ){
@@ -287,12 +290,19 @@ class Model extends BaseModel {
                 }
 
                 // Làm rõ mục đích để làm gì?
-                if (sortKey && typeof sortKey === 'string') {
-                    if (!IsJsonString(sortKey))
-                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+                // console.log({sortKey})
+                // console.log(IsJsonString(sortKey))
+                // if (sortKey && typeof sortKey === 'string') {
 
-                    keys = JSON.parse(sortKey);
-                }
+                //     console.log('============>>>>>>>>>>>>>>>>>>>')
+
+                //     if (!IsJsonString(sortKey))
+                //         return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                //     keys = JSON.parse(sortKey);
+                //     console.log(keys)
+                // }
+                // console.log({keys})
                 // console.log(conditionObj)
 
                 /**
@@ -327,8 +337,10 @@ class Model extends BaseModel {
 
                     select = JSON.parse(select);
                 }
+                // console.log(conditionObj)
  
                 let conditionObjOrg = { ...conditionObj };
+
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await FNB_MISTAKE_COLL.findById(lastestID);
                     if(!infoData)
@@ -343,6 +355,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
+                // console.log({sortBy})
 
                 let infoDataAfterGet = await FNB_MISTAKE_COLL.find(conditionObj)
                     .limit(limit+1)
