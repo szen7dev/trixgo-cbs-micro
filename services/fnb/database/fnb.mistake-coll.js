@@ -50,6 +50,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 0
     },
+    /**
+     * KPI SẢN PHẨM
+     */
+    //_________Khối lượng
+    quantity: {
+        type: Number,
+        default: 0
+    },
     //_________Giá trị thưởng
     bonus: {
         type: Number,
