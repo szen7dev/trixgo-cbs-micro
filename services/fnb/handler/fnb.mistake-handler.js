@@ -95,12 +95,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params)
-                let {  month, year, executorID, quantity, score } = ctx.params
+                let {  month, year, executorID, workingHours, quantity, score } = ctx.params
 				const { _id: userID, company } = ctx.meta.infoUser
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.updateKpi({
                     userID, companyID: company._id,
-                    month, year, executorID, quantity, score
+                    month, year, executorID, workingHours, quantity, score
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -197,6 +197,7 @@ module.exports = {
             optionGroup     : { type: "string", optional: true },
             optionTime      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
+            month           : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
             
@@ -211,12 +212,12 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, fromDate, toDate,
+                let { option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, month, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.getListByProperty({
                     companyID: company._id,
-                    option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, fromDate, toDate,
+                    option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, month, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      userID
                     });
