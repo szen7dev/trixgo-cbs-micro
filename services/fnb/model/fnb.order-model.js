@@ -2859,325 +2859,325 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     })
                 }else{
-                    // // console.log('=========2222222222222=============')
-                    // if(option == 1){
-                    //     let yearFilter
-                    //     let currentYear = new Date().getFullYear()
-                    //     if(year && !isNaN(year)){
-                    //         yearFilter = Number(year)
-                    //     }else{
-                    //         yearFilter = Number(currentYear)
-                    //     }
-                    //     let conditionObjYear = {
-                    //         "year": Number(yearFilter),
-                    //     }
+                    // console.log('=========2222222222222=============')
+                    if(option == 1){
+                        let yearFilter
+                        let currentYear = new Date().getFullYear()
+                        if(year && !isNaN(year)){
+                            yearFilter = Number(year)
+                        }else{
+                            yearFilter = Number(currentYear)
+                        }
+                        let conditionObjYear = {
+                            "year": Number(yearFilter),
+                        }
 
-                    //     let conditionObj = { 
-                    //         company: ObjectID(companyID),
-                    //         status: 5
-                    //     }
+                        let conditionObj = { 
+                            company: ObjectID(companyID),
+                            status: 5
+                        }
 
-                    //     // Địa điểm cơ sở được quyền truy cập
-                    //     let listFuda = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}}).select("_id name sign").sort({_id: 1})
-                    //     let fundasIDIsMember = listFuda.map(item=>ObjectID(item._id));
-                    //     if(fundasIDIsMember.length) {
-                    //         conditionObj.funda = { $in: fundasIDIsMember };
-                    //     }else{
-                    //         conditionObj.funda = { $in: [] }
-                    //     }
+                        // Địa điểm cơ sở được quyền truy cập
+                        let listFuda = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}}).select("_id name sign").sort({_id: 1})
+                        let fundasIDIsMember = listFuda.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }else{
+                            conditionObj.funda = { $in: [] }
+                        }
                                              
-                    //     let projectObj =  {
-                    //         year : {$year : "$createAt"},
-                    //         month : {$month : "$createAt"},
-                    //         day: { $dayOfMonth: "$createAt" },
-                    //         company : 1,
-                    //         funda : 1,
-                    //         createAt: 1,
-                    //         total: 1,
-                    //         discount: 1,
-                    //         salesoff: 1,
-                    //         credit: 1,
-                    //         amount: 1,
-                    //         salesChannel: 1
-                    //     }
-                    //     let sortBy = {"_id.salesChannel": 1}
-                    //     let conditionGroup = {}, conditionPopulate = {}
+                        let projectObj =  {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            company : 1,
+                            funda : 1,
+                            createAt: 1,
+                            total: 1,
+                            discount: 1,
+                            salesoff: 1,
+                            credit: 1,
+                            amount: 1,
+                            salesChannel: 1
+                        }
+                        let sortBy = {"_id.salesChannel": 1}
+                        let conditionGroup = {}, conditionPopulate = {}
 
-                    //     conditionGroup = {
-                    //         _id: {  salesChannel: "$salesChannel", funda: "$funda", month: "$month" },
-                    //         number: { $sum: 1 },
-                    //         total: { $sum: "$total" },
-                    //         discount: { $sum: "$discount" },
-                    //         salesoff: { $sum: "$salesoff" },
-                    //         credit: { $sum: "$credit" },
-                    //         amount: { $sum: "$amount" },
-                    //     }
+                        conditionGroup = {
+                            _id: {  salesChannel: "$salesChannel", funda: "$funda", month: "$month" },
+                            number: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            amount: { $sum: "$amount" },
+                        }
         
-                    //     conditionPopulate = {
-                    //         path: '_id.funda',
-                    //         select: '_id name',
-                    //         model: 'funda'
-                    //     }
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name',
+                            model: 'funda'
+                        }
 
-                    //     let conditionGroupDay = {
-                    //         _id: {  salesChannel: "$salesChannel", day: "$day", month: "$month" },
-                    //         number: { $sum: 1 },
-                    //         total: { $sum: "$total" },
-                    //         discount: { $sum: "$discount" },
-                    //         salesoff: { $sum: "$salesoff" },
-                    //         credit: { $sum: "$credit" },
-                    //         amount: { $sum: "$amount" },
-                    //     }
+                        let conditionGroupDay = {
+                            _id: {  salesChannel: "$salesChannel", day: "$day", month: "$month" },
+                            number: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            amount: { $sum: "$amount" },
+                        }
                         
-                    //     let listData = await FNB_ORDER_COLL.aggregate([
-                    //         {
-                    //             $match: conditionObj
-                    //         },
-                    //         {
-                    //             $project : projectObj
-                    //         },
-                    //         {
-                    //             $match: conditionObjYear
-                    //         },
-                    //         {
-                    //             $group: conditionGroup
-                    //         },
-                    //         {
-                    //             $sort: sortBy
-                    //         }
-                    //     ])
+                        let listData = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : projectObj
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            }
+                        ])
 
-                    //     let listData2 = await FNB_ORDER_COLL.aggregate([
-                    //         {
-                    //             $match: conditionObj
-                    //         },
-                    //         {
-                    //             $project : projectObj
-                    //         },
-                    //         {
-                    //             $match: conditionObjYear
-                    //         },
-                    //         {
-                    //             $group: conditionGroupDay
-                    //         },
-                    //         {
-                    //             $sort: {"_id.month": 1, "_id.day": 1}
-                    //         }
-                    //     ])
-                    //     // console.log(listData2)
+                        let listData2 = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : projectObj
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroupDay
+                            },
+                            {
+                                $sort: {"_id.month": 1, "_id.day": 1}
+                            }
+                        ])
+                        // console.log(listData2)
 
-                    //     // Modify the workbook.
-                    //     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
-                    //     .then(async workbook => {
-                    //         for(var m = 1; m<=12; m++){
-                    //             var i = 3
-                    //                 listFuda?.forEach((item, index) => {
-                    //                 workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index + 1))
-                    //                 workbook.sheet(`T${m}`).row(i).cell(2).value(item.name)
-                    //                 workbook.sheet(`T${m}`).row(i).cell(3).value(`${item._id}`)
-                    //                 i++
-                    //             })
-                    //         }
+                        // Modify the workbook.
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
+                        .then(async workbook => {
+                            for(var m = 1; m<=12; m++){
+                                var i = 3
+                                    listFuda?.forEach((item, index) => {
+                                    workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet(`T${m}`).row(i).cell(2).value(item.name)
+                                    workbook.sheet(`T${m}`).row(i).cell(3).value(`${item._id}`)
+                                    i++
+                                })
+                            }
 
-                    //         listData?.forEach((item, index) => {
-                    //             for(var m = 1; m<=12; m++){
-                    //                 if(Number(item._id.month) === Number(m)){
-                    //                     for(var i=3; i<=Number(listFuda.length + 2); i++){
+                            listData?.forEach((item, index) => {
+                                for(var m = 1; m<=12; m++){
+                                    if(Number(item._id.month) === Number(m)){
+                                        for(var i=3; i<=Number(listFuda.length + 2); i++){
                                             
-                    //                         let discount = 0, salesoff = 0, credit = 0, amount = 0
-                    //                         let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
+                                            let discount = 0, salesoff = 0, credit = 0, amount = 0
+                                            let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
                                             
-                    //                         if((item._id.funda.toString() === fundaID.toString())){  
-                    //                             for(var j=4; j<=10; j++){                                                
-                    //                                 if((Number(item._id.salesChannel) === Number(j-3))){        
-                    //                                     workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.total))
-                    //                                 }
-                    //                             }                                                
-                    //                         }
-                    //                     }
-                    //                 }
-                    //             }
-                    //         })
+                                            if((item._id.funda.toString() === fundaID.toString())){  
+                                                for(var j=4; j<=10; j++){                                                
+                                                    if((Number(item._id.salesChannel) === Number(j-3))){        
+                                                        workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.total))
+                                                    }
+                                                }                                                
+                                            }
+                                        }
+                                    }
+                                }
+                            })
 
-                    //         for(var m = 1; m<=12; m++){
-                    //             for(var i=3; i<=Number(listFuda.length + 2); i++){
+                            for(var m = 1; m<=12; m++){
+                                for(var i=3; i<=Number(listFuda.length + 2); i++){
 
-                    //                 let discount = 0, salesoff = 0, credit = 0, amount = 0
+                                    let discount = 0, salesoff = 0, credit = 0, amount = 0
 
-                    //                 let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
+                                    let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
 
-                    //                 listData?.forEach((item, index) => {
-                    //                     if((item._id.funda.toString() === fundaID.toString()) && Number(item._id.month) === Number(m)){       
+                                    listData?.forEach((item, index) => {
+                                        if((item._id.funda.toString() === fundaID.toString()) && Number(item._id.month) === Number(m)){       
 
-                    //                         discount = Number(discount) + Number(item.discount)
-                    //                         salesoff = Number(salesoff) + Number(item.salesoff)
-                    //                         credit = Number(credit) + Number(item.credit)
-                    //                         amount = Number(amount) + Number(item.amount)
-                    //                     }
-                    //                 })
+                                            discount = Number(discount) + Number(item.discount)
+                                            salesoff = Number(salesoff) + Number(item.salesoff)
+                                            credit = Number(credit) + Number(item.credit)
+                                            amount = Number(amount) + Number(item.amount)
+                                        }
+                                    })
                                     
-                    //                 workbook.sheet(`T${m}`).row(i).cell(11).value(Number(discount))
-                    //                 workbook.sheet(`T${m}`).row(i).cell(12).value(Number(salesoff))
-                    //                 workbook.sheet(`T${m}`).row(i).cell(13).value(Number(credit))
-                    //                 workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
-                    //             }
-                    //         }
+                                    workbook.sheet(`T${m}`).row(i).cell(11).value(Number(discount))
+                                    workbook.sheet(`T${m}`).row(i).cell(12).value(Number(salesoff))
+                                    workbook.sheet(`T${m}`).row(i).cell(13).value(Number(credit))
+                                    workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
+                                }
+                            }
                             
                             
-                    //         workbook.sheet(`BaoCaoNgay`).row(1).cell(2).value(Number(currentYear))
-                    //         listData2?.forEach((item, index) => {
+                            workbook.sheet(`BaoCaoNgay`).row(1).cell(2).value(Number(currentYear))
+                            listData2?.forEach((item, index) => {
 
-                    //             for(var i = 3; i<=379; i++){
+                                for(var i = 3; i<=379; i++){
                                     
-                    //                 let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
-                    //                 let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
+                                    let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
+                                    let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
 
-                    //                 for(var j=5; j<=11; j++){                                                
-                    //                     if((Number(item._id.salesChannel) === Number(j-4)) && Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){        
-                    //                         workbook.sheet(`BaoCaoNgay`).row(i).cell(j).value(Number(item.total))
-                    //                     }
-                    //                 }
-                    //             }
-                    //         })
+                                    for(var j=5; j<=11; j++){                                                
+                                        if((Number(item._id.salesChannel) === Number(j-4)) && Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){        
+                                            workbook.sheet(`BaoCaoNgay`).row(i).cell(j).value(Number(item.total))
+                                        }
+                                    }
+                                }
+                            })
                             
-                    //         for(var i = 3; i<=379; i++){
-                    //             let discount = 0, salesoff = 0, credit = 0, amount = 0
-                    //             let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
-                    //             let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
+                            for(var i = 3; i<=379; i++){
+                                let discount = 0, salesoff = 0, credit = 0, amount = 0
+                                let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
+                                let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
 
-                    //             if(!isNaN(xlsDay)){
-                    //                 // console.log({xlsDay, xlsMonth})
-                    //                 listData2?.forEach((item, index) => {
-                    //                     if(Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){        
-                    //                         discount = Number(discount) + Number(item.discount)
-                    //                         salesoff = Number(salesoff) + Number(item.salesoff)
-                    //                         credit = Number(credit) + Number(item.credit)
-                    //                         amount = Number(amount) + Number(item.amount)
-                    //                     }
-                    //                 })
+                                if(!isNaN(xlsDay)){
+                                    // console.log({xlsDay, xlsMonth})
+                                    listData2?.forEach((item, index) => {
+                                        if(Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){        
+                                            discount = Number(discount) + Number(item.discount)
+                                            salesoff = Number(salesoff) + Number(item.salesoff)
+                                            credit = Number(credit) + Number(item.credit)
+                                            amount = Number(amount) + Number(item.amount)
+                                        }
+                                    })
                                     
-                    //                 workbook.sheet(`BaoCaoNgay`).row(i).cell(12).value(Number(discount))
-                    //                 workbook.sheet(`BaoCaoNgay`).row(i).cell(13).value(Number(salesoff))
-                    //                 workbook.sheet(`BaoCaoNgay`).row(i).cell(14).value(Number(credit))
-                    //                 workbook.sheet(`BaoCaoNgay`).row(i).cell(15).value(Number(amount))
-                    //             }
-                    //         }
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(12).value(Number(discount))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(13).value(Number(salesoff))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(14).value(Number(credit))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(15).value(Number(amount))
+                                }
+                            }
                         
-                    //         const now = new Date();
-                    //         const filePath = '../../../files/temporary_uploads/';
-                    //         const fileName = `BaoCaoDoanhSo_${now.getTime()}.xlsx`;
-                    //         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `BaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
         
-                    //         await workbook.toFileAsync(pathWriteFile);
-                    //         const result = await uploadFileS3(pathWriteFile, fileName);
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
         
-                    //         fs.unlinkSync(pathWriteFile);
-                    //         return resolve({ error: false, data: result?.Location, status: 200 });
-                    //     })
-                    // }
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
+                    }
 
-                    // if(option == 2){
-                    //     if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
-                    //         let yearFilter
-                    //         let currentYear = new Date().getFullYear()
-                    //         if(year && !isNaN(year)){
-                    //             yearFilter = Number(year)
-                    //         }else{
-                    //             yearFilter = Number(currentYear)
-                    //         }
-                    //         let conditionObjYear = {
-                    //             "year": Number(yearFilter),
-                    //         }
-                    //         let conditionObj = { 
-                    //             company: ObjectID(companyID),
-                    //             status: 5
-                    //         }
-                    //         let projectObj =  {
-                    //             year : {$year : "$createAt"},
-                    //             month : {$month : "$createAt"},
-                    //             company : 1,
-                    //             funda : 1,
-                    //             createAt: 1,
-                    //             customer: 1,
-                    //             total: 1,
-                    //             discount: 1,
-                    //             salesoff: 1,
-                    //             credit: 1,
-                    //             amount: 1,
-                    //             // salesChannel: 1
-                    //         }
-                    //         let conditionGroup = {}, conditionPopulate = {}
+                    if(option == 2){
+                        if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+                            let yearFilter
+                            let currentYear = new Date().getFullYear()
+                            if(year && !isNaN(year)){
+                                yearFilter = Number(year)
+                            }else{
+                                yearFilter = Number(currentYear)
+                            }
+                            let conditionObjYear = {
+                                "year": Number(yearFilter),
+                            }
+                            let conditionObj = { 
+                                company: ObjectID(companyID),
+                                status: 5
+                            }
+                            let projectObj =  {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                company : 1,
+                                funda : 1,
+                                createAt: 1,
+                                customer: 1,
+                                total: 1,
+                                discount: 1,
+                                salesoff: 1,
+                                credit: 1,
+                                amount: 1,
+                                // salesChannel: 1
+                            }
+                            let conditionGroup = {}, conditionPopulate = {}
 
-                    //         conditionPopulate = {
-                    //             path: '_id.customer',
-                    //             select: '_id name phone note',
-                    //             model: 'contact'
-                    //         }
+                            conditionPopulate = {
+                                path: '_id.customer',
+                                select: '_id name phone note',
+                                model: 'contact'
+                            }
 
-                    //         conditionGroup = {
-                    //             _id: {  customer: "$customer", month: "$month" },
-                    //             number: { $sum: 1 },
-                    //             total: { $sum: "$total" },
-                    //             // discount: { $sum: "$discount" },
-                    //             // salesoff: { $sum: "$salesoff" },
-                    //             // credit: { $sum: "$credit" },
-                    //             amount: { $sum: "$amount" },
-                    //         }
+                            conditionGroup = {
+                                _id: {  customer: "$customer", month: "$month" },
+                                number: { $sum: 1 },
+                                total: { $sum: "$total" },
+                                // discount: { $sum: "$discount" },
+                                // salesoff: { $sum: "$salesoff" },
+                                // credit: { $sum: "$credit" },
+                                amount: { $sum: "$amount" },
+                            }
                             
-                    //         let listData = await FNB_ORDER_COLL.aggregate([
-                    //             {
-                    //                 $match: conditionObj
-                    //             },
-                    //             {
-                    //                 $project : projectObj
-                    //             },
-                    //             {
-                    //                 $match: conditionObjYear
-                    //             },
-                    //             {
-                    //                 $group: conditionGroup
-                    //             },
-                    //             {
-                    //                 $sort: {
-                    //                     "_id.month": -1, "total": -1
-                    //                 }
-                    //             }
-                    //         ])
-                    //         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+                            let listData = await FNB_ORDER_COLL.aggregate([
+                                {
+                                    $match: conditionObj
+                                },
+                                {
+                                    $project : projectObj
+                                },
+                                {
+                                    $match: conditionObjYear
+                                },
+                                {
+                                    $group: conditionGroup
+                                },
+                                {
+                                    $sort: {
+                                        "_id.month": -1, "total": -1
+                                    }
+                                }
+                            ])
+                            await FNB_ORDER_COLL.populate(listData, conditionPopulate)
 
-                    //         // Modify the workbook.
-                    //         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
-                    //         .then(async workbook => {
+                            // Modify the workbook.
+                            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
+                            .then(async workbook => {
                                 
-                    //             var i = 3
-                    //             listData?.forEach((item, index) => {
-                    //                 workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
-                    //                 workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name} - ${item._id.customer.phone}` )
-                    //                 workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
-                    //                 workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.note)
-                    //                 workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
-                    //                 workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
-                    //                 workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
-                    //                 workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
-                    //                 workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
-                    //                 i++
-                    //             })
+                                var i = 3
+                                listData?.forEach((item, index) => {
+                                    workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
+                                    workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name} - ${item._id.customer.phone}` )
+                                    workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
+                                    workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.note)
+                                    workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
+                                    workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
+                                    workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
+                                    workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
+                                    workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
+                                    i++
+                                })
                             
-                    //             const now = new Date();
-                    //             const filePath = '../../../files/temporary_uploads/';
-                    //             const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
-                    //             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                                const now = new Date();
+                                const filePath = '../../../files/temporary_uploads/';
+                                const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
+                                const pathWriteFile = path.resolve(__dirname, filePath, fileName);
             
-                    //             await workbook.toFileAsync(pathWriteFile);
-                    //             const result = await uploadFileS3(pathWriteFile, fileName);
+                                await workbook.toFileAsync(pathWriteFile);
+                                const result = await uploadFileS3(pathWriteFile, fileName);
             
-                    //             fs.unlinkSync(pathWriteFile);
-                    //             return resolve({ error: false, data: result?.Location, status: 200 });
-                    //         })
-                    //     }else{
-                    //         return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
-                    //     }
-                    // }                    
+                                fs.unlinkSync(pathWriteFile);
+                                return resolve({ error: false, data: result?.Location, status: 200 });
+                            })
+                        }else{
+                            return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                        }
+                    }                    
                 }
             } catch (error) {
                 // console.log({ error })
