@@ -270,23 +270,23 @@ class Model extends BaseModel {
                             amount = Number(amount) - Number(credit)
                         }
 
-                            // Nếu có tích điểm
-                            if(!isNaN(credit)){
-                                // console.log({credit})
-                                let creditRound = 1000*Math.round(credit/ 1000)
-                                // console.log({creditRound})
+                        // Nếu có tích điểm
+                        if(!isNaN(credit)){
+                            // console.log({credit})
+                            let creditRound = 1000*Math.round(credit/ 1000)
+                            // console.log({creditRound})
 
-                                // dataInsert.credit = Number(credit)
-                                // amount = Number(amount) - Number(credit)
+                            // dataInsert.credit = Number(credit)
+                            // amount = Number(amount) - Number(credit)
 
-                                dataInsert.credit = Number(creditRound)
-                                amount = Number(amount) - Number(creditRound)
-                            }
+                            dataInsert.credit = Number(creditRound)
+                            amount = Number(amount) - Number(creditRound)
+                        }
 
-                            /**
-                             * Chính sách tích điểm => Mở chính thức vào 1/3/2023
-                             */
-                            let factor = 0
+                        /**
+                         * Chính sách tích điểm => Mở chính thức vào 1/3/2023
+                         */
+                        let factor = 0
                         if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level2.purchasedOffValue)){
                             factor = Number(FNB_FACTOR.credit.level1.factor)
                         }else{
@@ -300,6 +300,7 @@ class Model extends BaseModel {
                                 }
                             }
                         }
+                    }
 
                     /**
                      * OFFER GIẢM GIÁ TỪ VOUCHER
