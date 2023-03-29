@@ -199,6 +199,7 @@ module.exports = {
         params: {
             // Field bổ sung
             contactID           : { type: "string", optional: true },
+            linkUserID          : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             fundaID             : { type: "string", optional: true },
             departmentID        : { type: "string", optional: true },
@@ -240,7 +241,7 @@ module.exports = {
                     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
                     isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate,
                     certificateName, certificateGrade, isPartner, isContractExpire4month,
-                    keyword, limit, lastestID, select, populates, fromDate, toDate
+                    keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -248,16 +249,16 @@ module.exports = {
                 //     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
                 //     isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate,
                 //     certificateName, certificateGrade, isPartner, isContractExpire4month,
-                //     keyword, limit, lastestID, select, populates, fromDate, toDate})
+                //     keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID })
 
                 if(!companyID){
                     companyID = company._id
                 }
                 
                 let resultAfterCallHandler;
-                if(contactID){
+                if(contactID || linkUserID){
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getInfo({
-                        contactID, select, populates
+                        contactID, linkUserID, select, populates
                     });
                 }else{
                     // resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({

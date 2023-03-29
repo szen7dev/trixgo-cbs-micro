@@ -30,7 +30,8 @@ const ITEM__CONTRACT_COLL            				= require('../database/item.contract-co
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
 const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll')
 
-const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll')
+const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll');
+const e = require('express');
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL;
 class Model extends BaseModel {
 
@@ -662,44 +663,60 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ contactID, select, populates }) {
+    getInfo({ contactID, linkUserID, select, populates }) {
+        console.log({ contactID, linkUserID, select, populates })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+                if(contactID){
+                    if(!checkObjectIDs(contactID))
+                        return resolve({ error: true, message: 'Request params contactID invalid', status: 400 })
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(contactID))
-                    return resolve({ error: true, message: 'Request params contactID invalid', status: 400 });
+                    if(populates && typeof populates === 'string'){
+                        if(!IsJsonString(populates))
+                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 })
 
-                 if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                        populates = JSON.parse(populates)
+                    }else{
+                        populates = {
+                            path: "",
+                            select: ""
+                        }
+                    }
+                    let infoAterGet = await ITEM__CONTACT_COLL.findById(contactID)
+                                        .select(select)
+                                        .populate(populates)
+                    if(!infoAterGet)
+                        return resolve({ error: true, message: "can't_get_info", status: 403 })
 
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
+                    return resolve({ error: false, data: infoAterGet, status: 200 })
+                }else{
+                    if(!checkObjectIDs(linkUserID))
+                        return resolve({ error: true, message: 'Request params linkUserID invalid', status: 400 })
+
+                    let info = await ITEM__CONTACT_COLL.findOne({ linkUser: linkUserID })
+                    if(info){
+                        if(populates && typeof populates === 'string'){
+                            if(!IsJsonString(populates))
+                                return resolve({ error: true, message: 'Request params populates invalid', status: 400 })
+    
+                            populates = JSON.parse(populates)
+                        }else{
+                            populates = {
+                                path: "",
+                                select: ""
+                            }
+                        }
+                        let infoAterGet = await ITEM__CONTACT_COLL.findById(info._id)
+                                            .select(select)
+                                            .populate(populates)
+                        if(!infoAterGet)
+                            return resolve({ error: true, message: "can't_get_info", status: 403 })
+    
+                        return resolve({ error: false, data: infoAterGet, status: 200 })
+                    }else{
+                        return resolve({ error: true, message: "can't_get_info", status: 403 })
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                let infoAterGet = await ITEM__CONTACT_COLL.findById(contactID)
-                                    .select(select)
-                                    .populate(populates)
-                if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
-
-                return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
