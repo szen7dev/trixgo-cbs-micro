@@ -664,7 +664,7 @@ class Model extends BaseModel {
      * Code:
      */
     getInfo({ contactID, linkUserID, select, populates }) {
-        console.log({ contactID, linkUserID, select, populates })
+        // console.log({ contactID, linkUserID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(contactID){
