@@ -480,7 +480,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
+    getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, userID }) { 
         // console.log({ option, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
@@ -672,6 +672,13 @@ class Model extends BaseModel {
                                     "year": Number(year),
                                 }
                             }
+
+                            if(!isNaN(month) && Number(month) >= 0){
+                                conditionObjYear = {
+                                    "year": Number(year),
+                                    "month": Number(month),
+                                }
+                            }
     
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
@@ -682,24 +689,13 @@ class Model extends BaseModel {
                             }
                         }  
 
-                        // Theo giờ trong ngày
-                        if(optionTime && Number(optionTime) == 3){    
-                            conditionGroup = {
-                                _id: { hour: "$hour" },
-                                number: { $sum: 1 },
-                                workingHours: { $sum: "$workingHours" },
-                                quantity: { $sum: "$quantity" },
-                                score: { $sum: "$score" }
-                            }
-                        } 
-
                         sortBy = {"_id.month": 1}
                     }
 
-                    console.log(conditionObj)
-                    console.log(conditionPopulate)
-                    console.log(conditionObjYear)
-                    console.log(conditionGroup)
+                    // console.log(conditionObj)
+                    // console.log(conditionPopulate)
+                    // console.log(conditionObjYear)
+                    // console.log(conditionGroup)
 
                     let listData
 
