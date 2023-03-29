@@ -2,10 +2,10 @@
 const BaseModel                         = require('../../../tools/db/base_model')
 const ObjectID                          = require('mongoose').Types.ObjectId
 const { KEY_ERROR }			            = require('../../../tools/keys')
-const { 
-    checkObjectIDs, 
-    IsJsonString, 
-    validateParamsObjectID 
+const {
+    checkObjectIDs,
+    IsJsonString,
+    validateParamsObjectID
 }
                                         = require('../../../tools/utils/utils')
 const { compareTwoTime, isValidDate }   = require('../../../tools/utils/time_utils')
@@ -21,8 +21,8 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  * import inter-coll, exter-coll
  */
 // const USER_COLL                                = require('../../auth/database/auth.user-coll');
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
-const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
+const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
+const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll');
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 // const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
@@ -44,8 +44,7 @@ const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
-const { 
-    FNB_ACC,
+const {
     FNB_FACTOR,
     FNB_NEW,
     FNB_NON_RESIDENT,
@@ -98,7 +97,7 @@ class Model extends BaseModel {
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda)
                     return resolve({ error: true, message: 'cannot_get_infoFunda' });
-                    
+
                 // Thông tin ca làm việc
                 let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
                 if (!infoShift)
@@ -173,7 +172,7 @@ class Model extends BaseModel {
                 if(infoCustomer.type && !isNaN(infoCustomer.type)){
                     dataInsert.customerType = Number(infoCustomer.type)
                 }
-                
+
                 // Giới tính
                 if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
                     dataInsert.gender = Number(infoCustomer.gender);
@@ -264,38 +263,43 @@ class Model extends BaseModel {
                         // Nếu đã giảm giá thì không được tích điểm
                         dataInsert.salesoff = Number(salesoff)
                         amount = Number(amount) - Number(salesoff)
-                    }
+                    } else{
+                        // Nếu có tích điểm
+                        if(!isNaN(credit)){
+                            dataInsert.credit = Number(credit)
+                            amount = Number(amount) - Number(credit)
+                        }
 
-                    // Nếu có tích điểm
-                    if(!isNaN(credit)){
-                        // console.log({credit})
-                        let creditRound = 1000*Math.round(credit/ 1000)
-                        // console.log({creditRound})
+                            // Nếu có tích điểm
+                            if(!isNaN(credit)){
+                                // console.log({credit})
+                                let creditRound = 1000*Math.round(credit/ 1000)
+                                // console.log({creditRound})
 
-                        // dataInsert.credit = Number(credit)
-                        // amount = Number(amount) - Number(credit)
+                                // dataInsert.credit = Number(credit)
+                                // amount = Number(amount) - Number(credit)
 
-                        dataInsert.credit = Number(creditRound)
-                        amount = Number(amount) - Number(creditRound)
-                    }
+                                dataInsert.credit = Number(creditRound)
+                                amount = Number(amount) - Number(creditRound)
+                            }
 
-                    /**
-                     * Chính sách tích điểm => Mở chính thức vào 1/3/2023
-                     */
-                    let factor = 0
-                    if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level2.purchasedOffValue)){
-                        factor = Number(FNB_FACTOR.credit.level1.factor)
-                    }else{
-                        if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level3.purchasedOffValue)){
-                            factor = Number(FNB_FACTOR.credit.level2.factor)
+                            /**
+                             * Chính sách tích điểm => Mở chính thức vào 1/3/2023
+                             */
+                            let factor = 0
+                        if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level2.purchasedOffValue)){
+                            factor = Number(FNB_FACTOR.credit.level1.factor)
                         }else{
-                            if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level4.purchasedOffValue)){
-                                factor = Number(FNB_FACTOR.credit.level3.factor)
+                            if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level3.purchasedOffValue)){
+                                factor = Number(FNB_FACTOR.credit.level2.factor)
                             }else{
-                                factor = Number(FNB_FACTOR.credit.level4.factor)
+                                if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level4.purchasedOffValue)){
+                                    factor = Number(FNB_FACTOR.credit.level3.factor)
+                                }else{
+                                    factor = Number(FNB_FACTOR.credit.level4.factor)
+                                }
                             }
                         }
-                    }
 
                     /**
                      * OFFER GIẢM GIÁ TỪ VOUCHER
@@ -361,12 +365,12 @@ class Model extends BaseModel {
                             amount = 0 // Set Amount về 0
                         }else{
                             amount = Number(amount) - Number(offer)
-                        } 
+                        }
 
                         dataInsert.voucher = voucherID
                         dataInsert.voucherType = Number(infoVoucher.type)
                         dataInsert.offer = Number(offer)
-                    }   
+                    }
 
                     /**
                      * ĐIỂM TRUNG THÀNH
@@ -550,87 +554,87 @@ class Model extends BaseModel {
 
                 // Kênh bán hàng, size, doanh số và số sản phẩm
                 if(!isNaN(salesChannel) && Number(salesChannel) === 1){
-                    dataUpdateFw.$inc = { 
-                        "total": Number(total), 
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders1": 1, 
-                        "total1": Number(total), 
-                        "numberOfSizeM": Number(totalSizeM), 
-                        "numberOfSizeL": Number(totalSizeL), 
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders1": 1,
+                        "total1": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 2){
-                    dataUpdateFw.$inc = { 
-                        "total": Number(total), 
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders2": 1, 
-                        "total2": Number(total), 
-                        "numberOfSizeM": Number(totalSizeM), 
-                        "numberOfSizeL": Number(totalSizeL), 
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders2": 1,
+                        "total2": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 3){
-                    dataUpdateFw.$inc = { 
-                        "total": Number(total), 
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders3": 1, 
-                        "total3": Number(total), 
-                        "numberOfSizeM": Number(totalSizeM), 
-                        "numberOfSizeL": Number(totalSizeL), 
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders3": 1,
+                        "total3": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 4){
-                    dataUpdateFw.$inc = { 
-                        "total": Number(total), 
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders4": 1, 
-                        "total4": Number(total), 
-                        "numberOfSizeM": Number(totalSizeM), 
-                        "numberOfSizeL": Number(totalSizeL), 
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders4": 1,
+                        "total4": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 5){
-                    dataUpdateFw.$inc = { 
-                        "total": Number(total), 
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders5": 1, 
-                        "total5": Number(total), 
-                        "numberOfSizeM": Number(totalSizeM), 
-                        "numberOfSizeL": Number(totalSizeL), 
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders5": 1,
+                        "total5": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 6){
-                    dataUpdateFw.$inc = { 
-                        "total": Number(total), 
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders6": 1, 
-                        "total6": Number(total), 
-                        "numberOfSizeM": Number(totalSizeM), 
-                        "numberOfSizeL": Number(totalSizeL), 
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders6": 1,
+                        "total6": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
                     }
                 }
                 if(!isNaN(salesChannel) && Number(salesChannel) === 7){
-                    dataUpdateFw.$inc = { 
-                        "total": Number(total), 
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
                         "amount": Number(amount),
-                        "numberOfProducts": totalQuantity, 
-                        "numberOfOrders": 1, 
-                        "numberOfOrders7": 1, 
-                        "total7": Number(total), 
-                        "numberOfSizeM": Number(totalSizeM), 
-                        "numberOfSizeL": Number(totalSizeL), 
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders7": 1,
+                        "total7": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
                     }
                 }
 
@@ -643,7 +647,7 @@ class Model extends BaseModel {
                     dataUpdateFw.$inc.transferAmount = Number(amount)
                 }
                 // console.log(dataUpdateFw)
-                
+
                 /**
                  * CẬP NHẬT VÀO ĐIỂM BÁN/CƠ SỞ
                  * - Số lượng đơn hàng
@@ -684,7 +688,7 @@ class Model extends BaseModel {
 
                     /**
                      * Kiểm tra nếu customerID có thông tin người giới thiệu
-                     * -> Tạo voucher để tặng Người giới thiệu 
+                     * -> Tạo voucher để tặng Người giới thiệu
                      * -> Chỉ tặng 1 lần cho 1 người giới thiệu => Tức số đơn hàng của khách mua lần đầu (trước đó = 0)
                      * -> Một người có thể giới thiệu cho nhiều người, tức cần được nhận nhiều voucher -> Cần tạo bộ
                      * voucher type=2 lên tới tối đa 20 cái
@@ -699,8 +703,8 @@ class Model extends BaseModel {
                         // console.log(infoOffer)
                         if(infoOffer){
                             await FNB_ORDER_VOUCHER_MODEL.update({
-                                userID, 
-                                voucherID: infoOffer._id, 
+                                userID,
+                                voucherID: infoOffer._id,
                                 receivers:[infoCustomer.referrer]
                             })
                         }
@@ -726,7 +730,7 @@ class Model extends BaseModel {
             try {
                 /**
                  * BA
-                 * 1-CẬP NHẬT ĐƠN HÀNG: 
+                 * 1-CẬP NHẬT ĐƠN HÀNG:
                  * - Hủy đơn
                  * - Phương thức thanh toán
                  * - Kênh bán hàng => Đồng thời cập nhật Phương thức thanh toán
@@ -746,11 +750,11 @@ class Model extends BaseModel {
                  */
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-                
+
                 let infoOrder = await FNB_ORDER_COLL.findById(orderID)
                 if(!infoOrder)
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-                
+
                 let oldCustomerID = infoOrder.customer;
                 let oldSalesChannel = infoOrder.salesChannel
 
@@ -770,7 +774,7 @@ class Model extends BaseModel {
                 if(!isNaN(status)){
                     dataInUpdate.status = Number(status)
                 }
-            
+
                 /**
                  * CẬP NHẬT PHƯƠNG THỨC THANH TOÁN
                  */
@@ -859,11 +863,8 @@ class Model extends BaseModel {
 
                 // 3. Cập nhật vào khách hàng: MỚI VÀ CŨ
                 if(customerID && checkObjectIDs(customerID)){
-                    // console.log('============111111111111111-KHÁCH HÀNG MỚI=============>>>>>>>>>')
-                    await that.updateCustomer({ customerID, userID }) 
-
-                    // console.log('============222222222222222-KHÁCH HÀNG CŨ=============>>>>>>>>>')
-                    await that.updateCustomer({ customerID: oldCustomerID, userID }) 
+                    await that.updateCustomer({ customerID, userID })
+                    await that.updateCustomer({ customerID: oldCustomerID, userID })
 
                     // Cập nhật đơn hàng, sản phẩm
                     await FNB_ORDER_PRODUCT_COLL.updateMany(
@@ -876,8 +877,8 @@ class Model extends BaseModel {
 
                 // 4. Cập nhật thông tin cho khách hàng (áp dụng khi cập nhật trạng thái)
                 if(!isNaN(status)){
-                    await that.updateCustomer({ customerID: oldCustomerID, userID }) 
-                }         
+                    await that.updateCustomer({ customerID: oldCustomerID, userID })
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -949,7 +950,7 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(shiftID))
                     return resolve({ error: true, message: 'shiftID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-                
+
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
@@ -1122,15 +1123,15 @@ class Model extends BaseModel {
                 dataInUpdate.total4 = Number(total4)
                 dataInUpdate.total5 = Number(total5)
                 dataInUpdate.total6 = Number(total6)
-                dataInUpdate.total7 = Number(total7)                
-                
+                dataInUpdate.total7 = Number(total7)
+
                 // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
-                return resolve({ error: false, data: infoAfterUpdate });            
+                return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -1148,7 +1149,6 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-                
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
@@ -1264,7 +1264,7 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                return resolve({ error: false, data: infoAfterUpdate }) 
+                return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -1279,9 +1279,9 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-                
+
                 let infoContact = ITEM__CONTACT_COLL.findById(customerID)
-                
+
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let totalLoyaltyPoints = 0
@@ -1322,7 +1322,7 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                return resolve({ error: false, data: infoAfterUpdate }) 
+                return resolve({ error: false, data: infoAfterUpdate })
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -1388,20 +1388,20 @@ class Model extends BaseModel {
                  // Tìm theo khách hàng
                  if(customerID && checkObjectIDs(customerID)){
                     // Sử dụng cho Profile khách hàng -> Không cần Login
-                    conditionObj.customer = ObjectID(customerID) 
+                    conditionObj.customer = ObjectID(customerID)
                  }else{
-                    conditionObj.company = ObjectID(companyID) 
+                    conditionObj.company = ObjectID(companyID)
 
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
                     });
                     if(validation.error) return resolve(validation);
-    
+
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
                         // console.log('==============Trường hợp 1111111111===============>')
                         let arrFun = fundasID.map(item=>ObjectID(item))
-    
+
                         if(arrFun.length) {
                             conditionObj.funda = { $in: arrFun };
                         }
@@ -1527,6 +1527,7 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
+                console.log({ conditionObj, funda: conditionObj.funda.$in })
                 let infoDataAfterGet = await FNB_ORDER_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
@@ -1907,13 +1908,13 @@ class Model extends BaseModel {
                             {
                                 $match: conditionObjYear
                             },
-                            { 
+                            {
                                 $lookup: {
                                     from: "users",
                                     localField: "assignee",
                                     foreignField: "_id",
                                     as: "assignee"
-                                }  
+                                }
                             },
                             {
                                 $unwind: "$assignee"
@@ -2012,7 +2013,7 @@ class Model extends BaseModel {
     //                 yearFilter = Number(currentYear)
     //             }
 
-    //             let conditionObj = { 
+    //             let conditionObj = {
     //                 company: ObjectID(companyID),
     //                 status: 5,
     //                 avgTotalPerStaff: {$exists: true, $ne: null},
@@ -2037,7 +2038,7 @@ class Model extends BaseModel {
     //                 localField: "assignee",
     //                 foreignField: "_id",
     //                 as: "staff"
-    //             } 
+    //             }
     //             let conditionGroup = {}
     //             let conditionPopulate = {}, sortBy = {"avgQuantityPerStaff": -1}
 
@@ -2192,8 +2193,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear1
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2207,7 +2208,7 @@ class Model extends BaseModel {
     //             ])
     //             await FNB_SHIFT_COLL.populate(listDataR1, conditionPopulate)
     //             // console.log(listDataR1)
-                
+
     //             let listDataR2 = await FNB_ORDER_COLL.aggregate([
     //                 {
     //                     $match: conditionObj
@@ -2218,8 +2219,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear2
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2232,7 +2233,7 @@ class Model extends BaseModel {
     //                 }
     //             ])
     //             await FNB_SHIFT_COLL.populate(listDataR2, conditionPopulate)
-                
+
     //             let listDataR3 = await FNB_ORDER_COLL.aggregate([
     //                 {
     //                     $match: conditionObj
@@ -2243,8 +2244,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear3
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2257,7 +2258,7 @@ class Model extends BaseModel {
     //                 }
     //             ])
     //             await FNB_SHIFT_COLL.populate(listDataR3, conditionPopulate)
-                
+
     //             let listDataR4 = await FNB_ORDER_COLL.aggregate([
     //                 {
     //                     $match: conditionObj
@@ -2268,8 +2269,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear4
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2282,7 +2283,7 @@ class Model extends BaseModel {
     //                 }
     //             ])
     //             await FNB_SHIFT_COLL.populate(listDataR4, conditionPopulate)
-                
+
     //             let listDataR5 = await FNB_ORDER_COLL.aggregate([
     //                 {
     //                     $match: conditionObj
@@ -2293,8 +2294,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear5
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2318,8 +2319,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear6
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2342,8 +2343,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear7
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2356,7 +2357,7 @@ class Model extends BaseModel {
     //                 }
     //             ])
     //             await FNB_SHIFT_COLL.populate(listDataR7, conditionPopulate)
-                
+
     //             let listDataR8 = await FNB_ORDER_COLL.aggregate([
     //                 {
     //                     $match: conditionObj
@@ -2367,8 +2368,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear8
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2381,7 +2382,7 @@ class Model extends BaseModel {
     //                 }
     //             ])
     //             await FNB_SHIFT_COLL.populate(listDataR8, conditionPopulate)
-                
+
     //             let listDataR9 = await FNB_ORDER_COLL.aggregate([
     //                 {
     //                     $match: conditionObj
@@ -2392,8 +2393,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear9
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2406,7 +2407,7 @@ class Model extends BaseModel {
     //                 }
     //             ])
     //             await FNB_SHIFT_COLL.populate(listDataR9, conditionPopulate)
-                
+
     //             let listDataR10 = await FNB_ORDER_COLL.aggregate([
     //                 {
     //                     $match: conditionObj
@@ -2417,8 +2418,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear10
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2431,7 +2432,7 @@ class Model extends BaseModel {
     //                 }
     //             ])
     //             await FNB_SHIFT_COLL.populate(listDataR10, conditionPopulate)
-                
+
     //             let listDataR11 = await FNB_ORDER_COLL.aggregate([
     //                 {
     //                     $match: conditionObj
@@ -2442,8 +2443,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear11
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2467,8 +2468,8 @@ class Model extends BaseModel {
     //                 {
     //                     $match: conditionObjYear12
     //                 },
-    //                 { 
-    //                     $lookup: lookupObj 
+    //                 {
+    //                     $lookup: lookupObj
     //                 },
     //                 {
     //                     $unwind: "$staff"
@@ -2493,7 +2494,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T1").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2505,7 +2506,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T2").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2517,7 +2518,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T3").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2529,7 +2530,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T4").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2541,7 +2542,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T5").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2553,7 +2554,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T6").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2565,7 +2566,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T1").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T1").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T1").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2577,7 +2578,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T2").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T2").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T2").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2589,7 +2590,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T3").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T3").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T3").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2601,7 +2602,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T4").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T4").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T4").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2613,7 +2614,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T5").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T5").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T5").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2625,7 +2626,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("T6").row(i).cell(4).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
     //                     workbook.sheet("T6").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("T6").row(i).cell(6).value(item?.avgTotalPerStaff);
-                        
+
     //                     i++
     //                 });
 
@@ -2640,13 +2641,13 @@ class Model extends BaseModel {
     //                     for(var m=1; m<=12; m++){
     //                         listDataContact?.forEach((contact) => {
     //                             if(contact._id.funda.toString() === item._id.toString() && Number(contact._id.month) === Number(m)){
-    //                                 workbook.sheet("Contact").row(i).cell(m+2).value(contact?.number); 
+    //                                 workbook.sheet("Contact").row(i).cell(m+2).value(contact?.number);
     //                             }
     //                         })
     //                     }
 
     //                     workbook.sheet("Contact").row(i).cell(16).value(`${item._id}`);
-                        
+
     //                     i++
     //                 });
 
@@ -2661,7 +2662,7 @@ class Model extends BaseModel {
     //                     workbook.sheet("Err").row(i).cell(4).value(item?._id.month);
     //                     workbook.sheet("Err").row(i).cell(5).value(item?.number);
     //                     workbook.sheet("Err").row(i).cell(6).value(item?.amount);
-                        
+
     //                     i++
     //                 });
 
@@ -2718,7 +2719,7 @@ class Model extends BaseModel {
 
                     if(fundasID && fundasID.length ){
                         let arrFun = fundasID.map(item=>ObjectID(item))
-    
+
                         if(arrFun.length) {
                             conditionObj.funda = { $in: arrFun };
                         }
@@ -2744,19 +2745,19 @@ class Model extends BaseModel {
                     if(isNonResident && isNonResident == 1){
                         conditionObj.nonResident = 2
                     }
-    
+
                     if(isDiscount && isDiscount == 1){
                         conditionObj.discount = { $gt: 0 }
                     }
-    
+
                     if(isSalesoff && isSalesoff == 1){
                         conditionObj.salesoff = { $gt: 0 }
                     }
-    
+
                     if(isCredit && isCredit == 1){
                         conditionObj.credit = { $gt: 0 }
                     }
-    
+
                     if(isOffer && isOffer == 1){
                         conditionObj.offer = { $gt: 0 }
                     }
@@ -2781,7 +2782,7 @@ class Model extends BaseModel {
                         keyword = keyword.split(" ");
                         keyword = '.*' + keyword.join(".*") + '.*';
                         const regSearch = new RegExp(keyword, 'i');
-    
+
                         conditionObj.$or = [
                             { name: regSearch },
                             { sign: regSearch },
@@ -2807,7 +2808,7 @@ class Model extends BaseModel {
                     }else{
                         yearFilter = Number(currentYear)
                     }
-    
+
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
                     .then(async workbook => {
@@ -2846,15 +2847,15 @@ class Model extends BaseModel {
                             }
                             i++
                         });
-                       
+
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
                         const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-    
+
                         await workbook.toFileAsync(pathWriteFile);
                         const result = await uploadFileS3(pathWriteFile, fileName);
-    
+
                         fs.unlinkSync(pathWriteFile);
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     })
@@ -2872,7 +2873,7 @@ class Model extends BaseModel {
                             "year": Number(yearFilter),
                         }
 
-                        let conditionObj = { 
+                        let conditionObj = {
                             company: ObjectID(companyID),
                             status: 5
                         }
@@ -2885,7 +2886,7 @@ class Model extends BaseModel {
                         }else{
                             conditionObj.funda = { $in: [] }
                         }
-                                             
+
                         let projectObj =  {
                             year : {$year : "$createAt"},
                             month : {$month : "$createAt"},
@@ -2912,7 +2913,7 @@ class Model extends BaseModel {
                             credit: { $sum: "$credit" },
                             amount: { $sum: "$amount" },
                         }
-        
+
                         conditionPopulate = {
                             path: '_id.funda',
                             select: '_id name',
@@ -2928,7 +2929,7 @@ class Model extends BaseModel {
                             credit: { $sum: "$credit" },
                             amount: { $sum: "$amount" },
                         }
-                        
+
                         let listData = await FNB_ORDER_COLL.aggregate([
                             {
                                 $match: conditionObj
@@ -2983,16 +2984,16 @@ class Model extends BaseModel {
                                 for(var m = 1; m<=12; m++){
                                     if(Number(item._id.month) === Number(m)){
                                         for(var i=3; i<=Number(listFuda.length + 2); i++){
-                                            
+
                                             let discount = 0, salesoff = 0, credit = 0, amount = 0
                                             let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
-                                            
-                                            if((item._id.funda.toString() === fundaID.toString())){  
-                                                for(var j=4; j<=10; j++){                                                
-                                                    if((Number(item._id.salesChannel) === Number(j-3))){        
+
+                                            if((item._id.funda.toString() === fundaID.toString())){
+                                                for(var j=4; j<=10; j++){
+                                                    if((Number(item._id.salesChannel) === Number(j-3))){
                                                         workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.total))
                                                     }
-                                                }                                                
+                                                }
                                             }
                                         }
                                     }
@@ -3007,7 +3008,7 @@ class Model extends BaseModel {
                                     let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
 
                                     listData?.forEach((item, index) => {
-                                        if((item._id.funda.toString() === fundaID.toString()) && Number(item._id.month) === Number(m)){       
+                                        if((item._id.funda.toString() === fundaID.toString()) && Number(item._id.month) === Number(m)){
 
                                             discount = Number(discount) + Number(item.discount)
                                             salesoff = Number(salesoff) + Number(item.salesoff)
@@ -3015,31 +3016,31 @@ class Model extends BaseModel {
                                             amount = Number(amount) + Number(item.amount)
                                         }
                                     })
-                                    
+
                                     workbook.sheet(`T${m}`).row(i).cell(11).value(Number(discount))
                                     workbook.sheet(`T${m}`).row(i).cell(12).value(Number(salesoff))
                                     workbook.sheet(`T${m}`).row(i).cell(13).value(Number(credit))
                                     workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
                                 }
                             }
-                            
-                            
+
+
                             workbook.sheet(`BaoCaoNgay`).row(1).cell(2).value(Number(currentYear))
                             listData2?.forEach((item, index) => {
 
                                 for(var i = 3; i<=379; i++){
-                                    
+
                                     let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
                                     let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
 
-                                    for(var j=5; j<=11; j++){                                                
-                                        if((Number(item._id.salesChannel) === Number(j-4)) && Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){        
+                                    for(var j=5; j<=11; j++){
+                                        if((Number(item._id.salesChannel) === Number(j-4)) && Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){
                                             workbook.sheet(`BaoCaoNgay`).row(i).cell(j).value(Number(item.total))
                                         }
                                     }
                                 }
                             })
-                            
+
                             for(var i = 3; i<=379; i++){
                                 let discount = 0, salesoff = 0, credit = 0, amount = 0
                                 let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
@@ -3048,29 +3049,29 @@ class Model extends BaseModel {
                                 if(!isNaN(xlsDay)){
                                     // console.log({xlsDay, xlsMonth})
                                     listData2?.forEach((item, index) => {
-                                        if(Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){        
+                                        if(Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){
                                             discount = Number(discount) + Number(item.discount)
                                             salesoff = Number(salesoff) + Number(item.salesoff)
                                             credit = Number(credit) + Number(item.credit)
                                             amount = Number(amount) + Number(item.amount)
                                         }
                                     })
-                                    
+
                                     workbook.sheet(`BaoCaoNgay`).row(i).cell(12).value(Number(discount))
                                     workbook.sheet(`BaoCaoNgay`).row(i).cell(13).value(Number(salesoff))
                                     workbook.sheet(`BaoCaoNgay`).row(i).cell(14).value(Number(credit))
                                     workbook.sheet(`BaoCaoNgay`).row(i).cell(15).value(Number(amount))
                                 }
                             }
-                        
+
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
                             const fileName = `BaoCaoDoanhSo_${now.getTime()}.xlsx`;
                             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-        
+
                             await workbook.toFileAsync(pathWriteFile);
                             const result = await uploadFileS3(pathWriteFile, fileName);
-        
+
                             fs.unlinkSync(pathWriteFile);
                             return resolve({ error: false, data: result?.Location, status: 200 });
                         })
@@ -3088,7 +3089,7 @@ class Model extends BaseModel {
                             let conditionObjYear = {
                                 "year": Number(yearFilter),
                             }
-                            let conditionObj = { 
+                            let conditionObj = {
                                 company: ObjectID(companyID),
                                 status: 5
                             }
@@ -3123,7 +3124,7 @@ class Model extends BaseModel {
                                 // credit: { $sum: "$credit" },
                                 amount: { $sum: "$amount" },
                             }
-                            
+
                             let listData = await FNB_ORDER_COLL.aggregate([
                                 {
                                     $match: conditionObj
@@ -3148,7 +3149,7 @@ class Model extends BaseModel {
                             // Modify the workbook.
                             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
                             .then(async workbook => {
-                                
+
                                 var i = 3
                                 listData?.forEach((item, index) => {
                                     workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
@@ -3162,23 +3163,64 @@ class Model extends BaseModel {
                                     workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
                                     i++
                                 })
-                            
+
                                 const now = new Date();
                                 const filePath = '../../../files/temporary_uploads/';
                                 const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
                                 const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-            
+
                                 await workbook.toFileAsync(pathWriteFile);
                                 const result = await uploadFileS3(pathWriteFile, fileName);
-            
+
                                 fs.unlinkSync(pathWriteFile);
                                 return resolve({ error: false, data: result?.Location, status: 200 });
                             })
                         }else{
                             return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                         }
-                    }                    
+                    }
                 }
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
+                .then(async workbook => {
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
+                        workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                        workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
+                        workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(6).value(item.name);
+                        workbook.sheet("Order").row(i).cell(7).value(item.sign);
+                        workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
+                        workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
+                        workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
+                        workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
+                        workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
+                        workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
+                        workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
+                        workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
+                        workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
+                        workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
+                        workbook.sheet("Order").row(i).cell(20).value(item.note);
+                        i++
+                    });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
             } catch (error) {
                 // console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -3220,15 +3262,15 @@ class Model extends BaseModel {
     //                         workbook.sheet("Customer").row(i).cell(12).value(item?._id?.customer?.note);
     //                         i++
     //                     });
-                       
+
     //                     const now = new Date();
     //                     const filePath = '../../../files/temporary_uploads/';
     //                     const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
     //                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-    
+
     //                     await workbook.toFileAsync(pathWriteFile);
     //                     const result = await uploadFileS3(pathWriteFile, fileName);
-    
+
     //                     fs.unlinkSync(pathWriteFile);
     //                     return resolve({ error: false, data: result?.Location, status: 200 })
     //                 })
@@ -3255,6 +3297,56 @@ class Model extends BaseModel {
             try {
                 if(password.toString() != `noPass12345${email}`)
                     return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
+
+                // if(option == 1){
+                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 2){
+                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 3){
+                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 4){
+                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 5){
+                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 6){
+                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 7){
+                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 8){
+                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 9){
+                //     await ITEM__CONTACT_COLL.deleteMany({ company: companyID })
+                //     await FNB_PRODUCT_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_PRODUCT_COLL.deleteMany({ company: companyID })
+                //     await FNB_SHIFT_COLL.deleteMany({ company: companyID })
+                //     await FNB_MISTAKE_COLL.deleteMany({ company: companyID })
+                //     await FNB_QUOTA_COLL.deleteMany({ company: companyID })
+                //     await FNB_ORDER_MATERIAL_COLL.deleteMany({ company: companyID })
+                //     await FNB_GENERAL_BOOK_COLL.deleteMany({ company: companyID })
+                // }
+
+                // if(option == 10){
+                //     await FNB_PRODUCT_COLL.updateMany({ company: companyID }, {$set: {"images": []}})
+                // }
+
                 /**
                  * CẬP NHẬT TÍCH ĐIỂM
                  * Convert dữ liệu cũ, mới
@@ -3262,19 +3354,19 @@ class Model extends BaseModel {
                  */
                 // if(option == 1){
                 //     await FNB_ORDER_COLL.updateMany(
-                //         { 
+                //         {
                 //             company: companyID,
                 //             status: 5, // Chỉ đơn hoàn thành
                 //             salesChannel: 1, // Kênh offline
-                //          }, 
+                //          },
                 //         [{
                 //             $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
-                //         }], 
+                //         }],
                 //         {"multi": true}
                 //     )
 
                 //     // Reset về 0 -> Bắt đầu từ đầu
-                //     await ITEM__CONTACT_COLL.updateMany({ company: companyID }, 
+                //     await ITEM__CONTACT_COLL.updateMany({ company: companyID },
                 //         [{
                 //             $set: {
                 //                 purchasedOffValue: 0,
@@ -3282,7 +3374,7 @@ class Model extends BaseModel {
                 //                 usedLoyaltyPoints: 0,
                 //                 remainLoyaltyPoints: 0,
                 //             }
-                //         }], 
+                //         }],
                 //         {"multi": true}
                 //     )
                 // }
@@ -3327,7 +3419,7 @@ class Model extends BaseModel {
                 //                     await that.convertDataCustomer({ customerID: item._id, userID })
                 //                 }
                 //             }
-                           
+
                 //             i++
                 //         }else{
                 //             await that.convertDataCustomer({ customerID: item._id, userID })
