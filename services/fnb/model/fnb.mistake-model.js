@@ -184,7 +184,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 28/3/2023
      */
-    updateKpi({ month, year, executorID, quantity, score, userID, companyID }) {
+    updateKpi({ month, year, executorID, workingHours, quantity, score, userID, companyID }) {
         // console.log({ month, year, executorID, quantity, score, userID, companyID })
         return new Promise(async resolve => {
             try {
@@ -203,6 +203,10 @@ class Model extends BaseModel {
                         month,
                         year,
                         executor: executorID
+                    }
+
+                    if(!isNaN(workingHours)){
+                        dataInsert.workingHours = Number(workingHours)
                     }
 
                     if(!isNaN(quantity)){
@@ -226,6 +230,10 @@ class Model extends BaseModel {
                     dataUpdate = { 
                         userUpdate: userID, 
                         modifyAt: new Date() 
+                    }
+
+                    if(!isNaN(workingHours)){
+                        dataUpdate.workingHours = Number(workingHours)
                     }
                         
                     if(!isNaN(quantity)){
@@ -640,17 +648,20 @@ class Model extends BaseModel {
                      * KPI nhân sự
                      */
                     if(option && Number(option) == 6){
-                        // Theo người mắc lỗi
-                        if(executorID){
-                            conditionObj.executor = ObjectID(executorID)
+                        conditionObj = {
+                            company: ObjectID(companyID),
+                            executor: ObjectID(executorID),
+                            year: Number(year),
                         }
 
                         // Theo năm
                         if(optionTime && Number(optionTime) == 1){
                             conditionGroup = {
                                 _id: { year: "$year" },
-                                quantity: { $sum: 1 },
-                                amount: { $sum: "$amount" },
+                                number: { $sum: 1 },
+                                workingHours: { $sum: "$workingHours" },
+                                quantity: { $sum: "$quantity" },
+                                score: { $sum: "$score" }
                             }
                         }
                         
@@ -664,8 +675,10 @@ class Model extends BaseModel {
     
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
-                                quantity: { $sum: 1 },
-                                amount: { $sum: "$amount" },
+                                number: { $sum: 1 },
+                                workingHours: { $sum: "$workingHours" },
+                                quantity: { $sum: "$quantity" },
+                                score: { $sum: "$score" }
                             }
                         }  
 
@@ -673,57 +686,91 @@ class Model extends BaseModel {
                         if(optionTime && Number(optionTime) == 3){    
                             conditionGroup = {
                                 _id: { hour: "$hour" },
-                                quantity: { $sum: 1 },
-                                amount: { $sum: "$amount" },
+                                number: { $sum: 1 },
+                                workingHours: { $sum: "$workingHours" },
+                                quantity: { $sum: "$quantity" },
+                                score: { $sum: "$score" }
                             }
                         } 
+
+                        sortBy = {"_id.month": 1}
                     }
 
-                    // console.log(conditionObj)
-                    // console.log(conditionPopulate)
-                    // console.log(conditionObjYear)
-                    // console.log(conditionGroup)
+                    console.log(conditionObj)
+                    console.log(conditionPopulate)
+                    console.log(conditionObjYear)
+                    console.log(conditionGroup)
 
-                    // Danh sách đang triển khai
-                    let listData = await FNB_MISTAKE_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project : {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
-                                hour : {$hour : "$createAt"},
-                                funda : 1,
-                                mistake : 1,
-                                order : 1,
-                                product : 1,
-                                executor : 1,
-                                type : 1,
-                                customer : 1,
-                                internal : 1,
-                                area1 : 1,
-                                area2 : 1,
-                                area3 : 1,
-                                seasons : 1,
-                                shift : 1,
-                                shiftType : 1,
-                                salesChannel : 1,
-                                service : 1,
-                                status : 1,
-                                amount : 1,
+                    let listData
+
+                    if(option != 6){
+                        listData = await FNB_MISTAKE_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : {
+                                    year : {$year : "$createAt"},
+                                    month : {$month : "$createAt"},
+                                    hour : {$hour : "$createAt"},
+                                    funda : 1,
+                                    mistake : 1,
+                                    order : 1,
+                                    product : 1,
+                                    executor : 1,
+                                    type : 1,
+                                    customer : 1,
+                                    internal : 1,
+                                    area1 : 1,
+                                    area2 : 1,
+                                    area3 : 1,
+                                    seasons : 1,
+                                    shift : 1,
+                                    shiftType : 1,
+                                    salesChannel : 1,
+                                    service : 1,
+                                    status : 1,
+                                    amount : 1,
+                                    quantity : 1,
+                                    score : 1,
+                                }
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
                             }
-                        },
-                        {
-                            $match: conditionObjYear
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        }
-                    ])
+                        ])
+                    }else{
+                        listData = await FNB_MISTAKE_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : {
+                                    year: 1,
+                                    month: 1,
+                                    executor : 1,
+                                    workingHours : 1,
+                                    quantity : 1,
+                                    score : 1,
+                                }
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            }
+                        ])
+                    }
 
                     if(!isNaN(option) && [1,3,4,5].includes(Number(option))){
                         await FNB_MISTAKE_COLL.populate(listData, conditionPopulate)

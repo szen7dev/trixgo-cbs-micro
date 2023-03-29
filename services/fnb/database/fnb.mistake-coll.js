@@ -56,7 +56,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         default: 0
     },
     /**
-     * KPI NHÂN VIÊN
+     * KPI NHÂN VIÊN TRONG THÁNG
      */
     //_________Tháng
     month: {
@@ -68,12 +68,22 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 0
     },
-    //_________Số lượng
+    //_________Số giờ làm việc trong tháng
+    workingHours: {
+        type: Number,
+        default: 0
+    },
+    //_________Số lượng sản phẩm trong tháng (cốc)
     quantity: {
         type: Number,
         default: 0
     },
-    //_________Điểm số
+    /**
+     * Điểm số tích lũy trong tháng
+     * 1-Theo số giờ làm việc trong tháng x đơn giá
+     * 2-Theo số lượng sản phẩm trong tháng x đơn giá
+     * 3-Theo giá trị tiền bị phạt
+     */
     score: {
         type: Number,
         default: 0
