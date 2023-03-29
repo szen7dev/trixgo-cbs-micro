@@ -528,9 +528,6 @@ class Model extends BaseModel {
 
                     /**
                      * Gom nhóm theo thời gian
-                     * - Số lượng đơn hàng
-                     * - Giá trị đơn hàng
-                     * - Số lượng sản phẩm
                      */
                     if(option && Number(option) == 2){
                         // Theo năm
@@ -598,7 +595,7 @@ class Model extends BaseModel {
                      /**
                      * Gom nhóm theo Nhân sự + Lỗi mắc phải
                      */
-                     if(option && Number(option) == 4){
+                    if(option && Number(option) == 4){
                         if(mistakeID){
                             conditionObj.mistake = ObjectID(mistakeID)
                         }
@@ -637,6 +634,49 @@ class Model extends BaseModel {
                             select: '_id name sign',
                             model: 'doctype'
                         }
+                    }
+
+                    /**
+                     * KPI nhân sự
+                     */
+                    if(option && Number(option) == 6){
+                        // Theo người mắc lỗi
+                        if(executorID){
+                            conditionObj.executor = ObjectID(executorID)
+                        }
+
+                        // Theo năm
+                        if(optionTime && Number(optionTime) == 1){
+                            conditionGroup = {
+                                _id: { year: "$year" },
+                                quantity: { $sum: 1 },
+                                amount: { $sum: "$amount" },
+                            }
+                        }
+                        
+                        // Theo tháng trong năm
+                        if(optionTime && Number(optionTime) == 2){
+                            if(!isNaN(year) && Number(year) >= 0){
+                                conditionObjYear = {
+                                    "year": Number(year),
+                                }
+                            }
+    
+                            conditionGroup = {
+                                _id: { month: "$month", year: "$year" },
+                                quantity: { $sum: 1 },
+                                amount: { $sum: "$amount" },
+                            }
+                        }  
+
+                        // Theo giờ trong ngày
+                        if(optionTime && Number(optionTime) == 3){    
+                            conditionGroup = {
+                                _id: { hour: "$hour" },
+                                quantity: { $sum: 1 },
+                                amount: { $sum: "$amount" },
+                            }
+                        } 
                     }
 
                     // console.log(conditionObj)
