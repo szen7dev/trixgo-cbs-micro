@@ -1371,8 +1371,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID }) {
-        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID })
+    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, productID }) {
+        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, productID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -1385,11 +1385,8 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1']
 
-                 // Tìm theo khách hàng
-                 if(customerID && checkObjectIDs(customerID)){
-                    // Sử dụng cho Profile khách hàng -> Không cần Login
-                    conditionObj.customer = ObjectID(customerID) 
-                 }else{
+                if(!checkObjectIDs(customerID) && !checkObjectIDs(productID)){
+                    // console.log('==============Trường hợp 1111111111===============>')
                     conditionObj.company = ObjectID(companyID) 
 
                     const validation = validateParamsObjectID({
@@ -1399,7 +1396,7 @@ class Model extends BaseModel {
     
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
-                        // console.log('==============Trường hợp 1111111111===============>')
+                        // console.log('==============Trường hợp 2222222222===============>')
                         let arrFun = fundasID.map(item=>ObjectID(item))
     
                         if(arrFun.length) {
@@ -1409,14 +1406,32 @@ class Model extends BaseModel {
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
                         let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                         if(fundasIDIsMember.length) {
-                            // console.log('==============Trường hợp 222222===============>')
+                            // console.log('==============Trường hợp 33333333333===============>')
                             conditionObj.funda = { $in: fundasIDIsMember };
                         }else{
-                            // console.log('==============Trường hợp 333333333===============>')
+                            // console.log('==============Trường hợp 44444444444===============>')
                             conditionObj.funda = { $in: [] }
                         }
                     }
-                 }
+                }else{
+                    // Tìm theo Khách hàng
+                    if(customerID && checkObjectIDs(customerID)){
+                        // console.log('==============Trường hợp 5555555555===============>')
+                        conditionObj.customer = ObjectID(customerID) 
+                    }else{
+                        // Tìm theo Sản phẩm
+                        if(productID && checkObjectIDs(productID)){
+                            // console.log('==============Trường hợp 66666666666===============>')
+                            let listOP = await FNB_ORDER_PRODUCT_COLL.find({ 
+                                product: ObjectID(productID),
+                                company: ObjectID(companyID),
+                            }).select('_id order product')    
+                            // console.log(listOP)   
+                               
+                            conditionObj._id = {$in: listOP.map(item=>item.order)}
+                        }
+                    }
+                }
                 // console.log(conditionObj)
 
                 shiftsID && shiftsID.length                 && (conditionObj.shift = { $in: shiftsID });

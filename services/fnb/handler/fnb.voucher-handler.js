@@ -149,12 +149,11 @@
                  if(voucherID || sign){
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getInfo({
                         voucherID, sign, select, populates,
-                     });
+                     })
                  }else{
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getList({
                          companyID: company._id, userID, customerID, template,  type, status, keyword, limit, lastestID, select, populates
-                     });
-                    //  console.log(resultAfterCallHandler.data.listRecords)
+                     })
                  }
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
