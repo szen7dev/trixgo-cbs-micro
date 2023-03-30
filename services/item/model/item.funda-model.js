@@ -285,7 +285,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(getNotificationRemove)){
                     dataPullAll = {
                         ...dataPullAll,
-                        admins: getNotificationRemove
+                        getNotification: getNotificationRemove
                     }
                 }
 
