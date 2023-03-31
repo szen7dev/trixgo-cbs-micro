@@ -518,7 +518,7 @@ class Model extends BaseModel {
      */
     getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
         keyword, limit, lastestID, select, populates, sortKey, userID }) {
-        console.log({fromDate, toDate})
+        // console.log({fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
