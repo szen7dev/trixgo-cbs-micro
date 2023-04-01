@@ -30,7 +30,6 @@ const { takeRight } = require('lodash');
 /**
  * import inter-model, exter-model
  */
-const FNB_ORDER_PRODUCT_MODEL                  = require('./fnb.order_product-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -43,8 +42,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName }) {
-        // console.log({ fundaID, parentID, outin, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID })
+    insert({ fundaID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName }) {
+        // console.log({ fundaID, parentID, outin, plan, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -71,21 +70,16 @@ class Model extends BaseModel {
                     userCreate: userID
                 };
 
-                if(parentID && checkObjectIDs(parentID)){
-                    let infoParent = await FNB_GENERAL_BOOK_COLL.findById(parentID)
-                    
-                    dataInsert.parent = parentID
-                    dataInsert.level = infoParent.level + 1;
-
-                    dataInsert.date = infoParent.date
-                }
-
                 if(customerID && checkObjectIDs(customerID)){
                     dataInsert.customer = customerID;
                 }
 
                 if(goodsID && checkObjectIDs(goodsID)){
                     dataInsert.goods = goodsID;
+                }
+
+                if(campaignName && checkObjectIDs(campaignName)){
+                    dataInsert.campaignName = campaignName;
                 }
 
                 if(date && date != ""){
@@ -95,9 +89,17 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
+                
+                if(sign && sign != ""){
+                    dataInsert.sign = sign;
+                }
 
                 if(!isNaN(outin)){
                     dataInsert.outin = Number(outin);
+                }
+
+                if(!isNaN(plan)){
+                    dataInsert.plan = Number(plan);
                 }
 
                 if(!isNaN(revenueType)){
@@ -106,6 +108,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(expenseType)){
                     dataInsert.expenseType = Number(expenseType);
+                }
+
+                if(!isNaN(appExpenseType)){
+                    dataInsert.appExpenseType = Number(appExpenseType);
                 }
 
                 if(!isNaN(quantity)){
@@ -124,16 +130,25 @@ class Model extends BaseModel {
                     dataInsert.vatAmount = Number(vatAmount);
                 }
 
-                if(sign){
-                    dataInsert.sign = sign;
-                }
+                /**
+                 * BỔ SUNG CÁC THUỘC TÍNH THEO PARENT
+                 */
+                if(parentID && checkObjectIDs(parentID)){
+                    let infoParent = await FNB_GENERAL_BOOK_COLL.findById(parentID)
+                    if (!infoParent)
+                        return resolve({ error: true, message: 'cannot_get_info_parent' });
+                    
+                    dataInsert.parent = parentID
+                    dataInsert.level = infoParent.level + 1;
 
-                if(campaignName){
-                    dataInsert.campaignName = campaignName;
-                }
-
-                if(appExpenseType){
-                    dataInsert.appExpenseType = appExpenseType;
+                    dataInsert.funda            = infoParent.funda
+                    dataInsert.campaignName     = infoParent.campaignName
+                    dataInsert.date             = infoParent.date
+                    dataInsert.outin            = infoParent.outin
+                    dataInsert.plan             = infoParent.plan
+                    dataInsert.revenueType      = infoParent.revenueType
+                    dataInsert.expenseType      = infoParent.expenseType
+                    dataInsert.appExpenseType   = infoParent.appExpenseType
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -169,7 +184,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ userID,
-        bookID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName }) {
+        bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -185,68 +200,72 @@ class Model extends BaseModel {
                 
                 let infoBook = await FNB_GENERAL_BOOK_COLL.findById(bookID)
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(name && name != ""){
-                    dataInUpdate.name =name;
+                    dataUpdate.name =name;
                 }
                 if(customerID && checkObjectIDs(customerID)){
-                    dataInUpdate.customer = customerID;
+                    dataUpdate.customer = customerID;
                 }
 
                 if(goodsID && checkObjectIDs(goodsID)){
-                    dataInUpdate.goods = goodsID;
+                    dataUpdate.goods = goodsID;
                 }
 
                 if(date && date != ""){
-                    dataInUpdate.date = date;
+                    dataUpdate.date = date;
                 }
 
                 if(note && note != ""){
-                    dataInUpdate.note = note;
+                    dataUpdate.note = note;
                 }
 
                 if(sign){
-                    dataInUpdate.sign = sign;
+                    dataUpdate.sign = sign;
                 }
                 
                 if(campaignName){
-                    dataInUpdate.campaignName = campaignName;
+                    dataUpdate.campaignName = campaignName;
                 }
                  
                 if(appExpenseType){
-                    dataInUpdate.appExpenseType = appExpenseType;
+                    dataUpdate.appExpenseType = appExpenseType;
                 }
 
                 if(!isNaN(outin)){
-                    dataInUpdate.outin = Number(outin);
+                    dataUpdate.outin = Number(outin);
+                }
+
+                if(!isNaN(plan)){
+                    dataUpdate.plan = Number(plan);
                 }
 
                 if(!isNaN(revenueType)){
-                    dataInUpdate.revenueType = Number(revenueType);
+                    dataUpdate.revenueType = Number(revenueType);
                 }
 
                 if(!isNaN(expenseType)){
-                    dataInUpdate.expenseType = Number(expenseType);
+                    dataUpdate.expenseType = Number(expenseType);
                 }
 
                 if(!isNaN(quantity)){
-                    dataInUpdate.quantity = Number(quantity);
+                    dataUpdate.quantity = Number(quantity);
                 }
 
                 if(!isNaN(unitPrice)){
-                    dataInUpdate.unitPrice = Number(unitPrice);
+                    dataUpdate.unitPrice = Number(unitPrice);
                 }
 
                 if(!isNaN(quantity && !isNaN(unitPrice))){
-                    dataInUpdate.amount = quantity * unitPrice;
+                    dataUpdate.amount = quantity * unitPrice;
                 }
 
                 if(!isNaN(vatAmount)){
-                    dataInUpdate.vatAmount = Number(vatAmount);
+                    dataUpdate.vatAmount = Number(vatAmount);
                 }
 
-                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
@@ -291,7 +310,7 @@ class Model extends BaseModel {
                 // console.log('=============>>>>>>>>>>>>>>>>>>')
                 // console.log(infoBook)
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 let amount = 0;
                 let listData = await FNB_GENERAL_BOOK_COLL.aggregate([
@@ -315,9 +334,9 @@ class Model extends BaseModel {
                     // console.log({amount})
                 }
 
-                dataInUpdate.amount = Number(amount)
+                dataUpdate.amount = Number(amount)
 
-                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
@@ -376,8 +395,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID }) {
-        // console.log({fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID})
+    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType }) {
+        // console.log({ companyID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -386,7 +405,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = { company: companyID }
                 let sortBy;
                 let keys	 = ['createAt__1', '_id__1'];
 
@@ -398,27 +417,58 @@ class Model extends BaseModel {
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundasID && fundasID.length ){
                     let arrFun = fundasID.map(item=>ObjectID(item))
-                    conditionObj.funda = { $in: arrFun }
+
+                    if(arrFun.length) {
+                        conditionObj.funda = { $in: arrFun };
+                    }
                 }else{
-                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                    // console.log(listFundaIsMember)
-                    conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
+                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                    if(fundasIDIsMember.length) {
+                        conditionObj.funda = { $in: fundasIDIsMember };
+                    }else{
+                        conditionObj.funda = { $in: [] }
+                    }
                 }
 
                 // Phân loại theo thời khoảng
                 if(fromDate && toDate){
-                    conditionObj.createAt = {
+                    conditionObj.date = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
                     }
                 }
 
+                // Theo mẩu tin cha
                 if(parentID){
                     conditionObj.parent = parentID;
                 }else{
                     conditionObj.parent = { $exists: false };
                 }
-                console.log({conditionObj});
+
+                // Phân loại theo Mua vào bán ra
+                if(outin && outin > 0){
+                    conditionObj.outin = Number(outin)
+                }
+
+                // Phân loại theo Kế hoạch, thực tế
+                if(plan && plan > 0){
+                    conditionObj.plan = Number(plan)
+                }
+
+                if(revenueType && revenueType > 0){
+                    conditionObj.revenueType = Number(revenueType)
+                }
+
+                if(expenseType && expenseType > 0){
+                    conditionObj.expenseType = Number(expenseType)
+                }
+
+                if(appExpenseType && appExpenseType > 0){
+                    conditionObj.appExpenseType = Number(appExpenseType)
+                }
+                // console.log({conditionObj});
+
                 // Làm rõ mục đích để làm gì?
                 if (sortKey && typeof sortKey === 'string') {
                     if (!IsJsonString(sortKey))
@@ -426,8 +476,6 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                // console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
-                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -516,8 +564,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, userID, option, optionTime, optionGroup, fundasID, year, fromDate, toDate, outin }) {
-        // console.log({companyID, userID, option, optionTime, fundasID, year, fromDate, toDate})
+    getListByProperty({ companyID, userID, option, optionTime, optionGroup, fundasID, year, month, fromDate, toDate, outin, plan, fundaID }) {
+        // console.log({ companyID, userID, option, optionTime, optionGroup, fundasID, year, month, fromDate, toDate, outin, plan })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -531,11 +579,9 @@ class Model extends BaseModel {
                         yearFilter = Number(currentYear)
                     }
 
-                    let conditionObj = {}
+                    let conditionObj = { company: ObjectID(companyID) }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": -1}
-
-                    conditionObj.company = ObjectID(companyID) 
 
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
@@ -544,7 +590,6 @@ class Model extends BaseModel {
     
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
-                        // console.log('==============Trường hợp 2222222222===============>')
                         let arrFun = fundasID.map(item=>ObjectID(item))
     
                         if(arrFun.length) {
@@ -554,143 +599,120 @@ class Model extends BaseModel {
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
                         let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                         if(fundasIDIsMember.length) {
-                            // console.log('==============Trường hợp 33333333333===============>')
                             conditionObj.funda = { $in: fundasIDIsMember };
                         }else{
-                            // console.log('==============Trường hợp 44444444444===============>')
                             conditionObj.funda = { $in: [] }
                         }
                     }
 
                     // Phân loại theo thời khoảng
                     if(fromDate && toDate){
-                        conditionObj.createAt = {
+                        conditionObj.date = {
                             $gte: new Date(fromDate),
                             $lte: new Date(toDate),
                         }
                     }
 
+                    // Phân loại theo Mua vào bán ra
                     if(outin && outin > 0){
                         conditionObj.outin = Number(outin)
                     }
 
+                    // Phân loại theo Kế hoạch, thực tế
+                    if(plan && plan > 0){
+                        conditionObj.plan = Number(plan)
+                    }
+
                     /**
-                     * Gom nhóm theo các phân loại căn bản
+                     * Gom nhóm theo PHÂN LOẠI căn bản
                      */
                     if(option && Number(option) == 1){
                         if(optionGroup && Number(optionGroup) == 1){
                             conditionGroup = {
-                                _id: { },
-                                quantity: { $sum: "$quantity" },
-                                amount: { $sum: "$amount" }
-                            }
-                        }
-
-                        if(optionGroup && Number(optionGroup) == 2){
-                            conditionGroup = {
-                                _id: { outin: "$outin" },
-                                quantity: { $sum: "$quantity" },
-                                amount: { $sum: "$amount" }
-                            }
-                        }
-
-                        if(optionGroup && Number(optionGroup) == 3){
-                            conditionGroup = {
-                                _id: { outin: "$outin", revenueType: "$revenueType", expenseType: "$expenseType", appExpenseType: "$appExpenseType" },
-                                quantity: { $sum: "$quantity" },
-                                amount: { $sum: "$amount" }
+                                _id: { plan: "$plan", outin: "$outin" },
+                                amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
                             }
                         }
                     }
 
                     /**
-                     * Gom nhóm theo thời gian
+                     * Gom nhóm theo THỜI GIAN năm/tháng
                      */
                     if(option && Number(option) == 2){
-                        // Theo năm
-                        if(optionTime && Number(optionTime) == 1){
-                            if(optionGroup && Number(optionGroup) == 1){
-                                conditionGroup = {
-                                    _id: { year: "$year" },
-                                    quantity: { $sum: "$quantity" },
-                                    amount: { $sum: "$amount" }
-                                }
-                            }
+                        conditionObjYear = {
+                            "year": Number(yearFilter),
+                        }
 
-                            if(optionGroup && Number(optionGroup) == 2){
-                                conditionGroup = {
-                                    _id: { year: "$year", outin: "$outin" },
-                                    quantity: { $sum: "$quantity" },
-                                    amount: { $sum: "$amount" }
-                                }
-                            }
-    
-                            if(optionGroup && Number(optionGroup) == 3){
-                                conditionGroup = {
-                                    _id: {  year: "$year", outin: "$outin", revenueType: "$revenueType", expenseType: "$expenseType", appExpenseType: "$appExpenseType" },
-                                    quantity: { $sum: "$quantity" },
-                                    amount: { $sum: "$amount" }
-                                }
+                        if(month && !isNaN(month)){
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
+                                "month": Number(month),
                             }
                         }
 
-                        // Theo tháng trong năm
-                        if(optionTime && Number(optionTime) == 2){
-                            conditionObjYear = {
-                                "year": Number(yearFilter),
-                            }
-
-                            if(optionGroup && Number(optionGroup) == 1){
-                                conditionGroup = {
-                                    _id: { month: "$month", year: "$year" },
-                                    quantity: { $sum: "$quantity" },
-                                    amount: { $sum: "$amount" }
-                                }
-                            }
-
-                            if(optionGroup && Number(optionGroup) == 2){
-                                conditionGroup = {
-                                    _id: { month: "$month", year: "$year", outin: "$outin" },
-                                    quantity: { $sum: "$quantity" },
-                                    amount: { $sum: "$amount" }
-                                }
-                            }
-    
-                            if(optionGroup && Number(optionGroup) == 3){
-                                conditionGroup = {
-                                    _id: {  month: "$month", year: "$year", outin: "$outin", revenueType: "$revenueType", expenseType: "$expenseType", appExpenseType: "$appExpenseType" },
-                                    quantity: { $sum: "$quantity" },
-                                    amount: { $sum: "$amount" }
-                                }
+                        // Gom nhóm theo tháng trong năm
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionGroup = {
+                                _id: { month: "$month" },
+                                amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
                             }
                         }
                     }
 
                     /**
-                     * Gom nhóm theo đơn vị cơ sở
+                     * Gom nhóm theo ĐƠN VỊ CƠ SỞ/THỜI GIAN
                      */
                     if(option && Number(option) == 3){
-                        if(optionTime && Number(optionTime) == 2){
+                        conditionObjYear = {
+                            "year": Number(yearFilter),
+                        }
+
+                        if(month && !isNaN(month)){
                             conditionObjYear = {
                                 "year": Number(yearFilter),
+                                "month": Number(month),
                             }
+                        }
 
-                            if(optionGroup && Number(optionGroup) == 1){
-                                conditionGroup = {
-                                    _id: { month: "$month", year: "$year", funda: "$funda" },
-                                    quantity: { $sum: "$quantity" },
-                                    amount: { $sum: "$amount" }
-                                }
-                            }
-
-                            conditionPopulate = {
-                                path: '_id.funda',
-                                select: '_id name sign image',
-                                model: 'funda'
+                        // Gom nhóm tổng hợp theo Cơ sở
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionGroup = {
+                                _id: { month: "$month", funda: "$funda" },
+                                amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
                             }
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo 01 ĐƠN VỊ CƠ SỞ/THỜI GIAN
+                     */
+                    if(option && Number(option) == 4){
+                        conditionObjYear = {
+                            "year": Number(yearFilter),
+                        }
+
+                        if(month && !isNaN(month)){
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
+                                "month": Number(month),
+                            }
+                        }
+
+                        if(fundaID && checkObjectIDs(fundaID)){
+                            conditionObj.funda = ObjectID(fundaID)
+                        }
+                       
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionGroup = {
+                                _id: { expenseType: "$expenseType" },
+                                amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
+                            }
+                        }
+                    }
                     // console.log(conditionObj)
                     // console.log(conditionObjYear)
                     // console.log(conditionGroup)
@@ -702,9 +724,10 @@ class Model extends BaseModel {
                         },
                         {
                             $project : {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
                                 funda : 1,
+                                plan : 1,
                                 outin : 1,
                                 revenueType : 1,
                                 expenseType : 1,
@@ -715,6 +738,7 @@ class Model extends BaseModel {
                                 goods : 1,
                                 quantity : 1,
                                 amount : 1,
+                                date : 1,
                                 createAt : 1,
                             }
                         },
@@ -729,9 +753,9 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [3].includes(Number(option))){
-                        await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
-                    }
+                    // if(!isNaN(option) && [3].includes(Number(option))){
+                    //     await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
+                    // }
 
                     return resolve({ error: false, data: listData });
                 }
