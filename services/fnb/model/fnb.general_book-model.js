@@ -712,6 +712,8 @@ class Model extends BaseModel {
                                 vatAmount: { $sum: "$vatAmount" },
                             }
                         }
+
+                        sortBy = {"_id.expenseType" : 1 }
                     }
                     // console.log(conditionObj)
                     // console.log(conditionObjYear)
