@@ -395,8 +395,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID, outin, plan }) {
-        // console.log({fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID})
+    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType }) {
+        // console.log({ companyID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -405,7 +405,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = { company: companyID }
                 let sortBy;
                 let keys	 = ['createAt__1', '_id__1'];
 
@@ -417,19 +417,33 @@ class Model extends BaseModel {
                 // Gom nhóm theo đơn vị cơ sở
                 if(fundasID && fundasID.length ){
                     let arrFun = fundasID.map(item=>ObjectID(item))
-                    conditionObj.funda = { $in: arrFun }
+
+                    if(arrFun.length) {
+                        conditionObj.funda = { $in: arrFun };
+                    }
                 }else{
-                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                    // console.log(listFundaIsMember)
-                    conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
+                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                    if(fundasIDIsMember.length) {
+                        conditionObj.funda = { $in: fundasIDIsMember };
+                    }else{
+                        conditionObj.funda = { $in: [] }
+                    }
                 }
 
                 // Phân loại theo thời khoảng
                 if(fromDate && toDate){
-                    conditionObj.createAt = {
+                    conditionObj.date = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
                     }
+                }
+
+                // Theo mẩu tin cha
+                if(parentID){
+                    conditionObj.parent = parentID;
+                }else{
+                    conditionObj.parent = { $exists: false };
                 }
 
                 // Phân loại theo Mua vào bán ra
@@ -442,11 +456,16 @@ class Model extends BaseModel {
                     conditionObj.plan = Number(plan)
                 }
 
-                // Theo mẩu tin cha
-                if(parentID){
-                    conditionObj.parent = parentID;
-                }else{
-                    conditionObj.parent = { $exists: false };
+                if(revenueType && revenueType > 0){
+                    conditionObj.revenueType = Number(revenueType)
+                }
+
+                if(expenseType && expenseType > 0){
+                    conditionObj.expenseType = Number(expenseType)
+                }
+
+                if(appExpenseType && appExpenseType > 0){
+                    conditionObj.appExpenseType = Number(appExpenseType)
                 }
                 // console.log({conditionObj});
 
@@ -457,8 +476,6 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                // console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
-                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
