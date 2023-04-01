@@ -145,6 +145,7 @@ module.exports = {
         params: {
             orderID             : { type: "string", optional: true },
             customerID          : { type: "string", optional: true },
+            productID           : { type: "string", optional: true },
             fundasID            : { type: "array", optional: true },
             shiftsID            : { type: "array", optional: true },
             assigneesID         : { type: "array", optional: true },
@@ -172,7 +173,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, customerID } = ctx.params;
+                let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, customerID, productID } = ctx.params;
 				const { _id: userID, email, fullname, company } = ctx.meta.infoUser;
                 // console.log({ email, fullname})
 
@@ -183,7 +184,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID
+                        companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, productID
                     });
                 }
 
