@@ -516,7 +516,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, userID, option, optionTime, optionGroup, fundasID, year, fromDate, toDate }) {
+    getListByProperty({ companyID, userID, option, optionTime, optionGroup, fundasID, year, fromDate, toDate, outin }) {
         // console.log({companyID, userID, option, optionTime, fundasID, year, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
@@ -568,6 +568,10 @@ class Model extends BaseModel {
                             $gte: new Date(fromDate),
                             $lte: new Date(toDate),
                         }
+                    }
+
+                    if(outin && outin > 0){
+                        conditionObj.outin = Number(outin)
                     }
 
                     /**
@@ -666,34 +670,24 @@ class Model extends BaseModel {
                      * Gom nhóm theo đơn vị cơ sở
                      */
                     if(option && Number(option) == 3){
-                        if(optionGroup && Number(optionGroup) == 1){
-                            conditionGroup = {
-                                _id: { funda: "$funda" },
-                                quantity: { $sum: "$quantity" },
-                                amount: { $sum: "$amount" }
+                        if(optionTime && Number(optionTime) == 2){
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
                             }
-                        }
 
-                        if(optionGroup && Number(optionGroup) == 2){
-                            conditionGroup = {
-                                _id: { funda: "$funda", outin: "$outin" },
-                                quantity: { $sum: "$quantity" },
-                                amount: { $sum: "$amount" }
+                            if(optionGroup && Number(optionGroup) == 1){
+                                conditionGroup = {
+                                    _id: { month: "$month", year: "$year", funda: "$funda" },
+                                    quantity: { $sum: "$quantity" },
+                                    amount: { $sum: "$amount" }
+                                }
                             }
-                        }
 
-                        if(optionGroup && Number(optionGroup) == 3){
-                            conditionGroup = {
-                                _id: { funda: "$funda", outin: "$outin", revenueType: "$revenueType", expenseType: "$expenseType", appExpenseType: "$appExpenseType" },
-                                quantity: { $sum: "$quantity" },
-                                amount: { $sum: "$amount" }
+                            conditionPopulate = {
+                                path: '_id.funda',
+                                select: '_id name sign image',
+                                model: 'funda'
                             }
-                        }
-
-                        conditionPopulate = {
-                            path: '_id.funda',
-                            select: '_id name sign image',
-                            model: 'funda'
                         }
                     }
 
