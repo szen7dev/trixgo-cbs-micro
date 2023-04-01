@@ -196,13 +196,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { undasID, option, optionGroup, optionTime, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { option, optionTime, optionGroup, fundasID, year, fromDate, toDate } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getListByProperty({
-                    companyID: company._id, fundasID, option, optionGroup, optionTime, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey, 
-                     userID
+                    companyID: company._id, userID, option, optionTime, optionGroup, fundasID, year, fromDate, toDate
                     });
              
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

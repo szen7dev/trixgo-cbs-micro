@@ -1588,6 +1588,14 @@ class Model extends BaseModel {
                 if(!option){
                     // Danh sách
                 }else{
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
+
                     let conditionObj = { company: ObjectID(companyID) }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"total": -1}
@@ -1681,10 +1689,8 @@ class Model extends BaseModel {
 
                         // Theo tháng trong năm
                         if(optionTime && Number(optionTime) == 2){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
                             }
 
                             conditionGroup = {
@@ -2698,6 +2704,189 @@ class Model extends BaseModel {
     //         }
     //     })
     // }
+
+    exportExcel({ companyID, year, month, email, userID }) {
+        // console.log({ companyID, year, month, userID })
+        return new Promise(async resolve => {
+            try {
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                let conditionObj = { 
+                    company: ObjectID(companyID),
+                    status: 5,
+                    // avgTotalPerStaff: {$exists: true, $ne: null},
+                    avgQuantityPerStaff: {$exists: true, $ne: null},
+                }
+                let projectObj =  {
+                    year : {$year : "$createAt"},
+                    month : {$month : "$createAt"},
+                    day: { $dayOfMonth: "$createAt" },
+                    company : 1,
+                    funda : 1,
+                    createAt: 1,
+                    assignee : 1,
+                    executor: 1,
+                    total: 1,
+                    amount: 1,
+                    // avgTotalPerStaff: 1,
+                    avgQuantityPerStaff: 1
+                }
+                let lookupObj = {
+                    from: "users",
+                    localField: "assignee",
+                    foreignField: "_id",
+                    as: "staff"
+                } 
+                let conditionGroup = {}
+                let conditionPopulate = {}, sortBy = {"_id.month": -1, "avgQuantityPerStaff": -1}
+
+                let conditionObjYear = {
+                    "year": Number(yearFilter),
+                }              
+
+                conditionGroup = {
+                    _id: {  staff: "$staff._id", month: "$month", year: "$year" },
+                    // _id: {  staff: "$staff._id" },
+                    // number: { $sum: 1 },
+                    // avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                    avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                }
+
+                conditionPopulate = {
+                    path: '_id.staff',
+                    select: '_id fullname department',
+                    populate: {
+                        path: 'department',
+                        select: '_id name',
+                        model: 'department',
+                    },
+                    model: 'user'
+                }
+
+                /**
+                 * LỖI MẮC PHẢI
+                 */
+                let conditionGroupErr = {
+                    _id: {  executor: "$executor", month: "$month" },
+                    number: { $sum: 1 },
+                    amount: { $sum: "$amount" },
+                }
+                let conditionPopulateErr = {
+                    path: '_id.executor',
+                    select: '_id fullname department',
+                    populate: {
+                        path: 'department',
+                        select: '_id name',
+                        model: 'department',
+                    },
+                    model: 'user'
+                }
+                let listDataErr = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
+                        $group: conditionGroupErr
+                    },
+                    {
+                        $sort: {"_id.month": -1}
+                    }
+                ])
+                await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr)
+                // console.log(listDataErr)
+
+                /**
+                 * DOANH SỐ
+                 */
+                let listDataR = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : projectObj
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    { 
+                        $lookup: lookupObj 
+                    },
+                    {
+                        $unwind: "$staff"
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    }
+                ])
+                await FNB_SHIFT_COLL.populate(listDataR, conditionPopulate)
+                // console.log(listDataR)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_kpi.xlsx')))
+                .then(async workbook => {
+                    var i = 3;
+                    listDataR?.forEach((item, index) => {
+                        workbook.sheet("DoanhSo").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("DoanhSo").row(i).cell(2).value(item?._id?.staff.fullname);
+                        workbook.sheet("DoanhSo").row(i).cell(3).value(`${item?._id.staff?.department?.name}`);
+                        // workbook.sheet("DoanhSo").row(i).cell(5).value(item?.number);
+                        // workbook.sheet("DoanhSo").row(i).cell(6).value(item?.avgTotalPerStaff);
+                        workbook.sheet("DoanhSo").row(i).cell(4).value(Number(item?._id?.month));
+                        workbook.sheet("DoanhSo").row(i).cell(5).value(item?.avgQuantityPerStaff != null ? Number(item?.avgQuantityPerStaff) : 0)
+                        
+                        i++
+                    })            
+
+                    /**
+                     * PHẠT LỖI VI PHẠM
+                     */
+                    var i = 3;
+                    listDataErr?.forEach((item, index) => {
+                        workbook.sheet("Err").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Err").row(i).cell(2).value(item?._id?.executor.fullname);
+                        workbook.sheet("Err").row(i).cell(3).value(`${item?._id.executor?.department?.name}`);
+                        workbook.sheet("Err").row(i).cell(4).value(item?._id.month);
+                        workbook.sheet("Err").row(i).cell(5).value(item?.number);
+                        workbook.sheet("Err").row(i).cell(6).value(item?.amount);
+                        
+                        i++
+                    })
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `BaoCaoKPI_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Dev: HiepNH

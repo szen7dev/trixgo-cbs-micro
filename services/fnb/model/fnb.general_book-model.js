@@ -377,7 +377,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID }) {
-        console.log({fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID})
+        // console.log({fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -516,34 +516,50 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) {
-        // console.log({fromDate, toDate})
+    getListByProperty({ companyID, userID, option, optionTime, optionGroup, fundasID, year, fromDate, toDate }) {
+        // console.log({companyID, userID, option, optionTime, fundasID, year, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
                     // Danh sách
                 }else{
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
+
                     let conditionObj = {}
                     let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"total": -1}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": -1}
 
-                    /**
-                     * VALIDATION (1)
-                     */
+                    conditionObj.company = ObjectID(companyID) 
+
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
                     });
                     if(validation.error) return resolve(validation);
-
+    
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
+                        // console.log('==============Trường hợp 2222222222===============>')
                         let arrFun = fundasID.map(item=>ObjectID(item))
-                        conditionObj.funda = { $in: arrFun }
+    
+                        if(arrFun.length) {
+                            conditionObj.funda = { $in: arrFun };
+                        }
                     }else{
-                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                        // console.log(listFundaIsMember)
-                        conditionObj.funda = { $in: listFundaIsMember.map(item=>ObjectID(item._id)) }
+                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            // console.log('==============Trường hợp 33333333333===============>')
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }else{
+                            // console.log('==============Trường hợp 44444444444===============>')
+                            conditionObj.funda = { $in: [] }
+                        }
                     }
 
                     // Phân loại theo thời khoảng
@@ -558,70 +574,90 @@ class Model extends BaseModel {
                      * Gom nhóm theo các phân loại căn bản
                      */
                     if(option && Number(option) == 1){
-                        conditionGroup = {
-                            _id: { shiftType: "$shiftType", mistake: "$mistake", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionGroup = {
+                                _id: { },
+                                quantity: { $sum: "$quantity" },
+                                amount: { $sum: "$amount" }
+                            }
+                        }
+
+                        if(optionGroup && Number(optionGroup) == 2){
+                            conditionGroup = {
+                                _id: { outin: "$outin" },
+                                quantity: { $sum: "$quantity" },
+                                amount: { $sum: "$amount" }
+                            }
+                        }
+
+                        if(optionGroup && Number(optionGroup) == 3){
+                            conditionGroup = {
+                                _id: { outin: "$outin", revenueType: "$revenueType", expenseType: "$expenseType", appExpenseType: "$appExpenseType" },
+                                quantity: { $sum: "$quantity" },
+                                amount: { $sum: "$amount" }
+                            }
                         }
                     }
 
                     /**
                      * Gom nhóm theo thời gian
-                     * - Số lượng đơn hàng
-                     * - Giá trị đơn hàng
-                     * - Số lượng sản phẩm
                      */
                     if(option && Number(option) == 2){
                         // Theo năm
                         if(optionTime && Number(optionTime) == 1){
-                            conditionGroup = {
-                                _id: { year: "$year" },
-                                quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
+                            if(optionGroup && Number(optionGroup) == 1){
+                                conditionGroup = {
+                                    _id: { year: "$year" },
+                                    quantity: { $sum: "$quantity" },
+                                    amount: { $sum: "$amount" }
+                                }
+                            }
+
+                            if(optionGroup && Number(optionGroup) == 2){
+                                conditionGroup = {
+                                    _id: { year: "$year", outin: "$outin" },
+                                    quantity: { $sum: "$quantity" },
+                                    amount: { $sum: "$amount" }
+                                }
+                            }
+    
+                            if(optionGroup && Number(optionGroup) == 3){
+                                conditionGroup = {
+                                    _id: {  year: "$year", outin: "$outin", revenueType: "$revenueType", expenseType: "$expenseType", appExpenseType: "$appExpenseType" },
+                                    quantity: { $sum: "$quantity" },
+                                    amount: { $sum: "$amount" }
+                                }
                             }
                         }
 
                         // Theo tháng trong năm
                         if(optionTime && Number(optionTime) == 2){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
+                            }
+
+                            if(optionGroup && Number(optionGroup) == 1){
+                                conditionGroup = {
+                                    _id: { month: "$month", year: "$year" },
+                                    quantity: { $sum: "$quantity" },
+                                    amount: { $sum: "$amount" }
                                 }
                             }
 
-                            conditionGroup = {
-                                _id: { month: "$month", year: "$year" },
-                                quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
+                            if(optionGroup && Number(optionGroup) == 2){
+                                conditionGroup = {
+                                    _id: { month: "$month", year: "$year", outin: "$outin" },
+                                    quantity: { $sum: "$quantity" },
+                                    amount: { $sum: "$amount" }
+                                }
                             }
-                        }
-
-                        // Theo giờ trong ngày (trả về kết quả +7 giờ => bằng giờ trong DB)
-                        if(optionTime && Number(optionTime) == 3){
-                            conditionGroup = {
-                                _id: { hour: "$hour" },
-                                quantity: { $sum: 1 },
-                                total: { $sum: "$total" },
-                                discount: { $sum: "$discount" },
-                                salesoff: { $sum: "$salesoff" },
-                                amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
-                                numberOfProducts: { $sum: "$numberOfProducts" },
+    
+                            if(optionGroup && Number(optionGroup) == 3){
+                                conditionGroup = {
+                                    _id: {  month: "$month", year: "$year", outin: "$outin", revenueType: "$revenueType", expenseType: "$expenseType", appExpenseType: "$appExpenseType" },
+                                    quantity: { $sum: "$quantity" },
+                                    amount: { $sum: "$amount" }
+                                }
                             }
                         }
                     }
@@ -630,37 +666,34 @@ class Model extends BaseModel {
                      * Gom nhóm theo đơn vị cơ sở
                      */
                     if(option && Number(option) == 3){
-                        conditionGroup = {
-                            _id: { funda: "$funda" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionGroup = {
+                                _id: { funda: "$funda" },
+                                quantity: { $sum: "$quantity" },
+                                amount: { $sum: "$amount" }
+                            }
+                        }
+
+                        if(optionGroup && Number(optionGroup) == 2){
+                            conditionGroup = {
+                                _id: { funda: "$funda", outin: "$outin" },
+                                quantity: { $sum: "$quantity" },
+                                amount: { $sum: "$amount" }
+                            }
+                        }
+
+                        if(optionGroup && Number(optionGroup) == 3){
+                            conditionGroup = {
+                                _id: { funda: "$funda", outin: "$outin", revenueType: "$revenueType", expenseType: "$expenseType", appExpenseType: "$appExpenseType" },
+                                quantity: { $sum: "$quantity" },
+                                amount: { $sum: "$amount" }
+                            }
                         }
 
                         conditionPopulate = {
                             path: '_id.funda',
                             select: '_id name sign image',
                             model: 'funda'
-                        }
-                    }
-
-                    /**
-                     * Gom nhóm theo khách hàng
-                     */
-                    if(option && Number(option) == 4){
-                        conditionGroup = {
-                            _id: { customer: "$customer" },
-                            quantity: { $sum: 1 },
-                            total: { $sum: "$total" },
-                            discount: { $sum: "$discount" },
-                            salesoff: { $sum: "$salesoff" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            numberOfProducts: { $sum: "$numberOfProducts" },
                         }
                     }
 
@@ -677,20 +710,18 @@ class Model extends BaseModel {
                             $project : {
                                 year : {$year : "$createAt"},
                                 month : {$month : "$createAt"},
-                                hour : {$hour : "$createAt"},
                                 funda : 1,
-                                total : 1,
-                                salesoff : 1,
-                                discount : 1,
-                                amount : 1,
-                                vatAmount : 1,
-                                numberOfProducts : 1,
-                                internal : 1,
-                                shift : 1,
-                                mistake : 1,
-                                salesChannel : 1,
-                                paymentMethod : 1,
+                                outin : 1,
+                                revenueType : 1,
+                                expenseType : 1,
+                                appExpenseType : 1,
+                                campaignName : 1,
+                                date : 1,
                                 customer : 1,
+                                goods : 1,
+                                quantity : 1,
+                                amount : 1,
+                                createAt : 1,
                             }
                         },
                         {
@@ -718,4 +749,4 @@ class Model extends BaseModel {
 
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model
