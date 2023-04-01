@@ -34,6 +34,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
         ref: "fnb_general_book"
     },
     /**
+     * Kế hoạch (ngân sách)
+     * 1-Kế hoạch
+     * 2-Thực tế
+     */
+    plan: {
+        type: Number,
+        default: 1
+    },
+    /**
      * Doanh thu, chi phí
      * 1-Doanh thu
      * 2-Chi phí
@@ -57,13 +66,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
         default: 1
     },
     /**
-     * Phân loại chi phí (tham khảo báo cáo)
-     * 1-Truyền thông và marketing
-     * 2-Food App
-     * 3-Nguyên liệu
-     * 4-Thuê mặt bằng
-     * 5-Điện nước
-     * 6-Lương nhân viên
+     * Phân loại chi phí
+     * 1-Food App
+     * 2-Nguyên liệu
+     * 3-Mặt bằng
+     * 4-Nhân viên
+     * 5-Quản lý
+     * 6-Bảo trì
      * 7-Khác
      */
     expenseType: {

@@ -24,6 +24,7 @@ module.exports = {
             campaignName        : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             outin               : { type: "number", optional: true },
+            plan                : { type: "number", optional: true },
             revenueType         : { type: "number", optional: true },
             expenseType         : { type: "number", optional: true },
             appExpenseType      : { type: "number", optional: true },
@@ -38,13 +39,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, parentID, outin, revenueType, expenseType, appExpenseType, date, name, note,
+                let { fundaID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note,
                      customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.insert({
-                    fundaID, parentID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName 
+                    fundaID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName 
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -68,6 +69,7 @@ module.exports = {
             campaignName        : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             outin               : { type: "number", optional: true },
+            plan                : { type: "number", optional: true },
             revenueType         : { type: "number", optional: true },
             expenseType         : { type: "number", optional: true },
             appExpenseType      : { type: "number", optional: true },
@@ -82,12 +84,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { bookID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName } = ctx.params;
+                let { bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.update({
                     userID,
-                    bookID, outin, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName
+                    bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -135,9 +137,8 @@ module.exports = {
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
-            // mistakeID           : { type: "string", optional: true },
-            // orderMistakeID      : { type: "string", optional: true },
-            // salesChannel        : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+            plan                : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -149,7 +150,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { bookID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, parentID } = ctx.params;
+                let { bookID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, parentID, outin, plan } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -159,7 +160,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getList({
-                        companyID: company._id, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID
+                        companyID: company._id, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID, outin, plan
                     });
                 }
 
@@ -178,11 +179,14 @@ module.exports = {
     getListByProperty: {
         params: {
             fundasID        : { type: "array", optional: true },
+            fundaID         : { type: "string", optional: true }, // Lấy data cho 1 cơ sở
             option          : { type: "string", optional: true },
             optionGroup     : { type: "string", optional: true },
             optionTime      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
+            month           : { type: "string", optional: true },
             outin           : { type: "string", optional: true },
+            plan            : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
             
@@ -197,10 +201,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { option, optionTime, optionGroup, fundasID, year, fromDate, toDate, outin } = ctx.params;
+                let { option, optionTime, optionGroup, fundasID, fundaID, year, month, fromDate, toDate, outin, plan } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getListByProperty({
-                    companyID: company._id, userID, option, optionTime, optionGroup, fundasID, year, fromDate, toDate, outin
+                    companyID: company._id, userID, option, optionTime, optionGroup, fundasID, fundaID, year, month, fromDate, toDate, outin, plan
                     });
              
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

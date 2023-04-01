@@ -1610,18 +1610,14 @@ class Model extends BaseModel {
 
                     // Gom nhóm theo đơn vị cơ sở
                     if(fundasID && fundasID.length ){
-                        // console.log('==============Trường hợp 1111111111===============>')
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
                     }else{
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
                         let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
                         if(fundasIDIsMember.length) {
-                            // console.log('==============Trường hợp 222222===============>')
                             conditionObj.funda = { $in: fundasIDIsMember };
                         } else{
-                            // console.log('==============Trường hợp 333333333===============>')
-                            // conditionObj.funda = { $in: [ObjectID("63f23c8d32982b0012ec75d2")] }
                             conditionObj.funda = { $in: [] }
                         }
                     }
@@ -1841,14 +1837,6 @@ class Model extends BaseModel {
                         conditionGroup = {
                             _id: { assignee: "$assignee._id" },
                             quantity: { $sum: 1 },
-                            // total: { $sum: "$total" },
-                            // discount: { $sum: "$discount" },
-                            // salesoff: { $sum: "$salesoff" },
-                            // credit: { $sum: "$credit" },
-                            // offer: { $sum: "$offer" },
-                            // amount: { $sum: "$amount" },
-                            // vatAmount: { $sum: "$vatAmount" },
-                            // numberOfProducts: { $sum: "$numberOfProducts" },
                             avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
                             avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
                         }
@@ -1895,8 +1883,7 @@ class Model extends BaseModel {
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
-                    let listData
-
+                    let listData;
                     // Danh sách đang triển khai
                     if(option && Number(option) == 7){
                         listData = await FNB_ORDER_COLL.aggregate([
