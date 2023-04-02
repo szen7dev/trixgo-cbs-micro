@@ -151,7 +151,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        console.log({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
+        // console.log({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -309,6 +309,23 @@ class Model extends BaseModel {
         });
     }
 
+    /**
+     * Name  : Cập nhật chi phí lương
+     * Author: HiepNH
+     * Code  : 2/4/2023
+     */
+    updateSalary({ companyID, fromDate, toDate, month, year, userID }) {
+        // console.log({ companyID, fromDate, toDate, month, year, userID })
+        return new Promise(async resolve => {
+            try {
+                
+
+                return resolve({ error: false, data: {} });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
 
     /**
      * Name: 

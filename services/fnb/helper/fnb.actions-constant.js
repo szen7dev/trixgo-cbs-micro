@@ -60,6 +60,7 @@ const CF_ACTIONS_FNB = {
    */
    SHIFT_INSERT                                    : `${BASE_ACTIONS}_${SHIFT}_INSERT`,
    SHIFT_UPDATE                                    : `${BASE_ACTIONS}_${SHIFT}_UPDATE`,
+   SHIFT_UPDATE_SALARY                             : `${BASE_ACTIONS}_${SHIFT}_UPDATE_SALARY`,
    SHIFT_REMOVE                                    : `${BASE_ACTIONS}_${SHIFT}_REMOVE`,
    SHIFT_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${SHIFT}_GET_INFO_AND_GET_LIST`,
    SHIFT_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${SHIFT}_GET_LIST_BY_PROPERTY`,

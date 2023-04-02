@@ -95,6 +95,7 @@ module.exports = {
 		//========================================== FNB_SHIFT ==============================================//
 		[CF_ACTIONS_FNB.SHIFT_INSERT]									: FNB__SHIFT_HANDLER.insert,
 		[CF_ACTIONS_FNB.SHIFT_UPDATE]									: FNB__SHIFT_HANDLER.update,
+		[CF_ACTIONS_FNB.SHIFT_UPDATE_SALARY]							: FNB__SHIFT_HANDLER.updateSalary,
 		[CF_ACTIONS_FNB.SHIFT_REMOVE]									: FNB__SHIFT_HANDLER.remove,
 		[CF_ACTIONS_FNB.SHIFT_GET_INFO_AND_GET_LIST]					: FNB__SHIFT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_FNB.SHIFT_GET_LIST_BY_PROPERTY]						: FNB__SHIFT_HANDLER.getListByProperty,

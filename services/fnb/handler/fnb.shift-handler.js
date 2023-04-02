@@ -96,6 +96,35 @@
              }
          }
      },
+
+      /**
+      * Dev: HiepNH
+      * Func: update Group
+      */
+      updateSalary: {
+        auth: "required",
+        params: {
+           fromDate            : { type: "string", optional: true  },
+           toDate              : { type: "string", optional: true },
+           month               : { type: "number", optional: true },
+           year                : { type: "number", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {  fromDate, toDate, month, year } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await FNB_SHIFT_MODEL.updateSalary({
+                    companyID: company._id, fromDate, toDate, month, year, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
  
      /**
       * Dev: Depv

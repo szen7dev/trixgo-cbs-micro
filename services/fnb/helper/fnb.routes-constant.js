@@ -43,6 +43,7 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_SHIFT=======================================//
     SHIFTS                                  : `${BASE_ROUTE}${SHIFT}`,
+    SHIFT_UPDATE_SALARY                     : `${BASE_ROUTE}${SHIFT}/update-salary`,
     SHIFT_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}${SHIFT}/get-list-by-property`,
     SHIFT_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${SHIFT}/download-template-excel`,
     SHIFT_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${SHIFT}/import-from-excel`,
