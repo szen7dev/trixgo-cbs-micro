@@ -78,11 +78,16 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 0
     },
+    //_________Số lỗi mắc phải trong tháng
+    numberOfMistakes: {
+        type: Number,
+        default: 0
+    },
     /**
      * Điểm số tích lũy trong tháng
      * 1-Theo số giờ làm việc trong tháng x đơn giá
      * 2-Theo số lượng sản phẩm trong tháng x đơn giá
-     * 3-Theo giá trị tiền bị phạt
+     * 3-Theo số lỗi mắc phải
      */
     score: {
         type: Number,
