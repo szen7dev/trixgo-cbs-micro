@@ -85,9 +85,9 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     },
     /**
      * Điểm số tích lũy trong tháng
-     * 1-Theo số giờ làm việc trong tháng x đơn giá
-     * 2-Theo số lượng sản phẩm trong tháng x đơn giá
-     * 3-Theo số lỗi mắc phải
+     * 1-Theo số giờ làm việc trong tháng: cập nhật theo ca làm việc
+     * 2-Theo số lượng sản phẩm trong tháng: cập nhật theo đơn hàng
+     * 3-Theo số lỗi mắc phải: cập nhật theo gán lỗi
      */
     score: {
         type: Number,
