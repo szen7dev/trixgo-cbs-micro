@@ -369,8 +369,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  :
      */
-     getList({ companyID, fundaID, staffID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log({ companyID, fundaID, staffID, keyword, limit, lastestID, select, populates, sortKey, userID })
+     getList({ companyID, fundaID, staffID, keyword, limit = 10, lastestID, select, populates, sortKey, fromDate, toDate, userID }) {
+        // console.log({ companyID, fundaID, staffID, keyword, limit, lastestID, select, populates, sortKey, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -418,6 +418,14 @@ class Model extends BaseModel {
                     populates = {
                         path: "",
                         select: ""
+                    }
+                }
+
+                // Phân loại theo thời khoảng
+                if(fromDate && toDate){
+                    conditionObj.createAt = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
                     }
                 }
 
