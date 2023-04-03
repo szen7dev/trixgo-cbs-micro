@@ -56,14 +56,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default: 1
     }, 
     /**
-     * Tên chiến dịch (type=20)
-     * - Gán chiến dịch đang hiện hành để đo lường (được gán từ Funda)
-     */
-    // campaignName: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : 'doctype'
-    // }, 
-    /**
      * Mùa trong năm (theo lịch âm)
      * 1-Xuân
      * 2-Hạ

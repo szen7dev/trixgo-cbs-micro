@@ -369,8 +369,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  :
      */
-     getList({ companyID, fundaID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log({ companyID, fundaID, keyword, limit, lastestID, select, populates, sortKey, userID })
+     getList({ companyID, fundaID, staffID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+        // console.log({ companyID, fundaID, staffID, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -387,7 +387,14 @@ class Model extends BaseModel {
                 if(fundaID ){
                     conditionObj.funda = ObjectID(fundaID)
                 }else{
-                    conditionObj.company = ObjectID(companyID)
+                    if(staffID){
+                        conditionObj.$or = [
+                            { staffs: {$in: [staffID]} },
+                            { subStaffs: {$in: [staffID]} },
+                        ]
+                    }else{
+                        conditionObj.company = ObjectID(companyID)
+                    }
                 }
 
                 // Làm rõ mục đích để làm gì?
@@ -397,7 +404,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
