@@ -1580,9 +1580,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID }) {
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID }) {
         // console.log('DANH SÁCH CƠ SỞ =================>>>>>>>>>>>>>>>>>>>>>>>>>')
-        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID})
+        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID})
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -1880,6 +1880,35 @@ class Model extends BaseModel {
 
                         sortBy = {"amount": -1}
                     }
+
+                    /**
+                     * Gom nhóm theo Nhân sự-Sản phẩm
+                     */
+                    if(option && Number(option) == 9){``
+                        delete conditionObj.company
+                        delete conditionObj.funda
+                        conditionObj.assignee = { $in: [ObjectID(staffID)] }
+
+                        conditionGroup = {
+                            _id: { shift: "$shift" },
+                            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                            avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                        }
+
+                        sortBy = {"_id.shift": -1}
+
+                        conditionPopulate = {
+                            path: '_id.shift',
+                            select: '_id name funda createAt',
+                            model: 'fnb_shift',
+                            populate: {
+                                path: 'funda',
+                                select: '_id name',
+                                model: 'funda',
+                            }
+                        }
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
@@ -1991,7 +2020,7 @@ class Model extends BaseModel {
                     }
                     // console.log(listData.length)
 
-                    if(!isNaN(option) && [3,6,7,8].includes(Number(option))){
+                    if(!isNaN(option) && [3,6,7,8,9].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
