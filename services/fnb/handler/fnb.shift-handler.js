@@ -161,6 +161,7 @@
          params: {
             shiftID                 : { type: "string", optional: true },
             fundaID                 : { type: "string", optional: true },
+            staffID                 : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -172,7 +173,7 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { shiftID, fundaID, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let { shiftID, fundaID, staffID, keyword, limit, lastestID, select, populates } = ctx.params;
                  const { _id: userID, company } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler;
@@ -182,7 +183,7 @@
                      });
                  }else{
                      resultAfterCallHandler = await FNB_SHIFT_MODEL.getList({
-                        companyID: company._id, fundaID, keyword, limit, lastestID, select, populates, userID
+                        companyID: company._id, fundaID, staffID, keyword, limit, lastestID, select, populates, userID
                      });
                  }
  
