@@ -82,9 +82,9 @@ class Model extends BaseModel {
                     dataInsert.campaignName = campaignName;
                 }
 
-                if(date && date != ""){
-                    dataInsert.date = date;
-                }
+                // if(date && date != ""){
+                //     dataInsert.date = date;
+                // }
 
                 if(note && note != ""){
                     dataInsert.note = note;
@@ -149,6 +149,11 @@ class Model extends BaseModel {
                     dataInsert.revenueType      = infoParent.revenueType
                     dataInsert.expenseType      = infoParent.expenseType
                     dataInsert.appExpenseType   = infoParent.appExpenseType
+                }
+
+                // Nếu có ngày tháng riêng => Lấy theo ngày tháng
+                if(date && date != ""){
+                    dataInsert.date = date;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
