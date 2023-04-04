@@ -579,7 +579,12 @@ class Model extends BaseModel {
                         yearFilter = Number(currentYear)
                     }
 
-                    let conditionObj = { company: ObjectID(companyID) }
+                    // Chỉ lấy các mẩu tin con
+                    let conditionObj = { 
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                    }
+                    
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": -1}
 
