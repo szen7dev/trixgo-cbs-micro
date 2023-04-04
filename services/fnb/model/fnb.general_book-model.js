@@ -400,7 +400,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType }) {
+    getList({ option, companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType }) {
         // console.log({ companyID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType })
         return new Promise(async (resolve) => {
             try {
@@ -448,7 +448,13 @@ class Model extends BaseModel {
                 if(parentID){
                     conditionObj.parent = parentID;
                 }else{
-                    conditionObj.parent = { $exists: false };
+                    if(!option){
+                        conditionObj.parent = { $exists: false }
+                    }else{
+                        if(option && Number(option) == 1){
+                            conditionObj.parent = { $exists: true, $ne: null }
+                        }
+                    }
                 }
 
                 // Phân loại theo Mua vào bán ra
