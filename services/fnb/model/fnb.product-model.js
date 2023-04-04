@@ -31,10 +31,12 @@ const FNB_PRODUCT_COLL                         = require('../database/fnb.produc
 // const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
 // const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
 // const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
+const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.general_book-coll');
 
 /**
  * import inter-model, exter-model
  */
+const FNB_GENERAL_BOOK_MODEL                    = require('./fnb.general_book-model').MODEL;
 class Model extends BaseModel {
 
     constructor() {
@@ -387,7 +389,8 @@ class Model extends BaseModel {
                 // console.log(listData)
 
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_product_template_import.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_general_book_import.xlsx')))
+                // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_product_template_import.xlsx')))
                 .then(async workbook => {
 
                     // var i = 3;
@@ -403,7 +406,8 @@ class Model extends BaseModel {
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `Template_import_product_${now.getTime()}.xlsx`;
+                    const fileName = `Template_import_book_${now.getTime()}.xlsx`;
+                    // const fileName = `Template_import_product_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
@@ -441,35 +445,34 @@ class Model extends BaseModel {
                         let dataInsert = {
                             companyID,
                             userID,
-                            name: data?.__EMPTY,
-                            sign: data?.__EMPTY_1,
-                            type: data?.__EMPTY_2,
-                            unit: data?.__EMPTY_3,
+                            name: data?.__EMPTY_1,
+                            date: data?.__EMPTY_13,
+                            quantity: data?.__EMPTY_3,
                             unitPrice: data?.__EMPTY_4,
-                            unitPrice2: data?.__EMPTY_5,
-                            unitPrice3: data?.__EMPTY_6,
-                            unitPrice4: data?.__EMPTY_7,
-                            note: data?.__EMPTY_8,
-                            parentID: data?.__EMPTY_9,
+                            amount: data?.__EMPTY_5,
+                            sign: data?.__EMPTY_6,
+                            note: data?.__EMPTY_7,
+                            campaignName: data?.__EMPTY_8,
+                            plan: data?.__EMPTY_9,
+                            outin: data?.__EMPTY_10,
+                            revenueType: data?.__EMPTY_11,
+                            expenseType: data?.__EMPTY_12,
+                            goodsID: data?.__EMPTY_14,
+                            parentID: data?.__EMPTY_15,
+                            fundaID: data?.__EMPTY_16,
                         }
 
                         // console.log(dataInsert);
                     
-                        let infoAfterInsert = await this.insert(dataInsert);
+                        let infoAfterInsert = await FNB_GENERAL_BOOK_MODEL.insert(dataInsert);
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
-
                     }
                     index ++;
                 }
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "Import failed" });
-                    
-                // console.log("Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-
-                // // Update timeImportExcel trick reload việc con
-                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
                 return resolve({ error: false, message: "Import successfull" });
             } catch (error) {
