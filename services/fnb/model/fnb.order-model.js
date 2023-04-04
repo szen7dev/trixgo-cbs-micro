@@ -2917,7 +2917,7 @@ class Model extends BaseModel {
 
                     let conditionObj = { company: companyID }
 
-                    let str = '{"name": "John", "age": 30, "city": "New York"}';
+                    // let str = '{"name": "John", "age": 30, "city": "New York"}';
                     let obj = JSON.parse(filterParams);
                     // console.log(obj);
 

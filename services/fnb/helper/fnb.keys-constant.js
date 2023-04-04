@@ -1,6 +1,7 @@
 exports.FNB_ACC = {
     bod: ['ad.c686.trx@gmail.com','hiepnh.winggo@gmail.com','ngocchuc0802@gmail.com	','minhbacninh1990@gmail.com','hoangnguyenhuu@gmail.com','tranthutrang8387@gmail.com','huongltk55@gmail.com','nguyenchinhds99@gmail.com'],
-    cskh: ['toannd.dtc@gmail.com','the21ttleprince@gmail.com','nguyendacvu1609@gmail.com','ngocchuc0802@gmail.com','diemquynh1125@gmail.com','tuyethunhan@gmail.com','the21ttleprince@gmail.com	'],
+    cskh: ['toannd.dtc@gmail.com','the21ttleprince@gmail.com','nguyendacvu1609@gmail.com','ngocchuc0802@gmail.com','diemquynh1125@gmail.com','tuyethunhan@gmail.com','the21ttleprince@gmail.com'],
+    taichinh: ['nbpt.96@gmail.com'],
     man: ['toannd.dtc@gmail.com','phungthu307@gmail.com','tuananhvp0711@gmail.com','phungthiha307@gmail.com','havy7983@gmail.com','sotprince93@gmail.com','quangvule00@gmail.com','wgo22@gmail.com','the21ttleprince@gmail.com']
 }
 
