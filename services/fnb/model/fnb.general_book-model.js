@@ -102,18 +102,6 @@ class Model extends BaseModel {
                     dataInsert.plan = Number(plan);
                 }
 
-                if(!isNaN(revenueType)){
-                    dataInsert.revenueType = Number(revenueType);
-                }
-
-                if(!isNaN(expenseType)){
-                    dataInsert.expenseType = Number(expenseType);
-                }
-
-                if(!isNaN(appExpenseType)){
-                    dataInsert.appExpenseType = Number(appExpenseType);
-                }
-
                 if(!isNaN(quantity)){
                     dataInsert.quantity = Number(quantity);
                 }
@@ -154,6 +142,18 @@ class Model extends BaseModel {
                 // Nếu có ngày tháng riêng => Lấy theo ngày tháng
                 if(date && date != ""){
                     dataInsert.date = date;
+                }
+
+                if(!isNaN(revenueType)){
+                    dataInsert.revenueType = Number(revenueType);
+                }
+
+                if(!isNaN(expenseType)){
+                    dataInsert.expenseType = Number(expenseType);
+                }
+
+                if(!isNaN(appExpenseType)){
+                    dataInsert.appExpenseType = Number(appExpenseType);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
