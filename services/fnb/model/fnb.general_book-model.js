@@ -734,6 +734,7 @@ class Model extends BaseModel {
                                 year : {$year : "$date"},
                                 month : {$month : "$date"},
                                 funda : 1,
+                                parent : 1,
                                 plan : 1,
                                 outin : 1,
                                 revenueType : 1,
