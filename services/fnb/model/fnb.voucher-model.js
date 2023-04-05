@@ -463,6 +463,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+                    // console.log('=============Có quyền===================')
                     const dataImportJSON = JSON.parse(dataImport);
                     // console.log('=============Log data===================');
                     // console.log({ dataImportJSON });
@@ -517,6 +518,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, message: "Import successfull" })
                     }
                 }else{
+                    // console.log('=============Không có quyền===================')
                     return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }
             } catch (error) {
