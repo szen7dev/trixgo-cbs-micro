@@ -207,7 +207,7 @@
             try {
                 await this.validateEntity(ctx.params);
                 const { dataImport } = ctx.params;
-				const { _id: userID, company } = ctx.meta.infoUser;
+				const { _id: userID, company, email } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
                 // console.log('====================HERE===================')
@@ -217,7 +217,7 @@
                 // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_VOUCHER_MODEL.importFromExcel({
-                    companyID: company._id, dataImport, userID, ctx
+                    companyID: company._id, dataImport, userID, email
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
