@@ -35,6 +35,10 @@ const ITEM__CONTACT_MODEL                       = require('../../item/model/item
 /**
  * import inter-model, exter-model
  */
+const { 
+    FNB_ACC,
+ } = require('../helper/fnb.keys-constant')
+
 class Model extends BaseModel {
 
     constructor() {
@@ -455,61 +459,65 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    importFromExcel({ companyID, dataImport, userID, ctx }) {
+    importFromExcel({ companyID, dataImport, userID, email }) {
         return new Promise(async resolve => {
             try {
-                const dataImportJSON = JSON.parse(dataImport);
-                // console.log('=============Log data===================');
-                // console.log({ dataImportJSON });
-                let index = 0;
+                if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+                    const dataImportJSON = JSON.parse(dataImport);
+                    // console.log('=============Log data===================');
+                    // console.log({ dataImportJSON });
+                    let index = 0;
 
-                let option = Number(dataImportJSON[0].__EMPTY_5)
-                // console.log({ option })
+                    let option = Number(dataImportJSON[0].__EMPTY_5)
+                    // console.log({ option })
 
-                let receivers = []
-                let voucherID = dataImportJSON[0].__EMPTY_3
+                    let receivers = []
+                    let voucherID = dataImportJSON[0].__EMPTY_3
 
-                if(option == 1){
-                    for (const item of dataImportJSON) {
-                        // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                        if(index > 0){
-                            console.log(item)
+                    if(option == 1){
+                        for (const item of dataImportJSON) {
+                            // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                            if(index > 0){
+                                console.log(item)
 
-                            receivers.push(item?.__EMPTY_3)
-                        }
-    
-                        index ++;
-                    }
-                    // console.log({voucherID})
-                    // console.log(receivers)
-    
-                    await this.update({ userID, voucherID, receivers })
-    
-                    return resolve({ error: false, message: "Import successfull" })
-                }
-
-                if(option == 2){
-                    for (const item of dataImportJSON) {
-                        // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                        if(index > 0){
-                            let dataInsert = {
-                                authorID: userID,
-                                fundaID: item?.__EMPTY,
-                                phone: item?.__EMPTY_1,
-                                name: item?.__EMPTY_2,
-                                gender: item?.__EMPTY_3,
-                                note: item?.__EMPTY_4
+                                receivers.push(item?.__EMPTY_3)
                             }
-                            // console.log(dataInsert)
-
-                           let info = await ITEM__CONTACT_MODEL.insert(dataInsert)
-                        //    console.log(info)
+        
+                            index ++;
                         }
-    
-                        index ++;
+                        // console.log({voucherID})
+                        // console.log(receivers)
+        
+                        await this.update({ userID, voucherID, receivers })
+        
+                        return resolve({ error: false, message: "Import successfull" })
                     }
 
-                    return resolve({ error: false, message: "Import successfull" })
+                    if(option == 2){
+                        for (const item of dataImportJSON) {
+                            // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                            if(index > 0){
+                                let dataInsert = {
+                                    authorID: userID,
+                                    fundaID: item?.__EMPTY,
+                                    phone: item?.__EMPTY_1,
+                                    name: item?.__EMPTY_2,
+                                    gender: item?.__EMPTY_3,
+                                    note: item?.__EMPTY_4
+                                }
+                                // console.log(dataInsert)
+
+                            let info = await ITEM__CONTACT_MODEL.insert(dataInsert)
+                            //    console.log(info)
+                            }
+        
+                            index ++;
+                        }
+
+                        return resolve({ error: false, message: "Import successfull" })
+                    }
+                }else{
+                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }
             } catch (error) {
                 // console.log({ error })
