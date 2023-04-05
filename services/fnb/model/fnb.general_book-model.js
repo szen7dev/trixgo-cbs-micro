@@ -82,9 +82,9 @@ class Model extends BaseModel {
                     dataInsert.campaignName = campaignName;
                 }
 
-                if(date && date != ""){
-                    dataInsert.date = date;
-                }
+                // if(date && date != ""){
+                //     dataInsert.date = date;
+                // }
 
                 if(note && note != ""){
                     dataInsert.note = note;
@@ -100,18 +100,6 @@ class Model extends BaseModel {
 
                 if(!isNaN(plan)){
                     dataInsert.plan = Number(plan);
-                }
-
-                if(!isNaN(revenueType)){
-                    dataInsert.revenueType = Number(revenueType);
-                }
-
-                if(!isNaN(expenseType)){
-                    dataInsert.expenseType = Number(expenseType);
-                }
-
-                if(!isNaN(appExpenseType)){
-                    dataInsert.appExpenseType = Number(appExpenseType);
                 }
 
                 if(!isNaN(quantity)){
@@ -149,6 +137,23 @@ class Model extends BaseModel {
                     dataInsert.revenueType      = infoParent.revenueType
                     dataInsert.expenseType      = infoParent.expenseType
                     dataInsert.appExpenseType   = infoParent.appExpenseType
+                }
+
+                // Nếu có ngày tháng riêng => Lấy theo ngày tháng
+                if(date && date != ""){
+                    dataInsert.date = date;
+                }
+
+                if(!isNaN(revenueType)){
+                    dataInsert.revenueType = Number(revenueType);
+                }
+
+                if(!isNaN(expenseType)){
+                    dataInsert.expenseType = Number(expenseType);
+                }
+
+                if(!isNaN(appExpenseType)){
+                    dataInsert.appExpenseType = Number(appExpenseType);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -395,7 +400,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType }) {
+    getList({ option, companyID, fundasID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType }) {
         // console.log({ companyID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType })
         return new Promise(async (resolve) => {
             try {
@@ -443,7 +448,13 @@ class Model extends BaseModel {
                 if(parentID){
                     conditionObj.parent = parentID;
                 }else{
-                    conditionObj.parent = { $exists: false };
+                    if(!option){
+                        conditionObj.parent = { $exists: false }
+                    }else{
+                        if(option && Number(option) == 1){
+                            conditionObj.parent = { $exists: true, $ne: null }
+                        }
+                    }
                 }
 
                 // Phân loại theo Mua vào bán ra

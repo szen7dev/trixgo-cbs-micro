@@ -142,6 +142,7 @@ module.exports = {
             revenueType         : { type: "string", optional: true },
             expenseType         : { type: "string", optional: true },
             appExpenseType      : { type: "string", optional: true },
+            option              : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -153,7 +154,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { bookID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, parentID, outin, plan, revenueType, expenseType, appExpenseType } = ctx.params;
+                let { bookID, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, parentID, outin, plan, revenueType, expenseType, appExpenseType, option } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -163,7 +164,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getList({
-                        companyID: company._id, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType
+                        companyID: company._id, fundasID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey, userID, parentID, outin, plan, revenueType, expenseType, appExpenseType, option
                     });
                 }
 
