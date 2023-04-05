@@ -33,6 +33,7 @@ const CONTACT_DOCUMENT_COLL                         = require('../../human/datab
 const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll');
 const e = require('express');
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL;
+
 class Model extends BaseModel {
 
     constructor() {

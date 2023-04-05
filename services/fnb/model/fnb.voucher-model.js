@@ -30,6 +30,8 @@ const ITEM__CONTACT_COLL            		   = require('../../item/database/item.con
 // const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 const FNB_VOUCHER_COLL                          = require('../database/fnb.voucher-coll');
 
+const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;
+
 /**
  * import inter-model, exter-model
  */
@@ -406,7 +408,9 @@ class Model extends BaseModel {
     downloadTemplateExcel({ companyID, userID }) {
         return new Promise(async resolve => {
             try {
+                // Danh sách danh bạ
                 let listData  = await ITEM__CONTACT_COLL.find({ company: companyID }).select('name phone address note')
+                .sort({_id: -1})
                 .limit(200)
                 // console.log(listData)
 
@@ -416,11 +420,13 @@ class Model extends BaseModel {
 
                     var i = 3;
                     listData?.forEach((item, index) => {
-                        workbook.sheet("Contact").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Contact").row(i).cell(2).value(item.name);
-                        workbook.sheet("Contact").row(i).cell(3).value(item.phone);
-                        workbook.sheet("Contact").row(i).cell(4).value(item.note);
-                        workbook.sheet("Contact").row(i).cell(5).value(`${item._id}`);
+                        workbook.sheet("ExportContact").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("ExportContact").row(i).cell(2).value(item.name);
+                        workbook.sheet("ExportContact").row(i).cell(3).value(item.phone);
+                        workbook.sheet("ExportContact").row(i).cell(4).value(item.note);
+                        workbook.sheet("ExportContact").row(i).cell(5).value(`${item._id}`);
+                        workbook.sheet("ExportContact").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}`)
+
                         i++
                     });
 
@@ -457,25 +463,56 @@ class Model extends BaseModel {
                 // console.log({ dataImportJSON });
                 let index = 0;
 
+                let option = Number(dataImportJSON[0].__EMPTY_5)
+                // console.log({ option })
+
                 let receivers = []
                 let voucherID = dataImportJSON[0].__EMPTY_3
-                
-                for (const item of dataImportJSON) {
-                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                    if(index > 0){
-                        receivers.push(item?.__EMPTY_3)
+
+                if(option == 1){
+                    for (const item of dataImportJSON) {
+                        // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                        if(index > 0){
+                            console.log(item)
+
+                            receivers.push(item?.__EMPTY_3)
+                        }
+    
+                        index ++;
+                    }
+                    // console.log({voucherID})
+                    // console.log(receivers)
+    
+                    await this.update({ userID, voucherID, receivers })
+    
+                    return resolve({ error: false, message: "Import successfull" })
+                }
+
+                if(option == 2){
+                    for (const item of dataImportJSON) {
+                        // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                        if(index > 0){
+                            let dataInsert = {
+                                authorID: userID,
+                                fundaID: item?.__EMPTY,
+                                phone: item?.__EMPTY_1,
+                                name: item?.__EMPTY_2,
+                                gender: item?.__EMPTY_3,
+                                note: item?.__EMPTY_4
+                            }
+                            // console.log(dataInsert)
+
+                           let info = await ITEM__CONTACT_MODEL.insert(dataInsert)
+                        //    console.log(info)
+                        }
+    
+                        index ++;
                     }
 
-                    index ++;
+                    return resolve({ error: false, message: "Import successfull" })
                 }
-                // console.log({voucherID})
-                // console.log(receivers)
-
-                await this.update({ userID, voucherID, receivers })
-
-                return resolve({ error: false, message: "Import successfull" });
             } catch (error) {
-                console.log({ error })
+                // console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
