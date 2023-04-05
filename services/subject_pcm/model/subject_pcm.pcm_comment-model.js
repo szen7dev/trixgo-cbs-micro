@@ -2066,157 +2066,157 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 24/9/2022
      */
-    getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
-        console.log('============Gom nhóm theo thuộc tính 222================')
-        console.log({ userID, option, fromDate, toDate, isParent, isGroup })
-        return new Promise(async resolve => {
-            try {
-                /**
-                 * BA
-                 * 1-Lấy danh sách các comment mà user được quyền truy cập receivers/thông qua Task
-                 * 2-Gom nhóm dữ liệu
-                 */
+    // getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
+    //     console.log('============Gom nhóm theo thuộc tính 222================')
+    //     console.log({ userID, option, fromDate, toDate, isParent, isGroup })
+    //     return new Promise(async resolve => {
+    //         try {
+    //             /**
+    //              * BA
+    //              * 1-Lấy danh sách các comment mà user được quyền truy cập receivers/thông qua Task
+    //              * 2-Gom nhóm dữ liệu
+    //              */
 
-                let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
+    //             let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
 
-                // Chỉ lấy task cha
-                if(isParent == 1){
-                    conditionSubjectObj.parent = { $exists: false };
-                }
+    //             // Chỉ lấy task cha
+    //             if(isParent == 1){
+    //                 conditionSubjectObj.parent = { $exists: false };
+    //             }
 
-                conditionSubjectObj.usersDelete = { $nin: [userID] }
+    //             conditionSubjectObj.usersDelete = { $nin: [userID] }
 
-                // Lấy các chủ đề mà user được quyền truy cập (members của group)
-                if(isGroup && isGroup == 1){
-                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+    //             // Lấy các chủ đề mà user được quyền truy cập (members của group)
+    //             if(isGroup && isGroup == 1){
+    //                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+    //                 let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                    // Lấy công việc mà userID được quyền truy cập
-                    conditionSubjectObj.$or = [
-                        { author: userID },
-                        { assignee: userID },
-                        { related: { $in: [userID] }},
-                        { group: { $in: listGroups.map(item => item._id) }},
-                    ]
-                }else{
-                    // conditionSubjectObj.$or = [
-                    //     { author: userID },
-                    //     { assignee: userID },
-                    //     { related: { $in: [userID] }},
-                    // ]
+    //                 // Lấy công việc mà userID được quyền truy cập
+    //                 conditionSubjectObj.$or = [
+    //                     { author: userID },
+    //                     { assignee: userID },
+    //                     { related: { $in: [userID] }},
+    //                     { group: { $in: listGroups.map(item => item._id) }},
+    //                 ]
+    //             }else{
+    //                 // conditionSubjectObj.$or = [
+    //                 //     { author: userID },
+    //                 //     { assignee: userID },
+    //                 //     { related: { $in: [userID] }},
+    //                 // ]
 
-                    //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+    //                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+    //                 let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                    // Lấy công việc mà userID được quyền truy cập
-                    conditionSubjectObj.$or = [
-                        { author: userID },
-                        { assignee: userID },
-                        { related: { $in: [userID] }},
-                        { group: { $in: listGroups.map(item => item._id) }},
-                    ]
-                }
+    //                 // Lấy công việc mà userID được quyền truy cập
+    //                 conditionSubjectObj.$or = [
+    //                     { author: userID },
+    //                     { assignee: userID },
+    //                     { related: { $in: [userID] }},
+    //                     { group: { $in: listGroups.map(item => item._id) }},
+    //                 ]
+    //             }
 
-                let listTask = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name')
-                // console.log(listTask)
+    //             let listTask = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name')
+    //             // console.log(listTask)
 
-                let listComments
-                if(fromDate && toDate){
-                    listComments = await PCM_COMMENT_COLL.find({
-                        task: {$in: listTask.map(item=>item._id)},
-                        createAt: {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
-                        },
-                        project: { $exists: true, $ne: null },
-                        companyOfAuthor: { $exists: true, $ne: null },
-                    })
-				}else{
-                    listComments = await PCM_COMMENT_COLL.find({
-                        task: {$in: listTask.map(item=>item._id)},
-                        project: { $exists: true, $ne: null },
-                        companyOfAuthor: { $exists: true, $ne: null },
-                    })
-                }
-                // let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
-                // console.log(listComments)
-                // console.log(listComments.length)
+    //             let listComments
+    //             if(fromDate && toDate){
+    //                 listComments = await PCM_COMMENT_COLL.find({
+    //                     task: {$in: listTask.map(item=>item._id)},
+    //                     createAt: {
+    //                         $gte: new Date(fromDate),
+    //                         $lte: new Date(toDate),
+    //                     },
+    //                     project: { $exists: true, $ne: null },
+    //                     companyOfAuthor: { $exists: true, $ne: null },
+    //                 })
+	// 			}else{
+    //                 listComments = await PCM_COMMENT_COLL.find({
+    //                     task: {$in: listTask.map(item=>item._id)},
+    //                     project: { $exists: true, $ne: null },
+    //                     companyOfAuthor: { $exists: true, $ne: null },
+    //                 })
+    //             }
+    //             // let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
+    //             // console.log(listComments)
+    //             // console.log(listComments.length)
 
-                /**
-                 * Tính tổng số lượng theo các phân loại của Nhà thầu
-                 */
-                if(option == 1){
-                    let conditionPopulateProject = {
-                        path: '_id.project',
-                        select: '_id name sign image modifyAt',
-                        // options: { sort: { '_id.project.modifyAt': -1 } },
-                        model: 'department'
-                    }
+    //             /**
+    //              * Tính tổng số lượng theo các phân loại của Nhà thầu
+    //              */
+    //             if(option == 1){
+    //                 let conditionPopulateProject = {
+    //                     path: '_id.project',
+    //                     select: '_id name sign image modifyAt',
+    //                     // options: { sort: { '_id.project.modifyAt': -1 } },
+    //                     model: 'department'
+    //                 }
 
-                    let conditionPopulateCompany = {
-                        path: '_id.companyOfAuthor',
-                        select: '_id name sign image',
-                        model: 'company'
-                    }
+    //                 let conditionPopulateCompany = {
+    //                     path: '_id.companyOfAuthor',
+    //                     select: '_id name sign image',
+    //                     model: 'company'
+    //                 }
 
-                    let sortProject = { "_id.project": 1 }
-                    let sortCompany = { "_id.companyOfAuthor": 1 }
+    //                 let sortProject = { "_id.project": 1 }
+    //                 let sortCompany = { "_id.companyOfAuthor": 1 }
 
-                    let listDataProject = await PCM_COMMENT_COLL.aggregate([
-                        {
-                            $match: {
-                                _id: {$in: listComments.map(item=>item._id)}
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { project: '$project' },
-                                amount: { $sum: 1 },
-                            }
-                        },
-                        { $sort: sortProject},
-                    ])
+    //                 let listDataProject = await PCM_COMMENT_COLL.aggregate([
+    //                     {
+    //                         $match: {
+    //                             _id: {$in: listComments.map(item=>item._id)}
+    //                         }
+    //                     },
+    //                     {
+    //                         $group: {
+    //                             _id: { project: '$project' },
+    //                             amount: { $sum: 1 },
+    //                         }
+    //                     },
+    //                     { $sort: sortProject},
+    //                 ])
 
-                    let listDataProjectCompanyAuthor = await PCM_COMMENT_COLL.aggregate([
-                        {
-                            $match: {
-                                _id: {$in: listComments.map(item=>item._id)}
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { project: '$project', companyOfAuthor: '$companyOfAuthor' },
-                                amount: { $sum: 1 },
-                            }
-                        },
-                        { $sort: sortCompany},
-                    ])
+    //                 let listDataProjectCompanyAuthor = await PCM_COMMENT_COLL.aggregate([
+    //                     {
+    //                         $match: {
+    //                             _id: {$in: listComments.map(item=>item._id)}
+    //                         }
+    //                     },
+    //                     {
+    //                         $group: {
+    //                             _id: { project: '$project', companyOfAuthor: '$companyOfAuthor' },
+    //                             amount: { $sum: 1 },
+    //                         }
+    //                     },
+    //                     { $sort: sortCompany},
+    //                 ])
 
-                    if(listDataProject.length){
-                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
-                    }
-                    // console.log(listDataProject)
+    //                 if(listDataProject.length){
+    //                     await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
+    //                 }
+    //                 // console.log(listDataProject)
 
-                    if(listDataProjectCompanyAuthor.length){
-                        await DEPARTMENT_COLL.populate(listDataProjectCompanyAuthor, conditionPopulateCompany)
-                    }
-                    // console.log(listDataProjectCompanyAuthor)
+    //                 if(listDataProjectCompanyAuthor.length){
+    //                     await DEPARTMENT_COLL.populate(listDataProjectCompanyAuthor, conditionPopulateCompany)
+    //                 }
+    //                 // console.log(listDataProjectCompanyAuthor)
 
-                    return resolve({ error: false, data: { listDataProject, listDataProjectCompanyAuthor } });
-                }
+    //                 return resolve({ error: false, data: { listDataProject, listDataProjectCompanyAuthor } });
+    //             }
 
-                /**
-                 * Danh sách chi tiết các thông báo
-                 */
-                if(option == 2){
+    //             /**
+    //              * Danh sách chi tiết các thông báo
+    //              */
+    //             if(option == 2){
 
-                }
+    //             }
 
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
 
 }
 
