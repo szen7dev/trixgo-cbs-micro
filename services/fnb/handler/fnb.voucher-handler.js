@@ -171,18 +171,20 @@
     downloadTemplateExcel: {
         auth: 'required',
         params: {
-
+            option     : { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                let { option } = ctx.params;
+
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log('====================HERE===================')
                 // console.log('====================HERE===================')
                 // console.log('====================HERE===================')
                 const resultAfterCallHandler = await FNB_VOUCHER_MODEL.downloadTemplateExcel({
-                    companyID: company._id, userID 
+                    option, companyID: company._id, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
