@@ -39,7 +39,7 @@ module.exports = {
 	dependencies: [
 		CF_DOMAIN_SERVICES.AUTH
 	],
-	
+
 	/**
 	* Actions
 	*/
@@ -50,7 +50,7 @@ module.exports = {
 		[CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_UPDATE] : EXPERT_TIMESHEET_HANDLER.update,
 		[CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_REMOVE] : EXPERT_TIMESHEET_HANDLER.remove,
 	},
-	
+
 	/**
 	* Events
 	*/

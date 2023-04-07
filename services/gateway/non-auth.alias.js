@@ -1,23 +1,24 @@
 "use strict";
+
 const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
 
 /**
  * ------import route's Services---------
  */
-const { CF_ROUTINGS_GATEWAY } 		= require('./helper/gateway.routes-constant');
-const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
+const { CF_ROUTINGS_GATEWAY } 	= require('./helper/gateway.routes-constant');
+const { CF_ROUTINGS_AUTH }		= require('../auth/helper/auth.routes-constant');
+const { CF_ROUTINGS_ZALO } 		= require('../zalo_oa/helper/zalo.routes');
 
 /**
  * ------import action's Services--------
  */
- const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
- const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_GATEWAY }	= require('./helper/gateway.actions-constant');
+const { CF_ACTIONS_AUTH }		= require('../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_ZALO }		= require('../zalo_oa/helper/zalo.actions');
 
 
 module.exports = {
 	path: 'api',
-	// authentication: true,
-	// authorization: true,
 
 	// Cho phép truy cập tất cả các services
 	whitelist: [
@@ -36,7 +37,7 @@ module.exports = {
 		/**
 		 * Code: A0015
 		 */
-		[`POST ${CF_ROUTINGS_AUTH.LOGIN}`] :
+		[`GET ${CF_ROUTINGS_AUTH.LOGIN}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.LOGIN}`],
 
 		/**
@@ -70,6 +71,18 @@ module.exports = {
 		 */
 		[`GET ${CF_ROUTINGS_AUTH.CHECK_LASTEST_APP}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.CHECK_VERSION_APP}`],
+
+		/**
+		 * Zalo OA
+		 */
+		[`GET ${CF_ROUTINGS_ZALO.ZALO_REQUEST_PERMISSION}`] :
+		[`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_REQUEST_PERMISSION}`],
+
+		[`GET ${CF_ROUTINGS_ZALO.ZALO_CALLBACK}`] :
+		[`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_CALLBACK}`],
+
+		[`POST ${CF_ROUTINGS_ZALO.ZALO_WEBHOOK}`] :
+		[`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_WEBHOOK}`],
 	},
 	// Disable to call not-mapped actions
 	mappingPolicy: "all", // Available values: "all", "restrict"

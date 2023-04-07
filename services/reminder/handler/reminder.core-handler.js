@@ -2,8 +2,7 @@ const Agenda            = require('agenda');
 const moment            = require('moment');
 const ObjectID 			= require('mongodb').ObjectID;
 const { MONGODB_URL } 	= require('../../../tools/db/utils');
-const { CF_DOMAIN_SERVICES } 		= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_SUBJECT_PCM }	= require('../../subject_pcm/helper/subject_pcm.actions-constant');
+
 let agenda;
 
 (async function run() {
@@ -273,6 +272,21 @@ module.exports = {
             }
         }
     },
+
+	addJobRefreshTokenZaloOA: {
+		async handler() {
+            try {
+				const timeScheduler = new Date(moment().add(24, 'hours')).getTime();
+
+				agenda.schedule(timeScheduler, 'zalo_oa_refresh_token');
+				console.log(`agenda: zalo_oa_refresh_token added - ${timeScheduler}`);
+
+                return { error: false, message: 'success' };
+			} catch(error) {
+				throw new Error(error.message);
+			}
+		}
+	},
 
 	addJobReminderExpiredTask: {
         params: {

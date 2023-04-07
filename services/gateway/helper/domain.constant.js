@@ -1,5 +1,5 @@
 let CF_DOMAIN_SERVICES = {
-    API             : 'api', //Bỏ api -> gateway
+    EXTERNAL        : 'external',
     GATEWAY         : 'gateway',
     AUTH            : 'auth',
     CHATTING        : 'chatting',

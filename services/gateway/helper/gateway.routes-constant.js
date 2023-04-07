@@ -3,4 +3,6 @@ const CF_ROUTINGS_GATEWAY = {
     CHECK_VERSION                               : `/version`,
 }
 
-exports.CF_ROUTINGS_GATEWAY = CF_ROUTINGS_GATEWAY;
+module.exports = {
+    CF_ROUTINGS_GATEWAY
+}
