@@ -148,7 +148,7 @@
                  let resultAfterCallHandler;
                  if(voucherID || sign){
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getInfo({
-                        voucherID, sign, select, populates,
+                        companyID: company._id, voucherID, sign, select, populates,
                      })
                  }else{
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getList({
