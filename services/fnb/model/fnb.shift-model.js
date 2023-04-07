@@ -717,20 +717,21 @@ class Model extends BaseModel {
                  * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
                  */
                 // Bảng chấm công theo từng điểm bán
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                let currentMonth = new Date().getMonth() + 1
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
                 if(fundaID){
                     let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                     .populate({
                         path: 'company',
                         select: 'name sign'
                     })
-    
-                    let yearFilter
-                    let currentYear = new Date().getFullYear()
-                    if(year && !isNaN(year)){
-                        yearFilter = Number(year)
-                    }else{
-                        yearFilter = Number(currentYear)
-                    }
     
                     let conditionObj = { 
                         funda: ObjectID(fundaID)
@@ -936,14 +937,6 @@ class Model extends BaseModel {
                         /**
                          * BẢNG CHẤM CÔNG TOÀN BỘ NHÂN SỰ
                          */
-                        let yearFilter
-                        let currentYear = new Date().getFullYear()
-                        if(year && !isNaN(year)){
-                            yearFilter = Number(year)
-                        }else{
-                            yearFilter = Number(currentYear)
-                        }
-        
                         let conditionObj = { 
                             company: ObjectID(companyID)
                         }
@@ -977,6 +970,7 @@ class Model extends BaseModel {
                         
                         let conditionObjYear = {
                             "year": Number(yearFilter),
+                            "month": {$in: [currentMonth - 1, currentMonth]},
                         }
         
                         let conditionPopulate = {}, sortBy = {"day": 1}, sortByMonth = {"_id.month": -1}
@@ -1071,36 +1065,6 @@ class Model extends BaseModel {
                             }
                         ])
                         await FNB_ORDER_COLL.populate(listDataRevenue, conditionOrderPopulate)
-                        // console.log(listDataRevenue)
-
-                        /**
-                         * DANH BẠ ĐIỂM BÁN ( // Bỏ)
-                         */
-                        // let conditionGroupContact = {
-                        //     _id: {  funda: "$funda", month: "$month" },
-                        //     number: { $sum: 1 },
-                        // }
-                        // let listDataContact = await ITEM__CONTACT_COLL.aggregate([
-                        //     {
-                        //         $match: {
-                        //             company: ObjectID(companyID),
-                        //         }
-                        //     },
-                        //     {
-                        //         $project : projectOrderObj
-                        //     },
-                        //     {
-                        //         $match: conditionObjYear
-                        //     },
-                        //     {
-                        //         $group: conditionGroupContact
-                        //     },
-                        //     {
-                        //         $sort: sortByMonth
-                        //     }
-                        // ])
-                        // await ITEM__CONTACT_COLL.populate(listDataContact, conditionFundaPopulate)
-                        // // console.log(listDataContact)
 
                         /**
                          * THƯỞNG PHẠT
@@ -1120,6 +1084,7 @@ class Model extends BaseModel {
                             },
                             model: 'user'
                         }
+
                         let listDataErr = await FNB_MISTAKE_COLL.aggregate([
                             {
                                 $match: {
@@ -1290,8 +1255,8 @@ class Model extends BaseModel {
                         // console.log(listStaffs)   
 
                         // Modify the workbook.
-                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary_bk.xlsx'))) // Bỏ
-                        // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary.xlsx')))
+                        // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary_bk.xlsx'))) // Bỏ
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary.xlsx')))
                         .then(async workbook => {
                             /**
                              * DANH SÁCH NHÂN VIÊN
@@ -1351,54 +1316,54 @@ class Model extends BaseModel {
                             /**
                              * BẢNG CHẤM CÔNG THEO NGÀY ( // Bỏ)
                              */
-                            for(var m = 1; m<=12; m++){
-                                workbook.sheet(`TS${m}`).row(1).cell(5).value(Number(yearFilter))
+                            // for(var m = 1; m<=12; m++){
+                            //     workbook.sheet(`TS${m}`).row(1).cell(5).value(Number(yearFilter))
         
-                                var i = 4
-                                listStaffs?.forEach((item, index) => {
-                                    workbook.sheet(`TS${m}`).row(i).cell(1).value(Number(index+1))
-                                    workbook.sheet(`TS${m}`).row(i).cell(2).value(item.fullname)
-                                    workbook.sheet(`TS${m}`).row(i).cell(3).value(item?.department?.name)
-                                    workbook.sheet(`TS${m}`).row(i).cell(36).value(`${item._id}`)
-                                    i++
-                                })
-                            }
+                            //     var i = 4
+                            //     listStaffs?.forEach((item, index) => {
+                            //         workbook.sheet(`TS${m}`).row(i).cell(1).value(Number(index+1))
+                            //         workbook.sheet(`TS${m}`).row(i).cell(2).value(item.fullname)
+                            //         workbook.sheet(`TS${m}`).row(i).cell(3).value(item?.department?.name)
+                            //         workbook.sheet(`TS${m}`).row(i).cell(36).value(`${item._id}`)
+                            //         i++
+                            //     })
+                            // }
 
-                            listDataTimesheet11?.forEach((item, index) => {
-                                for(var m = 1; m<=12; m++){
-                                    if(Number(item._id.month) === Number(m)){
-                                        for(let i=4; i<=Number(listStaffs.length + 3); i++){
-                                            // Mã nhân viên
-                                            let staffID = workbook.sheet(`TS${m}`).row(i).cell(36).value()
+                            // listDataTimesheet11?.forEach((item, index) => {
+                            //     for(var m = 1; m<=12; m++){
+                            //         if(Number(item._id.month) === Number(m)){
+                            //             for(let i=4; i<=Number(listStaffs.length + 3); i++){
+                            //                 // Mã nhân viên
+                            //                 let staffID = workbook.sheet(`TS${m}`).row(i).cell(36).value()
 
-                                            for(var j=1;j<=31;j++){
-                                                if((item._id.staff.toString() === staffID.toString()) && (Number(item._id.day) === Number(j))){
-                                                    workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value(item.workingHours)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            })
+                            //                 for(var j=1;j<=31;j++){
+                            //                     if((item._id.staff.toString() === staffID.toString()) && (Number(item._id.day) === Number(j))){
+                            //                         workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value(item.workingHours)
+                            //                     }
+                            //                 }
+                            //             }
+                            //         }
+                            //     }
+                            // })
 
-                            listDataTimesheet12?.forEach((item, index) => {
-                                for(var m = 1; m<=12; m++){
-                                    if(Number(item._id.month) === Number(m)){
-                                        for(let i=4; i<=Number(listStaffs.length + 3); i++){
-                                            // Mã nhân viên
-                                            let staffID = workbook.sheet(`TS${m}`).row(i).cell(36).value()
+                            // listDataTimesheet12?.forEach((item, index) => {
+                            //     for(var m = 1; m<=12; m++){
+                            //         if(Number(item._id.month) === Number(m)){
+                            //             for(let i=4; i<=Number(listStaffs.length + 3); i++){
+                            //                 // Mã nhân viên
+                            //                 let staffID = workbook.sheet(`TS${m}`).row(i).cell(36).value()
 
-                                            for(var j=1;j<=31;j++){
-                                                if((item._id.staff.toString() === staffID.toString()) && (Number(item._id.day) === Number(j))){
-                                                    let timesheet = workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value() | 0
+                            //                 for(var j=1;j<=31;j++){
+                            //                     if((item._id.staff.toString() === staffID.toString()) && (Number(item._id.day) === Number(j))){
+                            //                         let timesheet = workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value() | 0
 
-                                                    workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value(Number(timesheet + item.subWorkingHours))
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            })
+                            //                         workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value(Number(timesheet + item.subWorkingHours))
+                            //                     }
+                            //                 }
+                            //             }
+                            //         }
+                            //     }
+                            // })
 
                             /**
                              * BẢNG CHẤM CÔNG THEO THÁNG
@@ -1463,7 +1428,6 @@ class Model extends BaseModel {
                     }
                 }
             } catch (error) {
-                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 })
             }
         })
