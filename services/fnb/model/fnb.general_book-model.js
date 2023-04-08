@@ -311,7 +311,7 @@ class Model extends BaseModel {
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(name && name != ""){
-                    dataUpdate.name =name;
+                    dataUpdate.name = `${name} | Type ${infoBook.expenseType}`;
                 }
                 if(customerID && checkObjectIDs(customerID)){
                     dataUpdate.customer = customerID;
@@ -326,7 +326,7 @@ class Model extends BaseModel {
                 }
 
                 if(note && note != ""){
-                    dataUpdate.note = `${note}-${infoBook.expenseType}`;
+                    dataUpdate.note = note;
 
                     // Xử lý tạm thời do chưa sửa được trực tiếp Date
                     dataUpdate.date = note
