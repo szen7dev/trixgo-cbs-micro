@@ -43,7 +43,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName }) {
-        // console.log({ fundaID, parentID, outin, plan, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID })
+        // console.log({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -304,6 +304,8 @@ class Model extends BaseModel {
     update({ userID,
         bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName }) {
         const that = this
+        // console.log({ userID,
+        //     bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName })
         return new Promise(async resolve => {
             try {
                 /**
@@ -321,8 +323,9 @@ class Model extends BaseModel {
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(name && name != ""){
-                    dataUpdate.name = `${name} | ${infoBook.plan}.${infoBook.outin}.${infoBook.expenseType}`;
+                    dataUpdate.name = name;
                 }
+
                 if(customerID && checkObjectIDs(customerID)){
                     dataUpdate.customer = customerID;
                 }
@@ -337,9 +340,6 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataUpdate.note = note;
-
-                    // Xử lý tạm thời do chưa sửa được trực tiếp Date
-                    dataUpdate.date = note
                 }
 
                 if(sign){

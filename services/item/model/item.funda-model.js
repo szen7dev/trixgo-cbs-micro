@@ -423,7 +423,7 @@ class Model extends BaseModel {
      */
     getList({
         companyID, parentID, isListParentOfListChilds, isMember,
-        keyword, limit = 300, lastestID, select, populates= {}, userID } ) {
+        keyword, limit = 20, lastestID, select, populates= {}, userID } ) {
         // console.log({companyID, parentID, isListParentOfListChilds, isMember,
         //     keyword, limit, lastestID, select, populates, userID})
         //     console.log('========================')

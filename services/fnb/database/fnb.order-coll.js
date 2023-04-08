@@ -262,25 +262,25 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______Chiết khấu
+    //______Chiết khấu (chỉ áp dụng cho đơn App)
     discount: {
         type: Number,
         default : 0
     },
-    //______Giảm giá
+    //______Giảm giá (áp dụng cho đơn Off)
     salesoff: {
         type: Number,
         default : 0
     },
     /**
-     * Sử dụng credit (tích điểm quy đổi)
+     * Sử dụng credit (tích điểm quy đổi-áp dụng cho đơn Off)
      * Giảm giá bằng Credit
      */
     credit: {
         type: Number,
         default : 0
     },
-    //______Sử dụng offer từ voucher
+    //______Sử dụng offer từ voucher (áp dụng cho đơn Off)
     offer: {
         type: Number,
         default : 0
