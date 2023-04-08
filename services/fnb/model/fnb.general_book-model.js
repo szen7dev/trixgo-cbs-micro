@@ -179,6 +179,7 @@ class Model extends BaseModel {
         })
     }
 
+    // Cập nhật chi phí Nhân viên điểm bán thực tế
     updateFromShift({ shiftID, fundaID, companyID, userID }) {
         // console.log({ shiftID, fundaID, companyID, userID })
         const that = this
@@ -203,6 +204,8 @@ class Model extends BaseModel {
                             company: companyID,
                             funda: fundaID,
                             name: 'Chi phí Nhân viên điểm bán',
+                            plan: 2, // Thực tế
+                            outin: 2, // Chi phí
                             userCreate: userID,
                             expenseType: 4, // Chi phí nhân viên
                         })
@@ -217,6 +220,8 @@ class Model extends BaseModel {
                             parentID: infoParent._id,
                             name: infoShift.name,
                             userID,
+                            plan: 2, // Thực tế
+                            outin: 2, // Chi phí
                             expenseType: 4, // Chi phí nhân viên
                             date: infoShift.createAt,
                             quantity: 1,
@@ -241,6 +246,8 @@ class Model extends BaseModel {
                             parentID: infoRandomParent._id,
                             name: infoShift.name,
                             userID,
+                            plan: 2, // Thực tế
+                            outin: 2, // Chi phí
                             expenseType: 4, // Chi phí nhân viên
                             date: infoShift.createAt,
                             quantity: 1,
@@ -263,6 +270,9 @@ class Model extends BaseModel {
                     let dataUpdate = {
                         userID,
                         bookID: infoBook._id,
+                        plan: 2, // Thực tế
+                        outin: 2, // Chi phí
+                        expenseType: 4, // Chi phí nhân viên
                         quantity: 1,
                         unitPrice: infoShift.staffSalaryTotal,
                         // amount: infoShift.staffSalaryTotal,
@@ -311,7 +321,7 @@ class Model extends BaseModel {
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(name && name != ""){
-                    dataUpdate.name = `${name} | Type ${infoBook.expenseType}`;
+                    dataUpdate.name = `${name} | ${infoBook.plan}.${infoBook.outin}.${infoBook.expenseType}`;
                 }
                 if(customerID && checkObjectIDs(customerID)){
                     dataUpdate.customer = customerID;
@@ -375,8 +385,7 @@ class Model extends BaseModel {
                 if(!isNaN(vatAmount)){
                     dataUpdate.vatAmount = Number(vatAmount);
                 }
-
-                console.log(dataUpdate)
+                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true });
 
@@ -384,22 +393,11 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
                 /**
-                 * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA HOẶC CÁC MẨU TIN CON (KHI UPDATE CHA)
-                 */
-
-                /**
                  * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA (KHI UPDATE CON)
                  */
                 if(infoBook && infoBook.parent){
                     await that.updateValue({ bookID: infoBook.parent, userID }) 
                 }
-
-                /**
-                 * Cập nhật tổng chi phí cho Điểm bán
-                 * Xây dựng lại hàm tính chi phí (phân biệt chi phí kho, chi phí khác)
-                 */
-                // let info = await ITEM__FUNDA_COLL.findByIdAndUpdate(infoBook.funda, { $inc: { totalAccExpense: Number(quantity * unitPrice) }}, { new: true })   
-                // console.log(info)
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
