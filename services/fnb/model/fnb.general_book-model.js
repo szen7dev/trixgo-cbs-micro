@@ -375,8 +375,7 @@ class Model extends BaseModel {
                 if(!isNaN(vatAmount)){
                     dataUpdate.vatAmount = Number(vatAmount);
                 }
-
-                console.log(dataUpdate)
+                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true });
 
@@ -384,22 +383,11 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
                 /**
-                 * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA HOẶC CÁC MẨU TIN CON (KHI UPDATE CHA)
-                 */
-
-                /**
                  * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA (KHI UPDATE CON)
                  */
                 if(infoBook && infoBook.parent){
                     await that.updateValue({ bookID: infoBook.parent, userID }) 
                 }
-
-                /**
-                 * Cập nhật tổng chi phí cho Điểm bán
-                 * Xây dựng lại hàm tính chi phí (phân biệt chi phí kho, chi phí khác)
-                 */
-                // let info = await ITEM__FUNDA_COLL.findByIdAndUpdate(infoBook.funda, { $inc: { totalAccExpense: Number(quantity * unitPrice) }}, { new: true })   
-                // console.log(info)
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
