@@ -327,6 +327,9 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataUpdate.note = note;
+
+                    // Xử lý tạm thời do chưa sửa được trực tiếp Date
+                    dataUpdate.date = note
                 }
 
                 if(sign){
@@ -372,6 +375,8 @@ class Model extends BaseModel {
                 if(!isNaN(vatAmount)){
                     dataUpdate.vatAmount = Number(vatAmount);
                 }
+
+                console.log(dataUpdate)
 
                 let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true });
 
