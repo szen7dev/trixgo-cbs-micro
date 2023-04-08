@@ -42,21 +42,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName }) {
+    insert({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName }) {
         // console.log({ fundaID, parentID, outin, plan, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID })
         const that = this
         return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 * Bước 1: Khởi tạo đơn hàng
-                 * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
-                 * Bước 3: Tính Chiết khấu, giảm giá => cập nhật giá đơn hàng
-                 * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
-                 */
-
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'fundaID|name|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                return resolve({ error: true, message: 'fundaID|name|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 // Thông tin cửa hàng
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
@@ -82,6 +74,10 @@ class Model extends BaseModel {
                     dataInsert.campaignName = campaignName;
                 }
 
+                if(shiftID && checkObjectIDs(shiftID)){
+                    dataInsert.shift = shiftID;
+                }
+
                 // if(date && date != ""){
                 //     dataInsert.date = date;
                 // }
@@ -89,7 +85,7 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
-                
+
                 if(sign && sign != ""){
                     dataInsert.sign = sign;
                 }
@@ -175,8 +171,115 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true })
                 }    
-                
-                return resolve({ error: false, data: infoAfterInsert });
+
+                return resolve({ error: false, data: infoAfterInsert })
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    updateFromShift({ shiftID, fundaID, companyID, userID }) {
+        // console.log({ shiftID, fundaID, companyID, userID })
+        const that = this
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * Kiểm tra xem phần tử tồn tại chưa
+                 * - Nếu tồn tại rồi thì update
+                 * - Nếu chưa thì tạo mới, check parent đưa vào trong
+                 */
+                let infoBook = await FNB_GENERAL_BOOK_COLL.findOne({ shift: shiftID, parent: { $exists: true, $ne: null }, funda: fundaID, expenseType: 4 })
+
+                if(!infoBook){
+                    console.log('=================TH1')
+                    let infoRandomParent = await FNB_GENERAL_BOOK_COLL.findOne({ funda: fundaID, parent: { $exists: false }, expenseType: 4 })
+                    // console.log(infoRandomParent)
+    
+                    if(!infoRandomParent){
+                        console.log('=================TH1.1')
+                        // Tạo phần tử cha
+                        let infoParent = await that.insertData({
+                            company: companyID,
+                            funda: fundaID,
+                            name: 'Chi phí Nhân viên điểm bán',
+                            userCreate: userID,
+                            expenseType: 4, // Chi phí nhân viên
+                        })
+
+                        if(!infoParent)
+                            return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+
+                        let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id company funda name expenseType createAt staffSalaryTotal')
+                        let dataInsert = {
+                            fundaID: infoShift.funda,
+                            shiftID,
+                            parentID: infoParent._id,
+                            name: infoShift.name,
+                            userID,
+                            expenseType: 4, // Chi phí nhân viên
+                            date: infoShift.createAt,
+                            quantity: 1,
+                            unitPrice: infoShift.staffSalaryTotal,
+                            amount: infoShift.staffSalaryTotal,
+                            // vatAmount,
+                        }
+    
+                        let infoAfterInsert = await that.insert(dataInsert)
+                        if (!infoAfterInsert)
+                            return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+    
+                        return resolve({ error: false, data: infoAfterInsert })
+                    }else{
+                        console.log('=================TH1.2')
+                        // Đưa vào trong phần tử cha
+                        let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id company funda name expenseType createAt staffSalaryTotal')
+        
+                        let dataInsert = {
+                            fundaID: infoShift.funda,
+                            shiftID,
+                            parentID: infoRandomParent._id,
+                            name: infoShift.name,
+                            userID,
+                            expenseType: 4, // Chi phí nhân viên
+                            date: infoShift.createAt,
+                            quantity: 1,
+                            unitPrice: infoShift.staffSalaryTotal,
+                            amount: infoShift.staffSalaryTotal,
+                            // vatAmount,
+                        }
+    
+                        let infoAfterInsert = await that.insert(dataInsert)
+                        if (!infoAfterInsert)
+                            return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+    
+                        return resolve({ error: false, data: infoAfterInsert })
+                    }
+                }else{
+                    console.log('=================TH2')
+                    let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id company funda name expenseType createAt staffSalaryTotal')
+
+                    // Cập nhật thông tin
+                    let dataUpdate = {
+                        userID,
+                        bookID: infoBook._id,
+                        quantity: 1,
+                        unitPrice: infoShift.staffSalaryTotal,
+                        // amount: infoShift.staffSalaryTotal,
+                        // vatAmount,
+                    }
+
+                    let infoAfterUpdate = await that.update(dataUpdate)
+                    if (!infoAfterUpdate)
+                        return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                    // console.log(infoAfterUpdate)
+
+                    // Cập nhật phần tử cha
+                    await that.updateValue({ bookID: infoBook.parent, userID }) 
+
+                    return resolve({ error: false, data: infoAfterUpdate })
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -208,7 +311,7 @@ class Model extends BaseModel {
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(name && name != ""){
-                    dataUpdate.name =name;
+                    dataUpdate.name = `${name} | Type ${infoBook.expenseType}`;
                 }
                 if(customerID && checkObjectIDs(customerID)){
                     dataUpdate.customer = customerID;
@@ -224,6 +327,9 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataUpdate.note = note;
+
+                    // Xử lý tạm thời do chưa sửa được trực tiếp Date
+                    dataUpdate.date = note
                 }
 
                 if(sign){
@@ -270,6 +376,8 @@ class Model extends BaseModel {
                     dataUpdate.vatAmount = Number(vatAmount);
                 }
 
+                console.log(dataUpdate)
+
                 let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true });
 
                 if (!infoAfterUpdate)
@@ -301,7 +409,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update value
+     * Name: Cập nhật mẩu tin cha
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -310,10 +418,6 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(bookID))
                     return resolve({ error: true, message: 'bookID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-                let infoBook = await FNB_GENERAL_BOOK_COLL.findById(bookID)
-                // console.log('=============>>>>>>>>>>>>>>>>>>')
-                // console.log(infoBook)
 
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 

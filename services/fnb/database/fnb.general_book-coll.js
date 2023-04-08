@@ -16,6 +16,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
         type: Schema.Types.ObjectId,
         ref : "funda"
     },
+    //_________Ca làm việc
+    shift: {
+        type: Schema.Types.ObjectId,
+        ref : "fnb_shift"
+    },
     /**
      * Phân biệt phiếu và chi tiết
      */
