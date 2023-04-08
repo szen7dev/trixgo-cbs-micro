@@ -40,6 +40,8 @@ const {
 /**
  * import inter-model, exter-model
  */
+const FNB_GENERAL_BOOK_MODEL                  = require('./fnb.general_book-model').MODEL;
+
 class Model extends BaseModel {
 
     constructor() {
@@ -157,12 +159,18 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(shiftID))
                     return resolve({ error: true, message: 'shiftID__invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                 
-                // let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
+                let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id funda')
                 // let number1 = infoShift.staffs.length
                 // let number2 = infoShift.subStaffs.length
                 // console.log({ number1, number2 })
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name trialStaffSalary officialStaffSalar')
+                // console.log(infoFunda)
+
+                let dataInUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date()
+                };
 
                 if(name && name != ""){
                     dataInUpdate.name =name;
@@ -218,6 +226,11 @@ class Model extends BaseModel {
                         dataInUpdate.subWorkingHours = Number(subWorkingHours)
                     }
 
+                    // Chi phí ca làm việc
+                    dataInUpdate.officialStaffSalar = Number(infoFunda.officialStaffSalar)
+                    dataInUpdate.trialStaffSalary = Number(infoFunda.trialStaffSalary)
+                    dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.trialStaffSalary)*Number(subWorkingHours)*Number(subStaffsID.length)
+
                     if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
                         dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
                     }
@@ -256,11 +269,12 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                // Nếu là Quản lý => Cập nhật nhân viên ca làm việc
+                /**
+                 * CẬP NHẬT LẠI DOANH SỐ CỦA NHÂN VIÊN
+                 * CẬP NHẬT LẠI CHI PHÍ GIỜ LÀM CỦA NHÂN VIÊN
+                 */
                 if(FNB_ACC.man.includes(email.toString())){
-                    /**
-                     * CẬP NHẬT LẠI DOANH SỐ CỦA NHÂN VIÊN
-                     */
+                    // Doanh số nhân viên
                     let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
                     for(const item of listOrders){
                         let dataOrderUpdate = { userUpdate: userID, modifyAt: new Date() }
@@ -300,7 +314,13 @@ class Model extends BaseModel {
                         // console.log(dataOrderUpdate)
                         let infoOrder = await FNB_ORDER_COLL.findByIdAndUpdate(item._id, dataOrderUpdate, { new: true })
                     }
+
+                    // Chi phí nhân viên
+                    let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID, fundaID: infoShift.funda, userID })
+                    // console.log(infoBook)
                 }
+
+                // console.log(infoAfterUpdate)
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
