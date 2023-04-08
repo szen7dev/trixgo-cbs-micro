@@ -138,7 +138,11 @@ class Model extends BaseModel {
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+
+                // Chi phí nhân viên
+                let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, fundaID, userID })
+                // console.log(infoBook)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -164,7 +168,7 @@ class Model extends BaseModel {
                 // let number2 = infoShift.subStaffs.length
                 // console.log({ number1, number2 })
 
-                let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name trialStaffSalary officialStaffSalar')
+                let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name manager trialStaffSalary officialStaffSalar')
                 // console.log(infoFunda)
 
                 let dataInUpdate = { 
@@ -209,6 +213,15 @@ class Model extends BaseModel {
                 }
 
                 // Nếu là Quản lý => Cập nhật nhân viên ca làm việc
+                // console.log('===========>>>>>>>>>>>>>>>>>')
+                // console.log(infoFunda.manager.toString())
+                // console.log(userID.toString())
+                // if(infoFunda.manager && infoFunda.manager.toString() === userID.toString()){
+                //     // console.log()
+                // }else{
+                //     return resolve({ error: true, message: 'Bạn không có quyền', keyError: KEY_ERROR.UPDATE_FAILED })
+                // }
+
                 if(FNB_ACC.man.includes(email.toString())){
                     if(staffsID && checkObjectIDs(staffsID)){
                         dataInUpdate.staffs = staffsID;
@@ -319,7 +332,6 @@ class Model extends BaseModel {
                     let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID, fundaID: infoShift.funda, userID })
                     // console.log(infoBook)
                 }
-
                 // console.log(infoAfterUpdate)
 
                 return resolve({ error: false, data: infoAfterUpdate });
