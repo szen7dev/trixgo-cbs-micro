@@ -78,9 +78,9 @@ exports.isValidDate = function (date) {
  * Get the number of seconds between two dates
  */
 exports.getTimeBetween = function (time1, time2) {
-    let a = (new Date(time1)).getTime();
-    let b = (new Date(time2)).getTime();
-    return (a - b) / (1000);
+    let a = (new Date(time1)).getTime()
+    let b = (new Date(time2)).getTime()
+    return (a - b) / (1000)
 };
 
 exports.addMinuteToDate = function (dateAdded, minute) {

@@ -8,7 +8,7 @@ const {
     validateParamsObjectID 
 }
                                         = require('../../../tools/utils/utils')
-const { compareTwoTime, isValidDate }   = require('../../../tools/utils/time_utils')
+const { compareTwoTime, isValidDate, getTimeBetween }   = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 
 // const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
@@ -39,10 +39,10 @@ const FNB_VOUCHER_COLL                          = require('../database/fnb.vouch
 const FNB_ORDER_PRODUCT_MODEL                  = require('./fnb.order_product-model').MODEL;
 const FNB_ORDER_VOUCHER_MODEL                  = require('./fnb.voucher-model').MODEL;
 
-const XlsxPopulate                      = require('xlsx-populate');
-const fs                                = require('fs');
-const path                              = require('path');
-const { uploadFileS3 }                  = require('../../../tools/s3');
+const XlsxPopulate                             = require('xlsx-populate');
+const fs                                       = require('fs');
+const path                                     = require('path');
+const { uploadFileS3 }                         = require('../../../tools/s3');
 
 const { 
     FNB_ACC,
@@ -887,60 +887,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update value
-     * Author: HiepNH
-     * Code: 24/11/2022
-     */
-    // updateValue({ orderID, userID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!checkObjectIDs(orderID))
-    //                 return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-
-    //             let infoOrder = await FNB_ORDER_COLL.findById(orderID)
-
-    //             let total = infoOrder.total;
-    //             let discount = infoOrder.discount;
-    //             let salesoff = infoOrder.salesoff;
-    //             let amount = infoOrder.amount;
-
-    //             let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
-
-    //             let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
-    //                 {
-    //                     $match: {
-    //                         order: ObjectID(orderID)
-    //                     }
-    //                 },
-    //                 {
-    //                     $group: {
-    //                         _id: { },
-    //                         amount: { $sum: "$amount" },
-    //                     }
-    //                 }
-    //             ])
-
-    //             if(listData && listData.length){
-    //                 total = Number(listData[0].amount)
-    //                 amount = Number(total)-Number(discount)-Number(salesoff)
-
-    //                 dataInUpdate.total = Number(total)
-    //                 dataInUpdate.amount = Number(amount)
-    //             }
-
-    //             let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true });
-    //             if (!infoAfterUpdate)
-    //                 return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-    //             return resolve({ error: false, data: infoAfterUpdate });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     });
-    // }
-
-    /**
-     * Name: Update value
+     * Name: Cập nhật ca làm việc
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -1138,7 +1085,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update value
+     * Name: Cập nhật khách hàng
      * Author: HiepNH
      * Code: 24/11/2022
      */
@@ -1274,60 +1221,60 @@ class Model extends BaseModel {
     /**
      * Convert số liệu tích điểm cho khách hàng
      */
-    convertDataCustomer({ customerID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(customerID))
-                    return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+    // convertDataCustomer({ customerID, userID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!checkObjectIDs(customerID))
+    //                 return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                 
-                let infoContact = ITEM__CONTACT_COLL.findById(customerID)
+    //             let infoContact = ITEM__CONTACT_COLL.findById(customerID)
                 
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
+    //             let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
-                let totalLoyaltyPoints = 0
-                let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
-                let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
+    //             let totalLoyaltyPoints = 0
+    //             let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
+    //             let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
 
-                // Chỉ lấy đơn hàng Off đã hoàn thành để cập nhật tích điểm cho khách hàng
-                let listData = await FNB_ORDER_COLL.aggregate([
-                    {
-                        $match: {
-                            customer: ObjectID(customerID),
-                            status: 5, // Đơn đã hoàn thành
-                            salesChannel: 1, // Kênh offline
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            amount: { $sum: "$amount" },
-                            loyaltyPoints: { $sum: "$loyaltyPoints" }
-                        }
-                    }
-                ])
-                // console.log(listData)
+    //             // Chỉ lấy đơn hàng Off đã hoàn thành để cập nhật tích điểm cho khách hàng
+    //             let listData = await FNB_ORDER_COLL.aggregate([
+    //                 {
+    //                     $match: {
+    //                         customer: ObjectID(customerID),
+    //                         status: 5, // Đơn đã hoàn thành
+    //                         salesChannel: 1, // Kênh offline
+    //                     }
+    //                 },
+    //                 {
+    //                     $group: {
+    //                         _id: { },
+    //                         amount: { $sum: "$amount" },
+    //                         loyaltyPoints: { $sum: "$loyaltyPoints" }
+    //                     }
+    //                 }
+    //             ])
+    //             // console.log(listData)
 
-                if(listData && listData.length){
-                    // Giá trị thanh toán đơn Off hoàn thành
-                    dataUpdate.purchasedOffValue = Number(listData[0].amount)
+    //             if(listData && listData.length){
+    //                 // Giá trị thanh toán đơn Off hoàn thành
+    //                 dataUpdate.purchasedOffValue = Number(listData[0].amount)
 
-                    totalLoyaltyPoints = Number(listData[0].loyaltyPoints)
-                    remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
+    //                 totalLoyaltyPoints = Number(listData[0].loyaltyPoints)
+    //                 remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
 
-                    dataUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
-                    dataUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
-                }
+    //                 dataUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
+    //                 dataUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
+    //             }
 
-                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataUpdate, { new: true })
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+    //             let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataUpdate, { new: true })
+    //             if (!infoAfterUpdate)
+    //                 return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                return resolve({ error: false, data: infoAfterUpdate }) 
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        });
-    }
+    //             return resolve({ error: false, data: infoAfterUpdate }) 
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     });
+    // }
 
     /**
      * Name: Get info
@@ -1581,12 +1528,13 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID }) {
-        // console.log('DANH SÁCH CƠ SỞ =================>>>>>>>>>>>>>>>>>>>>>>>>>')
         // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID})
         return new Promise(async (resolve) => {
             try {
-                if(!option){
-                    // Danh sách
+                let duration = getTimeBetween(toDate, fromDate)
+                // console.log({duration:duration/86400})
+                if(Number(duration/86400) > 90){
+                    // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
                 }else{
                     let yearFilter
                     let currentYear = new Date().getFullYear()
@@ -2024,7 +1972,7 @@ class Model extends BaseModel {
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
-                    return resolve({ error: false, data: listData });
+                    return resolve({ error: false, data: listData })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
