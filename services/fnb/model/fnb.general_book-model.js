@@ -326,7 +326,7 @@ class Model extends BaseModel {
                 }
 
                 if(note && note != ""){
-                    dataUpdate.note = note;
+                    dataUpdate.note = `${note}-${infoBook.expenseType}`;
 
                     // Xử lý tạm thời do chưa sửa được trực tiếp Date
                     dataUpdate.date = note
