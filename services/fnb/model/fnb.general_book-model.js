@@ -204,6 +204,8 @@ class Model extends BaseModel {
                             company: companyID,
                             funda: fundaID,
                             name: 'Chi phí Nhân viên điểm bán',
+                            plan: 2, // Thực tế
+                            outin: 2, // Chi phí
                             userCreate: userID,
                             expenseType: 4, // Chi phí nhân viên
                         })
