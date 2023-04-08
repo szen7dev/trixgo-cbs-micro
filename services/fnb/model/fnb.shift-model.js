@@ -32,6 +32,7 @@ const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3')
+const moment                            = require('moment')
 
 const { 
     FNB_ACC,
@@ -53,7 +54,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
+    insert({ fundaID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
         // console.log({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
         return new Promise(async resolve => {
             try {
@@ -64,13 +65,31 @@ class Model extends BaseModel {
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda) 
                     return resolve({ error: true, message: 'cannot_get_info_funda' });
+                
+                // console.log(infoFunda)
 
                 let dataInsert = { 
                     company: infoFunda.company, 
                     funda: fundaID, 
                     name, 
-                    userCreate: userID 
+                    userCreate: userID,
+                    note: `${fullname} - ${moment(new Date()).format('DD/MM/YYYY HH:mm')}`
                 };
+
+                // Chi phí ca làm việc
+                let a1 = Number(infoFunda.officialStaffSalar) || 0
+                let a2 = Number(infoFunda.trialStaffSalary) || 0
+                let a3 = Number(workingHours) || 0
+                let a4 = Number(subWorkingHours) || 0
+                let a5 = Number(staffsID.length) || 0
+                let a6 = Number(subStaffsID.length) || 0
+
+                // console.log(infoFunda.officialStaffSalar)
+                // console.log(infoFunda.trialStaffSalary)
+
+                dataInsert.officialStaffSalar = a1
+                dataInsert.trialStaffSalary = a2
+                dataInsert.staffSalaryTotal = a1*a3*a5 + a2*a4*a6
 
                 if(note && note != ""){
                     dataInsert.note = note;
@@ -138,7 +157,11 @@ class Model extends BaseModel {
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+
+                // Chi phí nhân viên
+                let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, fundaID, userID })
+                // console.log(infoBook)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -152,8 +175,8 @@ class Model extends BaseModel {
      * Author: 
      * Code:
      */
-    update({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        // console.log({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
+    update({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
+        // console.log({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -164,12 +187,12 @@ class Model extends BaseModel {
                 // let number2 = infoShift.subStaffs.length
                 // console.log({ number1, number2 })
 
-                let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name trialStaffSalary officialStaffSalar')
+                let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name manager trialStaffSalary officialStaffSalar')
                 // console.log(infoFunda)
 
                 let dataInUpdate = { 
                     userUpdate: userID, 
-                    modifyAt: new Date()
+                    modifyAt: new Date(),
                 };
 
                 if(name && name != ""){
@@ -177,7 +200,10 @@ class Model extends BaseModel {
                 }
 
                 if(note && note != ""){
-                    dataInUpdate.note =note;
+                    // dataInUpdate.note =note;
+                    dataInUpdate.note = note
+                }else{
+                    dataInUpdate.note = `${fullname} - ${moment(new Date()).format('DD/MM/YYYY HH:mm')}`
                 }
 
                 if(campaign && !isNaN(campaign)){
@@ -209,6 +235,15 @@ class Model extends BaseModel {
                 }
 
                 // Nếu là Quản lý => Cập nhật nhân viên ca làm việc
+                // console.log('===========>>>>>>>>>>>>>>>>>')
+                // console.log(infoFunda.manager.toString())
+                // console.log(userID.toString())
+                // if(infoFunda.manager && infoFunda.manager.toString() === userID.toString()){
+                //     // console.log()
+                // }else{
+                //     return resolve({ error: true, message: 'Bạn không có quyền', keyError: KEY_ERROR.UPDATE_FAILED })
+                // }
+
                 if(FNB_ACC.man.includes(email.toString())){
                     if(staffsID && checkObjectIDs(staffsID)){
                         dataInUpdate.staffs = staffsID;
@@ -319,7 +354,6 @@ class Model extends BaseModel {
                     let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID, fundaID: infoShift.funda, userID })
                     // console.log(infoBook)
                 }
-
                 // console.log(infoAfterUpdate)
 
                 return resolve({ error: false, data: infoAfterUpdate });
