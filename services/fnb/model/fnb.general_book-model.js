@@ -270,6 +270,9 @@ class Model extends BaseModel {
                     let dataUpdate = {
                         userID,
                         bookID: infoBook._id,
+                        plan: 2, // Thực tế
+                        outin: 2, // Chi phí
+                        expenseType: 4, // Chi phí nhân viên
                         quantity: 1,
                         unitPrice: infoShift.staffSalaryTotal,
                         // amount: infoShift.staffSalaryTotal,
@@ -318,7 +321,7 @@ class Model extends BaseModel {
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(name && name != ""){
-                    dataUpdate.name = `${name} | Type ${infoBook.expenseType}`;
+                    dataUpdate.name = `${name} | ${infoBook.plan}.${infoBook.outin}.${infoBook.expenseType}`;
                 }
                 if(customerID && checkObjectIDs(customerID)){
                     dataUpdate.customer = customerID;
