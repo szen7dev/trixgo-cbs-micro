@@ -179,6 +179,7 @@ class Model extends BaseModel {
         })
     }
 
+    // Cập nhật chi phí Nhân viên điểm bán thực tế
     updateFromShift({ shiftID, fundaID, companyID, userID }) {
         // console.log({ shiftID, fundaID, companyID, userID })
         const that = this
@@ -217,6 +218,8 @@ class Model extends BaseModel {
                             parentID: infoParent._id,
                             name: infoShift.name,
                             userID,
+                            plan: 2, // Thực tế
+                            outin: 2, // Chi phí
                             expenseType: 4, // Chi phí nhân viên
                             date: infoShift.createAt,
                             quantity: 1,
@@ -241,6 +244,8 @@ class Model extends BaseModel {
                             parentID: infoRandomParent._id,
                             name: infoShift.name,
                             userID,
+                            plan: 2, // Thực tế
+                            outin: 2, // Chi phí
                             expenseType: 4, // Chi phí nhân viên
                             date: infoShift.createAt,
                             quantity: 1,
