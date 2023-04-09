@@ -2,8 +2,10 @@
 
 const DbService                		= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	= require("../../tools/mixins/cache.cleaner.mixin");
+
 const { CF_DOMAIN_SERVICES } 		= require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 	        = require('./helper/auth.actions-constant');
+
 const AUTH__USER_HANDLER			= require('./handler/auth.user-handler');
 const AUTH__COMPANY_HANDLER			= require('./handler/auth.company-handler');
 const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-handler');
@@ -13,16 +15,6 @@ const AUTH__APP_ROLE_MENU_HANDLER 	= require('./handler/auth.app_role_menu-handl
 const AUTH__APP_USER_HANDLER 		= require('./handler/auth.app_user-handler');
 const AUTH__APP_COMPANY_HANDLER 	= require('./handler/auth.app_company-handler');
 const AUTH__APP_HANDLER 			= require('./handler/auth.app-handler');
-
-const AUTH__USER_COLL				= require('./database/auth.user-coll');
-const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
-const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
-const AUTH__APP_COLL				= require('./database/permission/auth.app-coll');
-const AUTH__APP_MENU_COLL			= require('./database/permission/auth.app_menu-coll');
-const AUTH__APP_ROLE_COLL			= require('./database/permission/auth.app_role-coll');
-const AUTH__APP_USER_COLL			= require('./database/permission/auth.app_user-coll');
-const AUTH__APP_COMPANY_COLL		= require('./database/permission/auth.app_company-coll');
-const AUTH__APP_ROLE_MENU_COLL	    = require('./database/permission/auth.app_role_menu-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
@@ -157,7 +149,6 @@ module.exports = {
 
 		// Version app
 		[CF_ACTIONS_AUTH.CHECK_VERSION_APP]						    : AUTH__APP_HANDLER.checkVersionApp,
-
 	},
 
 	/**

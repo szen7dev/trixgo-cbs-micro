@@ -18,7 +18,6 @@ module.exports = {
 	name: CF_DOMAIN_SERVICES.GATEWAY,
 	mixins: [
 		ApiGateway,
-		// OpenApiMixin(),
 	],
 	settings: {
 		// Exposed port
@@ -30,8 +29,7 @@ module.exports = {
 		 * MIDDLEWARE GLOBAL
 		 */
 		// Global Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
-		use: [
-		],
+		use: [],
 
 		cors: {
 			// Configures the Access-Control-Allow-Origin CORS header.
@@ -70,15 +68,15 @@ module.exports = {
 	},
 
 	dependencies: [
-		CF_DOMAIN_SERVICES.AUTH
+		CF_DOMAIN_SERVICES.AUTH,
 	],
 
 	/**
 	* Actions HEALTH/VERSION
 	*/
 	actions: {
-		[CF_ACTIONS_GATEWAY.CHECK_HEALTH] 		: GATEWAY__HANDLER.checkHealth,
-		[CF_ACTIONS_GATEWAY.CHECK_VERSION] 		: GATEWAY__HANDLER.checkVersion,
+		[CF_ACTIONS_GATEWAY.CHECK_HEALTH] 			: GATEWAY__HANDLER.checkHealth,
+		[CF_ACTIONS_GATEWAY.CHECK_VERSION] 			: GATEWAY__HANDLER.checkVersion,
 	},
 
 	methods: {
@@ -200,16 +198,8 @@ module.exports = {
 	},
 
 	// some lifecycle
-	created() {
-		// config socket IO
-		// this.initSocketIO(server);
-		// const listUserConnected = [];
-		// this.listUserConnected = listUserConnected;
-	},
-	started() {
-		// port socket IO
-		// server.listen(4000);
-	},
+	created() {},
+	started() {},
 	stopped() {
 		if (this.app.listening) {
 			this.app.close(err => {

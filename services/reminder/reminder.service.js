@@ -1,19 +1,18 @@
 "use strict";
 
-const Agenda            				= require('agenda');
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
+const Agenda            				= require('agenda');
+
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_REMINDER } 	        = require('./helper/reminder.actions-constant');
 const { CF_ACTIONS_CHATTING } 	        = require('../chatting/helper/chatting.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM }		= require('../subject_pcm/helper/subject_pcm.actions-constant');
+const { CF_ACTIONS_ZALO }				= require('../zalo_oa/helper/zalo.actions');
 
 const { APP_KEYS, LANGUAGE_KEYS }		= require('../../tools/keys');
-
 const { ENV_DEVICE_WEB_CBS }			= require('../notification/helper/notification.keys-constant');
-
 const REMINDER__CORE_HANLDER            = require('./handler/reminder.core-handler');
-
 const { MONGODB_URL } 					= require('../../tools/db/utils');
 
 module.exports = {
@@ -51,6 +50,7 @@ module.exports = {
 		[CF_ACTIONS_REMINDER.DELETE_JOB_AUTO_DELETE_MESSAGE_CONVERSATION]	: REMINDER__CORE_HANLDER.deleteJobAutoDeleteMessageConversation,
 		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK]					: REMINDER__CORE_HANLDER.addJobReminderExpiredTask,
 		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK]				: REMINDER__CORE_HANLDER.deleteJobReminderExpiredTask,
+		[CF_ACTIONS_REMINDER.ADD_JOB_REFRESH_TOKEN_ZALO_OA]					: REMINDER__CORE_HANLDER.addJobRefreshTokenZaloOA,
 
 	},
 
@@ -126,10 +126,6 @@ module.exports = {
 			});
 
 			agenda.define('auto_delete_message_conversation', async (job, done) => {
-				console.log(`========================================`);
-				console.log(`done auto delete message conversation!!!!`);
-				// console.log({ __JOB: job.attrs });
-
 				await this.broker.call(`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.AUTO_DELETE_MESSAGE_CONVERSATION}`, job.attrs.data, {
 					meta: {
 						infoUser: { _id: job.attrs.data.userID }
@@ -214,6 +210,21 @@ module.exports = {
 					done()
 				} catch(err) {
 					console.error(err)
+				}
+			})
+
+			agenda.define('zalo_oa_refresh_token', async (job, done) => {
+				try {
+					console.log(`========================================`);
+					console.log(`zalo_oa_refresh_token !!!!`);
+
+					await this.broker.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_RENEW_TOKEN}`, {
+						isCache: true
+					});
+				} catch(error) {
+					console.error(err);
+				} finally {
+					done();
 				}
 			})
 

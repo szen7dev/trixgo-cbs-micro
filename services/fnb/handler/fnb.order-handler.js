@@ -42,10 +42,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, offer, vatAmount, products } = ctx.params;
 
-                const { _id: userID, company, email } = ctx.meta.infoUser;
+                const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, offer, vatAmount, products, userID
+                    voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, offer, vatAmount, products, userID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
