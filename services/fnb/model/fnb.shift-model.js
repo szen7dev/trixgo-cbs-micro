@@ -176,7 +176,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        // console.log({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
+        console.log({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -245,6 +245,7 @@ class Model extends BaseModel {
                 // }
 
                 if(FNB_ACC.man.includes(email.toString())){
+                    console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
                     if(staffsID && checkObjectIDs(staffsID)){
                         dataInUpdate.staffs = staffsID;
                     }
@@ -309,6 +310,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT LẠI CHI PHÍ GIỜ LÀM CỦA NHÂN VIÊN
                  */
                 if(FNB_ACC.man.includes(email.toString())){
+                    console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
                     // Doanh số nhân viên
                     let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
                     for(const item of listOrders){
