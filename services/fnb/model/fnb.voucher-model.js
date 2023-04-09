@@ -509,6 +509,7 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     importFromExcel({ companyID, dataImport, userID, email }) {
+        const that = this
         return new Promise(async resolve => {
             try {
                 if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
@@ -518,18 +519,45 @@ class Model extends BaseModel {
                     // console.log({ dataImportJSON });
                     let index = 0;
 
-                    let option = Number(dataImportJSON[0].__EMPTY_5)
+                    let option = Number(dataImportJSON[0].__EMPTY_9)
                     // console.log({ option })
-
-                    let receivers = []
-                    let voucherID = dataImportJSON[0].__EMPTY_3
 
                     if(option == 1){
                         for (const item of dataImportJSON) {
                             // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                             if(index > 0){
-                                console.log(item)
+                                let dataInsert = {
+                                    companyID,
+                                    userID,
+                                    type: item?.__EMPTY,
+                                    name: item?.__EMPTY_1,
+                                    sign: item?.__EMPTY_2,
+                                    expired: item?.__EMPTY_8,
+                                    minOrderAmount: item?.__EMPTY_4,
+                                    salesoffAmount: item?.__EMPTY_5,
+                                    salesoffRate: item?.__EMPTY_6,
+                                    note: item?.__EMPTY_7,
+                                }
+                                // console.log(dataInsert)
 
+                                let info = await that.insert(dataInsert)
+                            //    console.log(info)
+                            }
+        
+                            index ++;
+                        }
+
+                        return resolve({ error: false, message: "Import successfull" })
+                    }
+
+                    if(option == 2){
+                        let receivers = []
+                        let voucherID = dataImportJSON[0].__EMPTY_3
+
+                        for (const item of dataImportJSON) {
+                            // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                            if(index > 0){
+                                // console.log(item)
                                 receivers.push(item?.__EMPTY_3)
                             }
         
@@ -543,7 +571,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, message: "Import successfull" })
                     }
 
-                    if(option == 2){
+                    if(option == 3){
                         for (const item of dataImportJSON) {
                             // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                             if(index > 0){
@@ -557,8 +585,8 @@ class Model extends BaseModel {
                                 }
                                 // console.log(dataInsert)
 
-                            let info = await ITEM__CONTACT_MODEL.insert(dataInsert)
-                            //    console.log(info)
+                                let info = await ITEM__CONTACT_MODEL.insert(dataInsert)
+                                //    console.log(info)
                             }
         
                             index ++;
