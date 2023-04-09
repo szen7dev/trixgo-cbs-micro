@@ -1574,7 +1574,7 @@ class Model extends BaseModel {
                             select: '_id name'
                         })
                         .limit(200)
-                        .sort({createAt:-1,funda: -1})
+                        .sort({funda: -1,createAt:-1})
                         // console.log(listData)
 
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_bug.xlsx')))
