@@ -1,44 +1,42 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model')
-const ObjectID                          = require('mongoose').Types.ObjectId
-const { KEY_ERROR }			            = require('../../../tools/keys')
+
+const BaseModel                                 = require('../../../tools/db/base_model')
+const ObjectID                                  = require('mongoose').Types.ObjectId
+const { KEY_ERROR }			                    = require('../../../tools/keys')
 const {
     checkObjectIDs,
     IsJsonString,
     validateParamsObjectID
 }
-                                        = require('../../../tools/utils/utils')
-const { compareTwoTime, isValidDate, getTimeBetween }   = require('../../../tools/utils/time_utils')
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
-
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
-// const { CF_ACTIONS_ZALO } 		        = require('../../zalo_oa/helper/zalo.actions')
+                                                = require('../../../tools/utils/utils')
+const { compareTwoTime, 
+    isValidDate, 
+    getTimeBetween }                            = require('../../../tools/utils/time_utils')
+const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index')
+const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant')
+const { CF_ACTIONS_ZALO } 		                = require('../../zalo_oa/helper/zalo.actions')
 
 /**s
  * import inter-coll, exter-coll
  */
-// const USER_COLL                                = require('../../auth/database/auth.user-coll');
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
-const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll');
-const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
-// const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
-const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
-const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
-const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-// const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
-// const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
-// const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.general_book-coll');
+const ITEM__FUNDA_COLL            			    = require('../../item/database/item.funda-coll');
+const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll');
+const FNB_ORDER_COLL                            = require('../database/fnb.order-coll');
+const FNB_ORDER_PRODUCT_COLL                    = require('../database/fnb.order_product-coll');
+const FNB_SHIFT_COLL                            = require('../database/fnb.shift-coll');
+const FNB_MISTAKE_COLL                          = require('../database/fnb.mistake-coll');
 const FNB_VOUCHER_COLL                          = require('../database/fnb.voucher-coll');
 
 /**
  * import inter-model, exter-model
  */
 const FNB_ORDER_PRODUCT_MODEL                   = require('./fnb.order_product-model').MODEL;
+const FNB_ORDER_VOUCHER_MODEL                   = require('./fnb.voucher-model').MODEL;
 
-const XlsxPopulate                             = require('xlsx-populate');
-const fs                                       = require('fs');
-const path                                     = require('path');
-const { uploadFileS3 }                         = require('../../../tools/s3');
+const XlsxPopulate                             = require('xlsx-populate')
+const fs                                       = require('fs')
+const path                                     = require('path')
+const { uploadFileS3 }                         = require('../../../tools/s3')
 
 const {
     FNB_FACTOR,
