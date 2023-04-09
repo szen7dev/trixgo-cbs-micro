@@ -385,29 +385,13 @@ class Model extends BaseModel {
     downloadTemplateExcel({ companyID, userID }) {
         return new Promise(async resolve => {
             try {
-                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-                // console.log(listData)
-
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_general_book_import.xlsx')))
-                // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_product_template_import.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_product_template_import.xlsx')))
                 .then(async workbook => {
-
-                    // var i = 3;
-                    // listData?.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
-                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
-                    //     // workbook.sheet("Export").row(i).cell(5).value(item.description);
-                    //     workbook.sheet("Export").row(i).cell(5).value(item.note);
-                    //     i++
-                    // });
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `Template_import_book_${now.getTime()}.xlsx`;
-                    // const fileName = `Template_import_product_${now.getTime()}.xlsx`;
+                    const fileName = `Template_import_product_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
@@ -430,7 +414,8 @@ class Model extends BaseModel {
      * Func: importFromExcel
      * Date: 8/1/2023
      */
-    importFromExcel({ companyID, dataImport, userID, ctx }) {
+    importFromExcel({ companyID, dataImport, userID }) {
+        const that = this
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
@@ -438,33 +423,28 @@ class Model extends BaseModel {
                 // return console.log({ dataImportJSON });
                 let index = 0;
                 let errorNumber = 0;
-                // let parentID;
+
                 for (const data of dataImportJSON) {
                     // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                     if(index > 0){
                         let dataInsert = {
                             companyID,
                             userID,
-                            name: data?.__EMPTY_1,
-                            date: data?.__EMPTY_13,
-                            quantity: data?.__EMPTY_3,
+                            name: data?.__EMPTY,
+                            sign: data?.__EMPTY_1,
+                            type: data?.__EMPTY_2,
+                            unit: data?.__EMPTY_3,
                             unitPrice: data?.__EMPTY_4,
-                            amount: data?.__EMPTY_5,
-                            sign: data?.__EMPTY_6,
-                            note: data?.__EMPTY_7,
-                            campaignName: data?.__EMPTY_8,
-                            plan: data?.__EMPTY_9,
-                            outin: data?.__EMPTY_10,
-                            revenueType: data?.__EMPTY_11,
-                            expenseType: data?.__EMPTY_12,
-                            goodsID: data?.__EMPTY_14,
-                            parentID: data?.__EMPTY_15,
-                            fundaID: data?.__EMPTY_16,
+                            unitPrice2: data?.__EMPTY_5,
+                            unitPrice3: data?.__EMPTY_6,
+                            unitPrice4: data?.__EMPTY_7,
+                            note: data?.__EMPTY_8,
+                            parentID: data?.__EMPTY_9,
                         }
-
                         // console.log(dataInsert);
                     
-                        let infoAfterInsert = await FNB_GENERAL_BOOK_MODEL.insert(dataInsert);
+                        let infoAfterInsert = await that.insert(dataInsert);
+                        // console.log(infoAfterInsert);
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
@@ -481,77 +461,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-     * Dev: HiepNH
-     * Func: exportExcel
-     * Date: 15/1/2023
-     */
-    // exportExcel({ companyID, userID }) {
-    //     // console.log({ companyID, userID })
-    //     return new Promise(async resolve => {
-    //         try {
-    //             let listData  = await FNB_ORDER_COLL.find({ company: companyID })
-    //             .populate({
-    //                 path: "funda",
-    //                 select: "name sign",
-    //             })
-    //             .populate({
-    //                 path: "shift",
-    //                 select: "name sign",
-    //             })
-    //             .limit(1000)
-    //             .sort({createAt: -1})
-    //             // console.log(listData)
-
-    //             // Modify the workbook.
-    //             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export.xlsx')))
-    //             .then(async workbook => {
-
-    //                 var i = 3;
-    //                 listData?.forEach((item, index) => {
-    //                     workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-    //                     workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-    //                     workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-    //                     workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-    //                     workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-    //                     workbook.sheet("Order").row(i).cell(6).value(item.name);
-    //                     workbook.sheet("Order").row(i).cell(7).value(item.sign);
-    //                     workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-    //                     workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-    //                     workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-    //                     workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-    //                     workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-    //                     workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-    //                     workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-    //                     workbook.sheet("Order").row(i).cell(15).value(Number(item.amount));
-    //                     workbook.sheet("Order").row(i).cell(16).value(Number(item.numberOfSizeM));
-    //                     workbook.sheet("Order").row(i).cell(17).value(Number(item.numberOfSizeL));
-    //                     workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfProducts));
-    //                     workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfMistakes));
-    //                     workbook.sheet("Order").row(i).cell(20).value(item.note);
-    //                     i++
-    //                 });
-
-    //                 const now = new Date();
-    //                 const filePath = '../../../files/temporary_uploads/';
-    //                 const fileName = `fnb_shift_export_${now.getTime()}.xlsx`;
-    //                 const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-    //                 await workbook.toFileAsync(pathWriteFile);
-    //                 const result = await uploadFileS3(pathWriteFile, fileName);
-
-    //                 fs.unlinkSync(pathWriteFile);
-    //                 // console.log({ result })
-    //                 return resolve({ error: false, data: result?.Location, status: 200 });
-    //             });
-
-    //         } catch (error) {
-    //             console.log({ error })
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
 }
 
 exports.MODEL = new Model;

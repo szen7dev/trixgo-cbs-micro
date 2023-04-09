@@ -232,9 +232,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
+                console.log('====================downloadTemplateExcel===================')
+
                 const resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID 
                 })
@@ -260,17 +259,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { dataImport } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-
-                console.log(dataImport)
+                console.log('====================importFromExcel===================')
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.importFromExcel({
-                    taskID, dataImport, userID, ctx
+                    dataImport, userID, companyID: company._id
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -294,6 +290,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { companyID, filterParams } = ctx.params;
+
+                console.log('====================exportExcel===================')
 
                 if(!companyID) {
                     companyID = company._id;

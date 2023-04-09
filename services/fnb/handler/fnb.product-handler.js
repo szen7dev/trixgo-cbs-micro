@@ -175,9 +175,9 @@
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await FNB_PRODUCT_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID 
                 })
@@ -207,11 +207,10 @@
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-
-                console.log(dataImport)
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_PRODUCT_MODEL.importFromExcel({
                     companyID: company._id, dataImport, userID, ctx

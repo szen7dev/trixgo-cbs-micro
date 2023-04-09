@@ -267,7 +267,6 @@
     importFromExcel: {
         auth: 'required',
         params: {
-            // taskID    : { type: 'string', optional: true },
             dataImport: { type: 'string' }
         },
         async handler(ctx) {
@@ -277,11 +276,10 @@
 				const { _id: userID } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-
-                console.log(dataImport)
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_SHIFT_MODEL.importFromExcel({
                     taskID, dataImport, userID, ctx
@@ -333,6 +331,7 @@
     exportExcel2: {
         auth: 'required',
         params: {
+            option: { type: "string", optional: true },
             companyID: { type: "string", optional: true },
             fundaID: { type: "string", optional: true },
         },
@@ -340,14 +339,14 @@
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID, fundaID } = ctx.params;
+                let { option, companyID, fundaID, fromDate, toDate, month, year } = ctx.params;
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await FNB_SHIFT_MODEL.exportExcel2({
-                    userID, companyID, fundaID, ctx
+                    userID, companyID, fundaID, option, fromDate, toDate, month, year
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

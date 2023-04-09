@@ -12,6 +12,10 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**s
  * import inter-coll, exter-coll
@@ -43,7 +47,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName }) {
-        // console.log({ fundaID, parentID, outin, plan, revenueType, expenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID })
+        // console.log({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -304,6 +308,8 @@ class Model extends BaseModel {
     update({ userID,
         bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName }) {
         const that = this
+        // console.log({ userID,
+        //     bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName })
         return new Promise(async resolve => {
             try {
                 /**
@@ -321,8 +327,9 @@ class Model extends BaseModel {
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(name && name != ""){
-                    dataUpdate.name = `${name} | ${infoBook.plan}.${infoBook.outin}.${infoBook.expenseType}`;
+                    dataUpdate.name = name;
                 }
+
                 if(customerID && checkObjectIDs(customerID)){
                     dataUpdate.customer = customerID;
                 }
@@ -337,9 +344,6 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataUpdate.note = note;
-
-                    // Xử lý tạm thời do chưa sửa được trực tiếp Date
-                    dataUpdate.date = note
                 }
 
                 if(sign){
@@ -886,6 +890,94 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 8/12/2022
+     */
+    downloadTemplateExcel({ companyID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_general_book_import.xlsx')))
+                .then(async workbook => {
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_book_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: importFromExcel
+     * Date: 8/1/2023
+     */
+    importFromExcel({ companyID, dataImport, userID }) {
+        const that = this
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================');
+                // return console.log({ dataImportJSON });
+                let index = 0;
+                let errorNumber = 0;
+                // let parentID;
+                for (const data of dataImportJSON) {
+                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                    if(index > 0){
+                        let dataInsert = {
+                            companyID,
+                            userID,
+                            name: data?.__EMPTY_1,
+                            date: data?.__EMPTY_13,
+                            quantity: data?.__EMPTY_3,
+                            unitPrice: data?.__EMPTY_4,
+                            amount: data?.__EMPTY_5,
+                            sign: data?.__EMPTY_6,
+                            note: data?.__EMPTY_7,
+                            campaignName: data?.__EMPTY_8,
+                            plan: data?.__EMPTY_9,
+                            outin: data?.__EMPTY_10,
+                            revenueType: data?.__EMPTY_11,
+                            expenseType: data?.__EMPTY_12,
+                            goodsID: data?.__EMPTY_14,
+                            parentID: data?.__EMPTY_15,
+                            fundaID: data?.__EMPTY_16,
+                        }
+                        // console.log(dataInsert);
+                    
+                        let infoAfterInsert = await that.insert(dataInsert);
+                        // console.log(infoAfterInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+                    }
+                    index ++;
+                }
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "Import failed" });
+
+                return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model
