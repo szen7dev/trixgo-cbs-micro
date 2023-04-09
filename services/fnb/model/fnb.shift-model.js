@@ -1581,16 +1581,16 @@ class Model extends BaseModel {
                         .then(async workbook => {
                             var i = 3
                             listData?.forEach((item, index) => {
-                                workbook.sheet(`data`).row(i).cell(1).value(Number(index+1))
-                                workbook.sheet(`data`).row(i).cell(2).value(item?.createAt)
-                                workbook.sheet(`data`).row(i).cell(3).value(item?.name)
-                                workbook.sheet(`data`).row(i).cell(4).value(item?.shiftType)
-                                workbook.sheet(`data`).row(i).cell(5).value(item?.funda.name)
-                                workbook.sheet(`data`).row(i).cell(6).value(item?.workingHours)
-                                workbook.sheet(`data`).row(i).cell(7).value(item?.staffs?.length)
-                                workbook.sheet(`data`).row(i).cell(8).value(item?.subWorkingHours)
-                                workbook.sheet(`data`).row(i).cell(9).value(item?.subStaffs?.length)
-                                workbook.sheet(`data`).row(i).cell(10).value(item?.note)
+                                workbook.sheet(`Data`).row(i).cell(1).value(Number(index+1))
+                                workbook.sheet(`Data`).row(i).cell(2).value(item?.createAt)
+                                workbook.sheet(`Data`).row(i).cell(3).value(item?.name)
+                                workbook.sheet(`Data`).row(i).cell(4).value(item?.shiftType)
+                                workbook.sheet(`Data`).row(i).cell(5).value(item?.funda.name)
+                                workbook.sheet(`Data`).row(i).cell(6).value(item?.workingHours)
+                                workbook.sheet(`Data`).row(i).cell(7).value(item?.staffs?.length)
+                                workbook.sheet(`Data`).row(i).cell(8).value(item?.subWorkingHours)
+                                workbook.sheet(`Data`).row(i).cell(9).value(item?.subStaffs?.length)
+                                workbook.sheet(`Data`).row(i).cell(10).value(item?.note)
                                 i++
                             })
 
