@@ -518,7 +518,7 @@ class Model extends BaseModel {
 
                 let conditionObj = { company: companyID }
                 let sortBy;
-                let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 const validation = validateParamsObjectID({
                     fundasID            : { value: fundasID, isRequire: false },
