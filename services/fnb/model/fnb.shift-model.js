@@ -1492,65 +1492,120 @@ class Model extends BaseModel {
      * Func: Tải Báo cáo doanh số
      * Date: 15/1/2023
      */
-    exportExcel2({ companyID, fundaID, fromDate, toDate, month, year, userID }) {
+    exportExcel2({ option, companyID, fundaID, fromDate, toDate, month, year, userID }) {
         return new Promise(async resolve => {
             try {
-                if(fundaID){
-                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                    .select('_id name sign company')
-                    .populate({
-                        path: 'company',
-                        select: 'name sign'
-                    })
-    
-                    let yearFilter
-                    let currentYear = new Date().getFullYear()
-                    if(year && !isNaN(year)){
-                        yearFilter = Number(year)
+                if(!option){
+                    if(fundaID){
+                        let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                        .select('_id name sign company')
+                        .populate({
+                            path: 'company',
+                            select: 'name sign'
+                        })
+        
+                        let yearFilter
+                        let currentYear = new Date().getFullYear()
+                        if(year && !isNaN(year)){
+                            yearFilter = Number(year)
+                        }else{
+                            yearFilter = Number(currentYear)
+                        }
+        
+                        // Modify the workbook.
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
+                        .then(async workbook => {
+                            // workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
+        
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+        
+                            await workbook.toFileAsync(pathWriteFile)
+                            const result = await uploadFileS3(pathWriteFile, fileName)
+        
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 })
+                        })    
                     }else{
-                        yearFilter = Number(currentYear)
+                        let yearFilter
+                        let currentYear = new Date().getFullYear()
+                        if(year && !isNaN(year)){
+                            yearFilter = Number(year)
+                        }else{
+                            yearFilter = Number(currentYear)
+                        }
+        
+                        // Modify the workbook.
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
+                        .then(async workbook => {
+                            var i = 
+                            workbook.sheet(`Data`).row(3).cell(3).value(infoFunda?.trainStaffSalar)
+
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `TongHopBaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+        
+                            await workbook.toFileAsync(pathWriteFile)
+                            const result = await uploadFileS3(pathWriteFile, fileName)
+        
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 })
+                        })
                     }
-    
-                    // Modify the workbook.
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
-                    .then(async workbook => {
-                        // workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
-    
-                        const now = new Date();
-                        const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BaoCaoDoanhSo_${now.getTime()}.xlsx`;
-                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
-    
-                        await workbook.toFileAsync(pathWriteFile)
-                        const result = await uploadFileS3(pathWriteFile, fileName)
-    
-                        fs.unlinkSync(pathWriteFile);
-                        return resolve({ error: false, data: result?.Location, status: 200 })
-                    })    
                 }else{
-                    let yearFilter
-                    let currentYear = new Date().getFullYear()
-                    if(year && !isNaN(year)){
-                        yearFilter = Number(year)
-                    }else{
-                        yearFilter = Number(currentYear)
+                    if(option == 1){
+                        // console.log('==========12345=============')
+                        // let conditionObj = { company: companyID, shiftType: 3, workingHours: { $gt: 5.5 }}
+                        let conditionObj = { company: companyID, workingHours: { $gt: 5.5 }}
+                        // conditionObj.$or = [
+                        //     { shiftType: 1, workingHours: { $gt: 5 } }, // Ca sáng
+                        //     { shiftType: 2, workingHours: { $gt: 5 } }, // Ca chiều
+                        //     { shiftType: 3, workingHours: { $gt: 5.5 } }, // Ca tối
+                        // ]
+                        // console.log(conditionObj)
+
+                        let listData = await FNB_SHIFT_COLL.find(conditionObj)
+                        .select('_id shiftType name funda workingHours subWorkingHours createAt staffs subStaffs note')
+                        .populate({
+                            path: 'funda',
+                            select: '_id name'
+                        })
+                        .limit(200)
+                        .sort({createAt:-1,funda: -1})
+                        // console.log(listData)
+
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_bug.xlsx')))
+                        .then(async workbook => {
+                            var i = 3
+                            listData?.forEach((item, index) => {
+                                workbook.sheet(`data`).row(i).cell(1).value(Number(index+1))
+                                workbook.sheet(`data`).row(i).cell(2).value(item?.createAt)
+                                workbook.sheet(`data`).row(i).cell(3).value(item?.name)
+                                workbook.sheet(`data`).row(i).cell(4).value(item?.shiftType)
+                                workbook.sheet(`data`).row(i).cell(5).value(item?.funda.name)
+                                workbook.sheet(`data`).row(i).cell(6).value(item?.workingHours)
+                                workbook.sheet(`data`).row(i).cell(7).value(item?.staffs?.length)
+                                workbook.sheet(`data`).row(i).cell(8).value(item?.subWorkingHours)
+                                workbook.sheet(`data`).row(i).cell(9).value(item?.subStaffs?.length)
+                                workbook.sheet(`data`).row(i).cell(10).value(item?.note)
+                                i++
+                            })
+
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `BaoCaoBatThuong_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+        
+                            await workbook.toFileAsync(pathWriteFile)
+                            const result = await uploadFileS3(pathWriteFile, fileName)
+        
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 })
+                        })
                     }
-    
-                    // Modify the workbook.
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
-                    .then(async workbook => {
-                        const now = new Date();
-                        const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `TongHopBaoCaoDoanhSo_${now.getTime()}.xlsx`;
-                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
-    
-                        await workbook.toFileAsync(pathWriteFile)
-                        const result = await uploadFileS3(pathWriteFile, fileName)
-    
-                        fs.unlinkSync(pathWriteFile);
-                        return resolve({ error: false, data: result?.Location, status: 200 })
-                    })
-    
                 }
             } catch (error) {
                 console.log({ error })
@@ -1558,7 +1613,6 @@ class Model extends BaseModel {
             }
         })
     }
-    
 }
 
 exports.MODEL = new Model;
