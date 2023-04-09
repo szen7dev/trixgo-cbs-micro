@@ -10,7 +10,6 @@ const ObjectID                          		= require('mongoose').Types.ObjectId;
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_NOTIFICATION }				= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_ITEM }               		= require('../../item/helper/item.actions-constant');
@@ -46,7 +45,7 @@ class Model extends BaseModel {
      * Updated: 24/02/2022
 	 */
 	insertMedia({
-		title, content, type, otherID, companyID, departmentID, location, 
+		title, content, type, otherID, companyID, departmentID, location,
 		tagFriends, files, images, background, authorID, bizfullname, ctx
 	}) {
         return new Promise(async (resolve) => {
@@ -105,7 +104,7 @@ class Model extends BaseModel {
 
 				if (location) {
 					let locationOfMedia = {
-						type: "Point", 
+						type: "Point",
 						coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
 					}
 
@@ -197,11 +196,11 @@ class Model extends BaseModel {
 						const infoAfterInserted = await MEDIA__FILE_COLL.create({
 							media: mediaID,
 							file: fileID,
-							app, company, 
-							name, nameOrg, path, size, mimeType, 
+							app, company,
+							name, nameOrg, path, size, mimeType,
 							description, status, type, author
 						});
-	
+
 						dataUpdate.background = infoAfterInserted._id;
 					}
 				}
@@ -225,15 +224,15 @@ class Model extends BaseModel {
 							});
 
 							if(!infoFileCore.error) {
-								const { 
+								const {
 									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
 								} = infoFileCore.data;
-	
+
 								const infoAfterInserted = await MEDIA__FILE_COLL.create({
 									media: mediaID,
 									file: fileID,
-									app, company, 
-									name, nameOrg, path, size, mimeType, 
+									app, company,
+									name, nameOrg, path, size, mimeType,
 									description, status, type, author
 								});
 								return infoAfterInserted._id;
@@ -265,15 +264,15 @@ class Model extends BaseModel {
 							});
 
 							if(!infoFileCore.error) {
-								const { 
+								const {
 									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
 								} = infoFileCore.data;
-	
+
 								const infoAfterInserted = await MEDIA__FILE_COLL.create({
 									media: mediaID,
 									file: fileID,
-									app, company, 
-									name, nameOrg, path, size, mimeType, 
+									app, company,
+									name, nameOrg, path, size, mimeType,
 									description, status, type, author
 								});
 								return infoAfterInserted._id;
@@ -353,7 +352,7 @@ class Model extends BaseModel {
 				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
 				if(arrReceiver && arrReceiver.length) {
-					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 						users: arrReceiver,
 						title: titleMSS,
 						description: descriptionMSS,
@@ -368,20 +367,6 @@ class Model extends BaseModel {
 						web_url: `/media/post/${mediaID}`,
 						env: ENV_DEVICE_WEB_CBS
 					});
-
-					// ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-					// 	content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
-					// 	project: departmentID,
-					// 	receivers: arrReceiver,
-					// 	path: `/media/post/${mediaID}`,
-					// 	languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
-					// 	app: APP_KEYS.MEDIA,
-					// 	mainColl: {
-					// 		kind: "media",
-					// 		item: mediaID.toString()
-					// 	},
-					// 	type: 1 // InApp (Socket)
-					// });
 				}
 
                 return resolve({ error: false, data: {
@@ -401,7 +386,7 @@ class Model extends BaseModel {
      * Updated: 24/02/2022
 	 */
 	updateMedia({
-		mediaID, title, content, type, otherID, companyID, departmentID, location, 
+		mediaID, title, content, type, otherID, companyID, departmentID, location,
 		tagFriends, files, images, background, authorID, ctx
 	}) {
         return new Promise(async (resolve) => {
@@ -445,8 +430,8 @@ class Model extends BaseModel {
 					.lean();
 
 				if (!infoMedia) {
-                    return resolve({ 
-						error: true, 
+                    return resolve({
+						error: true,
 						message: "Bài viết không tồn tại hoặc bạn không phải tác giả bài viết",
 						keyError: "media_not_exists_or_you_are_not_author_of_post",
 						status: 400
@@ -478,7 +463,7 @@ class Model extends BaseModel {
 
 				if (location) {
 					let locationOfMedia = {
-						type: "Point", 
+						type: "Point",
 						coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
 					}
 
@@ -557,8 +542,8 @@ class Model extends BaseModel {
 						const infoAfterInserted = await MEDIA__FILE_COLL.create({
 							media: mediaID,
 							file: fileID,
-							app, company, 
-							name, nameOrg, path, size, mimeType, 
+							app, company,
+							name, nameOrg, path, size, mimeType,
 							description, status, type, author
 						});
 
@@ -605,15 +590,15 @@ class Model extends BaseModel {
 							});
 
 							if(!infoFileCore.error) {
-								const { 
+								const {
 									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
 								} = infoFileCore.data;
-	
+
 								const infoAfterInserted = await MEDIA__FILE_COLL.create({
 									media: mediaID,
 									file: fileID,
-									app, company, 
-									name, nameOrg, path, size, mimeType, 
+									app, company,
+									name, nameOrg, path, size, mimeType,
 									description, status, type, author
 								});
 								return infoAfterInserted._id;
@@ -665,15 +650,15 @@ class Model extends BaseModel {
 							});
 
 							if(!infoFileCore.error) {
-								const { 
+								const {
 									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
 								} = infoFileCore.data;
-	
+
 								const infoAfterInserted = await MEDIA__FILE_COLL.create({
 									media: mediaID,
 									file: fileID,
-									app, company, 
-									name, nameOrg, path, size, mimeType, 
+									app, company,
+									name, nameOrg, path, size, mimeType,
 									description, status, type, author
 								});
 								return infoAfterInserted._id;
@@ -710,7 +695,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: XÓA BÀI VIẾT	
+	 * Func: XÓA BÀI VIẾT
      * Updated: 24/02/2022
 	 */
 	deleteMedia({ mediaID, authorID }) {
@@ -748,7 +733,7 @@ class Model extends BaseModel {
 					})
 				}
 
-				return resolve({ 
+				return resolve({
 					error: false,
 					status: 200,
 					data: infoMediaAfterDelete
@@ -761,7 +746,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: THÔNG TIN BÀI VIẾT	
+	 * Func: THÔNG TIN BÀI VIẾT
      * Updated: 24/02/2022
 	 */
 	getInfoMedia({ mediaID, authorID, companyID, select, populates, ctx }) {
@@ -869,7 +854,7 @@ class Model extends BaseModel {
 
 				infoMedia.reaction = infoReaction;
 
-				return resolve({ 
+				return resolve({
 					error: false,
 					status: 200,
 					data: infoMedia
@@ -882,7 +867,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: CẬP NHẬT LƯỢT XEM BÀI VIẾT	
+	 * Func: CẬP NHẬT LƯỢT XEM BÀI VIẾT
      * Updated: 24/02/2022
 	 */
 	updateView({ mediaID, authorID }) {
@@ -937,7 +922,7 @@ class Model extends BaseModel {
 					}
 				}, { upsert: true })
 
-				return resolve({ 
+				return resolve({
 					error: false,
 					status: 200,
 					message: "success"
@@ -950,7 +935,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 
+	 * Func: LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT
 	 */
 	getListUsersSeen({ authorID, mediaID, lastestID, limit = 15, select, populates }) {
 		return new Promise(async resolve => {
@@ -963,7 +948,7 @@ class Model extends BaseModel {
 				let sortBy = {};
 				let nextCursor	= null;
 
-				/** 
+				/**
 				 * VALIDATION STEP (2)
 				 *  - Kiểm tra valid từ các input
 				 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -1060,7 +1045,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
+	 * Func: LẤY DANH SÁCH BÀI VIẾT
      * Updated: 24/02/2022
 	 */
     getListMedia({ authorID, lastestID, companyID, departmentID, otherID, mediaID, keyword, isRelated, type, limit = 20, select, populates }){
@@ -1260,7 +1245,7 @@ class Model extends BaseModel {
 				let sortBy = {};
 				let nextCursor	= null;
 
-				/** 
+				/**
 				 * VALIDATION STEP (2)
 				 *  - Kiểm tra valid từ các input
 				 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -1441,7 +1426,7 @@ class Model extends BaseModel {
 				let nextCursor	= null;
 				let sortBy = {};
 
-				/** 
+				/**
 				 * VALIDATION STEP (2)
 				 *  - Kiểm tra valid từ các input
 				 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -1552,7 +1537,7 @@ class Model extends BaseModel {
 						keyError: "params_mediaID_invalid",
 						status: 400
 					})
-				}	
+				}
 
 				const checkExisted = await MEDIA_COLL.findById(mediaID);
 				if (!checkExisted) {

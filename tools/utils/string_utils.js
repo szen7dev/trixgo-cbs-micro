@@ -15,6 +15,12 @@ exports.randomString = function () {
     return crypto.randomBytes(64).toString('hex');
 };
 
+exports.generateRandomString = function(length) {
+    return crypto.randomBytes(Math.ceil(length / 2))
+      .toString('hex')
+      .slice(0, length);
+}
+
 exports.randomStringFixLength = function (count) {
 
     let text = "";
