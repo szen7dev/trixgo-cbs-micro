@@ -37,7 +37,7 @@ module.exports = {
 		/**
 		 * Code: A0015
 		 */
-		[`GET ${CF_ROUTINGS_AUTH.LOGIN}`] :
+		[`POST ${CF_ROUTINGS_AUTH.LOGIN}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.LOGIN}`],
 
 		/**

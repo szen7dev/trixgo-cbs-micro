@@ -2,10 +2,8 @@
 
 const DbService                		= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	= require("../../tools/mixins/cache.cleaner.mixin");
-
 const { CF_DOMAIN_SERVICES } 		= require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 	        = require('./helper/auth.actions-constant');
-
 const AUTH__USER_HANDLER			= require('./handler/auth.user-handler');
 const AUTH__COMPANY_HANDLER			= require('./handler/auth.company-handler');
 const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-handler');
@@ -149,6 +147,7 @@ module.exports = {
 
 		// Version app
 		[CF_ACTIONS_AUTH.CHECK_VERSION_APP]						    : AUTH__APP_HANDLER.checkVersionApp,
+
 	},
 
 	/**
