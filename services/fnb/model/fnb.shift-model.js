@@ -1559,12 +1559,19 @@ class Model extends BaseModel {
                     if(option == 1){
                         // console.log('==========12345=============')
                         // let conditionObj = { company: companyID, shiftType: 3, workingHours: { $gt: 5.5 }}
-                        let conditionObj = { company: companyID, workingHours: { $gt: 5.5 }}
-                        // conditionObj.$or = [
-                        //     { shiftType: 1, workingHours: { $gt: 5 } }, // Ca sáng
-                        //     { shiftType: 2, workingHours: { $gt: 5 } }, // Ca chiều
-                        //     { shiftType: 3, workingHours: { $gt: 5.5 } }, // Ca tối
-                        // ]
+                        let conditionObj = { }
+                        conditionObj.$and = [
+                            {
+                                company: companyID
+                            },
+                            {
+                                $or: [
+                                    { shiftType: 1, workingHours: { $gt: 5 } }, // Ca sáng,
+                                    { shiftType: 2, workingHours: { $gt: 5 } }, // Ca chiều,
+                                    { shiftType: 3, workingHours: { $gt: 5.5 } }, // Ca tối
+                                ]
+                            }
+                        ]
                         // console.log(conditionObj)
 
                         let listData = await FNB_SHIFT_COLL.find(conditionObj)
@@ -1573,7 +1580,7 @@ class Model extends BaseModel {
                             path: 'funda',
                             select: '_id name'
                         })
-                        .limit(200)
+                        .limit(500)
                         .sort({funda: -1,createAt:-1})
                         // console.log(listData)
 
