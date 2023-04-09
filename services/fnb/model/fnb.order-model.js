@@ -667,7 +667,8 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO VOUCHER
                  */
                 if(salesChannel == 1 && voucherID && checkObjectIDs(voucherID)){
-                    // Cập nhật thông tin Người sử dụng voucher
+                    
+                    //______Cập nhật thông tin Người sử dụng voucher
                     await FNB_ORDER_VOUCHER_MODEL.update({ userID, voucherID, buyers: [customerID] })
 
                     /**
@@ -678,13 +679,15 @@ class Model extends BaseModel {
                      * voucher type=2 lên tới tối đa 20 cái
                      * -> Lấy các voucher type=2 và còn thời hạn để tặng cho người giới thiệu
                      */
-                    // console.log({infoCustomer:infoCustomer.referrer})
+                    //______Nếu khách hàng mới chưa từng mua đơn hàng nào bao giờ
                     if(numberOD == 0 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
-                        // Tạo voucher cho người giới thiệu (type=2)
+                        
+                        //______Tìm kiếm Voucher người giới thiệu còn thời hạn (type=2)
                         let infoOffer = await FNB_VOUCHER_COLL.findOne({ type: 2, receivers: {$nin: [infoCustomer.referrer]}, expired: {$gt: new Date()} })
                         .sort({_id: -1 })
                         .select("_id name sign")
-                        // console.log(infoOffer)
+
+                        //______Tặng voucher cho người giới thiệu (type=2)
                         if(infoOffer){
                             await FNB_ORDER_VOUCHER_MODEL.update({
                                 userID,
@@ -695,6 +698,9 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * THỰC HIỆN BẰN TIN NHẮN VỚI ZALO OA
+                 */
                 // await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE}`, {
                 //     text: 'Hello World',
                 //     userId: '1542296027315334678', // VHM zalo user
