@@ -1559,12 +1559,19 @@ class Model extends BaseModel {
                     if(option == 1){
                         // console.log('==========12345=============')
                         // let conditionObj = { company: companyID, shiftType: 3, workingHours: { $gt: 5.5 }}
-                        let conditionObj = { company: companyID, workingHours: { $gt: 5.5 }}
-                        // conditionObj.$or = [
-                        //     { shiftType: 1, workingHours: { $gt: 5 } }, // Ca sáng
-                        //     { shiftType: 2, workingHours: { $gt: 5 } }, // Ca chiều
-                        //     { shiftType: 3, workingHours: { $gt: 5.5 } }, // Ca tối
-                        // ]
+                        let conditionObj = { }
+                        conditionObj.$and = [
+                            {
+                                company: companyID
+                            },
+                            {
+                                $or: [
+                                    { shiftType: 1, workingHours: { $gt: 5 } }, // Ca sáng,
+                                    { shiftType: 2, workingHours: { $gt: 5 } }, // Ca chiều,
+                                    { shiftType: 3, workingHours: { $gt: 5.5 } }, // Ca tối
+                                ]
+                            }
+                        ]
                         // console.log(conditionObj)
 
                         let listData = await FNB_SHIFT_COLL.find(conditionObj)
@@ -1573,24 +1580,24 @@ class Model extends BaseModel {
                             path: 'funda',
                             select: '_id name'
                         })
-                        .limit(200)
-                        .sort({createAt:-1,funda: -1})
+                        .limit(500)
+                        .sort({funda: -1,createAt:-1})
                         // console.log(listData)
 
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_bug.xlsx')))
                         .then(async workbook => {
                             var i = 3
                             listData?.forEach((item, index) => {
-                                workbook.sheet(`data`).row(i).cell(1).value(Number(index+1))
-                                workbook.sheet(`data`).row(i).cell(2).value(item?.createAt)
-                                workbook.sheet(`data`).row(i).cell(3).value(item?.name)
-                                workbook.sheet(`data`).row(i).cell(4).value(item?.shiftType)
-                                workbook.sheet(`data`).row(i).cell(5).value(item?.funda.name)
-                                workbook.sheet(`data`).row(i).cell(6).value(item?.workingHours)
-                                workbook.sheet(`data`).row(i).cell(7).value(item?.staffs?.length)
-                                workbook.sheet(`data`).row(i).cell(8).value(item?.subWorkingHours)
-                                workbook.sheet(`data`).row(i).cell(9).value(item?.subStaffs?.length)
-                                workbook.sheet(`data`).row(i).cell(10).value(item?.note)
+                                workbook.sheet(`Data`).row(i).cell(1).value(Number(index+1))
+                                workbook.sheet(`Data`).row(i).cell(2).value(item?.createAt)
+                                workbook.sheet(`Data`).row(i).cell(3).value(item?.name)
+                                workbook.sheet(`Data`).row(i).cell(4).value(item?.shiftType)
+                                workbook.sheet(`Data`).row(i).cell(5).value(item?.funda.name)
+                                workbook.sheet(`Data`).row(i).cell(6).value(item?.workingHours)
+                                workbook.sheet(`Data`).row(i).cell(7).value(item?.staffs?.length)
+                                workbook.sheet(`Data`).row(i).cell(8).value(item?.subWorkingHours)
+                                workbook.sheet(`Data`).row(i).cell(9).value(item?.subStaffs?.length)
+                                workbook.sheet(`Data`).row(i).cell(10).value(item?.note)
                                 i++
                             })
 
