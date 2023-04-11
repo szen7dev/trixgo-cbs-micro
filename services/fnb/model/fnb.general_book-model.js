@@ -82,9 +82,22 @@ class Model extends BaseModel {
                     dataInsert.shift = shiftID;
                 }
 
-                // if(date && date != ""){
-                //     dataInsert.date = date;
-                // }
+                // Nếu có ngày tháng riêng => Lấy theo ngày tháng
+                if(date && date != ""){
+                    dataInsert.date = date;
+                }
+
+                if(!isNaN(revenueType)){
+                    dataInsert.revenueType = Number(revenueType);
+                }
+
+                if(!isNaN(expenseType)){
+                    dataInsert.expenseType = Number(expenseType);
+                }
+
+                if(!isNaN(appExpenseType)){
+                    dataInsert.appExpenseType = Number(appExpenseType);
+                }
 
                 if(note && note != ""){
                     dataInsert.note = note;
@@ -131,29 +144,12 @@ class Model extends BaseModel {
 
                     dataInsert.funda            = infoParent.funda
                     dataInsert.campaignName     = infoParent.campaignName
-                    dataInsert.date             = infoParent.date
+                    // dataInsert.date             = infoParent.date
                     dataInsert.outin            = infoParent.outin
                     dataInsert.plan             = infoParent.plan
                     dataInsert.revenueType      = infoParent.revenueType
                     dataInsert.expenseType      = infoParent.expenseType
                     dataInsert.appExpenseType   = infoParent.appExpenseType
-                }
-
-                // Nếu có ngày tháng riêng => Lấy theo ngày tháng
-                if(date && date != ""){
-                    dataInsert.date = date;
-                }
-
-                if(!isNaN(revenueType)){
-                    dataInsert.revenueType = Number(revenueType);
-                }
-
-                if(!isNaN(expenseType)){
-                    dataInsert.expenseType = Number(expenseType);
-                }
-
-                if(!isNaN(appExpenseType)){
-                    dataInsert.appExpenseType = Number(appExpenseType);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
