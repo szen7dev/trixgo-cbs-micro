@@ -27,7 +27,7 @@ const {
 } = require('../../../tools/utils/utils');
 
 const stringUtils					            = require('../../../tools/utils/string_utils');
-const { addDate, calculateExpireTime }          = require('../../../tools/utils/time_utils');
+const { addDate, calculateExpire, calculateExpireTime }  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { sendNoticeToMember }                    = require('../../../tools/mailer/module/notice_pcm_task');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
@@ -3505,8 +3505,11 @@ class Model extends BaseModel {
      * Date: 01/09/2022
      */
     cloneChildTask({ parentId, parentTask, isDraftTask, callback = null }) {
+        console.log('===========copy công việc connnnnnnnnn===========>>>>>>>>>>')
+        // console.log({ parentId, parentTask, isDraftTask })
         return new Promise(async resolve => {
             try {
+                // Công việc con của công việc CHA-GỐC
                 const listTasks = await PCM_PLAN_TASK_COLL
                     .find({ parent: parentId })
                     .populate('parent', 'startTime expiredTime')
@@ -3518,6 +3521,7 @@ class Model extends BaseModel {
                         errors: ['not found tasks']
                     })
                 }
+                // console.log(listTasks)
 
                 const { results, errors } = await PromisePool
                     .for(listTasks)
@@ -3525,21 +3529,38 @@ class Model extends BaseModel {
                     .process(async childTask => {
                         const childTaskID = childTask._id;
 
-                        // Thời gian bắt đầu task cha (1)
-                        let startTime = childTask.parent?.startTime;
+                        // Thời hạn công việc cha gốc
+                        let orgParentExpiredTime = childTask.parent?.expiredTime
+                        // console.log({ orgParentExpiredTime })
 
-                        // Deadline task con (2)
-                        let expiredTime = childTask.expiredTime;
+                        // Thời hạn công việc cha mới
+                        let newParentExpiredTime = parentTask?.expiredTime
+                        // console.log({ newParentExpiredTime })
 
-                        // Tổng ngày từ startTime task cha -> deadline task con (3)
-                        let totalDayStartTimeToExpiredTime = calculateExpireTime(startTime, expiredTime, 'days');
+                        let duaration = calculateExpire(orgParentExpiredTime, newParentExpiredTime, 'days');
+                        // console.log({ duaration })
+
+                        // // Thời gian bắt đầu task cha (1)
+                        // let startTime = childTask.parent?.startTime;
+                        // console.log({ startTime_TaskCha: startTime })
+
+                        // // Deadline task con (2)
+                        // let expiredTime = childTask.expiredTime;
+                        // console.log({ expiredTime_TaskCon: expiredTime })
+
+                        // // Tổng ngày từ startTime task cha -> deadline task con (3)
+                        // let totalDayStartTimeToExpiredTime = calculateExpire(startTime, expiredTime, 'days');
+                        // console.log({ totalDayStartTimeToExpiredTime })
 
                         /**
-                         * Lấy startTime của task cha (new) + thêm (3)
+                         * Lấy startTime của task CHA MỚI (new) + thêm (3)
                          * => Deadline mới cho task con (new)
                          */
-                        let newExpiredTime = moment(parentTask.startTime, "DD-MM-YYYY")
-                            .add(totalDayStartTimeToExpiredTime, 'days');
+                        // let newExpiredTime = moment(parentTask.startTime, "DD-MM-YYYY")
+                            // .add(totalDayStartTimeToExpiredTime, 'days');
+
+                        let newExpiredTime = moment(childTask.expiredTime, "DD-MM-YYYY")
+                            .add(duaration, 'days');
 
                         let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
 
@@ -3591,6 +3612,13 @@ class Model extends BaseModel {
         expiredTime, contractID, isDraftTask, isCloneChildTask,
         userID, bizfullname, ctx
     }) {
+        // console.log('===========copy công việc===========>>>>>>>>>>')
+        // console.log({
+        //     taskID, name, projectID, groupID, assigneeID, relatedIDs,
+        //     authorAttachs, type, subtype, description, startTime, expiredHour,
+        //     expiredTime, contractID, isDraftTask, isCloneChildTask,
+        //     userID, bizfullname
+        // })
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
@@ -3605,6 +3633,7 @@ class Model extends BaseModel {
                 });
                 if(validation.error) return resolve(validation);
 
+                // Công việc GỐC sẽ copy sang
                 const infoOldTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
                     .lean();
@@ -3620,7 +3649,7 @@ class Model extends BaseModel {
 
                 const { amountoftime, parent } = infoOldTask;
 
-                // Clone task
+                // Clone task (CÔNG VIỆC CHA MỚI)
                 const infoAfterCloneTask = await this.insert({
                     name,
                     description,
@@ -3634,7 +3663,8 @@ class Model extends BaseModel {
                     authorAttachs,
                     type,
                     subType: subtype,
-                    startTime,
+                    // startTime,
+                    startTime: new Date(),
                     expiredHour,
                     expiredTime,
                     draft: isDraftTask ? 1 : 0,
@@ -3644,7 +3674,8 @@ class Model extends BaseModel {
                     ctx
                 })
                 if(infoAfterCloneTask.error) return resolve(infoAfterCloneTask);
-
+                
+                // Copy các công việc con nếu có
                 if(isCloneChildTask) {
                     // Clone child task (level 2)
                     await this.cloneChildTask({
