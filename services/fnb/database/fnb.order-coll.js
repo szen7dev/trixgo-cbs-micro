@@ -217,17 +217,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 5
     },
-    /**
-     * Khách có khiếu nại không
-     * 1-Không có ý kiến
-     * 2-Có ý kiến
-     */
-    complain: {
-        type: Number,
-        default: 1
-    },
-    //_________Danh sách lỗi
-    mistakes: [{
+    //_________Sự khiếu nại
+    complaints: [{
         type: Schema.Types.ObjectId,
         ref: "fnb_mistake"
     }],

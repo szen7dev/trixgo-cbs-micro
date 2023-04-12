@@ -719,7 +719,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, cancelNote, filesID, status, paymentMethod, salesChannel }) {
+        customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaintID }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -768,6 +768,14 @@ class Model extends BaseModel {
                  */
                 if(!isNaN(status)){
                     dataInUpdate.status = Number(status)
+                }
+
+                if(!isNaN(starRating)){
+                    dataInUpdate.starRating = Number(starRating)
+                }
+
+                if(checkObjectIDs(complaintID)) {
+                    dataInUpdate.$addToSet = { complaints: complaintID };
                 }
 
                 /**
@@ -852,7 +860,9 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO CÁC COLL LIÊN QUAN
                  */
                 // 1. Cập nhật vào ca làm việc
-                await that.updateShift({ shiftID: infoOrder.shift, userID })
+                if(!isNaN(status) || !isNaN(paymentMethod) || !isNaN(salesChannel)){
+                    await that.updateShift({ shiftID: infoOrder.shift, userID })
+                }
 
                 // 2. Cập nhật vào đơn vị cơ sở
 
@@ -1032,7 +1042,6 @@ class Model extends BaseModel {
                         $group: {
                             _id: { size: "$size" },
                             quantity: { $sum: "$quantity" },
-                            // quantity: { $sum: 1 },
                         }
                     }
                 ])
