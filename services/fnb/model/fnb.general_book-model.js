@@ -514,7 +514,7 @@ class Model extends BaseModel {
 
                 let conditionObj = { company: companyID }
                 let sortBy;
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['date__-1', 'createAt__-1'];
 
                 const validation = validateParamsObjectID({
                     fundasID            : { value: fundasID, isRequire: false },
@@ -639,9 +639,9 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                console.log('===========SO NHAT KY CHUNG==========')
-                console.log(conditionObj)
-                console.log({sortBy})
+                // console.log('===========SO NHAT KY CHUNG==========')
+                // console.log(conditionObj)
+                // console.log({sortBy})
 
                 let infoDataAfterGet = await FNB_GENERAL_BOOK_COLL.find(conditionObj)
                     .limit(limit+1)

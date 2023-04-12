@@ -724,7 +724,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaintID }) {
+        customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -777,6 +777,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(starRating)){
                     dataInUpdate.starRating = Number(starRating)
+                }
+
+                if(!isNaN(complaint)){
+                    dataInUpdate.complaint = Number(complaint)
                 }
 
                 if(checkObjectIDs(complaintID)) {
@@ -1655,9 +1659,9 @@ class Model extends BaseModel {
                             //     conditionObj.starRating = {$lte: 4}
                             // }
 
-                            // if(optionGroup && Number(optionGroup) == 1){
-                            //     conditionObj.sizeOfComplaints = {$gte: 1}
-                            // }
+                            if(optionGroup && Number(optionGroup) == 1){
+                                conditionObj.complaint = {$gte: 1}
+                            }
 
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
@@ -1691,9 +1695,10 @@ class Model extends BaseModel {
 
                         // Theo ngày trong tuần
                         if(optionTime && Number(optionTime) == 4){
-                            // if(optionGroup && Number(optionGroup) == 1){
-                            //     conditionObj.sizeOfComplaints = {$gte: 1}
-                            // }
+    
+                            if(optionGroup && Number(optionGroup) == 1){
+                                conditionObj.complaint = {$gte: 1}
+                            }
 
                             conditionGroup = {
                                 _id: { dayOfWeek: "$dayOfWeek" },
@@ -1980,9 +1985,8 @@ class Model extends BaseModel {
                                     gender : 1,
                                     age : 1,
                                     loyaltyPoints : 1,
-                                    // starRating : 1,
-                                    // complaints : 1,
-                                    // sizeOfComplaints: {$size: "$complaints"},
+                                    starRating : 1,
+                                    complaint : 1,
                                 }
                             },
                             {

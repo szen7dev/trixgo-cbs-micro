@@ -216,6 +216,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 5
     },
+    //_________Số khiếu nại
+    complaint: {
+        type: Number,
+        default: 0
+    },  
     //_________Sự khiếu nại
     complaints: [{
         type: Schema.Types.ObjectId,
