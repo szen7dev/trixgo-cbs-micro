@@ -639,6 +639,10 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
+                console.log('===========SO NHAT KY CHUNG==========')
+                console.log(conditionObj)
+                console.log({sortBy})
+
                 let infoDataAfterGet = await FNB_GENERAL_BOOK_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)

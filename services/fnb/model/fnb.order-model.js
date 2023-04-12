@@ -1650,6 +1650,15 @@ class Model extends BaseModel {
                                 "year": Number(yearFilter),
                             }
 
+                            // Gom nhóm theo số sao
+                            // if(optionGroup && Number(optionGroup) == 1){
+                            //     conditionObj.starRating = {$lte: 4}
+                            // }
+
+                            // if(optionGroup && Number(optionGroup) == 1){
+                            //     conditionObj.sizeOfComplaints = {$gte: 1}
+                            // }
+
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
                                 quantity: { $sum: 1 },
@@ -1682,6 +1691,10 @@ class Model extends BaseModel {
 
                         // Theo ngày trong tuần
                         if(optionTime && Number(optionTime) == 4){
+                            // if(optionGroup && Number(optionGroup) == 1){
+                            //     conditionObj.sizeOfComplaints = {$gte: 1}
+                            // }
+
                             conditionGroup = {
                                 _id: { dayOfWeek: "$dayOfWeek" },
                                 quantity: { $sum: 1 },
@@ -1899,7 +1912,8 @@ class Model extends BaseModel {
                                     // vatAmount: 1,
                                     numberOfProducts: 1,
                                     avgTotalPerStaff: 1,
-                                    avgQuantityPerStaff: 1
+                                    avgQuantityPerStaff: 1,
+                                    // sizeOfComplaints: {$size: "$complaints"},
                                 }
                             },
                             {
@@ -1966,6 +1980,9 @@ class Model extends BaseModel {
                                     gender : 1,
                                     age : 1,
                                     loyaltyPoints : 1,
+                                    // starRating : 1,
+                                    // complaints : 1,
+                                    // sizeOfComplaints: {$size: "$complaints"},
                                 }
                             },
                             {
