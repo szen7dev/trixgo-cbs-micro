@@ -64,6 +64,11 @@ class Model extends BaseModel {
                 if(!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })
 
+                let checkPhone = phone.replace(/\s/g, "").length
+                // console.log(checkPhone)
+                if(Number(checkPhone) != 10)
+                    return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
+
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if(!infoFunda)
                     return resolve({ error: true, message: 'can_not_get_funda_info' })
@@ -87,10 +92,12 @@ class Model extends BaseModel {
                     conditionObj.$or.push({taxid: taxid})
                 }
                 if((phone && phone != "")){
-                    conditionObj.$or.push({phone: phone})
+                    conditionObj.$or.push({phone: phone.replace(/\s/g, "")})
                 }
 
+                // console.log(phone.replace(/\s/g, ""))
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
+                // console.log(infoContact)
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
@@ -111,7 +118,7 @@ class Model extends BaseModel {
                     address,
                     taxid,
                     birthday,
-                    phone,
+                    phone: phone.replace(/\s/g, ""),
                     email,
                     status: status ? Number(status) : Number(1)
                 }
@@ -333,6 +340,11 @@ class Model extends BaseModel {
         // })
         return new Promise(async (resolve) => {
             try {
+                let checkPhone = phone.replace(/\s/g, "").length
+                // console.log(checkPhone)
+                if(Number(checkPhone) != 10)
+                    return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
+
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
                     company: company,
@@ -349,7 +361,7 @@ class Model extends BaseModel {
                     conditionObj.$or.push({taxid: taxid})
                 }
                 if((phone && phone != "")){
-                    conditionObj.$or.push({phone: phone})
+                    conditionObj.$or.push({phone: phone.replace(/\s/g, "")})
                 }
 
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
@@ -408,7 +420,7 @@ class Model extends BaseModel {
                 }
 
                 if(phone){
-                    dataUpdate.phone = phone;
+                    dataUpdate.phone = phone.replace(/\s/g, "")
                 }
 
                 if(email){
