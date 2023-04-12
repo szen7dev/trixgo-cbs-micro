@@ -91,6 +91,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
         type: Number,
         default: 1
     },
+    //______Tỷ lệ chuyển đổi
+    conversionRate: {
+        type: Number,
+        default : 0
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
