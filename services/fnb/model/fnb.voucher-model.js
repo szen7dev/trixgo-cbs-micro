@@ -342,7 +342,11 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regExpSearch = RegExp(keyword, 'i');
-                    conditionObj.name = regExpSearch;
+                    // conditionObj.name = regExpSearch;
+                    conditionObj.$or = [
+                        { name: regExpSearch },
+                        { sign: regExpSearch },
+                    ]
                 }
 
                 if(select && typeof select === 'string'){

@@ -224,7 +224,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     //_________Sự khiếu nại
     complaints: [{
         type: Schema.Types.ObjectId,
-        ref: "fnb_mistake"
+        ref: "doctypes"
     }],
     //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
     numberOfMistakes: {
