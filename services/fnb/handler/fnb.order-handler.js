@@ -66,17 +66,18 @@ module.exports = {
             paymentMethod       : { type: "number", optional: true },
             salesChannel        : { type: "number", optional: true },
             starRating          : { type: "number", optional: true },
+            complaint           : { type: "number", optional: true },
             filesID             : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaintID } = ctx.params;
+                let {  orderID, customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.update({
                     orderID, userID,
-                    customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaintID
+                    customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
