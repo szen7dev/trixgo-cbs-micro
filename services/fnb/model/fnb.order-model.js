@@ -1198,6 +1198,11 @@ class Model extends BaseModel {
                     dataInUpdate.numberOfOrders = Number(numberOfOrders)
                     dataInUpdate.total = Number(total)
                     dataInUpdate.purchasedValue = Number(purchasedValue)
+                }else{
+                    // Áp dụng cho khách mua xong -> boom hàng dẫn tới Hủy đơn
+                    dataInUpdate.numberOfOrders = 0
+                    dataInUpdate.total = 0
+                    dataInUpdate.purchasedValue = 0
                 }
 
                 // Đơn hàng đã hủy
@@ -1221,6 +1226,12 @@ class Model extends BaseModel {
                     dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
                     dataInUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints)
                     dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
+                }else{
+                    // Áp dụng cho khách mua xong -> boom hàng dẫn tới Hủy đơn
+                    dataInUpdate.purchasedOffValue = 0
+                    dataInUpdate.totalLoyaltyPoints = 0
+                    dataInUpdate.usedLoyaltyPoints = 0
+                    dataInUpdate.remainLoyaltyPoints = 0
                 }
                 // console.log(dataInUpdate)
 
