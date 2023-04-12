@@ -87,10 +87,12 @@ class Model extends BaseModel {
                     conditionObj.$or.push({taxid: taxid})
                 }
                 if((phone && phone != "")){
-                    conditionObj.$or.push({phone: phone.toLowerCase().trim()})
+                    conditionObj.$or.push({phone: phone.replace(/\s/g, "")})
                 }
 
+                // console.log(phone.replace(/\s/g, ""))
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
+                // console.log(infoContact)
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
@@ -111,7 +113,7 @@ class Model extends BaseModel {
                     address,
                     taxid,
                     birthday,
-                    phone: phone.toLowerCase().trim(),
+                    phone: phone.replace(/\s/g, ""),
                     email,
                     status: status ? Number(status) : Number(1)
                 }
@@ -349,7 +351,7 @@ class Model extends BaseModel {
                     conditionObj.$or.push({taxid: taxid})
                 }
                 if((phone && phone != "")){
-                    conditionObj.$or.push({phone: phone.toLowerCase().trim()})
+                    conditionObj.$or.push({phone: phone.replace(/\s/g, "")})
                 }
 
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
@@ -408,7 +410,7 @@ class Model extends BaseModel {
                 }
 
                 if(phone){
-                    dataUpdate.phone = phone.toLowerCase().trim();
+                    dataUpdate.phone = phone.replace(/\s/g, "")
                 }
 
                 if(email){
