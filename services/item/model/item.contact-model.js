@@ -14,7 +14,8 @@ const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-co
 /**
  * TOOLS
  */
-const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils')
+const { checkObjectIDs, IsJsonString, validateParamsObjectID, } = require('../../../tools/utils/utils')
+const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 }                  = require('../../../tools/s3')
 const { INSURANCE_STATUS }              = require('../../../tools/constants')
@@ -1272,10 +1273,10 @@ class Model extends BaseModel {
     getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
         // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
+            let duration = getTimeBetween(toDate, fromDate)
             try {
-                if(!option){
-                    // Danh sách
-
+                if(Number(duration/86400) > 90){
+                     // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
                 }else{
                     let conditionObj = {
                         company: ObjectID(companyID)
@@ -1295,6 +1296,14 @@ class Model extends BaseModel {
                     if(fundasID && fundasID.length ){
                         let arrFun = fundasID.map(item=>ObjectID(item))
                         conditionObj.funda = { $in: arrFun }
+                    }else{
+                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        } else{
+                            conditionObj.funda = { $in: [] }
+                        }
                     }
 
                     // Phân loại theo thời khoảng
@@ -1307,9 +1316,6 @@ class Model extends BaseModel {
 
                     /**
                      * Gom nhóm theo thời gian
-                     * - Số lượng đơn hàng
-                     * - Giá trị đơn hàng
-                     * - Số lượng sản phẩm
                      */
                     if(option && Number(option) == 1){
                         // Theo năm
@@ -1322,11 +1328,11 @@ class Model extends BaseModel {
                         
                         // Theo tháng trong năm
                         if(optionTime && Number(optionTime) == 2){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
-                            }
+                            // if(!isNaN(year) && Number(year) >= 0){
+                            //     conditionObjYear = {
+                            //         "year": Number(year),
+                            //     }
+                            // }
     
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
