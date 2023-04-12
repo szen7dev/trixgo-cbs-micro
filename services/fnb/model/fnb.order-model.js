@@ -1934,10 +1934,32 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Phân loại lỗi
+                     */
+                    if(option && Number(option) == 11){
+                        // Gom nhóm theo số sao
+                        if(optionStar && !isNaN(optionStar)){
+                            conditionObj.starRating = Number(optionStar)
+                        }
+
+                        // Gom nhóm theo khiếu nại của khách
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionObj.complaint = {$gte: 1}
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.doctype',
+                            select: '_id name',
+                            model: 'doctype'
+                        }
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
                     let listData;
+
                     // Danh sách đang triển khai
                     if(option && Number(option) == 7){
                         listData = await FNB_ORDER_COLL.aggregate([
@@ -1989,67 +2011,92 @@ class Model extends BaseModel {
                             }
                         ])
                     }else{
-                        listData = await FNB_ORDER_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : {
-                                    year : {$year : "$createAt"},
-                                    month : {$month : "$createAt"},
-                                    day: { $dayOfMonth: "$createAt" },
-                                    dayOfWeek: { $dayOfWeek: "$createAt" },
-                                    hour : {$hour : "$createAt"},
-                                    funda : 1,
-                                    customer : 1,
-                                    new : 1,
-                                    assignee : 1,
-                                    campaign : 1,
-                                    activeCampaign : 1,
-                                    internal : 1,
-                                    area1 : 1,
-                                    area2 : 1,
-                                    area3 : 1,
-                                    shift : 1,
-                                    shiftType : 1,
-                                    seasons : 1,
-                                    salesChannel : 1,
-                                    paymentMethod : 1,
-                                    service : 1,
-                                    status : 1,
-                                    numberOfMistakes : 1,
-                                    numberOfProducts : 1,
-                                    total : 1,
-                                    salesoff : 1,
-                                    discount : 1,
-                                    credit : 1,
-                                    offer : 1,
-                                    amount : 1,
-                                    vatAmount : 1,
-                                    avgQuantityPerStaff : 1,
-                                    avgTotalPerStaff : 1,
-                                    gender : 1,
-                                    age : 1,
-                                    loyaltyPoints : 1,
-                                    manager : 1,
-                                    starRating : 1,
-                                    complaint : 1,
+                        if(option && Number(option) == 11){
+                            listData  = await FNB_ORDER_COLL.aggregate([
+                                {
+                                    $match: conditionObj
+                                },
+                                { 
+                                    $lookup: {
+                                        from: "doctypes",
+                                        localField: "complaints",
+                                        foreignField: "_id",
+                                        as: "doctype"
+                                    } 
+                                },
+                                {
+                                    $unwind: "$doctype"
+                                },
+                                {
+                                    $group: {
+                                        _id: { doctype: "$doctype._id" },
+                                        quantity: { $sum: 1 },
+                                    }
                                 }
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
+                            ])
+                        }else{
+                            listData = await FNB_ORDER_COLL.aggregate([
+                                {
+                                    $match: conditionObj
+                                },
+                                {
+                                    $project : {
+                                        year : {$year : "$createAt"},
+                                        month : {$month : "$createAt"},
+                                        day: { $dayOfMonth: "$createAt" },
+                                        dayOfWeek: { $dayOfWeek: "$createAt" },
+                                        hour : {$hour : "$createAt"},
+                                        funda : 1,
+                                        customer : 1,
+                                        new : 1,
+                                        assignee : 1,
+                                        campaign : 1,
+                                        activeCampaign : 1,
+                                        internal : 1,
+                                        area1 : 1,
+                                        area2 : 1,
+                                        area3 : 1,
+                                        shift : 1,
+                                        shiftType : 1,
+                                        seasons : 1,
+                                        salesChannel : 1,
+                                        paymentMethod : 1,
+                                        service : 1,
+                                        status : 1,
+                                        numberOfMistakes : 1,
+                                        numberOfProducts : 1,
+                                        total : 1,
+                                        salesoff : 1,
+                                        discount : 1,
+                                        credit : 1,
+                                        offer : 1,
+                                        amount : 1,
+                                        vatAmount : 1,
+                                        avgQuantityPerStaff : 1,
+                                        avgTotalPerStaff : 1,
+                                        gender : 1,
+                                        age : 1,
+                                        loyaltyPoints : 1,
+                                        manager : 1,
+                                        starRating : 1,
+                                        complaint : 1,
+                                    }
+                                },
+                                {
+                                    $match: conditionObjYear
+                                },
+                                {
+                                    $group: conditionGroup
+                                },
+                                {
+                                    $sort: sortBy
+                                }
+                            ])
+                        }
                     }
                     // console.log(listData.length)
 
-                    if(!isNaN(option) && [3,6,7,8,9,10].includes(Number(option))){
+                    if(!isNaN(option) && [3,6,7,8,9,10,11].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
