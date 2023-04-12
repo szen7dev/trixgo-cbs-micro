@@ -1328,11 +1328,11 @@ class Model extends BaseModel {
                         
                         // Theo tháng trong năm
                         if(optionTime && Number(optionTime) == 2){
-                            // if(!isNaN(year) && Number(year) >= 0){
-                            //     conditionObjYear = {
-                            //         "year": Number(year),
-                            //     }
-                            // }
+                            if(!isNaN(year) && Number(year) >= 0){
+                                conditionObjYear = {
+                                    "year": Number(year),
+                                }
+                            }
     
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
