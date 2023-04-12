@@ -1335,8 +1335,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, productID }) {
-        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, productID })
+    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID }) {
+        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -1349,7 +1349,7 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1']
 
-                if(!checkObjectIDs(customerID) && !checkObjectIDs(productID)){
+                if(!checkObjectIDs(customerID) && !checkObjectIDs(voucherID) && !checkObjectIDs(productID)){
                     // console.log('==============Trường hợp 1111111111===============>')
                     conditionObj.company = ObjectID(companyID)
 
@@ -1383,6 +1383,11 @@ class Model extends BaseModel {
                         // console.log('==============Trường hợp 5555555555===============>')
                         conditionObj.customer = ObjectID(customerID)
                     }else{
+                        if(voucherID && checkObjectIDs(voucherID)){
+                            // console.log('==============Trường hợp 5555555555===============>')
+                            conditionObj.voucher = ObjectID(voucherID)
+                        }
+
                         // Tìm theo Sản phẩm
                         if(productID && checkObjectIDs(productID)){
                             // console.log('==============Trường hợp 66666666666===============>')
