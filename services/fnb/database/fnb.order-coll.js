@@ -211,23 +211,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * Số sao đánh giá đơn app
      * 1-5 sao dành cho Food App
-     * 4 sao dành cho phản hồi của khách qua Hotline
      */
     starRating: {
         type: Number,
         default: 5
     },
-    /**
-     * Khách có khiếu nại không
-     * 1-Không có ý kiến
-     * 2-Có ý kiến
-     */
-    complain: {
-        type: Number,
-        default: 1
-    },
-    //_________Danh sách lỗi
-    mistakes: [{
+    //_________Sự khiếu nại
+    complaints: [{
         type: Schema.Types.ObjectId,
         ref: "fnb_mistake"
     }],
