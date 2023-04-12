@@ -136,6 +136,11 @@ class Model extends BaseModel {
                     dataInsert.area3 = infoFunda.area3
                 }
 
+                // Quản lý điểm bán
+                if(infoFunda.manager){
+                    dataInsert.manager = infoFunda.manager
+                }
+
                 // Chiến dịch
                 if(infoFunda.campaignName && checkObjectIDs(infoFunda.campaignName)){
                     dataInsert.campaignName = infoFunda.campaignName

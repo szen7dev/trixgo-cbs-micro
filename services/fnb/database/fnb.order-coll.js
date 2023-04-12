@@ -211,7 +211,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * Số sao đánh giá đơn app
      * 1-5 sao dành cho Food App
-     * 4 sao dành cho phản hồi của khách qua Hotline
      */
     starRating: {
         type: Number,
