@@ -1544,8 +1544,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID }) {
-        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID})
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID, optionStar }) {
+        // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID, optionStar })
         return new Promise(async (resolve) => {
             try {
                 let duration = getTimeBetween(toDate, fromDate)
@@ -1655,10 +1655,11 @@ class Model extends BaseModel {
                             }
 
                             // Gom nhóm theo số sao
-                            // if(optionGroup && Number(optionGroup) == 1){
-                            //     conditionObj.starRating = {$lte: 4}
-                            // }
+                            if(optionStar && !isNaN(optionStar)){
+                                conditionObj.starRating = Number(optionStar)
+                            }
 
+                            // Gom nhóm theo khiếu nại của khách
                             if(optionGroup && Number(optionGroup) == 1){
                                 conditionObj.complaint = {$gte: 1}
                             }
@@ -1696,6 +1697,12 @@ class Model extends BaseModel {
                         // Theo ngày trong tuần
                         if(optionTime && Number(optionTime) == 4){
     
+                            // Gom nhóm theo số sao
+                            if(optionStar && !isNaN(optionStar)){
+                                conditionObj.starRating = Number(optionStar)
+                            }
+
+                            // Gom nhóm theo khiếu nại của khách
                             if(optionGroup && Number(optionGroup) == 1){
                                 conditionObj.complaint = {$gte: 1}
                             }
