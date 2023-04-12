@@ -1742,6 +1742,16 @@ class Model extends BaseModel {
                      * Gom nhóm theo Đơn vị cơ sở
                      */
                     if(option && Number(option) == 3){
+                        // Gom nhóm theo số sao
+                        if(optionStar && !isNaN(optionStar)){
+                            conditionObj.starRating = Number(optionStar)
+                        }
+
+                        // Gom nhóm theo khiếu nại của khách
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionObj.complaint = {$gte: 1}
+                        }
+
                         conditionGroup = {
                             _id: { funda: "$funda" },
                             quantity: { $sum: 1 },
@@ -1895,6 +1905,35 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Quản lý điểm bán
+                     */
+                    if(option && Number(option) == 10){
+                        // Gom nhóm theo số sao
+                        if(optionStar && !isNaN(optionStar)){
+                            conditionObj.starRating = Number(optionStar)
+                        }
+
+                        // Gom nhóm theo khiếu nại của khách
+                        if(optionGroup && Number(optionGroup) == 1){
+                            conditionObj.complaint = {$gte: 1}
+                        }
+
+                        // Chỉ lấy các mẩu tin có dữ liệu quản lý
+                        conditionObj.manager = {$exists: true, $ne: null}
+
+                        conditionGroup = {
+                            _id: { manager: "$manager" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.manager',
+                            select: '_id fullname',
+                            model: 'user'
+                        }
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionGroup)
 
@@ -1992,6 +2031,7 @@ class Model extends BaseModel {
                                     gender : 1,
                                     age : 1,
                                     loyaltyPoints : 1,
+                                    manager : 1,
                                     starRating : 1,
                                     complaint : 1,
                                 }
@@ -2009,7 +2049,7 @@ class Model extends BaseModel {
                     }
                     // console.log(listData.length)
 
-                    if(!isNaN(option) && [3,6,7,8,9].includes(Number(option))){
+                    if(!isNaN(option) && [3,6,7,8,9,10].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
