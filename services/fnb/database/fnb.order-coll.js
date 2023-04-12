@@ -200,11 +200,37 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     appOrderSign: String,
     //_________Ghi chú
     note: String,
-    //_________Số sao đánh giá đơn app
+    /**
+     * QUẢN LÝ LỖI
+     */
+    //_________Người quản lý
+    manager: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
+    /**
+     * Số sao đánh giá đơn app
+     * 1-5 sao dành cho Food App
+     * 4 sao dành cho phản hồi của khách qua Hotline
+     */
     starRating: {
         type: Number,
         default: 5
     },
+    /**
+     * Khách có khiếu nại không
+     * 1-Không có ý kiến
+     * 2-Có ý kiến
+     */
+    complain: {
+        type: Number,
+        default: 1
+    },
+    //_________Danh sách lỗi
+    mistakes: [{
+        type: Schema.Types.ObjectId,
+        ref: "fnb_mistake"
+    }],
     //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
     numberOfMistakes: {
         type: Number,
