@@ -45,8 +45,8 @@ class Model extends BaseModel {
 
     // implement by: KHANHNEY
     register({ email, fullname, level, department, position, companyID, platform }) {
-        console.log('=================Dang Ky Tai Khoan')
-        console.log({ email, fullname, level, department, position, companyID, platform })
+        // console.log('=================Dang Ky Tai Khoan')
+        // console.log({ email, fullname, level, department, position, companyID, platform })
         return new Promise(async resolve => {
             try {
                 /**

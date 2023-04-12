@@ -87,7 +87,7 @@ class Model extends BaseModel {
                     conditionObj.$or.push({taxid: taxid})
                 }
                 if((phone && phone != "")){
-                    conditionObj.$or.push({phone: phone})
+                    conditionObj.$or.push({phone: phone.toLowerCase().trim()})
                 }
 
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
@@ -111,7 +111,7 @@ class Model extends BaseModel {
                     address,
                     taxid,
                     birthday,
-                    phone,
+                    phone: phone.toLowerCase().trim(),
                     email,
                     status: status ? Number(status) : Number(1)
                 }
@@ -349,7 +349,7 @@ class Model extends BaseModel {
                     conditionObj.$or.push({taxid: taxid})
                 }
                 if((phone && phone != "")){
-                    conditionObj.$or.push({phone: phone})
+                    conditionObj.$or.push({phone: phone.toLowerCase().trim()})
                 }
 
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
@@ -408,7 +408,7 @@ class Model extends BaseModel {
                 }
 
                 if(phone){
-                    dataUpdate.phone = phone;
+                    dataUpdate.phone = phone.toLowerCase().trim();
                 }
 
                 if(email){
