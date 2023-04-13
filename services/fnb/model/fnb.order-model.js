@@ -1818,14 +1818,14 @@ class Model extends BaseModel {
                     /**
                      * Gom nhóm theo Nhân viên phục vụ
                      */
-                    // if(option && Number(option) == 5){
-                    //     conditionObj.assignee = {$in: [ObjectID(userID)]}
-                    //     conditionGroup = {
-                    //         _id: { },
-                    //         avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
-                    //         avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
-                    //     }
-                    // }
+                    if(option && Number(option) == 5){
+                        conditionObj.assignee = {$in: [ObjectID(userID)]}
+                        conditionGroup = {
+                            _id: { },
+                            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                            avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                        }
+                    }
 
                     /**
                      * Gom nhóm theo Khu vực
@@ -1854,22 +1854,22 @@ class Model extends BaseModel {
                     /**
                      * Gom nhóm theo Nhân viên phục vụ
                      */
-                    // if(option && Number(option) == 7){
-                    //     conditionGroup = {
-                    //         _id: { assignee: "$assignee._id" },
-                    //         quantity: { $sum: 1 },
-                    //         avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
-                    //         avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
-                    //     }
+                    if(option && Number(option) == 7){
+                        conditionGroup = {
+                            _id: { assignee: "$assignee._id" },
+                            quantity: { $sum: 1 },
+                            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                            avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                        }
 
-                    //     conditionPopulate = {
-                    //         path: '_id.assignee',
-                    //         select: '_id fullname',
-                    //         model: 'user'
-                    //     }
+                        conditionPopulate = {
+                            path: '_id.assignee',
+                            select: '_id fullname',
+                            model: 'user'
+                        }
 
-                    //     sortBy = {"avgQuantityPerStaff": -1}
-                    // }
+                        sortBy = {"avgQuantityPerStaff": -1}
+                    }
 
                     /**
                      * Gom nhóm theo Khách hàng tiềm năng/Thời gian
@@ -1905,30 +1905,30 @@ class Model extends BaseModel {
                     /**
                      * Gom nhóm theo Nhân sự-Sản phẩm
                      */
-                    // if(option && Number(option) == 9){
-                    //     delete conditionObj.company
-                    //     delete conditionObj.funda
-                    //     conditionObj.assignee = { $in: [ObjectID(staffID)] }
+                    if(option && Number(option) == 9){
+                        delete conditionObj.company
+                        delete conditionObj.funda
+                        conditionObj.assignee = { $in: [ObjectID(staffID)] }
 
-                    //     conditionGroup = {
-                    //         _id: { shift: "$shift" },
-                    //         avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
-                    //         avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
-                    //     }
+                        conditionGroup = {
+                            _id: { shift: "$shift" },
+                            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                            avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+                        }
 
-                    //     sortBy = {"_id.shift": -1}
+                        sortBy = {"_id.shift": -1}
 
-                    //     conditionPopulate = {
-                    //         path: '_id.shift',
-                    //         select: '_id name funda createAt',
-                    //         model: 'fnb_shift',
-                    //         populate: {
-                    //             path: 'funda',
-                    //             select: '_id name',
-                    //             model: 'funda',
-                    //         }
-                    //     }
-                    // }
+                        conditionPopulate = {
+                            path: '_id.shift',
+                            select: '_id name funda createAt',
+                            model: 'fnb_shift',
+                            populate: {
+                                path: 'funda',
+                                select: '_id name',
+                                model: 'funda',
+                            }
+                        }
+                    }
 
                     /**
                      * Gom nhóm theo Quản lý điểm bán
@@ -2001,17 +2001,9 @@ class Model extends BaseModel {
                                     createAt: 1,
                                     assignee : 1,
                                     executor: 1,
-                                    // total: 1,
-                                    // discount: 1,
-                                    // salesoff: 1,
-                                    // credit: 1,
-                                    // offer: 1,
-                                    // amount: 1,
-                                    // vatAmount: 1,
                                     numberOfProducts: 1,
                                     avgTotalPerStaff: 1,
-                                    avgQuantityPerStaff: 1,
-                                    // sizeOfComplaints: {$size: "$complaints"},
+                                    avgQuantityPerStaff: 1
                                 }
                             },
                             {
