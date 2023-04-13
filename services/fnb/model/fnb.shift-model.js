@@ -765,863 +765,863 @@ class Model extends BaseModel {
      * Func: Tải Bảng chấm công
      * Date: 15/1/2023
      */
-    exportExcel({ companyID, email, fundaID, fromDate, toDate, month, year, userID }) {
-        // console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
-        return new Promise(async resolve => {
-            try {
-                /**
-                 * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
-                 */
-                // Bảng chấm công theo từng điểm bán
-                let yearFilter
-                let currentYear = new Date().getFullYear()
-                let currentMonth = new Date().getMonth() + 1
-                if(year && !isNaN(year)){
-                    yearFilter = Number(year)
-                }else{
-                    yearFilter = Number(currentYear)
-                }
+    // exportExcel({ companyID, email, fundaID, fromDate, toDate, month, year, userID }) {
+    //     // console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
+    //     return new Promise(async resolve => {
+    //         try {
+    //             /**
+    //              * https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
+    //              */
+    //             // Bảng chấm công theo từng điểm bán
+    //             let yearFilter
+    //             let currentYear = new Date().getFullYear()
+    //             let currentMonth = new Date().getMonth() + 1
+    //             if(year && !isNaN(year)){
+    //                 yearFilter = Number(year)
+    //             }else{
+    //                 yearFilter = Number(currentYear)
+    //             }
 
-                if(fundaID){
-                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                    .populate({
-                        path: 'company',
-                        select: 'name sign'
-                    })
+    //             if(fundaID){
+    //                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+    //                 .populate({
+    //                     path: 'company',
+    //                     select: 'name sign'
+    //                 })
     
-                    let conditionObj = { 
-                        funda: ObjectID(fundaID)
-                    }
+    //                 let conditionObj = { 
+    //                     funda: ObjectID(fundaID)
+    //                 }
     
-                    let projectObj =  {
-                        year : {$year : "$createAt"},
-                        month : {$month : "$createAt"},
-                        day: { $dayOfMonth: "$createAt" },
-                        company : 1,
-                        funda : 1,
-                        staffs : 1,
-                        workingHours : 1,
-                        subStaffs : 1,
-                        subWorkingHours : 1,
-                        createAt: 1
-                    }
+    //                 let projectObj =  {
+    //                     year : {$year : "$createAt"},
+    //                     month : {$month : "$createAt"},
+    //                     day: { $dayOfMonth: "$createAt" },
+    //                     company : 1,
+    //                     funda : 1,
+    //                     staffs : 1,
+    //                     workingHours : 1,
+    //                     subStaffs : 1,
+    //                     subWorkingHours : 1,
+    //                     createAt: 1
+    //                 }
                     
-                    let lookupObj = {
-                        from: "users",
-                        localField: "staffs",
-                        foreignField: "_id",
-                        as: "staff"
-                    } 
+    //                 let lookupObj = {
+    //                     from: "users",
+    //                     localField: "staffs",
+    //                     foreignField: "_id",
+    //                     as: "staff"
+    //                 } 
     
-                    let lookupSubObj = {
-                        from: "users",
-                        localField: "subStaffs",
-                        foreignField: "_id",
-                        as: "staff"
-                    } 
+    //                 let lookupSubObj = {
+    //                     from: "users",
+    //                     localField: "subStaffs",
+    //                     foreignField: "_id",
+    //                     as: "staff"
+    //                 } 
                     
-                    let conditionObjYear = {
-                        "year": Number(yearFilter),
-                    }
+    //                 let conditionObjYear = {
+    //                     "year": Number(yearFilter),
+    //                 }
     
-                    let conditionPopulate = {}, sortBy = {"day": 1}
+    //                 let conditionPopulate = {}, sortBy = {"day": 1}
     
-                    let conditionGroup = {
-                        _id: {  staff: "$staff._id", day: "$day", month: "$month", year: "$year" },
-                        number: { $sum: 1 },
-                        workingHours: { $sum: "$workingHours" },
-                        subWorkingHours: { $sum: "$subWorkingHours" }
-                    }
+    //                 let conditionGroup = {
+    //                     _id: {  staff: "$staff._id", day: "$day", month: "$month", year: "$year" },
+    //                     number: { $sum: 1 },
+    //                     workingHours: { $sum: "$workingHours" },
+    //                     subWorkingHours: { $sum: "$subWorkingHours" }
+    //                 }
     
-                    // Danh sách nhân sự ca chính
-                    let listData1  = await FNB_SHIFT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        { 
-                            $lookup: lookupObj
-                        },
-                        {
-                            $unwind: "$staff"
-                        },
-                        {
-                            $group: {
-                                _id: { staff: "$staff" }
-                            }
-                        }
-                    ])
+    //                 // Danh sách nhân sự ca chính
+    //                 let listData1  = await FNB_SHIFT_COLL.aggregate([
+    //                     {
+    //                         $match: conditionObj
+    //                     },
+    //                     { 
+    //                         $lookup: lookupObj
+    //                     },
+    //                     {
+    //                         $unwind: "$staff"
+    //                     },
+    //                     {
+    //                         $group: {
+    //                             _id: { staff: "$staff" }
+    //                         }
+    //                     }
+    //                 ])
     
-                     // Danh sách nhân sự ca phụ
-                    let listData2  = await FNB_SHIFT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        { 
-                            $lookup: lookupSubObj
-                        },
-                        {
-                            $unwind: "$staff"
-                        },
-                        {
-                            $group: {
-                                _id: { staff: "$staff" }
-                            }
-                        }
-                    ])
+    //                  // Danh sách nhân sự ca phụ
+    //                 let listData2  = await FNB_SHIFT_COLL.aggregate([
+    //                     {
+    //                         $match: conditionObj
+    //                     },
+    //                     { 
+    //                         $lookup: lookupSubObj
+    //                     },
+    //                     {
+    //                         $unwind: "$staff"
+    //                     },
+    //                     {
+    //                         $group: {
+    //                             _id: { staff: "$staff" }
+    //                         }
+    //                     }
+    //                 ])
     
-                    let listDataTimesheet1  = await FNB_SHIFT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project : projectObj
-                        },
-                        { 
-                            $lookup: lookupObj
-                        },
-                        {
-                            $unwind: "$staff"
-                        },
-                        {
-                            $match: conditionObjYear
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        }
-                    ])
+    //                 let listDataTimesheet1  = await FNB_SHIFT_COLL.aggregate([
+    //                     {
+    //                         $match: conditionObj
+    //                     },
+    //                     {
+    //                         $project : projectObj
+    //                     },
+    //                     { 
+    //                         $lookup: lookupObj
+    //                     },
+    //                     {
+    //                         $unwind: "$staff"
+    //                     },
+    //                     {
+    //                         $match: conditionObjYear
+    //                     },
+    //                     {
+    //                         $group: conditionGroup
+    //                     },
+    //                     {
+    //                         $sort: sortBy
+    //                     }
+    //                 ])
     
-                    let listDataTimesheet2  = await FNB_SHIFT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project : projectObj
-                        },
-                        { 
-                            $lookup: lookupSubObj
-                        },
-                        {
-                            $unwind: "$staff"
-                        },
-                        {
-                            $match: conditionObjYear
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        }
-                    ])
-                    // console.log(listDataTimesheet1)
-                    // console.log(listDataTimesheet2)
+    //                 let listDataTimesheet2  = await FNB_SHIFT_COLL.aggregate([
+    //                     {
+    //                         $match: conditionObj
+    //                     },
+    //                     {
+    //                         $project : projectObj
+    //                     },
+    //                     { 
+    //                         $lookup: lookupSubObj
+    //                     },
+    //                     {
+    //                         $unwind: "$staff"
+    //                     },
+    //                     {
+    //                         $match: conditionObjYear
+    //                     },
+    //                     {
+    //                         $group: conditionGroup
+    //                     },
+    //                     {
+    //                         $sort: sortBy
+    //                     }
+    //                 ])
+    //                 // console.log(listDataTimesheet1)
+    //                 // console.log(listDataTimesheet2)
     
-                    let listData3 = [...listData1, ...listData2]
-                    let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')               
+    //                 let listData3 = [...listData1, ...listData2]
+    //                 let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}}).select('_id fullname')               
     
-                    // Modify the workbook.
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_salary.xlsx')))
-                    .then(async workbook => {
-                        workbook.sheet(`QuyCheLuong`).row(3).cell(3).value(infoFunda?.trainStaffSalar)
-                        workbook.sheet(`QuyCheLuong`).row(4).cell(3).value(infoFunda?.trialStaffSalary)
-                        workbook.sheet(`QuyCheLuong`).row(5).cell(3).value(infoFunda?.officialStaffSalar)
-                        workbook.sheet(`QuyCheLuong`).row(6).cell(3).value(infoFunda?.lunchStaffAllowance)
+    //                 // Modify the workbook.
+    //                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_salary.xlsx')))
+    //                 .then(async workbook => {
+    //                     workbook.sheet(`QuyCheLuong`).row(3).cell(3).value(infoFunda?.trainStaffSalar)
+    //                     workbook.sheet(`QuyCheLuong`).row(4).cell(3).value(infoFunda?.trialStaffSalary)
+    //                     workbook.sheet(`QuyCheLuong`).row(5).cell(3).value(infoFunda?.officialStaffSalar)
+    //                     workbook.sheet(`QuyCheLuong`).row(6).cell(3).value(infoFunda?.lunchStaffAllowance)
     
-                        // Lặp qua 12 tháng
-                        for(var m = 1; m<=12; m++){
-                            workbook.sheet(`T${m}`).row(1).cell(4).value(Number(yearFilter))
-                            workbook.sheet(`T${m}`).row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`)
+    //                     // Lặp qua 12 tháng
+    //                     for(var m = 1; m<=12; m++){
+    //                         workbook.sheet(`T${m}`).row(1).cell(4).value(Number(yearFilter))
+    //                         workbook.sheet(`T${m}`).row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`)
     
-                            var j = 2
-                            listStaffs?.forEach((item, index) => {
-                                workbook.sheet(`T${m}`).row(3).cell(j).value(item.fullname);
-                                workbook.sheet(`T${m}`).row(4).cell(j).value(`${item._id}`);
-                                j++
-                            })
-                        }
+    //                         var j = 2
+    //                         listStaffs?.forEach((item, index) => {
+    //                             workbook.sheet(`T${m}`).row(3).cell(j).value(item.fullname);
+    //                             workbook.sheet(`T${m}`).row(4).cell(j).value(`${item._id}`);
+    //                             j++
+    //                         })
+    //                     }
     
-                        listDataTimesheet1?.forEach((item, index) => {
-                            for(var m = 1; m<=12; m++){
-                                if(Number(item._id.month) === Number(m)){
-                                    for(let i=5; i<=35; i++){
-                                        for(let j=2; j<=Number(listStaffs.length + 1); j++){
-                                            let staffID = workbook.sheet(`T${m}`).row(4).cell(j).value()
+    //                     listDataTimesheet1?.forEach((item, index) => {
+    //                         for(var m = 1; m<=12; m++){
+    //                             if(Number(item._id.month) === Number(m)){
+    //                                 for(let i=5; i<=35; i++){
+    //                                     for(let j=2; j<=Number(listStaffs.length + 1); j++){
+    //                                         let staffID = workbook.sheet(`T${m}`).row(4).cell(j).value()
                                             
-                                            if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
-                                                workbook.sheet(`T${m}`).row(i).cell(j).value(item.workingHours)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        })
+    //                                         if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
+    //                                             workbook.sheet(`T${m}`).row(i).cell(j).value(item.workingHours)
+    //                                         }
+    //                                     }
+    //                                 }
+    //                             }
+    //                         }
+    //                     })
     
-                        listDataTimesheet2?.forEach((item, index) => {
-                            for(var m = 1; m<=12; m++){
-                                if(Number(item._id.month) === Number(m)){
-                                    for(let i=5; i<=35; i++){
-                                        for(let j=2; j<=Number(listStaffs.length + 1); j++){
-                                            let staffID = workbook.sheet(`T${m}`).row(4).cell(j).value()
+    //                     listDataTimesheet2?.forEach((item, index) => {
+    //                         for(var m = 1; m<=12; m++){
+    //                             if(Number(item._id.month) === Number(m)){
+    //                                 for(let i=5; i<=35; i++){
+    //                                     for(let j=2; j<=Number(listStaffs.length + 1); j++){
+    //                                         let staffID = workbook.sheet(`T${m}`).row(4).cell(j).value()
                                             
-                                            if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
-                                                let timesheet = workbook.sheet(`T${m}`).row(i).cell(j).value() | 0
+    //                                         if((item._id.staff.toString() === staffID.toString()) && (Number(i-4) === Number(item._id.day))){
+    //                                             let timesheet = workbook.sheet(`T${m}`).row(i).cell(j).value() | 0
             
-                                                workbook.sheet(`T${m}`).row(i).cell(j).value(Number(timesheet) + Number(item.subWorkingHours))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        })
+    //                                             workbook.sheet(`T${m}`).row(i).cell(j).value(Number(timesheet) + Number(item.subWorkingHours))
+    //                                         }
+    //                                     }
+    //                                 }
+    //                             }
+    //                         }
+    //                     })
     
-                        const now = new Date();
-                        const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BangChamCong_${now.getTime()}.xlsx`;
-                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    //                     const now = new Date();
+    //                     const filePath = '../../../files/temporary_uploads/';
+    //                     const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BangChamCong_${now.getTime()}.xlsx`;
+    //                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
     
-                        await workbook.toFileAsync(pathWriteFile);
-                        const result = await uploadFileS3(pathWriteFile, fileName);
+    //                     await workbook.toFileAsync(pathWriteFile);
+    //                     const result = await uploadFileS3(pathWriteFile, fileName);
     
-                        fs.unlinkSync(pathWriteFile);
-                        return resolve({ error: false, data: result?.Location, status: 200 });
-                    });
-                }else{
-                    if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
-                        /**
-                         * BẢNG CHẤM CÔNG TOÀN BỘ NHÂN SỰ
-                         */
-                        let conditionObj = { 
-                            company: ObjectID(companyID)
-                        }
+    //                     fs.unlinkSync(pathWriteFile);
+    //                     return resolve({ error: false, data: result?.Location, status: 200 });
+    //                 });
+    //             }else{
+    //                 if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+    //                     /**
+    //                      * BẢNG CHẤM CÔNG TOÀN BỘ NHÂN SỰ
+    //                      */
+    //                     let conditionObj = { 
+    //                         company: ObjectID(companyID)
+    //                     }
         
-                        let projectObj =  {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            day: { $dayOfMonth: "$createAt" },
-                            company : 1,
-                            funda : 1,
-                            staffs : 1,
-                            workingHours : 1,
-                            subStaffs : 1,
-                            subWorkingHours : 1,
-                            createAt: 1
-                        }
+    //                     let projectObj =  {
+    //                         year : {$year : "$createAt"},
+    //                         month : {$month : "$createAt"},
+    //                         day: { $dayOfMonth: "$createAt" },
+    //                         company : 1,
+    //                         funda : 1,
+    //                         staffs : 1,
+    //                         workingHours : 1,
+    //                         subStaffs : 1,
+    //                         subWorkingHours : 1,
+    //                         createAt: 1
+    //                     }
                         
-                        let lookupObj = {
-                            from: "users",
-                            localField: "staffs",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+    //                     let lookupObj = {
+    //                         from: "users",
+    //                         localField: "staffs",
+    //                         foreignField: "_id",
+    //                         as: "staff"
+    //                     } 
         
-                        let lookupSubObj = {
-                            from: "users",
-                            localField: "subStaffs",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+    //                     let lookupSubObj = {
+    //                         from: "users",
+    //                         localField: "subStaffs",
+    //                         foreignField: "_id",
+    //                         as: "staff"
+    //                     } 
                         
-                        let conditionObjYear = {
-                            "year": Number(yearFilter),
-                            "month": {$in: [currentMonth - 1, currentMonth]},
-                        }
+    //                     let conditionObjYear = {
+    //                         "year": Number(yearFilter),
+    //                         "month": {$in: [currentMonth - 1, currentMonth]},
+    //                     }
         
-                        let conditionPopulate = {}, sortBy = {"day": 1}, sortByMonth = {"_id.month": -1}
+    //                     let conditionPopulate = {}, sortBy = {"day": 1}, sortByMonth = {"_id.month": -1}
         
-                        let conditionGroup = {
-                            _id: { staff: "$staff._id", month: "$month" },
-                            workingHours: { $sum: "$workingHours" },
-                            subWorkingHours: { $sum: "$subWorkingHours" },
-                        }
+    //                     let conditionGroup = {
+    //                         _id: { staff: "$staff._id", month: "$month" },
+    //                         workingHours: { $sum: "$workingHours" },
+    //                         subWorkingHours: { $sum: "$subWorkingHours" },
+    //                     }
 
-                        let conditionGroupByDay = {
-                            _id: { staff: "$staff._id", month: "$month", day: "$day" },
-                            workingHours: { $sum: "$workingHours" },
-                            subWorkingHours: { $sum: "$subWorkingHours" },
-                        }
+    //                     let conditionGroupByDay = {
+    //                         _id: { staff: "$staff._id", month: "$month", day: "$day" },
+    //                         workingHours: { $sum: "$workingHours" },
+    //                         subWorkingHours: { $sum: "$subWorkingHours" },
+    //                     }
 
-                        /**
-                         * DOANH SỐ CÁ NHÂN
-                         */
-                        let conditionOrderObj = { 
-                            company: ObjectID(companyID),
-                            status: 5,
-                            avgTotalPerStaff: {$exists: true, $ne: null, $gte: 0},
-                        }
-                        let projectOrderObj =  {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            day: { $dayOfMonth: "$createAt" },
-                            company : 1,
-                            funda : 1,
-                            createAt: 1,
-                            assignee : 1,
-                            executor: 1,
-                            total: 1,
-                            amount: 1,
-                            avgTotalPerStaff: 1,
-                            avgQuantityPerStaff: 1
-                        }
-                        let lookupOrderObj = {
-                            from: "users",
-                            localField: "assignee",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
-                        let conditionOrderGroup = {
-                            _id: {  staff: "$staff._id", month: "$month" },
-                            number: { $sum: 1 },
-                            avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
-                        }
-                        let conditionOrderPopulate = {
-                            path: '_id.staff',
-                            select: '_id fullname department',
-                            populate: {
-                                path: 'department',
-                                select: '_id name',
-                                model: 'department',
-                            },
-                            model: 'user'
-                        }
-                        let conditionFundaPopulate = {
-                            path: '_id.funda',
-                            select: '_id name project',
-                            populate: {
-                                path: 'project',
-                                select: '_id name',
-                                model: 'department',
-                            },
-                            model: 'funda'
-                        }
+    //                     /**
+    //                      * DOANH SỐ CÁ NHÂN
+    //                      */
+    //                     let conditionOrderObj = { 
+    //                         company: ObjectID(companyID),
+    //                         status: 5,
+    //                         avgTotalPerStaff: {$exists: true, $ne: null, $gte: 0},
+    //                     }
+    //                     let projectOrderObj =  {
+    //                         year : {$year : "$createAt"},
+    //                         month : {$month : "$createAt"},
+    //                         day: { $dayOfMonth: "$createAt" },
+    //                         company : 1,
+    //                         funda : 1,
+    //                         createAt: 1,
+    //                         assignee : 1,
+    //                         executor: 1,
+    //                         total: 1,
+    //                         amount: 1,
+    //                         avgTotalPerStaff: 1,
+    //                         avgQuantityPerStaff: 1
+    //                     }
+    //                     let lookupOrderObj = {
+    //                         from: "users",
+    //                         localField: "assignee",
+    //                         foreignField: "_id",
+    //                         as: "staff"
+    //                     } 
+    //                     let conditionOrderGroup = {
+    //                         _id: {  staff: "$staff._id", month: "$month" },
+    //                         number: { $sum: 1 },
+    //                         avgTotalPerStaff: { $sum: "$avgTotalPerStaff" },
+    //                     }
+    //                     let conditionOrderPopulate = {
+    //                         path: '_id.staff',
+    //                         select: '_id fullname department',
+    //                         populate: {
+    //                             path: 'department',
+    //                             select: '_id name',
+    //                             model: 'department',
+    //                         },
+    //                         model: 'user'
+    //                     }
+    //                     let conditionFundaPopulate = {
+    //                         path: '_id.funda',
+    //                         select: '_id name project',
+    //                         populate: {
+    //                             path: 'project',
+    //                             select: '_id name',
+    //                             model: 'department',
+    //                         },
+    //                         model: 'funda'
+    //                     }
 
-                        let listDataRevenue = await FNB_ORDER_COLL.aggregate([
-                            {
-                                $match: conditionOrderObj
-                            },
-                            {
-                                $project : projectOrderObj
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            { 
-                                $lookup: lookupOrderObj 
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $group: conditionOrderGroup
-                            },
-                            {
-                                $sort: {"_id.month": -1, "_id.funda": 1}
-                            }
-                        ])
-                        await FNB_ORDER_COLL.populate(listDataRevenue, conditionOrderPopulate)
+    //                     let listDataRevenue = await FNB_ORDER_COLL.aggregate([
+    //                         {
+    //                             $match: conditionOrderObj
+    //                         },
+    //                         {
+    //                             $project : projectOrderObj
+    //                         },
+    //                         {
+    //                             $match: conditionObjYear
+    //                         },
+    //                         { 
+    //                             $lookup: lookupOrderObj 
+    //                         },
+    //                         {
+    //                             $unwind: "$staff"
+    //                         },
+    //                         {
+    //                             $group: conditionOrderGroup
+    //                         },
+    //                         {
+    //                             $sort: {"_id.month": -1, "_id.funda": 1}
+    //                         }
+    //                     ])
+    //                     await FNB_ORDER_COLL.populate(listDataRevenue, conditionOrderPopulate)
 
-                        /**
-                         * THƯỞNG PHẠT
-                         */
-                        let conditionGroupErr = {
-                            _id: {  executor: "$executor", month: "$month" },
-                            number: { $sum: 1 },
-                            amount: { $sum: "$amount" },
-                        }
-                        let conditionPopulateErr = {
-                            path: '_id.executor',
-                            select: '_id fullname',
-                            populate: {
-                                path: 'department',
-                                select: '_id name',
-                                model: 'department',
-                            },
-                            model: 'user'
-                        }
+    //                     /**
+    //                      * THƯỞNG PHẠT
+    //                      */
+    //                     let conditionGroupErr = {
+    //                         _id: {  executor: "$executor", month: "$month" },
+    //                         number: { $sum: 1 },
+    //                         amount: { $sum: "$amount" },
+    //                     }
+    //                     let conditionPopulateErr = {
+    //                         path: '_id.executor',
+    //                         select: '_id fullname',
+    //                         populate: {
+    //                             path: 'department',
+    //                             select: '_id name',
+    //                             model: 'department',
+    //                         },
+    //                         model: 'user'
+    //                     }
 
-                        let listDataErr = await FNB_MISTAKE_COLL.aggregate([
-                            {
-                                $match: {
-                                    company: ObjectID(companyID),
-                                }
-                            },
-                            {
-                                $project : projectOrderObj
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroupErr
-                            },
-                            {
-                                $sort: {"_id.month": -1}
-                            }
-                        ])
-                        await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr)
-                        // console.log(listDataErr)
+    //                     let listDataErr = await FNB_MISTAKE_COLL.aggregate([
+    //                         {
+    //                             $match: {
+    //                                 company: ObjectID(companyID),
+    //                             }
+    //                         },
+    //                         {
+    //                             $project : projectOrderObj
+    //                         },
+    //                         {
+    //                             $match: conditionObjYear
+    //                         },
+    //                         {
+    //                             $group: conditionGroupErr
+    //                         },
+    //                         {
+    //                             $sort: {"_id.month": -1}
+    //                         }
+    //                     ])
+    //                     await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr)
+    //                     // console.log(listDataErr)
         
-                        // Danh sách nhân sự ca chính
-                        let listData1  = await FNB_SHIFT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            { 
-                                $lookup: lookupObj
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $group: {
-                                    _id: { staff: "$staff" }
-                                }
-                            }
-                        ])
+    //                     // Danh sách nhân sự ca chính
+    //                     let listData1  = await FNB_SHIFT_COLL.aggregate([
+    //                         {
+    //                             $match: conditionObj
+    //                         },
+    //                         { 
+    //                             $lookup: lookupObj
+    //                         },
+    //                         {
+    //                             $unwind: "$staff"
+    //                         },
+    //                         {
+    //                             $group: {
+    //                                 _id: { staff: "$staff" }
+    //                             }
+    //                         }
+    //                     ])
         
-                        // Danh sách nhân sự ca phụ
-                        let listData2  = await FNB_SHIFT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            { 
-                                $lookup: lookupSubObj
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $group: {
-                                    _id: { staff: "$staff" }
-                                }
-                            }
-                        ])
+    //                     // Danh sách nhân sự ca phụ
+    //                     let listData2  = await FNB_SHIFT_COLL.aggregate([
+    //                         {
+    //                             $match: conditionObj
+    //                         },
+    //                         { 
+    //                             $lookup: lookupSubObj
+    //                         },
+    //                         {
+    //                             $unwind: "$staff"
+    //                         },
+    //                         {
+    //                             $group: {
+    //                                 _id: { staff: "$staff" }
+    //                             }
+    //                         }
+    //                     ])
         
-                        let listDataTimesheet1  = await FNB_SHIFT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : projectObj
-                            },
-                            { 
-                                $lookup: lookupObj
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
+    //                     let listDataTimesheet1  = await FNB_SHIFT_COLL.aggregate([
+    //                         {
+    //                             $match: conditionObj
+    //                         },
+    //                         {
+    //                             $project : projectObj
+    //                         },
+    //                         { 
+    //                             $lookup: lookupObj
+    //                         },
+    //                         {
+    //                             $unwind: "$staff"
+    //                         },
+    //                         {
+    //                             $match: conditionObjYear
+    //                         },
+    //                         {
+    //                             $group: conditionGroup
+    //                         },
+    //                         {
+    //                             $sort: sortBy
+    //                         }
+    //                     ])
         
-                        let listDataTimesheet2  = await FNB_SHIFT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : projectObj
-                            },
-                            { 
-                                $lookup: lookupSubObj
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
+    //                     let listDataTimesheet2  = await FNB_SHIFT_COLL.aggregate([
+    //                         {
+    //                             $match: conditionObj
+    //                         },
+    //                         {
+    //                             $project : projectObj
+    //                         },
+    //                         { 
+    //                             $lookup: lookupSubObj
+    //                         },
+    //                         {
+    //                             $unwind: "$staff"
+    //                         },
+    //                         {
+    //                             $match: conditionObjYear
+    //                         },
+    //                         {
+    //                             $group: conditionGroup
+    //                         },
+    //                         {
+    //                             $sort: sortBy
+    //                         }
+    //                     ])
 
-                        let listDataTimesheet11  = await FNB_SHIFT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : projectObj
-                            },
-                            { 
-                                $lookup: lookupObj
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroupByDay
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
+    //                     let listDataTimesheet11  = await FNB_SHIFT_COLL.aggregate([
+    //                         {
+    //                             $match: conditionObj
+    //                         },
+    //                         {
+    //                             $project : projectObj
+    //                         },
+    //                         { 
+    //                             $lookup: lookupObj
+    //                         },
+    //                         {
+    //                             $unwind: "$staff"
+    //                         },
+    //                         {
+    //                             $match: conditionObjYear
+    //                         },
+    //                         {
+    //                             $group: conditionGroupByDay
+    //                         },
+    //                         {
+    //                             $sort: sortBy
+    //                         }
+    //                     ])
 
-                        let listDataTimesheet12  = await FNB_SHIFT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : projectObj
-                            },
-                            { 
-                                $lookup: lookupSubObj
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroupByDay
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
+    //                     let listDataTimesheet12  = await FNB_SHIFT_COLL.aggregate([
+    //                         {
+    //                             $match: conditionObj
+    //                         },
+    //                         {
+    //                             $project : projectObj
+    //                         },
+    //                         { 
+    //                             $lookup: lookupSubObj
+    //                         },
+    //                         {
+    //                             $unwind: "$staff"
+    //                         },
+    //                         {
+    //                             $match: conditionObjYear
+    //                         },
+    //                         {
+    //                             $group: conditionGroupByDay
+    //                         },
+    //                         {
+    //                             $sort: sortBy
+    //                         }
+    //                     ])
 
-                        // console.log(listDataTimesheet1)
-                        // console.log(listDataTimesheet2)
-                        // console.log(listDataTimesheet11)
-                        // console.log(listDataTimesheet12)
+    //                     // console.log(listDataTimesheet1)
+    //                     // console.log(listDataTimesheet2)
+    //                     // console.log(listDataTimesheet11)
+    //                     // console.log(listDataTimesheet12)
         
-                        let listData3 = [...listData1, ...listData2]
-                        let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}})
-                        .select('_id fullname department')    
-                        .populate({
-                            path: 'department',
-                            select: '_id name',
-                        })
-                        .sort({department: 1})
-                        // console.log(listStaffs)   
+    //                     let listData3 = [...listData1, ...listData2]
+    //                     let listStaffs = await USER_COLL.find({_id: {$in: listData3.map(item=>item._id.staff)}})
+    //                     .select('_id fullname department')    
+    //                     .populate({
+    //                         path: 'department',
+    //                         select: '_id name',
+    //                     })
+    //                     .sort({department: 1})
+    //                     // console.log(listStaffs)   
 
-                        // Modify the workbook.
-                        // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary_bk.xlsx'))) // Bỏ
-                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary.xlsx')))
-                        .then(async workbook => {
-                            /**
-                             * DANH SÁCH NHÂN VIÊN
-                             */
-                            var i = 4
-                            listStaffs?.forEach((item, index) => {
-                                workbook.sheet(`NhanVien`).row(i).cell(1).value(Number(index+1))
-                                workbook.sheet(`NhanVien`).row(i).cell(2).value(item.fullname)
-                                workbook.sheet(`NhanVien`).row(i).cell(3).value(item?.department?.name)
-                                workbook.sheet(`NhanVien`).row(i).cell(6).value(`${item._id}`)
-                                i++
-                            })
+    //                     // Modify the workbook.
+    //                     // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary_bk.xlsx'))) // Bỏ
+    //                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_staff_salary.xlsx')))
+    //                     .then(async workbook => {
+    //                         /**
+    //                          * DANH SÁCH NHÂN VIÊN
+    //                          */
+    //                         var i = 4
+    //                         listStaffs?.forEach((item, index) => {
+    //                             workbook.sheet(`NhanVien`).row(i).cell(1).value(Number(index+1))
+    //                             workbook.sheet(`NhanVien`).row(i).cell(2).value(item.fullname)
+    //                             workbook.sheet(`NhanVien`).row(i).cell(3).value(item?.department?.name)
+    //                             workbook.sheet(`NhanVien`).row(i).cell(6).value(`${item._id}`)
+    //                             i++
+    //                         })
 
-                            /**
-                             * DANH BẠ ĐIỂM BÁN ( // Bỏ)
-                             */
-                            // var i = 3
-                            // listDataContact?.forEach((item, index) => {
-                            //     workbook.sheet(`DanhBa`).row(i).cell(1).value(Number(index+1))
-                            //     workbook.sheet(`DanhBa`).row(i).cell(2).value(item._id.funda?.name)
-                            //     workbook.sheet(`DanhBa`).row(i).cell(3).value(Number(item._id.month))
-                            //     workbook.sheet(`DanhBa`).row(i).cell(4).value(Number(item.number))
-                            //     workbook.sheet(`DanhBa`).row(i).cell(7).value(`${item._id.funda?.project?._id}`)
-                            //     i++
-                            // })
+    //                         /**
+    //                          * DANH BẠ ĐIỂM BÁN ( // Bỏ)
+    //                          */
+    //                         // var i = 3
+    //                         // listDataContact?.forEach((item, index) => {
+    //                         //     workbook.sheet(`DanhBa`).row(i).cell(1).value(Number(index+1))
+    //                         //     workbook.sheet(`DanhBa`).row(i).cell(2).value(item._id.funda?.name)
+    //                         //     workbook.sheet(`DanhBa`).row(i).cell(3).value(Number(item._id.month))
+    //                         //     workbook.sheet(`DanhBa`).row(i).cell(4).value(Number(item.number))
+    //                         //     workbook.sheet(`DanhBa`).row(i).cell(7).value(`${item._id.funda?.project?._id}`)
+    //                         //     i++
+    //                         // })
 
-                            /**
-                             * DOANH SỐ CÁ NHÂN
-                             */
-                            var i = 3
-                            listDataRevenue?.forEach((item, index) => {
-                                workbook.sheet(`DoanhSo`).row(i).cell(1).value(Number(index+1))
-                                workbook.sheet(`DoanhSo`).row(i).cell(2).value(item._id.staff.fullname)
-                                workbook.sheet(`DoanhSo`).row(i).cell(3).value(item._id.staff?.department?.name)
-                                workbook.sheet(`DoanhSo`).row(i).cell(4).value(Number(item._id.month))
-                                workbook.sheet(`DoanhSo`).row(i).cell(5).value(Number(item.number))
-                                workbook.sheet(`DoanhSo`).row(i).cell(6).value(Number(item.avgTotalPerStaff))
-                                workbook.sheet(`DoanhSo`).row(i).cell(7).value(`${item._id.staff._id}`)
-                                i++
-                            })
+    //                         /**
+    //                          * DOANH SỐ CÁ NHÂN
+    //                          */
+    //                         var i = 3
+    //                         listDataRevenue?.forEach((item, index) => {
+    //                             workbook.sheet(`DoanhSo`).row(i).cell(1).value(Number(index+1))
+    //                             workbook.sheet(`DoanhSo`).row(i).cell(2).value(item._id.staff.fullname)
+    //                             workbook.sheet(`DoanhSo`).row(i).cell(3).value(item._id.staff?.department?.name)
+    //                             workbook.sheet(`DoanhSo`).row(i).cell(4).value(Number(item._id.month))
+    //                             workbook.sheet(`DoanhSo`).row(i).cell(5).value(Number(item.number))
+    //                             workbook.sheet(`DoanhSo`).row(i).cell(6).value(Number(item.avgTotalPerStaff))
+    //                             workbook.sheet(`DoanhSo`).row(i).cell(7).value(`${item._id.staff._id}`)
+    //                             i++
+    //                         })
 
-                            /**
-                             * THƯỞNG PHẠT
-                             */
-                            var i = 3
-                            listDataErr?.forEach((item, index) => {
-                                workbook.sheet(`ThuongPhat`).row(i).cell(1).value(Number(index+1))
-                                workbook.sheet(`ThuongPhat`).row(i).cell(2).value(item._id.executor.fullname)
-                                workbook.sheet(`ThuongPhat`).row(i).cell(3).value(item._id.executor.department.name)
-                                workbook.sheet(`ThuongPhat`).row(i).cell(4).value(Number(item._id.month))
-                                workbook.sheet(`ThuongPhat`).row(i).cell(5).value(Number(item.number))
-                                workbook.sheet(`ThuongPhat`).row(i).cell(7).value(Number(item.amount))
-                                workbook.sheet(`ThuongPhat`).row(i).cell(8).value(`${item._id.executor._id}`)
-                                i++
-                            })
+    //                         /**
+    //                          * THƯỞNG PHẠT
+    //                          */
+    //                         var i = 3
+    //                         listDataErr?.forEach((item, index) => {
+    //                             workbook.sheet(`ThuongPhat`).row(i).cell(1).value(Number(index+1))
+    //                             workbook.sheet(`ThuongPhat`).row(i).cell(2).value(item._id.executor.fullname)
+    //                             workbook.sheet(`ThuongPhat`).row(i).cell(3).value(item._id.executor.department.name)
+    //                             workbook.sheet(`ThuongPhat`).row(i).cell(4).value(Number(item._id.month))
+    //                             workbook.sheet(`ThuongPhat`).row(i).cell(5).value(Number(item.number))
+    //                             workbook.sheet(`ThuongPhat`).row(i).cell(7).value(Number(item.amount))
+    //                             workbook.sheet(`ThuongPhat`).row(i).cell(8).value(`${item._id.executor._id}`)
+    //                             i++
+    //                         })
         
-                            /**
-                             * BẢNG CHẤM CÔNG THEO NGÀY ( // Bỏ)
-                             */
-                            // for(var m = 1; m<=12; m++){
-                            //     workbook.sheet(`TS${m}`).row(1).cell(5).value(Number(yearFilter))
+    //                         /**
+    //                          * BẢNG CHẤM CÔNG THEO NGÀY ( // Bỏ)
+    //                          */
+    //                         // for(var m = 1; m<=12; m++){
+    //                         //     workbook.sheet(`TS${m}`).row(1).cell(5).value(Number(yearFilter))
         
-                            //     var i = 4
-                            //     listStaffs?.forEach((item, index) => {
-                            //         workbook.sheet(`TS${m}`).row(i).cell(1).value(Number(index+1))
-                            //         workbook.sheet(`TS${m}`).row(i).cell(2).value(item.fullname)
-                            //         workbook.sheet(`TS${m}`).row(i).cell(3).value(item?.department?.name)
-                            //         workbook.sheet(`TS${m}`).row(i).cell(36).value(`${item._id}`)
-                            //         i++
-                            //     })
-                            // }
+    //                         //     var i = 4
+    //                         //     listStaffs?.forEach((item, index) => {
+    //                         //         workbook.sheet(`TS${m}`).row(i).cell(1).value(Number(index+1))
+    //                         //         workbook.sheet(`TS${m}`).row(i).cell(2).value(item.fullname)
+    //                         //         workbook.sheet(`TS${m}`).row(i).cell(3).value(item?.department?.name)
+    //                         //         workbook.sheet(`TS${m}`).row(i).cell(36).value(`${item._id}`)
+    //                         //         i++
+    //                         //     })
+    //                         // }
 
-                            // listDataTimesheet11?.forEach((item, index) => {
-                            //     for(var m = 1; m<=12; m++){
-                            //         if(Number(item._id.month) === Number(m)){
-                            //             for(let i=4; i<=Number(listStaffs.length + 3); i++){
-                            //                 // Mã nhân viên
-                            //                 let staffID = workbook.sheet(`TS${m}`).row(i).cell(36).value()
+    //                         // listDataTimesheet11?.forEach((item, index) => {
+    //                         //     for(var m = 1; m<=12; m++){
+    //                         //         if(Number(item._id.month) === Number(m)){
+    //                         //             for(let i=4; i<=Number(listStaffs.length + 3); i++){
+    //                         //                 // Mã nhân viên
+    //                         //                 let staffID = workbook.sheet(`TS${m}`).row(i).cell(36).value()
 
-                            //                 for(var j=1;j<=31;j++){
-                            //                     if((item._id.staff.toString() === staffID.toString()) && (Number(item._id.day) === Number(j))){
-                            //                         workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value(item.workingHours)
-                            //                     }
-                            //                 }
-                            //             }
-                            //         }
-                            //     }
-                            // })
+    //                         //                 for(var j=1;j<=31;j++){
+    //                         //                     if((item._id.staff.toString() === staffID.toString()) && (Number(item._id.day) === Number(j))){
+    //                         //                         workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value(item.workingHours)
+    //                         //                     }
+    //                         //                 }
+    //                         //             }
+    //                         //         }
+    //                         //     }
+    //                         // })
 
-                            // listDataTimesheet12?.forEach((item, index) => {
-                            //     for(var m = 1; m<=12; m++){
-                            //         if(Number(item._id.month) === Number(m)){
-                            //             for(let i=4; i<=Number(listStaffs.length + 3); i++){
-                            //                 // Mã nhân viên
-                            //                 let staffID = workbook.sheet(`TS${m}`).row(i).cell(36).value()
+    //                         // listDataTimesheet12?.forEach((item, index) => {
+    //                         //     for(var m = 1; m<=12; m++){
+    //                         //         if(Number(item._id.month) === Number(m)){
+    //                         //             for(let i=4; i<=Number(listStaffs.length + 3); i++){
+    //                         //                 // Mã nhân viên
+    //                         //                 let staffID = workbook.sheet(`TS${m}`).row(i).cell(36).value()
 
-                            //                 for(var j=1;j<=31;j++){
-                            //                     if((item._id.staff.toString() === staffID.toString()) && (Number(item._id.day) === Number(j))){
-                            //                         let timesheet = workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value() | 0
+    //                         //                 for(var j=1;j<=31;j++){
+    //                         //                     if((item._id.staff.toString() === staffID.toString()) && (Number(item._id.day) === Number(j))){
+    //                         //                         let timesheet = workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value() | 0
 
-                            //                         workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value(Number(timesheet + item.subWorkingHours))
-                            //                     }
-                            //                 }
-                            //             }
-                            //         }
-                            //     }
-                            // })
+    //                         //                         workbook.sheet(`TS${m}`).row(i).cell(Number(j+3)).value(Number(timesheet + item.subWorkingHours))
+    //                         //                     }
+    //                         //                 }
+    //                         //             }
+    //                         //         }
+    //                         //     }
+    //                         // })
 
-                            /**
-                             * BẢNG CHẤM CÔNG THEO THÁNG
-                             */
-                            for(var m = 1; m<=12; m++){
-                                workbook.sheet(`T${m}`).row(1).cell(5).value(Number(yearFilter)) //
+    //                         /**
+    //                          * BẢNG CHẤM CÔNG THEO THÁNG
+    //                          */
+    //                         for(var m = 1; m<=12; m++){
+    //                             workbook.sheet(`T${m}`).row(1).cell(5).value(Number(yearFilter)) //
         
-                                var i = 4
-                                listStaffs?.forEach((item, index) => {
-                                    workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index+1))
-                                    workbook.sheet(`T${m}`).row(i).cell(2).value(item.fullname)
-                                    workbook.sheet(`T${m}`).row(i).cell(3).value(item?.department?.name)
-                                    workbook.sheet(`T${m}`).row(i).cell(19).value(`${item._id}`)
-                                    workbook.sheet(`T${m}`).row(i).cell(20).value(`${item?.department?._id}`)
-                                    i++
-                                })
-                            }
+    //                             var i = 4
+    //                             listStaffs?.forEach((item, index) => {
+    //                                 workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index+1))
+    //                                 workbook.sheet(`T${m}`).row(i).cell(2).value(item.fullname)
+    //                                 workbook.sheet(`T${m}`).row(i).cell(3).value(item?.department?.name)
+    //                                 workbook.sheet(`T${m}`).row(i).cell(19).value(`${item._id}`)
+    //                                 workbook.sheet(`T${m}`).row(i).cell(20).value(`${item?.department?._id}`)
+    //                                 i++
+    //                             })
+    //                         }
         
-                            listDataTimesheet1?.forEach((item, index) => {
-                                for(var m = 1; m<=12; m++){
-                                    if(Number(item._id.month) === Number(m)){
-                                        for(let i=4; i<=Number(listStaffs.length + 3); i++){
-                                            let staffID = workbook.sheet(`T${m}`).row(i).cell(19).value()
+    //                         listDataTimesheet1?.forEach((item, index) => {
+    //                             for(var m = 1; m<=12; m++){
+    //                                 if(Number(item._id.month) === Number(m)){
+    //                                     for(let i=4; i<=Number(listStaffs.length + 3); i++){
+    //                                         let staffID = workbook.sheet(`T${m}`).row(i).cell(19).value()
                                             
-                                            if((item._id.staff.toString() === staffID.toString())){
-                                                workbook.sheet(`T${m}`).row(i).cell(6).value(item.workingHours)
-                                            }
-                                        }
-                                    }
-                                }
-                            })
+    //                                         if((item._id.staff.toString() === staffID.toString())){
+    //                                             workbook.sheet(`T${m}`).row(i).cell(6).value(item.workingHours)
+    //                                         }
+    //                                     }
+    //                                 }
+    //                             }
+    //                         })
         
-                            listDataTimesheet2?.forEach((item, index) => {
-                                for(var m = 1; m<=12; m++){
-                                    if(Number(item._id.month) === Number(m)){
-                                        for(let i=4; i<=Number(listStaffs.length + 3); i++){
-                                            let staffID = workbook.sheet(`T${m}`).row(i).cell(19).value()
+    //                         listDataTimesheet2?.forEach((item, index) => {
+    //                             for(var m = 1; m<=12; m++){
+    //                                 if(Number(item._id.month) === Number(m)){
+    //                                     for(let i=4; i<=Number(listStaffs.length + 3); i++){
+    //                                         let staffID = workbook.sheet(`T${m}`).row(i).cell(19).value()
                                             
-                                            if((item._id.staff.toString() === staffID.toString())){
-                                                let timesheet = workbook.sheet(`T${m}`).row(i).cell(6).value() | 0
+    //                                         if((item._id.staff.toString() === staffID.toString())){
+    //                                             let timesheet = workbook.sheet(`T${m}`).row(i).cell(6).value() | 0
             
-                                                workbook.sheet(`T${m}`).row(i).cell(6).value(Number(timesheet) + Number(item.subWorkingHours))
-                                            }
-                                        }
-                                    }
-                                }
-                            })
+    //                                             workbook.sheet(`T${m}`).row(i).cell(6).value(Number(timesheet) + Number(item.subWorkingHours))
+    //                                         }
+    //                                     }
+    //                                 }
+    //                             }
+    //                         })
         
-                            const now = new Date()
-                            const filePath = '../../../files/temporary_uploads/'
-                            const fileName = `TongHopBangLuong_${now.getTime()}.xlsx`
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+    //                         const now = new Date()
+    //                         const filePath = '../../../files/temporary_uploads/'
+    //                         const fileName = `TongHopBangLuong_${now.getTime()}.xlsx`
+    //                         const pathWriteFile = path.resolve(__dirname, filePath, fileName)
         
-                            await workbook.toFileAsync(pathWriteFile)
-                            const result = await uploadFileS3(pathWriteFile, fileName)
+    //                         await workbook.toFileAsync(pathWriteFile)
+    //                         const result = await uploadFileS3(pathWriteFile, fileName)
         
-                            fs.unlinkSync(pathWriteFile)
-                            return resolve({ error: false, data: result?.Location, status: 200 })
-                        })
-                    }else{
-                        return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
-                    }
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 })
-            }
-        })
-    }
+    //                         fs.unlinkSync(pathWriteFile)
+    //                         return resolve({ error: false, data: result?.Location, status: 200 })
+    //                     })
+    //                 }else{
+    //                     return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 })
+    //         }
+    //     })
+    // }
 
     /**
      * Dev: HiepNH
      * Func: Tải Báo cáo doanh số
      * Date: 15/1/2023
      */
-    exportExcel2({ option, companyID, fundaID, fromDate, toDate, month, year, userID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!option){
-                    if(fundaID){
-                        let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
-                        .select('_id name sign company')
-                        .populate({
-                            path: 'company',
-                            select: 'name sign'
-                        })
+    // exportExcel2({ option, companyID, fundaID, fromDate, toDate, month, year, userID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!option){
+    //                 if(fundaID){
+    //                     let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+    //                     .select('_id name sign company')
+    //                     .populate({
+    //                         path: 'company',
+    //                         select: 'name sign'
+    //                     })
         
-                        let yearFilter
-                        let currentYear = new Date().getFullYear()
-                        if(year && !isNaN(year)){
-                            yearFilter = Number(year)
-                        }else{
-                            yearFilter = Number(currentYear)
-                        }
+    //                     let yearFilter
+    //                     let currentYear = new Date().getFullYear()
+    //                     if(year && !isNaN(year)){
+    //                         yearFilter = Number(year)
+    //                     }else{
+    //                         yearFilter = Number(currentYear)
+    //                     }
         
-                        // Modify the workbook.
-                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
-                        .then(async workbook => {
-                            // workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
+    //                     // Modify the workbook.
+    //                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
+    //                     .then(async workbook => {
+    //                         // workbook.sheet("Timesheet").row(2).cell(1).value(`Điểm bán: ${infoFunda.name}`);
         
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BaoCaoDoanhSo_${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+    //                         const now = new Date();
+    //                         const filePath = '../../../files/temporary_uploads/';
+    //                         const fileName = `${infoFunda.company.sign}.${infoFunda.sign}-BaoCaoDoanhSo_${now.getTime()}.xlsx`;
+    //                         const pathWriteFile = path.resolve(__dirname, filePath, fileName)
         
-                            await workbook.toFileAsync(pathWriteFile)
-                            const result = await uploadFileS3(pathWriteFile, fileName)
+    //                         await workbook.toFileAsync(pathWriteFile)
+    //                         const result = await uploadFileS3(pathWriteFile, fileName)
         
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 })
-                        })    
-                    }else{
-                        let yearFilter
-                        let currentYear = new Date().getFullYear()
-                        if(year && !isNaN(year)){
-                            yearFilter = Number(year)
-                        }else{
-                            yearFilter = Number(currentYear)
-                        }
+    //                         fs.unlinkSync(pathWriteFile);
+    //                         return resolve({ error: false, data: result?.Location, status: 200 })
+    //                     })    
+    //                 }else{
+    //                     let yearFilter
+    //                     let currentYear = new Date().getFullYear()
+    //                     if(year && !isNaN(year)){
+    //                         yearFilter = Number(year)
+    //                     }else{
+    //                         yearFilter = Number(currentYear)
+    //                     }
         
-                        // Modify the workbook.
-                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
-                        .then(async workbook => {
-                            var i = 
-                            workbook.sheet(`Data`).row(3).cell(3).value(infoFunda?.trainStaffSalar)
+    //                     // Modify the workbook.
+    //                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_revenue.xlsx')))
+    //                     .then(async workbook => {
+    //                         var i = 
+    //                         workbook.sheet(`Data`).row(3).cell(3).value(infoFunda?.trainStaffSalar)
 
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `TongHopBaoCaoDoanhSo_${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+    //                         const now = new Date();
+    //                         const filePath = '../../../files/temporary_uploads/';
+    //                         const fileName = `TongHopBaoCaoDoanhSo_${now.getTime()}.xlsx`;
+    //                         const pathWriteFile = path.resolve(__dirname, filePath, fileName)
         
-                            await workbook.toFileAsync(pathWriteFile)
-                            const result = await uploadFileS3(pathWriteFile, fileName)
+    //                         await workbook.toFileAsync(pathWriteFile)
+    //                         const result = await uploadFileS3(pathWriteFile, fileName)
         
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 })
-                        })
-                    }
-                }else{
-                    if(option == 1){
-                        // console.log('==========12345=============')
-                        // let conditionObj = { company: companyID, shiftType: 3, workingHours: { $gt: 5.5 }}
-                        let conditionObj = { }
-                        conditionObj.$and = [
-                            {
-                                company: companyID
-                            },
-                            {
-                                $or: [
-                                    { shiftType: 1, workingHours: { $gt: 5 } }, // Ca sáng,
-                                    { shiftType: 2, workingHours: { $gt: 5 } }, // Ca chiều,
-                                    { shiftType: 3, workingHours: { $gt: 5.5 } }, // Ca tối
-                                ]
-                            }
-                        ]
-                        // console.log(conditionObj)
+    //                         fs.unlinkSync(pathWriteFile);
+    //                         return resolve({ error: false, data: result?.Location, status: 200 })
+    //                     })
+    //                 }
+    //             }else{
+    //                 if(option == 1){
+    //                     // console.log('==========12345=============')
+    //                     // let conditionObj = { company: companyID, shiftType: 3, workingHours: { $gt: 5.5 }}
+    //                     let conditionObj = { }
+    //                     conditionObj.$and = [
+    //                         {
+    //                             company: companyID
+    //                         },
+    //                         {
+    //                             $or: [
+    //                                 { shiftType: 1, workingHours: { $gt: 5 } }, // Ca sáng,
+    //                                 { shiftType: 2, workingHours: { $gt: 5 } }, // Ca chiều,
+    //                                 { shiftType: 3, workingHours: { $gt: 5.5 } }, // Ca tối
+    //                             ]
+    //                         }
+    //                     ]
+    //                     // console.log(conditionObj)
 
-                        let listData = await FNB_SHIFT_COLL.find(conditionObj)
-                        .select('_id shiftType name funda workingHours subWorkingHours createAt staffs subStaffs note')
-                        .populate({
-                            path: 'funda',
-                            select: '_id name'
-                        })
-                        .limit(500)
-                        .sort({funda: -1,createAt:-1})
-                        // console.log(listData)
+    //                     let listData = await FNB_SHIFT_COLL.find(conditionObj)
+    //                     .select('_id shiftType name funda workingHours subWorkingHours createAt staffs subStaffs note')
+    //                     .populate({
+    //                         path: 'funda',
+    //                         select: '_id name'
+    //                     })
+    //                     .limit(500)
+    //                     .sort({funda: -1,createAt:-1})
+    //                     // console.log(listData)
 
-                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_bug.xlsx')))
-                        .then(async workbook => {
-                            var i = 3
-                            listData?.forEach((item, index) => {
-                                workbook.sheet(`Data`).row(i).cell(1).value(Number(index+1))
-                                workbook.sheet(`Data`).row(i).cell(2).value(item?.createAt)
-                                workbook.sheet(`Data`).row(i).cell(3).value(item?.name)
-                                workbook.sheet(`Data`).row(i).cell(4).value(item?.shiftType)
-                                workbook.sheet(`Data`).row(i).cell(5).value(item?.funda.name)
-                                workbook.sheet(`Data`).row(i).cell(6).value(item?.workingHours)
-                                workbook.sheet(`Data`).row(i).cell(7).value(item?.staffs?.length)
-                                workbook.sheet(`Data`).row(i).cell(8).value(item?.subWorkingHours)
-                                workbook.sheet(`Data`).row(i).cell(9).value(item?.subStaffs?.length)
-                                workbook.sheet(`Data`).row(i).cell(10).value(item?.note)
-                                i++
-                            })
+    //                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_bug.xlsx')))
+    //                     .then(async workbook => {
+    //                         var i = 3
+    //                         listData?.forEach((item, index) => {
+    //                             workbook.sheet(`Data`).row(i).cell(1).value(Number(index+1))
+    //                             workbook.sheet(`Data`).row(i).cell(2).value(item?.createAt)
+    //                             workbook.sheet(`Data`).row(i).cell(3).value(item?.name)
+    //                             workbook.sheet(`Data`).row(i).cell(4).value(item?.shiftType)
+    //                             workbook.sheet(`Data`).row(i).cell(5).value(item?.funda.name)
+    //                             workbook.sheet(`Data`).row(i).cell(6).value(item?.workingHours)
+    //                             workbook.sheet(`Data`).row(i).cell(7).value(item?.staffs?.length)
+    //                             workbook.sheet(`Data`).row(i).cell(8).value(item?.subWorkingHours)
+    //                             workbook.sheet(`Data`).row(i).cell(9).value(item?.subStaffs?.length)
+    //                             workbook.sheet(`Data`).row(i).cell(10).value(item?.note)
+    //                             i++
+    //                         })
 
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `BaoCaoBatThuong_${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+    //                         const now = new Date();
+    //                         const filePath = '../../../files/temporary_uploads/';
+    //                         const fileName = `BaoCaoBatThuong_${now.getTime()}.xlsx`;
+    //                         const pathWriteFile = path.resolve(__dirname, filePath, fileName)
         
-                            await workbook.toFileAsync(pathWriteFile)
-                            const result = await uploadFileS3(pathWriteFile, fileName)
+    //                         await workbook.toFileAsync(pathWriteFile)
+    //                         const result = await uploadFileS3(pathWriteFile, fileName)
         
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 })
-                        })
-                    }
-                }
-            } catch (error) {
-                console.log({ error })
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //                         fs.unlinkSync(pathWriteFile);
+    //                         return resolve({ error: false, data: result?.Location, status: 200 })
+    //                     })
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             console.log({ error })
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 }
 
 exports.MODEL = new Model;
