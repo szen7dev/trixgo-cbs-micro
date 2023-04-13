@@ -14,6 +14,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
 const moment = require("moment");
+const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 
 /**s
  * import inter-coll, exter-coll
@@ -267,8 +268,8 @@ class Model extends BaseModel {
         // console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 200){
-                    limit = 200;
+                if(Number(limit) > 20){
+                    limit = 20;
                 } else{
                     limit = +Number(limit);
                 }
@@ -385,13 +386,14 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-        keyword, limit, lastestID, select, populates, sortKey, userID }) {
+    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate }) {
             // console.log({fundasID, fromDate, toDate})
         return new Promise(async (resolve) => {
             try {
-                if(!option){
-                    // Danh sách
+                let duration = getTimeBetween(toDate, fromDate)
+                // console.log({duration:duration/86400})
+                if(Number(duration/86400) > 90){
+                    // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
                 }else{
                     let conditionObj = {}
                     let conditionGroup = {}
@@ -415,8 +417,6 @@ class Model extends BaseModel {
                         conditionObj.createAt = {
                             $gte: new Date(fromDate),
                             $lte: new Date(toDate),
-                            // $gte: moment(fromDate).startOf('day')._d,
-                            // $lte: moment(toDate).endOf('day')._d,
                         }
                     }
 
