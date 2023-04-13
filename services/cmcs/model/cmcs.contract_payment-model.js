@@ -275,8 +275,8 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20;
+                if(limit > 10){
+                    limit = 10;
                 } else{
                     limit = +limit;
                 }
@@ -540,110 +540,110 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 04/04/2022
      */
-    getAmountByMonth({ userID, companyID, projectID, contractID, outin, year, option }){
-        return new Promise(async resolve => {
-            try {
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
+    // getAmountByMonth({ userID, companyID, projectID, contractID, outin, year, option }){
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
 
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj.outin = Number(outin)
-                }
+    //             if(!isNaN(outin) && Number(outin) >= 0){
+    //                 conditionObj.outin = Number(outin)
+    //             }
 
-                 /**
-                 * Lấy số liệu theo hợp đồng, dự án hoặc theo năm
-                 */
-                if(contractID && checkObjectIDs(contractID)){
-                    conditionObj.contract = ObjectID(contractID)
-                }else{
-                    if(projectID && checkObjectIDs(projectID)){
-                        conditionObj.project = ObjectID(projectID)
-                    }else{
-                        if(companyID && checkObjectIDs(companyID)){
-                            conditionObj.company = ObjectID(companyID)
-                        }
-                    }
-                }
+    //              /**
+    //              * Lấy số liệu theo hợp đồng, dự án hoặc theo năm
+    //              */
+    //             if(contractID && checkObjectIDs(contractID)){
+    //                 conditionObj.contract = ObjectID(contractID)
+    //             }else{
+    //                 if(projectID && checkObjectIDs(projectID)){
+    //                     conditionObj.project = ObjectID(projectID)
+    //                 }else{
+    //                     if(companyID && checkObjectIDs(companyID)){
+    //                         conditionObj.company = ObjectID(companyID)
+    //                     }
+    //                 }
+    //             }
 
-                if(!option){
-                    console.log('SỐ LIỆU TIỀN VỀ NĂM NAY====================================')
-                    conditionGroup = {
-                        _id: { month: "$month", year: "$year" },
-                        amount: { $sum: "$amount" },
-                    }
+    //             if(!option){
+    //                 console.log('SỐ LIỆU TIỀN VỀ NĂM NAY====================================')
+    //                 conditionGroup = {
+    //                     _id: { month: "$month", year: "$year" },
+    //                     amount: { $sum: "$amount" },
+    //                 }
 
-                    if(!isNaN(year) && Number(year) >= 0){
-                        conditionObjYear = {
-                            "year": Number(year),
-                        }
-                    }
+    //                 if(!isNaN(year) && Number(year) >= 0){
+    //                     conditionObjYear = {
+    //                         "year": Number(year),
+    //                     }
+    //                 }
 
-                }else{
-                    if(option && option == 1){
-                        console.log('SỐ LIỆU TIỀN VỀ NĂM NGOÁI====================================')
+    //             }else{
+    //                 if(option && option == 1){
+    //                     console.log('SỐ LIỆU TIỀN VỀ NĂM NGOÁI====================================')
                         
-                        conditionGroup = {
-                            _id: { year: "$year" },
-                            amount: { $sum: "$amount" },
-                        }
+    //                     conditionGroup = {
+    //                         _id: { year: "$year" },
+    //                         amount: { $sum: "$amount" },
+    //                     }
 
-                        let firstDayOfLastYear = `${Number(year-1)}-01-01T00:00:00.000Z`;
-                        let lastDayOfLastYear 
+    //                     let firstDayOfLastYear = `${Number(year-1)}-01-01T00:00:00.000Z`;
+    //                     let lastDayOfLastYear 
 
-                        let thisYear = moment(new Date()).toDate().getFullYear()
+    //                     let thisYear = moment(new Date()).toDate().getFullYear()
 
-                        if(Number(year) == Number(thisYear)){
-                            var today = new Date(); 
-                            //Sunday 4 September 2016 - Week 36
-                            // console.log({today})
+    //                     if(Number(year) == Number(thisYear)){
+    //                         var today = new Date(); 
+    //                         //Sunday 4 September 2016 - Week 36
+    //                         // console.log({today})
     
-                            lastDayOfLastYear = new moment(today).subtract(12, 'months').toDate();
-                            //Friday 4 September 2015 - Week 37
-                            // console.log({lastDayOfLastYear})
-                        }else{
-                            lastDayOfLastYear = `${Number(year-1)}-12-31T00:00:00.000Z`;
-                        }
+    //                         lastDayOfLastYear = new moment(today).subtract(12, 'months').toDate();
+    //                         //Friday 4 September 2015 - Week 37
+    //                         // console.log({lastDayOfLastYear})
+    //                     }else{
+    //                         lastDayOfLastYear = `${Number(year-1)}-12-31T00:00:00.000Z`;
+    //                     }
 
-                        conditionObj.date = {
-                            // $gte: moment(firstDayOfLastYear).toDate(),
-                            // $lt: moment(lastDayOfLastYear).toDate(),
-                            $gte: new Date(firstDayOfLastYear),
-                            $lte: new Date(lastDayOfLastYear)
-                        }
-                        console.log(conditionObj)
-                    }
-                }
+    //                     conditionObj.date = {
+    //                         // $gte: moment(firstDayOfLastYear).toDate(),
+    //                         // $lt: moment(lastDayOfLastYear).toDate(),
+    //                         $gte: new Date(firstDayOfLastYear),
+    //                         $lte: new Date(lastDayOfLastYear)
+    //                     }
+    //                     console.log(conditionObj)
+    //                 }
+    //             }
 
-                let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
-                    {
-                        $match: conditionObj
-                    },
-                    {
-                        $project : {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            amount: { $sum: ["$value"] },
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    },
-                    {
-                        $group: conditionGroup
-                    },
-                    {
-                        $sort: {
-                            "_id.year": 1,
-                            "_id.month": 1,
-                        }
-                    }
-                ])
+    //             let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+    //                 {
+    //                     $match: conditionObj
+    //                 },
+    //                 {
+    //                     $project : {
+    //                         year : {$year : "$date"},
+    //                         month : {$month : "$date"},
+    //                         amount: { $sum: ["$value"] },
+    //                     }
+    //                 },
+    //                 {
+    //                     $match: conditionObjYear
+    //                 },
+    //                 {
+    //                     $group: conditionGroup
+    //                 },
+    //                 {
+    //                     $sort: {
+    //                         "_id.year": 1,
+    //                         "_id.month": 1,
+    //                     }
+    //                 }
+    //             ])
 
-                return resolve({ error: false, data: listData });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: listData });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
 
     /**
      * Name: Gom nhóm theo đối tượng
