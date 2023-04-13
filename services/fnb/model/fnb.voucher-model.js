@@ -30,7 +30,7 @@ const ITEM__CONTACT_COLL            		   = require('../../item/database/item.con
 // const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 const FNB_VOUCHER_COLL                          = require('../database/fnb.voucher-coll');
 
-const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;
+// const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;
 
 /**
  * import inter-model, exter-model
@@ -108,7 +108,7 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     update({ companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers }) {
-        // console.log({ userID, voucherID, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers })
+        // console.log({ companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(voucherID))
@@ -145,6 +145,7 @@ class Model extends BaseModel {
                     if(!isNaN(template) && Number(template) > 0){
                         dataUpdate.template = Number(template)
                     }
+
                     if(!isNaN(type) && Number(type) > 0){
                         dataUpdate.type = Number(type)
                     }
@@ -590,6 +591,7 @@ class Model extends BaseModel {
                                 // console.log(dataInsert)
 
                                 let info = await ITEM__CONTACT_MODEL.insert(dataInsert)
+                                // let info = await ITEM__CONTACT_COLL.insert(dataInsert)
                                 //    console.log(info)
                             }
         
@@ -682,3 +684,6 @@ class Model extends BaseModel {
 }
 
 exports.MODEL = new Model
+
+// Import tại đây để không bị lỗi triệu gọi CHÉO
+const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;

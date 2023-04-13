@@ -26,13 +26,10 @@ const { CONTACT_GENDER }                = require('../helper/item.keys-constant'
  * COLLECTIONS
  */
 const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll')
-const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll')
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll')
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
-const CONTACT_DOCUMENT_COLL                         = require('../../human/database/human.contact_document-coll')
 
 const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll');
-const e = require('express');
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL;
 
 class Model extends BaseModel {
@@ -298,18 +295,29 @@ class Model extends BaseModel {
                  * Chỉ áp dụng trong khoảng thời gian được khống chế
                  */
                 if(referrerID && checkObjectIDs(referrerID)){
-                    // Tạo voucher cho người được giới thiệu (type=3)
-                    let infoVoucher = await FNB_VOUCHER_COLL.findOne({ type: 3 })
-                    .sort({_id: -1 })
+                    /**
+                     * Tạo voucher cho Nngười được giới thiệu (type=3)
+                     * 1-Phân loại Type = 3
+                     * 2-Còn thời hạn sử dụng
+                     */
+                    let infoVoucher = await FNB_VOUCHER_COLL.findOne({ 
+                        type: 3, 
+                        company: infoFunda.company, 
+                        expired: { $gt: new Date() }
+                     })
+                    .sort({_id: 1 })
                     .select("_id name sign")
                     // console.log(infoVoucher)
                     if(infoVoucher){
                         let infoVoucherAfterUpdate = await FNB_ORDER_VOUCHER_MODEL.update({
+                            companyID: infoFunda.company,
                             userID: authorID, 
                             voucherID: infoVoucher._id, 
                             receivers:[infoAfterInsert._id]
                         })
                         // console.log(infoVoucherAfterUpdate)
+                    }else{
+                        console.log('===========Không tồn tại Voucher==================')
                     }
                 }
 
