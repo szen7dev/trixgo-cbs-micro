@@ -1398,10 +1398,12 @@ class Model extends BaseModel {
                     // Tìm theo Khách hàng
                     if(customerID && checkObjectIDs(customerID)){
                         // console.log('==============Trường hợp 5555555555===============>')
+                        limit = 5
                         conditionObj.customer = ObjectID(customerID)
                     }else{
                         if(voucherID && checkObjectIDs(voucherID)){
                             // console.log('==============Trường hợp 5555555555===============>')
+                            limit = 5
                             conditionObj.voucher = ObjectID(voucherID)
                         }
 
@@ -1415,6 +1417,7 @@ class Model extends BaseModel {
                             // console.log(listOP)
 
                             conditionObj._id = {$in: listOP.map(item=>item.order)}
+                            limit = 5
                         }
                     }
                 }
