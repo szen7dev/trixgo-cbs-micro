@@ -265,7 +265,7 @@ class Model extends BaseModel {
                     // Chi phí ca làm việc
                     dataInUpdate.officialStaffSalar = Number(infoFunda.officialStaffSalar)
                     dataInUpdate.trialStaffSalary = Number(infoFunda.trialStaffSalary)
-                    dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.trialStaffSalary)*Number(subWorkingHours)*Number(subStaffsID.length)
+                    dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.officialStaffSalar)*Number(subWorkingHours)*Number(subStaffsID.length)
 
                     if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
                         dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
