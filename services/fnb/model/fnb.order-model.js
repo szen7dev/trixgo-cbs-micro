@@ -2320,501 +2320,501 @@ class Model extends BaseModel {
      * Func: Tải Đơn hàng
      * Date: 4/2/2023
      */
-    // exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
-    //     // console.log({ companyID, option, year, month, filterParams, userID })
-    //     return new Promise(async resolve => {
-    //         try {
-    //             // DANH SÁCH ĐƠN HÀNG
-    //             if(!option || option == undefined){
+    exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
+        // console.log({ companyID, option, year, month, filterParams, userID })
+        return new Promise(async resolve => {
+            try {
+                // DANH SÁCH ĐƠN HÀNG
+                if(!option || option == undefined){
 
-    //                 let conditionObj = { company: companyID }
+                    let conditionObj = { company: companyID }
 
-    //                 // let str = '{"name": "John", "age": 30, "city": "New York"}';
-    //                 let obj = JSON.parse(filterParams);
-    //                 // console.log(obj);
+                    // let str = '{"name": "John", "age": 30, "city": "New York"}';
+                    let obj = JSON.parse(filterParams);
+                    // console.log(obj);
 
-    //                 let fundasID = obj.fundasID
-    //                 let shiftTypes = obj.shiftTypes
-    //                 let fromDate = obj.fromDate
-    //                 let toDate = obj.toDate
-    //                 let keyword = obj.keyword
-    //                 let salesChannels = obj.salesChannels
-    //                 let statuss = obj.statuss
-    //                 let isMistake = obj.isMistake
-    //                 let isDiscount = obj.isDiscount
-    //                 let isSalesoff = obj.isSalesoff
-    //                 let isCredit = obj.isCredit
-    //                 let isOffer = obj.isOffer
-    //                 let isNonResident = obj.isNonResident
-    //                 let isCustomerType = obj.isCustomerType
+                    let fundasID = obj.fundasID
+                    let shiftTypes = obj.shiftTypes
+                    let fromDate = obj.fromDate
+                    let toDate = obj.toDate
+                    let keyword = obj.keyword
+                    let salesChannels = obj.salesChannels
+                    let statuss = obj.statuss
+                    let isMistake = obj.isMistake
+                    let isDiscount = obj.isDiscount
+                    let isSalesoff = obj.isSalesoff
+                    let isCredit = obj.isCredit
+                    let isOffer = obj.isOffer
+                    let isNonResident = obj.isNonResident
+                    let isCustomerType = obj.isCustomerType
 
-    //                 if(fundasID && fundasID.length ){
-    //                     let arrFun = fundasID.map(item=>ObjectID(item))
+                    if(fundasID && fundasID.length ){
+                        let arrFun = fundasID.map(item=>ObjectID(item))
 
-    //                     if(arrFun.length) {
-    //                         conditionObj.funda = { $in: arrFun };
-    //                     }
-    //                 }else{
-    //                     let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-    //                     let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
-    //                     if(fundasIDIsMember.length) {
-    //                         conditionObj.funda = { $in: fundasIDIsMember };
-    //                     }else{
-    //                         conditionObj.funda = { $in: [] }
-    //                     }
-    //                 }
+                        if(arrFun.length) {
+                            conditionObj.funda = { $in: arrFun };
+                        }
+                    }else{
+                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }else{
+                            conditionObj.funda = { $in: [] }
+                        }
+                    }
 
-    //                 shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
-    //                 salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
-    //                 statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
+                    shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
+                    salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
+                    statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
 
-    //                 // Phân loại khác
-    //                 if(isMistake && isMistake == 1){
-    //                     conditionObj.numberOfMistakes = { $gt: 0 }
-    //                 }
+                    // Phân loại khác
+                    if(isMistake && isMistake == 1){
+                        conditionObj.numberOfMistakes = { $gt: 0 }
+                    }
 
-    //                 if(isNonResident && isNonResident == 1){
-    //                     conditionObj.nonResident = 2
-    //                 }
+                    if(isNonResident && isNonResident == 1){
+                        conditionObj.nonResident = 2
+                    }
 
-    //                 if(isDiscount && isDiscount == 1){
-    //                     conditionObj.discount = { $gt: 0 }
-    //                 }
+                    if(isDiscount && isDiscount == 1){
+                        conditionObj.discount = { $gt: 0 }
+                    }
 
-    //                 if(isSalesoff && isSalesoff == 1){
-    //                     conditionObj.salesoff = { $gt: 0 }
-    //                 }
+                    if(isSalesoff && isSalesoff == 1){
+                        conditionObj.salesoff = { $gt: 0 }
+                    }
 
-    //                 if(isCredit && isCredit == 1){
-    //                     conditionObj.credit = { $gt: 0 }
-    //                 }
+                    if(isCredit && isCredit == 1){
+                        conditionObj.credit = { $gt: 0 }
+                    }
 
-    //                 if(isOffer && isOffer == 1){
-    //                     conditionObj.offer = { $gt: 0 }
-    //                 }
+                    if(isOffer && isOffer == 1){
+                        conditionObj.offer = { $gt: 0 }
+                    }
 
-    //                 if(isCustomerType && isCustomerType == 1){
-    //                     conditionObj.customerType = 1
-    //                 }
-    //                 if(isCustomerType && isCustomerType == 2){
-    //                     conditionObj.customerType = 2
-    //                 }
-    //                 // console.log(conditionObj)
+                    if(isCustomerType && isCustomerType == 1){
+                        conditionObj.customerType = 1
+                    }
+                    if(isCustomerType && isCustomerType == 2){
+                        conditionObj.customerType = 2
+                    }
+                    // console.log(conditionObj)
 
-    //                 // Phân loại theo thời khoảng
-    //                 if(fromDate && toDate){
-    //                     conditionObj.createAt = {
-    //                         $gte: new Date(fromDate),
-    //                         $lte: new Date(toDate),
-    //                     }
-    //                 }
+                    // Phân loại theo thời khoảng
+                    if(fromDate && toDate){
+                        conditionObj.createAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
 
-    //                 if(keyword){
-    //                     keyword = keyword.split(" ");
-    //                     keyword = '.*' + keyword.join(".*") + '.*';
-    //                     const regSearch = new RegExp(keyword, 'i');
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        const regSearch = new RegExp(keyword, 'i');
 
-    //                     conditionObj.$or = [
-    //                         { name: regSearch },
-    //                         { sign: regSearch },
-    //                     ]
-    //                 }
+                        conditionObj.$or = [
+                            { name: regSearch },
+                            { sign: regSearch },
+                        ]
+                    }
 
-    //                 let listData  = await FNB_ORDER_COLL.find(conditionObj)
-    //                 .populate({
-    //                     path: "funda",
-    //                     select: "name sign",
-    //                 })
-    //                 .populate({
-    //                     path: "shift",
-    //                     select: "name sign",
-    //                 })
-    //                 .limit(1500)
-    //                 .sort({createAt: -1})
+                    let listData  = await FNB_ORDER_COLL.find(conditionObj)
+                    .populate({
+                        path: "funda",
+                        select: "name sign",
+                    })
+                    .populate({
+                        path: "shift",
+                        select: "name sign",
+                    })
+                    .limit(500)
+                    .sort({createAt: -1})
 
-    //                 let yearFilter
-    //                 let currentYear = new Date().getFullYear()
-    //                 if(year && !isNaN(year)){
-    //                     yearFilter = Number(year)
-    //                 }else{
-    //                     yearFilter = Number(currentYear)
-    //                 }
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
 
-    //                 // Modify the workbook.
-    //                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
-    //                 .then(async workbook => {
-    //                     var i = 3;
-    //                     listData?.forEach((item, index) => {
-    //                         workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-    //                         workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-    //                         workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-    //                         workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-    //                         workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-    //                         workbook.sheet("Order").row(i).cell(6).value(item.name);
-    //                         workbook.sheet("Order").row(i).cell(7).value(item.sign);
-    //                         workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-    //                         workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-    //                         workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-    //                         workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-    //                         workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-    //                         workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-    //                         workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-    //                         workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
-    //                         workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
-    //                         workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
-    //                         workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfSizeM));
-    //                         workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfSizeL));
-    //                         workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfProducts));
-    //                         workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfMistakes));
-    //                         workbook.sheet("Order").row(i).cell(22).value(item.note);
-    //                         workbook.sheet("Order").row(i).cell(23).value(Number(item.loyaltyPoints));
-    //                         workbook.sheet("Order").row(i).cell(24).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
-    //                         workbook.sheet("Order").row(i).cell(25).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
-    //                         if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
-    //                             workbook.sheet("Order").row(i).cell(26).value('Đơn nhân viên');
-    //                         }
-    //                         if(Number(item.nonResident) === 2){
-    //                             workbook.sheet("Order").row(i).cell(27).value('Khách vãng lai');
-    //                         }
-    //                         i++
-    //                     });
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
+                    .then(async workbook => {
+                        var i = 3;
+                        listData?.forEach((item, index) => {
+                            workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
+                            workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                            workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
+                            workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
+                            workbook.sheet("Order").row(i).cell(6).value(item.name);
+                            workbook.sheet("Order").row(i).cell(7).value(item.sign);
+                            workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
+                            workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
+                            workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
+                            workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
+                            workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
+                            workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
+                            workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
+                            workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
+                            workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
+                            workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
+                            workbook.sheet("Order").row(i).cell(18).value(Number(item.numberOfSizeM));
+                            workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfSizeL));
+                            workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfProducts));
+                            workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfMistakes));
+                            workbook.sheet("Order").row(i).cell(22).value(item.note);
+                            workbook.sheet("Order").row(i).cell(23).value(Number(item.loyaltyPoints));
+                            workbook.sheet("Order").row(i).cell(24).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
+                            workbook.sheet("Order").row(i).cell(25).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
+                            if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
+                                workbook.sheet("Order").row(i).cell(26).value('Đơn nhân viên');
+                            }
+                            if(Number(item.nonResident) === 2){
+                                workbook.sheet("Order").row(i).cell(27).value('Khách vãng lai');
+                            }
+                            i++
+                        });
 
-    //                     const now = new Date();
-    //                     const filePath = '../../../files/temporary_uploads/';
-    //                     const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
-    //                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-    //                     await workbook.toFileAsync(pathWriteFile);
-    //                     const result = await uploadFileS3(pathWriteFile, fileName);
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
 
-    //                     fs.unlinkSync(pathWriteFile);
-    //                     return resolve({ error: false, data: result?.Location, status: 200 });
-    //                 })
-    //             }else{
-    //                 // QUẢN LÝ DOANH SỐ
-    //                 if(option == 1){
-    //                     let yearFilter
-    //                     let currentYear = new Date().getFullYear()
-    //                     if(year && !isNaN(year)){
-    //                         yearFilter = Number(year)
-    //                     }else{
-    //                         yearFilter = Number(currentYear)
-    //                     }
-    //                     let conditionObjYear = {
-    //                         "year": Number(yearFilter),
-    //                     }
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    })
+                }else{
+                    // QUẢN LÝ DOANH SỐ
+                    if(option == 1){
+                        let yearFilter
+                        let currentYear = new Date().getFullYear()
+                        if(year && !isNaN(year)){
+                            yearFilter = Number(year)
+                        }else{
+                            yearFilter = Number(currentYear)
+                        }
+                        let conditionObjYear = {
+                            "year": Number(yearFilter),
+                        }
 
-    //                     let conditionObj = {
-    //                         company: ObjectID(companyID),
-    //                         status: 5
-    //                     }
+                        let conditionObj = {
+                            company: ObjectID(companyID),
+                            status: 5
+                        }
 
-    //                     // Địa điểm cơ sở được quyền truy cập
-    //                     let listFuda = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}}).select("_id name sign").sort({_id: 1})
-    //                     let fundasIDIsMember = listFuda.map(item=>ObjectID(item._id));
-    //                     if(fundasIDIsMember.length) {
-    //                         conditionObj.funda = { $in: fundasIDIsMember };
-    //                     }else{
-    //                         conditionObj.funda = { $in: [] }
-    //                     }
+                        // Địa điểm cơ sở được quyền truy cập
+                        let listFuda = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}}).select("_id name sign").sort({_id: 1})
+                        let fundasIDIsMember = listFuda.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }else{
+                            conditionObj.funda = { $in: [] }
+                        }
 
-    //                     let projectObj =  {
-    //                         year : {$year : "$createAt"},
-    //                         month : {$month : "$createAt"},
-    //                         day: { $dayOfMonth: "$createAt" },
-    //                         company : 1,
-    //                         funda : 1,
-    //                         createAt: 1,
-    //                         total: 1,
-    //                         discount: 1,
-    //                         salesoff: 1,
-    //                         credit: 1,
-    //                         amount: 1,
-    //                         salesChannel: 1
-    //                     }
-    //                     let sortBy = {"_id.salesChannel": 1}
-    //                     let conditionGroup = {}, conditionPopulate = {}
+                        let projectObj =  {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            day: { $dayOfMonth: "$createAt" },
+                            company : 1,
+                            funda : 1,
+                            createAt: 1,
+                            total: 1,
+                            discount: 1,
+                            salesoff: 1,
+                            credit: 1,
+                            amount: 1,
+                            salesChannel: 1
+                        }
+                        let sortBy = {"_id.salesChannel": 1}
+                        let conditionGroup = {}, conditionPopulate = {}
 
-    //                     conditionGroup = {
-    //                         _id: {  salesChannel: "$salesChannel", funda: "$funda", month: "$month" },
-    //                         number: { $sum: 1 },
-    //                         total: { $sum: "$total" },
-    //                         discount: { $sum: "$discount" },
-    //                         salesoff: { $sum: "$salesoff" },
-    //                         credit: { $sum: "$credit" },
-    //                         amount: { $sum: "$amount" },
-    //                     }
+                        conditionGroup = {
+                            _id: {  salesChannel: "$salesChannel", funda: "$funda", month: "$month" },
+                            number: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            amount: { $sum: "$amount" },
+                        }
 
-    //                     conditionPopulate = {
-    //                         path: '_id.funda',
-    //                         select: '_id name',
-    //                         model: 'funda'
-    //                     }
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name',
+                            model: 'funda'
+                        }
 
-    //                     let conditionGroupDay = {
-    //                         _id: {  salesChannel: "$salesChannel", day: "$day", month: "$month" },
-    //                         number: { $sum: 1 },
-    //                         total: { $sum: "$total" },
-    //                         discount: { $sum: "$discount" },
-    //                         salesoff: { $sum: "$salesoff" },
-    //                         credit: { $sum: "$credit" },
-    //                         amount: { $sum: "$amount" },
-    //                     }
+                        let conditionGroupDay = {
+                            _id: {  salesChannel: "$salesChannel", day: "$day", month: "$month" },
+                            number: { $sum: 1 },
+                            total: { $sum: "$total" },
+                            discount: { $sum: "$discount" },
+                            salesoff: { $sum: "$salesoff" },
+                            credit: { $sum: "$credit" },
+                            amount: { $sum: "$amount" },
+                        }
 
-    //                     let listData = await FNB_ORDER_COLL.aggregate([
-    //                         {
-    //                             $match: conditionObj
-    //                         },
-    //                         {
-    //                             $project : projectObj
-    //                         },
-    //                         {
-    //                             $match: conditionObjYear
-    //                         },
-    //                         {
-    //                             $group: conditionGroup
-    //                         },
-    //                         {
-    //                             $sort: sortBy
-    //                         }
-    //                     ])
+                        let listData = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : projectObj
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            }
+                        ])
 
-    //                     let listData2 = await FNB_ORDER_COLL.aggregate([
-    //                         {
-    //                             $match: conditionObj
-    //                         },
-    //                         {
-    //                             $project : projectObj
-    //                         },
-    //                         {
-    //                             $match: conditionObjYear
-    //                         },
-    //                         {
-    //                             $group: conditionGroupDay
-    //                         },
-    //                         {
-    //                             $sort: {"_id.month": 1, "_id.day": 1}
-    //                         }
-    //                     ])
-    //                     // console.log(listData2)
+                        let listData2 = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project : projectObj
+                            },
+                            {
+                                $match: conditionObjYear
+                            },
+                            {
+                                $group: conditionGroupDay
+                            },
+                            {
+                                $sort: {"_id.month": 1, "_id.day": 1}
+                            }
+                        ])
+                        // console.log(listData2)
 
-    //                     // Modify the workbook.
-    //                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
-    //                     .then(async workbook => {
-    //                         for(var m = 1; m<=12; m++){
-    //                             var i = 3
-    //                                 listFuda?.forEach((item, index) => {
-    //                                 workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index + 1))
-    //                                 workbook.sheet(`T${m}`).row(i).cell(2).value(item.name)
-    //                                 workbook.sheet(`T${m}`).row(i).cell(3).value(`${item._id}`)
-    //                                 i++
-    //                             })
-    //                         }
+                        // Modify the workbook.
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
+                        .then(async workbook => {
+                            for(var m = 1; m<=12; m++){
+                                var i = 3
+                                    listFuda?.forEach((item, index) => {
+                                    workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet(`T${m}`).row(i).cell(2).value(item.name)
+                                    workbook.sheet(`T${m}`).row(i).cell(3).value(`${item._id}`)
+                                    i++
+                                })
+                            }
 
-    //                         listData?.forEach((item, index) => {
-    //                             for(var m = 1; m<=12; m++){
-    //                                 if(Number(item._id.month) === Number(m)){
-    //                                     for(var i=3; i<=Number(listFuda.length + 2); i++){
+                            listData?.forEach((item, index) => {
+                                for(var m = 1; m<=12; m++){
+                                    if(Number(item._id.month) === Number(m)){
+                                        for(var i=3; i<=Number(listFuda.length + 2); i++){
 
-    //                                         let discount = 0, salesoff = 0, credit = 0, amount = 0
-    //                                         let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
+                                            let discount = 0, salesoff = 0, credit = 0, amount = 0
+                                            let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
 
-    //                                         if((item._id.funda.toString() === fundaID.toString())){
-    //                                             for(var j=4; j<=10; j++){
-    //                                                 if((Number(item._id.salesChannel) === Number(j-3))){
-    //                                                     workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.total))
-    //                                                 }
-    //                                             }
-    //                                         }
-    //                                     }
-    //                                 }
-    //                             }
-    //                         })
+                                            if((item._id.funda.toString() === fundaID.toString())){
+                                                for(var j=4; j<=10; j++){
+                                                    if((Number(item._id.salesChannel) === Number(j-3))){
+                                                        workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.total))
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            })
 
-    //                         for(var m = 1; m<=12; m++){
-    //                             for(var i=3; i<=Number(listFuda.length + 2); i++){
+                            for(var m = 1; m<=12; m++){
+                                for(var i=3; i<=Number(listFuda.length + 2); i++){
 
-    //                                 let discount = 0, salesoff = 0, credit = 0, amount = 0
+                                    let discount = 0, salesoff = 0, credit = 0, amount = 0
 
-    //                                 let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
+                                    let fundaID = workbook.sheet(`T${m}`).row(i).cell(3).value()
 
-    //                                 listData?.forEach((item, index) => {
-    //                                     if((item._id.funda.toString() === fundaID.toString()) && Number(item._id.month) === Number(m)){
+                                    listData?.forEach((item, index) => {
+                                        if((item._id.funda.toString() === fundaID.toString()) && Number(item._id.month) === Number(m)){
 
-    //                                         discount = Number(discount) + Number(item.discount)
-    //                                         salesoff = Number(salesoff) + Number(item.salesoff)
-    //                                         credit = Number(credit) + Number(item.credit)
-    //                                         amount = Number(amount) + Number(item.amount)
-    //                                     }
-    //                                 })
+                                            discount = Number(discount) + Number(item.discount)
+                                            salesoff = Number(salesoff) + Number(item.salesoff)
+                                            credit = Number(credit) + Number(item.credit)
+                                            amount = Number(amount) + Number(item.amount)
+                                        }
+                                    })
 
-    //                                 workbook.sheet(`T${m}`).row(i).cell(11).value(Number(discount))
-    //                                 workbook.sheet(`T${m}`).row(i).cell(12).value(Number(salesoff))
-    //                                 workbook.sheet(`T${m}`).row(i).cell(13).value(Number(credit))
-    //                                 workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
-    //                             }
-    //                         }
+                                    workbook.sheet(`T${m}`).row(i).cell(11).value(Number(discount))
+                                    workbook.sheet(`T${m}`).row(i).cell(12).value(Number(salesoff))
+                                    workbook.sheet(`T${m}`).row(i).cell(13).value(Number(credit))
+                                    workbook.sheet(`T${m}`).row(i).cell(14).value(Number(amount))
+                                }
+                            }
 
 
-    //                         workbook.sheet(`BaoCaoNgay`).row(1).cell(2).value(Number(currentYear))
-    //                         listData2?.forEach((item, index) => {
+                            workbook.sheet(`BaoCaoNgay`).row(1).cell(2).value(Number(currentYear))
+                            listData2?.forEach((item, index) => {
 
-    //                             for(var i = 3; i<=379; i++){
+                                for(var i = 3; i<=379; i++){
 
-    //                                 let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
-    //                                 let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
+                                    let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
+                                    let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
 
-    //                                 for(var j=5; j<=11; j++){
-    //                                     if((Number(item._id.salesChannel) === Number(j-4)) && Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){
-    //                                         workbook.sheet(`BaoCaoNgay`).row(i).cell(j).value(Number(item.total))
-    //                                     }
-    //                                 }
-    //                             }
-    //                         })
+                                    for(var j=5; j<=11; j++){
+                                        if((Number(item._id.salesChannel) === Number(j-4)) && Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){
+                                            workbook.sheet(`BaoCaoNgay`).row(i).cell(j).value(Number(item.total))
+                                        }
+                                    }
+                                }
+                            })
 
-    //                         for(var i = 3; i<=379; i++){
-    //                             let discount = 0, salesoff = 0, credit = 0, amount = 0
-    //                             let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
-    //                             let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
+                            for(var i = 3; i<=379; i++){
+                                let discount = 0, salesoff = 0, credit = 0, amount = 0
+                                let xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value()
+                                let xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value()
 
-    //                             if(!isNaN(xlsDay)){
-    //                                 // console.log({xlsDay, xlsMonth})
-    //                                 listData2?.forEach((item, index) => {
-    //                                     if(Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){
-    //                                         discount = Number(discount) + Number(item.discount)
-    //                                         salesoff = Number(salesoff) + Number(item.salesoff)
-    //                                         credit = Number(credit) + Number(item.credit)
-    //                                         amount = Number(amount) + Number(item.amount)
-    //                                     }
-    //                                 })
+                                if(!isNaN(xlsDay)){
+                                    // console.log({xlsDay, xlsMonth})
+                                    listData2?.forEach((item, index) => {
+                                        if(Number(item._id.day) === Number(xlsDay) && Number(item._id.month) === Number(xlsMonth)){
+                                            discount = Number(discount) + Number(item.discount)
+                                            salesoff = Number(salesoff) + Number(item.salesoff)
+                                            credit = Number(credit) + Number(item.credit)
+                                            amount = Number(amount) + Number(item.amount)
+                                        }
+                                    })
 
-    //                                 workbook.sheet(`BaoCaoNgay`).row(i).cell(12).value(Number(discount))
-    //                                 workbook.sheet(`BaoCaoNgay`).row(i).cell(13).value(Number(salesoff))
-    //                                 workbook.sheet(`BaoCaoNgay`).row(i).cell(14).value(Number(credit))
-    //                                 workbook.sheet(`BaoCaoNgay`).row(i).cell(15).value(Number(amount))
-    //                             }
-    //                         }
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(12).value(Number(discount))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(13).value(Number(salesoff))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(14).value(Number(credit))
+                                    workbook.sheet(`BaoCaoNgay`).row(i).cell(15).value(Number(amount))
+                                }
+                            }
 
-    //                         const now = new Date();
-    //                         const filePath = '../../../files/temporary_uploads/';
-    //                         const fileName = `BaoCaoDoanhSo_${now.getTime()}.xlsx`;
-    //                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `BaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-    //                         await workbook.toFileAsync(pathWriteFile);
-    //                         const result = await uploadFileS3(pathWriteFile, fileName);
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
 
-    //                         fs.unlinkSync(pathWriteFile);
-    //                         return resolve({ error: false, data: result?.Location, status: 200 });
-    //                     })
-    //                 }
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
+                    }
 
-    //                 // SỐ LIỆU KHÁCH HÀNG
-    //                 // if(option == 2){
-    //                 //     if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
-    //                 //         let yearFilter
-    //                 //         let currentYear = new Date().getFullYear()
-    //                 //         if(year && !isNaN(year)){
-    //                 //             yearFilter = Number(year)
-    //                 //         }else{
-    //                 //             yearFilter = Number(currentYear)
-    //                 //         }
-    //                 //         let conditionObjYear = {
-    //                 //             "year": Number(yearFilter),
-    //                 //         }
-    //                 //         let conditionObj = {
-    //                 //             company: ObjectID(companyID),
-    //                 //             status: 5
-    //                 //         }
-    //                 //         let projectObj =  {
-    //                 //             year : {$year : "$createAt"},
-    //                 //             month : {$month : "$createAt"},
-    //                 //             company : 1,
-    //                 //             funda : 1,
-    //                 //             createAt: 1,
-    //                 //             customer: 1,
-    //                 //             total: 1,
-    //                 //             discount: 1,
-    //                 //             salesoff: 1,
-    //                 //             credit: 1,
-    //                 //             amount: 1,
-    //                 //             // salesChannel: 1
-    //                 //         }
-    //                 //         let conditionGroup = {}, conditionPopulate = {}
+                    // SỐ LIỆU KHÁCH HÀNG
+                    // if(option == 2){
+                    //     if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+                    //         let yearFilter
+                    //         let currentYear = new Date().getFullYear()
+                    //         if(year && !isNaN(year)){
+                    //             yearFilter = Number(year)
+                    //         }else{
+                    //             yearFilter = Number(currentYear)
+                    //         }
+                    //         let conditionObjYear = {
+                    //             "year": Number(yearFilter),
+                    //         }
+                    //         let conditionObj = {
+                    //             company: ObjectID(companyID),
+                    //             status: 5
+                    //         }
+                    //         let projectObj =  {
+                    //             year : {$year : "$createAt"},
+                    //             month : {$month : "$createAt"},
+                    //             company : 1,
+                    //             funda : 1,
+                    //             createAt: 1,
+                    //             customer: 1,
+                    //             total: 1,
+                    //             discount: 1,
+                    //             salesoff: 1,
+                    //             credit: 1,
+                    //             amount: 1,
+                    //             // salesChannel: 1
+                    //         }
+                    //         let conditionGroup = {}, conditionPopulate = {}
 
-    //                 //         conditionPopulate = {
-    //                 //             path: '_id.customer',
-    //                 //             select: '_id name phone note',
-    //                 //             model: 'contact'
-    //                 //         }
+                    //         conditionPopulate = {
+                    //             path: '_id.customer',
+                    //             select: '_id name phone note',
+                    //             model: 'contact'
+                    //         }
 
-    //                 //         conditionGroup = {
-    //                 //             _id: {  customer: "$customer", month: "$month" },
-    //                 //             number: { $sum: 1 },
-    //                 //             total: { $sum: "$total" },
-    //                 //             amount: { $sum: "$amount" },
-    //                 //         }
+                    //         conditionGroup = {
+                    //             _id: {  customer: "$customer", month: "$month" },
+                    //             number: { $sum: 1 },
+                    //             total: { $sum: "$total" },
+                    //             amount: { $sum: "$amount" },
+                    //         }
 
-    //                 //         let listData = await FNB_ORDER_COLL.aggregate([
-    //                 //             {
-    //                 //                 $match: conditionObj
-    //                 //             },
-    //                 //             {
-    //                 //                 $project : projectObj
-    //                 //             },
-    //                 //             {
-    //                 //                 $match: conditionObjYear
-    //                 //             },
-    //                 //             {
-    //                 //                 $group: conditionGroup
-    //                 //             },
-    //                 //             {
-    //                 //                 $sort: {
-    //                 //                     "_id.month": -1, "total": -1
-    //                 //                 }
-    //                 //             }
-    //                 //         ])
-    //                 //         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+                    //         let listData = await FNB_ORDER_COLL.aggregate([
+                    //             {
+                    //                 $match: conditionObj
+                    //             },
+                    //             {
+                    //                 $project : projectObj
+                    //             },
+                    //             {
+                    //                 $match: conditionObjYear
+                    //             },
+                    //             {
+                    //                 $group: conditionGroup
+                    //             },
+                    //             {
+                    //                 $sort: {
+                    //                     "_id.month": -1, "total": -1
+                    //                 }
+                    //             }
+                    //         ])
+                    //         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
 
-    //                 //         // Modify the workbook.
-    //                 //         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
-    //                 //         .then(async workbook => {
+                    //         // Modify the workbook.
+                    //         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
+                    //         .then(async workbook => {
 
-    //                 //             var i = 3
-    //                 //             listData?.forEach((item, index) => {
-    //                 //                 workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
-    //                 //                 workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name} - ${item._id.customer.phone}` )
-    //                 //                 workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
-    //                 //                 workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.note)
-    //                 //                 workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
-    //                 //                 workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
-    //                 //                 workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
-    //                 //                 workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
-    //                 //                 workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
-    //                 //                 i++
-    //                 //             })
+                    //             var i = 3
+                    //             listData?.forEach((item, index) => {
+                    //                 workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
+                    //                 workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name} - ${item._id.customer.phone}` )
+                    //                 workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
+                    //                 workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.note)
+                    //                 workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
+                    //                 workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
+                    //                 workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
+                    //                 workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
+                    //                 workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
+                    //                 i++
+                    //             })
 
-    //                 //             const now = new Date();
-    //                 //             const filePath = '../../../files/temporary_uploads/';
-    //                 //             const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
-    //                 //             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                    //             const now = new Date();
+                    //             const filePath = '../../../files/temporary_uploads/';
+                    //             const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
+                    //             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-    //                 //             await workbook.toFileAsync(pathWriteFile);
-    //                 //             const result = await uploadFileS3(pathWriteFile, fileName);
+                    //             await workbook.toFileAsync(pathWriteFile);
+                    //             const result = await uploadFileS3(pathWriteFile, fileName);
 
-    //                 //             fs.unlinkSync(pathWriteFile);
-    //                 //             return resolve({ error: false, data: result?.Location, status: 200 });
-    //                 //         })
-    //                 //     }else{
-    //                 //         return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
-    //                 //     }
-    //                 // }
-    //             }
-    //         } catch (error) {
-    //             // console.log({ error })
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+                    //             fs.unlinkSync(pathWriteFile);
+                    //             return resolve({ error: false, data: result?.Location, status: 200 });
+                    //         })
+                    //     }else{
+                    //         return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                    //     }
+                    // }
+                }
+            } catch (error) {
+                // console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Dev: HiepNH
