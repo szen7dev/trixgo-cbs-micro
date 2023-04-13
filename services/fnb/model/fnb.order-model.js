@@ -97,8 +97,8 @@ class Model extends BaseModel {
                 if (!infoCustomer)
                     return resolve({ error: true, message: 'cannot_get_infoCustomer' })
 
-                // Lấy số đơn hàng khách đã mua
-                let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
+                // Lấy số đơn hàng khách đã mua (thành công)
+                let numberOD = await FNB_ORDER_COLL.count({ customer: customerID, status: 5 })
 
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
@@ -688,17 +688,30 @@ class Model extends BaseModel {
                     if(numberOD == 0 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
                         
                         //______Tìm kiếm Voucher người giới thiệu còn thời hạn (type=2)
-                        let infoOffer = await FNB_VOUCHER_COLL.findOne({ type: 2, receivers: {$nin: [infoCustomer.referrer]}, expired: {$gt: new Date()} })
+                        /**
+                         * Tạo voucher cho Người giới thiệu (type=2)
+                         * 1-Phân loại Type = 2
+                         * 2-Còn thời hạn sử dụng
+                         * 3-Voucher chưa cấp cho người giới thiệu lần nào
+                         */
+                        let infoOffer = await FNB_VOUCHER_COLL.findOne({ 
+                            type: 2, 
+                            company: infoFunda.company, 
+                            receivers: {$nin: [infoCustomer.referrer]}, //Chưa cấp phát lần nào
+                            expired: {$gt: new Date()} 
+                        })
                         .sort({_id: -1 })
                         .select("_id name sign")
 
-                        //______Tặng voucher cho người giới thiệu (type=2)
                         if(infoOffer){
                             await FNB_ORDER_VOUCHER_MODEL.update({
+                                companyID: infoFunda.company,
                                 userID,
                                 voucherID: infoOffer._id,
                                 receivers:[infoCustomer.referrer]
                             })
+                        }else{
+                            console.log('===========Không tồn tại Voucher==================')
                         }
                     }
                 }
