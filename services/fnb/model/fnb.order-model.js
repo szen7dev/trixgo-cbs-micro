@@ -669,7 +669,7 @@ class Model extends BaseModel {
                 await that.updateCustomer({ customerID, userID })
 
                 /**
-                 * CẬP NHẬT VÀO VOUCHER
+                 * CẬP NHẬT VÀO VOUCHER--
                  */
                 if(salesChannel == 1 && voucherID && checkObjectIDs(voucherID)){
                     //______Cập nhật thông tin Người sử dụng voucher
