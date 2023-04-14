@@ -69,7 +69,7 @@ class Model extends BaseModel {
                     template, 
                     type,
                     name,
-                    sign,
+                    sign: sign.replace(/\s/g, ""),
                     expired, 
                     userCreate: userID 
                 }
@@ -270,7 +270,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    let info = await FNB_VOUCHER_COLL.findOne({ company: companyID, sign: sign })
+                    let info = await FNB_VOUCHER_COLL.findOne({ company: companyID, sign: sign.replace(/\s/g, "") })
                                         .select(select)
                                         .populate(populates)
                     if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
