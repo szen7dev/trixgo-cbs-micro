@@ -750,10 +750,10 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getListV2({companyID, fundaID, type, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, userID }) { 
+    getListV2({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, userID }) { 
         return new Promise(async (resolve) => {
             try {
-                // console.log({companyID, fundaID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
+                // console.log({companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
 
                 if(limit > 20){
                     limit = 20
@@ -782,7 +782,16 @@ class Model extends BaseModel {
                 }
 
                 // Lấy nhân sự theo đơn vị cơ sở
-                if(checkObjectIDs(fundaID)){
+                if(voucherID && checkObjectIDs(voucherID)){
+                    let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
+                    // console.log(infoVoucher)
+                    if(infoVoucher){
+                        conditionObj._id = {$in: infoVoucher.receivers}
+                    }
+                }
+
+                // Lấy nhân sự theo đơn vị cơ sở
+                if(fundaID && checkObjectIDs(fundaID)){
                     conditionObj.funda = fundaID
                 }
 
