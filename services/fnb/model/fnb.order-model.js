@@ -1569,7 +1569,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID, optionStar }) {
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar }) {
         // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID, optionStar })
         return new Promise(async (resolve) => {
             try {
@@ -1990,7 +1990,47 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * GOM NHÓM THEO VOUCHER
+                     */
+                    if(option && Number(option) == 12){
+                        conditionObj.voucher = { $exists: true, $ne: null }
+                        conditionObjYear = {
+                            "year": Number(yearFilter),
+                        }
+
+                        // Theo năm
+                        if(optionTime && Number(optionTime) == 1){
+                            conditionGroup = {
+                                _id: { year: "$year" },
+                                quantity: { $sum: 1 },
+                            }
+                        }
+
+                        // Theo tháng trong năm
+                        if(optionTime && Number(optionTime) == 2){
+                            conditionGroup = {
+                                _id: { month: "$month", year: "$year" },
+                                quantity: { $sum: 1 },
+                            }
+                        }
+
+                        // Theo ngày trong tháng
+                        if(optionTime && Number(optionTime) == 3){
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
+                                "month": Number(month),
+                            }
+
+                            conditionGroup = {
+                                _id: { day: "$day" },
+                                quantity: { $sum: 1 },
+                            }
+                        }
+                    }
+
                     // console.log(conditionObj)
+                    // console.log(conditionObjYear)
                     // console.log(conditionGroup)
 
                     let listData;
