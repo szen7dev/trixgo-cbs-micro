@@ -693,7 +693,7 @@ class Model extends BaseModel {
                         receivers: {$nin: [infoCustomer.referrer]}, //Chưa cấp phát lần nào
                         expired: {$gt: new Date()} 
                     })
-                    .sort({_id: -1 })
+                    .sort({_id: 1 })
                     .select("_id name sign")
                     // console.log(infoOffer)
 
