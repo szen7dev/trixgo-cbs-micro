@@ -1569,7 +1569,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar }) {
+    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar }) {
         // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID, optionStar })
         return new Promise(async (resolve) => {
             try {
@@ -1995,6 +1995,11 @@ class Model extends BaseModel {
                      */
                     if(option && Number(option) == 12){
                         conditionObj.voucher = { $exists: true, $ne: null }
+
+                        if(voucherType && !isNaN(voucherType)){
+                            conditionObj.voucherType = Number(voucherType)
+                        }
+                        
                         conditionObjYear = {
                             "year": Number(yearFilter),
                         }
