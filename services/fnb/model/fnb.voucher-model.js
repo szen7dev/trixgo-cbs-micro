@@ -107,7 +107,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    update({ companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers }) {
+    update({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers }) {
         // console.log({ companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers })
         return new Promise(async resolve => {
             try {
@@ -117,6 +117,8 @@ class Model extends BaseModel {
                     let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
                     let dataAddToset = {};
                     let dataPullAll  = {};
+
+                    let infoCheck = await FNB_VOUCHER_COLL.findById(voucherID).select('_id type')
 
                     if(name && name != ""){
                         dataUpdate.name = name
@@ -168,9 +170,22 @@ class Model extends BaseModel {
                      */
                     //_________Thêm người nhận voucher
                     if(checkObjectIDs(receivers)){
-                        dataAddToset = {
-                            ...dataAddToset,
-                            receivers
+                        // console.log('=========1111111111111111111')
+                        if(option && option == 1){
+                            // console.log('=========222222222222222222')
+                            // Không cho phép Import excel với Voucher tặng người giới thiệu hoặc khách mới
+                            if(Number(infoCheck.type) != 2 && Number(infoCheck.type) != 3){
+                                dataAddToset = {
+                                    ...dataAddToset,
+                                    receivers
+                                }
+                            }
+                        }else{
+                            // console.log('=========333333333333333')
+                            dataAddToset = {
+                                ...dataAddToset,
+                                receivers
+                            }
                         }
                     }
 
@@ -555,6 +570,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, message: "Import successfull" })
                     }
 
+                    // Cấp phát Voucher
                     if(option == 2){
                         let receivers = []
                         let voucherID = dataImportJSON[0].__EMPTY_3
@@ -571,11 +587,12 @@ class Model extends BaseModel {
                         // console.log({voucherID})
                         // console.log(receivers)
         
-                        await this.update({ userID, voucherID, receivers })
+                        await this.update({ userID, voucherID, receivers, option: 1 })
         
                         return resolve({ error: false, message: "Import successfull" })
                     }
-
+                    
+                    // Tạo danh bạ
                     if(option == 3){
                         for (const item of dataImportJSON) {
                             // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
