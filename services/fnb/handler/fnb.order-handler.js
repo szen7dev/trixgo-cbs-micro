@@ -217,15 +217,16 @@ module.exports = {
             month           : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
+            voucherType     : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { option, optionGroup, optionStatus, optionTime, fundasID, year, month, fromDate, toDate, staffID, optionStar } = ctx.params;
+                let { option, optionGroup, optionStatus, optionTime, fundasID, year, month, fromDate, toDate, staffID, optionStar, voucherType } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
-                    companyID: company._id, fundasID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar
+                    companyID: company._id, fundasID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar, voucherType
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
