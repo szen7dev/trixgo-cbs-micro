@@ -162,11 +162,11 @@ module.exports = {
 
                 let appID = "61e04971fdebf77b072d1b0f"; // FNB_APP
                 let arrUser = ["63ed0debc0d91500123495d3","63ed0e083f7a130012d41058","63ed0e1d3f7a130012d41059","63ed0e303f7a130012d4105a","63ed0e860e2f4d00119e52fa"]
-                    // MenuID cho Khách hàng (1)
-                    // MenuID cho Nhân viên (2)
+                    // MenuID cho Khách hàng (5)
+                    // MenuID cho Nhân viên (4)
                     // MenuID cho Quản lý (3)
-                    // MenuID cho Ban lãnh đạo (4)
-                    // MenuID cho Nhà đầu tư (5)
+                    // MenuID cho Ban lãnh đạo (2)
+                    // MenuID cho Nhà đầu tư (1)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
                 let accessApp = {level: 0, read: 0, create: 0, update: 0, delete: 0}
@@ -174,7 +174,7 @@ module.exports = {
 
                 let info = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
                     type: 1, 
-                    menu: ObjectID(arrUser[0]), 
+                    menu: ObjectID(arrUser[4]), 
                     user: ObjectID(userID), 
                     app: ObjectID(appID), 
                     company: ObjectID(company._id) 
@@ -183,7 +183,7 @@ module.exports = {
                 if(!info || info.error){
                     let info1 = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
                         type: 1, 
-                        menu: ObjectID(arrUser[1]), 
+                        menu: ObjectID(arrUser[3]), 
                         user: ObjectID(userID), 
                         app: ObjectID(appID), 
                         company: ObjectID(company._id) 
@@ -201,7 +201,7 @@ module.exports = {
                         if(!info2 || info2.error){
                             let info3 = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
                                 type: 1, 
-                                menu: ObjectID(arrUser[3]), 
+                                menu: ObjectID(arrUser[1]), 
                                 user: ObjectID(userID), 
                                 app: ObjectID(appID), 
                                 company: ObjectID(company._id) 
@@ -210,7 +210,7 @@ module.exports = {
                             if(!info3 || info3.error){
                                 let info4 = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
                                     type: 1, 
-                                    menu: ObjectID(arrUser[4]), 
+                                    menu: ObjectID(arrUser[0]), 
                                     user: ObjectID(userID), 
                                     app: ObjectID(appID), 
                                     company: ObjectID(company._id) 
@@ -219,14 +219,14 @@ module.exports = {
                                 if(!info4 || info4.error){
                                                                        
                                 }else{
-                                    accessApp.level = 5
+                                    accessApp.level = 1
                                     accessApp.read = Number(info4.data.read)
                                     accessApp.create = Number(info4.data.create)
                                     accessApp.update = Number(info4.data.update)
                                     accessApp.delete = Number(info4.data.delete)
                                 }
                             }else{
-                                accessApp.level = 4
+                                accessApp.level = 2
                                 accessApp.read = Number(info3.data.read)
                                 accessApp.create = Number(info3.data.create)
                                 accessApp.update = Number(info3.data.update)
@@ -240,14 +240,14 @@ module.exports = {
                             accessApp.delete = Number(info2.data.delete)
                         }
                     }else{
-                        accessApp.level = 2
+                        accessApp.level = 4
                         accessApp.read = Number(info1.data.read)
                         accessApp.create = Number(info1.data.create)
                         accessApp.update = Number(info1.data.update)
                         accessApp.delete = Number(info1.data.delete)
                     }
                 }else{
-                    accessApp.level = 1
+                    accessApp.level = 5
                     accessApp.read = Number(info.data.read)
                     accessApp.create = Number(info.data.create)
                     accessApp.update = Number(info.data.update)
