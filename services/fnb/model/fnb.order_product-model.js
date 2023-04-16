@@ -386,97 +386,97 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    // getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate }) {
-    //         // console.log({fundasID, fromDate, toDate})
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             let duration = getTimeBetween(toDate, fromDate)
-    //             // console.log({duration:duration/86400})
-    //             if(Number(duration/86400) > 90){
-    //                 // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
-    //             }else{
-    //                 let conditionObj = {}
-    //                 let conditionGroup = {}
-    //                 let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
-    //                 /**
-    //                  * VALIDATION (1)
-    //                  */
-    //                 const validation = validateParamsObjectID({
-    //                     fundasID            : { value: fundasID, isRequire: false },
-    //                 });
-    //                 if(validation.error) return resolve(validation);
+    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate }) {
+            // console.log({fundasID, fromDate, toDate})
+        return new Promise(async (resolve) => {
+            try {
+                let duration = getTimeBetween(toDate, fromDate)
+                // console.log({duration:duration/86400})
+                if(Number(duration/86400) > 90){
+                    // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
+                }else{
+                    let conditionObj = {}
+                    let conditionGroup = {}
+                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
+                    /**
+                     * VALIDATION (1)
+                     */
+                    const validation = validateParamsObjectID({
+                        fundasID            : { value: fundasID, isRequire: false },
+                    });
+                    if(validation.error) return resolve(validation);
 
-    //                 // Gom nhóm theo đơn vị cơ sở
-    //                 if(fundasID && fundasID.length ){
-    //                     let arrFun = fundasID.map(item=>ObjectID(item))
-    //                     conditionObj.funda = { $in: arrFun }
-    //                 }
+                    // Gom nhóm theo đơn vị cơ sở
+                    if(fundasID && fundasID.length ){
+                        let arrFun = fundasID.map(item=>ObjectID(item))
+                        conditionObj.funda = { $in: arrFun }
+                    }
 
-    //                 // Phân loại theo thời khoảng
-    //                 if(fromDate && toDate){
-    //                     conditionObj.createAt = {
-    //                         $gte: new Date(fromDate),
-    //                         $lte: new Date(toDate),
-    //                     }
-    //                 }
+                    // Phân loại theo thời khoảng
+                    if(fromDate && toDate){
+                        conditionObj.createAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
 
-    //                 /**
-    //                  * Gom nhóm theo sản phẩm
-    //                  */
-    //                 if(option && Number(option) == 1){
-    //                     conditionGroup = {
-    //                         _id: { product: "$product" },
-    //                         quantity: { $sum: "$quantity" },
-    //                     }
+                    /**
+                     * Gom nhóm theo sản phẩm
+                     */
+                    if(option && Number(option) == 1){
+                        conditionGroup = {
+                            _id: { product: "$product" },
+                            quantity: { $sum: "$quantity" },
+                        }
 
-    //                     conditionPopulate = {
-    //                         path: '_id.product',
-    //                         select: '_id name sign',
-    //                         model: 'fnb_product'
-    //                     }
-    //                 }
+                        conditionPopulate = {
+                            path: '_id.product',
+                            select: '_id name sign',
+                            model: 'fnb_product'
+                        }
+                    }
 
-    //                 // Danh sách đang triển khai
-    //                 let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
-    //                     {
-    //                         $match: conditionObj
-    //                     },
-    //                     {
-    //                         $project : {
-    //                             year : {$year : "$createAt"},
-    //                             month : {$month : "$createAt"},
-    //                             hour : {$hour : "$createAt"},
-    //                             funda : 1,
-    //                             order : 1,
-    //                             product : 1,
-    //                             quantity : 1,
-    //                             unitPrice : 1,
-    //                             amount : 1,
-    //                         }
-    //                     },
-    //                     {
-    //                         $match: conditionObjYear
-    //                     },
-    //                     {
-    //                         $group: conditionGroup
-    //                     },
-    //                     {
-    //                         $sort: sortBy
-    //                     }
-    //                 ])
+                    // Danh sách đang triển khai
+                    let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                hour : {$hour : "$createAt"},
+                                funda : 1,
+                                order : 1,
+                                product : 1,
+                                quantity : 1,
+                                unitPrice : 1,
+                                amount : 1,
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: sortBy
+                        }
+                    ])
 
-    //                 if(!isNaN(option) && [1].includes(Number(option))){
-    //                     await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
-    //                 }
+                    if(!isNaN(option) && [1].includes(Number(option))){
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
+                    }
 
-    //                 return resolve({ error: false, data: listData })
-    //                 // return resolve({ error: false, data: [] })
-    //             }
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+                    return resolve({ error: false, data: listData })
+                    // return resolve({ error: false, data: [] })
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Dev: HiepNH
