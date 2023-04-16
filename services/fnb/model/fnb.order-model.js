@@ -1465,7 +1465,6 @@ class Model extends BaseModel {
                 if(isCustomerType && isCustomerType == 2){
                     conditionObj.customerType = 2
                 }
-                // console.log(conditionObj)
 
                 if(isComplaint && isComplaint == 1){
                     conditionObj.complaint = { $gt: 0 }
