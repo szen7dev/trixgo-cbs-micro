@@ -1666,7 +1666,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await PCM_COMMENT_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await PCM_COMMENT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord / limit);
                 let dataResponse = [];
 

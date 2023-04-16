@@ -659,7 +659,7 @@ class Model extends BaseModel {
                     })
                 }
 
-                let totalRecord  = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);
+                let totalRecord  = await MEDIA__COMMENT_COLL.count(conditionObjOrg);
                 let dataResponse = await this.responseDataComment({ authorID, comments: infoDataAfterGet });
                 let totalPage    = Math.ceil(totalRecord / limit);
                 let nextCursor	= null;
@@ -1141,7 +1141,7 @@ class Model extends BaseModel {
                     })
                 }
 
-                let totalRecord = await MEDIA__COMMENT_FILE_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await MEDIA__COMMENT_FILE_COLL.count(conditionObjOrg);
                 let dataResponse = await this.responseDataComment({ authorID, comments: infoDataAfterGet });
                 let totalPage   = Math.ceil(totalRecord / limit);
                 let nextCursor	= null;

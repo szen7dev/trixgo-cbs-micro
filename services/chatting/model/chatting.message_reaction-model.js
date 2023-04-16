@@ -192,7 +192,7 @@ class Model extends BaseModel {
 					.lean();
 
 				// GET TOTAL RECORD
-				let totalRecord = await CHATTING__MESSAGE_REACTION_COLL.countDocuments(conditionObjOrg);
+				let totalRecord = await CHATTING__MESSAGE_REACTION_COLL.count(conditionObjOrg);
 				let nextCursor  = null;
 
 				if(listReactions && listReactions.length){

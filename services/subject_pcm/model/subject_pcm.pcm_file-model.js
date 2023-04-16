@@ -391,7 +391,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await PCM_FILE__COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await PCM_FILE__COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({
@@ -550,7 +550,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await PCM_FILE__COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await PCM_FILE__COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({

@@ -551,7 +551,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await HUMAN__CONTACT_DOCUMENT_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await HUMAN__CONTACT_DOCUMENT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,

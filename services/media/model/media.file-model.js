@@ -196,7 +196,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				let totalRecord = await MEDIA__FILE_COLL.countDocuments(conditionObjOrg);
+				let totalRecord = await MEDIA__FILE_COLL.count(conditionObjOrg);
 
 				return resolve({ error: false, data: {
 					listRecords: infoDataAfterGet,

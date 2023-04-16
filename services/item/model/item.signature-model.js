@@ -269,7 +269,7 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                let totalRecord = await ITEM__SIGNATURE_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await ITEM__SIGNATURE_COLL.count(conditionObjOrg);
                 let nextCursor	= null;
 
                 if(infoDataAfterGet && infoDataAfterGet.length){

@@ -170,7 +170,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				let totalRecord = await CHATTING__CONVERSATION_MEMBER_COLL.countDocuments(conditionObjOrg);
+				let totalRecord = await CHATTING__CONVERSATION_MEMBER_COLL.count(conditionObjOrg);
 
 				return resolve({ error: false, data: {
 					listRecords: infoDataAfterGet,

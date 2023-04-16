@@ -175,7 +175,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                const totalRecord = await REACTION__REACTION_CORE_COLL.countDocuments(conditionObjOrg);
+                const totalRecord = await REACTION__REACTION_CORE_COLL.count(conditionObjOrg);
 
                 if(isGetTotal) {
                     const totalRecordLike       = await REACTION__REACTION_CORE_COLL.countDocuments({ ...conditionObjOrg, type: 1 });

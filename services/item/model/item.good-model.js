@@ -277,7 +277,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await ITEM__GOODS_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await ITEM__GOODS_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

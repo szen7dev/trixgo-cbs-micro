@@ -308,7 +308,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                const totalRecord = await MEDIA__REACTION_COMMENT_COLL.countDocuments(conditionObjOrg);
+                const totalRecord = await MEDIA__REACTION_COMMENT_COLL.count(conditionObjOrg);
 
                 if(isGetTotal) {
                     const totalRecordLike       = await MEDIA__REACTION_COMMENT_COLL.countDocuments({ ...conditionObjOrg, type: 1 });
