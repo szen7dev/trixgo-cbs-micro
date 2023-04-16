@@ -386,256 +386,256 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate }) {
-            // console.log({fundasID, fromDate, toDate})
-        return new Promise(async (resolve) => {
-            try {
-                let duration = getTimeBetween(toDate, fromDate)
-                // console.log({duration:duration/86400})
-                if(Number(duration/86400) > 90){
-                    // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
-                }else{
-                    let conditionObj = {}
-                    let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
-                    /**
-                     * VALIDATION (1)
-                     */
-                    const validation = validateParamsObjectID({
-                        fundasID            : { value: fundasID, isRequire: false },
-                    });
-                    if(validation.error) return resolve(validation);
+    // getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate }) {
+    //         // console.log({fundasID, fromDate, toDate})
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             let duration = getTimeBetween(toDate, fromDate)
+    //             // console.log({duration:duration/86400})
+    //             if(Number(duration/86400) > 90){
+    //                 // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
+    //             }else{
+    //                 let conditionObj = {}
+    //                 let conditionGroup = {}
+    //                 let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
+    //                 /**
+    //                  * VALIDATION (1)
+    //                  */
+    //                 const validation = validateParamsObjectID({
+    //                     fundasID            : { value: fundasID, isRequire: false },
+    //                 });
+    //                 if(validation.error) return resolve(validation);
 
-                    // Gom nhóm theo đơn vị cơ sở
-                    if(fundasID && fundasID.length ){
-                        let arrFun = fundasID.map(item=>ObjectID(item))
-                        conditionObj.funda = { $in: arrFun }
-                    }
+    //                 // Gom nhóm theo đơn vị cơ sở
+    //                 if(fundasID && fundasID.length ){
+    //                     let arrFun = fundasID.map(item=>ObjectID(item))
+    //                     conditionObj.funda = { $in: arrFun }
+    //                 }
 
-                    // Phân loại theo thời khoảng
-                    if(fromDate && toDate){
-                        conditionObj.createAt = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
-                        }
-                    }
+    //                 // Phân loại theo thời khoảng
+    //                 if(fromDate && toDate){
+    //                     conditionObj.createAt = {
+    //                         $gte: new Date(fromDate),
+    //                         $lte: new Date(toDate),
+    //                     }
+    //                 }
 
-                    /**
-                     * Gom nhóm theo sản phẩm
-                     */
-                    if(option && Number(option) == 1){
-                        conditionGroup = {
-                            _id: { product: "$product" },
-                            quantity: { $sum: "$quantity" },
-                        }
+    //                 /**
+    //                  * Gom nhóm theo sản phẩm
+    //                  */
+    //                 if(option && Number(option) == 1){
+    //                     conditionGroup = {
+    //                         _id: { product: "$product" },
+    //                         quantity: { $sum: "$quantity" },
+    //                     }
 
-                        conditionPopulate = {
-                            path: '_id.product',
-                            select: '_id name sign',
-                            model: 'fnb_product'
-                        }
-                    }
+    //                     conditionPopulate = {
+    //                         path: '_id.product',
+    //                         select: '_id name sign',
+    //                         model: 'fnb_product'
+    //                     }
+    //                 }
 
-                    // Danh sách đang triển khai
-                    let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project : {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
-                                hour : {$hour : "$createAt"},
-                                funda : 1,
-                                order : 1,
-                                product : 1,
-                                quantity : 1,
-                                unitPrice : 1,
-                                amount : 1,
-                            }
-                        },
-                        {
-                            $match: conditionObjYear
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        }
-                    ])
+    //                 // Danh sách đang triển khai
+    //                 let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
+    //                     {
+    //                         $match: conditionObj
+    //                     },
+    //                     {
+    //                         $project : {
+    //                             year : {$year : "$createAt"},
+    //                             month : {$month : "$createAt"},
+    //                             hour : {$hour : "$createAt"},
+    //                             funda : 1,
+    //                             order : 1,
+    //                             product : 1,
+    //                             quantity : 1,
+    //                             unitPrice : 1,
+    //                             amount : 1,
+    //                         }
+    //                     },
+    //                     {
+    //                         $match: conditionObjYear
+    //                     },
+    //                     {
+    //                         $group: conditionGroup
+    //                     },
+    //                     {
+    //                         $sort: sortBy
+    //                     }
+    //                 ])
 
-                    if(!isNaN(option) && [1].includes(Number(option))){
-                        await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
-                    }
+    //                 if(!isNaN(option) && [1].includes(Number(option))){
+    //                     await FNB_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
+    //                 }
 
-                    return resolve({ error: false, data: listData })
-                    // return resolve({ error: false, data: [] })
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //                 return resolve({ error: false, data: listData })
+    //                 // return resolve({ error: false, data: [] })
+    //             }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
     /**
      * Dev: HiepNH
-     * Func: Tải Đơn hàng
+     * Func: Tải excel
      * Date: 4/2/2023
      */
-    exportExcel({ companyID, option, year, month, filterParams, email, userID }) {
-        // console.log({ companyID, option, year, month, filterParams, email, userID })
-        return new Promise(async resolve => {
-            try {
-                if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
-                    if(!option || option == undefined){
+    // exportExcel({ companyID, option, year, month, filterParams, email, userID }) {
+    //     // console.log({ companyID, option, year, month, filterParams, email, userID })
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
+    //                 if(!option || option == undefined){
 
-                        let obj = JSON.parse(filterParams);
-                        // console.log(obj)
-                        let fromDate = obj.fromDate
-                        let toDate = obj.toDate
+    //                     let obj = JSON.parse(filterParams);
+    //                     // console.log(obj)
+    //                     let fromDate = obj.fromDate
+    //                     let toDate = obj.toDate
 
-                        let yearFilter
-                        let currentYear = new Date().getFullYear()
-                        if(year && !isNaN(year)){
-                            yearFilter = Number(year)
-                        }else{
-                            yearFilter = Number(currentYear)
-                        }
+    //                     let yearFilter
+    //                     let currentYear = new Date().getFullYear()
+    //                     if(year && !isNaN(year)){
+    //                         yearFilter = Number(year)
+    //                     }else{
+    //                         yearFilter = Number(currentYear)
+    //                     }
 
-                        // Phân loại theo thời khoảng
-                        let conditionOrderObj = { company: ObjectID(companyID), status: 5 }
-                        if(fromDate && toDate){
-                            conditionOrderObj.createAt = {
-                                $gte: new Date(fromDate),
-                                $lte: new Date(toDate),
-                            }
-                        }
+    //                     // Phân loại theo thời khoảng
+    //                     let conditionOrderObj = { company: ObjectID(companyID), status: 5 }
+    //                     if(fromDate && toDate){
+    //                         conditionOrderObj.createAt = {
+    //                             $gte: new Date(fromDate),
+    //                             $lte: new Date(toDate),
+    //                         }
+    //                     }
     
-                        let listOrders = await FNB_ORDER_COLL.find(conditionOrderObj).select('_id')
+    //                     let listOrders = await FNB_ORDER_COLL.find(conditionOrderObj).select('_id')
     
-                        let conditionObj = { 
-                            company: ObjectID(companyID),
-                            order: {$in: listOrders.map(item=>ObjectID(item._id))}
-                        }
+    //                     let conditionObj = { 
+    //                         company: ObjectID(companyID),
+    //                         order: {$in: listOrders.map(item=>ObjectID(item._id))}
+    //                     }
     
-                        let conditionGroup = {}
-                        let conditionPopulate = {}, sortBy = {"quantity": -1}
-                        let conditionObjYear = {
-                            "year": Number(yearFilter),
-                        }
+    //                     let conditionGroup = {}
+    //                     let conditionPopulate = {}, sortBy = {"quantity": -1}
+    //                     let conditionObjYear = {
+    //                         "year": Number(yearFilter),
+    //                     }
     
-                        conditionGroup = {
-                            _id: { product: "$product", funda: "$funda", month: "$month" },
-                            quantity: { $sum: "$quantity" },
-                        }
+    //                     conditionGroup = {
+    //                         _id: { product: "$product", funda: "$funda", month: "$month" },
+    //                         quantity: { $sum: "$quantity" },
+    //                     }
     
-                        // conditionGroup = {
-                        //     _id: { },
-                        //     quantity: { $sum: "$quantity" },
-                        // }
+    //                     // conditionGroup = {
+    //                     //     _id: { },
+    //                     //     quantity: { $sum: "$quantity" },
+    //                     // }
     
-                        // console.log(conditionObjYear)
+    //                     // console.log(conditionObjYear)
     
-                        // Danh sách đang triển khai
-                        let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : {
-                                    year : {$year : "$createAt"},
-                                    month : {$month : "$createAt"},
-                                    funda : 1,
-                                    product : 1,
-                                    quantity : 1,
-                                    ice : 1,
-                                    sugar : 1,
-                                    size : 1
-                                }
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
-                        // console.log(listData)
+    //                     // Danh sách đang triển khai
+    //                     let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
+    //                         {
+    //                             $match: conditionObj
+    //                         },
+    //                         {
+    //                             $project : {
+    //                                 year : {$year : "$createAt"},
+    //                                 month : {$month : "$createAt"},
+    //                                 funda : 1,
+    //                                 product : 1,
+    //                                 quantity : 1,
+    //                                 ice : 1,
+    //                                 sugar : 1,
+    //                                 size : 1
+    //                             }
+    //                         },
+    //                         {
+    //                             $match: conditionObjYear
+    //                         },
+    //                         {
+    //                             $group: conditionGroup
+    //                         },
+    //                         {
+    //                             $sort: sortBy
+    //                         }
+    //                     ])
+    //                     // console.log(listData)
     
-                        let listProducts = await FNB_PRODUCT_COLL.find({_id: {$in: listData.map(item=>item._id.product)}}).select("_id name unit")
-                        let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
+    //                     let listProducts = await FNB_PRODUCT_COLL.find({_id: {$in: listData.map(item=>item._id.product)}}).select("_id name unit")
+    //                     let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
     
-                         // Modify the workbook.
-                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_order_product.xlsx')))
-                         .then(async workbook => {
-                             for(var m = 1; m<=12; m++){
-                                 var i = 4
-                                 listProducts?.forEach((item, index) => {
-                                     workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index + 1))
-                                     workbook.sheet(`T${m}`).row(i).cell(2).value(item.name)
-                                     workbook.sheet(`T${m}`).row(i).cell(3).value(`${item._id}`)
-                                     i++
-                                 })
-                             }
+    //                      // Modify the workbook.
+    //                      XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_order_product.xlsx')))
+    //                      .then(async workbook => {
+    //                          for(var m = 1; m<=12; m++){
+    //                              var i = 4
+    //                              listProducts?.forEach((item, index) => {
+    //                                  workbook.sheet(`T${m}`).row(i).cell(1).value(Number(index + 1))
+    //                                  workbook.sheet(`T${m}`).row(i).cell(2).value(item.name)
+    //                                  workbook.sheet(`T${m}`).row(i).cell(3).value(`${item._id}`)
+    //                                  i++
+    //                              })
+    //                          }
     
-                             for(var m = 1; m<=12; m++){
-                                var i = 4
-                                listFuda?.forEach((item, index) => {
-                                    workbook.sheet(`T${m}`).row(2).cell(i).value(`${item._id}`)
-                                    workbook.sheet(`T${m}`).row(3).cell(i).value(item.name)
-                                    i++
-                                })
-                            }
+    //                          for(var m = 1; m<=12; m++){
+    //                             var i = 4
+    //                             listFuda?.forEach((item, index) => {
+    //                                 workbook.sheet(`T${m}`).row(2).cell(i).value(`${item._id}`)
+    //                                 workbook.sheet(`T${m}`).row(3).cell(i).value(item.name)
+    //                                 i++
+    //                             })
+    //                         }
     
-                             listData?.forEach((item, index) => {
-                                 for(var m = 1; m<=12; m++){
-                                     if(Number(item._id.month) === Number(m)){
+    //                          listData?.forEach((item, index) => {
+    //                              for(var m = 1; m<=12; m++){
+    //                                  if(Number(item._id.month) === Number(m)){
     
-                                         for(var i=4; i<=Number(listProducts.length + 3); i++){
+    //                                      for(var i=4; i<=Number(listProducts.length + 3); i++){
     
-                                            let productID = workbook.sheet(`T${m}`).row(i).cell(3).value()
+    //                                         let productID = workbook.sheet(`T${m}`).row(i).cell(3).value()
     
-                                            for(var j=4; j<=Number(listFuda.length + 3); j++){
+    //                                         for(var j=4; j<=Number(listFuda.length + 3); j++){
     
-                                                let fundaID = workbook.sheet(`T${m}`).row(2).cell(j).value()
+    //                                             let fundaID = workbook.sheet(`T${m}`).row(2).cell(j).value()
     
-                                                if(item._id.product.toString() === productID.toString() && item._id.funda.toString() === fundaID.toString()){        
-                                                    workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.quantity))
-                                                }
+    //                                             if(item._id.product.toString() === productID.toString() && item._id.funda.toString() === fundaID.toString()){        
+    //                                                 workbook.sheet(`T${m}`).row(i).cell(j).value(Number(item.quantity))
+    //                                             }
     
-                                            }
-                                         }
-                                     }
-                                 }
-                             })
+    //                                         }
+    //                                      }
+    //                                  }
+    //                              }
+    //                          })
                          
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `BaoCaoSanPham_${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    //                         const now = new Date();
+    //                         const filePath = '../../../files/temporary_uploads/';
+    //                         const fileName = `BaoCaoSanPham_${now.getTime()}.xlsx`;
+    //                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
         
-                            await workbook.toFileAsync(pathWriteFile);
-                            const result = await uploadFileS3(pathWriteFile, fileName);
+    //                         await workbook.toFileAsync(pathWriteFile);
+    //                         const result = await uploadFileS3(pathWriteFile, fileName);
         
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 });
-                         })
-                    }else{
+    //                         fs.unlinkSync(pathWriteFile);
+    //                         return resolve({ error: false, data: result?.Location, status: 200 });
+    //                      })
+    //                 }else{
                         
-                    }
-                }else{
-                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
-                }
-            } catch (error) {
-                console.log({ error })
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //                 }
+    //             }else{
+    //                 return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+    //             }
+    //         } catch (error) {
+    //             console.log({ error })
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 }
 
 exports.MODEL = new Model
