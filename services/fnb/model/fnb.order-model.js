@@ -1697,9 +1697,10 @@ class Model extends BaseModel {
                             // Gom nhóm theo số sao
                             if(optionStar && !isNaN(optionStar)){
                                 conditionObj.starRating = Number(optionStar)
-                            }else{
-                                conditionObj.starRating = {$gte: 4}
                             }
+                            // else{
+                            //     conditionObj.starRating = {$gte: 4}
+                            // }
 
                             // Gom nhóm theo khiếu nại của khách
                             if(optionGroup && Number(optionGroup) == 1){
@@ -1742,9 +1743,10 @@ class Model extends BaseModel {
                             // Gom nhóm theo số sao
                             if(optionStar && !isNaN(optionStar)){
                                 conditionObj.starRating = Number(optionStar)
-                            }else{
-                                conditionObj.starRating = {$gte: 4}
                             }
+                            // else{
+                            //     conditionObj.starRating = {$gte: 4}
+                            // }
 
                             // Gom nhóm theo khiếu nại của khách
                             if(optionGroup && Number(optionGroup) == 1){
@@ -1770,9 +1772,10 @@ class Model extends BaseModel {
                             // Gom nhóm theo số sao
                             if(optionStar && !isNaN(optionStar)){
                                 conditionObj.starRating = Number(optionStar)
-                            }else{
-                                conditionObj.starRating = {$gte: 4}
                             }
+                            // else{
+                            //     conditionObj.starRating = {$gte: 4}
+                            // }
 
                             // Gom nhóm theo khiếu nại của khách
                             if(optionGroup && Number(optionGroup) == 1){
