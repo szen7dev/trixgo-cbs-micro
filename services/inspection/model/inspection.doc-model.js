@@ -841,7 +841,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                const totalRecord = await INSPECTION__DOC_COLL.countDocuments(conditionObjOrg);
+                const totalRecord = await INSPECTION__DOC_COLL.count(conditionObjOrg);
                 const totalPage   = Math.ceil(totalRecord / limit);
 
                 return resolve({

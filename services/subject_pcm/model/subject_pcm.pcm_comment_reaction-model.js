@@ -213,7 +213,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                const totalRecord = await PCM_COMMENT_REACTION_COLL.countDocuments(conditionObjOrg);
+                const totalRecord = await PCM_COMMENT_REACTION_COLL.count(conditionObjOrg);
 
                 if(isGetTotal) {
                     const totalRecordLike       = await PCM_COMMENT_REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 1 });

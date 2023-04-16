@@ -353,7 +353,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await ANALYSIS__HISTORY_TRAFFIC_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await ANALYSIS__HISTORY_TRAFFIC_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

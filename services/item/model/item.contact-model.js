@@ -750,38 +750,26 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getListV2({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, userID }) { 
+    getListV2({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, userID }) {
+        // console.log({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
-                // console.log({companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
-
-                if(limit > 20){
-                    limit = 20
-                }else{
-                    limit = +limit;
+                if(Number(limit) > 15){
+                    limit = 15;
+                } else{
+                    limit = +Number(limit);
                 }
 
-                let sortBy;
+                let sortBy
                 let conditionObj = { company: companyID }
-                let keys	 = ['createAt__-1', '_id__-1'];
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
+                let keys	 = ['createAt__-1', '_id__-1']
 
                 // Theo phân loại
                 if(type){
                     conditionObj.type = type
                 }
 
-                // Lấy nhân sự theo đơn vị cơ sở
+                // Lấy theo Voucher
                 if(voucherID && checkObjectIDs(voucherID)){
                     let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
                     // console.log(infoVoucher)
@@ -802,44 +790,60 @@ class Model extends BaseModel {
                         $lte: new Date(toDate),
                     }
                 }
-               
+
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                } else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');  
-                    // conditionObj.name = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+
                     conditionObj.$or = [
                         { name: regSearch },
                         { phone: regSearch }
                     ]
                 }
 
+                // if(select && typeof select === 'string'){
+                //     if(!IsJsonString(select))
+                //         return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+                //     select = JSON.parse(select);
+                // }
                 // console.log(conditionObj)
-                
+
                 let conditionObjOrg = { ...conditionObj };
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-                    conditionObj = dataPagingAndSort.data.find;
-					sortBy       = dataPagingAndSort.data.sort;
-				}else{
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-                    sortBy       = dataPagingAndSort.data.sort;
+                    sortBy                = dataPagingAndSort.data.sort;
                 }
-                
-                let infoDataAfterGet = await ITEM__CONTACT_COLL
-                    .find(conditionObj)
-                    .select(select)
+
+                let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
+                    .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -847,17 +851,16 @@ class Model extends BaseModel {
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
-
-                let totalRecord = await ITEM__CONTACT_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit: limit,
                     totalRecord,
                     totalPage,
                     nextCursor,

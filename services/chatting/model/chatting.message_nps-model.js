@@ -541,7 +541,7 @@ class Model extends BaseModel {
 					.lean();
 
 				// GET TOTAL RECORD
-				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObjOrg);
+				let totalRecord = await CHATTING__MESSAGE_COLL.count(conditionObjOrg);
 				let nextCursor  = null;
 
 				if(listNps && listNps.length){

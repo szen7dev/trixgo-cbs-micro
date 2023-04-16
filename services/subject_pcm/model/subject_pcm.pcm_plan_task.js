@@ -2040,7 +2040,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                const totalRecord = await PCM_PLAN_TASK_COLL.countDocuments(conditionObjOrg);
+                const totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
                 const totalPage   = Math.ceil(totalRecord / limit);
 
                 return resolve({

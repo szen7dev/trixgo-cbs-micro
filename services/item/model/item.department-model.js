@@ -1133,7 +1133,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
 
-                let totalRecord = await ITEM__DEPARTMENT_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObjOrg);
                 let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
 

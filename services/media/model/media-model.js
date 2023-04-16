@@ -1029,7 +1029,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				let totalRecord = await MEDIA__SEEN_COLL.countDocuments(conditionObjOrg);
+				let totalRecord = await MEDIA__SEEN_COLL.count(conditionObjOrg);
 
 				return resolve({ error: false, data: {
 					listRecords: infoDataAfterGet,
@@ -1215,7 +1215,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				const totalRecord = await MEDIA_COLL.countDocuments(conditionObjOrg);
+				const totalRecord = await MEDIA_COLL.count(conditionObjOrg);
 
 				return resolve({ error: false, data: {
 					listRecords: listDataAfterGet,
@@ -1318,7 +1318,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				let totalRecord = await MEDIA__SAVE_COLL.countDocuments(conditionObjOrg);
+				let totalRecord = await MEDIA__SAVE_COLL.count(conditionObjOrg);
 
 				return resolve({ error: false, data: {
 					listRecords: infoDataAfterGet,
@@ -1498,7 +1498,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				let totalRecord = await MEDIA_COLL.countDocuments(conditionObjOrg);
+				let totalRecord = await MEDIA_COLL.count(conditionObjOrg);
 
 				return resolve({ error: false, data: {
 					listRecords: infoDataAfterGet,

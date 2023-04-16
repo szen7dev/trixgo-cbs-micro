@@ -289,7 +289,7 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
-				let totalRecord = await NOTIFICATION__LOG_COLL.countDocuments(conditionObjOrg);
+				let totalRecord = await NOTIFICATION__LOG_COLL.count(conditionObjOrg);
 				let totalRecordSendSuccess = await NOTIFICATION__LOG_COLL.countDocuments({
                     ...conditionObjOrg,
                     status: 1

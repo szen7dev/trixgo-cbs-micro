@@ -166,7 +166,7 @@ class Model extends BaseModel {
 					.lean();
 
 				// GET TOTAL RECORD
-                let totalRecord = await CHATTING__CONVERSATION_LINK_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await CHATTING__CONVERSATION_LINK_COLL.count(conditionObjOrg);
 				let nextCursor	= null;
 
 				if(listLinksConversation && listLinksConversation.length){

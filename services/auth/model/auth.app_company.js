@@ -253,7 +253,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await AUTH__APP_COMPANY_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await AUTH__APP_COMPANY_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
