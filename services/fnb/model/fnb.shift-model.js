@@ -245,7 +245,7 @@ class Model extends BaseModel {
                 // }
 
                 if(FNB_ACC.man.includes(email.toString())){
-                    console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
+                    // console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
                     if(staffsID && checkObjectIDs(staffsID)){
                         dataInUpdate.staffs = staffsID;
                     }
@@ -263,9 +263,11 @@ class Model extends BaseModel {
                     }
 
                     // Chi phí ca làm việc
-                    dataInUpdate.officialStaffSalar = Number(infoFunda.officialStaffSalar)
-                    dataInUpdate.trialStaffSalary = Number(infoFunda.trialStaffSalary)
-                    dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.officialStaffSalar)*Number(subWorkingHours)*Number(subStaffsID.length)
+                    if(checkObjectIDs(staffsID) || checkObjectIDs(subStaffsID)){
+                        dataInUpdate.officialStaffSalar = Number(infoFunda.officialStaffSalar)
+                        dataInUpdate.trialStaffSalary = Number(infoFunda.trialStaffSalary)
+                        dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.officialStaffSalar)*Number(subWorkingHours)*Number(subStaffsID.length)
+                    }
 
                     if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
                         dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
@@ -310,14 +312,14 @@ class Model extends BaseModel {
                  * CẬP NHẬT LẠI CHI PHÍ GIỜ LÀM CỦA NHÂN VIÊN
                  */
                 if(FNB_ACC.man.includes(email.toString())){
-                    console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
+                    // console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
                     // Doanh số nhân viên
                     let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
                     for(const item of listOrders){
                         let dataOrderUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                         let numberStaff = 0
-                        if(staffsID && staffsID.length){
+                        if(staffsID && checkObjectIDs(staffsID) && staffsID.length){
                             numberStaff = staffsID.length
                             let arrStaffs = staffsID
 
