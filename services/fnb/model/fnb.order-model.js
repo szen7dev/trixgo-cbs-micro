@@ -763,6 +763,7 @@ class Model extends BaseModel {
 
                 let oldCustomerID = infoOrder.customer;
                 let oldSalesChannel = infoOrder.salesChannel
+                let oldComplaint = infoOrder.complaint || 0
 
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
 
@@ -791,6 +792,9 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(complaintID)) {
                     dataInUpdate.$addToSet = { complaints: complaintID };
+
+                    let newComplaint = Number(oldComplaint) + 1
+                    dataInUpdate.complaint = Number(newComplaint)
                 }
 
                 /**
@@ -1352,7 +1356,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID }) {
+    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID }) {
         // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
         return new Promise(async (resolve) => {
             try {
@@ -1462,6 +1466,18 @@ class Model extends BaseModel {
                     conditionObj.customerType = 2
                 }
                 // console.log(conditionObj)
+
+                if(isComplaint && isComplaint == 1){
+                    conditionObj.complaint = { $gt: 0 }
+                }
+
+                if(starRating && !isNaN(starRating)){
+                    conditionObj.starRating = Number(starRating)
+                }
+
+                if(managerID && checkObjectIDs(managerID)){
+                    dataInsert.manager = managerID;
+                }
 
                 // Phân loại theo thời khoảng
                 if(isValidDate(fromDate) && isValidDate(fromDate)){
@@ -2034,6 +2050,24 @@ class Model extends BaseModel {
                         }
                     }
 
+                    /**
+                     * Gom nhóm theo Quản lý
+                     */
+                    if(option && Number(option) == 13){
+                        conditionObj.manager = {$exists: true, $ne: null}
+
+                        conditionGroup = {
+                            _id: { manager: "$manager" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.manager',
+                            select: '_id fullname',
+                            model: 'user'
+                        }
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionObjYear)
                     // console.log(conditionGroup)
@@ -2168,7 +2202,7 @@ class Model extends BaseModel {
                     }
                     // console.log(listData.length)
 
-                    if(!isNaN(option) && [3,6,7,8,9,10,11].includes(Number(option))){
+                    if(!isNaN(option) && [3,6,7,8,9,10,11,13].includes(Number(option))){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
                     }
 
