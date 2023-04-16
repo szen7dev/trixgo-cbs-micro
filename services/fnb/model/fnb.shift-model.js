@@ -554,11 +554,8 @@ class Model extends BaseModel {
         })
     }
 
-        /**
+    /**
      * Name: Danh sách
-     * - Theo gói thầu (hợp đồng)
-     * - Theo ngày tháng tạo/hoàn thành (from-to)
-     * - Theo Nhóm công tác con-khu vực con
      * Author: HiepNH
      * Code: 2/10/2022
      */
