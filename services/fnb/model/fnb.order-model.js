@@ -1465,7 +1465,6 @@ class Model extends BaseModel {
                 if(isCustomerType && isCustomerType == 2){
                     conditionObj.customerType = 2
                 }
-                // console.log(conditionObj)
 
                 if(isComplaint && isComplaint == 1){
                     conditionObj.complaint = { $gt: 0 }
@@ -1768,6 +1767,18 @@ class Model extends BaseModel {
 
                         // Theo ngày trong tháng
                         if(optionTime && Number(optionTime) == 5){
+                            // Gom nhóm theo số sao
+                            if(optionStar && !isNaN(optionStar)){
+                                conditionObj.starRating = Number(optionStar)
+                            }else{
+                                conditionObj.starRating = {$gte: 4}
+                            }
+
+                            // Gom nhóm theo khiếu nại của khách
+                            if(optionGroup && Number(optionGroup) == 1){
+                                conditionObj.complaint = {$gte: 1}
+                            }
+                            
                             conditionGroup = {
                                 _id: { day: "$day" },
                                 quantity: { $sum: 1 },
