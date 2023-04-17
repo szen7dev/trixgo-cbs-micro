@@ -387,13 +387,28 @@ class Model extends BaseModel {
                 }
                 // console.log(dataUpdate)
 
-                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true });
+                let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true })
 
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+                
 
                 /**
-                 * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA (KHI UPDATE CON)
+                 * CẬP NHẬT CÁC PHÂN LOẠI CHO MẨU TIN CON (NẾU UPDATE CHA)
+                 */
+                await FNB_GENERAL_BOOK_COLL.updateMany(
+                    { parent: ObjectID(bookID) },
+                    { $set: { 
+                        "plan": plan, 
+                        "outin": outin, 
+                        "revenueType": revenueType, 
+                        "expenseType": expenseType, 
+                        "appExpenseType": appExpenseType
+                    } }
+                 );
+                
+                /**
+                 * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA (NẾU UPDATE CON)
                  */
                 if(infoBook && infoBook.parent){
                     await that.updateValue({ bookID: infoBook.parent, userID }) 
@@ -837,8 +852,28 @@ class Model extends BaseModel {
 
                         sortBy = {"_id.expenseType" : 1 }
                     }
+
+                    /**
+                     * Gom nhóm theo Đơn vị cơ sở
+                     */
+                    if(option && Number(option) == 5){
+                        conditionGroup = {
+                            _id: { funda: "$funda" },
+                            quantity: { $sum: 1 },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name sign image',
+                            model: 'funda'
+                        }
+                    }
+
                     // console.log(conditionObj)
-                    // console.log(conditionObjYear)
+                    // console.log(codnditionObjYear)
                     // console.log(conditionGroup)
 
                     // Danh sách đang triển khai
@@ -878,9 +913,9 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    // if(!isNaN(option) && [3].includes(Number(option))){
-                    //     await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
-                    // }
+                    if(!isNaN(option) && [5].includes(Number(option))){
+                        await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
+                    }
 
                     return resolve({ error: false, data: listData });
                 }
