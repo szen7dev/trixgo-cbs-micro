@@ -837,8 +837,28 @@ class Model extends BaseModel {
 
                         sortBy = {"_id.expenseType" : 1 }
                     }
+
+                    /**
+                     * Gom nhóm theo Đơn vị cơ sở
+                     */
+                    if(option && Number(option) == 5){
+                        conditionGroup = {
+                            _id: { funda: "$funda" },
+                            quantity: { $sum: 1 },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.funda',
+                            select: '_id name sign image',
+                            model: 'funda'
+                        }
+                    }
+
                     // console.log(conditionObj)
-                    // console.log(conditionObjYear)
+                    // console.log(codnditionObjYear)
                     // console.log(conditionGroup)
 
                     // Danh sách đang triển khai
@@ -878,9 +898,9 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    // if(!isNaN(option) && [3].includes(Number(option))){
-                    //     await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
-                    // }
+                    if(!isNaN(option) && [5].includes(Number(option))){
+                        await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
+                    }
 
                     return resolve({ error: false, data: listData });
                 }
