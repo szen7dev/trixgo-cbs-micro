@@ -2062,6 +2062,19 @@ class Model extends BaseModel {
                                 quantity: { $sum: 1 },
                             }
                         }
+
+                        // Theo phân loại voucher
+                        if(optionTime && Number(optionTime) == 4){
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
+                                "month": Number(month),
+                            }
+
+                            conditionGroup = {
+                                _id: { voucherType: "$voucherType" },
+                                quantity: { $sum: 1 },
+                            }
+                        }
                     }
 
                     /**
@@ -2263,6 +2276,7 @@ class Model extends BaseModel {
                                     manager : 1,
                                     starRating : 1,
                                     complaint : 1,
+                                    voucherType: 1,
                                 }
                             },
                             {
