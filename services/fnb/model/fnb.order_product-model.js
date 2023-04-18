@@ -484,11 +484,19 @@ class Model extends BaseModel {
      * Date: 4/2/2023
      */
     exportExcel({ companyID, option, year, month, filterParams, email, userID }) {
-        console.log({ companyID, option, year, month, filterParams, email, userID })
+        // console.log({ companyID, option, year, month, filterParams, email, userID })
         return new Promise(async resolve => {
             try {
                 if(FNB_ACC.cskh.includes(email.toString())){
-                    // let conditionObj = { company: companyID }
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    let currentMonth = new Date().getMonth() + 1
+
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
 
                     let obj = JSON.parse(filterParams);
 
@@ -523,6 +531,11 @@ class Model extends BaseModel {
                                     $gte: new Date(fromDate),
                                     $lte: new Date(toDate),
                                 }
+                            }else{
+                                conditionObjYear = {
+                                    "year": Number(yearFilter),
+                                    "month": {$in: [currentMonth - 1, currentMonth]}
+                                }
                             }
         
                             let listOrders = await FNB_ORDER_COLL.find(conditionOrderObj).select('_id')
@@ -551,16 +564,12 @@ class Model extends BaseModel {
         
                             let conditionGroup = {}
                             let conditionPopulate = {}, sortBy = {"quantity": -1}
-                            // conditionObjYear = {
-                            //     "year": Number(yearFilter),
-                            // }
-        
+
                             conditionGroup = {
                             _id: { product: "$product", funda: "$funda", month: "$month" },
                                 quantity: { $sum: "$quantity" },
                             }
-
-                            console.log(conditionObj)
+                            // console.log(conditionObj)
         
                             // Danh sách đang triển khai
                             let listData = await FNB_ORDER_PRODUCT_COLL.aggregate([
@@ -593,6 +602,9 @@ class Model extends BaseModel {
         
                             let listProducts = await FNB_PRODUCT_COLL.find({_id: {$in: listData.map(item=>item._id.product)}}).select("_id name unit")
                             let listFuda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item._id.funda)}}).select("_id name sign")
+
+                            // console.log(listProducts)
+                            // console.log(listFuda)
         
                             // Modify the workbook.
                             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_shift_export_order_product.xlsx')))
