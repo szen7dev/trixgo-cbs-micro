@@ -82,16 +82,17 @@ module.exports = {
             amount              : { type: "number", optional: true },
             vatAmount           : { type: "number", optional: true },
             storeType           : { type: "number", optional: true },
+            option              : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName, storeType } = ctx.params;
+                let { bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName, storeType, option } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.update({
                     userID,
-                    bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName, storeType
+                    bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName, storeType, option
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
