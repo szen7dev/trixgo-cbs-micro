@@ -524,7 +524,7 @@ class Model extends BaseModel {
         
                             // Phân loại theo thời khoảng
                             let conditionOrderObj = { company: ObjectID(companyID), status: 5 }
-                            let conditionObjYear
+                            let conditionObjYear = {}
 
                             if(fromDate && toDate){
                                 conditionOrderObj.createAt = {
@@ -534,7 +534,7 @@ class Model extends BaseModel {
                             }else{
                                 conditionObjYear = {
                                     "year": Number(yearFilter),
-                                    "month": {$in: [currentMonth - 1, currentMonth]}
+                                    "month": {$in: [currentMonth]}
                                 }
                             }
         
