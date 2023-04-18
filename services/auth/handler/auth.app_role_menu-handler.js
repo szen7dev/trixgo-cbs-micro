@@ -111,7 +111,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { companyID, appID, menuID, type } = ctx.params;
                 let { _id: userID, company } = ctx.meta.infoUser;
-
+                
                 if(!companyID){
                     companyID = company._id
                 }

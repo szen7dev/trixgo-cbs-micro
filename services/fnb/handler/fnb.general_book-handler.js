@@ -35,17 +35,18 @@ module.exports = {
             unitPrice           : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             vatAmount           : { type: "number", optional: true },
+            storeType           : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { fundaID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note,
-                     customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName } = ctx.params;
+                     customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName, storeType } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.insert({
-                    fundaID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName 
+                    fundaID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName, storeType
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -80,16 +81,17 @@ module.exports = {
             unitPrice           : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             vatAmount           : { type: "number", optional: true },
+            storeType           : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName } = ctx.params;
+                let { bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName, storeType } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.update({
                     userID,
-                    bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName
+                    bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, sign, campaignName, storeType
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
