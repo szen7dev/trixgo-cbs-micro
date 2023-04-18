@@ -107,6 +107,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         type: Number,
         default : 1
     },
+    //______Trạng thái (1-ON, 2-OFF)
+    status: {
+        type: Number,
+        default : 1
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
