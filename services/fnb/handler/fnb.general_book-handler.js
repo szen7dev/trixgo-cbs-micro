@@ -193,6 +193,7 @@ module.exports = {
             month           : { type: "string", optional: true },
             outin           : { type: "string", optional: true },
             plan            : { type: "string", optional: true },
+            storeType       : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
             
@@ -207,10 +208,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { option, optionTime, optionGroup, fundasID, fundaID, year, month, fromDate, toDate, outin, plan } = ctx.params;
+                let { option, optionTime, optionGroup, fundasID, fundaID, year, month, fromDate, toDate, outin, plan, storeType } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_GENERAL_BOOK_MODEL.getListByProperty({
-                    companyID: company._id, userID, option, optionTime, optionGroup, fundasID, fundaID, year, month, fromDate, toDate, outin, plan
+                    companyID: company._id, userID, option, optionTime, optionGroup, fundasID, fundaID, year, month, fromDate, toDate, outin, plan, storeType
                     });
              
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
