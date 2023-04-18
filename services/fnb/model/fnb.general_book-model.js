@@ -309,8 +309,8 @@ class Model extends BaseModel {
     update({ userID,
         bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType }) {
         const that = this
-        // console.log({ userID,
-        //     bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType })
+        console.log({ userID,
+            bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType })
         return new Promise(async resolve => {
             try {
                 /**
@@ -397,11 +397,9 @@ class Model extends BaseModel {
                 // console.log(dataUpdate)
 
                 let infoAfterUpdate = await FNB_GENERAL_BOOK_COLL.findByIdAndUpdate(bookID, dataUpdate, { new: true })
-
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
-                
-
+                    
                 /**
                  * CẬP NHẬT CÁC PHÂN LOẠI CHO MẨU TIN CON (NẾU UPDATE CHA)
                  */
@@ -458,8 +456,8 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                // console.log('=============>>>>>>>>>>>>>>>>>>')
-                // console.log(listData)
+                console.log('=============>>>>>>>>>>>>>>>>>>')
+                console.log(listData)
 
                 if(listData && listData[0]){
                     amount = Number(listData[0].amount)
@@ -706,8 +704,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, userID, option, optionTime, optionGroup, fundasID, year, month, fromDate, toDate, outin, plan, fundaID }) {
-        // console.log({ companyID, userID, option, optionTime, optionGroup, fundasID, year, month, fromDate, toDate, outin, plan })
+    getListByProperty({ companyID, userID, option, optionTime, optionGroup, fundasID, year, month, fromDate, toDate, outin, plan, storeType, fundaID }) {
+        // console.log({ companyID, userID, option, optionTime, optionGroup, fundasID, year, month, fromDate, toDate, outin, storeType, fundaID  })
         return new Promise(async (resolve) => {
             try {
                 if(!option){
@@ -768,6 +766,11 @@ class Model extends BaseModel {
                     // Phân loại theo Kế hoạch, thực tế
                     if(plan && plan > 0){
                         conditionObj.plan = Number(plan)
+                    }
+
+                    // Phân loại theo Nhập xuất
+                    if(storeType && storeType > 0){
+                        conditionObj.storeType = Number(storeType)
                     }
 
                     /**
@@ -874,12 +877,6 @@ class Model extends BaseModel {
                             amount: { $sum: "$amount" },
                             vatAmount: { $sum: "$vatAmount" },
                         }
-
-                        conditionPopulate = {
-                            path: '_id.funda',
-                            select: '_id name sign image',
-                            model: 'funda'
-                        }
                     }
 
                     // console.log(conditionObj)
@@ -923,9 +920,9 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    if(!isNaN(option) && [5].includes(Number(option))){
-                        await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
-                    }
+                    // if(!isNaN(option) && [5].includes(Number(option))){
+                    //     await FNB_GENERAL_BOOK_COLL.populate(listData, conditionPopulate)
+                    // }
 
                     return resolve({ error: false, data: listData });
                 }
