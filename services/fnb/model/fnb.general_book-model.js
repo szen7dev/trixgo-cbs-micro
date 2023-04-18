@@ -412,7 +412,7 @@ class Model extends BaseModel {
                         "outin": outin, 
                         "revenueType": revenueType, 
                         "expenseType": expenseType, 
-                        "appExpenseType": appExpenseType
+                        "appExpenseType": appExpenseType,
                         "storeType": storeType
                     } }
                  );
