@@ -307,10 +307,10 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ userID,
-        bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType }) {
+        bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType, option }) {
         const that = this
-        console.log({ userID,
-            bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType })
+        // console.log({ userID,
+        //     bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType })
         return new Promise(async resolve => {
             try {
                 /**
@@ -335,6 +335,10 @@ class Model extends BaseModel {
                     dataUpdate.customer = customerID;
                 }
 
+                if(option && !isNaN(option) == 1){
+                    dataUpdate.$addToSet = {signatures: userID};
+                }
+
                 if(goodsID && checkObjectIDs(goodsID)){
                     dataUpdate.goods = goodsID;
                 }
@@ -347,15 +351,15 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                if(sign){
+                if(sign && sign != ""){
                     dataUpdate.sign = sign;
                 }
                 
-                if(campaignName){
+                if(campaignName && checkObjectIDs(campaignName)){
                     dataUpdate.campaignName = campaignName;
                 }
                  
-                if(appExpenseType){
+                if(appExpenseType && !isNaN(appExpenseType)){
                     dataUpdate.appExpenseType = appExpenseType;
                 }
 
@@ -379,20 +383,23 @@ class Model extends BaseModel {
                     dataUpdate.storeType = Number(storeType);
                 }
 
-                if(!isNaN(quantity)){
-                    dataUpdate.quantity = Number(quantity);
-                }
-
-                if(!isNaN(unitPrice)){
-                    dataUpdate.unitPrice = Number(unitPrice);
-                }
-
-                if(!isNaN(quantity && !isNaN(unitPrice))){
-                    dataUpdate.amount = quantity * unitPrice;
-                }
-
-                if(!isNaN(vatAmount)){
-                    dataUpdate.vatAmount = Number(vatAmount);
+                // Chỉ cập nhật với mẩu tin Con
+                if(infoBook && infoBook.parent){
+                    if(!isNaN(quantity)){
+                        dataUpdate.quantity = Number(quantity);
+                    }
+    
+                    if(!isNaN(unitPrice)){
+                        dataUpdate.unitPrice = Number(unitPrice);
+                    }
+    
+                    if(!isNaN(quantity && !isNaN(unitPrice))){
+                        dataUpdate.amount = quantity * unitPrice;
+                    }
+    
+                    if(!isNaN(vatAmount)){
+                        dataUpdate.vatAmount = Number(vatAmount);
+                    }
                 }
                 // console.log(dataUpdate)
 
@@ -403,17 +410,19 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CÁC PHÂN LOẠI CHO MẨU TIN CON (NẾU UPDATE CHA)
                  */
-                await FNB_GENERAL_BOOK_COLL.updateMany(
-                    { parent: ObjectID(bookID) },
-                    { $set: { 
-                        "plan": plan, 
-                        "outin": outin, 
-                        "revenueType": revenueType, 
-                        "expenseType": expenseType, 
-                        "appExpenseType": appExpenseType,
-                        "storeType": storeType
-                    } }
-                 );
+                if(!infoBook.parent){
+                    await FNB_GENERAL_BOOK_COLL.updateMany(
+                        { parent: ObjectID(bookID) },
+                        { $set: { 
+                            "plan": plan, 
+                            "outin": outin, 
+                            "revenueType": revenueType, 
+                            "expenseType": expenseType, 
+                            "appExpenseType": appExpenseType,
+                            "storeType": storeType
+                        } }
+                    )
+                }
                 
                 /**
                  * CẬP NHẬT GIÁ TRỊ CHO MẨU TIN CHA (NẾU UPDATE CON)

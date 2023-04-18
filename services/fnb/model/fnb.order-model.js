@@ -1479,7 +1479,7 @@ class Model extends BaseModel {
                 }
 
                 if(managerID && checkObjectIDs(managerID)){
-                    dataInsert.manager = managerID;
+                    conditionObj.manager = managerID;
                 }
 
                 // Phân loại theo thời khoảng

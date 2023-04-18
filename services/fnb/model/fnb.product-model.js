@@ -4,14 +4,8 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
-// const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
-
-// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 const XlsxPopulate                      = require('xlsx-populate');
@@ -23,20 +17,11 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**s
  * import inter-coll, exter-coll
  */
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
-// const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
-// const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
-// const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
-// const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-// const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
-// const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
-const FNB_GENERAL_BOOK_COLL                    = require('../database/fnb.general_book-coll');
 
 /**
  * import inter-model, exter-model
  */
-const FNB_GENERAL_BOOK_MODEL                    = require('./fnb.general_book-model').MODEL;
 class Model extends BaseModel {
 
     constructor() {
@@ -122,8 +107,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ companyID, productID, userID, parentID, type, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption }) {
-        // console.log({ companyID, productID, userID, parentID, type, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption })
+    update({ companyID, productID, userID, parentID, type, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption, status }) {
+        // console.log({ companyID, productID, userID, parentID, type, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption, status })
         return new Promise(async resolve => {
             try {
                 if(!option){
@@ -136,7 +121,11 @@ class Model extends BaseModel {
                         dataInUpdate.parent = parentID;
                     }
 
-                    if(type){
+                    if(status && !isNaN(status)){
+                        dataInUpdate.status = Number(status);
+                    }
+
+                    if(type && !isNaN(type)){
                         dataInUpdate.type = Number(type);
                     }
 

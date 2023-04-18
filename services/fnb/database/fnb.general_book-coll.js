@@ -162,6 +162,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
         type: Number,
         default: 0 
     },
+    //_________Ký duyệt xác nhận
+    signatures: [{
+        type: Schema.Types.ObjectId,
+        ref: "signature"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
