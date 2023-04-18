@@ -46,8 +46,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName }) {
-        // console.log({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName })
+    insert({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName, storeType }) {
+        // console.log({ fundaID, shiftID, parentID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, amount, vatAmount, userID, sign, campaignName, storeType })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -97,6 +97,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(appExpenseType)){
                     dataInsert.appExpenseType = Number(appExpenseType);
+                }
+
+                if(!isNaN(storeType)){
+                    dataInsert.storeType = Number(storeType);
                 }
 
                 if(note && note != ""){
@@ -150,6 +154,7 @@ class Model extends BaseModel {
                     dataInsert.revenueType      = infoParent.revenueType
                     dataInsert.expenseType      = infoParent.expenseType
                     dataInsert.appExpenseType   = infoParent.appExpenseType
+                    dataInsert.storeType        = infoParent.storeType
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -302,10 +307,10 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ userID,
-        bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName }) {
+        bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType }) {
         const that = this
         // console.log({ userID,
-        //     bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName })
+        //     bookID, outin, plan, revenueType, expenseType, appExpenseType, date, name, note, customerID, goodsID, quantity, unitPrice, vatAmount, sign, campaignName, storeType })
         return new Promise(async resolve => {
             try {
                 /**
@@ -370,6 +375,10 @@ class Model extends BaseModel {
                     dataUpdate.expenseType = Number(expenseType);
                 }
 
+                if(!isNaN(storeType)){
+                    dataUpdate.storeType = Number(storeType);
+                }
+
                 if(!isNaN(quantity)){
                     dataUpdate.quantity = Number(quantity);
                 }
@@ -404,6 +413,7 @@ class Model extends BaseModel {
                         "revenueType": revenueType, 
                         "expenseType": expenseType, 
                         "appExpenseType": appExpenseType
+                        "storeType": storeType
                     } }
                  );
                 

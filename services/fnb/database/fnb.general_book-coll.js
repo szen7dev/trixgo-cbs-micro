@@ -84,6 +84,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
         type: Number,
         default: 1
     },
+    /**
+     * Nhập xuất
+     * 1-Nhập kho
+     * 2-Xuất kho
+     */
+    storeType: {
+        type: Number,
+        default: 1
+    },
      /**
      * Phân loại app
      * 1-Offline
