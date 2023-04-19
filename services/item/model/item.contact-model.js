@@ -14,7 +14,7 @@ const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-co
 /**
  * TOOLS
  */
-const { checkObjectIDs, IsJsonString, validateParamsObjectID, } = require('../../../tools/utils/utils')
+const { checkObjectIDs, IsJsonString, validateParamsObjectID, regexPhoneNumber } = require('../../../tools/utils/utils')
 const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 }                  = require('../../../tools/s3')
@@ -60,6 +60,9 @@ class Model extends BaseModel {
                  */
                 if(!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })
+
+                if(!regexPhoneNumber(phone))
+                    return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
 
                 let checkPhone = phone.replace(/\s/g, "").length
                 // console.log(checkPhone)
@@ -348,6 +351,9 @@ class Model extends BaseModel {
         // })
         return new Promise(async (resolve) => {
             try {
+                if(!regexPhoneNumber(phone))
+                    return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
+
                 let checkPhone = phone.replace(/\s/g, "").length
                 // console.log(checkPhone)
                 if(Number(checkPhone) != 10)
