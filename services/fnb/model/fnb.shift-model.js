@@ -200,10 +200,7 @@ class Model extends BaseModel {
                 }
 
                 if(note && note != ""){
-                    // dataInUpdate.note =note;
                     dataInUpdate.note = note
-                }else{
-                    dataInUpdate.note = `${fullname} - ${moment(new Date()).format('DD/MM/YYYY HH:mm')}`
                 }
 
                 if(campaign && !isNaN(campaign)){
