@@ -165,7 +165,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_general_book", {
     //_________Ký duyệt xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,
-        ref: "signature"
+        ref: "user"
     }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
