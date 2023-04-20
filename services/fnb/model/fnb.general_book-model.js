@@ -409,8 +409,9 @@ class Model extends BaseModel {
                     
                 /**
                  * CẬP NHẬT CÁC PHÂN LOẠI CHO MẨU TIN CON (NẾU UPDATE CHA)
+                 *  Nếu không cập nhật chữ ký
                  */
-                if(!infoBook.parent){
+                if(!infoBook.parent && !option){
                     await FNB_GENERAL_BOOK_COLL.updateMany(
                         { parent: ObjectID(bookID) },
                         { $set: { 
