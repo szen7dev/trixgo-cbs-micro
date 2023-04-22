@@ -251,11 +251,11 @@ class Model extends BaseModel {
                         dataInUpdate.subStaffs = subStaffsID;
                     }
 
-                    if(workingHours && !isNaN(workingHours)){
+                    if(!isNaN(workingHours)){
                         dataInUpdate.workingHours = Number(workingHours)
                     }
     
-                    if(subWorkingHours && !isNaN(subWorkingHours)){
+                    if(!isNaN(subWorkingHours)){
                         dataInUpdate.subWorkingHours = Number(subWorkingHours)
                     }
 
