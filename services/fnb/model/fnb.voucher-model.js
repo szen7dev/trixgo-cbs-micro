@@ -128,12 +128,12 @@ class Model extends BaseModel {
                         let infoVoucher = await FNB_VOUCHER_COLL.findOne({ 
                             _id: { $ne: voucherID },
                             company: companyID, 
-                            sign: sign 
+                            sign: sign.replace(/\s/g, "")
                         })
                         if(infoVoucher)
                             return resolve({ error: true, message: 'Mã hiệu đã tồn tại' })
 
-                        dataUpdate.sign = sign
+                        dataUpdate.sign = sign.replace(/\s/g, "")
                     }
 
                     if(note && note != ""){
@@ -246,6 +246,8 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     getInfo({ companyID, voucherID, sign, select, populates={} }) {
+        // console.log({ companyID, voucherID, sign, select })
+        // console.log({ sign: sign.replace(/\s/g, "") })
         return new Promise(async resolve => {
             try {
                 if(voucherID){

@@ -68,6 +68,16 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 2
     },
+    /**
+     * BỔ SUNG
+     * 1-Khách hàng mua hàng gốc tới từ chiến dịch nào
+     * 2-Đơn hàng có tới từ giới thiệu khách hay khôgn
+     */    
+    //_________Khách hàng đến từ chiến dịch nào
+    customerFrom: {
+        type: Schema.Types.ObjectId,
+        ref : 'fnb_voucher'
+    }, 
     //_________Người thực hiện
     assignee: [{
         type: Schema.Types.ObjectId,
