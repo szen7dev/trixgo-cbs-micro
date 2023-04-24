@@ -235,7 +235,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, parentID, fundaID, type, isParent, convertOption, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
+    getList({ companyID, parentID, fundaID, type, isParent, convertOption, keyword, limit = 10, lastestID, select, populates, sortKey, userID, status }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -265,6 +265,11 @@ class Model extends BaseModel {
                 // Phân loại (sản phẩm chính/topping)
                 if(type && !isNaN(type)){
                     conditionObj.type = Number(type)
+                }
+
+                // Theo trạng thái sản phẩm
+                if(status && !isNaN(status)){
+                    conditionObj.status = Number(status)
                 }
 
                 if(convertOption){
