@@ -107,8 +107,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    update({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers }) {
-        // console.log({ companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers })
+    update({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove }) {
+        // console.log({ companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(voucherID))
@@ -197,10 +197,36 @@ class Model extends BaseModel {
                         }
                     }
 
+                    //_________Thành viên truy cập
+                    if(checkObjectIDs(membersAdd)){
+                        dataAddToset = {
+                            ...dataAddToset,
+                            members: membersAdd
+                        }
+                    }
+
+                    //_________Xoá thành viên
+                    if(checkObjectIDs(membersRemove)){
+                        dataPullAll = {
+                            ...dataPullAll,
+                            members: membersRemove
+                        }
+                    }
+
+                    /**
+                     * Cập nhật nhiều dữ liệu addToSet cùng 1 lúc
+                     */
                     if(dataAddToset){
                         dataUpdate.$addToSet = dataAddToset;
                     }
                     // console.log(dataUpdate)
+
+                    /**
+                     * Xóa nhiều dữ liệu cùng 1 lúc
+                     */
+                    if(dataPullAll){
+                        dataUpdate.$pullAll = dataPullAll;
+                    }
 
                     let infoAfterUpdate = await FNB_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate, { new: true });
                     if (!infoAfterUpdate)
@@ -305,7 +331,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getList({ companyID, userID, customerID, template, type, keyword, limit=10, lastestID, select, populates }) {
+    getList({ companyID, userID, customerID, template, type, keyword, limit=10, lastestID, select, populates, isMember }) {
         // console.log({ companyID, userID, customerID, template, type, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -339,6 +365,9 @@ class Model extends BaseModel {
                     conditionObj.template = Number(template)
                 }
 
+                if(isMember && isMember == 1){
+                    conditionObj.members = { $in: [userID] }
+                }
                 // console.log(conditionObj)
 
                 /**

@@ -69,18 +69,20 @@
             status              : { type: "number", optional: true },
             receivers           : { type: "array", optional: true },
             buyers              : { type: "array", optional: true },
+            membersAdd          : { type: "array", optional: true },
+            membersRemove       : { type: "array", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers } = ctx.params;
+                 let { voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove } = ctx.params;
                  
-                //  console.log({voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers })
+                //  console.log({voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove })
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await FNB_VOUCHER_MODEL.update({
-                    companyID: company._id, userID, voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers
+                    companyID: company._id, userID, voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -141,7 +143,7 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { voucherID, sign, customerID, template, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
+                 let { voucherID, sign, customerID, template, type, status, keyword, limit, lastestID, select, populates, isMember } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -152,7 +154,7 @@
                      })
                  }else{
                      resultAfterCallHandler = await FNB_VOUCHER_MODEL.getList({
-                         companyID: company._id, userID, customerID, template,  type, status, keyword, limit, lastestID, select, populates
+                         companyID: company._id, userID, customerID, template,  type, status, keyword, limit, lastestID, select, populates, isMember
                      })
                  }
 
