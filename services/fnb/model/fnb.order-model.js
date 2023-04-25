@@ -180,6 +180,12 @@ class Model extends BaseModel {
                 if(infoCustomer.birthday){
                     let dateNow = new Date
                     dataInsert.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
+                    // console.log(Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear()))
+                }
+
+                // Người giới thiệu
+                if(infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
+                    dataInsert.referrer = Number(infoCustomer.referrer);
                 }
 
                 // Doanh số khách cũ, mới và khách vãng lai
@@ -856,6 +862,7 @@ class Model extends BaseModel {
                     if(infoCustomer.birthday){
                         let dateNow = new Date
                         dataInUpdate.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
+                        // console.log(Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear()))
                     }
 
                     // Doanh số khách cũ, mới
@@ -2609,6 +2616,14 @@ class Model extends BaseModel {
 
                         let listData  = await FNB_ORDER_COLL.find(conditionObj)
                         .populate({
+                            path: "referrer",
+                            select: "name phone",
+                        })
+                        .populate({
+                            path: "customer",
+                            select: "name phone",
+                        })
+                        .populate({
                             path: "funda",
                             select: "name sign",
                         })
@@ -2663,6 +2678,12 @@ class Model extends BaseModel {
                                 if(Number(item.nonResident) === 2){
                                     workbook.sheet("Order").row(i).cell(27).value('Khách vãng lai');
                                 }
+
+                                workbook.sheet("Order").row(i).cell(28).value(`${item?.customer?._id}`);
+                                workbook.sheet("Order").row(i).cell(29).value(item?.customer?.phone);
+
+                                workbook.sheet("Order").row(i).cell(30).value(item?.referrer ? `${item?.referrer?._id}` : "");
+                                workbook.sheet("Order").row(i).cell(31).value(item?.referrer ? item?.referrer?.phone : "");
                                 i++
                             });
 
