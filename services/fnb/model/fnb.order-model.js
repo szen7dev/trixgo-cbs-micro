@@ -185,7 +185,7 @@ class Model extends BaseModel {
 
                 // Người giới thiệu
                 if(infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
-                    dataInsert.referrer = Number(infoCustomer.referrer);
+                    dataInsert.referrer = infoCustomer.referrer;
                 }
 
                 // Doanh số khách cũ, mới và khách vãng lai
