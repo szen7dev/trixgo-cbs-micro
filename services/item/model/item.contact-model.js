@@ -77,6 +77,13 @@ class Model extends BaseModel {
                 if(!infoFunda.area1 || !infoFunda.area2 || !infoFunda.area3)
                     return resolve({ error: true, message: 'Cơ sở chưa khai báo thuộc khu vực nào, cần bổ sung' })
 
+                let checkPhoneNew = await ITEM__CONTACT_COLL.findOne({
+                    company: infoFunda.company,
+                    phone: checkPhone
+                })
+                if(checkPhoneNew)
+                    return resolve({ error: true, message: 'Điện thoại danh bạ đã tồn tại' })
+
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
                     company: infoFunda.company
@@ -358,6 +365,14 @@ class Model extends BaseModel {
                 // console.log(checkPhone)
                 if(Number(checkPhone) != 10)
                     return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
+
+                let checkPhoneNew = await ITEM__CONTACT_COLL.findOne({
+                    _id: { $ne: contactID },
+                    company: infoFunda.company,
+                    phone: checkPhone
+                })
+                if(checkPhoneNew)
+                    return resolve({ error: true, message: 'Điện thoại danh bạ đã tồn tại' })
 
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
