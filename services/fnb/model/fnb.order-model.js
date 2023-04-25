@@ -3319,30 +3319,60 @@ class Model extends BaseModel {
                     // ])
 
                     let listContact = await ITEM__CONTACT_COLL.find({company: ObjectID(companyID), phone: {$in: listDataPhone.map(item=>item.phone) }}).select('_id name phone')
-                    // console.log(listContact.length)
 
                     var i = 0, j = 0
                     let arr = []
-                    for(const item of listContact){
-                        let infoOrder = await FNB_ORDER_COLL.findOne({customer: ObjectID(item._id)})
-
-                        if(infoOrder){
-                            i++
-                            arr.push(item)
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_duplicate_contact.xlsx')))
+                    .then(async workbook => {
+                      
+                        var i = 3;
+                        for(const item of listContact){
+                            let infoOrder = await FNB_ORDER_COLL.findOne({customer: ObjectID(item._id)})
                             // console.log(item)
-                        }else{
-                            j++
+    
+                            if(infoOrder){
+                                // workbook.sheet("Data").row(i).cell(1).value()
+                                workbook.sheet("Data").row(i).cell(2).value(item?.name)
+                                workbook.sheet("Data").row(i).cell(3).value(item?.phone)
+                                workbook.sheet("Data").row(i).cell(4).value(`${item?._id}`)
+                                i++
+                            }
                         }
-                    }
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `BaoCaoNhanSuTrung_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+
+                    // var i = 3;
+                    // for(const item of listContact){
+                    //     let infoOrder = await FNB_ORDER_COLL.findOne({customer: ObjectID(item._id)})
+
+                    //     if(infoOrder){
+                    //         i++
+                    //         arr.push(item)
+                    //         // console.log(item)
+                    //     }else{
+                    //         j++
+                    //     }
+                    // }
                     // console.log({___soKhachReal: i})
                     // console.log({___soKhachFakeTrung: j})
 
                     // let listContactFake = await FNB_ORDER_COLL.find({customer: })
 
-                    return resolve({ error: false, arr })
+                    // return resolve({ error: false, arr })
                 }
 
-                return resolve({ error: false, message: 'Reset thành công'})
+                // return resolve({ error: false, message: 'Reset thành công'})
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
