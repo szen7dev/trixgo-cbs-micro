@@ -3182,51 +3182,51 @@ class Model extends BaseModel {
                  /**
                  * CẬP NHẬT LỖI
                  */
-                if(option == 3){
-                    // Cập nhật cho Điểm bán
-                    await ITEM__FUNDA_COLL.updateMany(
-                        {
-                            company: ObjectID(companyID),
-                        },
-                        {$set: {numberOfMistakes: 0 } }
-                     )
-                    let listData = await FNB_MISTAKE_COLL.aggregate([
-                        {
-                            $match: {
-                                company: ObjectID(companyID)
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { funda: "$funda" },
-                                quantity: { $sum: 1 },
-                            }
-                        }
-                    ])
-                    for(const item of listData){
-                        let infoFunda = await ITEM__FUNDA_COLL.findByIdAndUpdate(item._id.funda, {
-                            numberOfMistakes: Number(item.quantity)
-                        })
-                    }
-                }
+                // if(option == 3){
+                //     // Cập nhật cho Điểm bán
+                //     await ITEM__FUNDA_COLL.updateMany(
+                //         {
+                //             company: ObjectID(companyID),
+                //         },
+                //         {$set: {numberOfMistakes: 0 } }
+                //      )
+                //     let listData = await FNB_MISTAKE_COLL.aggregate([
+                //         {
+                //             $match: {
+                //                 company: ObjectID(companyID)
+                //             }
+                //         },
+                //         {
+                //             $group: {
+                //                 _id: { funda: "$funda" },
+                //                 quantity: { $sum: 1 },
+                //             }
+                //         }
+                //     ])
+                //     for(const item of listData){
+                //         let infoFunda = await ITEM__FUNDA_COLL.findByIdAndUpdate(item._id.funda, {
+                //             numberOfMistakes: Number(item.quantity)
+                //         })
+                //     }
+                // }
 
                 /**
                  * CẬP NHẬT LƯƠNG CĂN BẢN
                  */
-                if(option == 4){
-                    // Cập nhật cho Điểm bán
-                    await ITEM__FUNDA_COLL.updateMany(
-                        {
-                            company: ObjectID(companyID),
-                        },
-                        {$set: {
-                            trainStaffSalar: 10000,
-                            trialStaffSalary: 15000,
-                            officialStaffSalar: 20000,
-                            lunchStaffAllowance: 30000,
-                        } }
-                     )
-                }
+                // if(option == 4){
+                //     // Cập nhật cho Điểm bán
+                //     await ITEM__FUNDA_COLL.updateMany(
+                //         {
+                //             company: ObjectID(companyID),
+                //         },
+                //         {$set: {
+                //             trainStaffSalar: 10000,
+                //             trialStaffSalary: 15000,
+                //             officialStaffSalar: 20000,
+                //             lunchStaffAllowance: 30000,
+                //         } }
+                //      )
+                // }
 
                 /**
                  * CẬP NHẬT DANH BẠ => BỔ SUNG SUID
@@ -3297,7 +3297,52 @@ class Model extends BaseModel {
                 //     return resolve({ error: false, message: 'Reset thành công', data: listContacts.length });
                 // }
 
-                return resolve({ error: false, message: 'Reset thành công'});
+                /**
+                 * UPDATE CÁC SỐ ĐIỆN THOẠI TRÙNG
+                 */
+                if(option == 6){
+                    // Cập nhật cho Điểm bán
+                    let listDataPhone = await ITEM__CONTACT_COLL.aggregate([
+                        {"$match": {company: ObjectID(companyID)} },
+                        {"$group" : { "_id": "$phone", "count": { "$sum": 1 } } },
+                        {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } }, 
+                        {"$project": {"phone" : "$_id", "_id" : 0} }
+                    ])
+
+                    // let listDataPhone = await ITEM__CONTACT_COLL.aggregate([
+                    //     {"$match": {company: ObjectID(companyID)} },
+                    //     {$group:{"_id":"$phone","phone":{$first:"$phone"},"count":{$sum:1}}},
+                    //     {$match:{"count":{$gt:1}}},
+                    //     {$project:{"phone":1,"_id":0}},
+                    //     {$group:{"_id":null,"duplicateNames":{$push:"$phone"}}},
+                    //     {$project:{"_id":0,"duplicateNames":1}}
+                    // ])
+
+                    let listContact = await ITEM__CONTACT_COLL.find({company: ObjectID(companyID), phone: {$in: listDataPhone.map(item=>item.phone) }}).select('_id name phone')
+                    // console.log(listContact.length)
+
+                    var i = 0, j = 0
+                    let arr = []
+                    for(const item of listContact){
+                        let infoOrder = await FNB_ORDER_COLL.findOne({customer: ObjectID(item._id)})
+
+                        if(infoOrder){
+                            i++
+                            arr.push(item)
+                            // console.log(item)
+                        }else{
+                            j++
+                        }
+                    }
+                    // console.log({___soKhachReal: i})
+                    // console.log({___soKhachFakeTrung: j})
+
+                    // let listContactFake = await FNB_ORDER_COLL.find({customer: })
+
+                    return resolve({ error: false, arr })
+                }
+
+                return resolve({ error: false, message: 'Reset thành công'})
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
