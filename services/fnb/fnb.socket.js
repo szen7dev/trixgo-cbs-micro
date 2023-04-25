@@ -74,7 +74,7 @@ exports.FNB_SOCKET = {
 
             const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
             const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
-            const contentMSS = `${orderInfo?.name} ${orderInfo.salesChannel > 1 ? '-App' : '-Off'}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công bởi ${user.data?.bizfullname}`;
+            const contentMSS = `${orderInfo?.name} ${orderInfo.salesChannel > 1 ? '-App' : '-Off'}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công, tạo bởi ${user.data?.bizfullname}`;
             // console.log({ receivers, titleMSS, contentMSS })//
 
             // Cloud messaging
