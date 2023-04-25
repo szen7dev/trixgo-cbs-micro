@@ -96,6 +96,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
         type: Number,
         default : 0
     },
+    //_________Thành viên truy cập
+    members: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

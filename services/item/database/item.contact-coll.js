@@ -15,12 +15,6 @@ const Schema                = require('mongoose').Schema;
  * 4. Báo cáo hiệu quả tuyển dụng
  */
 module.exports  = DATABASE_MIDDLEWARE("contact", {
-    // //_________Mã hiệu
-    // suid : {
-    //     type   : String,
-    //     require:  true,
-    //     unique : true
-    // },
     //_________Điện thoại (***)
     phone : String,
     //_________Email

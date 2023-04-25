@@ -716,10 +716,12 @@ class Model extends BaseModel {
                 /**
                  * THỰC HIỆN BẰN TIN NHẮN VỚI ZALO OA
                  */
-                // await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE}`, {
+                // let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE}`, {
                 //     text: 'Hello World',
                 //     userId: '1542296027315334678', // VHM zalo user
                 // });
+                // console.log('===========Bắn Zalo OA==================')
+                // console.log(infoOA)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
