@@ -43,7 +43,7 @@ exports.FNB_SOCKET = {
                     infoUser: { _id: userID, company: { _id: companyID } }
                 }
             });
-            console.log({ fundaResponse })
+            // console.log({ fundaResponse })
 
             if(!fundaResponse || fundaResponse.error) {
                 return sendDataToMultilSocketsOfListUser({
@@ -69,12 +69,12 @@ exports.FNB_SOCKET = {
 
             // Bắn về các user đăng ký nhận thông báo
             const usersID = fundaResponse.data?.getNotification?.map?.(userId => userId.toString()) || [];
-            console.log('Thông tin socket=======================')
-            console.log({ usersID, userID })
+            // console.log('Thông tin socket=======================')
+            // console.log({ usersID, userID })
 
             const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
             const titleMSS = `Đơn hàng ${fundaResponse?.data?.name}`;
-            const contentMSS = `${orderInfo?.name} ${orderInfo.salesChannel > 1 ? '-App' : '-Off'}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công bởi ${user.data?.bizfullname}`;
+            const contentMSS = `${orderInfo?.name} ${orderInfo.salesChannel > 1 ? '-App' : '-Off'}, mã hiệu ${orderInfo?.sign}, giá trị ${orderInfo?.total}, đã được thanh toán thành công, tạo bởi ${user.data?.bizfullname}`;
             // console.log({ receivers, titleMSS, contentMSS })//
 
             // Cloud messaging
