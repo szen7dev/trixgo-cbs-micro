@@ -368,7 +368,7 @@ class Model extends BaseModel {
 
                 let checkPhoneNew = await ITEM__CONTACT_COLL.findOne({
                     _id: { $ne: contactID },
-                    company: infoFunda.company,
+                    company: company,
                     phone: checkPhone
                 })
                 if(checkPhoneNew)

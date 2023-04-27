@@ -865,6 +865,11 @@ class Model extends BaseModel {
                         // console.log(Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear()))
                     }
 
+                    // Người giới thiệu
+                    if(infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
+                        dataInUpdate.referrer = infoCustomer.referrer;
+                    }
+
                     // Doanh số khách cũ, mới
                     let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
                     if((numberOD && numberOD > 0) || (infoCustomer.new && infoCustomer.new == 2)){
