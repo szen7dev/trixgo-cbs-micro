@@ -2655,6 +2655,10 @@ class Model extends BaseModel {
 
                         let listData  = await FNB_ORDER_COLL.find(conditionObj)
                         .populate({
+                            path: "campaignType",
+                            select: "name",
+                        })
+                        .populate({
                             path: "referrer",
                             select: "name phone",
                         })
@@ -2723,6 +2727,9 @@ class Model extends BaseModel {
 
                                 workbook.sheet("Order").row(i).cell(30).value(item?.referrer ? `${item?.referrer?._id}` : "");
                                 workbook.sheet("Order").row(i).cell(31).value(item?.referrer ? item?.referrer?.phone : "");
+
+                                workbook.sheet("Order").row(i).cell(32).value(item?.campaignType ? item?.campaignType?.name : "");
+
                                 i++
                             });
 
