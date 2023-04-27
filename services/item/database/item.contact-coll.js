@@ -265,6 +265,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     /**
      * FNB
      */
+    //_________Thành tích giới thiệu
+    achievements: [{
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    }],
     //_________Người giới thiệu
     referrer: {
         type: Schema.Types.ObjectId,

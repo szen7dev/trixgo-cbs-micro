@@ -100,9 +100,11 @@ class Model extends BaseModel {
                 let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID)
                 if (!infoCustomer)
                     return resolve({ error: true, message: 'cannot_get_infoCustomer' })
+                // console.log(infoCustomer)
 
                 // Lấy số đơn hàng khách đã mua (thành công)
                 let numberOD = await FNB_ORDER_COLL.count({ customer: customerID, status: 5 })
+                // console.log(numberOD)
 
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
@@ -687,35 +689,57 @@ class Model extends BaseModel {
                 }
 
                 /**
+                 * Nếu khách hàng mua Offline
                  * Nếu khách hàng mới chưa từng mua đơn hàng nào bao giờ
-                 * Có người giới thiệu
+                 * Nếu khách hàng có người giới thiệu
+                 * => Lưu ý khi đơn đầu -> được Ref -> Hủy -> Đơn sau vẫn được Ref
                  */
                 if(salesChannel == 1 && numberOD == 0 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
-                    /**
-                    * Tạo voucher cho Người giới thiệu (type=2)
-                    * 1-Phân loại Type = 2
-                    * 2-Còn thời hạn sử dụng
-                    * 3-Voucher chưa cấp cho người giới thiệu lần nào
-                    */
-                    let infoOffer = await FNB_VOUCHER_COLL.findOne({ 
-                        type: 2, 
-                        company: infoFunda.company, 
-                        receivers: {$nin: [infoCustomer.referrer]}, //Chưa cấp phát lần nào
-                        expired: {$gt: new Date()} 
-                    })
-                    .sort({_id: 1 })
-                    .select("_id name sign")
-                    // console.log(infoOffer)
+                    
+                    // Thông tin người giới thiệu
+                    let infoReferral = await ITEM__CONTACT_COLL.findById(infoCustomer.referrer)
 
-                    if(infoOffer){
-                        await FNB_ORDER_VOUCHER_MODEL.update({
-                            companyID: infoFunda.company,
-                            userID,
-                            voucherID: infoOffer._id,
-                            receivers:[infoCustomer.referrer]
-                        })
+                    // Kiểm tra xem Người giới thiệu đã được nhận Voucher khi Bạn của mình mua hàng hay chưa (tránh trường hợp đơn hủy)
+                    if(infoReferral && infoReferral.achievements && infoReferral.achievements.includes(customerID)){
+                        // console.log('Đã được tính Ref=========================')
+
                     }else{
-                        console.log('===========Không tồn tại Voucher==================')
+                        // console.log('Chưa được tính Ref=========================')
+
+                        /**
+                        * Tạo voucher cho Người giới thiệu theo mã bất kỳ (type=2)
+                        * 1-Phân loại Type = 2
+                        * 2-Còn thời hạn sử dụng
+                        * 3-Voucher chưa cấp cho người giới thiệu lần nào
+                        */
+                        let infoOffer = await FNB_VOUCHER_COLL.findOne({ 
+                            type: 2, 
+                            company: infoFunda.company, 
+                            receivers: {$nin: [infoCustomer.referrer]}, // Chưa từng cấp phát cho Người giới thiệu
+                            expired: {$gt: new Date()} 
+                        })
+                        .sort({_id: 1 })
+                        .select("_id name sign")
+                        // console.log(infoOffer)
+
+                        if(infoOffer){
+                            // console.log('===========Tồn tại Voucher và tiến hành Cấp phát==================')
+
+                            // Cấp phát voucher cho người Giới thiệu
+                            await FNB_ORDER_VOUCHER_MODEL.update({
+                                companyID: infoFunda.company,
+                                userID,
+                                voucherID: infoOffer._id,
+                                receivers:[infoCustomer.referrer]
+                            })
+
+                            // Gán thông tin Thành tích
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(infoCustomer.referrer, {
+                                $addToSet: { achievements: customerID }
+                            }, { new: true })
+                        }else{
+                            // console.log('===========Không tồn tại Voucher==================')
+                        }
                     }
                 }
 
@@ -2332,7 +2356,7 @@ class Model extends BaseModel {
         // console.log({ companyID, year, month, userID })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString())){
+                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
                     let yearFilter
                     let currentYear = new Date().getFullYear()
                     let currentMonth = new Date().getMonth() + 1
@@ -2523,7 +2547,7 @@ class Model extends BaseModel {
         // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString())){
+                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
                     // DANH SÁCH ĐƠN HÀNG
                     if(!option || option == undefined){
 
@@ -2926,7 +2950,7 @@ class Model extends BaseModel {
 
                         // SỐ LIỆU KHÁCH HÀNG
                         // if(option == 2){
-                        //     if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+                        //     if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) ){
                         //         let yearFilter
                         //         let currentYear = new Date().getFullYear()
                         //         if(year && !isNaN(year)){
@@ -3045,8 +3069,8 @@ class Model extends BaseModel {
     //     const that = this
     //     return new Promise(async resolve => {
     //         try {
-    //             if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
-    //             // if(FNB_ACC.cskh.includes(email.toString()) ){
+    //             if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) ){
+    //             // if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) ){
     //                 // console.log('1111111111111')
     //                 let { data: listData } = await that.getListByProperty({ companyID, option: 8, userID })
 
