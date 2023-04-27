@@ -9,8 +9,8 @@ const {
     validateParamsObjectID
 }
                                                 = require('../../../tools/utils/utils')
-const { compareTwoTime, 
-    isValidDate, 
+const { compareTwoTime,
+    isValidDate,
     getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index')
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant')
@@ -38,7 +38,7 @@ const fs                                       = require('fs')
 const path                                     = require('path')
 const { uploadFileS3 }                         = require('../../../tools/s3')
 
-const { 
+const {
     FNB_ACC,
  } = require('../helper/fnb.keys-constant')
 
@@ -700,7 +700,7 @@ class Model extends BaseModel {
                  * => Lưu ý khi đơn đầu -> được Ref -> Hủy -> Đơn sau vẫn được Ref
                  */
                 if(salesChannel == 1 && numberOD == 0 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
-                    
+
                     // Thông tin người giới thiệu
                     let infoReferral = await ITEM__CONTACT_COLL.findById(infoCustomer.referrer)
 
@@ -717,11 +717,11 @@ class Model extends BaseModel {
                         * 2-Còn thời hạn sử dụng
                         * 3-Voucher chưa cấp cho người giới thiệu lần nào
                         */
-                        let infoOffer = await FNB_VOUCHER_COLL.findOne({ 
-                            type: 2, 
-                            company: infoFunda.company, 
+                        let infoOffer = await FNB_VOUCHER_COLL.findOne({
+                            type: 2,
+                            company: infoFunda.company,
                             receivers: {$nin: [infoCustomer.referrer]}, // Chưa từng cấp phát cho Người giới thiệu
-                            expired: {$gt: new Date()} 
+                            expired: {$gt: new Date()}
                         })
                         .sort({_id: 1 })
                         .select("_id name sign")
@@ -1791,7 +1791,7 @@ class Model extends BaseModel {
 
                         // Theo ngày trong tuần
                         if(optionTime && Number(optionTime) == 4){
-    
+
                             // Gom nhóm theo số sao
                             if(optionStar && !isNaN(optionStar)){
                                 conditionObj.starRating = Number(optionStar)
@@ -1833,7 +1833,7 @@ class Model extends BaseModel {
                             if(optionGroup && Number(optionGroup) == 1){
                                 conditionObj.complaint = {$gte: 1}
                             }
-                            
+
                             conditionGroup = {
                                 _id: { day: "$day" },
                                 quantity: { $sum: 1 },
@@ -2081,7 +2081,7 @@ class Model extends BaseModel {
                         if(voucherType && !isNaN(voucherType)){
                             conditionObj.voucherType = Number(voucherType)
                         }
-                        
+
                         conditionObjYear = {
                             "year": Number(yearFilter),
                         }
@@ -2225,13 +2225,13 @@ class Model extends BaseModel {
                             {
                                 $match: conditionObj
                             },
-                            { 
+                            {
                                 $lookup: {
                                     from: "doctypes",
                                     localField: "complaints",
                                     foreignField: "_id",
                                     as: "doctype"
-                                } 
+                                }
                             },
                             {
                                 $unwind: "$doctype"
@@ -3351,7 +3351,7 @@ class Model extends BaseModel {
                     let listDataPhone = await ITEM__CONTACT_COLL.aggregate([
                         {"$match": {company: ObjectID(companyID)} },
                         {"$group" : { "_id": "$phone", "count": { "$sum": 1 } } },
-                        {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } }, 
+                        {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } },
                         {"$project": {"phone" : "$_id", "_id" : 0} }
                     ])
 
@@ -3371,12 +3371,12 @@ class Model extends BaseModel {
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_duplicate_contact.xlsx')))
                     .then(async workbook => {
-                      
+
                         var i = 3;
                         for(const item of listContact){
                             let infoOrder = await FNB_ORDER_COLL.findOne({customer: ObjectID(item._id)})
                             // console.log(item)
-    
+
                             if(infoOrder){
                                 // workbook.sheet("Data").row(i).cell(1).value()
                                 workbook.sheet("Data").row(i).cell(2).value(item?.name)

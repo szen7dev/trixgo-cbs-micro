@@ -52,6 +52,29 @@ module.exports = {
         }
     },
 
+    sendMessageZNS: {
+        params: {
+            phone           : { type: 'string' },
+            templateData    : { type: 'object' },
+            templateId      : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+                const { phone, templateData, templateId } = ctx.params;
+                const resultAfterCallHandler = await ZALO_MODEL.sendMessageZNS({
+                    phone,
+                    templateData,
+                    templateId,
+                    cacher: this.broker.cacher
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
     zaloOACallback: {
         params: {
             oa_id           : { type: 'string' },
