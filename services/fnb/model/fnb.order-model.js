@@ -751,17 +751,23 @@ class Model extends BaseModel {
                 /**
                  * THỰC HIỆN BẰN TIN NHẮN VỚI ZALO OA
                  */
-                // let dataOA = {
-                //     phone: "84985199295",
-                //     templateData:{
-
-                //     },
-                //     templateId,
-                //     cacher: this.broker.cacher
-                // }
-                // let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
-                // console.log('===========Bắn Zalo OA==================')
-                // console.log(infoOA)
+                if(userID.toString() === "5f7363e2c229794d8c0bc691"){
+                    let dataOA = {
+                        phone: "84985199295",
+                        templateData: {
+                            "customer_name": "Nguyễn Hữu Hiệp",
+                            "order_code": "WGO-C001",
+                            "price": "30000",
+                            "date": "15:25:00 25/04/2023",
+                            "note": "Write something"
+                        },
+                        // templateId: 257162,
+                        // cacher: this.broker.cacher
+                    }
+                    let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
+                    console.log('===========Bắn Zalo OA==================')
+                    console.log(infoOA)
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
