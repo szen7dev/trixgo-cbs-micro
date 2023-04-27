@@ -687,8 +687,10 @@ class Model extends BaseModel {
                 }
 
                 /**
+                 * Nếu khách hàng mua Offline
                  * Nếu khách hàng mới chưa từng mua đơn hàng nào bao giờ
-                 * Có người giới thiệu
+                 * Nếu khách hàng có người giới thiệu
+                 * => Lưu ý khi đơn đầu -> được Ref -> Hủy -> Đơn sau vẫn được Ref
                  */
                 if(salesChannel == 1 && numberOD == 0 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
                     /**
