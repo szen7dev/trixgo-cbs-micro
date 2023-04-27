@@ -246,6 +246,14 @@ class Model extends BaseModel {
                                     { getVouchers: voucherID },
                                 },
                             )
+
+                            // Kiểm tra nếu chưa Add vào chiến dịch
+                            await ITEM__CONTACT_COLL.updateMany(
+                                { _id: { $in: receivers, campaignType: {$exists: false} }},
+                                { 
+                                    $set: {campaignType: voucherID}
+                                },
+                            )
                         }
 
                         // Cập nhật vào Người sử dụng
