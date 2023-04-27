@@ -156,7 +156,7 @@ class Model extends BaseModel {
         })
     }
 
-    sendZNSMessage({ phone, templateData, templateId = 257162, cacher }) {
+    sendMessageZNS({ phone, templateData, templateId = 257162, cacher }) {
         return new Promise(async resolve => {
             try {
                 const token = await cacher.get(`ZALO:oa:token`);
