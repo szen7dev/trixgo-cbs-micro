@@ -265,6 +265,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     /**
      * FNB
      */
+    //_________Phân loại chiến dịch
+    campaignType: {
+        type: Schema.Types.ObjectId,
+        ref : 'fnb_voucher' 
+    },
     //_________Thành tích giới thiệu
     achievements: [{
         type: Schema.Types.ObjectId,

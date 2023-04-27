@@ -190,6 +190,11 @@ class Model extends BaseModel {
                     dataInsert.referrer = infoCustomer.referrer;
                 }
 
+                // Phân loại chiến dịch
+                if(infoCustomer.campaignType && checkObjectIDs(infoCustomer.campaignType)){
+                    dataInsert.campaignType = infoCustomer.campaignType;
+                }
+
                 // Doanh số khách cũ, mới và khách vãng lai
                 if((numberOD && numberOD > 0) || (infoCustomer.new && infoCustomer.new == 2)){
                     dataInsert.new = 2 // Đơn hàng khách cũ
@@ -892,6 +897,11 @@ class Model extends BaseModel {
                     // Người giới thiệu
                     if(infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
                         dataInUpdate.referrer = infoCustomer.referrer;
+                    }
+
+                    // Phân loại chiến dịch
+                    if(infoCustomer.campaignType && checkObjectIDs(infoCustomer.campaignType)){
+                        dataInUpdate.campaignType = infoCustomer.campaignType;
                     }
 
                     // Doanh số khách cũ, mới
@@ -2645,6 +2655,10 @@ class Model extends BaseModel {
 
                         let listData  = await FNB_ORDER_COLL.find(conditionObj)
                         .populate({
+                            path: "campaignType",
+                            select: "name",
+                        })
+                        .populate({
                             path: "referrer",
                             select: "name phone",
                         })
@@ -2713,6 +2727,9 @@ class Model extends BaseModel {
 
                                 workbook.sheet("Order").row(i).cell(30).value(item?.referrer ? `${item?.referrer?._id}` : "");
                                 workbook.sheet("Order").row(i).cell(31).value(item?.referrer ? item?.referrer?.phone : "");
+
+                                workbook.sheet("Order").row(i).cell(32).value(item?.campaignType ? item?.campaignType?.name : "");
+
                                 i++
                             });
 

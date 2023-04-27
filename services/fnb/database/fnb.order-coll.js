@@ -78,23 +78,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
-    /**
-     * Bật chiến dịch truyền thông/marketing
-     * 1-Không bật
-     * 2-Bật
-     */
-    campaign: {
-        type: Number,
-        default: 1
-    }, 
-    /**
-     * Tên chiến dịch (type=20)
-     * - Gán chiến dịch đang hiện hành để đo lường
-     */
-    activeCampaign: {
+    //_________Phân loại chiến dịch
+    campaignType: {
         type: Schema.Types.ObjectId,
-        ref : 'doctype'
-    }, 
+        ref : 'fnb_voucher' 
+    },
     /**
      * Phân loại trong hệ thống hoặc nhượng quyền (cập nhật theo funda)
      * 1-Trong hệ thống
