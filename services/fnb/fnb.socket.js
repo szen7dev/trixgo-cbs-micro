@@ -168,7 +168,7 @@ exports.FNB_SOCKET = {
             const receivers = usersID.filter(receiverID => receiverID.toString() !== userID.toString());
             const titleMSS = `Gán lỗi vi phạm ${fundaResponse?.data?.name}`;
             const contentMSS = `${user.data?.bizfullname} đã gán lỗi mistake.name cho bạn, giá trị phạt là amount`;
-            // console.log({ receivers, titleMSS, contentMSS })
+            console.log({ receivers, titleMSS, contentMSS })
 
             /**
              * Bắn Cloud messaging về mobile

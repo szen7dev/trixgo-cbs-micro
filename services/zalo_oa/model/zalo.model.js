@@ -3,12 +3,14 @@
  */
 const crypto                    = require('crypto');
 const base64url                 = require('base64url');
+const uuidv4                    = require('uuid').v4;
 const httpRequest               = require('../../../tools/http');
 const { generateRandomString }  = require('../../../tools/utils/string_utils');
 
-const BaseModel = require('../../../tools/db/base_model');
+const BaseModel                 = require('../../../tools/db/base_model');
 
 const {
+    ZALO_ZNS_OPEN_API_URL,
     ZALO_OPEN_API_URL,
     ZALO_OA_OAUTH_URL,
     ZALO_OA_APP_ID,
@@ -75,7 +77,7 @@ class Model extends BaseModel {
                 await cacher.set(`ZALO:oa:token`, access_token, 24 * 60 * 60);
                 await cacher.set(`ZALO:oa:refresh_token`, refresh_token, 24 * 60 * 60 * 60);
 
-                resolve({ error: false, message: 'OK' });
+                resolve({ error: false, data: access_token });
             } catch(error) {
                 resolve({ error: true, message: error.message });
             }
@@ -145,6 +147,48 @@ class Model extends BaseModel {
                 });
                 if(response.status !== 200 || response.statusText !== 'OK') {
                     return resolve({ error: true, message: "Can't request to zalo" });
+                }
+
+                resolve(response.data);
+            } catch(error) {
+                resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    sendMessageZNS({ phone, templateData, templateId = 257162, cacher }) {
+        return new Promise(async resolve => {
+            try {
+                const token = await cacher.get(`ZALO:oa:token`);
+                if(!token) {
+                    return resolve({ error: true, message: 'Token is required' });
+                }
+
+                if(!phone || !templateData) {
+                    return resolve({ error: true, message: "Phone and template data is required" });
+                }
+
+                /**
+                 * Template data:
+                    "customer_name": "Nguyễn Hữu Hiệp",
+                    "order_code": "WGO-C001",
+                    "price": "30000",
+                    "date": "15:25:00 25/04/2023",
+                    "note": "Write something"
+                 */
+                const response = await httpRequest.post(`${ZALO_ZNS_OPEN_API_URL}/message/template`, {
+                    phone,
+                    tracking_id: uuidv4(),
+                    template_id: templateId,
+                    template_data: templateData,
+                }, {
+                    headers: {
+						access_token: token,
+						'Content-type': 'application/json',
+					},
+                });
+                if(response.status !== 200 || response.statusText !== 'OK') {
+                    return resolve({ error: true, message: "Can't request to zalo zns" });
                 }
 
                 resolve(response.data);

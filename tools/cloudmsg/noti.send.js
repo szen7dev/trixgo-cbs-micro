@@ -1,10 +1,9 @@
-
 exports.sendNotificationviaOneSignal = function(data) {
     let headers = {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz",
     };
-      
+
     let options = {
       host: "onesignal.com",
       port: 443,
@@ -17,10 +16,10 @@ exports.sendNotificationviaOneSignal = function(data) {
     let req = https.request(options, function(res) {
         res.on('data', function(data) {
           try {
-            console.log("Response:");
-            console.log(JSON.parse(data));
+            console.log("Response:", data);
+            // console.log(JSON.parse(data));
           } catch (error) {
-            // console.error(error);
+            console.error(error);
           }
         });
     });
@@ -35,10 +34,11 @@ exports.sendNotificationviaOneSignal = function(data) {
 };
 
 // let message = {
-//     app_id: "79acfc09-966a-48f5-a9ea-44d90410014f",
+//     // app_id: "79acfc09-966a-48f5-a9ea-44d90410014f",
+//     app_id: "bb20e3c3-e4b2-458a-b8e0-35955876073f",
 //     contents: {"en": "English Message"},
 //     headings: {"en": "HEADING ENGLISH"},
-//     include_player_ids: ["e45cef35-de34-4a85-b7f4-6dab8ed41be0"],
+//     include_player_ids: ["0840a5a3-3e0b-4439-838e-fb13ba6c48ce"],
 //     big_picture: 'https://trixgo.com/template/images/logo.png'
 // };
 
