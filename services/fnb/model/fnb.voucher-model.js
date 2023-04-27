@@ -240,6 +240,7 @@ class Model extends BaseModel {
 
                         // Cập nhật vào Người nhận
                         if(checkObjectIDs(receivers)){
+                            // Cấp phát voucher
                             await ITEM__CONTACT_COLL.updateMany(
                                 {_id: { $in: receivers }},
                                 { $addToSet:
@@ -247,9 +248,9 @@ class Model extends BaseModel {
                                 },
                             )
 
-                            // Kiểm tra nếu chưa Add vào chiến dịch
+                            // Đánh dấu phân loại chiến dịch
                             await ITEM__CONTACT_COLL.updateMany(
-                                { _id: { $in: receivers, campaignType: {$exists: false} }},
+                                { _id: { $in: receivers }, campaignType: {$exists: false}},
                                 { 
                                     $set: {campaignType: voucherID}
                                 },

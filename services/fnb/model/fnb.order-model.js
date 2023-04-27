@@ -190,6 +190,11 @@ class Model extends BaseModel {
                     dataInsert.referrer = infoCustomer.referrer;
                 }
 
+                // Phân loại chiến dịch
+                if(infoCustomer.campaignType && checkObjectIDs(infoCustomer.campaignType)){
+                    dataInsert.campaignType = infoCustomer.campaignType;
+                }
+
                 // Doanh số khách cũ, mới và khách vãng lai
                 if((numberOD && numberOD > 0) || (infoCustomer.new && infoCustomer.new == 2)){
                     dataInsert.new = 2 // Đơn hàng khách cũ
@@ -892,6 +897,11 @@ class Model extends BaseModel {
                     // Người giới thiệu
                     if(infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
                         dataInUpdate.referrer = infoCustomer.referrer;
+                    }
+
+                    // Phân loại chiến dịch
+                    if(infoCustomer.campaignType && checkObjectIDs(infoCustomer.campaignType)){
+                        dataInUpdate.campaignType = infoCustomer.campaignType;
                     }
 
                     // Doanh số khách cũ, mới
