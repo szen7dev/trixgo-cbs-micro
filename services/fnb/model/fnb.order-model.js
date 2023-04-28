@@ -753,9 +753,13 @@ class Model extends BaseModel {
                  * THỰC HIỆN BẰN TIN NHẮN VỚI ZALO OA
                  */
                 if(userID.toString() === "5f7363e2c229794d8c0bc691"){
+                    // Xử lý dữ liệu số điện thoại
+                    const str = infoCustomer.phone
+                    const removeFirst1 = `84${str.slice(1)}`;
+
                     let dataOA = {
                         // phone: "84979560951",
-                        phone:  infoCustomer.phone,
+                        phone:  `${removeFirst1}`,
                         // phone: "0985199295",
                         templateData: {
                             "customer_name": infoCustomer.name,
@@ -767,9 +771,11 @@ class Model extends BaseModel {
                         // templateId: 257162,
                         // cacher: this.broker.cacher
                     }
+                    // console.log(removeFirst1)
+                    // console.log(moment(new Date()).format("HH:mm DD/MM/YYYY"))
                     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
-                    console.log('===========Bắn Zalo OA==================')
-                    console.log(infoOA)
+                    // console.log('===========Bắn Zalo OA==================')
+                    // console.log(infoOA)
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
