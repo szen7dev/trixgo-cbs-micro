@@ -15,6 +15,7 @@ const { compareTwoTime,
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index')
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant')
 const { CF_ACTIONS_ZALO } 		                = require('../../zalo_oa/helper/zalo.actions')
+const moment                                    = require('moment')
 
 /**s
  * import inter-coll, exter-coll
@@ -753,20 +754,20 @@ class Model extends BaseModel {
                  */
                 if(userID.toString() === "5f7363e2c229794d8c0bc691"){
                     let dataOA = {
-                        phone: "84985199295",
+                        phone: "84979560951",
                         templateData: {
-                            "customer_name": "Nguyễn Hữu Hiệp",
-                            "order_code": "WGO-C001",
-                            "price": "30000",
-                            "date": "15:25:00 25/04/2023",
-                            "note": "Write something"
+                            "customer_name": infoCustomer.name,
+                            "order_code": `C${Number(numberOfOrder+1)}`,
+                            "price": total,
+                            "date": moment(new Date).format("HH:mm DD/MM/YYY"),
+                            "note": "Chi tiết xem link Winggo"
                         },
                         // templateId: 257162,
                         // cacher: this.broker.cacher
                     }
                     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
-                    console.log('===========Bắn Zalo OA==================')
-                    console.log(infoOA)
+                    // console.log('===========Bắn Zalo OA==================')
+                    // console.log(infoOA)
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
