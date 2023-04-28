@@ -236,10 +236,11 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, parentID, fundaID, type, isParent, convertOption, keyword, limit = 10, lastestID, select, populates, sortKey, userID, status }) {
+        // console.log({ companyID, parentID, fundaID, type, isParent, convertOption, keyword, limit, lastestID, select, populates, sortKey, userID, status })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 10){
-                    limit = 10;
+                if(Number(limit) > 50){
+                    limit = 50;
                 } else{
                     limit = +Number(limit);
                 }
