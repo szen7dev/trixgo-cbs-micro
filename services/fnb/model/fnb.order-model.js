@@ -117,7 +117,7 @@ class Model extends BaseModel {
                     funda: fundaID,
                     customer: customerID,
                     shift: shiftID,
-                    name,
+                    name: `${name}-C${Number(numberOfOrder+1)}`,
                     sign: `C${Number(numberOfOrder+1)}`,
                     amount: 0,
                     userCreate: userID
@@ -892,7 +892,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                     // Tên đơn hàng
-                    dataInUpdate.name = `Đơn hàng ${infoCustomer.name}-${infoCustomer.phone}`
+                    dataInUpdate.name = `Đơn hàng ${infoCustomer.name}-${infoCustomer.phone}-${infoOrder.sign}`
 
                     // Mã khách
                     dataInUpdate.customer = customerID
@@ -1592,11 +1592,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                        { note: regSearch },
-                    ]
+                    conditionObj.name = regSearch
+
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { sign: regSearch },
+                    // ]
                 }
 
                 if(select && typeof select === 'string'){
