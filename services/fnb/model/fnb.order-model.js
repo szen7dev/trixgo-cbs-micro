@@ -755,7 +755,8 @@ class Model extends BaseModel {
                 if(userID.toString() === "5f7363e2c229794d8c0bc691"){
                     let dataOA = {
                         // phone: "84979560951",
-                        phone: "0985199295",
+                        phone:  infoCustomer.phone,
+                        // phone: "0985199295",
                         templateData: {
                             "customer_name": infoCustomer.name,
                             "order_code": `C${Number(numberOfOrder+1)}`,
