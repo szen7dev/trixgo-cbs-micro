@@ -1422,7 +1422,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID }) {
+    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, isCampaignType, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID }) {
         // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
         return new Promise(async (resolve) => {
             try {
@@ -1534,6 +1534,10 @@ class Model extends BaseModel {
 
                 if(isComplaint && isComplaint == 1){
                     conditionObj.complaint = { $gt: 0 }
+                }
+
+                if(isCampaignType && isCampaignType == 1){
+                    conditionObj.campaignType = { $exists: true, $ne: null }
                 }
 
                 if(starRating && !isNaN(starRating)){
