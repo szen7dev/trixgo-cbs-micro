@@ -349,7 +349,7 @@ class Model extends BaseModel {
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, fundaID, getVouchers, usedVouchers
     }){
-        // console.log('================THAM BIẾN CẬP NHẬT=================')
+        // console.log('================THAM BIẾN CẬP NHẬT DANH BẠ=================')
         // console.log({
         //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
@@ -358,21 +358,23 @@ class Model extends BaseModel {
         // })
         return new Promise(async (resolve) => {
             try {
-                if(!regexPhoneNumber(phone))
-                    return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
+                if(!linkUser){
+                    if(!regexPhoneNumber(phone))
+                        return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
 
-                let checkPhone = phone.replace(/\s/g, "").length
-                // console.log(checkPhone)
-                if(Number(checkPhone) != 10)
-                    return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
+                    let checkPhone = phone.replace(/\s/g, "").length
+                    // console.log(checkPhone)
+                    if(Number(checkPhone) != 10)
+                        return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
 
-                let checkPhoneNew = await ITEM__CONTACT_COLL.findOne({
-                    _id: { $ne: contactID },
-                    company: company,
-                    phone: checkPhone
-                })
-                if(checkPhoneNew)
-                    return resolve({ error: true, message: 'Điện thoại danh bạ đã tồn tại' })
+                    let checkPhoneNew = await ITEM__CONTACT_COLL.findOne({
+                        _id: { $ne: contactID },
+                        company: company,
+                        phone: checkPhone
+                    })
+                    if(checkPhoneNew)
+                        return resolve({ error: true, message: 'Điện thoại danh bạ đã tồn tại' })
+                }
 
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
