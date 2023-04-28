@@ -1654,7 +1654,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar }) {
+    getListByProperty({ companyID, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar }) {
         // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID, optionStar })
         return new Promise(async (resolve) => {
             try {
@@ -1683,18 +1683,22 @@ class Model extends BaseModel {
                     });
                     if(validation.error) return resolve(validation);
 
-                    // Gom nhóm theo đơn vị cơ sở
-                    if(fundasID && fundasID.length ){
-                        let arrFun = fundasID.map(item=>ObjectID(item))
-                        conditionObj.funda = { $in: arrFun }
-                    }else{
-                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
-                        if(fundasIDIsMember.length) {
-                            conditionObj.funda = { $in: fundasIDIsMember };
-                        } else{
-                            conditionObj.funda = { $in: [] }
+                    if(!checkObjectIDs(customerID)){
+                        // Gom nhóm theo đơn vị cơ sở
+                        if(fundasID && fundasID.length ){
+                            let arrFun = fundasID.map(item=>ObjectID(item))
+                            conditionObj.funda = { $in: arrFun }
+                        }else{
+                            let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
+                            let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                            if(fundasIDIsMember.length) {
+                                conditionObj.funda = { $in: fundasIDIsMember };
+                            } else{
+                                conditionObj.funda = { $in: [] }
+                            }
                         }
+                    }else{
+                        conditionObj.customer = ObjectID(customerID)
                     }
 
                     /**

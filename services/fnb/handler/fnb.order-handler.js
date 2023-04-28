@@ -211,6 +211,7 @@ module.exports = {
     getListByProperty: {
         params: {
             fundasID        : { type: "array", optional: true },
+            customerID      : { type: "string", optional: true },
             option          : { type: "string", optional: true },
             staffID         : { type: "string", optional: true },
             optionGroup     : { type: "string", optional: true },
@@ -227,10 +228,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { option, optionGroup, optionStatus, optionTime, fundasID, year, month, fromDate, toDate, staffID, optionStar, voucherType } = ctx.params;
+                let { option, optionGroup, optionStatus, optionTime, fundasID, customerID, year, month, fromDate, toDate, staffID, optionStar, voucherType } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
-                    companyID: company._id, fundasID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar, voucherType
+                    companyID: company._id, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar, voucherType
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
