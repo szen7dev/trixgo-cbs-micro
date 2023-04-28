@@ -755,16 +755,18 @@ class Model extends BaseModel {
                 if(userID.toString() === "5f7363e2c229794d8c0bc691"){
                     let dataOA = {
                         phone: "84979560951",
+                        // phone: "84985199295",
                         templateData: {
                             "customer_name": infoCustomer.name,
                             "order_code": `C${Number(numberOfOrder+1)}`,
                             "price": total,
-                            "date": moment(new Date).format("HH:mm DD/MM/YYY"),
+                            "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
                             "note": "Chi tiết xem link Winggo"
                         },
                         // templateId: 257162,
                         // cacher: this.broker.cacher
                     }
+                    // console.log(moment(new Date()).format("HH:mm DD/MM/YYYY"),)
                     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
                     // console.log('===========Bắn Zalo OA==================')
                     // console.log(infoOA)
