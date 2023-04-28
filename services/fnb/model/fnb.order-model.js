@@ -1432,8 +1432,8 @@ class Model extends BaseModel {
         // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 20){
-                    limit = 20;
+                if(Number(limit) > 10){
+                    limit = 10;
                 } else{
                     limit = +Number(limit);
                 }
