@@ -777,8 +777,8 @@ class Model extends BaseModel {
         // console.log({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 15){
-                    limit = 15;
+                if(Number(limit) > 10){
+                    limit = 10;
                 } else{
                     limit = +Number(limit);
                 }
@@ -910,8 +910,8 @@ class Model extends BaseModel {
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 10){
+                    limit = 10
                 }
 
                 /**
