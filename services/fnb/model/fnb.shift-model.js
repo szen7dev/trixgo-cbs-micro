@@ -765,7 +765,7 @@ class Model extends BaseModel {
         // console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString())){
+                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
                     // Bảng chấm công theo từng điểm bán
                     let yearFilter
                     let currentYear = new Date().getFullYear()
@@ -1494,7 +1494,7 @@ class Model extends BaseModel {
     exportExcel2({ option, companyID, fundaID, fromDate, toDate, month, year, userID }) {
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString())){
+                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
                     if(!option){
                         if(fundaID){
                             let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
