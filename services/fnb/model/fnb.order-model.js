@@ -2753,11 +2753,13 @@ class Model extends BaseModel {
 
                                 workbook.sheet("Order").row(i).cell(28).value(`${item?.customer?._id}`);
                                 workbook.sheet("Order").row(i).cell(29).value(item?.customer?.phone);
+                                workbook.sheet("Order").row(i).cell(30).value(item?.customer?.name);
 
-                                workbook.sheet("Order").row(i).cell(30).value(item?.referrer ? `${item?.referrer?._id}` : "");
-                                workbook.sheet("Order").row(i).cell(31).value(item?.referrer ? item?.referrer?.phone : "");
+                                workbook.sheet("Order").row(i).cell(31).value(item?.referrer ? `${item?.referrer?._id}` : "");
+                                workbook.sheet("Order").row(i).cell(32).value(item?.referrer ? item?.referrer?.phone : "");
+                                workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? item?.referrer?.name : "");
 
-                                workbook.sheet("Order").row(i).cell(32).value(item?.campaignType ? item?.campaignType?.name : "");
+                                workbook.sheet("Order").row(i).cell(34).value(item?.campaignType ? item?.campaignType?.name : "");
 
                                 i++
                             });
