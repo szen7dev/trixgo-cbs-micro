@@ -13,6 +13,7 @@ const ORDER_MATERIAL             = 'ORDER_MATERIAL';
 const SHIFT_HANDOVER             = 'SHIFT_HANDOVER';
 const GENERAL_BOOK               = 'GENERAL_BOOK';
 const VOUCHER                    = 'VOUCHER';
+const ZALOOA                     = 'ZALOOA';
 
 const CF_ACTIONS_FNB = {
   
@@ -139,6 +140,17 @@ const CF_ACTIONS_FNB = {
    VOUCHER_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${VOUCHER}_DOWNLOAD_TEMPLATE_EXCEL`,
    VOUCHER_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${VOUCHER}_IMPORT_FROM_EXCEL`,
    VOUCHER_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${VOUCHER}_EXPORT_EXCEL`,
+
+   /**
+   * ZALOOA
+   */
+   ZALOOA_INSERT                                    : `${BASE_ACTIONS}_${ZALOOA}_INSERT`,
+   ZALOOA_UPDATE                                    : `${BASE_ACTIONS}_${ZALOOA}_UPDATE`,
+   ZALOOA_REMOVE                                    : `${BASE_ACTIONS}_${ZALOOA}_REMOVE`,
+   ZALOOA_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${ZALOOA}_GET_INFO_AND_GET_LIST`,
+   ZALOOA_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${ZALOOA}_DOWNLOAD_TEMPLATE_EXCEL`,
+   ZALOOA_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${ZALOOA}_IMPORT_FROM_EXCEL`,
+   ZALOOA_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${ZALOOA}_EXPORT_EXCEL`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;
