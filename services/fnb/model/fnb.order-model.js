@@ -744,6 +744,26 @@ class Model extends BaseModel {
                             await ITEM__CONTACT_COLL.findByIdAndUpdate(infoCustomer.referrer, {
                                 $addToSet: { achievements: customerID }
                             }, { new: true })
+
+                            // Bắn tin Zalo OA cho Người giới thiệu
+                            const str = infoReferral.phone
+                            const removeFirst1 = `84${str.slice(1)}`;
+
+                            /**
+                             * CẦN THAY LẠI TEMPLATE VÀ CẤU TRÚC DỮ LIỆU
+                             * Mẫu này chỉ dùng để test thôi
+                             */
+                            let dataOA = {
+                                phone:  `${removeFirst1}`,
+                                templateData: {
+                                    "customer_name": infoReferral.name,
+                                    "order_code": `C${Number(numberOfOrder+1)}`,
+                                    "price": total,
+                                    "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                                    "note": "Chi tiết xem link Winggo"
+                                },
+                            }
+                            await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
                         }else{
                             // console.log('===========Không tồn tại Voucher==================')
                         }
