@@ -13,6 +13,7 @@ const ORDER_MATERIAL        = '/order_materials';
 const SHIFT_HANDOVER        = '/shift_handovers';
 const GENERAL_BOOK          = '/general_books';
 const VOUCHER               = '/vouchers';
+const ZALOOA                = '/zalooas';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -89,6 +90,12 @@ const CF_ROUTINGS_FNB = {
     VOUCHER_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${VOUCHER}/download-template-excel`,
     VOUCHER_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${VOUCHER}/import-from-excel`,
     VOUCHER_EXPORT_EXCEL                    : `${BASE_ROUTE}${VOUCHER}/export-excel`,
+
+    //================================FNB_ZALOOA=======================================//
+    ZALOOAS                                : `${BASE_ROUTE}${ZALOOA}`,
+    ZALOOA_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${ZALOOA}/download-template-excel`,
+    ZALOOA_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${ZALOOA}/import-from-excel`,
+    ZALOOA_EXPORT_EXCEL                    : `${BASE_ROUTE}${ZALOOA}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;
