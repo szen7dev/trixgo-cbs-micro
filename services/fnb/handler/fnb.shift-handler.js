@@ -338,7 +338,7 @@
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID, company } = ctx.meta.infoUser;
+				const { _id: userID, company, email } = ctx.meta.infoUser;
                 let { option, companyID, fundaID, fromDate, toDate, month, year } = ctx.params;
 
                 if(!companyID) {
@@ -346,7 +346,7 @@
                 }
 
                 const resultAfterCallHandler = await FNB_SHIFT_MODEL.exportExcel2({
-                    userID, companyID, fundaID, option, fromDate, toDate, month, year
+                    userID, email, companyID, fundaID, option, fromDate, toDate, month, year
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
