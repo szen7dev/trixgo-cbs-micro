@@ -763,7 +763,9 @@ class Model extends BaseModel {
                                     "note": "Chi tiết xem link Winggo"
                                 },
                             }
-                            await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
+                            let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
+                            console.log('==============Bắn tin nhắn Zalo OA tới Người giới thiệu')
+                            console.log(infoOA)
                         }else{
                             // console.log('===========Không tồn tại Voucher==================')
                         }
@@ -797,6 +799,8 @@ class Model extends BaseModel {
                     // console.log(removeFirst1)
                     // console.log(moment(new Date()).format("HH:mm DD/MM/YYYY"))
                     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
+                    console.log('==============Bắn tin nhắn Zalo OA tới Khách hàng')
+                    console.log(infoOA)
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
