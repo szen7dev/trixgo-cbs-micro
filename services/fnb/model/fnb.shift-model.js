@@ -1491,7 +1491,7 @@ class Model extends BaseModel {
      * Func: Tải Báo cáo doanh số
      * Date: 15/1/2023
      */
-    exportExcel2({ option, companyID, fundaID, fromDate, toDate, month, year, userID }) {
+    exportExcel2({ option, email, companyID, fundaID, fromDate, toDate, month, year, userID }) {
         return new Promise(async resolve => {
             try {
                 if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
