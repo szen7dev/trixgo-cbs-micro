@@ -695,6 +695,7 @@ class Model extends BaseModel {
                 }
 
                 /**
+                 * NGƯỜI GIỚI THIỆU
                  * Nếu khách hàng mua Offline
                  * Nếu khách hàng mới chưa từng mua đơn hàng nào bao giờ
                  * Nếu khách hàng có người giới thiệu
@@ -751,8 +752,10 @@ class Model extends BaseModel {
 
                 /**
                  * THỰC HIỆN BẰN TIN NHẮN VỚI ZALO OA
+                 * - Đơn hàng Offline
+                 * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                if(userID.toString() === "5f7363e2c229794d8c0bc691"){
+                if(salesChannel == 1 && infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93") && total >= 100000)){
                     // Xử lý dữ liệu số điện thoại
                     const str = infoCustomer.phone
                     const removeFirst1 = `84${str.slice(1)}`;
@@ -774,8 +777,6 @@ class Model extends BaseModel {
                     // console.log(removeFirst1)
                     // console.log(moment(new Date()).format("HH:mm DD/MM/YYYY"))
                     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
-                    // console.log('===========Bắn Zalo OA==================')
-                    // console.log(infoOA)
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
