@@ -748,25 +748,18 @@ class Model extends BaseModel {
                             // Bắn tin Zalo OA cho Người giới thiệu
                             const str = infoReferral.phone
                             const removeFirst1 = `84${str.slice(1)}`;
-
-                            /**
-                             * CẦN THAY LẠI TEMPLATE VÀ CẤU TRÚC DỮ LIỆU
-                             * Mẫu này chỉ dùng để test thôi
-                             */
                             let dataOA = {
                                 phone:  `${removeFirst1}`,
-                                // phone: "84985199295",
                                 templateData: {
                                     "customer_name": infoReferral.name,
                                     "order_code": `C${Number(numberOfOrder+1)}`,
                                     "price": amount,
                                     "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                                    "note": `Bạn mới ${infoCustomer.phone}`
+                                    "note": `Bạn mới ${infoCustomer.phone}`,
                                 },
+                                templateId: "258296",
                             }
                             let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
-                            // console.log('==============Bắn tin nhắn Zalo OA tới Người giới thiệu')
-                            // console.log(infoOA)
                         }else{
                             // console.log('===========Không tồn tại Voucher==================')
                         }
@@ -778,15 +771,12 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                // console.log('==============Kiểm tra xem USER quan tâm ZALO OA hay chưa=============')
-                // console.log(infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93")))
                 if(salesChannel == 1 && infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93"))){
                     // Xử lý dữ liệu số điện thoại
                     const str = infoCustomer.phone
                     const removeFirst1 = `84${str.slice(1)}`;
 
                     let dataOA = {
-                        // phone: "84979560951",
                         // phone:  `${removeFirst1}`,
                         phone: "84985199295",
                         templateData: {
@@ -797,15 +787,8 @@ class Model extends BaseModel {
                             "note": "Chi tiết xem link Winggo"
                         },
                         templateId: "257162",
-                        // templateId: 258296,
-                        // cacher: this.broker.cacher
                     }
-                    // console.log(dataOA)
-                    // console.log(removeFirst1)
-                    // console.log(moment(new Date()).format("HH:mm DD/MM/YYYY"))
                     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
-                    // console.log('==============Bắn tin nhắn Zalo OA tới Khách hàng')
-                    // console.log(infoOA)
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
