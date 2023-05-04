@@ -71,7 +71,8 @@ class Model extends BaseModel {
                     name,
                     sign: sign.replace(/\s/g, ""),
                     expired, 
-                    userCreate: userID 
+                    userCreate: userID,
+                    members: [userID]
                 }
 
                 if(note && note != ""){
