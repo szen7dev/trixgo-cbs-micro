@@ -778,10 +778,8 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                // console.log(infoCustomer.getVouchers.includes(ObjectID("643787a8c047ca3f5830a043")))
                 // console.log('==============Kiểm tra xem USER quan tâm ZALO OA hay chưa=============')
                 // console.log(infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93")))
-                // if(salesChannel == 1 && infoCustomer.getVouchers.includes(ObjectID("643787a8c047ca3f5830a043")) && total >= 200000){
                 if(salesChannel == 1 && infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93"))){
                     // Xử lý dữ liệu số điện thoại
                     const str = infoCustomer.phone
