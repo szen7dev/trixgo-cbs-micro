@@ -730,7 +730,7 @@ class Model extends BaseModel {
                         // console.log(infoOffer)
 
                         if(infoOffer){
-                            // console.log('===========Tồn tại Voucher và tiến hành Cấp phát==================')
+                            console.log('===========Tồn tại Voucher và tiến hành Cấp phát==================')
 
                             // Cấp phát voucher cho người Giới thiệu
                             await FNB_ORDER_VOUCHER_MODEL.update({
@@ -763,8 +763,9 @@ class Model extends BaseModel {
                                     "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
                                     "note": `${infoCustomer.name}-${infoCustomer.phone}`
                                 },
-                                templateId: 258296,
+                                // templateId: 258296,
                             }
+                            console.log(dataOA)
                             let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
                             console.log('==============Bắn tin nhắn Zalo OA tới Người giới thiệu')
                             console.log(infoOA)
