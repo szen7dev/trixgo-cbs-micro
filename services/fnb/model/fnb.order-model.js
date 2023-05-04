@@ -811,7 +811,7 @@ class Model extends BaseModel {
                         // phone:  `${removeFirst1}`,
                         phone: "84985199295",
                         templateData: {
-                            "customer_name": infoReferral.name,
+                            "customer_name": infoCustomer.name,
                             "order_code": `C${Number(numberOfOrder+1)}`,
                             "price": amount,
                             "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
