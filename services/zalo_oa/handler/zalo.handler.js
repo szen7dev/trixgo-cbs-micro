@@ -89,6 +89,7 @@ module.exports = {
                     code_challenge,
                     authCode: code,
                     state,
+                    ctx,
                     cacher: this.broker.cacher
                 });
 

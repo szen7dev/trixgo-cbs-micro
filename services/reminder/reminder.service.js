@@ -83,10 +83,6 @@ module.exports = {
 			/**
 			 * define all EVENT for COMSUMER
 			 */
-			// --------- demo event: reminder_birthday --------- //
-			agenda.define('reminder_birthday', () => {
-				console.log(`defined birthday`);
-			});
 
 			agenda.define('update_mute_conversation', async (job, done) => {
 				console.log(`========================================`);
