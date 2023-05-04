@@ -702,18 +702,16 @@ class Model extends BaseModel {
                  * => Lưu ý khi đơn đầu -> được Ref -> Hủy -> Đơn sau vẫn được Ref
                  */
                 if(salesChannel == 1 && numberOD == 0 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
-                // if(salesChannel == 1 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
 
                     // Thông tin người giới thiệu
                     let infoReferral = await ITEM__CONTACT_COLL.findById(infoCustomer.referrer)
-                    // console.log(infoReferral)
 
                     // Kiểm tra xem Người giới thiệu đã được nhận Voucher khi Bạn của mình mua hàng hay chưa (tránh trường hợp đơn hủy)
                     if(infoReferral && infoReferral.achievements && infoReferral.achievements.includes(customerID)){
-                        console.log('Đã được tính Ref=========================')
+                        // console.log('Đã được tính Ref=========================')
 
                     }else{
-                        console.log('Chưa được tính Ref=========================')
+                        // console.log('Chưa được tính Ref=========================')
 
                         /**
                         * Tạo voucher cho Người giới thiệu theo mã bất kỳ (type=2)
@@ -732,7 +730,7 @@ class Model extends BaseModel {
                         // console.log(infoOffer)
 
                         if(infoOffer){
-                            console.log('===========Tồn tại Voucher và tiến hành Cấp phát==================')
+                            // console.log('===========Tồn tại Voucher và tiến hành Cấp phát==================')
 
                             // Cấp phát voucher cho người Giới thiệu
                             await FNB_ORDER_VOUCHER_MODEL.update({
@@ -761,14 +759,11 @@ class Model extends BaseModel {
                                 templateData: {
                                     "customer_name": infoReferral.name,
                                     "order_code": `C${Number(numberOfOrder+1)}`,
-                                    "price": amount,
+                                    "price": total,
                                     "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                                    "note": `Khách-${infoCustomer.phone}`,
-                                    // "note": `${infoCustomer.name}-${infoCustomer.phone}`,
+                                    "note": "Có khách hàng mới"
                                 },
-                                templateId: 258296,
                             }
-                            console.log(dataOA)
                             let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
                             console.log('==============Bắn tin nhắn Zalo OA tới Người giới thiệu')
                             console.log(infoOA)
@@ -783,6 +778,7 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
+                // console.log(infoCustomer.getVouchers.includes(ObjectID("643787a8c047ca3f5830a043")))
                 console.log('==============Kiểm tra xem USER quan tâm ZALO OA hay chưa=============')
                 console.log(infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93")))
                 // if(salesChannel == 1 && infoCustomer.getVouchers.includes(ObjectID("643787a8c047ca3f5830a043")) && total >= 200000){
@@ -805,21 +801,6 @@ class Model extends BaseModel {
                         // templateId: 257162,
                         // cacher: this.broker.cacher
                     }
-
-                    // let dataOA = {
-                    //     // phone:  `${removeFirst1}`,
-                    //     phone: "84985199295",
-                    //     templateData: {
-                    //         "customer_name": infoCustomer.name,
-                    //         "order_code": `C${Number(numberOfOrder+1)}`,
-                    //         "price": amount,
-                    //         "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                    //         "note": `Khách-${infoCustomer.phone}`,
-                    //         // "note": `${infoCustomer.name}-${infoCustomer.phone}`,
-                    //     },
-                    //     templateId: 258296,
-                    // }
-                    
                     console.log(dataOA)
                     // console.log(removeFirst1)
                     // console.log(moment(new Date()).format("HH:mm DD/MM/YYYY"))
