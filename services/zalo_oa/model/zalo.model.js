@@ -4,8 +4,12 @@
 const crypto                    = require('crypto');
 const base64url                 = require('base64url');
 const uuidv4                    = require('uuid').v4;
+
 const httpRequest               = require('../../../tools/http');
 const { generateRandomString }  = require('../../../tools/utils/string_utils');
+
+const { CF_ACTIONS_REMINDER }   = require('../../reminder/helper/reminder.actions-constant');
+const { CF_DOMAIN_SERVICES }    = require('../../gateway/helper/domain.constant');
 
 const BaseModel                 = require('../../../tools/db/base_model');
 
@@ -37,7 +41,7 @@ class Model extends BaseModel {
         });
     }
 
-    requestToken({ code_challenge, authCode, state, cacher }) {
+    requestToken({ code_challenge, authCode, state, cacher, ctx }) {
         return new Promise(async resolve => {
             try {
                 const verifierCacheKey = `ZALO:oa:verifier:${state}`;
@@ -76,6 +80,8 @@ class Model extends BaseModel {
                  */
                 await cacher.set(`ZALO:oa:token`, access_token, 24 * 60 * 60);
                 await cacher.set(`ZALO:oa:refresh_token`, refresh_token, 24 * 60 * 60 * 60);
+
+                await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REFRESH_TOKEN_ZALO_OA}`);
 
                 resolve({ error: false, data: access_token });
             } catch(error) {
@@ -169,12 +175,12 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Template data:
-                    "customer_name": "Nguyễn Hữu Hiệp",
-                    "order_code": "WGO-C001",
-                    "price": "30000",
-                    "date": "15:25:00 25/04/2023",
-                    "note": "Write something"
+                    Template data:
+                        "customer_name": "Nguyễn Hữu Hiệp",
+                        "order_code": "WGO-C001",
+                        "price": "30000",
+                        "date": "15:25:00 25/04/2023",
+                        "note": "Write something"
                  */
                 const response = await httpRequest.post(`${ZALO_ZNS_OPEN_API_URL}/message/template`, {
                     phone,
@@ -189,6 +195,66 @@ class Model extends BaseModel {
                 });
                 if(response.status !== 200 || response.statusText !== 'OK') {
                     return resolve({ error: true, message: "Can't request to zalo zns" });
+                }
+
+                resolve(response.data);
+            } catch(error) {
+                resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    getFollowers({ offset = 0, count = 50, tag_name = '', cacher }) {
+        return new Promise(async resolve => {
+            try {
+                const token = await cacher.get(`ZALO:oa:token`);
+                if(!token) {
+                    return resolve({ error: true, message: 'Token is required' });
+                }
+
+                const response = await httpRequest.get(
+                    `${ZALO_OPEN_API_URL}/v2.0/oa/getfollowers?data=${JSON.stringify({
+                        offset, count, tag_name
+                    })}`,
+                    {
+                        headers: {
+                            access_token: token,
+                            'Content-type': 'application/json',
+                        }
+                    }
+                );
+                if(response.status !== 200 || response.statusText !== 'OK') {
+                    return resolve({ error: true, message: "Can't request to zalo" });
+                }
+
+                resolve(response.data);
+            } catch(error) {
+                resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    getProfileFollower({ userId, cacher }) {
+        return new Promise(async resolve => {
+            try {
+                const token = await cacher.get(`ZALO:oa:token`);
+                if(!token) {
+                    return resolve({ error: true, message: 'Token is required' });
+                }
+
+                const response = await httpRequest.get(
+                    `${ZALO_OPEN_API_URL}/v2.0/oa/getprofile?data=${JSON.stringify({
+                        user_id: userId
+                    })}`,
+                    {
+                        headers: {
+                            access_token: token,
+                            'Content-type': 'application/json',
+                        }
+                    }
+                );
+                if(response.status !== 200 || response.statusText !== 'OK') {
+                    return resolve({ error: true, message: "Can't request to zalo" });
                 }
 
                 resolve(response.data);
