@@ -759,9 +759,9 @@ class Model extends BaseModel {
                                 templateData: {
                                     "customer_name": infoReferral.name,
                                     "order_code": `C${Number(numberOfOrder+1)}`,
-                                    "price": total,
+                                    "price": amount,
                                     "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                                    "note": "Có khách hàng mới"
+                                    "note": `Bạn ${infoCustomer.phone}`
                                 },
                             }
                             let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
