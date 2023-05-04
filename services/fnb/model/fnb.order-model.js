@@ -783,43 +783,42 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                // console.log(infoCustomer.getVouchers.includes(ObjectID("643787a8c047ca3f5830a043")))
-                // console.log('==============Kiểm tra xem USER quan tâm ZALO OA hay chưa=============')
-                // console.log(infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93")))
+                console.log('==============Kiểm tra xem USER quan tâm ZALO OA hay chưa=============')
+                console.log(infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93")))
                 // if(salesChannel == 1 && infoCustomer.getVouchers.includes(ObjectID("643787a8c047ca3f5830a043")) && total >= 200000){
                 if(salesChannel == 1 && infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93"))){
                     // Xử lý dữ liệu số điện thoại
                     const str = infoCustomer.phone
                     const removeFirst1 = `84${str.slice(1)}`;
 
-                    // let dataOA = {
-                    //     // phone: "84979560951",
-                    //     // phone:  `${removeFirst1}`,
-                    //     phone: "84985199295",
-                    //     templateData: {
-                    //         "customer_name": infoCustomer.name,
-                    //         "order_code": `C${Number(numberOfOrder+1)}`,
-                    //         "price": total,
-                    //         "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                    //         "note": "Chi tiết xem link Winggo"
-                    //     },
-                    //     // templateId: 257162,
-                    //     // cacher: this.broker.cacher
-                    // }
-
                     let dataOA = {
+                        // phone: "84979560951",
                         // phone:  `${removeFirst1}`,
                         phone: "84985199295",
                         templateData: {
                             "customer_name": infoCustomer.name,
                             "order_code": `C${Number(numberOfOrder+1)}`,
-                            "price": amount,
+                            "price": total,
                             "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                            "note": `Khách-${infoCustomer.phone}`,
-                            // "note": `${infoCustomer.name}-${infoCustomer.phone}`,
+                            "note": "Chi tiết xem link Winggo"
                         },
-                        templateId: 258296,
+                        // templateId: 257162,
+                        // cacher: this.broker.cacher
                     }
+
+                    // let dataOA = {
+                    //     // phone:  `${removeFirst1}`,
+                    //     phone: "84985199295",
+                    //     templateData: {
+                    //         "customer_name": infoCustomer.name,
+                    //         "order_code": `C${Number(numberOfOrder+1)}`,
+                    //         "price": amount,
+                    //         "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                    //         "note": `Khách-${infoCustomer.phone}`,
+                    //         // "note": `${infoCustomer.name}-${infoCustomer.phone}`,
+                    //     },
+                    //     templateId: 258296,
+                    // }
                     
                     console.log(dataOA)
                     // console.log(removeFirst1)
