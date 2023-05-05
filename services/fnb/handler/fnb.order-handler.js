@@ -413,15 +413,16 @@ module.exports = {
             page: { type: "string", optional: true },
             password: { type: "string" },
             fundaID: { type: "string", optional: true },
+            arrCustomers: { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { option, password, fundaID, page } = ctx.params;
+                let { option, password, fundaID, page, arrCustomers } = ctx.params;
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.resetAllData({
-                    option, email, password, userID, fundaID, companyID: company._id, page
+                    option, email, password, userID, fundaID, companyID: company._id, page, arrCustomers
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

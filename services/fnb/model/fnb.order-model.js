@@ -712,7 +712,6 @@ class Model extends BaseModel {
 
                     }else{
                         // console.log('Chưa được tính Ref=========================')
-
                         /**
                         * Tạo voucher cho Người giới thiệu theo mã bất kỳ (type=2)
                         * 1-Phân loại Type = 2
@@ -745,7 +744,9 @@ class Model extends BaseModel {
                                 $addToSet: { achievements: customerID }
                             }, { new: true })
 
-                            // Bắn tin Zalo OA cho Người giới thiệu
+                            /**
+                             * Bắn tin Zalo OA cho Người giới thiệu
+                             */
                             const str = infoReferral.phone
                             const removeFirst1 = `84${str.slice(1)}`;
                             let dataOA = {
@@ -759,7 +760,43 @@ class Model extends BaseModel {
                                 },
                                 templateId: "258296",
                             }
-                            let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
+                            let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
+
+                            /**
+                             * Bắn Zalo OA cho Người mới
+                             */
+                            const str2 = infoCustomer.phone
+                            const removeFirst2 = `84${str2.slice(1)}`;
+
+                            let dataOA2 = {
+                                phone:  `${removeFirst2}`,
+                                templateData: {
+                                    "customer_name": infoCustomer.name,
+                                    "order_code": `C${Number(numberOfOrder+1)}`,
+                                    "price": amount,
+                                    "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                                    "note": "Chi tiết xem link Winggo"
+                                },
+                                templateId: "257162",
+                            }
+                            let infoOA2 = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2);
+
+                            /**
+                             * Bắn Zalo OA cho Công ty
+                             */
+
+                            let dataOA3 = {
+                                phone: "84985199295",
+                                templateData: {
+                                    "customer_name": infoCustomer.name,
+                                    "order_code": `C${Number(numberOfOrder+1)}`,
+                                    "price": amount,
+                                    "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                                    "note": "Khách hàng mới"
+                                },
+                                templateId: "257162",
+                            }
+                            let infoOA3 = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA3);
                         }else{
                             // console.log('===========Không tồn tại Voucher==================')
                         }
@@ -3182,9 +3219,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 25/12/2022
      */
-    resetAllData({ option, email, password, userID, fundaID, companyID, page }) {
+    resetAllData({ option, email, password, userID, fundaID, companyID, page, arrCustomers }) {
         const that = this
-        // console.log({ option, email, password, userID, fundaID, companyID })
+        // console.log({ option, email, password, userID, fundaID, companyID, arrCustomers })
         return new Promise(async (resolve) => {
             try {
                 if(password.toString() != `noPass12345${email}`)
@@ -3391,75 +3428,22 @@ class Model extends BaseModel {
                  * UPDATE CÁC SỐ ĐIỆN THOẠI TRÙNG
                  */
                 if(option == 6){
-                    // Cập nhật cho Điểm bán
                     let listDataPhone = await ITEM__CONTACT_COLL.aggregate([
                         {"$match": {company: ObjectID(companyID)} },
                         {"$group" : { "_id": "$phone", "count": { "$sum": 1 } } },
                         {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } },
                         {"$project": {"phone" : "$_id", "_id" : 0} }
                     ])
-
-                    // let listDataPhone = await ITEM__CONTACT_COLL.aggregate([
-                    //     {"$match": {company: ObjectID(companyID)} },
-                    //     {$group:{"_id":"$phone","phone":{$first:"$phone"},"count":{$sum:1}}},
-                    //     {$match:{"count":{$gt:1}}},
-                    //     {$project:{"phone":1,"_id":0}},
-                    //     {$group:{"_id":null,"duplicateNames":{$push:"$phone"}}},
-                    //     {$project:{"_id":0,"duplicateNames":1}}
-                    // ])
-
-                    // let listContact = await ITEM__CONTACT_COLL.find({company: ObjectID(companyID), phone: {$in: listDataPhone.map(item=>item.phone) }}).select('_id name phone')
-
-                    // var i = 0, j = 0
-                    // let arr = []
-                    // // Modify the workbook.
-                    // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_duplicate_contact.xlsx')))
-                    // .then(async workbook => {
-
-                    //     var i = 3;
-                    //     for(const item of listContact){
-                    //         let infoOrder = await FNB_ORDER_COLL.findOne({customer: ObjectID(item._id)})
-                    //         // console.log(item)
-
-                    //         if(infoOrder){
-                    //             // workbook.sheet("Data").row(i).cell(1).value()
-                    //             workbook.sheet("Data").row(i).cell(2).value(item?.name)
-                    //             workbook.sheet("Data").row(i).cell(3).value(item?.phone)
-                    //             workbook.sheet("Data").row(i).cell(4).value(`${item?._id}`)
-                    //             i++
-                    //         }
-                    //     }
-
-                    //     const now = new Date();
-                    //     const filePath = '../../../files/temporary_uploads/';
-                    //     const fileName = `BaoCaoNhanSuTrung_${now.getTime()}.xlsx`;
-                    //     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    //     await workbook.toFileAsync(pathWriteFile);
-                    //     const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    //     fs.unlinkSync(pathWriteFile);
-                    //     return resolve({ error: false, data: result?.Location, status: 200 });
-                    // });
-
-                    // var i = 3;
-                    // for(const item of listContact){
-                    //     let infoOrder = await FNB_ORDER_COLL.findOne({customer: ObjectID(item._id)})
-
-                    //     if(infoOrder){
-                    //         i++
-                    //         arr.push(item)
-                    //         // console.log(item)
-                    //     }else{
-                    //         j++
-                    //     }
-                    // }
-                    // console.log({___soKhachReal: i})
-                    // console.log({___soKhachFakeTrung: j})
-
-                    // let listContactFake = await FNB_ORDER_COLL.find({customer: })
-
                     return resolve({ error: false, listDataPhone })
+                }
+
+                if(option == 7){
+                    await ITEM__CONTACT_COLL.updateMany(
+                        { _id: {$in: arrCustomers }},
+                        { $set: {type: 2} }
+                     );
+
+                     return resolve({ error: false, message: 'Reset thành công'})
                 }
 
                 // return resolve({ error: false, message: 'Reset thành công'})
