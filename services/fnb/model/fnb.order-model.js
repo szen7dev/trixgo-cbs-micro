@@ -708,34 +708,37 @@ class Model extends BaseModel {
 
                     // Kiểm tra xem Người giới thiệu đã được nhận Voucher khi Bạn của mình mua hàng hay chưa (tránh trường hợp đơn hủy)
                     if(infoReferral && infoReferral.achievements && infoReferral.achievements.includes(customerID)){
-                        // console.log('Đã được tính Ref=========================')
+                        console.log('Đã được tính Ref=========================')
 
                     }else{
-                        // console.log('Chưa được tính Ref=========================')
+                        console.log('Chưa được tính Ref=========================')
                         /**
                         * Tạo voucher cho Người giới thiệu theo mã bất kỳ (type=2)
                         * 1-Phân loại Type = 2
                         * 2-Còn thời hạn sử dụng
-                        * 3-Voucher chưa cấp cho người giới thiệu lần nào
+                        * 3-Voucher tặng Giá trị
+                        * 4-Voucher chưa cấp cho người giới thiệu lần nào
                         */
-                        let infoOffer = await FNB_VOUCHER_COLL.findOne({
+                        let infoOffer1 = await FNB_VOUCHER_COLL.findOne({
                             type: 2,
                             company: infoFunda.company,
                             receivers: {$nin: [infoCustomer.referrer]}, // Chưa từng cấp phát cho Người giới thiệu
-                            expired: {$gt: new Date()}
+                            expired: {$gt: new Date()},
+                            salesoffAmount: { $gt: 0 },
+                            salesoffRate: 0,
                         })
-                        .sort({_id: 1 })
+                        .sort({expired: 1 })
                         .select("_id name sign")
-                        // console.log(infoOffer)
+                        // console.log(infoOffer1)
 
-                        if(infoOffer){
-                            // console.log('===========Tồn tại Voucher và tiến hành Cấp phát==================')
+                        if(infoOffer1){
+                            console.log('===========Tồn tại Voucher và tiến hành Cấp phát M1==================')
 
                             // Cấp phát voucher cho người Giới thiệu
                             await FNB_ORDER_VOUCHER_MODEL.update({
                                 companyID: infoFunda.company,
                                 userID,
-                                voucherID: infoOffer._id,
+                                voucherID: infoOffer1._id,
                                 receivers:[infoCustomer.referrer]
                             })
 
@@ -761,6 +764,7 @@ class Model extends BaseModel {
                                 templateId: "258296",
                             }
                             let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
+                            // console.log(infoOA)
 
                             /**
                              * Bắn Zalo OA cho Người mới
@@ -779,12 +783,12 @@ class Model extends BaseModel {
                                 },
                                 templateId: "257162",
                             }
-                            let infoOA2 = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2);
+                            let infoOA2 = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2)
+                            // console.log(infoOA2)
 
                             /**
                              * Bắn Zalo OA cho Công ty
                              */
-
                             let dataOA3 = {
                                 phone: "84985199295",
                                 templateData: {
@@ -796,9 +800,39 @@ class Model extends BaseModel {
                                 },
                                 templateId: "257162",
                             }
-                            let infoOA3 = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA3);
-                        }else{
-                            // console.log('===========Không tồn tại Voucher==================')
+                            let infoOA3 = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA3)
+                            // console.log(infoOA3)
+                        }
+
+                        /**
+                        * Tạo voucher cho Người giới thiệu theo mã bất kỳ (type=2)
+                        * 1-Phân loại Type = 2
+                        * 2-Còn thời hạn sử dụng
+                        * 3-Voucher tặng Phần trăm
+                        * 4-Voucher chưa cấp cho người giới thiệu lần nào
+                        */
+                        let infoOffer2 = await FNB_VOUCHER_COLL.findOne({
+                            type: 2,
+                            company: infoFunda.company,
+                            receivers: {$nin: [infoCustomer.referrer]}, // Chưa từng cấp phát cho Người giới thiệu
+                            expired: {$gt: new Date()},
+                            salesoffAmount: 0,
+                            salesoffRate: { $gt: 0 },
+                        })
+                        .sort({expired: 1 })
+                        .select("_id name sign")
+                        // console.log(infoOffer2)
+
+                        if(infoOffer2){
+                            console.log('===========Tồn tại Voucher và tiến hành Cấp phát M2==================')
+
+                            // Cấp phát voucher cho người Giới thiệu
+                            await FNB_ORDER_VOUCHER_MODEL.update({
+                                companyID: infoFunda.company,
+                                userID,
+                                voucherID: infoOffer2._id,
+                                receivers:[infoCustomer.referrer]
+                            })
                         }
                     }
                 }

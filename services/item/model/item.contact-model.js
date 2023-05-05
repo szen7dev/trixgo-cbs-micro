@@ -309,25 +309,54 @@ class Model extends BaseModel {
                      * Tạo voucher cho Nngười được giới thiệu (type=3)
                      * 1-Phân loại Type = 3
                      * 2-Còn thời hạn sử dụng
+                     * 3-Voucher tặng Giá trị
                      */
-                    let infoVoucher = await FNB_VOUCHER_COLL.findOne({ 
+                    let infoVoucher1 = await FNB_VOUCHER_COLL.findOne({ 
                         type: 3, 
                         company: infoFunda.company, 
-                        expired: { $gt: new Date() }
+                        expired: { $gt: new Date() },
+                        salesoffAmount: { $gt: 0 },
+                        salesoffRate: 0,
                      })
-                    .sort({_id: 1 })
+                    .sort({expired: 1 })
                     .select("_id name sign")
-                    // console.log(infoVoucher)
-                    if(infoVoucher){
-                        let infoVoucherAfterUpdate = await FNB_ORDER_VOUCHER_MODEL.update({
+                    // console.log({infoVoucher1})
+
+                    if(infoVoucher1){
+                        let infoVoucherAfterUpdate1 = await FNB_ORDER_VOUCHER_MODEL.update({
                             companyID: infoFunda.company,
                             userID: authorID, 
-                            voucherID: infoVoucher._id, 
+                            voucherID: infoVoucher1._id, 
                             receivers:[infoAfterInsert._id]
                         })
-                        // console.log(infoVoucherAfterUpdate)
-                    }else{
-                        console.log('===========Không tồn tại Voucher==================')
+                        // console.log(infoVoucherAfterUpdate1)
+                    }
+
+                     /**
+                     * Tạo voucher cho Nngười được giới thiệu (type=3)
+                     * 1-Phân loại Type = 3
+                     * 2-Còn thời hạn sử dụng
+                     * 3-Voucher tặng Phần trăm
+                     */
+                     let infoVoucher2 = await FNB_VOUCHER_COLL.findOne({ 
+                        type: 3, 
+                        company: infoFunda.company, 
+                        expired: { $gt: new Date() },
+                        salesoffAmount: 0,
+                        salesoffRate: { $gt: 0 },
+                     })
+                    .sort({expired: 1 })
+                    .select("_id name sign")
+                    // console.log({infoVoucher2})
+
+                    if(infoVoucher2){
+                        let infoVoucherAfterUpdate2 = await FNB_ORDER_VOUCHER_MODEL.update({
+                            companyID: infoFunda.company,
+                            userID: authorID, 
+                            voucherID: infoVoucher2._id, 
+                            receivers:[infoAfterInsert._id]
+                        })
+                        // console.log(infoVoucherAfterUpdate2)
                     }
                 }
 
