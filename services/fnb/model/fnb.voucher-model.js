@@ -564,7 +564,7 @@ class Model extends BaseModel {
                     if(option == 2){
                         // Danh sách danh bạ
                         let listData  = await ITEM__CONTACT_COLL.find({ company: companyID, getVouchers: {$in: [ObjectID("64378d6618c77f00128abe93")]} })
-                        .select('name funda phone address note usedVouchers')
+                        .select('type name funda phone address note usedVouchers')
                         .populate({
                             path: 'funda',
                             select: 'name'
@@ -591,6 +591,7 @@ class Model extends BaseModel {
                                 }else{
                                     workbook.sheet("Data").row(i).cell(8).value(0)
                                 }
+                                workbook.sheet("Data").row(i).cell(9).value(Number(item.type))
 
                                 i++
                             });
