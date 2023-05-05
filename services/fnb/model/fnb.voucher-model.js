@@ -474,9 +474,10 @@ class Model extends BaseModel {
         // console.log({ option, companyID, userID })
         return new Promise(async resolve => {
             try {
+                /**
+                 * TẢI DANH SÁCH KHÁCH HÀNG
+                 */
                 if(!option){
-                    // console.log('===========VVVVVVVVVVVVVVV')
-
                     // Danh sách danh bạ
                     let listData  = await ITEM__CONTACT_COLL.find({ company: companyID }).select('name phone address note')
                     .sort({_id: -1})
@@ -494,7 +495,7 @@ class Model extends BaseModel {
                             workbook.sheet("ExportContact").row(i).cell(3).value(item.phone);
                             workbook.sheet("ExportContact").row(i).cell(4).value(item.note);
                             workbook.sheet("ExportContact").row(i).cell(5).value(`${item._id}`);
-                            workbook.sheet("ExportContact").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}`)
+                            workbook.sheet("ExportContact").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`)
 
                             i++
                         });
@@ -512,8 +513,10 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     });
                 }else{
+                    /**
+                     * TẢI DANH SÁCH NHÂN VIÊN
+                     */
                     if(option == 1){
-                        // console.log('===========CCCCCCCCCCCCCCCCCCCC')
                         // Danh sách danh bạ
                         let listData  = await ITEM__CONTACT_COLL.find({ company: companyID, type: 1 })
                         .select('name funda phone address note')
@@ -536,7 +539,7 @@ class Model extends BaseModel {
                                 workbook.sheet("ExportContact").row(i).cell(3).value(item.phone)
                                 workbook.sheet("ExportContact").row(i).cell(4).value(item.note)
                                 workbook.sheet("ExportContact").row(i).cell(5).value(`${item._id}`)
-                                workbook.sheet("ExportContact").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}`)
+                                workbook.sheet("ExportContact").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`)
                                 workbook.sheet("ExportContact").row(i).cell(7).value(`${item?.funda.name}`)
 
                                 i++
@@ -551,7 +554,56 @@ class Model extends BaseModel {
                             const result = await uploadFileS3(pathWriteFile, fileName);
 
                             fs.unlinkSync(pathWriteFile);
-                            // console.log({ result })
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        });
+                    }
+
+                    /**
+                     * TẢI KHÁCH HÀNG ĐÃ BẤM QUAN TÂM ZALO OA
+                     */
+                    if(option == 2){
+                        // Danh sách danh bạ
+                        let listData  = await ITEM__CONTACT_COLL.find({ company: companyID, getVouchers: {$in: [ObjectID("64378d6618c77f00128abe93")]} })
+                        .select('name funda phone address note usedVouchers')
+                        .populate({
+                            path: 'funda',
+                            select: 'name'
+                        })
+                        .sort({_id: -1})
+                        // .limit(600)
+                        // console.log(listData)
+
+                        // Modify the workbook.
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_oa_contact.xlsx')))
+                        .then(async workbook => {
+
+                            var i = 3;
+                            listData?.forEach((item, index) => {
+                                workbook.sheet("Data").row(i).cell(1).value(Number(index+1))
+                                workbook.sheet("Data").row(i).cell(2).value(item.name)
+                                workbook.sheet("Data").row(i).cell(3).value(item.phone)
+                                workbook.sheet("Data").row(i).cell(4).value(item.note)
+                                workbook.sheet("Data").row(i).cell(5).value(`${item._id}`)
+                                workbook.sheet("Data").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`)
+                                workbook.sheet("Data").row(i).cell(7).value(`${item?.funda.name}`)
+                                if(item?.usedVouchers.includes(ObjectID("64378d6618c77f00128abe93"))){
+                                    workbook.sheet("Data").row(i).cell(8).value(1)
+                                }else{
+                                    workbook.sheet("Data").row(i).cell(8).value(0)
+                                }
+
+                                i++
+                            });
+
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `oa_contact_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+
+                            fs.unlinkSync(pathWriteFile);
                             return resolve({ error: false, data: result?.Location, status: 200 });
                         });
                     }
