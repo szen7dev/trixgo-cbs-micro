@@ -294,6 +294,7 @@ class Model extends BaseModel {
 
                 resolve({ error: false, message: 'OK' });
             } catch(error) {
+                console.error(error);
                 resolve({ error: true, message: error.message });
             }
         })
