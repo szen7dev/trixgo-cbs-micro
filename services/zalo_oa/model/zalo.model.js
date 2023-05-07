@@ -263,6 +263,16 @@ class Model extends BaseModel {
             }
         })
     }
+
+    handleWebhook() {
+        return new Promise(resolve => {
+            try {
+                resolve({ error: false, message: 'OK', status: 200 });
+            } catch(error) {
+                resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
