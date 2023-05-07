@@ -271,15 +271,17 @@ class Model extends BaseModel {
                 const status = eventName === 'follow' ? 1 : 2;
 
                 const follower = await ZALOOA_FOLLOWER_COLL.findOne({ followerId, oaId }).lean();
+                console.log({ follower })
 
                 if(follower) {
-                    await ZALOOA_FOLLOWER_COLL.findOneAndUpdate({
+                    const result = await ZALOOA_FOLLOWER_COLL.findOneAndUpdate({
                         followerId
                     }, {
                         status, eventName, source, timestamp
                     });
+                    console.log({ result })
                 } else{
-                    await ZALOOA_FOLLOWER_COLL.create({
+                    const result = await ZALOOA_FOLLOWER_COLL.create({
                         oaId,
                         source,
                         eventName,
@@ -287,6 +289,7 @@ class Model extends BaseModel {
                         timestamp,
                         status
                     });
+                    console.log({ result })
                 }
 
                 resolve({ error: false, message: 'OK' });
