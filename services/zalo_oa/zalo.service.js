@@ -2,6 +2,7 @@
  * Build-in
  */
 const CacheCleaner              = require("../../tools/mixins/cache.cleaner.mixin");
+const DbService                 = require("../../tools/mixins/db.mixin");
 
 /**
  * Constants
