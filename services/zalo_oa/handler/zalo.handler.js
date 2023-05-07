@@ -110,7 +110,6 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                console.log({ params });
                 const { oa_id, source, follower, event_name, timestamp } = ctx.params;
                 console.log({
                     oaId: oa_id,

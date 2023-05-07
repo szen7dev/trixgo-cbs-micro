@@ -15,10 +15,15 @@ const { CF_ACTIONS_ZALO }       = require('./helper/zalo.actions');
  */
 const ZALO_HANDLER              = require('./handler/zalo.handler');
 
+/**
+ * Collections
+ */
+const ZALOOA_FOLLOWER_COLL      = require('./database/zalooa.follower-coll');
+
 module.exports = {
     name: CF_DOMAIN_SERVICES.EXTERNAL,
     mixins: [
-		DbService('zalooa_follower'),
+		DbService(ZALOOA_FOLLOWER_COLL),
         CacheCleaner([CF_DOMAIN_SERVICES.EXTERNAL])
     ],
     actions: {

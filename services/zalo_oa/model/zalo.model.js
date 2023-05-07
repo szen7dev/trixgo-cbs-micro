@@ -269,6 +269,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const status = eventName === 'follow' ? 1 : 2;
+                console.log({ oaId, source, followerId, eventName, timestamp })
 
                 const follower = await ZALOOA_FOLLOWER_COLL.findOne({ followerId, oaId }).lean();
                 console.log({ follower })
