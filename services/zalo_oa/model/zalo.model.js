@@ -12,6 +12,7 @@ const { CF_ACTIONS_REMINDER }   = require('../../reminder/helper/reminder.action
 const { CF_DOMAIN_SERVICES }    = require('../../gateway/helper/domain.constant');
 
 const BaseModel                 = require('../../../tools/db/base_model');
+const ZALOOA_FOLLOWER_COLL      = require('../database/zalooa.follower-coll')
 
 const {
     ZALO_ZNS_OPEN_API_URL,
@@ -264,10 +265,31 @@ class Model extends BaseModel {
         })
     }
 
-    handleWebhook() {
-        return new Promise(resolve => {
+    handleWebhookFollower({ oaId, source, followerId, eventName, timestamp }) {
+        return new Promise(async resolve => {
             try {
-                resolve({ error: false, message: 'OK', status: 200 });
+                const status = eventName === 'follow' ? 1 : 2;
+
+                const follower = await ZALOOA_FOLLOWER_COLL.findOne({ followerId, oaId }).lean();
+
+                if(follower) {
+                    await ZALOOA_FOLLOWER_COLL.findOneAndUpdate({
+                        followerId
+                    }, {
+                        status, eventName, source, timestamp
+                    });
+                } else{
+                    await ZALOOA_FOLLOWER_COLL.create({
+                        oaId,
+                        source,
+                        eventName,
+                        followerId,
+                        timestamp,
+                        status
+                    });
+                }
+
+                resolve({ error: false, message: 'OK' });
             } catch(error) {
                 resolve({ error: true, message: error.message });
             }

@@ -17,6 +17,7 @@ const ZALO_HANDLER              = require('./handler/zalo.handler');
 module.exports = {
     name: CF_DOMAIN_SERVICES.EXTERNAL,
     mixins: [
+		DbService('fnb_zalooa'),
         CacheCleaner([CF_DOMAIN_SERVICES.EXTERNAL])
     ],
     actions: {

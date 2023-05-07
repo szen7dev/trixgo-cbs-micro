@@ -101,11 +101,34 @@ module.exports = {
     },
 
     zaloOAWebhook: {
+        params: {
+            oa_id           : { type: 'string' },
+            source          : { type: 'string' },
+            event_name      : { type: 'string' },
+            timestamp       : { type: 'string' },
+            follower        : { type: 'object' },
+        },
         async handler(ctx) {
             try {
-                const params = ctx.params;
                 console.log({ params });
-                return { status: 200, message: 'OK', params };
+                const { oa_id, source, follower, event_name, timestamp } = ctx.params;
+                console.log({
+                    oaId: oa_id,
+                    source,
+                    followerId: follower.id,
+                    eventName: event_name,
+                    timestamp
+                });
+
+                const resultAfterCallHandler = await ZALO_MODEL.handleWebhookFollower({
+                    oaId: oa_id,
+                    source,
+                    followerId: follower.id,
+                    eventName: event_name,
+                    timestamp
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch(error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
