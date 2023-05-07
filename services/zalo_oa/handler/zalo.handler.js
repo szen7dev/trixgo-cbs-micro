@@ -103,7 +103,9 @@ module.exports = {
     zaloOAWebhook: {
         async handler(ctx) {
             try {
-                return { status: 200, message: 'OK' }
+                const params = ctx.params;
+                console.log({ params });
+                return { status: 200, message: 'OK', params };
             } catch(error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }

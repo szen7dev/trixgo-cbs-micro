@@ -81,8 +81,8 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ZALO.ZALO_CALLBACK}`] :
 		[`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_CALLBACK}`],
 
-		// [`POST ${CF_ROUTINGS_ZALO.ZALO_WEBHOOK}`] :
-		// [`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_WEBHOOK}`],
+		[`POST ${CF_ROUTINGS_ZALO.ZALO_WEBHOOK}`] :
+		[`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_WEBHOOK}`],
 	},
 	// Disable to call not-mapped actions
 	mappingPolicy: "all", // Available values: "all", "restrict"
