@@ -168,6 +168,7 @@ module.exports = {
             isCustomerType      : { type: "string", optional: true },
             isComplaint         : { type: "string", optional: true },
             isCampaignType      : { type: "string", optional: true },
+            isPaymentMethod     : { type: "string", optional: true },
             starRating          : { type: "string", optional: true },
             managerID           : { type: "string", optional: true },
 
@@ -181,7 +182,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID } = ctx.params;
+                let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID } = ctx.params;
 				const { _id: userID, email, fullname, company } = ctx.meta.infoUser;
                 // console.log({ email, fullname})
 
@@ -192,7 +193,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID
+                        companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID
                     });
                 }
 
