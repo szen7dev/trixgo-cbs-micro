@@ -303,8 +303,6 @@ class Model extends BaseModel {
 
                 if(keyword){
                     let keywordCV =  stringUtils.removeAccents(keyword)
-                    // console.log({keywordCV})
-
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
