@@ -803,7 +803,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getListV2({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, userID }) {
-        console.log({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
+        // console.log({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 10){
