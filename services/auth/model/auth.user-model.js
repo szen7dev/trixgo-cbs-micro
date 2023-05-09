@@ -604,7 +604,7 @@ class Model extends BaseModel {
     }
 
     // implement by: MINHVH
-    getListUser({ userID, lastestID, departmentID, keyword, limit = 20, filter = {}, select = {} }){
+    getListUser({ userID, lastestID, departmentID, keyword, limit = 10, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
@@ -614,7 +614,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
 				if(isNaN(limit)) {
-					limit = 20;
+					limit = 10;
 				} else{
 					limit = +limit;
 				}
@@ -1452,8 +1452,8 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(isNaN(limit) || +limit > 20) {
-					limit = 20;
+                if(isNaN(limit) || +limit >10) {
+					limit = 10;
 				} else{
 					limit = +limit;
 				}
@@ -1549,8 +1549,8 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(limit > 20){
-					limit = 20;
+                if(limit > 10){
+					limit = 10;
                 }
 
 				if(populates && typeof populates === 'string'){
@@ -1685,8 +1685,8 @@ class Model extends BaseModel {
             //     keyword, limit, lastestID, select, populates, isLoadAll})
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
+                if(limit > 10){
+                    limit = 10
                 }else{
                     limit = +limit
                 }
