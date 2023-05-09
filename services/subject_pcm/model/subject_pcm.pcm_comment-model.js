@@ -1846,7 +1846,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
 	 * Date: 19/8/2022
 	 */
-	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 20, unlimit, lastestID, select, populates = {} }){
+	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 10, unlimit, lastestID, select, populates = {} }){
         // console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu comment================')
         // console.log({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
@@ -1857,8 +1857,8 @@ class Model extends BaseModel {
                  * 2-Tìm kiếm các phản hồi trong chủ đề
                  * 3-Populate tới chủ đề (task) chứa phản hồi để hiển thị ra ngoài trang chủ
                  */
-                if(Number(limit) > 20){
-                    limit = 20;
+                if(Number(limit) > 10){
+                    limit = 10;
                 } else{
                     limit = +Number(limit);
                 }
@@ -1934,7 +1934,7 @@ class Model extends BaseModel {
                     conditionObj.contentcv = regCVSearch
                 }
                 // console.log(conditionObj)
-                conditionObj = {}
+                // conditionObj = {}
 
                 let conditionObjOrg = {...conditionObj};
 
