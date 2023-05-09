@@ -1934,6 +1934,7 @@ class Model extends BaseModel {
                     conditionObj.contentcv = regCVSearch
                 }
                 // console.log(conditionObj)
+                conditionObj = {}
 
                 let conditionObjOrg = {...conditionObj};
 
