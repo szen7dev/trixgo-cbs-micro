@@ -1,8 +1,8 @@
 exports.FNB_ACC = {
-    bod: ['ngocchuc0802@gmail.com','minhbacninh1990@gmail.com','hoangnguyenhuu@gmail.com','tranthutrang8387@gmail.com','huongltk55@gmail.com','nguyenchinhds99@gmail.com','adwgo.winggo@gmail.com', 'toannd.winggo@gmail.com', 'hiepnh.winggo@gmail.com','kiemthuvien4.fnb@gmail.com'],
-    cskh: ['adwgo.winggo@gmail.com','nguyendacvu1609@gmail.com','diemquynh1125@gmail.com','tuyethunhan@gmail.com','nhungvu10112002@gmail.com','toannd.winggo@gmail.com','hiepnh.winggo@gmail.com','kiemsoat1.winggo@gmail.com','kiemsoat2.winggo@gmail.com','kiemsoat3.winggo@gmail.com','kiemsoat4.winggo@gmail.com','kiemsoat5.winggo@gmail.com','ngocchuc0802@gmail.com','minhbacninh1990@gmail.com','hoangnguyenhuu@gmail.com','tranthutrang8387@gmail.com','huongltk55@gmail.com','nguyenchinhds99@gmail.com','kiemthuvien4.fnb@gmail.com'],
+    bod: ['kiemthuvien4.fnb@gmail.com', 'adwgo.winggo@gmail.com', 'hiepnh.winggo@gmail.com', 'chinhnv.winggo@gmail.com','huongnt.winggo@gmail.com',,'hoangnh.winggo@gmail.com', 'hienpd.winggo@gmail.com','toannd.winggo@gmail.com'],
+    cskh: ['kiemthuvien4.fnb@gmail.com', 'adwgo.winggo@gmail.com','kiemsoat1.winggo@gmail.com','kiemsoat2.winggo@gmail.com','kiemsoat3.winggo@gmail.com','kiemsoat4.winggo@gmail.com','kiemsoat5.winggo@gmail.com','vund.winggo@gmail.com','quynhntd.winggo@gmail.com','nhungvth.winggo@gmail.com','tuyetnt.winggo@gmail.com', 'hiepnh.winggo@gmail.com', 'chinhnv.winggo@gmail.com','huongnt.winggo@gmail.com',,'hoangnh.winggo@gmail.com'],
     taichinh: ['nbpt.96@gmail.com'],
-    man: ['thupt1.winggo@gmail.com','hapt.winggo@gmail.com','hienpd.winggo@gmail.com','anhnt.winggo@gmail.com','vyhth.winggo@gmail.com','toannd.winggo@gmail.com','hiepnh.winggo@gmail.com','kiemsoat1.winggo@gmail.com','kiemsoat2.winggo@gmail.com','kiemsoat3.winggo@gmail.com','kiemsoat4.winggo@gmail.com','kiemsoat5.winggo@gmail.com','kiemthuvien4.fnb@gmail.com']
+    man: ['thupt1.winggo@gmail.com','hapt.winggo@gmail.com','hienpd.winggo@gmail.com','vyhth.winggo@gmail.com','toannd.winggo@gmail.com','vund.winggo@gmail.com','quynhntd.winggo@gmail.com','nhungvth.winggo@gmail.com']
 }
 
 exports.FNB_FACTOR = {
