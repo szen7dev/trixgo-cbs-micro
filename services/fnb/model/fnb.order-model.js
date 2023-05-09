@@ -1646,7 +1646,7 @@ class Model extends BaseModel {
                 }
 
                 // Phân loại theo thời khoảng
-                if(isValidDate(fromDate) && isValidDate(fromDate)){
+                if(isValidDate(fromDate) && isValidDate(toDate)){
                     conditionObj.createAt = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
@@ -1660,12 +1660,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-                // console.log('==================TÌM KIẾM ĐƠN HÀNG===================')
-                // console.log(conditionObj)
 
-                /**
-                 * ĐIỀU KIỆN KHÁC
-                 */
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -1684,11 +1679,6 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
 
                     conditionObj.name = regSearch
-
-                    // conditionObj.$or = [
-                    //     { name: regSearch },
-                    //     { sign: regSearch },
-                    // ]
                 }
 
                 if(select && typeof select === 'string'){

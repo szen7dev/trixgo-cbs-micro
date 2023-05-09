@@ -1857,88 +1857,14 @@ class Model extends BaseModel {
                  * 2-Tìm kiếm các phản hồi trong chủ đề
                  * 3-Populate tới chủ đề (task) chứa phản hồi để hiển thị ra ngoài trang chủ
                  */
-
-                // if(Number(limit) > 20){
-                //     limit = 20;
-                // } else{
-                //     limit = +Number(limit);
-                // }
-
-                // /**
-                //  * 1-Tìm kiếm các chủ đề mà user được quyền truy cập
-                //  */
-                // let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
-
-                // // Chỉ lấy task cha
-                // if(isParent == 1){
-                //     conditionSubjectObj.parent = { $exists: false };
-                // }
-
-                // // if(isActive && isActive == 1){
-                // //     conditionSubjectObj.usersDelete = { $nin: [userID] }
-                // // }else{
-                // //     conditionSubjectObj.usersDelete = { $in: [userID] }
-                // // }
-                // conditionSubjectObj.usersDelete = { $nin: [userID] }
-
-                // // Lấy các chủ đề mà user được quyền truy cập (members của group)
-                // if(isGroup && isGroup == 1){
-                //     //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                //     let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
-
-                //     // Lấy công việc mà mình được quyền truy cập
-                //     conditionSubjectObj.$or = [
-                //         { author: userID },
-                //         { assignee: userID },
-                //         { related: { $in: [userID] }},
-                //         { group: { $in: listGroups.map(item => item._id) }},
-                //     ]
-
-                //     // conditionSubjectObj.$or = [
-                //     //     { author: userID },
-                //     //     { assignee: userID },
-                //     //     { related: { $in: [userID] }},
-                //     // ]
-                // }else{
-                //     conditionSubjectObj.$or = [
-                //         { author: userID },
-                //         { assignee: userID },
-                //         { related: { $in: [userID] }},
-                //     ]
-
-                //     //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                //     let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
-
-                //     // Lấy công việc mà mình được quyền truy cập
-                //     conditionSubjectObj.$or = [
-                //         { author: userID },
-                //         { assignee: userID },
-                //         { related: { $in: [userID] }},
-                //         { group: { $in: listGroups.map(item => item._id) }},
-                //     ]
-                // }
-
-                // // Lấy những việc nháp hoặc không phải việc nháp
-                // if(draft && [0,1].includes(draft)){
-                //     conditionSubjectObj.draft = draft;
-                // }
-
-                // let listSubject = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name draft usersDelete')
-                // console.log(listSubject)
-                // console.log(listSubject.map(item => item._id))
-
-                /**
-                 * 2-Tìm kiếm các phản hồi trong chủ đề
-                 */
-                // let conditionObj = {
-                //     task: { $in: listSubject.map(item => item._id) }
-                // }
-                // let conditionObj = {
-                //     task: { $in: [] }
-                // }
+                if(Number(limit) > 20){
+                    limit = 20;
+                } else{
+                    limit = +Number(limit);
+                }
 
                 let conditionObj = {
-                    receivers: {$in: [userID]}
+                    receivers: { $in: [userID] }
                 }
 
                 /**
@@ -1996,10 +1922,16 @@ class Model extends BaseModel {
 
                 // Tìm kiếm theo keyword
 				if(keyword){
+                    let keywordCV =  stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.
-                    content = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+                    
+                    keywordCV = keywordCV.split(" ");
+                    keywordCV = '.*' + keywordCV.join(".*") + '.*';
+                    const regCVSearch = new RegExp(keywordCV, 'i');
+
+                    conditionObj.contentcv = regCVSearch
                 }
                 // console.log(conditionObj)
 
