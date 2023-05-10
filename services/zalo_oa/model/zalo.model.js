@@ -265,37 +265,43 @@ class Model extends BaseModel {
         })
     }
 
-    handleWebhookFollower({ oaId, source, followerId, eventName, timestamp }) {
+    handleWebhookFollower({ oaId, source, followerId, eventName, timestamp, cacher }) {
         return new Promise(async resolve => {
             try {
+                let gender = '', name = '';
                 const status = eventName === 'follow' ? 1 : 2;
-                console.log({ oaId, source, followerId, eventName, timestamp })
 
                 const follower = await ZALOOA_FOLLOWER_COLL.findOne({ followerId, oaId }).lean();
-                console.log({ follower })
+                const profile = this.getProfileFollower({ userId: followerId, cacher });
+
+                if(!profile.error) {
+                    const { display_name, user_gender } = profile.data;
+
+                    name = display_name;
+                    gender = user_gender === 1 ? 'Nam' : (user_gender === 2 ? 'Nữ' : 'Không xác định');
+                }
 
                 if(follower) {
-                    const result = await ZALOOA_FOLLOWER_COLL.findOneAndUpdate({
+                    await ZALOOA_FOLLOWER_COLL.findOneAndUpdate({
                         followerId
                     }, {
-                        status, eventName, source, timestamp
+                        status, eventName, source, timestamp, name, gender
                     });
-                    console.log({ result })
                 } else{
-                    const result = await ZALOOA_FOLLOWER_COLL.create({
+                    await ZALOOA_FOLLOWER_COLL.create({
                         oaId,
                         source,
                         eventName,
                         followerId,
                         timestamp,
-                        status
+                        status,
+                        name,
+                        gender
                     });
-                    console.log({ result })
                 }
 
                 resolve({ error: false, message: 'OK' });
             } catch(error) {
-                console.error(error);
                 resolve({ error: true, message: error.message });
             }
         })

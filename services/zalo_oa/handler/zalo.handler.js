@@ -111,20 +111,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 const { oa_id, source, follower, event_name, timestamp } = ctx.params;
-                console.log({
-                    oaId: oa_id,
-                    source,
-                    followerId: follower.id,
-                    eventName: event_name,
-                    timestamp
-                });
 
                 const resultAfterCallHandler = await ZALO_MODEL.handleWebhookFollower({
                     oaId: oa_id,
                     source,
                     followerId: follower.id,
                     eventName: event_name,
-                    timestamp
+                    timestamp,
+                    cacher: this.broker.cacher
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
