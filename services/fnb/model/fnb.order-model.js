@@ -67,23 +67,6 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 * Bước 1: Khởi tạo đơn hàng
-                 * - Cập nhật thuộc tính của Cơ sở
-                 * - Cập nhật thuộc tính của Ca làm việc
-                 * - Cập nhật thuộc tính của khách hàng
-                 * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
-                 * Bước 3: Tính Chiết khấu, giảm giá => cập nhật giá đơn hàng
-                 * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
-                 * Bước 5: Cập nhật thông số của đơn hàng ngược lại vào:
-                 * - Cơ sở
-                 * - Ca làm việc
-                 * - Khách hàng
-                 * Sử dụng Credit:
-                 * - Nếu mà chọn Không sử dụng -> Truyền credit = 0
-                 * - Nếu mà chọn Có sử dụng -> Truyền credit = theo mặc định đang có ở Client
-                 */
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
                     return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
@@ -279,12 +262,7 @@ class Model extends BaseModel {
 
                     // Nếu có tích điểm
                     if(!isNaN(credit)){
-                        // console.log({credit})
                         let creditRound = 1000*Math.round(credit/ 1000)
-                        // console.log({creditRound})
-
-                        // dataInsert.credit = Number(credit)
-                        // amount = Number(amount) - Number(credit)
 
                         dataInsert.credit = Number(creditRound)
                         amount = Number(amount) - Number(creditRound)
@@ -323,19 +301,16 @@ class Model extends BaseModel {
                             Voucher không áp dụng chung với các chương trình khuyến mãi khác (trường hợp quý khách muốn sử dụng voucher để áp dụng mua các sản phẩm đang khuyến mãi thì voucher chỉ áp dụng cho giá gốc chưa khuyến mãi của sản phẩm đó).
                         */
                         let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
-                        // console.log(infoVoucher)
                         if (!infoVoucher)
                             return resolve({ error: true, message: 'cannot_get_infoVoucher' })
 
                         // Kiểm tra xem đúng VoucherID của customerID hay không
-                        // console.log({VoucherIDcustomerID:!infoVoucher.receivers.includes(customerID)})
                         if(!infoVoucher.receivers.includes(customerID))
                             return resolve({ error: true, message: 'Voucher không áp dụng cho khách hàng này' })
 
                         // Kiểm tra thời hạn VoucherID
                         let currentTime = new Date();
                         let checkExpired = compareTwoTime(currentTime, infoVoucher.expired)
-                        // console.log({checkExpired:checkExpired})
                         if(checkExpired == 1)
                             return resolve({ error: true, message: 'Voucher đã hết hạn' })
 
@@ -344,12 +319,6 @@ class Model extends BaseModel {
                          */
                         if( Number(total) < Number(infoVoucher.minOrderAmount))
                             return resolve({ error: true, message: `Đơn hàng không đủ điều kiện áp dụng (Giá trị phải >= ${infoVoucher.minOrderAmount})` })
-
-                        /**
-                         * Voucher không áp dụng chung với các chương trình khuyến mãi khác
-                         * - Không kèm giảm giá
-                         * - Không kèm tích điểm
-                         */
 
                         /**
                          * Kiểm tra xem khách hàng đã sử dụng voucherID hay chưa
@@ -425,8 +394,6 @@ class Model extends BaseModel {
                     // Doanh số trung bình/đầu nhân viên (1 nhân viên)
                     dataInsert.avgTotalPerStaff = Number(amount/Number(numberStaff)).toFixed(0)
                 }
-                // console.log({numberStaff})
-                // console.log(Number(amount/Number(numberStaff)).toFixed(0))
 
                 /**
                  * KHỐI LƯỢNG SẢN PHẨM
@@ -468,13 +435,7 @@ class Model extends BaseModel {
                 dataInsert.numberOfSizeL = Number(totalSizeL)
                 // console.log(dataInsert)
 
-                /**
-                 * =====================TIẾN HÀNH TẠO ĐƠN HÀNG================
-                 * =====================TIẾN HÀNH TẠO ĐƠN HÀNG================
-                 * =====================TIẾN HÀNH TẠO ĐƠN HÀNG================
-                 */
                 let infoAfterInsert = await this.insertData(dataInsert);
-                // console.log(infoAfterInsert)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
@@ -538,18 +499,6 @@ class Model extends BaseModel {
 
                     await Promise.all(productsAsync);
                 }
-
-                /**
-                 * CẬP NHẬT GIÁ TRỊ ĐƠN HÀNG SAU KHI CHỌN XONG SẢN PHẨM
-                 * - Bỏ phần này đi, vì đã được tính ở Client rồi
-                 * - Nếu sử dụng hàm này -> cần tính thêm cả giá thành của Topping nữa (subProductsID)
-                 */
-
-                /**
-                 * BẮN SOCKET VÀ CLOUD MSS
-                 * -> Gửi tới các user là members của fundaID (infoFunda.members)
-                 * -> Thực hiện ở phía Client side
-                 */
 
                 /**
                  * B5. CẬP NHẬT THÔNG TIN SAU KHI TẠO XONG ĐƠN HÀNG:
@@ -657,37 +606,21 @@ class Model extends BaseModel {
 
                 /**
                  * CẬP NHẬT VÀO ĐIỂM BÁN/CƠ SỞ
-                 * - Số lượng đơn hàng
-                 * - Doanh số
-                 * - Doanh thu sau khi trừ giảm giá, Chiết khấu
-                 * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
-                 * - Số lượng sản phẩm (để kiểm kê cốc)
-                 * - Tiền mặt, chuyển khoản
                  */
                 await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdateFw)
 
                 /**
                  * CẬP NHẬT VÀO CA LÀM VIỆC
-                 * - Số lượng đơn hàng
-                 * - Doanh số
-                 * - Doanh thu sau khi trừ giảm giá, Chiết khấu
-                 * - Số lượng đơn Off, App (các loại app) và giá trị đơn hàng
-                 * - Số lượng sản phẩm (để kiểm kê cốc)
-                 * - Tiền mặt, chuyển khoản
                  */
                 await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataUpdateFw)
 
                 /**
                  * CẬP NHẬT VÀO KHÁCH HÀNG
-                 * - Khách hàng mới hay cũ
-                 * - Doanh số
-                 * - Điểm tích lũy (tăng, giảm)
-                 * - Số đơn hàng
                  */
                 await that.updateCustomer({ customerID, userID })
 
                 /**
-                 * CẬP NHẬT VÀO VOUCHER--
+                 * CẬP NHẬT VÀO VOUCHER
                  */
                 if(salesChannel == 1 && voucherID && checkObjectIDs(voucherID)){
                     //______Cập nhật thông tin Người sử dụng voucher
@@ -696,10 +629,6 @@ class Model extends BaseModel {
 
                 /**
                  * NGƯỜI GIỚI THIỆU
-                 * Nếu khách hàng mua Offline
-                 * Nếu khách hàng mới chưa từng mua đơn hàng nào bao giờ
-                 * Nếu khách hàng có người giới thiệu
-                 * => Lưu ý khi đơn đầu -> được Ref -> Hủy -> Đơn sau vẫn được Ref
                  */
                 if(salesChannel == 1 && numberOD == 0 && infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
 
@@ -708,10 +637,9 @@ class Model extends BaseModel {
 
                     // Kiểm tra xem Người giới thiệu đã được nhận Voucher khi Bạn của mình mua hàng hay chưa (tránh trường hợp đơn hủy)
                     if(infoReferral && infoReferral.achievements && infoReferral.achievements.includes(customerID)){
-                        console.log('Đã được tính Ref=========================')
-
+                        // console.log('Đã được tính Ref=========================')
                     }else{
-                        console.log('Chưa được tính Ref=========================')
+                        // console.log('Chưa được tính Ref=========================')
                         /**
                         * Tạo voucher cho Người giới thiệu theo mã bất kỳ (type=2)
                         * 1-Phân loại Type = 2
@@ -732,7 +660,7 @@ class Model extends BaseModel {
                         // console.log(infoOffer1)
 
                         if(infoOffer1){
-                            console.log('===========Tồn tại Voucher và tiến hành Cấp phát M1==================')
+                            // console.log('===========Tồn tại Voucher và tiến hành Cấp phát M1==================')
 
                             // Cấp phát voucher cho người Giới thiệu
                             await FNB_ORDER_VOUCHER_MODEL.update({
@@ -824,7 +752,7 @@ class Model extends BaseModel {
                         // console.log(infoOffer2)
 
                         if(infoOffer2){
-                            console.log('===========Tồn tại Voucher và tiến hành Cấp phát M2==================')
+                            // console.log('===========Tồn tại Voucher và tiến hành Cấp phát M2==================')
 
                             // Cấp phát voucher cho người Giới thiệu
                             await FNB_ORDER_VOUCHER_MODEL.update({
@@ -2660,7 +2588,7 @@ class Model extends BaseModel {
 
     /**
      * Dev: HiepNH
-     * Func: Tải Đơn hàng
+     * Func: Tải Đơn hàng và Doanh số
      * Date: 4/2/2023
      */
     exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
@@ -3078,105 +3006,205 @@ class Model extends BaseModel {
                         }
 
                         // SỐ LIỆU KHÁCH HÀNG
-                        // if(option == 2){
-                        //     if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) ){
-                        //         let yearFilter
-                        //         let currentYear = new Date().getFullYear()
-                        //         if(year && !isNaN(year)){
-                        //             yearFilter = Number(year)
-                        //         }else{
-                        //             yearFilter = Number(currentYear)
-                        //         }
-                        //         let conditionObjYear = {
-                        //             "year": Number(yearFilter),
-                        //         }
-                        //         let conditionObj = {
-                        //             company: ObjectID(companyID),
-                        //             status: 5
-                        //         }
-                        //         let projectObj =  {
-                        //             year : {$year : "$createAt"},
-                        //             month : {$month : "$createAt"},
-                        //             company : 1,
-                        //             funda : 1,
-                        //             createAt: 1,
-                        //             customer: 1,
-                        //             total: 1,
-                        //             discount: 1,
-                        //             salesoff: 1,
-                        //             credit: 1,
-                        //             amount: 1,
-                        //             // salesChannel: 1
-                        //         }
-                        //         let conditionGroup = {}, conditionPopulate = {}
+                        if(option == 2){
+                            if(FNB_ACC.bod.includes(email.toString())){
+                                let conditionObj = { company:  ObjectID(companyID) }
 
-                        //         conditionPopulate = {
-                        //             path: '_id.customer',
-                        //             select: '_id name phone note',
-                        //             model: 'contact'
-                        //         }
+                                let obj = JSON.parse(filterParams);
 
-                        //         conditionGroup = {
-                        //             _id: {  customer: "$customer", month: "$month" },
-                        //             number: { $sum: 1 },
-                        //             total: { $sum: "$total" },
-                        //             amount: { $sum: "$amount" },
-                        //         }
+                                let fundasID = obj.fundasID
+                                let shiftTypes = obj.shiftTypes
+                                let fromDate = obj.fromDate
+                                let toDate = obj.toDate
+                                let keyword = obj.keyword
+                                let salesChannels = obj.salesChannels
+                                let statuss = obj.statuss
+                                let isMistake = obj.isMistake
+                                let isDiscount = obj.isDiscount
+                                let isSalesoff = obj.isSalesoff
+                                let isCredit = obj.isCredit
+                                let isOffer = obj.isOffer
+                                let isNonResident = obj.isNonResident
+                                let isCustomerType = obj.isCustomerType
 
-                        //         let listData = await FNB_ORDER_COLL.aggregate([
-                        //             {
-                        //                 $match: conditionObj
-                        //             },
-                        //             {
-                        //                 $project : projectObj
-                        //             },
-                        //             {
-                        //                 $match: conditionObjYear
-                        //             },
-                        //             {
-                        //                 $group: conditionGroup
-                        //             },
-                        //             {
-                        //                 $sort: {
-                        //                     "_id.month": -1, "total": -1
-                        //                 }
-                        //             }
-                        //         ])
-                        //         await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+                                if(fundasID && fundasID.length ){
+                                    let arrFun = fundasID.map(item=>ObjectID(item))
 
-                        //         // Modify the workbook.
-                        //         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
-                        //         .then(async workbook => {
+                                    if(arrFun.length) {
+                                        conditionObj.funda = { $in: arrFun };
+                                    }
+                                }else{
+                                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                                    if(fundasIDIsMember.length) {
+                                        conditionObj.funda = { $in: fundasIDIsMember };
+                                    }else{
+                                        conditionObj.funda = { $in: [] }
+                                    }
+                                }
 
-                        //             var i = 3
-                        //             listData?.forEach((item, index) => {
-                        //                 workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
-                        //                 workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name} - ${item._id.customer.phone}` )
-                        //                 workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
-                        //                 workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.note)
-                        //                 workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
-                        //                 workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
-                        //                 workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
-                        //                 workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
-                        //                 workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
-                        //                 i++
-                        //             })
+                                shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
+                                salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
+                                statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
 
-                        //             const now = new Date();
-                        //             const filePath = '../../../files/temporary_uploads/';
-                        //             const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
-                        //             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                                // Phân loại khác
+                                if(isMistake && isMistake == 1){
+                                    conditionObj.numberOfMistakes = { $gt: 0 }
+                                }
 
-                        //             await workbook.toFileAsync(pathWriteFile);
-                        //             const result = await uploadFileS3(pathWriteFile, fileName);
+                                if(isNonResident && isNonResident == 1){
+                                    conditionObj.nonResident = 2
+                                }
 
-                        //             fs.unlinkSync(pathWriteFile);
-                        //             return resolve({ error: false, data: result?.Location, status: 200 });
-                        //         })
-                        //     }else{
-                        //         return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
-                        //     }
-                        // }
+                                if(isDiscount && isDiscount == 1){
+                                    conditionObj.discount = { $gt: 0 }
+                                }
+
+                                if(isSalesoff && isSalesoff == 1){
+                                    conditionObj.salesoff = { $gt: 0 }
+                                }
+
+                                if(isCredit && isCredit == 1){
+                                    conditionObj.credit = { $gt: 0 }
+                                }
+
+                                if(isOffer && isOffer == 1){
+                                    conditionObj.offer = { $gt: 0 }
+                                }
+
+                                if(isCustomerType && isCustomerType == 1){
+                                    conditionObj.customerType = 1
+                                }
+                                if(isCustomerType && isCustomerType == 2){
+                                    conditionObj.customerType = 2
+                                }
+
+                                // Phân loại theo thời khoảng
+                                if(fromDate && toDate){
+                                    conditionObj.createAt = {
+                                        $gte: new Date(fromDate),
+                                        $lte: new Date(toDate),
+                                    }
+                                }
+
+                                if(keyword){
+                                    keyword = keyword.split(" ");
+                                    keyword = '.*' + keyword.join(".*") + '.*';
+                                    const regSearch = new RegExp(keyword, 'i');
+
+                                    conditionObj.$or = [
+                                        { name: regSearch },
+                                        { sign: regSearch },
+                                    ]
+                                }
+                                
+                                // let yearFilter
+                                // let currentYear = new Date().getFullYear()
+                                // if(year && !isNaN(year)){
+                                //     yearFilter = Number(year)
+                                // }else{
+                                //     yearFilter = Number(currentYear)
+                                // }
+                                // let conditionObjYear = {
+                                //     "year": Number(yearFilter),
+                                // }
+
+                                // let projectObj =  {
+                                //     year : {$year : "$createAt"},
+                                //     month : {$month : "$createAt"},
+                                //     company : 1,
+                                //     funda : 1,
+                                //     createAt: 1,
+                                //     customer: 1,
+                                //     total: 1,
+                                //     discount: 1,
+                                //     salesoff: 1,
+                                //     credit: 1,
+                                //     amount: 1
+                                // }
+                                let conditionGroup = {}, conditionPopulate = {}
+
+                                conditionPopulate = {
+                                    path: '_id.customer',
+                                    select: '_id name phone note funda customerType type nonResident',
+                                    populate: {
+                                        path: 'funda',
+                                        select: '_id name',
+                                        model: 'funda'
+                                    },
+                                    model: 'contact'
+                                }
+
+                                conditionGroup = {
+                                    _id: {  customer: "$customer", month: "$month" },
+                                    number: { $sum: 1 },
+                                    total: { $sum: "$total" },
+                                    amount: { $sum: "$amount" },
+                                }
+                                // console.log(conditionObj)
+                                // console.log(conditionObjYear)
+
+                                let listData = await FNB_ORDER_COLL.aggregate([
+                                    {
+                                        $match: conditionObj
+                                    },
+                                    // {
+                                    //     $project : projectObj
+                                    // },
+                                    // {
+                                    //     $match: conditionObjYear
+                                    // },
+                                    {
+                                        $group: conditionGroup
+                                    },
+                                    {
+                                        $sort: {
+                                            "number": -1, "total": -1, "amount": -1
+                                        }
+                                    }
+                                ])
+                                await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+
+                                // Modify the workbook.
+                                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
+                                .then(async workbook => {
+
+                                    var i = 3
+                                    listData?.forEach((item, index) => {
+                                        workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
+                                        workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name}` )
+                                        workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
+                                        workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.funda.name)
+                                        // workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
+                                        workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
+                                        workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
+                                        workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
+                                        workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
+                                        if(item._id.customer.type && Number(item._id.customer.type) === 1){
+                                            workbook.sheet("Report").row(i).cell(10).value('Nhân viên');
+                                        }
+                                        if(Number(item._id.customer.nonResident) === 2){
+                                            workbook.sheet("Report").row(i).cell(11).value('Khách vãng lai');
+                                        }
+
+                                        i++
+                                    })
+
+                                    const now = new Date();
+                                    const filePath = '../../../files/temporary_uploads/';
+                                    const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
+                                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                                    await workbook.toFileAsync(pathWriteFile);
+                                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                                    fs.unlinkSync(pathWriteFile);
+                                    return resolve({ error: false, data: result?.Location, status: 200 });
+                                })
+                            }else{
+                                return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                            }
+                        }
                     }
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
