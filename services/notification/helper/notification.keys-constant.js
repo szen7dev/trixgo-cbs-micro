@@ -35,3 +35,4 @@ exports.ENV_DEVICE_WEB_CBS = 1;
 exports.ENV_DEVICE_APP_TEASER = 2;
 exports.ENV_DEVICE_APP_CBS = 3;
 exports.ENV_DEVICE_APP_FNB = 4;
+exports.ENV_DEVICE_APP_FNB_AND_CBS = 5;

@@ -272,7 +272,7 @@ class Model extends BaseModel {
                 const status = eventName === 'follow' ? 1 : 2;
 
                 const follower = await ZALOOA_FOLLOWER_COLL.findOne({ followerId, oaId }).lean();
-                const profile = this.getProfileFollower({ userId: followerId, cacher });
+                const profile = await this.getProfileFollower({ userId: followerId, cacher });
 
                 if(!profile.error) {
                     const { display_name, user_gender } = profile.data;

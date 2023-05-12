@@ -13,6 +13,7 @@ const {
     ENV_DEVICE_APP_TEASER,
     ENV_DEVICE_WEB_CBS,
     ENV_DEVICE_APP_FNB,
+    ENV_DEVICE_APP_FNB_AND_CBS,
 } = require('../helper/notification.keys-constant');
 const {
     NOTI_TYPE,
@@ -337,25 +338,35 @@ class Model extends BaseModel {
                  *      1/ WEB_CBS
                         2/ MOBILE_TEARSER
                         3/ MOBILE_CBS
+                        4/ MOBILE_FNB
+                        5/ MOBILE_FNB_AND_CBS
 
                         -> CẦN TÌM ra
                             VD: env = 1 => listEnvReceiveNoti = [1, 3]. Vì 1 và 3 là 2 giá trị của CBS nên cần đẩy về cho app và web
                             VD: env = 2 => listEnvReceiveNoti = [1, 2]. vì 2 là ứng dụng teaser, nên sẽ đẩy về CBS web(có chứa app chatting), và App Teaser
+                            VD: env = 4 => listEnvReceiveNoti = [4]. vì là ứng dụng fnb, nên sẽ đẩy về App fnb
+                            VD: env = 5 => listEnvReceiveNoti = [4, 3]. vì là ứng dụng fnb và cbs, nên sẽ đẩy về App fnb và cbs
                  */
-                const ENV_CBS = [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS];
-                const ENV_TEASER = [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_TEASER];
-                const ENV_FNB = [ENV_DEVICE_APP_FNB];
+                // const ENV_CBS = [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS];
+                // const ENV_TEASER = [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_TEASER];
+                // const ENV_FNB = [ENV_DEVICE_APP_FNB];
+                // const ENV_FNB_CBS = [ENV_DEVICE_APP_FNB, ENV_DEVICE_APP_CBS, ENV_DEVICE_APP_FNB_AND_CBS];
 
-                let listEnvReceiveNoti = ENV_CBS.includes(+env) ?
-                    ENV_CBS : (
-                        ENV_TEASER.includes(+env) ?
-                        ENV_TEASER : ENV_FNB
-                    );
+                // let listEnvReceiveNoti = ENV_CBS.includes(+env) ?
+                //     ENV_CBS : (
+                //         ENV_TEASER.includes(+env) ?
+                //         ENV_TEASER : ENV_FNB
+                //     );
 
+                const objEnv = {
+                    1: [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS],
+                    2: [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_TEASER],
+                    4: [ENV_DEVICE_APP_FNB],
+                    5: [ENV_DEVICE_APP_FNB, ENV_DEVICE_APP_CBS],
+                }
+
+                let listEnvReceiveNoti = objEnv[env];
                 console.log({ listEnvReceiveNoti, env })
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
 
                 /**
                  * VALIDATION STEP (2)
@@ -411,7 +422,6 @@ class Model extends BaseModel {
                                      * item.oneSignalID: là điều kiện chắc chắn obj trong devices phải có key để onesignal push noti
                                      * listEnvReceiveNoti.includes(item.env): tùy vào ACTION mà sẽ push noti theo từng loại app
                                      * (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS): kiểm tra rẽ nhánh theo WEB và APP theo 2 arr khác nhau
-                                     *
                                      */
                                     ...devices.filter(item => item.oneSignalID && listEnvReceiveNoti.includes(item.env) && ENV_MOBILES.includes(item.env)).map(itemReturn => {
                                         return {
