@@ -18,7 +18,7 @@ const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-consta
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
-const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
+const { ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_FNB }                    = require('../../notification/helper/notification.keys-constant');
 const stringUtils					            = require('../../../tools/utils/string_utils');
 
 /**
@@ -572,6 +572,16 @@ class Model extends BaseModel {
                         dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: arrReceiver,
+                        title: titleMSS,
+                        description: descriptionMSS,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
+                        dataSend,
+                        web_url: webUrl,
+                        env: ENV_DEVICE_APP_FNB
                     });
 
                     // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {

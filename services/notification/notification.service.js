@@ -11,7 +11,7 @@ const NOTIFICATION_LOG_COLL				= require('./database/notification.log-coll');
 module.exports = {
 	name: CF_DOMAIN_SERVICES.NOTIFICATION,
 	mixins: [
-		DbService(NOTIFICATION_LOG_COLL),  
+		DbService(NOTIFICATION_LOG_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.NOTIFICATION])
     ],
 

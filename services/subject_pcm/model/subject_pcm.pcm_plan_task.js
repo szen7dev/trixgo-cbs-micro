@@ -30,7 +30,7 @@ const stringUtils					            = require('../../../tools/utils/string_utils')
 const { addDate, calculateExpire, calculateExpireTime }  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { sendNoticeToMember }                    = require('../../../tools/mailer/module/notice_pcm_task');
-const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
+const { ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_FNB }                    = require('../../notification/helper/notification.keys-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
 const { PCM_STATUS_TASK }			            = require('../../../tools/constants');
 const { uploadFileS3 }                  = require('../../../tools/s3');
@@ -469,6 +469,16 @@ class Model extends BaseModel {
                                 dataSend,
                                 web_url: webUrl,
                                 env: ENV_DEVICE_WEB_CBS
+                            });
+
+                            ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                                users: [receiver],
+                                title: titleMSS,
+                                description: descriptionMSS,
+                                amountNoti,
+                                dataSend,
+                                web_url: webUrl,
+                                env: ENV_DEVICE_APP_FNB
                             });
                         }
                     }
