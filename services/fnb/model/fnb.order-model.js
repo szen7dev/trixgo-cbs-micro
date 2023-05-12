@@ -3098,35 +3098,40 @@ class Model extends BaseModel {
                                     ]
                                 }
                                 
-                                let yearFilter
-                                let currentYear = new Date().getFullYear()
-                                if(year && !isNaN(year)){
-                                    yearFilter = Number(year)
-                                }else{
-                                    yearFilter = Number(currentYear)
-                                }
-                                let conditionObjYear = {
-                                    "year": Number(yearFilter),
-                                }
+                                // let yearFilter
+                                // let currentYear = new Date().getFullYear()
+                                // if(year && !isNaN(year)){
+                                //     yearFilter = Number(year)
+                                // }else{
+                                //     yearFilter = Number(currentYear)
+                                // }
+                                // let conditionObjYear = {
+                                //     "year": Number(yearFilter),
+                                // }
 
-                                let projectObj =  {
-                                    year : {$year : "$createAt"},
-                                    month : {$month : "$createAt"},
-                                    company : 1,
-                                    funda : 1,
-                                    createAt: 1,
-                                    customer: 1,
-                                    total: 1,
-                                    discount: 1,
-                                    salesoff: 1,
-                                    credit: 1,
-                                    amount: 1
-                                }
+                                // let projectObj =  {
+                                //     year : {$year : "$createAt"},
+                                //     month : {$month : "$createAt"},
+                                //     company : 1,
+                                //     funda : 1,
+                                //     createAt: 1,
+                                //     customer: 1,
+                                //     total: 1,
+                                //     discount: 1,
+                                //     salesoff: 1,
+                                //     credit: 1,
+                                //     amount: 1
+                                // }
                                 let conditionGroup = {}, conditionPopulate = {}
 
                                 conditionPopulate = {
                                     path: '_id.customer',
-                                    select: '_id name phone note',
+                                    select: '_id name phone note funda customerType type nonResident',
+                                    populate: {
+                                        path: 'funda',
+                                        select: '_id name',
+                                        model: 'funda'
+                                    },
                                     model: 'contact'
                                 }
 
@@ -3143,18 +3148,18 @@ class Model extends BaseModel {
                                     {
                                         $match: conditionObj
                                     },
-                                    {
-                                        $project : projectObj
-                                    },
-                                    {
-                                        $match: conditionObjYear
-                                    },
+                                    // {
+                                    //     $project : projectObj
+                                    // },
+                                    // {
+                                    //     $match: conditionObjYear
+                                    // },
                                     {
                                         $group: conditionGroup
                                     },
                                     {
                                         $sort: {
-                                            "_id.month": -1, "total": -1
+                                            "number": -1, "total": -1, "amount": -1
                                         }
                                     }
                                 ])
@@ -3167,14 +3172,21 @@ class Model extends BaseModel {
                                     var i = 3
                                     listData?.forEach((item, index) => {
                                         workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
-                                        workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name} - ${item._id.customer.phone}` )
+                                        workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name}` )
                                         workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
-                                        workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.note)
-                                        workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
+                                        workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.funda.name)
+                                        // workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
                                         workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
                                         workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
                                         workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
                                         workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
+                                        if(item._id.customer.type && Number(item._id.customer.type) === 1){
+                                            workbook.sheet("Report").row(i).cell(10).value('Nhân viên');
+                                        }
+                                        if(Number(item._id.customer.nonResident) === 2){
+                                            workbook.sheet("Report").row(i).cell(11).value('Khách vãng lai');
+                                        }
+
                                         i++
                                     })
 
