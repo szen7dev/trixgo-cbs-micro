@@ -627,7 +627,7 @@ class Model extends BaseModel {
                         // Modify the workbook.
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_oa_contact.xlsx')))
                         .then(async workbook => {
-v
+
                             var i = 3;
                             listData?.forEach((item, index) => {
                                 workbook.sheet("Data").row(i).cell(1).value(Number(index+1))
