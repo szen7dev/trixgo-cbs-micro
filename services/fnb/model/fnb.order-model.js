@@ -3225,7 +3225,7 @@ class Model extends BaseModel {
                                     listDataContact?.forEach((item, index) => {
                                         for(var m = 1; m<=12; m++){
                                             if(Number(item._id.month) === Number(m)){
-                                                for(let j=3; j<=listFundaIsMember.length; j++){
+                                                for(let j=3; j<=Number(listFundaIsMember.length +2); j++){
                                                     let fundaID = workbook.sheet(`TongSoKhachHang`).row(1).cell(j).value()
                                                         
                                                     if((item._id.funda.toString() === fundaID.toString())){
