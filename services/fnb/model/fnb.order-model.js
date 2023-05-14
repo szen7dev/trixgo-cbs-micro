@@ -2209,6 +2209,22 @@ class Model extends BaseModel {
 
                         sortBy = {"quantity": -1}
                     }
+
+                     /**
+                     * Tỷ lệ khách hàng quay lại
+                     */
+                    // if(option && Number(option) == 15){
+                    //     conditionGroup = {
+                    //         _id: { customer: "$customer" },
+                    //         numberOfOrders: { $sum: 1 },
+                    //         numberOfProducts: { $sum: "$numberOfProducts" },
+                    //         total: { $sum: "$total" },
+                    //         amount: { $sum: "$amount" },
+                    //     }
+
+                    //     sortBy = {"numberOfOrders": -1}
+                    // }
+
                     // console.log(conditionObj)
                     // console.log(conditionObjYear)
                     // console.log(conditionGroup)
@@ -3008,7 +3024,26 @@ class Model extends BaseModel {
                         // SỐ LIỆU KHÁCH HÀNG
                         if(option == 2){
                             if(FNB_ACC.bod.includes(email.toString())){
+                                /**
+                                 * Mốc thời gian
+                                 */
+                                let yearFilter
+                                let currentYear = new Date().getFullYear()
+
+                                if(year && !isNaN(year)){
+                                    yearFilter = Number(year)
+                                }else{
+                                    yearFilter = Number(currentYear)
+                                }
+                                let conditionObjYear = {
+                                    "year": Number(yearFilter),
+                                }
+
+                                /**
+                                 * Điều kiện tra cứu
+                                 */
                                 let conditionObj = { company:  ObjectID(companyID) }
+                                let conditionContactObj = { company:  ObjectID(companyID) } //
 
                                 let obj = JSON.parse(filterParams);
 
@@ -3027,21 +3062,28 @@ class Model extends BaseModel {
                                 let isNonResident = obj.isNonResident
                                 let isCustomerType = obj.isCustomerType
 
+                                let listFundaIsMember = [];
                                 if(fundasID && fundasID.length ){
+                                    listFundaIsMember = await ITEM__FUNDA_COLL.find({_id: {$in: fundasID}}).select('_id name')
                                     let arrFun = fundasID.map(item=>ObjectID(item))
 
                                     if(arrFun.length) {
-                                        conditionObj.funda = { $in: arrFun };
+                                        conditionObj.funda = { $in: arrFun }
+                                        conditionContactObj.funda = { $in: arrFun }//
                                     }
                                 }else{
-                                    let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-                                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                                    listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}}).select('_id name')
+                                    let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id))
+
                                     if(fundasIDIsMember.length) {
-                                        conditionObj.funda = { $in: fundasIDIsMember };
+                                        conditionObj.funda = { $in: fundasIDIsMember }
+                                        conditionContactObj.funda = { $in: fundasIDIsMember }//
                                     }else{
                                         conditionObj.funda = { $in: [] }
+                                        conditionContactObj.funda = { $in: [] }//
                                     }
                                 }
+                                // console.log(listFundaIsMember)
 
                                 shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
                                 salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
@@ -3098,30 +3140,6 @@ class Model extends BaseModel {
                                     ]
                                 }
                                 
-                                // let yearFilter
-                                // let currentYear = new Date().getFullYear()
-                                // if(year && !isNaN(year)){
-                                //     yearFilter = Number(year)
-                                // }else{
-                                //     yearFilter = Number(currentYear)
-                                // }
-                                // let conditionObjYear = {
-                                //     "year": Number(yearFilter),
-                                // }
-
-                                // let projectObj =  {
-                                //     year : {$year : "$createAt"},
-                                //     month : {$month : "$createAt"},
-                                //     company : 1,
-                                //     funda : 1,
-                                //     createAt: 1,
-                                //     customer: 1,
-                                //     total: 1,
-                                //     discount: 1,
-                                //     salesoff: 1,
-                                //     credit: 1,
-                                //     amount: 1
-                                // }
                                 let conditionGroup = {}, conditionPopulate = {}
 
                                 conditionPopulate = {
@@ -3136,24 +3154,17 @@ class Model extends BaseModel {
                                 }
 
                                 conditionGroup = {
-                                    _id: {  customer: "$customer", month: "$month" },
+                                    _id: {  customer: "$customer" },
                                     number: { $sum: 1 },
                                     total: { $sum: "$total" },
                                     amount: { $sum: "$amount" },
                                 }
                                 // console.log(conditionObj)
-                                // console.log(conditionObjYear)
 
                                 let listData = await FNB_ORDER_COLL.aggregate([
                                     {
                                         $match: conditionObj
                                     },
-                                    // {
-                                    //     $project : projectObj
-                                    // },
-                                    // {
-                                    //     $match: conditionObjYear
-                                    // },
                                     {
                                         $group: conditionGroup
                                     },
@@ -3165,26 +3176,87 @@ class Model extends BaseModel {
                                 ])
                                 await FNB_ORDER_COLL.populate(listData, conditionPopulate)
 
+                                /**
+                                 * Tổng hợp danh bạ
+                                 */
+                                let conditionGroupContact = {
+                                    _id: { year: "$year", month: "$month", funda: "$funda" },
+                                    quantity: { $sum: 1 },
+                                }
+                                let listDataContact = await ITEM__CONTACT_COLL.aggregate([
+                                    {
+                                        $match: conditionContactObj
+                                    },
+                                    {
+                                        $project : {
+                                            year : {$year : "$joinedDate"},
+                                            month : {$month : "$joinedDate"},
+                                            funda : 1,
+                                            joinedDate : 1
+                                        }
+                                    },
+                                    {
+                                        $match: conditionObjYear
+                                    },
+                                    {
+                                        $group: conditionGroupContact
+                                    },
+                                    {
+                                        $sort: {"_id.month": 1}
+                                    }
+                                ])
+                                // console.log(listDataContact)
+
+
                                 // Modify the workbook.
                                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_customer.xlsx')))
                                 .then(async workbook => {
+                                    // Tổng số khách hàng
+                                    workbook.sheet(`TongSoKhachHang`).row(1).cell(1).value(`TỔNG SỐ KHÁCH HÀNG ${yearFilter}`)
+                                    var j = 3
+                                    listFundaIsMember?.forEach((item, index) => {
+                                        workbook.sheet(`TongSoKhachHang`).row(1).cell(j).value(`${item._id}`)
+                                        workbook.sheet(`TongSoKhachHang`).row(2).cell(j).value(item.name)
+                                      
+                                        j++
+                                    })
+
+                                    // Chi tiết khách hàng theo điểm bán
+                                    listDataContact?.forEach((item, index) => {
+                                        for(var m = 1; m<=12; m++){
+                                            if(Number(item._id.month) === Number(m)){
+                                                for(let j=3; j<=listFundaIsMember.length; j++){
+                                                    let fundaID = workbook.sheet(`TongSoKhachHang`).row(1).cell(j).value()
+                                                        
+                                                    if((item._id.funda.toString() === fundaID.toString())){
+                                                        workbook.sheet(`TongSoKhachHang`).row(Number(m+2)).cell(j).value(item.quantity)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    })
+
+                                    // Khách hàng quay lại
+                                    if(fromDate && toDate){
+                                        workbook.sheet(`KhachHangQuayLai`).row(1).cell(1).value(`Từ ${moment(fromDate).format("DD/MM/YYYY")}-${moment(toDate).format("DD/MM/YYYY")}`)
+                                    }
 
                                     var i = 3
                                     listData?.forEach((item, index) => {
-                                        workbook.sheet(`Report`).row(i).cell(1).value(Number(index+1))
-                                        workbook.sheet(`Report`).row(i).cell(2).value( `${item._id.customer.name}` )
-                                        workbook.sheet(`Report`).row(i).cell(3).value(item._id.customer.phone)
-                                        workbook.sheet(`Report`).row(i).cell(4).value(item._id.customer.funda.name)
-                                        // workbook.sheet(`Report`).row(i).cell(5).value(Number(item._id.month))
-                                        workbook.sheet(`Report`).row(i).cell(6).value(Number(item.number))
-                                        workbook.sheet(`Report`).row(i).cell(7).value(Number(item.total))
-                                        workbook.sheet(`Report`).row(i).cell(8).value(Number(item.amount))
-                                        workbook.sheet(`Report`).row(i).cell(9).value(`${item._id.customer._id}`)
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(1).value(Number(index+1))
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(2).value( `${item._id.customer.name}` )
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(3).value(item._id.customer.phone)
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(4).value(item._id.customer.funda.name)
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(5).value(`${item._id.customer.funda._id}`)
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(6).value(Number(item.number))
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(7).value(Number(item.total))
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(8).value(Number(item.amount))
+                                        workbook.sheet(`KhachHangQuayLai`).row(i).cell(9).value(`${item._id.customer._id}`)
                                         if(item._id.customer.type && Number(item._id.customer.type) === 1){
-                                            workbook.sheet("Report").row(i).cell(10).value('Nhân viên');
+                                            workbook.sheet("KhachHangQuayLai").row(i).cell(10).value('Nhân viên');
                                         }
                                         if(Number(item._id.customer.nonResident) === 2){
-                                            workbook.sheet("Report").row(i).cell(11).value('Khách vãng lai');
+                                            workbook.sheet("KhachHangQuayLai").row(i).cell(11).value('Khách vãng lai');
                                         }
 
                                         i++
