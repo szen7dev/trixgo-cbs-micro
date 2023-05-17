@@ -802,12 +802,12 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getListV2({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, userID }) {
+    getListV2({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID }) {
         // console.log({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 10){
-                    limit = 10;
+                if(Number(limit) > 5){
+                    limit = 5;
                 } else{
                     limit = +Number(limit);
                 }
@@ -931,7 +931,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getListOfSystem({
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 5, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -941,8 +941,8 @@ class Model extends BaseModel {
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
-                if(limit > 10){
-                    limit = 10
+                if(limit > 5){
+                    limit = 5
                 }
 
                 /**
