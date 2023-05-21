@@ -766,29 +766,32 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * THỰC HIỆN BẰN TIN NHẮN VỚI ZALO OA
+                 * TEST ZNS XEM CÒN HOẠT ĐỘNG HAY KHÔNG
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                // if(salesChannel == 1 && infoCustomer.getVouchers.includes(ObjectID("64378d6618c77f00128abe93"))){
-                //     // Xử lý dữ liệu số điện thoại
-                //     const str = infoCustomer.phone
-                //     const removeFirst1 = `84${str.slice(1)}`;
+                if(salesChannel == 1 && Number(total) > 500000){
+                    console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
 
-                //     let dataOA = {
-                //         // phone:  `${removeFirst1}`,
-                //         phone: "84985199295",
-                //         templateData: {
-                //             "customer_name": infoCustomer.name,
-                //             "order_code": `C${Number(numberOfOrder+1)}`,
-                //             "price": total,
-                //             "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                //             "note": "Chi tiết xem link Winggo"
-                //         },
-                //         templateId: "257162",
-                //     }
-                //     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA);
-                // }
+                    // Xử lý dữ liệu số điện thoại
+                    const str = infoCustomer.phone
+                    const removeFirst1 = `84${str.slice(1)}`;
+
+                    let dataOA = {
+                        // phone:  `${removeFirst1}`,
+                        phone: "84985199295",
+                        templateData: {
+                            "customer_name": infoCustomer.name,
+                            "order_code": `C${Number(numberOfOrder+1)}`,
+                            "price": total,
+                            "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                            "note": "Chi tiết xem link Winggo"
+                        },
+                        templateId: "257162",
+                    }
+                    let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
+                    console.log(infoOA)
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
