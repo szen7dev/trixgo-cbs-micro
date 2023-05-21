@@ -770,7 +770,7 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                if(salesChannel == 1 && Number(total) > 50000){
+                if(salesChannel == 1 && Number(total) > 500000){
                     console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
 
                     // Xử lý dữ liệu số điện thoại
