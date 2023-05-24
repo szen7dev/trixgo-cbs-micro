@@ -16,6 +16,8 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  * import inter-coll, exter-coll
  */
 const PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
+const PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
+
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
 
@@ -33,7 +35,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, parentID, name, sign, userID }) {
+    insert({ projectID, parentID, name, sign, userID, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(projectID))
@@ -43,7 +45,21 @@ class Model extends BaseModel {
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let dataInsert = { project: projectID, name, sign, userCreate: userID, admins: [userID], members: [userID] };
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID
+                })
+
+                companyID = infoProject?.data?.company
+
+                let dataInsert = { 
+                    company: companyID, 
+                    project: projectID, 
+                    name, 
+                    sign, 
+                    userCreate: userID, 
+                    admins: [userID],
+                     members: [userID] 
+                };
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }

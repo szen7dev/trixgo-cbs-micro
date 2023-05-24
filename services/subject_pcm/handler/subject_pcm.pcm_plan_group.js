@@ -28,7 +28,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.insert({
-                    projectID, parentID, name, sign, userID
+                    projectID, parentID, name, sign, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
