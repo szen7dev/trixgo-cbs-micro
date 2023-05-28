@@ -178,9 +178,18 @@ class Model extends BaseModel {
 
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
 
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name);
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + stringUtils.removeAccents(description);
+                }
+
                 dataInsert = {
                     name,
-                    namecv: stringUtils.removeAccents(name),
+                    namecv: convertStr,
+                    // namecv: stringUtils.removeAccents(name),
                     company : companyID,
                     project : projectID,
                     group   : groupID,
