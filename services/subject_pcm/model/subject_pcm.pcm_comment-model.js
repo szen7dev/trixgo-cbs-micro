@@ -305,19 +305,25 @@ class Model extends BaseModel {
                     dataInsert.receivers = receiversID;
                 } else{
                     if(!checkObjectIDs([parentID])) {
-                        const receivers = infoTask.accessUsers?.filter(user =>
-                            user.toString() !== authorID.toString()
-                        );
-                        dataInsert.receivers = receivers;
+                        // const receivers = infoTask.accessUsers?.filter(user => user.toString() );
+                        // dataInsert.receivers = receivers;
+                        dataInsert.receivers = infoTask.accessUsers;
                     } else {
                         const commentParent = await PCM_COMMENT_COLL
                             .findById(parentID)
-                            .select('author')
+                            .select('author receivers')
                             .lean();
 
-                        dataInsert.receivers = [commentParent?.author];
+                        // dataInsert.receivers = [commentParent?.author];
+                        dataInsert.receivers = commentParent?.receivers
                     }
                 }
+                // console.log('============Kiểm tra xem có người thực thi hành động hay chưa==========')
+                // console.log(dataInsert.receivers)
+                if(!dataInsert.receivers.includes(authorID)){
+                    dataInsert.receivers.push(authorID)
+                }
+                // console.log(dataInsert.receivers)
 
                 if(content) {
                     dataInsert.content = content;
@@ -515,10 +521,6 @@ class Model extends BaseModel {
                 let { name: taskName, sign: taskSign, author, project } = infoTask;
                 let arrReceiver = dataInsert.receivers;
 
-                // related = related.map(userID => userID.toString());
-                // let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
-                // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
-
                 switch (infoAfterInsert.type) {
                     case 1:
                         languageKey     = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
@@ -583,25 +585,6 @@ class Model extends BaseModel {
                         web_url: webUrl,
                         env: ENV_DEVICE_APP_FNB
                     });
-
-                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    //     content,
-                    //     receivers: arrReceiver,
-                    //     project: project?._id?.toString(),
-                    //     contract: contract?.toString(),
-                    //     path: webUrl,
-                    //     languageKey: dataSend.languageKey,
-                    //     app: APP_KEYS.PCM_PLAN_TASK,
-                    //     mainColl: {
-                    //         kind: "pcm_plan_task",
-                    //         item: taskID
-                    //     },
-                    //     subColl: {
-                    //         kind: "pcm_comment",
-                    //         item: infoAfterInsert._id
-                    //     },
-                    //     type: 1 // InApp (Socket)
-                    // })
                 }
 
                 infoAfterInsert = await PCM_COMMENT_COLL
@@ -919,11 +902,14 @@ class Model extends BaseModel {
     }) {
         return new Promise(async (resolve) => {
             switch (switchType) {
+                // Tạo comment cho Task
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.insertCommentTask({
                         taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, isOfficial, companyOfAuthor, ctx
                     }))
                     break;
+
+                // Tạo comment cho Project
                 case this.SWITCH_TYPE.PROJECT:
                     resolve(await this.insertCommentProject({
                         projectID, authorID, content, files, images, select, populates, bizfullname, ctx
