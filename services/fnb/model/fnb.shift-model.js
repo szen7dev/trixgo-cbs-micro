@@ -176,7 +176,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        // console.log({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
+        console.log({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -241,8 +241,8 @@ class Model extends BaseModel {
                 //     return resolve({ error: true, message: 'Bạn không có quyền', keyError: KEY_ERROR.UPDATE_FAILED })
                 // }
 
-                if(FNB_ACC.man.includes(email.toString())){
-                    // console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
+                if(FNB_ACC.man.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
+                    // console.log('==========111111111111')
                     if(staffsID && checkObjectIDs(staffsID)){
                         dataInUpdate.staffs = staffsID;
                     }
@@ -266,35 +266,36 @@ class Model extends BaseModel {
                         dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.officialStaffSalar)*Number(subWorkingHours)*Number(subStaffsID.length)
                     }
 
-                    if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
+                    if(!isNaN(numberOfOpeningSizeM)){
                         dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
                     }
     
-                    if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
+                    if(!isNaN(numberOfOpeningSizeL)){
                         dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
                     }
     
-                    if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
+                    if(!isNaN(numberOfEotSizeM)){
                         dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
                     }
     
-                    if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
+                    if(!isNaN(numberOfEotSizeL)){
                         dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
                     }
                 }else{
-                    if(numberOfOpeningSizeM && !isNaN(numberOfOpeningSizeM)){
+                    // console.log('==========2222222222222222')
+                    if(!isNaN(numberOfOpeningSizeM)){
                         dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
                     }
     
-                    if(numberOfOpeningSizeL && !isNaN(numberOfOpeningSizeL)){
+                    if(!isNaN(numberOfOpeningSizeL)){
                         dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
                     }
     
-                    if(numberOfEotSizeM && !isNaN(numberOfEotSizeM)){
+                    if(!isNaN(numberOfEotSizeM)){
                         dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
                     }
     
-                    if(numberOfEotSizeL && !isNaN(numberOfEotSizeL)){
+                    if(!isNaN(numberOfEotSizeL)){
                         dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
                     }
                 }
@@ -308,7 +309,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT LẠI DOANH SỐ CỦA NHÂN VIÊN
                  * CẬP NHẬT LẠI CHI PHÍ GIỜ LÀM CỦA NHÂN VIÊN
                  */
-                if(FNB_ACC.man.includes(email.toString())){
+                if(FNB_ACC.man.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
                     // console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
                     // Doanh số nhân viên
                     let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
