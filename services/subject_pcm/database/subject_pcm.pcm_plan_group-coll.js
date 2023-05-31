@@ -12,11 +12,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
     },
     project: {
         type: Schema.Types.ObjectId,
-        ref : "department"                  
+        ref : "department"
     },
     contract: {
         type: Schema.Types.ObjectId,
-        ref : "contract"                  
+        ref : "contract"
     },
     /**
      * Công việc

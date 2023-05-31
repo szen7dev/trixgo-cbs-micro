@@ -174,4 +174,32 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: MinhVH
+     * Func: Download files in group
+     * Date: 24/05/2023
+     */
+    downloadFilesInGroup: {
+        auth: 'required',
+        timeout: 600000,
+        params: {
+            groupID: { type: 'string' },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { groupID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await PCM_FILE_MODEL.downloadFilesInGroup({
+                    groupID, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }

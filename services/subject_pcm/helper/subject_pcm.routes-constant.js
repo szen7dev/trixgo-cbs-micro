@@ -61,6 +61,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     PCM_FILE_GROUP_BY_CONTRACT                          : `${BASE_ROUTE}${PCM_FILE}/group-by-contract`,
 
     PCM_FILES_DOWNLOAD                                  : `${BASE_ROUTE}${PCM_FILE}/downloads`,
+    PCM_FILES_DOWNLOAD_IN_GROUP                         : `${BASE_ROUTE}${PCM_FILE}/downloads-in-group`,
 }
 
 exports.CF_ROUTINGS_SUBJECT_PCM = CF_ROUTINGS_SUBJECT_PCM;

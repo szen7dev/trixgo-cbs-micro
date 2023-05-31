@@ -13,11 +13,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				// const { _id: userID } = ctx.meta.infoUser;
-                let { app, name, path, size, userID } = ctx.params;
+                const { app, name, path, size, userID } = ctx.params;
 
-                let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, path, size, userID });
-                return infoFileAfterInsert;
+                return await FILE__CORE_MODEL.insert({ app, name, path, size, userID });
             } catch (error) {
                 return { error: true, message: error.message };
             }
@@ -34,10 +32,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { fileID, status, description } = ctx.params;
+                const { fileID, status, description } = ctx.params;
 
-                let infoFileAfterUpdate = await FILE__CORE_MODEL.update({ fileID, status, description, userID });
-                return infoFileAfterUpdate;
+                return await FILE__CORE_MODEL.update({ fileID, status, description, userID });
             } catch (error) {
                 return { error: true, message: error.message };
             }
@@ -56,9 +53,7 @@ module.exports = {
                 const { _id: authorID } = ctx.meta.infoUser;
                 const { fileID, select, populates } = ctx.params;
 
-                const infoFile = await FILE__CORE_MODEL.getInfoFile({ authorID, fileID, select, populates });
-
-                return infoFile;
+                return await FILE__CORE_MODEL.getInfoFile({ authorID, fileID, select, populates });
             } catch (error) {
                 return { error: true, message: error.message, status: 500 };
             }
@@ -75,8 +70,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { status, userID } = ctx.params;
 
-                let listFiles = await FILE__CORE_MODEL.getListFileWithStatus({ status, userID });
-                return listFiles;
+                return await FILE__CORE_MODEL.getListFileWithStatus({ status, userID });
             } catch (error) {
                 return { error: true, message: error.message };
             }

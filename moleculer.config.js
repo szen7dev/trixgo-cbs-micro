@@ -66,23 +66,22 @@ module.exports = {
 	cacher: {
 		type: "Redis",
 		options: {
-		  // Prefix for keys
-		  prefix: "MOL",
-		  // set Time-to-live to sec.
-		  ttl: 10 * 24 * 60 * 60,
-		  // Turns Redis client monitoring on.
-		  monitor: false,
-		  // Redis settings3
-		  redis: {
-			host: REDIS_SEPERATOR.HOST,
-			port: REDIS_SEPERATOR.PORT,
-			password: REDIS_SEPERATOR.PWD,
-			// db: 0
-		  },
-		  lock: {
-			ttl: 15, //the maximum amount of time you want the resource locked in seconds
-			staleTime: 10, // If the TTL is less than this number, means that the resources are staled
-		  },
+			// Prefix for keys
+			prefix: "MOL",
+			// set Time-to-live to sec.
+			ttl: 10 * 24 * 60 * 60,
+			// Turns Redis client monitoring on.
+			monitor: false,
+			// Redis settings3
+			redis: {
+				host: REDIS_SEPERATOR.HOST,
+				port: REDIS_SEPERATOR.PORT,
+				password: REDIS_SEPERATOR.PWD,
+			},
+			lock: {
+				ttl: 15, //the maximum amount of time you want the resource locked in seconds
+				staleTime: 10, // If the TTL is less than this number, means that the resources are staled
+			},
 			//   4308215003496
 		  	// Redlock settings
 		//   redlock: {

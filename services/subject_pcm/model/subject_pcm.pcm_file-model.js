@@ -6,31 +6,39 @@
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment');
 const uuidv4                            = require('uuid').v4;
-// const fs                                = require('node:fs');
 const fs                                = require('fs');
 const AWS                               = require('aws-sdk');
 const s3                                = require('@auth0/s3');
 const compressing                       = require('compressing');
 const rimraf                            = require('rimraf');
 const path                              = require('path');
+const PromisePool                       = require('@supercharge/promise-pool');
 
 /**
  * Tools
  */
 const BaseModel                         = require('../../../tools/db/base_model');
-const { KEY_ERROR }			            = require('../../../tools/keys');
+const { KEY_ERROR, APP_KEYS }           = require('../../../tools/keys');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { config } 	                    = require('../../../tools/s3/config');
 const {
+    nonAccentVietnamese,
+    replaceSpaceWithChar
+} = require('../../../tools/utils/string_utils');
+const {
     checkObjectIDs,
     IsJsonString,
-    validateParamsObjectID
+    validateParamsObjectID,
+    getExtension,
 } = require('../../../tools/utils/utils');
-
 const {
     downloadFileS3,
     uploadFileS3,
+    uploadFileS3V2,
+    downloadFileS3V2,
     zipFileToS3,
+    copyFileS3,
+    listObjectsS3,
 } = require('../../../tools/s3');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -58,18 +66,18 @@ class Model extends BaseModel {
           signatureVersion: 'v2',
         });
 
-        this.client = s3.createClient({
-            maxAsyncS3: 20,     // this is the default
-            s3RetryCount: 3,    // this is the default
-            s3RetryDelay: 1000, // this is the default
-            multipartUploadThreshold: 20971520, // this is the default (20 MB)
-            multipartUploadSize: 15728640, // this is the default (15 MB)
-            s3Options: {
-                accessKeyId : config.aws_access_key_id,
-                secretAccessKey : config.aws_secret_access_key,
-                region: config.aws_region,
-            },
-        });
+        // this.client = s3.createClient({
+        //     maxAsyncS3: 20,     // this is the default
+        //     s3RetryCount: 3,    // this is the default
+        //     s3RetryDelay: 1000, // this is the default
+        //     multipartUploadThreshold: 20971520, // this is the default (20 MB)
+        //     multipartUploadSize: 15728640, // this is the default (15 MB)
+        //     s3Options: {
+        //         accessKeyId : config.aws_access_key_id,
+        //         secretAccessKey : config.aws_secret_access_key,
+        //         region: config.aws_region,
+        //     },
+        // });
     }
 
     /**
@@ -822,6 +830,102 @@ class Model extends BaseModel {
                 const result = await zipFileToS3(files, `${taskID}-${uuidv4()}`);
 
                 return resolve({ error: false, data: result, status: 200 });
+            } catch(error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    downloadFilesInGroup({ groupID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const group = await PCM_PLAN_GROUP__COLL
+                    .findOne({ _id: groupID })
+                    .select('name sign company project')
+                    .populate('project', 'company')
+                    .lean();
+
+                const groupsChild = await PCM_PLAN_GROUP__COLL
+                    .find({ parent: groupID })
+                    .select('name sign')
+                    .lean();
+
+                const folderRootName = replaceSpaceWithChar(nonAccentVietnamese(group.name));
+                const foldersChild = groupsChild.map(group => ({
+                    _id: group._id.toString(),
+                    name: replaceSpaceWithChar(nonAccentVietnamese(group.name), '_')
+                }));
+
+                const bucketNameDes = `${config.bucketDemo}`;
+                const destFolderKey = `files/temporary_uploads/${folderRootName}_${userID}`;
+
+                const folderGroupParentParams = {
+                    Bucket: bucketNameDes,
+                    Key: `${destFolderKey}/`,
+                    Body: '',
+                };
+                // Create folder group parent
+                await uploadFileS3V2(folderGroupParentParams);
+
+                const { errors } = await PromisePool
+                    .for(foldersChild)
+                    .withConcurrency(10)
+                    .process(async childGroup => {
+                        const folderChildName = childGroup.name;
+                        const folderGroupChildParams = {
+                            Bucket: bucketNameDes,
+                            Key: `${destFolderKey}/${folderChildName}/`,
+                            Body: '',
+                        };
+                        // Create folder group child
+                        await uploadFileS3V2(folderGroupChildParams);
+
+                        const tasks = await PCM_PLAN_TASK__COLL
+                            .find({ group: childGroup._id })
+                            .select('_id name namecv')
+                            .lean();
+
+                        return await PromisePool
+                            .for(tasks)
+                            .withConcurrency(10)
+                            .process(async task => {
+                                const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
+                                const folderTaskParams = {
+                                    Bucket: bucketNameDes,
+                                    Key: `${destFolderKey}/${folderChildName}/${taskName}/`,
+                                    Body: '',
+                                };
+                                // Create folder task
+                                await uploadFileS3V2(folderTaskParams);
+
+                                const filesByTask = await PCM_FILE__COLL
+                                    .find({ task: task._id })
+                                    .select('name nameOrg path')
+                                    .lean();
+
+                                // Copy file to folder task
+                                return await PromisePool
+                                    .for(filesByTask)
+                                    .withConcurrency(10)
+                                    .process(async file => {
+                                        const copyFileParams = {
+                                            Bucket: `${config.bucketDemo}`,
+                                            CopySource: `${config.bucket}${file.path}`,
+                                            Key: `${destFolderKey}/${folderChildName}/${taskName}/${file.nameOrg || file.name}`,
+                                        };
+                                        await copyFileS3(copyFileParams);
+                                    });
+                            });
+                    });
+
+                const linkDownload = await downloadFileS3V2({
+                    folderName: `${destFolderKey}/`,
+                    bucketName: bucketNameDes,
+                    fileName: `${folderRootName}_${userID}.zip`,
+                    zipTo: `archive`,
+                });
+
+                return resolve({ data: linkDownload, errors });
             } catch(error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

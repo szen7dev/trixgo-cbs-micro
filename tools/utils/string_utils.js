@@ -87,6 +87,10 @@ exports.replaceAll = function (str, find, replace) {
     return str;
 };
 
+exports.replaceSpaceWithChar = function (str, char = '') {
+    return str.replace(/\s/g, char);
+}
+
 exports.validURL = function (str) {
     var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
     return regexp.test(str);
