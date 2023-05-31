@@ -1,12 +1,14 @@
-const fs            = require('fs');
-const stream        = require('stream');
-const path          = require('path');
-const uuidv4        = require('uuid').v4;
-const AWS           = require('aws-sdk');
-const s3            = require('@auth0/s3');
-const archiver      = require('archiver');
-const PromisePool   = require('@supercharge/promise-pool');
-const { config }    = require('./config');
+const fs                        = require('fs');
+const stream                    = require('stream');
+const path                      = require('path');
+const uuidv4                    = require('uuid').v4;
+const AWS                       = require('aws-sdk');
+const s3                        = require('@auth0/s3');
+const archiver                  = require('archiver');
+const PromisePool               = require('@supercharge/promise-pool');
+const { config }                = require('./config');
+// const { nonAccentVietnamese }   = require('../utils/string_utils');
+// const { getExtension }          = require('../utils/utils');
 
 AWS.config.update({
     accessKeyId: config.aws_access_key_id,
@@ -22,12 +24,16 @@ const s3Client = s3.createClient({
     multipartUploadThreshold: 20971520, // this is the default (20 MB)
     multipartUploadSize: 15728640, // this is the default (15 MB)
     s3Options: {
-        accessKeyId : config.aws_access_key_id,
-        secretAccessKey : config.aws_secret_access_key,
+        accessKeyId: config.aws_access_key_id,
+        secretAccessKey: config.aws_secret_access_key,
         region: config.aws_region,
     },
 });
 
+/**
+ * @deprecated
+ * Use uploadFileS3V2 instead
+ */
 const uploadFileS3 = (pathFile, key) => {
     return new Promise(async resolve => {
         const fileContent = fs.readFileSync(pathFile);
@@ -39,7 +45,6 @@ const uploadFileS3 = (pathFile, key) => {
             ACL: 'public-read',
             Key: key, // File name you want to save as in S3
             Body: fileContent,
-            // ContentType: 'application/vnd.ms-excel.sheet.macroEnabled.12',
             // Expires: config.signedUrlExpireSeconds,
         };
 
@@ -53,6 +58,10 @@ const uploadFileS3 = (pathFile, key) => {
     })
 }
 
+/**
+ * @deprecated
+ * Use downloadFileS3V2 instead
+ */
 const downloadFileS3 = async (pathDownload, fileName, filePath, fileNameLocal) => {
     return new Promise(async resolve => {
         const params = {
@@ -77,6 +86,135 @@ const downloadFileS3 = async (pathDownload, fileName, filePath, fileNameLocal) =
         downloader.on('end', function() {
             console.log("-----download done");
             resolve({ error: false, message: 'download done' });
+        });
+    })
+}
+
+const uploadFileS3V2 = (uploadParams) => {
+    return new Promise(resolve => {
+        const bucketName = `${config.bucketDemo}`;
+        const key = `files/temporary_uploads`;
+
+        const params = {
+            Bucket: bucketName,
+            Key: key,
+            ACL: 'public-read',
+            ...uploadParams,
+        };
+
+        // Uploading files to the bucket
+        s3Object.upload(params, function(err, data) {
+            if (err) return resolve(err);
+
+            console.log(`File uploaded successfully. ${data.Location}`);
+            resolve(data);
+        });
+    })
+}
+
+const downloadFileS3V2 = (params) => {
+    return new Promise(async resolve => {
+        const KeyDefault = `${uuidv4()}-${Date.now()}.zip`; // File name you want to save as in S3
+
+        const { folderName, fileName, zipTo, bucketName = config.bucketDemo } = params;
+
+        // Set the parameters for listing objects in the folder
+        const listObjectsParams = {
+            Bucket: bucketName,
+            Prefix: folderName
+        };
+
+        // List objects in the folder
+        s3Object.listObjectsV2(listObjectsParams, async (err, data) => {
+            if (err) {
+                console.error('Error listing objects:', err);
+            } else {
+                // Create a new archiver instance
+                const archive = archiver('zip', {
+                    zlib: { level: 9 } // Set compression level (optional)
+                });
+
+                const passThrough = new stream.PassThrough();
+
+                const params = {
+                    Bucket: bucketName,
+                    Key: zipTo ? `${zipTo}/${fileName}` : `files/temporary_uploads/${KeyDefault}`,
+                    Body: passThrough,
+                    ACL: 'public-read',
+                    ContentType: 'application/zip',
+                };
+
+                s3Object.upload(params, function(err, data) {
+                    if (err) throw err;
+
+                    console.log(`File uploaded successfully. ${data.Location}`);
+                    resolve(data.Location);
+                });
+
+                // Pipe the archive to the output stream
+                archive.pipe(passThrough);
+
+                // Iterate through each object in the folder and add it to the archive
+                await PromisePool
+                    .for(data.Contents)
+                    .withConcurrency(10)
+                    .process(async object => {
+                        const getObjectParams = {
+                            Bucket: bucketName,
+                            Key: object.Key
+                        };
+                        const response = await s3Object.getObject(getObjectParams).promise();
+                        archive.append(response.Body, { name: object.Key });
+                    })
+
+                // Finalize the archive
+                archive.finalize();
+            }
+        });
+    });
+}
+
+/**
+ *
+ * Example:
+    Bucket: 'trx-demo-003',
+    CopySource: 'trx-main/root/storage/5dfe4b9051dc622100bb9d89/6046ac97b55525368b105d62/633c0c684a8b661cf2034aeb/6344b456c5cb9e2fe1887260/image.png___d1133192-2b21-48a2-99c7-db9624c3020f.png',
+    Key: 'files/temp/vhm/QUAN_LY_DỐI_TAC/image.png___d1133192-2b21-48a2-99c7-db9624c3020f-new.png'
+*/
+const copyFileS3 = (copyParams) => {
+    return new Promise(resolve => {
+        const bucketName = `${config.bucketDemo}`;
+
+        const params = {
+            Bucket: bucketName,
+            ACL: 'public-read',
+            ...copyParams
+        };
+
+        // Copy files to the bucket
+        s3Object.copyObject(params, function(err, data) {
+            if (err) return resolve(err);
+
+            console.log(`Copy file successfully`);
+            resolve(data);
+        });
+    });
+}
+
+const listObjectsS3 = (listParams) => {
+    return new Promise(resolve => {
+        const bucketName = `${config.bucketDemo}`;
+        const bucketPath = `${config.bucketPath}/`;
+
+        const params = {
+            Bucket: bucketName,
+            Prefix: bucketPath,
+            ...listParams
+        };
+
+        s3Object.listObjectsV2(params, function(err, data) {
+            if (err) return resolve(err);
+            resolve(data);
         });
     })
 }
@@ -137,5 +275,9 @@ const zipFileToS3 = async (files, key) => {
 module.exports = {
     uploadFileS3,
     downloadFileS3,
+    uploadFileS3V2,
+    downloadFileS3V2,
+    copyFileS3,
+    listObjectsS3,
     zipFileToS3,
 }

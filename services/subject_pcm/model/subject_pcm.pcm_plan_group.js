@@ -30,7 +30,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert group 
+     * Name: insert group
      * Author: Depv
      * Code:
      */
@@ -80,7 +80,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update group 
+     * Name: update group
      * Author: Depv
      * Code:
      */
@@ -126,7 +126,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(image)){
                     dataInUpdate.image = image;
                 }
-                
+
                 /**
                  * Di chuyển thư mục
                  */
@@ -148,19 +148,19 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: remove group 
+     * Name: remove group
      * Author: Depv
      * Code:
      */
 
     /**
-     * Name: remove many 
+     * Name: remove many
      * Author: Depv
      * Code:
      */
 
     /**
-     * Name: get info user_pcm_plan_group 
+     * Name: get info user_pcm_plan_group
      * Author: Depv
      * Code:
      */
@@ -197,7 +197,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách user_pcm_plan_group 
+     * Name  : Danh sách user_pcm_plan_group
      * Author: Depv
      * Code  :
      */
@@ -249,7 +249,7 @@ class Model extends BaseModel {
                  */
                 if(isShowAll == 1){
                     delete conditionObj.$or;
-                 }
+                }
 
                 if(projectID){
                     conditionObj.project = projectID;
@@ -263,8 +263,6 @@ class Model extends BaseModel {
                         conditionObj.parent = { $exists: false };
                     }
                 }
-
-                console.log(conditionObj)
 
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -302,7 +300,7 @@ class Model extends BaseModel {
 
                     conditionObj  = dataPagingAndSort.data.find;
 					sortBy        = dataPagingAndSort.data.sort;
-				}else{
+				} else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }

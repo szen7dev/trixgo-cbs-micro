@@ -230,9 +230,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     let pathS3      = '';
     let newFileName = '';
 
-    const SPECIAL_CASE = ['in-project'];
-
-    if(SPECIAL_CASE.includes(typeUpload)) {
+    if(['in-project'].includes(typeUpload)) {
         const result = getPathByType({
             typeUpload, companyID, projectID
         })
