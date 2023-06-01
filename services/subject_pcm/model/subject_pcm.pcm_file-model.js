@@ -906,15 +906,15 @@ class Model extends BaseModel {
                     const { error, data } = await this.createFolderTasksByGroup({
                         groupID: group._id,
                         bucket: bucketNameDes,
-                        key: `${destFolderKey}/`
+                        key: `${destFolderKey}/`,
                     });
-                    if(error) return resolve({ error: true, message: error.message, status: 500 });
+                    if(error) return resolve({ error: true, message: 'Create folder failed', status: 500 });
 
                     await PromisePool
                         .for(data.tasks)
                         .withConcurrency(10)
                         .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
-                        .process(async task => {
+                        .process(task => {
                             const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
                             return this.copyFileByTask({
                                 taskID: task._id,
