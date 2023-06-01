@@ -857,7 +857,8 @@ class Model extends BaseModel {
                 }));
 
                 const bucketNameDes = `${config.bucketDemo}`;
-                const destFolderKey = `files/temporary_uploads/${folderRootName}_${userID}`;
+                const destFolderKey = `archive/${folderRootName}_${userID}`;
+                const errors = [];
 
                 const folderGroupParentParams = {
                     Bucket: bucketNameDes,
@@ -867,69 +868,131 @@ class Model extends BaseModel {
                 // Create folder group parent
                 await uploadFileS3V2(folderGroupParentParams);
 
-                const { errors } = await PromisePool
-                    .for(foldersChild)
-                    .withConcurrency(10)
-                    .process(async childGroup => {
-                        const folderChildName = childGroup.name;
-                        const folderGroupChildParams = {
-                            Bucket: bucketNameDes,
-                            Key: `${destFolderKey}/${folderChildName}/`,
-                            Body: '',
-                        };
-                        // Create folder group child
-                        await uploadFileS3V2(folderGroupChildParams);
+                if(foldersChild.length) {
+                    await PromisePool
+                        .for(foldersChild)
+                        .withConcurrency(10)
+                        .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
+                        .process(async childGroup => {
+                            const folderChildName = childGroup.name;
+                            const folderGroupChildParams = {
+                                Bucket: bucketNameDes,
+                                Key: `${destFolderKey}/${folderChildName}/`,
+                                Body: '',
+                            };
+                            // Create folder group child
+                            await uploadFileS3V2(folderGroupChildParams);
 
-                        const tasks = await PCM_PLAN_TASK__COLL
-                            .find({ group: childGroup._id })
-                            .select('_id name namecv')
-                            .lean();
-
-                        return await PromisePool
-                            .for(tasks)
-                            .withConcurrency(10)
-                            .process(async task => {
-                                const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
-                                const folderTaskParams = {
-                                    Bucket: bucketNameDes,
-                                    Key: `${destFolderKey}/${folderChildName}/${taskName}/`,
-                                    Body: '',
-                                };
-                                // Create folder task
-                                await uploadFileS3V2(folderTaskParams);
-
-                                const filesByTask = await PCM_FILE__COLL
-                                    .find({ task: task._id })
-                                    .select('name nameOrg path')
-                                    .lean();
-
-                                // Copy file to folder task
-                                return await PromisePool
-                                    .for(filesByTask)
-                                    .withConcurrency(10)
-                                    .process(async file => {
-                                        const copyFileParams = {
-                                            Bucket: `${config.bucketDemo}`,
-                                            CopySource: `${config.bucket}${file.path}`,
-                                            Key: `${destFolderKey}/${folderChildName}/${taskName}/${file.nameOrg || file.name}`,
-                                        };
-                                        await copyFileS3(copyFileParams);
-                                    });
+                            const { error, data } = await this.createFolderTasksByGroup({
+                                groupID: childGroup._id,
+                                bucket: bucketNameDes,
+                                key: `${destFolderKey}/${folderChildName}/`
                             });
+
+                            return !error && await PromisePool
+                                .for(data.tasks)
+                                .withConcurrency(10)
+                                .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
+                                .process(async task => {
+                                    const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
+                                    return this.copyFileByTask({
+                                        taskID: task._id,
+                                        bucket: bucketNameDes,
+                                        key: `${destFolderKey}/${folderChildName}/${taskName}/`
+                                    });
+                                });
+                        });
+                } else {
+                    const { error, data } = await this.createFolderTasksByGroup({
+                        groupID: group._id,
+                        bucket: bucketNameDes,
+                        key: `${destFolderKey}/`
                     });
+                    if(error) return resolve({ error: true, message: error.message, status: 500 });
+
+                    await PromisePool
+                        .for(data.tasks)
+                        .withConcurrency(10)
+                        .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
+                        .process(async task => {
+                            const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
+                            return this.copyFileByTask({
+                                taskID: task._id,
+                                bucket: bucketNameDes,
+                                key: `${destFolderKey}/${taskName}/`
+                            });
+                        });
+                }
 
                 const linkDownload = await downloadFileS3V2({
                     folderName: `${destFolderKey}/`,
                     bucketName: bucketNameDes,
                     fileName: `${folderRootName}_${userID}.zip`,
-                    zipTo: `archive`,
+                    zipTo: `files/temporary_uploads`,
                 });
 
                 return resolve({ data: linkDownload, errors });
             } catch(error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
+    }
+
+    createFolderTasksByGroup({ groupID, key, bucket }) {
+        return new Promise(async resolve => {
+            const tasks = await PCM_PLAN_TASK__COLL
+                .find({ group: groupID })
+                .select('_id name namecv')
+                .lean();
+
+            if(!tasks.length) return resolve({ error: true, data: [] });
+
+            const { results, errors } = await PromisePool
+                .for(tasks)
+                .withConcurrency(10)
+                .process(async task => {
+                    const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
+                    const folderTaskParams = {
+                        Bucket: bucket,
+                        Key: `${key}${taskName}/`,
+                        Body: '',
+                    };
+                    // Create folder task
+                    await uploadFileS3V2(folderTaskParams);
+                });
+
+            return resolve({ error: false, data: { results, tasks }, errors, status: 200 });
+        });
+    }
+
+    copyFileByTask({ taskID, bucket, key }) {
+        return new Promise(async resolve => {
+            try {
+                const files = await PCM_FILE__COLL
+                    .find({ task: taskID })
+                    .select('name nameOrg path')
+                    .lean();
+
+                if(!files.length) return resolve({ error: true, data: [] });
+
+                const { results, errors } = await PromisePool
+                    .for(files)
+                    .withConcurrency(10)
+                    .process(async file => {
+                        const copyFileParams = {
+                            Bucket: bucket,
+                            CopySource: `${config.bucket}${file.path}`,
+                            Key: `${key}${file.nameOrg || file.name}`,
+                        };
+                        await copyFileS3(copyFileParams);
+                    });
+
+                return resolve({ error: false, data: { results, files }, errors, status: 200 });
+            } catch(error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        });
     }
 }
 
