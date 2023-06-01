@@ -3026,7 +3026,7 @@ class Model extends BaseModel {
 
                         // SỐ LIỆU KHÁCH HÀNG
                         if(option == 2){
-                            if(FNB_ACC.bod.includes(email.toString())){
+                            if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
                                 /**
                                  * Mốc thời gian
                                  */
