@@ -182,7 +182,7 @@ module.exports = {
      */
     downloadFilesInGroup: {
         auth: 'required',
-        timeout: 600000,
+        timeout: 0,
         params: {
             groupID: { type: 'string' },
         },
