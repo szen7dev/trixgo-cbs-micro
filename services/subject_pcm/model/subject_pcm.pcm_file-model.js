@@ -836,26 +836,37 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Tải file trong GroupID
+     */
     downloadFilesInGroup({ groupID, userID }) {
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * 1-Cấn thêm 1 bước để xóa folder achive vào nửa đêm để dọn rác
+                 */
+                // Thông tin group
                 const group = await PCM_PLAN_GROUP__COLL
                     .findOne({ _id: groupID })
                     .select('name sign company project')
                     .populate('project', 'company')
                     .lean();
 
+                // Group con của group (cấp 1)
                 const groupsChild = await PCM_PLAN_GROUP__COLL
                     .find({ parent: groupID })
                     .select('name sign')
                     .lean();
 
+                // Lấy tên group loại bỏ tiếng việt
                 const folderRootName = replaceSpaceWithChar(nonAccentVietnamese(group.name));
                 const foldersChild = groupsChild.map(group => ({
                     _id: group._id.toString(),
                     name: replaceSpaceWithChar(nonAccentVietnamese(group.name), '_')
                 }));
 
+                // Tạo đường dẫn để chứa file và Zip (để đặt trên S3)
                 const bucketNameDes = `${config.bucketDemo}`;
                 const destFolderKey = `archive/${folderRootName}_${userID}`;
                 const errors = [];
@@ -865,9 +876,12 @@ class Model extends BaseModel {
                     Key: `${destFolderKey}/`,
                     Body: '',
                 };
-                // Create folder group parent
+
+
+                // Create folder group parent (tạo folder trên S3 theo tên chỉ định)
                 await uploadFileS3V2(folderGroupParentParams);
 
+                // Lặp qua các folder group con
                 if(foldersChild.length) {
                     await PromisePool
                         .for(foldersChild)
@@ -880,9 +894,11 @@ class Model extends BaseModel {
                                 Key: `${destFolderKey}/${folderChildName}/`,
                                 Body: '',
                             };
+
                             // Create folder group child
                             await uploadFileS3V2(folderGroupChildParams);
 
+                            // Tạo folder theo tên của TaskID
                             const { error, data } = await this.createFolderTasksByGroup({
                                 groupID: childGroup._id,
                                 bucket: bucketNameDes,
@@ -895,6 +911,8 @@ class Model extends BaseModel {
                                 .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
                                 .process(async task => {
                                     const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
+
+                                    // Đưa file của TaskID vào trong folder TaskID
                                     return this.copyFileByTask({
                                         taskID: task._id,
                                         bucket: bucketNameDes,
@@ -903,6 +921,8 @@ class Model extends BaseModel {
                                 });
                         });
                 } else {
+
+                    // Tạo folder theo tên của TaskID
                     const { error, data } = await this.createFolderTasksByGroup({
                         groupID: group._id,
                         bucket: bucketNameDes,
@@ -916,6 +936,8 @@ class Model extends BaseModel {
                         .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
                         .process(task => {
                             const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
+
+                             // Đưa file của TaskID vào trong folder TaskID
                             return this.copyFileByTask({
                                 taskID: task._id,
                                 bucket: bucketNameDes,
@@ -924,6 +946,7 @@ class Model extends BaseModel {
                         });
                 }
 
+                 // Download tổng thể (đã đóng gói theo hàm)
                 const linkDownload = await downloadFileS3V2({
                     folderName: `${destFolderKey}/`,
                     bucketName: bucketNameDes,
@@ -966,6 +989,7 @@ class Model extends BaseModel {
         });
     }
 
+    // Copy file của Tasks vào trong folder
     copyFileByTask({ taskID, bucket, key }) {
         return new Promise(async resolve => {
             try {
