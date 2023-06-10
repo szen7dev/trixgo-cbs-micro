@@ -125,7 +125,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
+    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -320,7 +320,13 @@ class Model extends BaseModel {
                  */
                 dataInsert.news = accessUsers.filter(userId => userId !== authorID);
 
-                let infoAfterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = null;
+                if(taskID) {
+                    infoAfterInsert = await this.updateById(taskID, dataInsert);
+                } else {
+                    infoAfterInsert = await this.insertData(dataInsert);
+                }
+
                 if(!infoAfterInsert) {
                     return resolve({
                         error: true,
