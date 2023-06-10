@@ -20,6 +20,7 @@ module.exports = {
             projectID        : { type: "string" },
             groupID          : { type: "string" },
             assigneeID       : { type: "string" },
+            taskID           : { type: "string", optional: true },
             authorAttachs    : { type: "array", optional: true },
             actualStartTime  : { type: "string", optional: true },
             type             : { type: "number", optional: true },
@@ -52,10 +53,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 
 				const { _id: authorID, bizfullname, email, fullname, company } = ctx.meta.infoUser;
-                const { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, select, populates } = ctx.params;
+                const { projectID, groupID, taskID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, select, populates, senderMail: { email, fullname }, company, ctx
+                    projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, select, populates, senderMail: { email, fullname }, company, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
