@@ -37,16 +37,6 @@ class BaseModel {
         this.coll = collection;
     }
 
-    updateById(id, updatedata) {
-        let coll = this.coll;
-        return new PROMISE(function (resolve) {
-            updatedata.modifyAt = timeUtils.getCurrentTime();
-            coll.update({_id: OBJECT_ID(id)}, updatedata, function (error) {
-                return resolve(error);
-            })
-        });
-    }
-
     /**
      *
      * @param {*} data
@@ -70,6 +60,20 @@ class BaseModel {
 
     /**
      *
+     * @param {*} id cập nhật
+     * @param {*} updatedata giá trị cập nhật
+     */
+    updateById(id, updatedata, opts = { new: true }) {
+        return new Promise(async resolve => {
+            updatedata.modifyAt = timeUtils.getCurrentTime();
+
+            const infoAfterUpdate = await this.coll.findByIdAndUpdate(id, updatedata, opts);
+            resolve(infoAfterUpdate);
+        })
+    }
+
+    /**
+     *
      * @param {*} condition  điều kiện
      * @param {*} updatedata giá trị cập nhật
      * @param {*} authorID   người cập nhật
@@ -78,7 +82,7 @@ class BaseModel {
         return new Promise(async resolve => {
             updatedata.modifyAt = timeUtils.getCurrentTime();
 
-            let infoAfterUpdate = await this.coll.findOneAndUpdate(condition, updatedata, { new: true });
+            const infoAfterUpdate = await this.coll.findOneAndUpdate(condition, updatedata, { new: true });
             resolve(infoAfterUpdate);
         })
     }

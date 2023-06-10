@@ -3280,6 +3280,188 @@ class Model extends BaseModel {
                                 return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                             }
                         }
+
+                        // PHÂN LOẠI DOANH SỐ
+                        if(option == 3){
+                            let conditionObj = { company: ObjectID(companyID) }
+
+                            let obj = JSON.parse(filterParams);
+                            // console.log(obj)
+
+                            let fundasID = obj.fundasID
+                            let shiftTypes = obj.shiftTypes
+                            let fromDate = obj.fromDate
+                            let toDate = obj.toDate
+                            let keyword = obj.keyword
+                            let salesChannels = obj.salesChannels
+                            let statuss = obj.statuss
+                            let isMistake = obj.isMistake
+                            let isDiscount = obj.isDiscount
+                            let isSalesoff = obj.isSalesoff
+                            let isCredit = obj.isCredit
+                            let isOffer = obj.isOffer
+                            let isNonResident = obj.isNonResident
+                            let isCustomerType = obj.isCustomerType
+
+                            if(fundasID && fundasID.length ){
+                                let arrFun = fundasID.map(item=>ObjectID(item))
+
+                                if(arrFun.length) {
+                                    conditionObj.funda = { $in: arrFun };
+                                }
+                            }else{
+                                let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                                let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                                if(fundasIDIsMember.length) {
+                                    conditionObj.funda = { $in: fundasIDIsMember };
+                                }else{
+                                    conditionObj.funda = { $in: [] }
+                                }
+                            }
+
+                            shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
+                            salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
+                            statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
+
+                            // Phân loại khác
+                            if(isMistake && isMistake == 1){
+                                conditionObj.numberOfMistakes = { $gt: 0 }
+                            }
+
+                            if(isNonResident && isNonResident == 1){
+                                conditionObj.nonResident = 2
+                            }
+
+                            if(isDiscount && isDiscount == 1){
+                                conditionObj.discount = { $gt: 0 }
+                            }
+
+                            if(isSalesoff && isSalesoff == 1){
+                                conditionObj.salesoff = { $gt: 0 }
+                            }
+
+                            if(isCredit && isCredit == 1){
+                                conditionObj.credit = { $gt: 0 }
+                            }
+
+                            if(isOffer && isOffer == 1){
+                                conditionObj.offer = { $gt: 0 }
+                            }
+
+                            if(isCustomerType && isCustomerType == 1){
+                                conditionObj.customerType = 1
+                            }
+                            if(isCustomerType && isCustomerType == 2){
+                                conditionObj.customerType = 2
+                            }
+
+                            // Phân loại theo thời khoảng
+                            if(fromDate && toDate){
+                                conditionObj.createAt = {
+                                    $gte: new Date(fromDate),
+                                    $lte: new Date(toDate),
+                                }
+                            }else{
+                                conditionObj.createAt = {
+                                    $gte: new Date(),
+                                    $lte: new Date(),
+                                }
+                            }
+
+                            if(keyword){
+                                keyword = keyword.split(" ");
+                                keyword = '.*' + keyword.join(".*") + '.*';
+                                const regSearch = new RegExp(keyword, 'i');
+
+                                conditionObj.$or = [
+                                    { name: regSearch },
+                                    { sign: regSearch },
+                                ]
+                            }
+                            // console.log(conditionObj)
+                            
+                            let sortBy = { "_id.funda": 1, "_id.salesChannel": 1 }
+                            let conditionGroup = {}, conditionPopulate = {}
+
+                            conditionGroup = {
+                                _id: {  salesChannel: "$salesChannel", funda: "$funda" },
+                                total: { $sum: "$total" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.funda',
+                                select: '_id name sign',
+                                model: 'funda'
+                            }
+
+                            let listData = await FNB_ORDER_COLL.aggregate([
+                                {
+                                    $match: conditionObj
+                                },
+                                {
+                                    $group: conditionGroup
+                                },
+                                {
+                                    $sort: sortBy
+                                }
+                            ])
+                            await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+                            // console.log(listData)
+
+                            // Modify the workbook.
+                            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_type.xlsx')))
+                            .then(async workbook => {
+
+                                if(fromDate && toDate){
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(1).cell(1).value(`Từ ${fromDate} tới ${toDate}`)
+                                }else{
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(1).cell(1).value(`Từ ${fromDate} tới ${toDate}`)
+                                }
+
+                                var i = 3
+                                listData?.forEach((item, index) => {
+                                    let str = ''
+                                    if(Number(item._id.salesChannel) === 1){
+                                        str = 'Off'
+                                    }else if(Number(item._id.salesChannel) === 2){
+                                        str = 'Grab'
+                                    }else if(Number(item._id.salesChannel) === 3){
+                                        str = 'Shopee'
+                                    }else if(Number(item._id.salesChannel) === 4){
+                                        str = 'Gojek'
+                                    }else if(Number(item._id.salesChannel) === 5){
+                                        str = 'Baemin'
+                                    }else if(Number(item._id.salesChannel) === 6){
+                                        str = 'Loship'
+                                    }else{
+                                        str = 'Bee'
+                                    }
+
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(i).cell(2).value(item._id.funda.name)
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(i).cell(3).value(`${item._id.funda._id}`)
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(i).cell(4).value(item._id.funda.sign)
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(i).cell(5).value(Number(item._id.salesChannel))
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(i).cell(6).value(str)
+                                    workbook.sheet(`PhanLoaiDoanhSo`).row(i).cell(7).value(Number(item.total))
+
+                                    i++
+                                })
+
+                                const now = new Date();
+                                const filePath = '../../../files/temporary_uploads/';
+                                const fileName = `BaoCaoDoanhSo_${now.getTime()}.xlsx`;
+                                const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                                await workbook.toFileAsync(pathWriteFile);
+                                const result = await uploadFileS3(pathWriteFile, fileName);
+
+                                fs.unlinkSync(pathWriteFile);
+                                return resolve({ error: false, data: result?.Location, status: 200 });
+
+                            })
+                        }
                     }
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
