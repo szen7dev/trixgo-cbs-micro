@@ -108,6 +108,7 @@ module.exports = {
             groupID         : { type: "string", optional: true },
             packageID       : { type: "string", optional: true },
             conversationID  : { type: "string", optional: true },
+            taskID          : { type: "string", optional: true },
             typeUpload      : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -115,7 +116,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let {
                     appID, mimeType, type, name, size, typeUpload,
-                    companyID, projectID, groupID, packageID, conversationID
+                    companyID, projectID, groupID, packageID, conversationID, taskID
                 } = ctx.params;
                 let { _id: userID } = ctx.meta.infoUser;
 
@@ -127,7 +128,10 @@ module.exports = {
                     packageID,
                     conversationID,
                     fileName: name,
-                    typeUpload
+                    typeUpload,
+                    otherIDs: {
+                        taskID,
+                    }
                 });
                 if(generatePathS3.error) return generatePathS3;
 
@@ -148,7 +152,7 @@ module.exports = {
                         nameOrg: name,
                         name: newFileName,
                         path: `/${process.env.AWS_BUCKET_PATH}${pathS3}/${newFileName}`,
-                        mimeType: mimeType,
+                        mimeType,
                         type,
                         size,
                         userID
