@@ -327,7 +327,6 @@ class Model extends BaseModel {
                     infoAfterInsert = await this.insertData(dataInsert);
                 }
 
-                console.log({ infoAfterInsert, taskID })
                 if(!infoAfterInsert) {
                     return resolve({
                         error: true,
