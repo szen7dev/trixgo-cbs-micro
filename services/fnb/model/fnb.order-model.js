@@ -59,7 +59,7 @@ class Model extends BaseModel {
 
     /**
      * Name: Insert
-     * Author: HiepNH
+     * Author: HiepNH--
      * Code: 24/11/2022
      */
     insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID, ctx }) {
