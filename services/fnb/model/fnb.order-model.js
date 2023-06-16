@@ -981,12 +981,12 @@ class Model extends BaseModel {
                     await that.updateCustomer({ customerID: oldCustomerID, userID })
 
                     // Cập nhật đơn hàng, sản phẩm
-                    await FNB_ORDER_PRODUCT_COLL.updateMany(
-                        {
-                            order: ObjectID(orderID),
-                        },
-                        {$set: {customer: customerID } }
-                     )
+                    // await FNB_ORDER_PRODUCT_COLL.updateMany(
+                    //     {
+                    //         order: ObjectID(orderID),
+                    //     },
+                    //     {$set: {customer: customerID } }
+                    //  )
                 }
 
                 // 4. Cập nhật thông tin cho khách hàng (áp dụng khi cập nhật trạng thái)
