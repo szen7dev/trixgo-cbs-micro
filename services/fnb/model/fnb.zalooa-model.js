@@ -15,7 +15,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 
 
 /**s
- * import inter-coll, exter-coll
+ * import inter-coll
  */
 const FNB_ZALOOA_COLL                         = require('../database/fnb.zalooa-coll');
 
