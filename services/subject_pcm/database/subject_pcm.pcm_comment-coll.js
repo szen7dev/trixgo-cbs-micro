@@ -4,12 +4,12 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
-    //_________Mã hiệu bằng số do hệ thống tự phát sinh
-    suid : {
-        type   : String,
-        require:  true,
-        unique : true
-    },
+    // //_________Mã hiệu bằng số do hệ thống tự phát sinh
+    // suid : {
+    //     type   : String,
+    //     require:  true,
+    //     unique : true
+    // },
     /**
      * Người nhận (cải thiện năng suất)
      * 1-author (khi tạo việc xong thì add vào)
