@@ -353,7 +353,8 @@ class Model extends BaseModel {
 
                 let conditionObj = { }
                 let sortBy;
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
+                // let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(customerID && checkObjectIDs(customerID)){
 
