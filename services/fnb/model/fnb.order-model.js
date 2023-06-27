@@ -3171,9 +3171,14 @@ class Model extends BaseModel {
                                     {
                                         $group: conditionGroup
                                     },
+                                    // {
+                                    //     $sort: {
+                                    //         "number": -1, "total": -1, "amount": -1
+                                    //     }
+                                    // },
                                     {
                                         $sort: {
-                                            "number": -1, "total": -1, "amount": -1
+                                           "total": -1
                                         }
                                     }
                                 ])
