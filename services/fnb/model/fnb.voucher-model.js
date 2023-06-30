@@ -341,7 +341,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getList({ companyID, userID, customerID, template, type, keyword, limit=10, lastestID, select, populates, isMember }) {
+    getList({ companyID, userID, customerID, template, type, keyword, limit=50, lastestID, select, populates, isMember }) {
         // console.log({ companyID, userID, customerID, template, type, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -353,7 +353,8 @@ class Model extends BaseModel {
 
                 let conditionObj = { }
                 let sortBy;
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
+                // let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(customerID && checkObjectIDs(customerID)){
 

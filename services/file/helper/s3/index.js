@@ -97,7 +97,7 @@ const uploadFile = (pathFile, key) => {
 };
 
 const getPathByApp = (params) => {
-    const { appID, companyID, projectID, groupID, packageID, conversationID } = params;
+    const { appID, companyID, projectID, groupID, packageID, conversationID, otherIDs } = params;
     let pathS3 = `/${appID}`;
     let appName = '';
 
@@ -149,6 +149,8 @@ const getPathByApp = (params) => {
         case APP_KEYS.PCM_PLAN_TASK:
             appName = 'PCM_PLAN_TASK';
             pathS3 += `/${companyID}/${projectID}/${groupID}`;
+
+            otherIDs.taskID && (pathS3 += `/${otherIDs.taskID}`);
             break;
         case APP_KEYS.DOCUMENT:
             appName = 'DOCUMENT';
@@ -205,7 +207,10 @@ const getPathByType = (params) => {
  * GET PATH S3 BY APP
  * @returns { error: boolean, data: string }
  */
-const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
+const getPathS3 = ({
+    typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID,
+    otherIDs,
+}) => {
     switch (typeUpload) {
         case 'contact':
         case 'project':
@@ -249,7 +254,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
         }
 
         const result = getPathByApp({
-            appID, companyID, projectID, groupID, packageID, conversationID
+            appID, companyID, projectID, groupID, packageID, conversationID, otherIDs
         })
         if(result.error) return result;
 

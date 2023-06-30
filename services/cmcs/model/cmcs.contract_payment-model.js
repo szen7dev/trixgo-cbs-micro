@@ -272,11 +272,11 @@ class Model extends BaseModel {
      * Author: Depv
      */
     getList({ contractID,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 20, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 10){
-                    limit = 10;
+                if(limit > 20){
+                    limit = 20;
                 } else{
                     limit = +limit;
                 }

@@ -125,7 +125,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
+    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -320,7 +320,13 @@ class Model extends BaseModel {
                  */
                 dataInsert.news = accessUsers.filter(userId => userId !== authorID);
 
-                let infoAfterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = null;
+                if(taskID) {
+                    infoAfterInsert = await this.updateById(taskID, dataInsert);
+                } else {
+                    infoAfterInsert = await this.insertData(dataInsert);
+                }
+
                 if(!infoAfterInsert) {
                     return resolve({
                         error: true,
@@ -1429,9 +1435,9 @@ class Model extends BaseModel {
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 50, unlimit, lastestID, select, populates = {}, unlimited
+        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited
     }) {
-        console.log('=============DANH SÁCH CHỦ ĐỀ==========>>>>>>>>>>>>>>')
+        // console.log('=============DANH SÁCH CHỦ ĐỀ==========>>>>>>>>>>>>>>')
         // console.log({
         //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
@@ -1444,8 +1450,8 @@ class Model extends BaseModel {
                  * BA
                  */
 
-                if(Number(limit) > 50){
-                    limit = 50;
+                if(Number(limit) > 20){
+                    limit = 20;
                 } else{
                     limit = +Number(limit);
                 }
@@ -1818,9 +1824,9 @@ class Model extends BaseModel {
     getListByFilter({
         fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
-        limit = 50, lastestID, select, populates, userID, reportID
+        limit = 20, lastestID, select, populates, userID, reportID
     }) {
-        console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ==========>>>>>>>>>>>>>>')
+        // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ==========>>>>>>>>>>>>>>')
         // console.log({
         //     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         //     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
@@ -1872,8 +1878,8 @@ class Model extends BaseModel {
                 /**
                  * LOGIC CODE (3)
                  */
-                if(limit > 50 && isNaN(limit)){
-                    limit = 50;
+                if(limit > 20 && isNaN(limit)){
+                    limit = 20;
                 } else{
                     limit = +limit;
                 }
