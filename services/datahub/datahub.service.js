@@ -16,6 +16,7 @@ const DATAHUB_INSPECTION_CHECKLIST_COLL	= require('./database/datahub_inspection
 const DATAHUB_JOB_COLL					= require('./database/datahub_job-coll');
 const DATAHUB_JOBLINE_COLL				= require('./database/datahub_jobline-coll');
 const DATAHUB_PRODUCT_COLL				= require('./database/datahub_product-coll');
+const DATAHUB_TEMPLATE_COLL				= require('./database/datahub_template-coll');
 
 const DATAHUB_CONTACT_HANDLER   		= require('./handler/datahub.datahub_contact-handler');
 const DATAHUB_TYPE_HANDLER   			= require('./handler/datahub.datahub_type-handler');
@@ -29,6 +30,7 @@ const DATAHUB_INSPECTION_CHECKLIST_HANDLER  = require('./handler/datahub.datahub
 const DATAHUB_JOB_HANDLER  					= require('./handler/datahub.datahub_job-handler');
 const DATAHUB_JOBLINE_HANDLER  				= require('./handler/datahub.datahub_jobline-handler');
 const DATAHUB_PRODUCT_HANDLER  				= require('./handler/datahub.datahub_product-handler');
+const DATAHUB_TEMPLATE_HANDLER   			= require('./handler/datahub.datahub_template-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DATAHUB,
@@ -45,6 +47,7 @@ module.exports = {
 		DbService(DATAHUB_JOB_COLL), 
 		DbService(DATAHUB_JOBLINE_COLL), 
 		DbService(DATAHUB_PRODUCT_COLL), 
+		DbService(DATAHUB_TEMPLATE_COLL), 
 		CacheCleaner([CF_DOMAIN_SERVICES.DATAHUB])
     ],
 
@@ -138,6 +141,13 @@ module.exports = {
 		[CF_ACTIONS_DATAHUB.DATAHUB_PRODUCT_UPDATE]   			 	: DATAHUB_PRODUCT_HANDLER.update,
 		[CF_ACTIONS_DATAHUB.DATAHUB_PRODUCT_REMOVE]					: DATAHUB_PRODUCT_HANDLER.remove,
 		[CF_ACTIONS_DATAHUB.DATAHUB_PRODUCT_GET_INFO_AND_GET_LIST]	: DATAHUB_PRODUCT_HANDLER.getInfoAndGetList,
+
+		//==========================================   DATAHUB TEMPLATE   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_TEMPLATE_INSERT]   			 	: DATAHUB_TEMPLATE_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_TEMPLATE_UPDATE]   			 	: DATAHUB_TEMPLATE_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_TEMPLATE_REMOVE]					: DATAHUB_TEMPLATE_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_TEMPLATE_GET_INFO_AND_GET_LIST]	: DATAHUB_TEMPLATE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_DATAHUB.DATAHUB_TEMPLATE_DOWNLOAD_TEMPLATE_IMPORT_EXCEL]   : DATAHUB_TEMPLATE_HANDLER.downloadTemplateImportExcel,
 	},
 	
 	/**
