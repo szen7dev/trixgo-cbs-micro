@@ -126,6 +126,7 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
+        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -168,28 +169,38 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                    departmentID: projectID
+                    departmentID: `${projectID}`
                 })
 
+                // console.log('===========1111111111>>>>>>>>>>>>>>>>>>')
+                // console.log(infoProject)
+                // console.log('===========2222222222>>>>>>>>>>>>>>>>>>')
+                // console.log(infoProject.data)
+
                 companyID = infoProject?.data?.company
+                // console.log({companyID})
 
                 if(!companyID)
                     return resolve({ error: true, message: "company_invalid", status: 400 })
 
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
+                // console.log(infoGroup)
 
                 let convertStr = ''
                 if(name && name != ""){
                     convertStr = stringUtils.removeAccents(name);
+                    console.log(convertStr)
                 }
                 if(description && description != ""){
                     convertStr = convertStr + stringUtils.removeAccents(description);
+                    console.log(convertStr)
                 }
+
+                // console.log(convertStr)
 
                 dataInsert = {
                     name,
                     namecv: convertStr,
-                    // namecv: stringUtils.removeAccents(name),
                     company : companyID,
                     project : projectID,
                     group   : groupID,
@@ -200,7 +211,7 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type
                 }
-
+                // console.log(dataInsert)
 
                 if(parentID){
                     infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
@@ -234,6 +245,9 @@ class Model extends BaseModel {
                 let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     userID: assigneeID, select: "_id company department"
                 })
+
+                // console.log(infoAuthor)
+                // console.log(infoAssignee)
 
                 // companyOfAuthor
                 if(!infoAuthor.error){
@@ -319,9 +333,12 @@ class Model extends BaseModel {
                  * - Sẽ thêm user khi có thông báo mới
                  */
                 dataInsert.news = accessUsers.filter(userId => userId !== authorID);
+                // console.log(dataInsert)
 
                 let infoAfterInsert = null;
                 if(taskID) {
+                    // Cập nhật thành việc chính thức
+                    dataInsert.draft = 0
                     infoAfterInsert = await this.updateById(taskID, dataInsert);
                 } else {
                     infoAfterInsert = await this.insertData(dataInsert);
@@ -351,17 +368,18 @@ class Model extends BaseModel {
                 // })
 
                 // Thêm record vào bảng pcm_comment phục vụ search (****)
-                await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
+                let infoCommentAfter = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
                     taskID: infoAfterInsert._id?.toString(),
                     type: 5,
                     files: authorAttachs,
-                    content: `${infoAfterInsert.name} - ${infoAfterInsert.description}`,
-                    rawContent: infoAfterInsert.name,
+                    content: `${infoAfterInsert.name}-${ description ? infoAfterInsert.description : ''}`,
+                    rawContent: `${infoAfterInsert.name}-${ description ? infoAfterInsert.description : ''}`,
                 }, {
                     meta: {
-                        infoUser: { _id: authorID, bizfullname, company }
+                        infoUser: { _id: authorID, bizfullname, company: company._id }
                     }
-                });
+                })
+                // console.log(infoCommentAfter)
 
                 /**
                  * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
@@ -4093,6 +4111,7 @@ class Model extends BaseModel {
      * Date: 15/09/2022
      */
     importTaskFromExcel({ taskID, dataImport, userID, ctx }) {
+        // console.log({taskID, dataImport, userID})
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
@@ -4116,6 +4135,7 @@ class Model extends BaseModel {
                             subType: data?.__EMPTY_9,
                             ctx,
                         }
+                        // console.log(dataInsert)
 
                         let listEmailRelates = data?.__EMPTY_5?.split(",");
                         let related = await USER_COLL.find({ email: { $in: listEmailRelates?.map(email => email.trim()) }}).select("_id")
@@ -4135,13 +4155,17 @@ class Model extends BaseModel {
                         }
 
                         let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
+                        console.log(infoGroup)
                         if(!infoGroup){
                             errorNumber++;
                             return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
                         }
 
+                        console.log({errorNumber})
+
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
+                        console.log(infoAfterInsert)
 
                         if(data?.__EMPTY_1){
                             parentID = infoAfterInsert?.data?._id;
@@ -4156,6 +4180,7 @@ class Model extends BaseModel {
                 }
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "import field" });
+
                 // Update timeImportExcel trick reload việc con
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
