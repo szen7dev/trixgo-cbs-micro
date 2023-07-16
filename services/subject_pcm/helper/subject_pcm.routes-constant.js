@@ -42,6 +42,9 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     // Group
     SUBJECT__PCM_PLAN_GROUP                             : `${BASE_ROUTE}${PCM_PLAN_GROUP}`,
     SUBJECT__PCM_PLAN_GROUP_REMOVE_MANY                 : `${BASE_ROUTE}${PCM_PLAN_GROUP}/remove-many`,
+    SUBJECT__PCM_PLAN_GROUP_DOWNLOAD_TEMPLATE_EXCEL     : `${BASE_ROUTE}${PCM_PLAN_GROUP}/download-template-excel`,
+    SUBJECT__PCM_PLAN_GROUP_IMPORT_FROM_EXCEL           : `${BASE_ROUTE}${PCM_PLAN_GROUP}/import-from-excel`,
+    SUBJECT__PCM_PLAN_GROUP_EXPORT_EXCEL                : `${BASE_ROUTE}${PCM_PLAN_GROUP}/export-excel`,
 
     //Comment
     SUBJECT_PCM__PCM_PLAN_TASK_COMMENT                              : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}`,
@@ -53,7 +56,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     // Reaction_comment
     SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_REACTION         : `${BASE_ROUTE}${PCM_PLAN_TASK_COMMENT}/reactions`,
 
-    // pcm_file
+    // Pcm File
     PCM_FILE                                            : `${BASE_ROUTE}${PCM_FILE}`,
     PCM_FILE_GET_LIST_BY_FILTER                         : `${BASE_ROUTE}${PCM_FILE}/filter`,
     PCM_FILE_GROUP_BY_DATE                              : `${BASE_ROUTE}${PCM_FILE}/group-by-date`,
