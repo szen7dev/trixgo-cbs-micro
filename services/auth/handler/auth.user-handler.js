@@ -754,6 +754,10 @@ module.exports = {
                 } = ctx.params;
                 let resultAfterCallHandler;
 
+                // console.log('=======DANH SÁCH USER 222222222222==========>>>>>>>>>>>>>>>>>')
+                // console.log({ userID, projectID, companyID, arrayID,
+                //     keyword, limit, lastestID, select, populates, isLoadAll})
+
                 if(userID){
                     resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
                         userID, select, populates
@@ -763,6 +767,8 @@ module.exports = {
                         arrayID, projectID, companyID, keyword, limit, lastestID, select, populates, ctx, isLoadAll
                     });
                 }
+
+                // console.log(resultAfterCallHandler)
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

@@ -887,7 +887,7 @@ class Model extends BaseModel {
      * Code  : F00402
      */
     getList({ companyID, keyword, type, userID, isMember, isBudget, limit = 20, lastestID, select, populates={} }) {
-        console.log('==============Danh mục dự án=>DÙNG CHUNG')
+        // console.log('==============Danh mục dự án=>DÙNG CHUNG')
         // console.log({ companyID, keyword, type, userID, isMember, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -1014,7 +1014,7 @@ class Model extends BaseModel {
      * Code  : 1/9/2022
      */
     getListByMembers({ companyID, keyword, type, userID, limit = 20, isBudget, unLimit, lastestID, select, populates={} }) {
-        console.log('==============Danh mục dự án mà user là MEMBER')
+        // console.log('==============Danh mục dự án mà user là MEMBER')
         // console.log({ companyID, keyword, type, userID, isBudget, limit })
         return new Promise(async (resolve) => {
             try {

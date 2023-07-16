@@ -12,6 +12,11 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**s
  * import inter-coll, exter-coll
  */
@@ -340,6 +345,57 @@ class Model extends BaseModel {
             }
         })
     }
+
+         /**
+     * Name: Download Template Excel
+     * Author: HiepNH
+     * Date: 21/3/2023
+     */
+    downloadTemplateExcel({ option, companyID, userID }) {
+        // console.log({ option, companyID, userID })
+        return new Promise(async resolve => {
+            try {
+                // Danh sách danh bạ
+                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID }).select('name phone address note')
+                // .sort({_id: -1})
+                // .limit(200)
+                // console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_setup_template.xlsx')))
+                .then(async workbook => {
+
+                    // var i = 3;
+                    // listData?.forEach((item, index) => {
+                    //     workbook.sheet("ExportContact").row(i).cell(1).value(Number(index+1));
+                    //     workbook.sheet("ExportContact").row(i).cell(2).value(item.name);
+                    //     workbook.sheet("ExportContact").row(i).cell(3).value(item.phone);
+                    //     workbook.sheet("ExportContact").row(i).cell(4).value(item.note);
+                    //     workbook.sheet("ExportContact").row(i).cell(5).value(`${item._id}`);
+                    //     workbook.sheet("ExportContact").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`)
+
+                    //     i++
+                    // });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `pcm_setup_template_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

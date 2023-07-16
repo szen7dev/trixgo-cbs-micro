@@ -1679,14 +1679,11 @@ class Model extends BaseModel {
      */
     getListV2({
         companyID, projectID, arrayID,
-        keyword, limit = 10, lastestID, select, populates= {}, ctx, isLoadAll}) {
-            // console.log({
-            //     companyID, projectID, arrayID,
-            //     keyword, limit, lastestID, select, populates, isLoadAll})
+        keyword, limit = 20, lastestID, select, populates= {}, ctx, isLoadAll}) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 10){
-                    limit = 10
+                if(limit > 20){
+                    limit = 20
                 }else{
                     limit = +limit
                 }
