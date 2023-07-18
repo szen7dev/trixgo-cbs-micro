@@ -2,7 +2,7 @@ exports.FNB_ACC = {
     bod: ['kiemthuvien4.fnb@gmail.com', 'adwgo.winggo@gmail.com', 'hiepnh.winggo@gmail.com', 'chinhnv.winggo@gmail.com','huongnt.winggo@gmail.com',,'hoangnh.winggo@gmail.com', 'hienpd.winggo@gmail.com','toannd.winggo@gmail.com'],
     cskh: ['kiemthuvien4.fnb@gmail.com', 'adwgo.winggo@gmail.com','kiemsoat1.winggo@gmail.com','kiemsoat2.winggo@gmail.com','kiemsoat3.winggo@gmail.com','kiemsoat4.winggo@gmail.com','kiemsoat5.winggo@gmail.com','vund.winggo@gmail.com','quynhntd.winggo@gmail.com','nhungvth.winggo@gmail.com','tuyetnt.winggo@gmail.com', 'hiepnh.winggo@gmail.com', 'chinhnv.winggo@gmail.com','huongnt.winggo@gmail.com',,'hoangnh.winggo@gmail.com'],
     taichinh: ['nbpt.96@gmail.com'],
-    man: ['thupt1.winggo@gmail.com','hapt.winggo@gmail.com','hienpd.winggo@gmail.com','vyhth.winggo@gmail.com','toannd.winggo@gmail.com','vund.winggo@gmail.com','quynhntd.winggo@gmail.com','nhungvth.winggo@gmail.com']
+    man: ['thupt1.winggo@gmail.com','hapt.winggo@gmail.com','hienpd.winggo@gmail.com','vyhth.winggo@gmail.com','toannd.winggo@gmail.com','vund.winggo@gmail.com','quynhntd.winggo@gmail.com','nhungvth.winggo@gmail.com','anhml.winggo@gmail.com']
 }
 
 exports.FNB_FACTOR = {
