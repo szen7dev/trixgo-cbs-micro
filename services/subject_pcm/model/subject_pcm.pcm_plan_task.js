@@ -171,14 +171,7 @@ class Model extends BaseModel {
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID: `${projectID}`
                 })
-
-                // console.log('===========1111111111>>>>>>>>>>>>>>>>>>')
-                // console.log(infoProject)
-                // console.log('===========2222222222>>>>>>>>>>>>>>>>>>')
-                // console.log(infoProject.data)
-
                 companyID = infoProject?.data?.company
-                // console.log({companyID})
 
                 if(!companyID)
                     return resolve({ error: true, message: "company_invalid", status: 400 })
@@ -188,15 +181,11 @@ class Model extends BaseModel {
 
                 let convertStr = ''
                 if(name && name != ""){
-                    convertStr = stringUtils.removeAccents(name);
-                    console.log(convertStr)
+                    convertStr = stringUtils.removeAccents(name)
                 }
                 if(description && description != ""){
-                    convertStr = convertStr + stringUtils.removeAccents(description);
-                    console.log(convertStr)
+                    convertStr = convertStr + stringUtils.removeAccents(description)
                 }
-
-                // console.log(convertStr)
 
                 dataInsert = {
                     name,
@@ -239,15 +228,12 @@ class Model extends BaseModel {
                  * Precalculated
                  */
                 let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    userID: authorID, select: "_id company department"
+                    userID: authorID, select: "_id company department fullname"
                 })
 
                 let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    userID: assigneeID, select: "_id company department"
+                    userID: assigneeID, select: "_id company department fullname"
                 })
-
-                // console.log(infoAuthor)
-                // console.log(infoAssignee)
 
                 // companyOfAuthor
                 if(!infoAuthor.error){
@@ -333,14 +319,17 @@ class Model extends BaseModel {
                  * - Sẽ thêm user khi có thông báo mới
                  */
                 dataInsert.news = accessUsers.filter(userId => userId !== authorID);
-                // console.log(dataInsert)
 
                 let infoAfterInsert = null;
                 if(taskID) {
                     // Cập nhật thành việc chính thức
                     dataInsert.draft = 0
+
+                    // Khi bấm submit
                     infoAfterInsert = await this.updateById(taskID, dataInsert);
                 } else {
+
+                    // Tự động lưu việc nháp
                     infoAfterInsert = await this.insertData(dataInsert);
                 }
 
@@ -376,10 +365,10 @@ class Model extends BaseModel {
                     rawContent: `${infoAfterInsert.name}-${ description ? infoAfterInsert.description : ''}`,
                 }, {
                     meta: {
-                        infoUser: { _id: authorID, bizfullname, company: company._id }
+                        infoUser: { _id: authorID, bizfullname, company: infoAuthor.data.company }
                     }
                 })
-                // console.log(infoCommentAfter)
+                
 
                 /**
                  * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
@@ -4137,9 +4126,9 @@ class Model extends BaseModel {
                         }
                         // console.log(dataInsert)
 
+                        // Thêm người liên quan
                         let listEmailRelates = data?.__EMPTY_5?.split(",");
                         let related = await USER_COLL.find({ email: { $in: listEmailRelates?.map(email => email.trim()) }}).select("_id")
-
                         if(related && related.length){
                             dataInsert.relatedIDs = related.map(item => ObjectID(item._id));
                         }
@@ -4153,20 +4142,20 @@ class Model extends BaseModel {
                             dataInsert.parentID = parentID;
                             dataInsert.name = data.__EMPTY_2;
                         }
+                        // console.log(dataInsert)
 
                         let infoGroup = await PCM_PLAN_GROUP_COLL.findById(data.__EMPTY_12).select("project");
-                        console.log(infoGroup)
                         if(!infoGroup){
                             errorNumber++;
                             return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
                         }
-
-                        console.log({errorNumber})
+                        // console.log({errorNumber})
 
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
-                        console.log(infoAfterInsert)
-
+                        // console.log(infoAfterInsert)
+                        
+                        // Công việc cha
                         if(data?.__EMPTY_1){
                             parentID = infoAfterInsert?.data?._id;
                         }
