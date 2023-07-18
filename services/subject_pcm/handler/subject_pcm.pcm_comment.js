@@ -36,12 +36,12 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname, company } = ctx.meta.infoUser;
-                const { content, rawContent, taskID, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params;
+                const { content, rawContent, taskID, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
 					taskID, projectID, parentID, authorID, type, content, rawContent, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname: bizfullname,
                     companyOfAuthor: company._id, ctx
-				});
+				})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
