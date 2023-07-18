@@ -139,22 +139,12 @@ class Model extends BaseModel {
                 let infoTaskParent = null;
                 let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
 
-                if(!name)
-                    return resolve({ error: true, message: 'name_invalid', status: 400 });
-
-                if(!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'projectID_invalid', status: 400 });
-
-                if(!checkObjectIDs(groupID))
-                    return resolve({ error: true, message: 'groupID_invalid', status: 400 });
-
-                if(!checkObjectIDs(assigneeID))
-                    return resolve({ error: true, message: 'assignee_invalid', status: 400 });
+                if(!name || !checkObjectIDs(projectID) || !checkObjectIDs(groupID) || !checkObjectIDs(assigneeID))
+                    return resolve({ error: true, message: 'name|project|group|assignee_invalid', status: 400 })
 
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
                     populates = JSON.parse(populates);
                 } else{
                     populates = {
@@ -164,18 +154,16 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
+                 * LOGIC STEP
                  */
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID: `${projectID}`
                 })
                 companyID = infoProject?.data?.company
-
                 if(!companyID)
                     return resolve({ error: true, message: "company_invalid", status: 400 })
 
+                // Thông tin Nhóm dữ liệu
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
                 // console.log(infoGroup)
 
@@ -202,6 +190,7 @@ class Model extends BaseModel {
                 }
                 // console.log(dataInsert)
 
+                // Công việc cha
                 if(parentID){
                     infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
                     dataInsert.subtype = infoTaskParent.subtype;
@@ -209,6 +198,7 @@ class Model extends BaseModel {
                     dataInsert.subtype = subType;
                 }
 
+                // Thời hạn hoàn thành
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
                     dataInsert.actualFinishTime = new Date(expiredTime);
@@ -257,6 +247,7 @@ class Model extends BaseModel {
                     dataInsert.authorAttachs = authorAttachs;
                 }
 
+                // Người liên quan
                 if(relatedIDs && relatedIDs.length){
                     relatedIDs = [...new Set(relatedIDs)];
 
@@ -326,11 +317,11 @@ class Model extends BaseModel {
                     dataInsert.draft = 0
 
                     // Khi bấm submit
-                    infoAfterInsert = await this.updateById(taskID, dataInsert);
+                    infoAfterInsert = await this.updateById(taskID, dataInsert)
                 } else {
 
                     // Tự động lưu việc nháp
-                    infoAfterInsert = await this.insertData(dataInsert);
+                    infoAfterInsert = await this.insertData(dataInsert)
                 }
 
                 if(!infoAfterInsert) {
@@ -339,7 +330,7 @@ class Model extends BaseModel {
                         message: "can't_insert_task",
                         keyError: KEY_ERROR.INSERT_FAILED,
                         status: 403
-                    });
+                    })
                 }
 
                 /**
@@ -507,7 +498,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Gửi mail
+                 * Gửi mail thông báo
                  */
                 if(isNotiEmail) {
                     this.sendEmailToMembersInTask({
@@ -4103,10 +4094,37 @@ class Model extends BaseModel {
         // console.log({taskID, dataImport, userID})
         return new Promise(async resolve => {
             try {
+                if(!checkObjectIDs(taskID))
+                    return resolve({ error: true, message: 'taskID_invalid', status: 400 })
+
                 const dataImportJSON = JSON.parse(dataImport);
                 let index = 0;
                 let errorNumber = 0;
                 let parentID;
+
+                /**
+                 * XÁC THỰC DỮ LIỆU
+                 */
+                let indexCheck = 0
+                let errorValidate = 0;
+                let inforTask = await PCM_PLAN_TASK_COLL.findById(taskID)
+                .select('name project')
+                // console.log(inforTask)
+                for (const data of dataImportJSON) {
+                    if(indexCheck > 0){
+                        // console.log(data?.__EMPTY_12)
+                        let infoGroup = await PCM_PLAN_GROUP_COLL.findById(ObjectID(data?.__EMPTY_12)).select('name project')
+                        // console.log(infoGroup)
+                        if(infoGroup.project.toString() !== inforTask.project.toString()){
+                            errorValidate ++
+                            console.log({errorValidate})
+                        }
+                    }
+                    indexCheck ++;
+                }
+                if(errorValidate != 0)
+                    return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
+
                 for (const data of dataImportJSON) {
                     if(index > 0){
                         let dataInsert = {
@@ -4167,6 +4185,7 @@ class Model extends BaseModel {
                     }
                     index ++;
                 }
+
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "import field" });
 
