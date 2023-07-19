@@ -2609,7 +2609,7 @@ class Model extends BaseModel {
      * Depv
      */
     sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, emails, userID, ctx }) {
-        console.log({ taskID, title, notice, sender, receivers, emails, userID })
+        // console.log({ taskID, title, notice, sender, receivers, emails, userID })
         return new Promise(async resolve => {
             try {
                 let infoTask = await PCM_PLAN_TASK_COLL
@@ -2667,6 +2667,14 @@ class Model extends BaseModel {
                 }
                 mailsUser = mailsUser.join(',');
 
+                // Ghi log
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                    taskID: `${taskID}`,
+                    type: 2,
+                    title: "Thông báo email",
+                    content: `đã thông báo email tới ${mailsUser}`,
+                })
+
                 const result = await sendNoticeToMember({
                     email: mailsUser,
                     title,
@@ -2687,7 +2695,7 @@ class Model extends BaseModel {
      * Code: 23/9/2022
      */
     getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, projectID, keyword, subtype, ctx }){
-        console.log('========CÔNG VIỆC PHÂN LOẠI THEO DỰ ÁN PHÒNG BAN==============')
+        // console.log('========CÔNG VIỆC PHÂN LOẠI THEO DỰ ÁN PHÒNG BAN==============')
         // console.log({ option, companyID, projectID, keyword, subtype })
         return new Promise(async resolve => {
             try {
