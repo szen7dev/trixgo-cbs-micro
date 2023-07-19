@@ -331,7 +331,6 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-
                 if(!infoAfterInsert) {
                     return resolve({
                         error: true,
@@ -563,6 +562,9 @@ class Model extends BaseModel {
                     titleMSS = `${taskName}`;
                 }
 
+                /**
+                 * BẮN THÔNG BÁO REALTIME
+                 */
                 if(arrReceiver && arrReceiver.length) {
                     let amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
 

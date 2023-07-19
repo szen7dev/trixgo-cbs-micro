@@ -38,19 +38,20 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**
  * import inter-coll, exter-coll
  */
-const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll');
-const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
-const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll');
-const CONTRACT_COLL                     = require('../../item/database/item.contract-coll');
-const USER_COLL                         = require('../../auth/database/auth.user-coll');
-const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll');
-// const { email } = require('../../../tools/mailer/config/cf_mailer');
+const USER_COLL                         = require('../../auth/database/auth.user-coll')
+const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll')
+const CONTRACT_COLL                     = require('../../item/database/item.contract-coll')
+const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll')
+const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll')
+const PCM_COMMENT_COLL                  = require('../database/subject_pcm.pcm_comment-coll')
+const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll')
 
-const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll');
-const { sortBy } = require('lodash');
+const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll')
+
+// const { email } = require('../../../tools/mailer/config/cf_mailer');
+// const { sortBy } = require('lodash');
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
-
 class Model extends BaseModel {
 
     constructor() {
@@ -535,17 +536,18 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
-        console.log({ typeUpdate,
-            taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-            contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-            links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-            openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate
-        })
+        // console.log({ typeUpdate,
+        //     taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate
+        // })
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate   = {};
                 let dataAddToset = {};
                 let dataPullAll  = {};
+                let convertStr = '';
 
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'taskID_invalid', status: 400 });
@@ -598,7 +600,11 @@ class Model extends BaseModel {
                         let listDataRalated = await USER_COLL.find({_id: {$in: relatedRemoves}}).select('fullname')
                         let str = ''
                         for(const item of listDataRalated){
-                            str = str + item.fullname
+                            if(str != ""){
+                                str = str + ", " + item.fullname
+                            }else{
+                                str = str + item.fullname
+                            }
                         }
                         
                         await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
@@ -621,8 +627,7 @@ class Model extends BaseModel {
                      * - Sửa comment
                      */
                     if(name){
-                        dataUpdate.name = name;
-                        dataUpdate.namecv = stringUtils.removeAccents(name)
+                        dataUpdate.name = name
 
                          /**
                          * Ghi log
@@ -642,8 +647,7 @@ class Model extends BaseModel {
                      * - Sửa comment
                      */
                     if(description){
-                        dataUpdate.description = description;
-                        dataUpdate.descriptioncv = stringUtils.removeAccents(description);
+                        dataUpdate.description = description
 
                          /**
                          * Ghi log
@@ -656,6 +660,15 @@ class Model extends BaseModel {
                             content: `đã cập nhật nội dung công việc "${infoTask.description}" thành "${description}"`,
                         })
                     }
+
+                    if(name && name != ""){
+                        convertStr = stringUtils.removeAccents(name)
+                    }
+                    if(description && description != ""){
+                        convertStr = convertStr + stringUtils.removeAccents(description)
+                    }
+                    dataUpdate.namecv = convertStr
+                    dataUpdate.descriptioncv = convertStr
 
                     /**
                      * Ngày kết thúc
@@ -736,7 +749,11 @@ class Model extends BaseModel {
                     let listDataRalated = await USER_COLL.find({_id: {$in: related}}).select('fullname')
                     let str = ''
                     for(const item of listDataRalated){
-                        str = str + "," + item.fullname
+                        if(str != ""){
+                            str = str + ", " + item.fullname
+                        }else{
+                            str = str + item.fullname
+                        }
                     }
                     
                     await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
@@ -1046,10 +1063,25 @@ class Model extends BaseModel {
                 /**
                  * TIẾN HÀNH CẬP NHẬT CÔNG VIỆC
                  */
-                let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
-
+                let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
+
+                /**
+                 * CẬP NHẬT COMMENT GỐC LINK VỚI TÊN/MÔ TẢ CÔNG VIỆC
+                 */
+                let initialComment = await PCM_COMMENT_COLL.findOne({type: 5, task: taskID })
+                // console.log({initialComment})
+                if(initialComment){
+                    let initialCommentAfterUpdate = await PCM_COMMENT_COLL.findByIdAndUpdate(initialComment, 
+                        {
+                            content: name,
+                            contentcv: convertStr,
+                        } , 
+                        { new: true })
+
+                    // console.log({initialCommentAfterUpdate})
+                }
 
                 /**
                  * Khi link việc A vào việc B thì ở trong việc B, links cũng chứa A
