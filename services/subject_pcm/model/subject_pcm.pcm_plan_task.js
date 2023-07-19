@@ -173,7 +173,7 @@ class Model extends BaseModel {
                     convertStr = stringUtils.removeAccents(name)
                 }
                 if(description && description != ""){
-                    convertStr = convertStr + stringUtils.removeAccents(description)
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
                 }
 
                 dataInsert = {
@@ -353,14 +353,13 @@ class Model extends BaseModel {
                     taskID: infoAfterInsert._id?.toString(),
                     type: 5,
                     files: authorAttachs,
-                    content: `${infoAfterInsert.name}-${ description ? infoAfterInsert.description : ''}`,
-                    rawContent: `${infoAfterInsert.name}-${ description ? infoAfterInsert.description : ''}`,
+                    content: name,
+                    rawContent: convertStr,
                 }, {
                     meta: {
                         infoUser: { _id: authorID, bizfullname, company: infoAuthor.data.company }
                     }
                 })
-                
 
                 /**
                  * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
@@ -430,7 +429,9 @@ class Model extends BaseModel {
                         }
                     }
 
-
+                    /**
+                     * BẮN THÔNG BÁO REALTIME
+                     */
                     if(arrReceiver && arrReceiver.length) {
                         if(parentID) {
                             let { related } = infoTaskParent;
