@@ -2,22 +2,22 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const ObjectID                          = require('mongoose').Types.ObjectId;
+// const stringUtils					    = require('../../../tools/utils/string_utils');
+// const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+// const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment')
 
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_SUBJECT_PCM } 	    = require('../../subject_pcm/helper/subject_pcm.actions-constant');
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_SUBJECT_PCM } 	    = require('../../subject_pcm/helper/subject_pcm.actions-constant');
 
 /**
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * COLLECTIONS
@@ -43,13 +43,18 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "title_invalid" });
                 }
 
-                let dataInsert = { title, userCreate: userID };
+                let dataInsert = { title, userCreate: userID }
+
+                /**
+                 * Ghi log cho chủ đề
+                 */
                 if(checkObjectIDs(taskID)){
                     const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID);
                     if(!infoTask){
                         return resolve({ error: true, message: "taskID_invalid" })
                     }
                     const { project, contract } = infoTask;
+                    
                     dataInsert.task = taskID;
                     if(checkObjectIDs(project)){
                         dataInsert.project = project;
@@ -60,6 +65,10 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * Ghi log cho hồ sơ
+                 */
+
                 if(content){
                     dataInsert.content = content;
                 }
@@ -68,9 +77,9 @@ class Model extends BaseModel {
                     dataInsert.type = type;
                 }
 
-                let infoAfterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Cannot_insert_history_log" })
+                    return resolve({ error: true, message: "cannot_insert_history_log" })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -87,15 +96,6 @@ class Model extends BaseModel {
     getInfo({ historyLogID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(historyLogID))
                     return resolve({ error: true, message: 'Request params historyLogID invalid', status: 400 });
                 
@@ -111,11 +111,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await ANALYSIS__HISTORY_LOG_COLL.findById(historyLogID)
                                     .select(select)
                                     .populate(populates)
@@ -250,4 +246,4 @@ class Model extends BaseModel {
     }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model

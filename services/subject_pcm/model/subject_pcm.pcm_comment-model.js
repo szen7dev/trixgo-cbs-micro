@@ -189,7 +189,7 @@ class Model extends BaseModel {
     insertCommentTask({
         taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
     }) {
-        // console.log('=======================insertCommentTask=====================')
+        // console.log('=======================Tạo comment Task=====================')
         // console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
         return new Promise(async resolve => {
             try {
@@ -301,29 +301,32 @@ class Model extends BaseModel {
                     dataInsert.group = infoTask.group;
                 }
 
+                /**
+                 * Users nhận thông báo
+                 */
                 if(checkObjectIDs(receiversID)) {
+                    // console.log('=================1111111111111111=================')
                     dataInsert.receivers = receiversID;
                 } else{
+                    // console.log('=================2222222222222222=================')
                     if(!checkObjectIDs([parentID])) {
-                        // const receivers = infoTask.accessUsers?.filter(user => user.toString() );
-                        // dataInsert.receivers = receivers;
-                        dataInsert.receivers = infoTask.accessUsers;
+                        // console.log('=================333333333333333333=================')
+                        const receivers = infoTask.accessUsers?.filter(user => user.toString() !== authorID.toString())
+                        dataInsert.receivers = receivers
                     } else {
+                        // console.log('=================444444444444444444=================')
                         const commentParent = await PCM_COMMENT_COLL
                             .findById(parentID)
                             .select('author receivers')
                             .lean();
-
-                        // dataInsert.receivers = [commentParent?.author];
                         dataInsert.receivers = commentParent?.receivers
                     }
                 }
-                // console.log('============Kiểm tra xem có người thực thi hành động hay chưa==========')
-                // console.log(dataInsert.receivers)
-                if(!dataInsert.receivers.includes(authorID)){
-                    dataInsert.receivers.push(authorID)
-                }
-                // console.log(dataInsert.receivers)
+
+                /**
+                 *  Users được quyền truy cập
+                 */
+                dataInsert.accessUsers = infoTask.accessUsers;
 
                 if(content) {
                     dataInsert.content = content;
@@ -331,7 +334,6 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-
                 if(!infoAfterInsert) {
                     return resolve({
                         error: true,
@@ -563,9 +565,13 @@ class Model extends BaseModel {
                     titleMSS = `${taskName}`;
                 }
 
+                /**
+                 * BẮN THÔNG BÁO REALTIME MOBILE
+                 */
                 if(arrReceiver && arrReceiver.length) {
                     let amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
 
+                    // App Trixgo
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: titleMSS,
@@ -576,6 +582,7 @@ class Model extends BaseModel {
                         env: ENV_DEVICE_WEB_CBS
                     });
 
+                    // App CBS
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: titleMSS,
@@ -584,7 +591,7 @@ class Model extends BaseModel {
                         dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_APP_FNB
-                    });
+                    })
                 }
 
                 infoAfterInsert = await PCM_COMMENT_COLL
@@ -1860,7 +1867,7 @@ class Model extends BaseModel {
                 }
 
                 let conditionObj = {
-                    receivers: { $in: [userID] }
+                    accessUsers: { $in: [userID] }
                 }
 
                 /**
