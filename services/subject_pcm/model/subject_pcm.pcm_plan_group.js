@@ -20,10 +20,12 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**s
  * import inter-coll, exter-coll
  */
-const PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
+const USER_COLL                         = require('../../auth/database/auth.user-coll')
+const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll')
+const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
-const { template } = require('lodash');
+// const { template } = require('lodash');
 
 /**
  * import inter-model, exter-model
@@ -351,31 +353,67 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    downloadTemplateExcel({ option, companyID, userID }) {
-        // console.log({ option, companyID, userID })
+    downloadTemplateExcel({ option, projectID, userID }) {
+        // console.log({ option, projectID, userID })
         return new Promise(async resolve => {
             try {
-                // Danh sách danh bạ
-                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID }).select('name phone address note')
-                // .sort({_id: -1})
+
+                // let listUsers = await DEPARTMENT_COLL
+                let infoProject = await DEPARTMENT_COLL.findById(projectID)
+                .select('name members admins')
+                .populate({
+                    path: 'members',
+                    select: 'fullname'
+                })
+                // console.log(infoProject)
+
+                // 
+                let listData  = await PCM_PLAN_GROUP_COLL.find({ project: projectID }).select('name sign members')
+                .sort({_id: -1})
                 // .limit(200)
                 // console.log(listData)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_setup_template.xlsx')))
                 .then(async workbook => {
+                    var i = 4;
+                    infoProject.members?.forEach((item, index) => {
+                        workbook.sheet("ThanhVienDuAn").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("ThanhVienDuAn").row(i).cell(2).value(item.fullname)
+                        workbook.sheet("ThanhVienDuAn").row(i).cell(3).value(`${item._id}`)
 
-                    // var i = 3;
-                    // listData?.forEach((item, index) => {
-                    //     workbook.sheet("ExportContact").row(i).cell(1).value(Number(index+1));
-                    //     workbook.sheet("ExportContact").row(i).cell(2).value(item.name);
-                    //     workbook.sheet("ExportContact").row(i).cell(3).value(item.phone);
-                    //     workbook.sheet("ExportContact").row(i).cell(4).value(item.note);
-                    //     workbook.sheet("ExportContact").row(i).cell(5).value(`${item._id}`);
-                    //     workbook.sheet("ExportContact").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`)
+                        if(infoProject?.admins.includes(item._id)){
+                            workbook.sheet("ThanhVienDuAn").row(i).cell(4).value(1)
+                        }
 
-                    //     i++
-                    // });
+                        workbook.sheet("ThanhVienDuAn").row(i).cell(5).value(1)
+
+                        i++
+                    });
+
+                    var i = 4;
+                    infoProject.members?.forEach((item, index) => {
+                        workbook.sheet("NhomDuLieuCongViec").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("NhomDuLieuCongViec").row(i).cell(2).value(item.fullname)
+                        workbook.sheet("NhomDuLieuCongViec").row(i).cell(3).value(`${item._id}`)
+                        i++
+                    });
+
+                    var j = 4;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("NhomDuLieuCongViec").row(2).cell(j).value(`${item._id}`)
+                        workbook.sheet("NhomDuLieuCongViec").row(3).cell(j).value(item.name)
+
+                        for (var i = 4; i < infoProject.members?.length + 4; i++) {
+                           let userID = workbook.sheet("NhomDuLieuCongViec").row(i).cell(3).value()
+
+                           if(item?.members.includes(userID)){
+                                workbook.sheet("NhomDuLieuCongViec").row(i).cell(j).value(1)
+                           }
+                        }
+
+                        j++
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
