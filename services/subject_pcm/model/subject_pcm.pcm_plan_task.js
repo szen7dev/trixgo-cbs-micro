@@ -535,31 +535,18 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
-        // console.log({ typeUpdate,
-        //     taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
-        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate
-        // })
+        console.log({ typeUpdate,
+            taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+            contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+            links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
+            openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate
+        })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * KHU VỰC CHECK QUYỀN CẬP NHẬT CÔNG VIỆC
-                 */
-                // Dựa vào trường typeUpdate để cập nhật
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataUpdate   = {};
                 let dataAddToset = {};
                 let dataPullAll  = {};
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'taskID_invalid', status: 400 });
 
@@ -586,12 +573,9 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * NẾU LÀ CÔNG VIỆC NHÁP THÌ CHO PHÉP CẬP NHẬT MỘT SỐ THÔNG TIN
+                 * Nếu là công việc nháp hoặc Admin dự án
                  */
                 if(infoTask.draft == 1 || infoTask.project.admins.map(item=>item.toString()).includes(userID?.toString())){
-                    /**
-                     * Các trường thông tin quan trọng/hay gặp
-                     */
                     //_________Việc nháp sang việc chính thức
                     if(+draft === 0){
                         dataUpdate.draft = 0;
@@ -603,10 +587,27 @@ class Model extends BaseModel {
                     if(checkObjectIDs(relatedRemoves)){
                         dataPullAll = {
                             ...dataPullAll,
-                            related: relatedRemoves,
-                            accessUsers: relatedRemoves,
-                            news: relatedRemoves
+                            related: relatedRemoves, // Xóa trong chủ đề
+                            accessUsers: relatedRemoves, // Xóa trong quyền truy cập
+                            news: relatedRemoves, // Xóa trong newFeed
                         }
+                       
+                        /**
+                         * Ghi log
+                         */
+                        let listDataRalated = await USER_COLL.find({_id: {$in: relatedRemoves}}).select('fullname')
+                        let str = ''
+                        for(const item of listDataRalated){
+                            str = str + item.fullname
+                        }
+                        
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`,
+                            type: 4,
+                            title: "Xóa người liên quan",
+                            content: `đã xóa người liên quan "${str}"`,
+                        })
+                        // console.log(listDataRalated)
                     }
 
                     //_________Mã công việc
@@ -621,16 +622,18 @@ class Model extends BaseModel {
                      */
                     if(name){
                         dataUpdate.name = name;
-                        dataUpdate.namecv = stringUtils.removeAccents(name);
-                        /**
+                        dataUpdate.namecv = stringUtils.removeAccents(name)
+
+                         /**
                          * Ghi log
+                         * Cập nhật comment type=5 tương ứng (chưa có phần này)
                          */
-                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
                             taskID: `${taskID}`,
                             type: 3,
                             title: "Cập nhật tên công việc",
                             content: `đã cập nhật tên công việc "${infoTask.name}" thành "${name}"`,
-                        });
+                        })
                     }
 
                     /**
@@ -644,14 +647,14 @@ class Model extends BaseModel {
 
                          /**
                          * Ghi log
-                         * Cập nhật comment type=5 tương ứng
+                         * Cập nhật comment type=5 tương ứng (chưa có phần này)
                          */
-                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
                             taskID: `${taskID}`,
                             type: 3,
                             title: "Cập nhật nội dung công việc",
                             content: `đã cập nhật nội dung công việc "${infoTask.description}" thành "${description}"`,
-                        });
+                        })
                     }
 
                     /**
@@ -670,11 +673,11 @@ class Model extends BaseModel {
                         /**
                          * Ghi log
                          */
-                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
                             taskID: `${taskID}`,
                             type: 3,
                             title: "Cập nhật thời hạn",
-                            content: `đã cập nhật thời hạn từ ${moment(infoTask.actualFinishTime).format("L")} thành "${moment(actualFinishTime).format("L")}"`,
+                            content: `đã cập nhật thời hạn từ ${moment(infoTask.actualFinishTime).format("DD/MM/YYYY")} thành ${moment(actualFinishTime).format("DD/MM/YYYY")}`,
                         });
                     }
 
@@ -695,7 +698,7 @@ class Model extends BaseModel {
                          * Ghi log
                          * Cập nhật comment type=5 tương ứng
                          */
-                        let infoLogAfterInsert = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
                             taskID: `${taskID}`,
                             type: 3,
                             title: "Cập nhật người thực hiện",
@@ -726,10 +729,28 @@ class Model extends BaseModel {
                         accessUsers: related,
                         news: related
                     }
+
+                    /**
+                     * Ghi log
+                     */
+                    let listDataRalated = await USER_COLL.find({_id: {$in: related}}).select('fullname')
+                    let str = ''
+                    for(const item of listDataRalated){
+                        str = str + "," + item.fullname
+                    }
+                    
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                        taskID: `${taskID}`,
+                        type: 4,
+                        title: "Thêm người liên quan",
+                        content: `đã thêm người liên quan "${str}"`,
+                    })
+                    // console.log(listDataRalated)
                 }
 
                 /**
-                 * Phân loại công việc: không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
+                 * Phân loại công việc: 
+                 * - Không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
                  */
                 if(subType && !isNaN(subType)){
                     const subTypes = [4, 9, 11];
@@ -931,7 +952,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * THẦU
+                 * CÔNG VIỆC THẦU
                  */
                 if(checkObjectIDs(openedUsers)){
                     dataAddToset = { ...dataAddToset, openedUsers }
