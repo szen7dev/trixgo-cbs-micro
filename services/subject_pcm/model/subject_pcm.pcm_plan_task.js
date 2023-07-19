@@ -1078,6 +1078,7 @@ class Model extends BaseModel {
                         {
                             content: name,
                             contentcv: convertStr,
+                            accessUsers: infoTask.accessUsers
                         } , 
                         { new: true })
 
