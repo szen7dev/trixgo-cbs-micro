@@ -434,6 +434,108 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Dev: Depv
+     * Func: Tạo task từ dữ liệu excel
+     * Date: 15/09/2022
+     */
+    importFromExcel({ option, projectID, dataImport, userID, ctx }) {
+        console.log({option, projectID, userID})
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'projectID_invalid', status: 400 })
+
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+
+                /**
+                 * THÀNH VIÊN DỰ ÁN
+                 */
+                if(1 == 1){
+                    let admins = [], members = []
+                    for (const data of dataImportJSON) {
+                        if(index > 0){
+                            // console.log('=====================')
+                            // console.log(data?.__EMPTY_1)
+                            // console.log(data?.__EMPTY_2)
+                            // console.log(data?.__EMPTY_3)
+
+                            if(Number(data?.__EMPTY_2) == 1){
+                                admins.push(data?.__EMPTY_1)
+                            }
+
+                            if(Number(data?.__EMPTY_3) == 1){
+                                members.push(data?.__EMPTY_1)
+                            }
+                        }
+
+                        index ++;
+                    }
+
+                    await DEPARTMENT_COLL.findByIdAndUpdate(projectID, 
+                        {
+                            admins: admins,
+                            members: members,
+                        }, 
+                    { new: true })
+                }
+                
+                /**
+                 * THÀNH VIÊN NHÓM DỮ LIỆU
+                 */
+                // if(2 == 2){
+                //     let  members = []
+                //     let arrGroup = []
+
+                //     for (const data of dataImportJSON) {
+                //         console.log(data)
+                //     }
+
+                //     for (const data of dataImportJSON) {
+                //         console.log(data)
+                //         // if(index > 0){
+                //         //     console.log('=====================')
+                //         //     console.log(data?.__EMPTY_1)
+                //         //     console.log(data?.__EMPTY_2)
+                //         //     console.log(data?.__EMPTY_3)
+
+                //         //     // if(Number(data?.__EMPTY_2) == 1){
+                //         //     //     admins.push(data?.__EMPTY_1)
+                //         //     // }
+
+                //         //     // if(Number(data?.__EMPTY_3) == 1){
+                //         //     //     members.push(data?.__EMPTY_1)
+                //         //     // }
+                //         // }
+
+                //         // index ++;
+                //     }
+
+                //     // console.log(admins)
+                //     // console.log(members)
+
+                //     // await DEPARTMENT_COLL.findByIdAndUpdate(projectID, 
+                //     //     {
+                //     //         admins: admins,
+                //     //         members: members,
+                //     //     }, 
+                //     // { new: true })
+                // }
+
+                // if(errorNumber != 0)
+                //     return resolve({ error: true, message: "import field" });
+
+                // Update timeImportExcel trick reload việc con
+                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

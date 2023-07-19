@@ -3591,7 +3591,7 @@ class Model extends BaseModel {
      * Date: 01/09/2022
      */
     cloneChildTask({ parentId, parentTask, isDraftTask, callback = null }) {
-        console.log('===========copy công việc connnnnnnnnn===========>>>>>>>>>>')
+        // console.log('===========copy công việc connnnnnnnnn===========>>>>>>>>>>')
         // console.log({ parentId, parentTask, isDraftTask })
         return new Promise(async resolve => {
             try {
