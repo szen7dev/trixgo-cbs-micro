@@ -176,15 +176,17 @@ module.exports = {
     downloadTemplateExcel: {
         auth: 'required',
         params: {
-
+            option     : { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
+                let { projectID } = ctx.params;
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.downloadTemplateExcel({
-                    companyID: company._id, userID 
+                    companyID: company._id, projectID, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -202,19 +204,18 @@ module.exports = {
     importFromExcel: {
         auth: 'required',
         params: {
-            // taskID    : { type: 'string', optional: true },
+            projectID    : { type: 'string', optional: true },
             dataImport: { type: 'string' }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport } = ctx.params;
+                const { projectID, dataImport } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-
-                console.log(dataImport)
+                // console.log(dataImport)
 
                 const resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.importFromExcel({
-                    taskID, dataImport, userID, ctx
+                    projectID, dataImport, userID, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
