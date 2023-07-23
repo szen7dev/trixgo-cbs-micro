@@ -261,17 +261,17 @@ class Model extends BaseModel {
         deletedJournals,
         ctx
      }) {
-        console.log({authorID, 
-            voucherID,
-            customerID,
-            contractID, 
-            storageID, 
-            type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
-            receiver, note,
-            forward, forwardIs, returning, advancePayment, cancel, 
-            fcuExRate, 
-            selectedJournals, 
-            deletedJournals})
+        // console.log({authorID, 
+        //     voucherID,
+        //     customerID,
+        //     contractID, 
+        //     storageID, 
+        //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
+        //     receiver, note,
+        //     forward, forwardIs, returning, advancePayment, cancel, 
+        //     fcuExRate, 
+        //     selectedJournals, 
+        //     deletedJournals})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -723,8 +723,8 @@ class Model extends BaseModel {
      */
     getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
         keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
-            console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
-                keyword})
+            // console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
+            //     keyword})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 20) {
@@ -863,6 +863,7 @@ class Model extends BaseModel {
 
                 let totalRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count(conditionObjOrg);
                 let totalPage = Math.ceil(totalRecord / limit);
+                // console.log(infoDataAfterGet)
 
                 return resolve({
                     error: false, data: {
@@ -879,6 +880,11 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * TÍNH TOÁN VÀ BÁO CÁO SỐ LIỆU
+     */
+    
 }
 
 exports.MODEL = new Model;

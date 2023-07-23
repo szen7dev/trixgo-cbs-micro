@@ -462,17 +462,15 @@ class Model extends BaseModel {
                     conditionObj.company = companyID
                 }
 
-                // if(companyID && checkObjectIDs(companyID)){
-                //     conditionObj.company = companyID;
-                // }
-
                 // Chỉ lấy danh sách cha hoặc con
                 if(isListParentOfListChilds == 1){
                     if(parentID){
                         conditionObj.parent = parentID;
-                    }else{
-                        conditionObj.parent = { $exists: false };
                     }
+                    // else{
+                    //     conditionObj.parent = { $exists: false };
+                    //     conditionObj.parent = null;
+                    // }
                 }
 
                 if(keyword){

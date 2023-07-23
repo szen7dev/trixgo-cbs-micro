@@ -29,7 +29,6 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
         type: Number,
         default: 1
     },
-
     // Cấu hình hiển thị cho báo cáo quản trị (Đang phát triển)
     showInReportMonth: {
         type: Number,
@@ -49,6 +48,19 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
         type: Number,
         default: 1 
     },
+    /**
+     * MẢNG ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU
+     */
+    //_________Toàn bộ các cấp cha bên trên
+    nestedParents: [{
+        type: Schema.Types.ObjectId,
+        ref: "account"
+    }],
+    //_________Toàn bộ các cấp con bên dưới
+    nestedChilds: [{
+        type: Schema.Types.ObjectId,
+        ref: "account"
+    }],
     // Số lượng phần tử con
     amountChilds: {
         type: Number,

@@ -47,15 +47,20 @@ class Model extends BaseModel {
                 let dataInsert = {
                     userCreate: userID,
                     company: companyID,
-                    name,
+                    name: name.trim(),
                 }
 
+                /**
+                 * PHẦN TỬ CHA
+                 */
+                let infoParent
                 if(checkObjectIDs(parentID)){
-                    dataInsert.parent = parentID;
+                    dataInsert.parent = parentID
+                    dataInsert.nestedParents = [parentID]
 
                     // Cập nhật Level để phục vụ việc tính toán, đệ quy
-                    let infoParent = await ITEM__ACCOUNT_COLL.findById(parentID);
-                    dataInsert.level = infoParent.level + 1;
+                    infoParent = await ITEM__ACCOUNT_COLL.findById(parentID)
+                    dataInsert.level = infoParent.level + 1
                 }
 
                 if(description){
@@ -68,13 +73,39 @@ class Model extends BaseModel {
 
                 // Cập nhật amountChilds cho phần tử cha
                 if(checkObjectIDs(parentID)){
+
                     await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID,
                         {
-                            $addToSet: { childs: infoAfterInsert._id },
+                            $addToSet: { 
+                                childs: infoAfterInsert._id,
+                                nestedChilds: infoAfterInsert._id, // Mảng các phần tử con/cháu...
+                             },
                             $inc: { amountChilds: 1 }
                         },
-                        { new: true });
+                        { new: true })
                 }
+
+                /**
+                 * CẬP NHẬT CÁC PHẦN TỬ CHA CẤP TRÊN
+                 */
+                if(checkObjectIDs(parentID)){
+                    for(const item of infoParent?.nestedParents){
+                        // Cập nhật cho các phần tử cha
+                        await ITEM__ACCOUNT_COLL.findByIdAndUpdate(item,
+                            {
+                                $addToSet: { nestedChilds: infoAfterInsert._id },
+                            },
+                            { new: true })
+
+                        // Cập nhật các cha cho chính phần tử này
+                        await ITEM__ACCOUNT_COLL.findByIdAndUpdate(infoAfterInsert._id ,
+                            {
+                                $addToSet: { nestedParents: item },
+                            },
+                            { new: true })
+                    }
+                }
+
 
                 return resolve({ error: false, data: infoAfterInsert });
 
