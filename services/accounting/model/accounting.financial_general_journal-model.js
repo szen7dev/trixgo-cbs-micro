@@ -711,33 +711,43 @@ class Model extends BaseModel {
      */
     /**
      * Name: Số dư của 1 tài khoản (opening balance, closing balance)
-     * Usage:
-     * - Sổ chi tiết tài khoản
      * Author: Hiepnh
      * Date: 03/5/2022
+     * -> CẦN ĐÓNG GÓI THÀNH 1 HÀM TÁI SỬ DỤNG
      */
-    getAccountBalance({ companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
-        const that = this;
+    getAccountBalance({ option, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
+        // const that = this;
+        // console.log({companyID, fundaID, projectID, contractID, accountID, fromDate, toDate})
         return new Promise(async resolve => {
             try {
                 /**
                  * Business Analyst (BA)
-                 * 1. Lấy mảng chứa tài khoản và các con cháu của nó
+                 * ĐẦU KỲ: Tính từ ngày 1/1 của năm tới ngày fromDate (ngày đầu kỳ)
+                 * CUỐI KỲ: Tính từ ngày fromDate tới toDate (ngày cuối kỳ)
+                 * 1. Lấy mảng chứa Tài khoản + Con cháu
                  * 2. Lấy năm của ngày đầu kỳ
-                 * 3. Lấy số liệu đầu kỳ = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
+                 * 3. Số liệu đầu kỳ tra cứu (13/5/2020) = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
                  */
-
-                /**
-                 * ĐẦU KỲ: Tính từ ngày 1/1 của năm tới ngày FromDate (ngày đầu kỳ)
-                 * CUỐI KỲ: Tính từ ngày FromDate tới ToDate (ngày cuối kỳ)
-                 */
-
-                //_________Get nestedArray of account
-                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true });
-
-                arrObjectID = arrObjectID.data || []
+                let arrObjectID = []
+                if(!option){
+                    let infoAccount = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST}`, { accountID })
+                    if(!infoAccount.error){
+                        arrObjectID = infoAccount.data.nestedChilds
+                        arrObjectID.push(accountID)
+                    }
+                }else{
+                    let infoAccount = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_NAME}`, { companyID, name })
+                    // console.log(infoAccount)
+                    if(!infoAccount.error){
+                        arrObjectID = infoAccount.data.nestedChilds
+                        arrObjectID.push(infoAccount.data._id)
+                    }
+                }
                 // console.log(arrObjectID)
 
+                /**
+                 * XỬ LÝ ĐIỀU KIỆN TRA CỨU
+                 */
                 let conditionObj1 = {
                     debit: {
                         $in: arrObjectID
@@ -751,37 +761,35 @@ class Model extends BaseModel {
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
-                    console.log('============1')
-                    conditionObj1.contract = ObjectID(contractID) // Do sử dụng Aggregate nên phải đưa vào dạng ObjectID()
+                    // console.log('============1')
+                    conditionObj1.contract = ObjectID(contractID)
                     conditionObj2.contract = ObjectID(contractID)
                 }else{
                     if (projectID && checkObjectIDs(projectID)) {
-                        console.log('============2')
+                        // console.log('============2')
                         conditionObj1.project = ObjectID(projectID)
                         conditionObj2.project = ObjectID(projectID)
                     }else{
                         if(fundaID && checkObjectIDs(fundaID)){
-                            console.log('============3')
+                            // console.log('============3')
                             conditionObj1.funda = ObjectID(fundaID)
                             conditionObj2.funda = ObjectID(fundaID)
                         }else{
-                            console.log('============4')
+                            // console.log('============4')
                             conditionObj1.company = ObjectID(companyID)
                             conditionObj2.company = ObjectID(companyID)
                         }
                     }
                 }
-
-                console.log(conditionObj1)
-                console.log(conditionObj2)
+                // console.log(conditionObj1)
+                // console.log(conditionObj2)
 
                 /**
                  * Lấy năm của ngày đầu kỳ
-                 * !!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm) !!!
                  */
                 let year = moment(fromDate).toDate().getFullYear()
                 let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`;
-                console.log({ year, firstDayOfYear })
+                // console.log({ year, firstDayOfYear })
 
                 /**
                  * Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau: SỐ ĐẦU NĂM (31/12/2019-1/1/2020)
@@ -848,9 +856,9 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
-                console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
-                console.log({_____PSNo:listDataOpeningS[0]._debit})
-                console.log({_____PSCo: listDataOpeningS[0]._credit})
+                // console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
+                // console.log({_____PSNo:listDataOpeningS[0]._debit})
+                // console.log({_____PSCo: listDataOpeningS[0]._credit})
 
                 /**
                 * Số liệu của các phiếu từ ngày 1/1/2020 tới fromDate và không phải là phiếu kết chuyển: SỐ ĐẦU NĂM->ĐẦU KỲ
@@ -906,9 +914,9 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
-                console.log('=========SỐ ĐẦU KỲ-1: MỐC ĐẦU NĂM->FROMDATE=========')
-                console.log({_____PSNo:listDataOpening[0]._debit})
-                console.log({_____PSCo: listDataOpening[0]._credit})
+                // console.log('=========SỐ ĐẦU KỲ-1: MỐC ĐẦU NĂM->FROMDATE=========')
+                // console.log({_____PSNo:listDataOpening[0]._debit})
+                // console.log({_____PSCo: listDataOpening[0]._credit})
 
                 /**
                 * Số liệu của các phiếu từ ngày fromDate tới toDate và không phải là phiếu kết chuyển: SỐ ĐẦU KỲ->CUỐI KỲ
@@ -964,9 +972,9 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
-                console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
-                console.log({_____PSNo:listDataIncurred[0]._debit})
-                console.log({_____PSCo: listDataIncurred[0]._credit})
+                // console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
+                // console.log({_____PSNo:listDataIncurred[0]._debit})
+                // console.log({_____PSCo: listDataIncurred[0]._credit})
 
 
                 let openingBalanceS = listDataOpeningS[0], openingBalance = listDataOpening[0], incurredBalance = listDataIncurred[0]
@@ -997,7 +1005,7 @@ class Model extends BaseModel {
                     totaIncurredCredit = incurredBalance._credit[0].amountPrice;
                 }
 
-                return resolve({ error: false, data: { totalOpeningDebitS, totalOpeningCreditS, totalOpeningDebit, totalOpeningCredit, totalIncurredDebit, totaIncurredCredit} });
+                return resolve({ error: false, data: { totalOpeningDebitS, totalOpeningCreditS, totalOpeningDebit, totalOpeningCredit, totalIncurredDebit, totaIncurredCredit} })
             } catch (error) {
                 console.log(`getAccountBalance: ${error} `);
                 return resolve({ error: true, message: error.message });

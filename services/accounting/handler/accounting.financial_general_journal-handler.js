@@ -186,13 +186,14 @@ module.exports = {
         params: {
             fromDate        : { type: "string" },
             toDate          : { type: "string" },
-            option          : { type: "number", optional: true },
+            option          : { type: "string", optional: true },
+            name            : { type: "string", optional: true },
             multiple        : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, fundaID, contractID, accountID, fromDate, toDate, option, multiple } = ctx.params;
+                let { companyID, fundaID, contractID, accountID, fromDate, toDate, name, option, multiple } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -211,7 +212,7 @@ module.exports = {
                     
                 } else {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getAccountBalance({
-                        companyID, fundaID, contractID, accountID, fromDate, toDate, option, userID, ctx
+                        companyID, fundaID, contractID, accountID, fromDate, toDate, name, option, userID, ctx
                     });
                 }
 
