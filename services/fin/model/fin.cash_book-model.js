@@ -377,7 +377,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ outin, userID, companyID, accountID, parentID, companyOfUser,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
+        keyword, limit = 10, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -392,8 +392,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if (limit > 50) {
-                    limit = 50
+                if (limit > 10) {
+                    limit = 10
                 } else {
                     limit = +limit;
                 }
@@ -740,7 +740,7 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     downloadTemplateExcel({ option, companyID, parentID, userID }) {
-        console.log({ option, companyID, parentID, userID })
+        // console.log({ option, companyID, parentID, userID })
         return new Promise(async resolve => {
             try {
 
@@ -764,10 +764,15 @@ class Model extends BaseModel {
                 /**
                  * DỮ LIỆU SỔ QUỸ
                  */
-                let listData = await FIN__CASH_BOOK_COLL.find({parent: parentID})
+                let listData = await FIN__CASH_BOOK_COLL.find({company: companyID, parent:{$exists: true, $ne: null}})
                 .limit(200)
-                // .select('name phone taxid')
-                console.log(listData)
+                // .select('name')
+                .populate({
+                    path: 'account customer contract',
+                    select: 'name phone'
+                })
+                .sort({date: 1})
+                // console.log(listData)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))
@@ -790,6 +795,20 @@ class Model extends BaseModel {
                     listItems3?.forEach((item, index) => {
                         workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
                         workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
+                        i++
+                    })
+
+                    var i = 3
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("DataImport").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("DataImport").row(i).cell(2).value(item.date)
+                        workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
+                        workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
+                        workbook.sheet("DataImport").row(i).cell(5).value(`${item?.customer?.name}`)
+                        workbook.sheet("DataImport").row(i).cell(6).value(`${item?.contract?.name}`)
+                        workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
+                        workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
+                        workbook.sheet("DataImport").row(i).cell(9).value(`${item?.note}`)
                         i++
                     })
 
