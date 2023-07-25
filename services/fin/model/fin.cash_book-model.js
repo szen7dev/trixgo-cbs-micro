@@ -7,10 +7,18 @@ const ObjectID = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**
  * import inter-coll, exter-coll
  */
-const FIN__CASH_BOOK_COLL = require('../database/fin.cash_book-coll');
+const FIN__CASH_BOOK_COLL                = require('../database/fin.cash_book-coll');
+const ACCOUNT_COLL                       = require('../../item/database/item.account-coll')
+const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
+const CONTRACT_COLL                      = require('../../item/database/item.contract-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -722,6 +730,133 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Download Template Excel
+     * Author: Hiepnh
+     * Date: 25/7/2023
+     */
+    downloadTemplateExcel({ option, companyID, userID }) {
+        // console.log({ option, companyID, userID })
+        return new Promise(async resolve => {
+            try {
+
+                let listItems1 = await ACCOUNT_COLL.find({company: companyID})
+                .limit(200)
+                .select('name')
+                // .populate({
+                //     path: 'members',
+                //     select: 'fullname'
+                // })
+                // console.log(listItems1)
+
+                let listItems2 = await CONTACT_COLL.find({company: companyID})
+                .limit(200)
+                .select('name phone taxid')
+
+                let listItems3 = await CONTRACT_COLL.find({company: companyID})
+                .limit(200)
+                .select('name sign')
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))
+                .then(async workbook => {
+                    var i = 3
+                    listItems1?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
+                        workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
+                        i++
+                    })
+
+                    var i = 3
+                    listItems2?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(3).value(`${item._id}`)
+                        workbook.sheet("Export").row(i).cell(4).value(`${item.name}_${item?.phone}_${item?.taxid}`)
+                        i++
+                    })
+
+                    var i = 3
+                    listItems3?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
+                        workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
+                        i++
+                    })
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `fin_cashbook_import_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Import Excel
+     * Author: Hiepnh
+     * Date: 25/7/2023
+     */
+    importFromExcel({ option, companyID, parentID, dataImport, userID, ctx }) {
+        // console.log({option, companyID, parentID, userID})
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(parentID))
+                    return resolve({ error: true, message: 'parentID_invalid', status: 400 })
+
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+                
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        // console.log('===================')
+                        // console.log(data)
+                        let dataInsert = {
+                            companyID, 
+                            userID, 
+                            parentID, 
+                            accountID: data?.__EMPTY_14,
+                            customerID: data?.__EMPTY_15, 
+                            contractID: data?.__EMPTY_16, 
+                            name: data?.__EMPTY_1,
+                            note: data?.__EMPTY_7, 
+                            date: data?.__EMPTY_13, 
+                            income: data?.__EMPTY_5, 
+                            expense: data?.__EMPTY_6
+                        }
+                        // console.log(dataInsert)
+
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        // console.log(infoAfterInsert)
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+                    }
+                    index ++;
+                }
+
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "import field" });
+
+                // Update timeImportExcel trick reload việc con
+                // await FIN__CASH_BOOK_COLL.findByIdAndUpdate(parentID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
