@@ -739,8 +739,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 25/7/2023
      */
-    downloadTemplateExcel({ option, companyID, userID }) {
-        // console.log({ option, companyID, userID })
+    downloadTemplateExcel({ option, companyID, parentID, userID }) {
+        console.log({ option, companyID, parentID, userID })
         return new Promise(async resolve => {
             try {
 
@@ -760,6 +760,14 @@ class Model extends BaseModel {
                 let listItems3 = await CONTRACT_COLL.find({company: companyID})
                 .limit(200)
                 .select('name sign')
+
+                /**
+                 * DỮ LIỆU SỔ QUỸ
+                 */
+                let listData = await FIN__CASH_BOOK_COLL.find({parent: parentID})
+                .limit(200)
+                // .select('name phone taxid')
+                console.log(listData)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))

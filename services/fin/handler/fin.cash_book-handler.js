@@ -241,17 +241,17 @@ module.exports = {
     downloadTemplateExcel: {
         auth: 'required',
         params: {
+            parentID: { type: 'string', optional: true  },
             option     : { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                const { parentID, dataImport } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { } = ctx.params;
-                // console.log(ctx.params)
-
+                // console.log({parentID})
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.downloadTemplateExcel({
-                    companyID: company._id, userID 
+                    companyID: company._id, parentID, userID 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -277,7 +277,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { parentID, dataImport } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log({parentID})
+                console.log({parentID})
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.importFromExcel({
                     companyID: company._id, parentID, dataImport, userID, ctx
