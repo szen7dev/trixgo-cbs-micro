@@ -788,9 +788,9 @@ class Model extends BaseModel {
                 /**
                  * DỮ LIỆU SỔ QUỸ
                  */
-                let listData = await FIN__CASH_BOOK_COLL.find({company: companyID, parent:{$exists: true, $ne: null}})
-                .limit(200)
-                // .select('name')
+                let listData = await FIN__CASH_BOOK_COLL.find({parent: parentID})
+                .limit(2000)
+                .select('date name account customer contract income expense note')
                 .populate({
                     path: 'account customer contract',
                     select: 'name phone'
@@ -828,11 +828,11 @@ class Model extends BaseModel {
                         workbook.sheet("DataImport").row(i).cell(2).value(item.date)
                         workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
                         workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
-                        workbook.sheet("DataImport").row(i).cell(5).value(`${item?.customer?.name}`)
-                        workbook.sheet("DataImport").row(i).cell(6).value(`${item?.contract?.name}`)
+                        workbook.sheet("DataImport").row(i).cell(5).value(`${(item?.customer && item?.customer != null) ? item.customer.name : ""}`)
+                        workbook.sheet("DataImport").row(i).cell(6).value(`${(item?.contract && item?.contract != null) ? item.contract.name : ""}`)
                         workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
                         workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
-                        workbook.sheet("DataImport").row(i).cell(9).value(`${item?.note}`)
+                        workbook.sheet("DataImport").row(i).cell(9).value(`${(item?.note && item?.note != "") ? item?.note : ""}`)
                         i++
                     })
 
