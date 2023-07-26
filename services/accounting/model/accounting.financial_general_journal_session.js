@@ -229,7 +229,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date  : 23/4/2022 
      */
-    insertFull({ 
+insertFull({ 
         authorID, companyID, fundaID, voucherID,
         date, forward, forwardIs, returning, advancePayment, cancel, vat,
         debit, credit, customerDebit, customerCredit, updown,
@@ -3749,4 +3749,4 @@ class Model extends BaseModel {
     }
 }
 exports.MODEL = new Model;
-var ACCOUNTING__FINANCIAL_VOUCHER     = require('./accounting.financial_voucher-old').MODEL;
+var ACCOUNTING__FINANCIAL_VOUCHER     = require('./accounting.financial_voucher_session').MODEL;

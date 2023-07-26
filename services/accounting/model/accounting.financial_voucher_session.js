@@ -1789,4 +1789,4 @@ class AccountingFinancialVoucher extends BaseModel {
 }
 
 exports.MODEL = new AccountingFinancialVoucher;
-var ACCOUNTING__FINANCIAL_GENERAL_JOURNAL   = require('./accounting.financial_general_journal-old').MODEL;
+var ACCOUNTING__FINANCIAL_GENERAL_JOURNAL   = require('./accounting.financial_general_journal_session').MODEL;

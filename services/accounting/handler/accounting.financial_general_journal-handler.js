@@ -186,13 +186,18 @@ module.exports = {
         params: {
             fromDate        : { type: "string" },
             toDate          : { type: "string" },
-            option          : { type: "number", optional: true },
-            multiple        : { type: "number", optional: true },
+            option          : { type: "string", optional: true },
+            optionGroup     : { type: "string", optional: true },
+            name            : { type: "string", optional: true },
+            arrAccNames     : { type: "array", optional: true },
+            arrAccIDs       : { type: "array", optional: true },
+            arrCompanyIDs   : { type: "array", optional: true },
+            arrFundaIDs     : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, fundaID, contractID, accountID, fromDate, toDate, option, multiple } = ctx.params;
+                let { companyID, fundaID, contractID, accountID, fromDate, toDate, name, option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -206,14 +211,9 @@ module.exports = {
                 fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
-                let resultAfterCallHandler;
-                if (multiple) {
-                    
-                } else {
-                    resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getAccountBalance({
-                        companyID, fundaID, contractID, accountID, fromDate, toDate, option, userID, ctx
-                    });
-                }
+                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getAccountBalance({
+                    userID, ctx, companyID, fundaID, contractID, accountID, fromDate, toDate, name,  option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
+                })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

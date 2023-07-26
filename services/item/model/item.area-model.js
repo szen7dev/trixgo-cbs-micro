@@ -57,7 +57,7 @@ class Model extends BaseModel {
                 if(parentID) {
                     await ITEM__AREA_COLL.findByIdAndUpdate(parentID, {
                         $addToSet: { childs: infoAfterInsert._id } 
-                    }, { new: true });
+                    }, { new: true })
                 }
                 
                 return resolve({ error: false, data: infoAfterInsert });

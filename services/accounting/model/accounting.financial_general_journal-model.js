@@ -25,8 +25,10 @@
 /**
  * COLLECTIONS
  */
- const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL       = require('../database/accounting.financial_general_journal-coll');
- const BUDGET_WORK_COLL                                 = require('../../budget/database/budget.work-coll'); // Kiểm tra fix lại, không Import trực tiếp
+const ITEM_ACCOUNT_COLL                                 = require('../../item/database/item.account-coll');
+const ITEM__FUNDA_COLL            			            = require('../../item/database/item.funda-coll');
+const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL        = require('../database/accounting.financial_general_journal-coll');
+const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll'); // Kiểm tra fix lại, không Import trực tiếp
 
 /**
  * MODELS
@@ -711,33 +713,397 @@ class Model extends BaseModel {
      */
     /**
      * Name: Số dư của 1 tài khoản (opening balance, closing balance)
-     * Usage:
-     * - Sổ chi tiết tài khoản
      * Author: Hiepnh
      * Date: 03/5/2022
+     * -> CẦN ĐÓNG GÓI THÀNH 1 HÀM TÁI SỬ DỤNG
      */
-    getAccountBalance({ companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
-        const that = this;
+    // getAccountBalance({ option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
+    //     // const that = this;
+    //     console.log({option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate})
+    //     return new Promise(async resolve => {
+    //         try {
+    //             /**
+    //              * Business Analyst (BA)
+    //              * ĐẦU KỲ: Tính từ ngày 1/1 của năm tới ngày fromDate (ngày đầu kỳ)
+    //              * CUỐI KỲ: Tính từ ngày fromDate tới toDate (ngày cuối kỳ)
+    //              * 1. Lấy mảng chứa Tài khoản + Con cháu
+    //              * 2. Lấy năm của ngày đầu kỳ
+    //              * 3. Số liệu đầu kỳ tra cứu (13/5/2020) = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
+    //              */
+    //             let conditionObj = { }
+    //             let conditionGroup = {}
+    //             let conditionProject = {}
+    //             let conditionMatch = {}, conditionMatchS = {}, conditionMatchSF = {}, conditionMatchFT = {}
+    //             let conditionObjYear = {}
+    //             let conditionPopulate = {}
+    //             let sortBy = {"total": -1}
+
+    //             let arrObjectID = []
+    //             if(!option){
+    //                 // let infoAccount = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST}`, { accountID })
+
+    //                 /**
+    //                  * Báo cáo theo ID tài khoản
+    //                  */
+    //                 let listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
+    //                 // console.log(listAccounts)
+    //                 if(listAccounts){
+    //                     for(const item of listAccounts){
+    //                         arrObjectID.push(item._id)
+    //                         arrObjectID = [...arrObjectID,...item.nestedChilds]
+    //                     }
+    //                 }
+    //             }else{
+    //                 /**
+    //                  * Báo cáo theo Tên tài khoản
+    //                  */
+    //                 if(Number(option) === 1){
+    //                     /**
+    //                      * Kiểm tra xem đang lấy dữ liệu của 1 công ty hay nhiều công ty
+    //                      */
+    //                     if(!arrCompanyIDs){
+    //                         let listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
+    //                         console.log(listAccounts)
+    //                         if(listAccounts){
+    //                             for(const item of listAccounts){
+    //                                 arrObjectID.push(item._id)
+    //                                 arrObjectID = [...arrObjectID,...item.nestedChilds]
+    //                             }
+    //                         }
+    //                     }else{
+    //                         // Đang gặp vấn đề ở đây!!!
+    //                         let listAccounts = await ITEM_ACCOUNT_COLL.find({ company: {$in: arrCompanyIDs}, name: {$in: arrAccNames} })
+    //                         console.log(listAccounts)
+    //                         if(listAccounts){
+    //                             for(const item of listAccounts){
+    //                                 arrObjectID.push(item._id)
+    //                                 arrObjectID = [...arrObjectID,...item.nestedChilds]
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             console.log(arrObjectID)
+
+    //             /**
+    //              * XỬ LÝ ĐIỀU KIỆN TRA CỨU
+    //              */
+    //             let conditionObj1 = {
+    //                 debit: {
+    //                     $in: arrObjectID
+    //                 }
+    //             }
+
+    //             let conditionObj2 = {
+    //                 credit: {
+    //                     $in: arrObjectID
+    //                 }
+    //             }
+
+    //             if(contractID && checkObjectIDs(contractID)){
+    //                 console.log('============1')
+    //                 conditionObj1.contract = ObjectID(contractID)
+    //                 conditionObj2.contract = ObjectID(contractID)
+    //             }else{
+    //                 if (projectID && checkObjectIDs(projectID)) {
+    //                     console.log('============2')
+    //                     conditionObj1.project = ObjectID(projectID)
+    //                     conditionObj2.project = ObjectID(projectID)
+    //                 }else{
+    //                     if(fundaID && checkObjectIDs(fundaID)){
+    //                         console.log('============3')
+    //                         conditionObj1.funda = ObjectID(fundaID)
+    //                         conditionObj2.funda = ObjectID(fundaID)
+    //                     }else{
+    //                         if(arrCompanyIDs && checkObjectIDs(arrCompanyIDs)){
+    //                             console.log('============4')
+    //                             conditionObj1.company = {$in: arrCompanyIDs.map( item => ObjectID(item))}
+    //                             conditionObj2.company =  {$in: arrCompanyIDs.map( item => ObjectID(item))}
+    //                         }else{
+    //                             console.log('============5')
+    //                             conditionObj1.company = ObjectID(companyID)
+    //                             conditionObj2.company = ObjectID(companyID)
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             console.log(conditionObj1)
+    //             console.log(conditionObj2)
+
+    //             /**
+    //              * Lấy năm của ngày đầu kỳ
+    //              */
+    //             let year = moment(fromDate).toDate().getFullYear()
+    //             let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`;
+    //             // console.log({ year, firstDayOfYear })
+
+    //             /**
+    //              * XỬ LÝ CÁC ĐIỀU KIỆN
+    //              */
+    //             conditionProject = {
+    //                 year : {$year : "$date"},
+    //                 forward: '$forward',
+    //                 cancel: '$cancel',
+    //                 amount: 1,
+    //             }
+
+    //             conditionMatchS = {
+    //                 "year": Number(year),
+    //                 "forward": 1,
+    //                 "cancel": 0
+    //             }
+
+    //             conditionMatchSF = {
+    //                 "forward": 0,
+    //                 "cancel": 0,
+    //                 "date": {
+    //                     $gte: moment(firstDayOfYear).toDate(),
+    //                     $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+    //                 },
+    //             }
+
+    //             conditionMatchFT = {
+    //                 "forward": 0,
+    //                 "cancel": 0,
+    //                 "date": {
+    //                     $gte: moment(fromDate).toDate(),
+    //                     $lte: moment(toDate).toDate(),
+    //                 },
+    //             }
+
+    //             if(!arrCompanyIDs){
+    //                 conditionGroup =  {
+    //                     _id: { },
+    //                     amount: { $sum: "$amount" }
+    //                 }
+    //             }else{
+    //                 conditionGroup =  {
+    //                     _id: { company: "$company" },
+    //                     amount: { $sum: "$amount" }
+    //                 }
+    //             }
+
+    //             /**
+    //              * Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau: SỐ ĐẦU NĂM (31/12/2019-1/1/2020)
+    //              * - Tức trường "forward" = 1 và Không phải là phiếu hủy "cancel" = 0
+    //              */
+    //             let listDataOpeningS = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+    //                 {
+    //                     $facet: {
+    //                         _debit:[
+    //                             {
+    //                                 $match: conditionObj1
+    //                             },
+    //                             {
+    //                                 $project : conditionProject
+    //                             },
+    //                             {
+    //                                 $match: conditionMatchS
+    //                             },
+    //                             {
+    //                                 $group: conditionGroup
+    //                             }
+    //                         ],
+    //                         _credit:[
+    //                             {
+    //                                 $match: conditionObj2
+    //                             },
+    //                             {
+    //                                 $project : conditionProject
+    //                             },
+    //                             {
+    //                                 $match: conditionMatchS
+    //                             },
+
+    //                             {
+    //                                 $group: conditionGroup
+    //                             }
+    //                         ],
+
+    //                     }
+    //                 }
+    //             ]);
+    //             console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
+    //             console.log({_____PSNo:listDataOpeningS[0]._debit})
+    //             console.log({_____PSCo: listDataOpeningS[0]._credit})
+
+    //             /**
+    //             * Số liệu của các phiếu từ ngày 1/1/2020 tới fromDate và không phải là phiếu kết chuyển: SỐ ĐẦU NĂM->ĐẦU KỲ
+    //             * - Tức trường "forward" = 0 và Không phải là phiếu hủy "cancel" = 0
+    //             */
+    //             let listDataOpening = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+    //                 {
+    //                     $facet: {
+    //                         _debit:[
+    //                             {
+    //                                 $match: conditionObj1
+    //                             },
+    //                             {
+    //                                 $match: conditionMatchSF
+    //                             },
+    //                             {
+    //                                 $group: conditionGroup
+    //                             }
+    //                         ],
+    //                         _credit:[
+    //                             {
+    //                                 $match: conditionObj2
+    //                             },
+    //                             {
+    //                                 $match: conditionMatchSF
+    //                             },
+    //                             {
+    //                                 $group: conditionGroup
+    //                             }
+    //                         ],
+
+    //                     }
+    //                 }
+    //             ])
+    //             console.log('=========SỐ ĐẦU KỲ-1: MỐC ĐẦU NĂM->FROMDATE=========')
+    //             console.log({_____PSNo:listDataOpening[0]._debit})
+    //             console.log({_____PSCo: listDataOpening[0]._credit})
+
+    //             /**
+    //             * Số liệu của các phiếu từ ngày fromDate tới toDate và không phải là phiếu kết chuyển: SỐ ĐẦU KỲ->CUỐI KỲ
+    //             * - Tức trường "forward" = 0 và Không phải là phiếu hủy "cancel" = 0
+    //             */
+    //             let listDataIncurred = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+    //                 {
+    //                     $facet: {
+    //                         _debit:[
+    //                             {
+    //                                 $match: conditionObj1
+    //                             },
+    //                             {
+    //                                 $match: conditionMatchFT
+    //                             },
+    //                             {
+    //                                 $group: conditionGroup
+    //                             }
+    //                         ],
+
+    //                         _credit:[
+    //                             {
+    //                                 $match: conditionObj2
+    //                             },
+    //                             {
+    //                                 $match: conditionMatchFT
+    //                             },
+    //                             {
+    //                                 $group: conditionGroup
+    //                             }
+    //                         ],
+
+    //                     }
+    //                 }
+    //             ]);
+    //             console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
+    //             console.log({_____PSNo:listDataIncurred[0]._debit})
+    //             console.log({_____PSCo: listDataIncurred[0]._credit})
+    //             console.log({_____PSNo:listDataIncurred[0]._debit[0]})
+    //             console.log({_____PSCo: listDataIncurred[0]._credit[0]})
+
+
+    //             let openingBalanceS = listDataOpeningS[0], openingBalance = listDataOpening[0], incurredBalance = listDataIncurred[0]
+
+    //             let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0, totalIncurredDebit = 0, totaIncurredCredit = 0
+
+    //             // Số liệu đầu năm
+    //             if(openingBalanceS._debit.length > 0){
+    //                 totalOpeningDebitS = openingBalanceS._debit[0].amount;
+    //             }
+    //             if(openingBalanceS._credit.length > 0){
+    //                 totalOpeningCreditS = openingBalanceS._credit[0].amount;
+    //             }
+
+    //             // Số liệu từ đầu năm tới đầu kỳ đang xét
+    //             if(openingBalance._debit.length > 0){
+    //                 totalOpeningDebit = openingBalance._debit[0].amount;
+    //             }
+    //             if(openingBalance._credit.length > 0){
+    //                 totalOpeningCredit = openingBalance._credit[0].amount;
+    //             }
+
+    //             // Số liệu đầu kỳ tới cuối kỳ đang xét
+    //             if(incurredBalance._debit.length > 0){
+    //                 totalIncurredDebit = incurredBalance._debit[0].amount;
+    //             }
+    //             if(incurredBalance._credit.length > 0){
+    //                 totaIncurredCredit = incurredBalance._credit[0].amount;
+    //             }
+
+    //             return resolve({ error: false, data: { totalOpeningDebitS, totalOpeningCreditS, totalOpeningDebit, totalOpeningCredit, totalIncurredDebit, totaIncurredCredit} })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     });
+    // }
+
+    getAccountBalance({ option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
+        // console.log({option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate})
         return new Promise(async resolve => {
             try {
                 /**
                  * Business Analyst (BA)
-                 * 1. Lấy mảng chứa tài khoản và các con cháu của nó
+                 * ĐẦU KỲ: Tính từ ngày 1/1 của năm tới ngày fromDate (ngày đầu kỳ)
+                 * CUỐI KỲ: Tính từ ngày fromDate tới toDate (ngày cuối kỳ)
+                 * 1. Lấy mảng chứa Tài khoản + Con cháu
                  * 2. Lấy năm của ngày đầu kỳ
-                 * 3. Lấy số liệu đầu kỳ = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
+                 * 3. Số liệu đầu kỳ tra cứu (13/5/2020) = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
                  */
+                let conditionObj = { }
+                let conditionGroup = {}
+                let conditionProject = {}
+                let conditionMatch = {}, conditionMatchS = {}, conditionMatchSF = {}, conditionMatchFT = {}
+                let conditionObjYear = {}
+                let conditionPopulate = {}
+                let sortBy = {"total": -1}
 
-                /**
-                 * ĐẦU KỲ: Tính từ ngày 1/1 của năm tới ngày FromDate (ngày đầu kỳ)
-                 * CUỐI KỲ: Tính từ ngày FromDate tới ToDate (ngày cuối kỳ)
-                 */
-
-                //_________Get nestedArray of account
-                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true });
-
-                arrObjectID = arrObjectID.data || []
+                let arrObjectID = []
+                if(!option){
+                    /**
+                     * Báo cáo theo ID tài khoản
+                     */
+                    let listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
+                    if(listAccounts){
+                        for(const item of listAccounts){
+                            arrObjectID.push(item._id)
+                            arrObjectID = [...arrObjectID,...item.nestedChilds]
+                        }
+                    }
+                }else{
+                    /**
+                     * Báo cáo theo Tên tài khoản
+                     */
+                    if(Number(option) === 1){
+                        /**
+                         * Kiểm tra xem đang lấy dữ liệu của 1 công ty hay nhiều công ty
+                         */
+                        if(!arrCompanyIDs){
+                            let listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
+                            if(listAccounts){
+                                for(const item of listAccounts){
+                                    arrObjectID.push(item._id)
+                                    arrObjectID = [...arrObjectID,...item.nestedChilds]
+                                }
+                            }
+                        }else{
+                            let listAccounts = await ITEM_ACCOUNT_COLL.find({ company: {$in: arrCompanyIDs}, name: {$in: arrAccNames} })
+                            if(listAccounts){
+                                for(const item of listAccounts){
+                                    arrObjectID.push(item._id)
+                                    arrObjectID = [...arrObjectID,...item.nestedChilds]
+                                }
+                            }
+                        }
+                    }
+                }
                 // console.log(arrObjectID)
 
+                /**
+                 * XỬ LÝ ĐIỀU KIỆN TRA CỨU
+                 */
                 let conditionObj1 = {
                     debit: {
                         $in: arrObjectID
@@ -751,37 +1117,87 @@ class Model extends BaseModel {
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
-                    console.log('============1')
-                    conditionObj1.contract = ObjectID(contractID) // Do sử dụng Aggregate nên phải đưa vào dạng ObjectID()
+                    // console.log('============1')
+                    conditionObj1.contract = ObjectID(contractID)
                     conditionObj2.contract = ObjectID(contractID)
                 }else{
                     if (projectID && checkObjectIDs(projectID)) {
-                        console.log('============2')
+                        // console.log('============2')
                         conditionObj1.project = ObjectID(projectID)
                         conditionObj2.project = ObjectID(projectID)
                     }else{
                         if(fundaID && checkObjectIDs(fundaID)){
-                            console.log('============3')
+                            // console.log('============3')
                             conditionObj1.funda = ObjectID(fundaID)
                             conditionObj2.funda = ObjectID(fundaID)
                         }else{
-                            console.log('============4')
-                            conditionObj1.company = ObjectID(companyID)
-                            conditionObj2.company = ObjectID(companyID)
+                            if(arrCompanyIDs && checkObjectIDs(arrCompanyIDs)){
+                                // console.log('============4')
+                                conditionObj1.company = {$in: arrCompanyIDs.map( item => ObjectID(item))}
+                                conditionObj2.company =  {$in: arrCompanyIDs.map( item => ObjectID(item))}
+                            }else{
+                                // console.log('============5')
+                                conditionObj1.company = ObjectID(companyID)
+                                conditionObj2.company = ObjectID(companyID)
+                            }
                         }
                     }
                 }
-
-                console.log(conditionObj1)
-                console.log(conditionObj2)
+                // console.log(conditionObj1)
+                // console.log(conditionObj2)
 
                 /**
                  * Lấy năm của ngày đầu kỳ
-                 * !!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm) !!!
                  */
                 let year = moment(fromDate).toDate().getFullYear()
                 let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`;
-                console.log({ year, firstDayOfYear })
+                // console.log({ year, firstDayOfYear })
+
+                /**
+                 * XỬ LÝ CÁC ĐIỀU KIỆN
+                 */
+                conditionProject = {
+                    year : {$year : "$date"},
+                    forward: '$forward',
+                    cancel: '$cancel',
+                    amount: 1,
+                }
+
+                conditionMatchS = {
+                    "year": Number(year),
+                    "forward": 1,
+                    "cancel": 0
+                }
+
+                conditionMatchSF = {
+                    "forward": 0,
+                    "cancel": 0,
+                    "date": {
+                        $gte: moment(firstDayOfYear).toDate(),
+                        $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                    },
+                }
+
+                conditionMatchFT = {
+                    "forward": 0,
+                    "cancel": 0,
+                    "date": {
+                        $gte: moment(firstDayOfYear).toDate(), // Tính từ ngày 1/1
+                        $lte: moment(toDate).toDate(),
+                    },
+                }
+
+                if(!arrCompanyIDs){
+                    conditionGroup =  {
+                        _id: { },
+                        amount: { $sum: "$amount" }
+                    }
+                }else{
+                    conditionGroup =  {
+                        _id: { company: "$company" },
+                        amount: { $sum: "$amount" }
+                    }
+                }
 
                 /**
                  * Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau: SỐ ĐẦU NĂM (31/12/2019-1/1/2020)
@@ -795,120 +1211,37 @@ class Model extends BaseModel {
                                     $match: conditionObj1
                                 },
                                 {
-                                    $project : {
-                                        year : {$year : "$date"},
-                                        forward: '$forward',
-                                        cancel: '$cancel',
-                                        amount: 1,
-                                    }
+                                    $project : conditionProject
                                 },
                                 {
-                                    $match: {
-                                        "year": Number(year),
-                                        "forward": 1,
-                                        "cancel": 0
-                                    }
+                                    $match: conditionMatchS
                                 },
                                 {
-                                    $group: {
-                                        _id: { },
-                                        amountPrice: { $sum: "$amount" }
-                                    }
+                                    $group: conditionGroup
                                 }
                             ],
-
                             _credit:[
                                 {
                                     $match: conditionObj2
                                 },
                                 {
-                                    $project : {
-                                        year : {$year : "$date"},
-                                        forward: '$forward',
-                                        cancel: '$cancel',
-                                        amount: 1,
-                                    }
+                                    $project : conditionProject
                                 },
                                 {
-                                    $match: {
-                                        "year": Number(year),
-                                        "forward": 1,
-                                        "cancel": 0
-                                    }
+                                    $match: conditionMatchS
                                 },
 
                                 {
-                                    $group: {
-                                        _id: { },
-                                        amountPrice: { $sum: "$amount" }
-                                    }
+                                    $group: conditionGroup
                                 }
                             ],
 
                         }
                     }
                 ]);
-                console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
-                console.log({_____PSNo:listDataOpeningS[0]._debit})
-                console.log({_____PSCo: listDataOpeningS[0]._credit})
-
-                /**
-                * Số liệu của các phiếu từ ngày 1/1/2020 tới fromDate và không phải là phiếu kết chuyển: SỐ ĐẦU NĂM->ĐẦU KỲ
-                * - Tức trường "forward" = 0 và Không phải là phiếu hủy "cancel" = 0
-                */
-                let listDataOpening = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionObj1
-                                },
-                                {
-                                    $match: {
-                                        "forward": 0,
-                                        "cancel": 0,
-                                        "date": {
-                                            $gte: moment(firstDayOfYear).toDate(),
-                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
-                                        },
-                                    }
-                                },
-                                {
-                                    $group: {
-                                        _id: { },
-                                        amountPrice: { $sum: "$amount" }
-                                    }
-                                }
-                            ],
-
-                            _credit:[
-                                {
-                                    $match: conditionObj2
-                                },
-                                {
-                                    $match: {
-                                        "forward": 0,
-                                        "cancel": 0,
-                                        "date": {
-                                            $gte: moment(firstDayOfYear).toDate(),
-                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
-                                        },
-                                    }
-                                },
-                                {
-                                    $group: {
-                                        _id: { },
-                                        amountPrice: { $sum: "$amount" }
-                                    }
-                                }
-                            ],
-
-                        }
-                    }
-                ]);
-                console.log('=========SỐ ĐẦU KỲ-1: MỐC ĐẦU NĂM->FROMDATE=========')
-                console.log({_____PSNo:listDataOpening[0]._debit})
-                console.log({_____PSCo: listDataOpening[0]._credit})
+                // console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
+                // console.log({_____PSNo:listDataOpeningS[0]._debit})
+                // console.log({_____PSCo: listDataOpeningS[0]._credit})
 
                 /**
                 * Số liệu của các phiếu từ ngày fromDate tới toDate và không phải là phiếu kết chuyển: SỐ ĐẦU KỲ->CUỐI KỲ
@@ -922,20 +1255,10 @@ class Model extends BaseModel {
                                     $match: conditionObj1
                                 },
                                 {
-                                    $match: {
-                                        "forward": 0,
-                                        "cancel": 0,
-                                        "date": {
-                                            $gte: moment(fromDate).toDate(),
-                                            $lte: moment(toDate).toDate(),
-                                        },
-                                    }
+                                    $match: conditionMatchFT
                                 },
                                 {
-                                    $group: {
-                                        _id: { },
-                                        amountPrice: { $sum: "$amount" }
-                                    }
+                                    $group: conditionGroup
                                 }
                             ],
 
@@ -944,66 +1267,49 @@ class Model extends BaseModel {
                                     $match: conditionObj2
                                 },
                                 {
-                                    $match: {
-                                        "forward": 0,
-                                        "cancel": 0,
-                                        "date": {
-                                            $gte: moment(fromDate).toDate(),
-                                            $lte: moment(toDate).toDate(),
-                                        },
-                                    }
+                                    $match: conditionMatchFT
                                 },
                                 {
-                                    $group: {
-                                        _id: { },
-                                        amountPrice: { $sum: "$amount" }
-                                    }
+                                    $group: conditionGroup
                                 }
                             ],
 
                         }
                     }
                 ]);
-                console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
-                console.log({_____PSNo:listDataIncurred[0]._debit})
-                console.log({_____PSCo: listDataIncurred[0]._credit})
+                // console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
+                // console.log({_____PSNo:listDataIncurred[0]._debit})
+                // console.log({_____PSCo: listDataIncurred[0]._credit})
+                // console.log({_____PSNo:listDataIncurred[0]._debit[0]})
+                // console.log({_____PSCo: listDataIncurred[0]._credit[0]})
 
 
-                let openingBalanceS = listDataOpeningS[0], openingBalance = listDataOpening[0], incurredBalance = listDataIncurred[0]
+                let openingBalanceS = listDataOpeningS[0], incurredBalance = listDataIncurred[0]
 
-                let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0, totalIncurredDebit = 0, totaIncurredCredit = 0
+                let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalIncurredDebit = 0, totaIncurredCredit = 0
 
                 // Số liệu đầu năm
                 if(openingBalanceS._debit.length > 0){
-                    totalOpeningDebitS = openingBalanceS._debit[0].amountPrice;
+                    totalOpeningDebitS = openingBalanceS._debit[0].amount;
                 }
                 if(openingBalanceS._credit.length > 0){
-                    totalOpeningCreditS = openingBalanceS._credit[0].amountPrice;
-                }
-
-                // Số liệu từ đầu năm tới đầu kỳ đang xét
-                if(openingBalance._debit.length > 0){
-                    totalOpeningDebit = openingBalance._debit[0].amountPrice;
-                }
-                if(openingBalance._credit.length > 0){
-                    totalOpeningCredit = openingBalance._credit[0].amountPrice;
+                    totalOpeningCreditS = openingBalanceS._credit[0].amount;
                 }
 
                 // Số liệu đầu kỳ tới cuối kỳ đang xét
                 if(incurredBalance._debit.length > 0){
-                    totalIncurredDebit = incurredBalance._debit[0].amountPrice;
+                    totalIncurredDebit = incurredBalance._debit[0].amount;
                 }
                 if(incurredBalance._credit.length > 0){
-                    totaIncurredCredit = incurredBalance._credit[0].amountPrice;
+                    totaIncurredCredit = incurredBalance._credit[0].amount;
                 }
 
-                return resolve({ error: false, data: { totalOpeningDebitS, totalOpeningCreditS, totalOpeningDebit, totalOpeningCredit, totalIncurredDebit, totaIncurredCredit} });
+                return resolve({ error: false, data: { totalOpeningDebitS, totalOpeningCreditS, totalIncurredDebit, totaIncurredCredit } })
             } catch (error) {
-                console.log(`getAccountBalance: ${error} `);
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message })
             }
         });
     }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model

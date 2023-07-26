@@ -7,10 +7,18 @@ const ObjectID = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**
  * import inter-coll, exter-coll
  */
-const FIN__CASH_BOOK_COLL = require('../database/fin.cash_book-coll');
+const FIN__CASH_BOOK_COLL                = require('../database/fin.cash_book-coll');
+const ACCOUNT_COLL                       = require('../../item/database/item.account-coll')
+const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
+const CONTRACT_COLL                      = require('../../item/database/item.contract-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -369,23 +377,15 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ outin, userID, companyID, accountID, parentID, companyOfUser,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
+        keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let sortBy;
                 let conditionObj = {};
                 let keys = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if (limit > 50) {
-                    limit = 50
+                if (limit > 30) {
+                    limit = 30
                 } else {
                     limit = +limit;
                 }
@@ -409,11 +409,6 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
 
@@ -567,7 +562,7 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
 
-                if (!option || isNaN(option) || ![1,2,3].includes(Number(option)))
+                if (!option || isNaN(option) || ![1,2,3,4].includes(Number(option)))
                     return resolve({ error: true, message: "Tham số option không hợp lệ", keyError: "option_invalid" })
 
                 // Cấu hình gom nhóm mặc định
@@ -580,7 +575,7 @@ class Model extends BaseModel {
 
                 // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
                 if(Number(option) === 1){
-                    console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị 556688')
+                    // console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị 556688')
                     let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
                         appID: "5dfe4bc751dc622100bb9d8a",
                         menuID: "623f2465e998e94feda0cdaa",
@@ -613,9 +608,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                // 2-Tổng hợp của công ty user
+                // 2-Tổng hợp theo công ty cụ thể
                 if(Number(option) === 2){
-                    console.log('2-Tổng hợp của công ty user')
+                    // console.log('2-Tổng hợp của công ty user')
                     let listActiveParent = await FIN__CASH_BOOK_COLL.find({
                         active: 1,
                         parent: {$exists: false},
@@ -643,7 +638,7 @@ class Model extends BaseModel {
 
                 // 3-Tổng hợp theo sổ quỹ cụ thể
                 if(Number(option) === 3){
-                    console.log('3-Tổng hợp theo sổ quỹ cụ thể')
+                    // console.log('3-Tổng hợp theo sổ quỹ cụ thể')
                     if(parentID && checkObjectIDs(parentID)){
                         conditionObj.parent = ObjectID(parentID)
 
@@ -668,6 +663,42 @@ class Model extends BaseModel {
 
                     sortBy = {
                         "_id.account": 1,
+                    }
+                }
+
+                /**
+                 * TỔNG HỢP THEO CÁC CÔNG TY MÀ USER ĐƯỢC TRUY CẬP
+                 */
+                if(Number(option) === 4){
+                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
+                        appID: "5dfe4bc751dc622100bb9d8a",
+                        menuID: "623f2465e998e94feda0cdaa",
+                        type: "1"
+                    })
+
+                    // Danh sách các sổ quỹ còn hoạt động thuộc các công ty user được truy cập
+                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({
+                        active: 1,
+                        parent: {$exists: false},
+                        company: {$in: listCompany.data.map(item=>item._id.company._id)}
+                    })
+
+                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
+
+                    conditionGroup = {
+                        _id: { company: "$company" },
+                        income: { $sum: "$income" },
+                        expense: { $sum: "$expense" }
+                    }
+
+                    conditionPopulate = {
+                        path: '_id.company',
+                        select: '_id name sign image',
+                        model: 'company'
+                    }
+
+                    sortBy = {
+                        "_id.company": 1,
                     }
                 }
 
@@ -718,10 +749,165 @@ class Model extends BaseModel {
                 if(!isNaN(option) && Number(option) > 0){
                     await FIN__CASH_BOOK_COLL.populate(listData, conditionPopulate)
                 }
+                // console.log(listData)
 
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Download Template Excel
+     * Author: Hiepnh
+     * Date: 25/7/2023
+     */
+    downloadTemplateExcel({ option, companyID, parentID, userID }) {
+        // console.log({ option, companyID, parentID, userID })
+        return new Promise(async resolve => {
+            try {
+
+                let listItems1 = await ACCOUNT_COLL.find({company: companyID})
+                .limit(200)
+                .select('name')
+                // .populate({
+                //     path: 'members',
+                //     select: 'fullname'
+                // })
+                // console.log(listItems1)
+
+                let listItems2 = await CONTACT_COLL.find({company: companyID})
+                .limit(200)
+                .select('name phone taxid')
+
+                let listItems3 = await CONTRACT_COLL.find({company: companyID})
+                .limit(200)
+                .select('name sign')
+
+                /**
+                 * DỮ LIỆU SỔ QUỸ
+                 */
+                let listData = await FIN__CASH_BOOK_COLL.find({company: companyID, parent:{$exists: true, $ne: null}})
+                .limit(200)
+                // .select('name')
+                .populate({
+                    path: 'account customer contract',
+                    select: 'name phone'
+                })
+                .sort({date: 1})
+                // console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))
+                .then(async workbook => {
+                    var i = 3
+                    listItems1?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
+                        workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
+                        i++
+                    })
+
+                    var i = 3
+                    listItems2?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(3).value(`${item._id}`)
+                        workbook.sheet("Export").row(i).cell(4).value(`${item.name}_${item?.phone}_${item?.taxid}`)
+                        i++
+                    })
+
+                    var i = 3
+                    listItems3?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
+                        workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
+                        i++
+                    })
+
+                    var i = 3
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("DataImport").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("DataImport").row(i).cell(2).value(item.date)
+                        workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
+                        workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
+                        workbook.sheet("DataImport").row(i).cell(5).value(`${item?.customer?.name}`)
+                        workbook.sheet("DataImport").row(i).cell(6).value(`${item?.contract?.name}`)
+                        workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
+                        workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
+                        workbook.sheet("DataImport").row(i).cell(9).value(`${item?.note}`)
+                        i++
+                    })
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `fin_cashbook_import_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Import Excel
+     * Author: Hiepnh
+     * Date: 25/7/2023
+     */
+    importFromExcel({ option, companyID, parentID, dataImport, userID, ctx }) {
+        // console.log({option, companyID, parentID, userID})
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(parentID))
+                    return resolve({ error: true, message: 'parentID_invalid', status: 400 })
+
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+                
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        // console.log('===================')
+                        // console.log(data)
+                        let dataInsert = {
+                            companyID, 
+                            userID, 
+                            parentID, 
+                            accountID: data?.__EMPTY_14,
+                            customerID: data?.__EMPTY_15, 
+                            contractID: data?.__EMPTY_16, 
+                            name: data?.__EMPTY_1,
+                            note: data?.__EMPTY_7, 
+                            date: data?.__EMPTY_13, 
+                            income: data?.__EMPTY_5, 
+                            expense: data?.__EMPTY_6
+                        }
+                        // console.log(dataInsert)
+
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        // console.log(infoAfterInsert)
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+                    }
+                    index ++;
+                }
+
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "import field" });
+
+                // Update timeImportExcel trick reload việc con
+                // await FIN__CASH_BOOK_COLL.findByIdAndUpdate(parentID, { $set: { timeImportExcel: new Date() }}, { new: true });
+
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
