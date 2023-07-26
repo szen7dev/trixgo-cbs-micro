@@ -83,17 +83,17 @@ class Model extends BaseModel {
                 let infoFunda       = await FUNDA_COLL.findById(fundaID)
 
                 let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
-                if(sign && sign != ""){
-                    // Kiểm tra xem đã tồn tại mã hiệu đó hay chưa
-                    let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
-                        funda: fundaID, 
-                        sign: sign
-                    }).select('_id')
+                // if(sign && sign != ""){
+                //     // Kiểm tra xem đã tồn tại mã hiệu đó hay chưa
+                //     let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
+                //         funda: fundaID, 
+                //         sign: sign
+                //     }).select('_id')
 
-                    if(!infoVoucher){
-                        voucherSign = sign
-                    }
-                }
+                //     if(!infoVoucher){
+                //         voucherSign = sign
+                //     }
+                // }
 
                 /**
                  * B1. TẠO PHIẾU
@@ -103,7 +103,10 @@ class Model extends BaseModel {
                     company: companyID, 
                     funda: fundaID, 
                     customer: customerID,
-                    type, date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
+                    type, date, name, 
+                    sign: voucherSign, 
+                    signInvoice, 
+                    dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate
@@ -214,6 +217,7 @@ class Model extends BaseModel {
                                 dataInsert.contract = contractID;
                             }
                         }
+
 
                         /**
                          * Cập nhật ngân sách thực hiện

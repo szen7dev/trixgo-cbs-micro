@@ -8,9 +8,16 @@ const Schema                = require('mongoose').Schema;
  */
 
 module.exports  = DATABASE_MIDDLEWARE("account", { 
-     /**
-     * Thuộc về công ty nào
-     */    
+    /**
+     * Trạng thái sử dụng
+     * - 1: Đang sử dụng
+     * - 0: Không còn sử dụng
+     */
+    status: {
+        type: Number,
+        default: 0
+    },  
+    //_________Thuộc về công ty nào
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -29,7 +36,7 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
         type: Number,
         default: 1
     },
-    // Cấu hình hiển thị cho báo cáo quản trị (Đang phát triển)
+    //_________Cấu hình hiển thị cho báo cáo quản trị (Đang phát triển)
     showInReportMonth: {
         type: Number,
     },
@@ -48,8 +55,13 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
         type: Number,
         default: 1 
     },
+    //_________Số lượng phần tử con
+    amountChilds: {
+        type: Number,
+        default: 0 
+    },
     /**
-     * MẢNG ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU
+     * ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU
      */
     //_________Toàn bộ các cấp cha bên trên
     nestedParents: [{
@@ -61,20 +73,6 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
         type: Schema.Types.ObjectId,
         ref: "account"
     }],
-    // Số lượng phần tử con
-    amountChilds: {
-        type: Number,
-        default: 0 
-    },
-    /**
-     * Trạng thái sử dụng
-     * - 1: Đang sử dụng
-     * - 0: Không còn sử dụng
-     */
-    status: {
-        type: Number,
-        default: 0
-    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
