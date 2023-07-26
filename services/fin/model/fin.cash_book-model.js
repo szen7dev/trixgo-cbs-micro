@@ -377,23 +377,15 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ outin, userID, companyID, accountID, parentID, companyOfUser,
-        keyword, limit = 10, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
+        keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let sortBy;
                 let conditionObj = {};
                 let keys = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if (limit > 10) {
-                    limit = 10
+                if (limit > 30) {
+                    limit = 30
                 } else {
                     limit = +limit;
                 }
@@ -417,11 +409,6 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
 
@@ -575,7 +562,7 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
 
-                if (!option || isNaN(option) || ![1,2,3].includes(Number(option)))
+                if (!option || isNaN(option) || ![1,2,3,4].includes(Number(option)))
                     return resolve({ error: true, message: "Tham số option không hợp lệ", keyError: "option_invalid" })
 
                 // Cấu hình gom nhóm mặc định
@@ -588,7 +575,7 @@ class Model extends BaseModel {
 
                 // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
                 if(Number(option) === 1){
-                    console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị 556688')
+                    // console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị 556688')
                     let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
                         appID: "5dfe4bc751dc622100bb9d8a",
                         menuID: "623f2465e998e94feda0cdaa",
@@ -621,9 +608,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                // 2-Tổng hợp của công ty user
+                // 2-Tổng hợp theo công ty cụ thể
                 if(Number(option) === 2){
-                    console.log('2-Tổng hợp của công ty user')
+                    // console.log('2-Tổng hợp của công ty user')
                     let listActiveParent = await FIN__CASH_BOOK_COLL.find({
                         active: 1,
                         parent: {$exists: false},
@@ -651,7 +638,7 @@ class Model extends BaseModel {
 
                 // 3-Tổng hợp theo sổ quỹ cụ thể
                 if(Number(option) === 3){
-                    console.log('3-Tổng hợp theo sổ quỹ cụ thể')
+                    // console.log('3-Tổng hợp theo sổ quỹ cụ thể')
                     if(parentID && checkObjectIDs(parentID)){
                         conditionObj.parent = ObjectID(parentID)
 
@@ -676,6 +663,42 @@ class Model extends BaseModel {
 
                     sortBy = {
                         "_id.account": 1,
+                    }
+                }
+
+                /**
+                 * TỔNG HỢP THEO CÁC CÔNG TY MÀ USER ĐƯỢC TRUY CẬP
+                 */
+                if(Number(option) === 4){
+                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
+                        appID: "5dfe4bc751dc622100bb9d8a",
+                        menuID: "623f2465e998e94feda0cdaa",
+                        type: "1"
+                    })
+
+                    // Danh sách các sổ quỹ còn hoạt động thuộc các công ty user được truy cập
+                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({
+                        active: 1,
+                        parent: {$exists: false},
+                        company: {$in: listCompany.data.map(item=>item._id.company._id)}
+                    })
+
+                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
+
+                    conditionGroup = {
+                        _id: { company: "$company" },
+                        income: { $sum: "$income" },
+                        expense: { $sum: "$expense" }
+                    }
+
+                    conditionPopulate = {
+                        path: '_id.company',
+                        select: '_id name sign image',
+                        model: 'company'
+                    }
+
+                    sortBy = {
+                        "_id.company": 1,
                     }
                 }
 
@@ -726,6 +749,7 @@ class Model extends BaseModel {
                 if(!isNaN(option) && Number(option) > 0){
                     await FIN__CASH_BOOK_COLL.populate(listData, conditionPopulate)
                 }
+                // console.log(listData)
 
                 return resolve({ error: false, data: listData });
             } catch (error) {
