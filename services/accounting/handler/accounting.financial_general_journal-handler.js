@@ -11,7 +11,7 @@ const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_cod
 /**
  * MODELS
  */
-const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL = require('../model/accounting.financial_general_journal-model').MODEL;
+const FINANCIAL_GENERAL_JOURNAL_MODEL = require('../model/accounting.financial_general_journal-model').MODEL;
 
 module.exports = {
     /**
@@ -31,7 +31,7 @@ module.exports = {
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert({});
+                const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.insert({});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -57,7 +57,7 @@ module.exports = {
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update({});
+                const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.update({});
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -81,7 +81,7 @@ module.exports = {
                 const { cashBooksID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.remove({});
+                const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.remove({});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -130,11 +130,11 @@ module.exports = {
 
                 let resultAfterCallHandler;
                 if (journalID) {
-                    resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getInfo({
+                    resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getInfo({
                         journalID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
+                    resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
                         companyID, fundaID, projectID, contractID, voucherID, accountID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, sortKey, ctx
                     });
                 }
@@ -165,7 +165,7 @@ module.exports = {
             
                 const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.calImpleBudget({
+                let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.calImpleBudget({
                     workID, groupID, itemID, budgetID, userID, ctx
                 });
                 
@@ -211,8 +211,55 @@ module.exports = {
                 fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
-                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getAccountBalance({
+                let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getAccountBalance({
                     userID, ctx, companyID, fundaID, contractID, accountID, fromDate, toDate, name,  option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: Lấy số dư tài khoản
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+    getListByProperty: {
+        auth: "required",
+        params: {
+            option          : { type: "string", optional: true },
+            optionAccount   : { type: "string", optional: true },
+            fromDate        : { type: "string" },
+            toDate          : { type: "string" },
+            companyID       : { type: "string", optional: true },
+            name            : { type: "string", optional: true },
+            arrAccNames     : { type: "array", optional: true },
+            arrAccIDs       : { type: "array", optional: true },
+            arrCompanyIDs   : { type: "array", optional: true },
+            arrFundaIDs     : { type: "array", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, fundaID, contractID, accountID, fromDate, toDate, name, option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
+                
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                /**
+                 * Convert dữ liệu ngày tháng để theo chuẩn chung
+                 */
+                fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+
+                let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({
+                    userID, ctx, option, optionAccount, companyID, fundaID, contractID, accountID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

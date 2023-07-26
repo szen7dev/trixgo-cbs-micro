@@ -150,6 +150,12 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
+                /**
+                 * NẾU DI CHUYỂN PHẦN TỬ CHA
+                 * - Thay đổi cấu trúc cha cũ
+                 * - Cập nhật theo cấu trúc cha mới cho tất cả con cháu
+                 */
+
                 let infoAfterUpdate = await ITEM__ACCOUNT_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update" });
