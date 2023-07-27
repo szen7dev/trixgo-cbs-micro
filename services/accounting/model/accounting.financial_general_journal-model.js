@@ -25,10 +25,11 @@
 /**
  * COLLECTIONS
  */
-const ITEM_ACCOUNT_COLL                                 = require('../../item/database/item.account-coll');
-const ITEM__FUNDA_COLL            			            = require('../../item/database/item.funda-coll');
-const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll');
-const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll'); // Kiểm tra fix lại, không Import trực tiếp
+const ITEM_ACCOUNT_COLL                                 = require('../../item/database/item.account-coll')
+const ITEM__FUNDA_COLL            			            = require('../../item/database/item.funda-coll')
+const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
+const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
+const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll')
 
 /**
  * MODELS
@@ -907,12 +908,12 @@ class Model extends BaseModel {
                         }
 
                         conditionGroupDebit = {
-                            _id: { debit: "$debit" },
+                            _id: { account: "$debit" },
                             amount: { $sum: "$amount" }
                         }
                         
                         conditionGroupCredit = {
-                            _id: { credit: "$credit" },
+                            _id: { account: "$credit" },
                             amount: { $sum: "$amount" }
                         }
                     }
@@ -932,12 +933,12 @@ class Model extends BaseModel {
                         }
 
                         conditionGroupDebit = {
-                            _id: { customerDebit: "$customerDebit", debit: "$debit" },
+                            _id: { contact: "$customerDebit", account: "$debit" },
                             amount: { $sum: "$amount" }
                         }
                         
                         conditionGroupCredit = {
-                            _id: { customerCredit: "$customerCredit", credit: "$credit" },
+                            _id: { contact: "$customerCredit", account: "$credit" },
                             amount: { $sum: "$amount" }
                         }
                     }
@@ -1152,7 +1153,7 @@ class Model extends BaseModel {
                         totalCreditFT,
                     }})
                 }else{
-                    if(option == 1 || option == 2){
+                    if(option == 1){
                         return resolve({ error: false, data: { 
                             listAccounts,
                             debitO: listDataO[0]._debit,
@@ -1161,6 +1162,98 @@ class Model extends BaseModel {
                             creditIn: listDataIn[0]._credit,
                         }})
                     }
+
+                    if(option == 2){
+                        let arrCustomers = []
+                        if(listDataO[0]._debit.length > 0){
+                            arrCustomers = [...arrCustomers,...listDataO[0]._debit.map(item=>item._id.contact)]
+                        }
+                        if(listDataO[0]._credit.length > 0){
+                            arrCustomers = [...arrCustomers,...listDataO[0]._credit.map(item=>item._id.contact)]
+                        }
+                        if(listDataIn[0]._debit.length > 0){
+                            arrCustomers = [...arrCustomers,...listDataIn[0]._debit.map(item=>item._id.contact)]
+                        }
+                        if(listDataIn[0]._credit.length > 0){
+                            arrCustomers = [...arrCustomers,...listDataIn[0]._credit.map(item=>item._id.contact)]
+                        }
+
+                        let listCustomers = await ITEM__CONTACT_COLL.find({_id: {$in: arrCustomers}}).select('name phone address image')
+                        // console.log(listCustomers)
+
+                        /**
+                         * XỬ LÝ LOGIC DATA
+                         */
+                        let arrDebitO = [], arrCreditO = [], arrDebitIn = [], arrCreditIn = []
+
+                        listDataO[0]._debit.forEach(element=>{
+                            let key = element._id.contact;
+                            if (!Array.isArray(arrDebitO[key])) {
+                                arrDebitO[key] = [];
+                            }
+                            arrDebitO[key].push(element)
+                        })
+
+                        listDataO[0]._credit.forEach(element=>{
+                            let key = element._id.contact;
+                            if (!Array.isArray(arrCreditO[key])) {
+                                arrCreditO[key] = [];
+                            }
+                            arrCreditO[key].push(element)
+                        })
+
+                        listDataIn[0]._debit.forEach(element=>{
+                            let key = element._id.contact;
+                            if (!Array.isArray(arrDebitIn[key])) {
+                                arrDebitIn[key] = [];
+                            }
+                            arrDebitIn[key].push(element)
+                        })
+
+                        listDataIn[0]._credit.forEach(element=>{
+                            let key = element._id.contact;
+                            if (!Array.isArray(arrCreditIn[key])) {
+                                arrCreditIn[key] = [];
+                            }
+                            arrCreditIn[key].push(element)
+                        })
+                        // console.log(arrDebitO)
+                        // console.log(arrCreditO)
+                        // console.log(arrDebitIn)
+                        // console.log(arrCreditIn)
+
+                        for(var i=0; i < listCustomers.length; i++ ){
+                            listCustomers[i].total = 0
+                        }
+                        // console.log(listCustomers)
+
+                        listCustomers.forEach((item, index)=>{
+                            if(arrDebitO[item._id]){
+                                listCustomers[index].total = listCustomers[index].total + Number(arrDebitO[item._id][0].amount)
+                            }
+                            if(arrCreditO[item._id]){
+                                listCustomers[index].total = listCustomers[index].total - Number(arrCreditO[item._id][0].amount)
+                            }
+                            if(arrDebitIn[item._id]){
+                                listCustomers[index].total = listCustomers[index].total + Number(arrDebitIn[item._id][0].amount)
+                            }
+                            if(arrCreditIn[item._id]){
+                                listCustomers[index].total = listCustomers[index].total - Number(arrCreditIn[item._id][0].amount)
+                            }
+                        })
+
+                        // return resolve({ error: false, data: { 
+                        //     listAccounts,
+                        //     listCustomers,
+                        //     debitO: listDataO[0]._debit,
+                        //     creditO: listDataO[0]._credit,
+                        //     debitIn: listDataIn[0]._debit,
+                        //     creditIn: listDataIn[0]._credit
+                        // }})
+                        return resolve({ error: false, data: listCustomers })
+                    }
+
+                    
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message })
