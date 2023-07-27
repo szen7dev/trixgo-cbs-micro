@@ -232,6 +232,7 @@ module.exports = {
         params: {
             option          : { type: "string", optional: true },
             optionAccount   : { type: "string", optional: true },
+            optionTerm      : { type: "string", optional: true },
             fromDate        : { type: "string" },
             toDate          : { type: "string" },
             companyID       : { type: "string", optional: true },
@@ -244,7 +245,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, fundaID, contractID, accountID, fromDate, toDate, name, option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
+                let { option, optionAccount, optionTerm, companyID, fundaID, contractID, accountID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -259,7 +260,7 @@ module.exports = {
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({
-                    userID, ctx, option, optionAccount, companyID, fundaID, contractID, accountID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
+                    userID, ctx, option, optionAccount, optionTerm, companyID, fundaID, contractID, accountID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
