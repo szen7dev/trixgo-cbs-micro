@@ -68,6 +68,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     },
     //_________Tên/họ và tên
     name: String,
+    //_________Tên tra cứu
+    namecv: String,
     //_________Mã hiệu
     sign: String,  
     //_________Mô tả (Thông tin khác)

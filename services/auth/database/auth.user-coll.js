@@ -8,9 +8,6 @@ function obfuscate (cc) {
 }
 
 module.exports  = DATABASE_MIDDLEWARE("user", {
-    /**
-     * index: {fullname: text}
-     */
     //_________Thuộc nền tảng
     platform:{
         type: Number,
@@ -60,6 +57,11 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     position: {
         type: Schema.Types.ObjectId,
         ref : "position"
+    },
+    //_______Link với danh bạ
+    contact: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
     },
     //_______Ảnh đại diện
     image: {
@@ -169,7 +171,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
             default: 1
         }
     }],
-
     /**
      * Group default
      */
