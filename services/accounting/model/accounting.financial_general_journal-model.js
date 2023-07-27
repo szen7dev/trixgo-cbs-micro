@@ -420,8 +420,9 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ companyID, fundaID, projectID, contractID, accountID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey, ctx }) {
+    getList({ companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID,
+        keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+            // console.log({companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -430,19 +431,10 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                // Chỉ hiển thị sổ quỹ mà user là member
                 let sortBy;
-                let conditionObj = { };
-                let keys = ['createAt__-1', '_id__-1'];
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                // let conditionObj = { forward: 0, cancel: 0 };
+                let conditionObj = {  };
+                let keys = ['createAt__1', '_id__1'];
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
@@ -464,9 +456,24 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
+                 * BA
+                 */
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
+                /**
+                 * THEO PHIẾU/HỢP ĐỒNG/DỰ ÁN/ĐƠN VỊ/CÔNG TY
                  */
                 if (checkObjectIDs(voucherID)) {
                     conditionObj.voucher = voucherID
@@ -487,7 +494,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Bút toán của Thực hiện ngân sách
+                 * THEO NGÂN SÁCH
                  */
                 if(checkObjectIDs(budgetID)){
                     conditionObj = {
@@ -513,32 +520,59 @@ class Model extends BaseModel {
                 /**
                  * THEO TÀI KHOẢN
                  */
-                if(checkObjectIDs(accountID)){
-                    //_________Get nestedArray of account
-                    let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true });
+                if(checkObjectIDs(accountID) && checkObjectIDs(contactID)){
+                    // console.log('=================1111111111111111')
+                    let arrObjectID = []
+                    let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                    if(!infoAccount)
+                        return resolve({ error: true, message: 'cannot_get_account_info' })
 
-                    arrObjectID = arrObjectID.data || []
-                    console.log(arrObjectID)
+                    arrObjectID.push(accountID)
+                    arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
+                    // console.log(arrObjectID)
 
                     conditionObj.$or = [
-                        { debit:   {
-                            $in: arrObjectID
-                        }},
-                        { credit:  {
-                            $in: arrObjectID
-                        } },
+                        { debit: { $in: arrObjectID }, customerDebit: contactID },
+                        { credit: { $in: arrObjectID }, customerCredit: contactID },
                     ]
+                    // console.log(conditionObj)
 
-                    if(fromDate && toDate){
-                        conditionObj.date = {
-                            $gte: moment(fromDate).toDate(),
-                            $lte: moment(toDate).toDate(),
-                        }
+                }else{
+                    if(checkObjectIDs(accountID)){
+                        // console.log('=================22222222222222222')
+                        let arrObjectID = []
+                        let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                        if(!infoAccount)
+                            return resolve({ error: true, message: 'cannot_get_account_info' })
+    
+                        arrObjectID.push(accountID)
+                        arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
+                        // console.log(arrObjectID)
+    
+                        conditionObj.$or = [
+                            { debit:   {
+                                $in: arrObjectID
+                            }},
+                            { credit:  {
+                                $in: arrObjectID
+                            } }
+                        ]
+                        // console.log(conditionObj)
                     }
 
-                    console.log(conditionObj)
+                    if(checkObjectIDs(contactID)){
+                        // console.log('=================333333333333333333333')
+                        conditionObj.$or = [
+                            { customerDebit: contactID },
+                            { customerCredit: contactID },
+                        ]
+                        // console.log(conditionObj)
+                    }
                 }
-
+         
+                /**
+                 * THEO KEYWORD
+                 */
                 if (keyword) {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
@@ -546,6 +580,7 @@ class Model extends BaseModel {
                     conditionObj.name = regExpSearch;
                 }
                 let conditionObjOrg = { ...conditionObj };
+                // console.log(conditionObj)
 
                 // PHÂN TRANG KIỂU MỚI
                 if (lastestID && checkObjectIDs(lastestID)) {
@@ -712,8 +747,8 @@ class Model extends BaseModel {
     /**
      * REPORT
      */
-    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
-        // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate})
+    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID }) {
+        // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate})
         return new Promise(async resolve => {
             try {
                 /**
@@ -736,6 +771,7 @@ class Model extends BaseModel {
                 let arrObjectID = [], listAccounts = []
                 // Truyền theo ID tài khoản
                 if(!optionAccount){
+                    // console.log('============zzzzzzzzzzzz1111111111111111111111')
                     listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
                     .select('name description nestedChilds')
                     if(listAccounts){
@@ -748,6 +784,7 @@ class Model extends BaseModel {
                     // Theo tên tài khoản
                     if(optionAccount == 1){
                         if(!arrCompanyIDs){
+                            // console.log('============zzzzzzzzzzzz2222222222222222222')
                             listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
                             .select('name description nestedChilds')
                             if(listAccounts){
@@ -757,6 +794,7 @@ class Model extends BaseModel {
                                 }
                             }
                         }else{
+                            // console.log('============zzzzzzzzzzzz333333333333333333')
                             listAccounts = await ITEM_ACCOUNT_COLL.find({ company: {$in: arrCompanyIDs}, name: {$in: arrAccNames} })
                             .select('name description nestedChilds')
                             if(listAccounts){
@@ -918,7 +956,10 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // 1 tài khoản - Nhiều mã khách
+                    /**
+                     * BÁO CÁO TÀI KHOẢN - MÃ KHÁCH => ÁP DỤNG MOBILE
+                     * 1 tài khoản - Nhiều mã khách
+                     */
                     if(option == 2){
                         conditionProject = {
                             year : {$year : "$date"},
@@ -932,13 +973,49 @@ class Model extends BaseModel {
                             credit: 1
                         }
 
+                        // conditionGroupDebit = {
+                        //     _id: { contact: "$customerDebit", account: "$debit" },
+                        //     amount: { $sum: "$amount" }
+                        // }
+                        // conditionGroupCredit = {
+                        //     _id: { contact: "$customerCredit", account: "$credit" },
+                        //     amount: { $sum: "$amount" }
+                        // }
+
                         conditionGroupDebit = {
-                            _id: { contact: "$customerDebit", account: "$debit" },
+                            _id: { contact: "$customerDebit" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { contact: "$customerCredit" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+
+                    // Báo cáo theo Tài khoản - Mã khách (quan hệ 1-1)
+                    if(option == 3){
+                        conditionDebitObj.customerDebit = ObjectID(contactID)
+                        conditionCreditObj.customerCredit = ObjectID(contactID)
+        
+                        conditionProject = {
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1,
+                            customerDebit: 1,
+                            customerCredit: 1,
+                            debit: 1,
+                            credit: 1
+                        }
+
+                        conditionGroupDebit = {
+                            _id: { },
                             amount: { $sum: "$amount" }
                         }
                         
                         conditionGroupCredit = {
-                            _id: { contact: "$customerCredit", account: "$credit" },
+                            _id: {  },
                             amount: { $sum: "$amount" }
                         }
                     }
@@ -1163,6 +1240,9 @@ class Model extends BaseModel {
                         }})
                     }
 
+                    /**
+                     * BÁO CÁO TÀI KHOẢN - MÃ KHÁCH => ÁP DỤNG MOBILE
+                     */
                     if(option == 2){
                         let arrCustomers = []
                         if(listDataO[0]._debit.length > 0){
@@ -1253,6 +1333,17 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: listCustomers })
                     }
 
+                    if(option == 3){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitOF: listDataOF[0]._debit,
+                            creditOF: listDataOF[0]._credit,
+                            debitFT: listDataFT[0]._debit,
+                            creditFT: listDataFT[0]._credit,
+                        }})
+                    }
                     
                 }
             } catch (error) {
