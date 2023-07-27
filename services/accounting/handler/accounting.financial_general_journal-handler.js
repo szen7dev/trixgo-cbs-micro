@@ -104,6 +104,7 @@ module.exports = {
             projectID: { type: "string", optional: true },
             voucherID: { type: "string", optional: true },
             accountID: { type: "string", optional: true },
+            contactID: { type: "string", optional: true },
             contractID: { type: "string", optional: true },
             budgetID: { type: "string", optional: true },
             budgetItemID: { type: "string", optional: true },
@@ -120,7 +121,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -135,7 +136,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
-                        companyID, fundaID, projectID, contractID, voucherID, accountID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, sortKey, ctx
+                        companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, sortKey, ctx
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
