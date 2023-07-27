@@ -712,8 +712,8 @@ class Model extends BaseModel {
     /**
      * REPORT
      */
-    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
-        // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate})
+    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID }) {
+        // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate})
         return new Promise(async resolve => {
             try {
                 /**
@@ -736,6 +736,7 @@ class Model extends BaseModel {
                 let arrObjectID = [], listAccounts = []
                 // Truyền theo ID tài khoản
                 if(!optionAccount){
+                    // console.log('============zzzzzzzzzzzz1111111111111111111111')
                     listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
                     .select('name description nestedChilds')
                     if(listAccounts){
@@ -748,6 +749,7 @@ class Model extends BaseModel {
                     // Theo tên tài khoản
                     if(optionAccount == 1){
                         if(!arrCompanyIDs){
+                            // console.log('============zzzzzzzzzzzz2222222222222222222')
                             listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
                             .select('name description nestedChilds')
                             if(listAccounts){
@@ -757,6 +759,7 @@ class Model extends BaseModel {
                                 }
                             }
                         }else{
+                            // console.log('============zzzzzzzzzzzz333333333333333333')
                             listAccounts = await ITEM_ACCOUNT_COLL.find({ company: {$in: arrCompanyIDs}, name: {$in: arrAccNames} })
                             .select('name description nestedChilds')
                             if(listAccounts){
@@ -918,7 +921,10 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // 1 tài khoản - Nhiều mã khách
+                    /**
+                     * BÁO CÁO TÀI KHOẢN - MÃ KHÁCH => ÁP DỤNG MOBILE
+                     * 1 tài khoản - Nhiều mã khách
+                     */
                     if(option == 2){
                         conditionProject = {
                             year : {$year : "$date"},
@@ -932,13 +938,49 @@ class Model extends BaseModel {
                             credit: 1
                         }
 
+                        // conditionGroupDebit = {
+                        //     _id: { contact: "$customerDebit", account: "$debit" },
+                        //     amount: { $sum: "$amount" }
+                        // }
+                        // conditionGroupCredit = {
+                        //     _id: { contact: "$customerCredit", account: "$credit" },
+                        //     amount: { $sum: "$amount" }
+                        // }
+
                         conditionGroupDebit = {
-                            _id: { contact: "$customerDebit", account: "$debit" },
+                            _id: { contact: "$customerDebit" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { contact: "$customerCredit" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+
+                    // Báo cáo theo Tài khoản - Mã khách (quan hệ 1-1)
+                    if(option == 3){
+                        conditionDebitObj.customerDebit = ObjectID(contactID)
+                        conditionCreditObj.customerCredit = ObjectID(contactID)
+        
+                        conditionProject = {
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1,
+                            customerDebit: 1,
+                            customerCredit: 1,
+                            debit: 1,
+                            credit: 1
+                        }
+
+                        conditionGroupDebit = {
+                            _id: { },
                             amount: { $sum: "$amount" }
                         }
                         
                         conditionGroupCredit = {
-                            _id: { contact: "$customerCredit", account: "$credit" },
+                            _id: {  },
                             amount: { $sum: "$amount" }
                         }
                     }
@@ -1163,6 +1205,9 @@ class Model extends BaseModel {
                         }})
                     }
 
+                    /**
+                     * BÁO CÁO TÀI KHOẢN - MÃ KHÁCH => ÁP DỤNG MOBILE
+                     */
                     if(option == 2){
                         let arrCustomers = []
                         if(listDataO[0]._debit.length > 0){
@@ -1253,6 +1298,17 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: listCustomers })
                     }
 
+                    if(option == 3){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitOF: listDataOF[0]._debit,
+                            creditOF: listDataOF[0]._credit,
+                            debitFT: listDataFT[0]._debit,
+                            creditFT: listDataFT[0]._credit,
+                        }})
+                    }
                     
                 }
             } catch (error) {
