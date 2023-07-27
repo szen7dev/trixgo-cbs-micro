@@ -57,6 +57,7 @@ class Model extends BaseModel {
                  * BA-Quy trình khởi tạo và quản lý khách hàng
                  * 1-Khi tạo lần đầu/Mua hàng lần đầu => Khách hàng mới
                  * 2-Khi mua hàng lần 2 trở đi => Khách hàng cũ => Đơn hàng cũ
+                 * 3-Concat name, note, description -> namecv
                  */
                 if(!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })

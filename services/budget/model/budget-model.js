@@ -31,7 +31,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ ctx, userID, companyID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue }) {
+    insert({ userID, companyID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -119,7 +119,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({
-        budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID, ctx
+        budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID
     }){
         return new Promise(async (resolve) => {
             try {

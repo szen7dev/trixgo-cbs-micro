@@ -71,16 +71,6 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type: Number,
         default : 0
     },
-    //______Dự báo doanh thu tới khi kết thúc
-    forecastRevenue: {
-        type: Number,
-        default : 0
-    },
-    //______VAT
-    forecastVatRevenue: {
-        type: Number,
-        default : 0
-    },
     //______Doanh thu thực tế
     finalRevenue: {
         type: Number,
@@ -88,6 +78,16 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
     },
     //______VAT
     finalVatRevenue: {
+        type: Number,
+        default : 0
+    },
+    //______Dự báo doanh thu tới khi kết thúc
+    forecastRevenue: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    forecastVatRevenue: {
         type: Number,
         default : 0
     },
