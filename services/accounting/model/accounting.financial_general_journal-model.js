@@ -711,24 +711,26 @@ class Model extends BaseModel {
     /**
      * REPORT
      */
-    getListByProperty({ option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
+    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
         // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate})
         return new Promise(async resolve => {
             try {
                 /**
                  * BA
-                 * ĐẦU KỲ: Tính từ ngày 1/1 của năm tới ngày fromDate (ngày đầu kỳ)
-                 * CUỐI KỲ: Tính từ ngày fromDate tới toDate (ngày cuối kỳ)
+                 * Kỳ tra cứu: 30/5/2020 (fromDate) - 15/6/2020 (toDate) - Incurred
+                 * Đầu kỳ: Tính từ 1/1 của năm tới ngày [fromDate]
+                 * Cuối kỳ: Tính từ [fromDate] tới [toDate]
                  * 1. Lấy mảng chứa Tài khoản + Con cháu
                  * 2. Lấy năm của ngày đầu kỳ
-                 * 3. Số liệu đầu kỳ tra cứu (13/5/2020) = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
+                 * 3. Đầu kỳ = Kết chuyển cuối kỳ năm trước (31/12/2019) + Đầu năm nay đến ngày đầu kỳ (1/1/2020-30/5/2020)
                  */
-                let conditionObj = { }, conditionProject = {}
+                let conditionObj = {}, conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
                 let conditionGroup = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
-                let conditionMatch = {}, conditionMatchS = {}, conditionMatchSF = {}, conditionMatchFT = {}
+                let conditionMatch = {}, conditionMatchO = {}, conditionMatchOF = {}, conditionMatchFT = {}, conditionMatchIn = {}
+                let listDataO, listDataOF, listDataFT, listDataIn
                 let conditionObjYear = {}
                 let conditionPopulate = {}
-                let sortBy = {"total": -1}
+                let sortBy = {"amount": -1}
 
                 let arrObjectID = [], listAccounts = []
                 // Truyền theo ID tài khoản
@@ -768,68 +770,58 @@ class Model extends BaseModel {
                     // Theo toàn bộ tài khoản của công ty
                 }
 
-                let conditionObj1 = {
-                    debit: {
-                        $in: arrObjectID
-                    }
-                }
-                let conditionObj2 = {
-                    credit: {
-                        $in: arrObjectID
-                    }
-                }
-
                 if(contractID && checkObjectIDs(contractID)){
                     // console.log('============1')
-                    conditionObj1.contract = ObjectID(contractID)
-                    conditionObj2.contract = ObjectID(contractID)
+                    conditionDebitObj.contract = ObjectID(contractID)
+                    conditionCreditObj.contract = ObjectID(contractID)
                 }else{
                     if (projectID && checkObjectIDs(projectID)) {
                         // console.log('============2')
-                        conditionObj1.project = ObjectID(projectID)
-                        conditionObj2.project = ObjectID(projectID)
+                        conditionDebitObj.project = ObjectID(projectID)
+                        conditionCreditObj.project = ObjectID(projectID)
                     }else{
                         if(fundaID && checkObjectIDs(fundaID)){
                             // console.log('============3')
-                            conditionObj1.funda = ObjectID(fundaID)
-                            conditionObj2.funda = ObjectID(fundaID)
+                            conditionDebitObj.funda = ObjectID(fundaID)
+                            conditionCreditObj.funda = ObjectID(fundaID)
                         }else{
                             if(arrCompanyIDs && checkObjectIDs(arrCompanyIDs)){
                                 // console.log('============4')
-                                conditionObj1.company = {$in: arrCompanyIDs.map( item => ObjectID(item))}
-                                conditionObj2.company =  {$in: arrCompanyIDs.map( item => ObjectID(item))}
+                                conditionDebitObj.company = {$in: arrCompanyIDs.map( item => ObjectID(item))}
+                                conditionCreditObj.company =  {$in: arrCompanyIDs.map( item => ObjectID(item))}
                             }else{
                                 // console.log('============5')
-                                conditionObj1.company = ObjectID(companyID)
-                                conditionObj2.company = ObjectID(companyID)
+                                conditionDebitObj.company = ObjectID(companyID)
+                                conditionCreditObj.company = ObjectID(companyID)
                             }
                         }
                     }
                 }
-                // console.log(conditionObj1)
-                // console.log(conditionObj2)
+                // console.log(conditionDebitObj)
+                // console.log(conditionCreditObj)
 
                 /**
                  * Lấy năm của ngày đầu kỳ
                  */
                 let year = moment(fromDate).toDate().getFullYear()
-                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`;
-                // console.log({ year, firstDayOfYear })
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
 
                 conditionProject = {
-                    year : {$year : "$date"},
                     forward: '$forward',
                     cancel: '$cancel',
+                    year : {$year : "$date"},
                     amount: 1,
                 }
 
-                conditionMatchS = {
-                    "year": Number(year),
+                // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
+                conditionMatchO = {
                     "forward": 1,
-                    "cancel": 0
+                    "cancel": 0,
+                    "year": Number(year)
                 }
 
-                conditionMatchSF = {
+                // Từ đầu năm tới ngày đầu kỳ
+                conditionMatchOF = {
                     "forward": 0,
                     "cancel": 0,
                     "date": {
@@ -838,7 +830,18 @@ class Model extends BaseModel {
                     },
                 }
 
+                // Từ đầu kỳ tới cuối kỳ
                 conditionMatchFT = {
+                    "forward": 0,
+                    "cancel": 0,
+                    "date": {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
+                // Từ đầu năm tới đầu kỳ***
+                conditionMatchIn = {
                     "forward": 0,
                     "cancel": 0,
                     "date": {
@@ -847,6 +850,7 @@ class Model extends BaseModel {
                     },
                 }
 
+                // Gom nhóm theo công ty -> Báo cáo tổng hợp mô hình công ty thành viên
                 if(!arrCompanyIDs){
                     conditionGroup =  {
                         _id: { },
@@ -859,31 +863,48 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * Điều kiện bút toán theo tài khoản
+                 */
+                conditionDebitObj.debit = {
+                    $in: arrObjectID
+                }
+
+                conditionCreditObj.credit = {
+                    $in: arrObjectID
+                }
+
                 if(!option){
-                    // Tổng hợp theo 1 tài khoản
+                    // 1 tài khoản - Không mã khách
+                    conditionProject = {
+                        year : {$year : "$date"},
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        date: 1,
+                        amount: 1
+                    }
+
+                    conditionGroupDebit = {
+                        _id: { },
+                        amount: { $sum: "$amount" }
+                    }
+                    
+                    conditionGroupCredit = {
+                        _id: { },
+                        amount: { $sum: "$amount" }
+                    }
                 }else{
-                    // Tổng hợp theo nhiều tài khoản
+                    // Nhiều tài khoản - Không mã khách
                     if(option == 1){
                         conditionProject = {
                             year : {$year : "$date"},
                             forward: '$forward',
                             cancel: '$cancel',
+                            date: 1,
                             amount: 1,
-                            customerDebit: 1,
-                            customerCredit: 1,
                             debit: 1,
-                            credit: 1,
+                            credit: 1
                         }
-
-                        // conditionGroupDebit = {
-                        //     _id: { customerDebit: "$customerDebit", debit: "$debit" },
-                        //     amount: { $sum: "$amount" }
-                        // }
-                        
-                        // conditionGroupCredit = {
-                        //     _id: { customerCredit: "$customerCredit", credit: "$credit" },
-                        //     amount: { $sum: "$amount" }
-                        // }
 
                         conditionGroupDebit = {
                             _id: { debit: "$debit" },
@@ -894,401 +915,260 @@ class Model extends BaseModel {
                             _id: { credit: "$credit" },
                             amount: { $sum: "$amount" }
                         }
+                    }
 
-                        /**
-                         * Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau: SỐ ĐẦU NĂM (31/12/2019-1/1/2020)
-                         * - Tức trường "forward" = 1 và Không phải là phiếu hủy "cancel" = 0
-                         */
-                        let listDataOpeningS = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                            {
-                                $facet: {
-                                    _debit:[
-                                        {
-                                            $match: conditionObj1
-                                        },
-                                        {
-                                            $project : conditionProject
-                                        },
-                                        {
-                                            $match: conditionMatchS
-                                        },
-                                        {
-                                            $group: conditionGroupDebit
-                                        }
-                                    ],
-                                    _credit:[
-                                        {
-                                            $match: conditionObj2
-                                        },
-                                        {
-                                            $project : conditionProject
-                                        },
-                                        {
-                                            $match: conditionMatchS
-                                        },
+                    // 1 tài khoản - Nhiều mã khách
+                    if(option == 2){
+                        conditionProject = {
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1,
+                            customerDebit: 1,
+                            customerCredit: 1,
+                            debit: 1,
+                            credit: 1
+                        }
 
-                                        {
-                                            $group: conditionGroupCredit
-                                        }
-                                    ],
-
-                                }
-                            }
-                        ])
-                        // console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
-                        // console.log({_____PSNo:listDataOpeningS[0]._debit})
-                        // console.log({_____PSCo: listDataOpeningS[0]._credit})
-
-                        /**
-                        * Số liệu của các phiếu từ ngày fromDate tới toDate và không phải là phiếu kết chuyển: SỐ ĐẦU KỲ->CUỐI KỲ
-                        * - Tức trường "forward" = 0 và Không phải là phiếu hủy "cancel" = 0
-                        */
-                        let listDataIncurred = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                            {
-                                $facet: {
-                                    _debit:[
-                                        {
-                                            $match: conditionObj1
-                                        },
-                                        {
-                                            $match: conditionMatchFT
-                                        },
-                                        {
-                                            $group: conditionGroupDebit
-                                        }
-                                    ],
-
-                                    _credit:[
-                                        {
-                                            $match: conditionObj2
-                                        },
-                                        {
-                                            $match: conditionMatchFT
-                                        },
-                                        {
-                                            $group: conditionGroupCredit
-                                        }
-                                    ],
-
-                                }
-                            }
-                        ])
-                        // console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
-                        // console.log({_____PSNo:listDataIncurred[0]._debit})
-                        // console.log({_____PSCo: listDataIncurred[0]._credit})
-                        // console.log({_____PSNo:listDataIncurred[0]._debit[0]})
-                        // console.log({_____PSCo: listDataIncurred[0]._credit[0]})
-
-                        return resolve({ error: false, data: { listAccounts,
-                            debitS: listDataOpeningS[0]._debit,
-                            creditS: listDataOpeningS[0]._credit,
-                            debitIn: listDataIncurred[0]._debit,
-                            creditIn: listDataIncurred[0]._credit,
-                       } })
-
+                        conditionGroupDebit = {
+                            _id: { customerDebit: "$customerDebit", debit: "$debit" },
+                            amount: { $sum: "$amount" }
+                        }
+                        
+                        conditionGroupCredit = {
+                            _id: { customerCredit: "$customerCredit", credit: "$credit" },
+                            amount: { $sum: "$amount" }
+                        }
                     }
                 }
 
-                // let openingBalanceS = listDataOpeningS[0], incurredBalance = listDataIncurred[0]
-                // let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalIncurredDebit = 0, totaIncurredCredit = 0
+                /**
+                 * DATA KẾT CHUYỂN/ĐẦU NĂM
+                 */
+                listDataO = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project : conditionProject
+                                },
+                                {
+                                    $match: conditionMatchO
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project : conditionProject
+                                },
+                                {
+                                    $match: conditionMatchO
+                                },
 
+                                {
+                                    $group: conditionGroupCredit
+                                }
+                            ],
 
+                        }
+                    }
+                ])
+                // console.log('=========MỐC ĐẦU NĂM=========')
+                // console.log({_____No: listDataO[0]._debit})
+                // console.log({_____Co: listDataO[0]._credit})
+
+                if(!optionTerm){
+                    // console.log(conditionDebitObj)
+                    // console.log(conditionCreditObj)
+                    // console.log(conditionProject)
+                    // console.log(conditionMatchIn)
+                    listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatchIn
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    }
+                                ],
+    
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatchIn
+                                    },
+                                    {
+                                        $group: conditionGroupCredit
+                                    }
+                                ],
+    
+                            }
+                        }
+                    ])
+                    // console.log('=========ĐẦU NĂM-CUỐI KỲ=========')
+                    // console.log({_____No: listDataIn[0]._debit})
+                    // console.log({_____Co: listDataIn[0]._credit})
+                }else{
+                    // console.log(conditionDebitObj)
+                    // console.log(conditionCreditObj)
+                    // console.log(conditionProject)
+                    listDataOF = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatchOF
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    }
+                                ],
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatchOF
+                                    },
+    
+                                    {
+                                        $group: conditionGroupCredit
+                                    }
+                                ],
+    
+                            }
+                        }
+                    ])
+                    // console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
+                    // console.log({_____No: listDataOF[0]._debit})
+                    // console.log({_____Co: listDataOF[0]._credit})
+
+                    listDataFT = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatchFT
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    }
+                                ],
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatchFT
+                                    },
+    
+                                    {
+                                        $group: conditionGroupCredit
+                                    }
+                                ],
+    
+                            }
+                        }
+                    ])
+                    // console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
+                    // console.log({_____No: listDataFT[0]._debit})
+                    // console.log({_____Co: listDataFT[0]._credit})
+                }
+
+                if(!option){
+                    let totalDebitO = 0, totalCreditO = 0, totalDebitOF = 0, totalCreditOF = 0, totalDebitFT = 0, totalCreditFT = 0
+    
+                    // Số liệu đầu năm
+                    if(listDataO[0]._debit.length > 0){
+                        totalDebitO = listDataO[0]._debit[0].amount
+                    }
+                    if(listDataO[0]._credit.length > 0){
+                        totalCreditO = listDataO[0]._credit[0].amount
+                    }
+
+                    // Số liệu từ đầu năm tới đầu kỳ đang xét
+                    if(listDataOF[0]._debit.length > 0){
+                        totalDebitOF = listDataOF[0]._debit[0].amount
+                    }
+                    if(listDataOF[0]._credit.length > 0){
+                        totalCreditOF = listDataOF[0]._credit[0].amount
+                    }
+
+                    // Số liệu đầu kỳ tới cuối kỳ đang xét
+                    if(listDataFT[0]._debit.length > 0){
+                        totalDebitFT = listDataFT[0]._debit[0].amount
+                    }
+                    if(listDataFT[0]._credit.length > 0){
+                        totalCreditFT = listDataFT[0]._credit[0].amount
+                    }
+
+                    return resolve({ error: false, data: { 
+                        listAccounts,
+                        totalDebitO,
+                        totalCreditO,
+                        totalDebitOF,
+                        totalCreditOF,
+                        totalDebitFT,
+                        totalCreditFT,
+                    }})
+                }else{
+                    if(option == 1 || option == 2){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitIn: listDataIn[0]._debit,
+                            creditIn: listDataIn[0]._credit,
+                        }})
+                    }
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
         });
     }
 
-    // getAccountBalance({ option, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, arrAccNames, arrCompanyIDs }) {
-    //     console.log({ option, companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, arrAccNames, arrCompanyIDs })
-    //     return new Promise(async resolve => {
-    //         try {
-    //             /**
-    //              * Business Analyst (BA)
-    //              * ĐẦU KỲ: Tính từ ngày 1/1 của năm tới ngày fromDate (ngày đầu kỳ)
-    //              * CUỐI KỲ: Tính từ ngày fromDate tới toDate (ngày cuối kỳ)
-    //              * 1. Lấy mảng chứa Tài khoản + Con cháu
-    //              * 2. Lấy năm của ngày đầu kỳ
-    //              * 3. Số liệu đầu kỳ tra cứu (13/5/2020) = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
-    //              */
-    //             let conditionObj = { }
-    //             let conditionGroup = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
-    //             let conditionProject = {}
-    //             let conditionMatch = {}, conditionMatchS = {}, conditionMatchSF = {}, conditionMatchFT = {}
-    //             let conditionObjYear = {}
-    //             let conditionPopulate = {}
-    //             let sortBy = {"total": -1}
 
-    //             let arrObjectID = []
-    //             if(!option){
-    //                 /**
-    //                  * Báo cáo theo ID tài khoản
-    //                  */
-    //                 let listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
-    //                 if(listAccounts){
-    //                     for(const item of listAccounts){
-    //                         arrObjectID.push(item._id)
-    //                         arrObjectID = [...arrObjectID,...item.nestedChilds]
-    //                     }
-    //                 }
-    //             }else{
-    //                 /**
-    //                  * Báo cáo theo Tên tài khoản
-    //                  */
-    //                 if(Number(option) === 1){
-    //                     /**
-    //                      * Kiểm tra xem đang lấy dữ liệu của 1 công ty hay nhiều công ty
-    //                      */
-    //                     if(!arrCompanyIDs){
-    //                         let listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
-    //                         if(listAccounts){
-    //                             for(const item of listAccounts){
-    //                                 arrObjectID.push(item._id)
-    //                                 arrObjectID = [...arrObjectID,...item.nestedChilds]
-    //                             }
-    //                         }
-    //                     }else{
-    //                         let listAccounts = await ITEM_ACCOUNT_COLL.find({ company: {$in: arrCompanyIDs}, name: {$in: arrAccNames} })
-    //                         if(listAccounts){
-    //                             for(const item of listAccounts){
-    //                                 arrObjectID.push(item._id)
-    //                                 arrObjectID = [...arrObjectID,...item.nestedChilds]
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //             // console.log(arrObjectID)
-
-    //             /**
-    //              * XỬ LÝ ĐIỀU KIỆN TRA CỨU
-    //              */
-    //             let conditionObj1 = {
-    //                 debit: {
-    //                     $in: arrObjectID
-    //                 }
-    //             }
-
-    //             let conditionObj2 = {
-    //                 credit: {
-    //                     $in: arrObjectID
-    //                 }
-    //             }
-
-    //             if(contractID && checkObjectIDs(contractID)){
-    //                 // console.log('============1')
-    //                 conditionObj1.contract = ObjectID(contractID)
-    //                 conditionObj2.contract = ObjectID(contractID)
-    //             }else{
-    //                 if (projectID && checkObjectIDs(projectID)) {
-    //                     // console.log('============2')
-    //                     conditionObj1.project = ObjectID(projectID)
-    //                     conditionObj2.project = ObjectID(projectID)
-    //                 }else{
-    //                     if(fundaID && checkObjectIDs(fundaID)){
-    //                         // console.log('============3')
-    //                         conditionObj1.funda = ObjectID(fundaID)
-    //                         conditionObj2.funda = ObjectID(fundaID)
-    //                     }else{
-    //                         if(arrCompanyIDs && checkObjectIDs(arrCompanyIDs)){
-    //                             // console.log('============4')
-    //                             conditionObj1.company = {$in: arrCompanyIDs.map( item => ObjectID(item))}
-    //                             conditionObj2.company =  {$in: arrCompanyIDs.map( item => ObjectID(item))}
-    //                         }else{
-    //                             // console.log('============5')
-    //                             conditionObj1.company = ObjectID(companyID)
-    //                             conditionObj2.company = ObjectID(companyID)
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //             console.log(conditionObj1)
-    //             console.log(conditionObj2)
-
-    //             /**
-    //              * Lấy năm của ngày đầu kỳ
-    //              */
-    //             let year = moment(fromDate).toDate().getFullYear()
-    //             let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`;
-    //             // console.log({ year, firstDayOfYear })
-
-    //             /**
-    //              * XỬ LÝ CÁC ĐIỀU KIỆN
-    //              */
-    //             conditionProject = {
-    //                 year : {$year : "$date"},
-    //                 forward: '$forward',
-    //                 cancel: '$cancel',
-    //                 amount: 1,
-    //                 // customerDebit: 1,
-    //                 // customerCredit: 1,
-    //                 // debit: 1,
-    //                 // credit: 1,
-    //             }
-
-    //             conditionMatchS = {
-    //                 "year": Number(year),
-    //                 "forward": 1,
-    //                 "cancel": 0
-    //             }
-
-    //             conditionMatchSF = {
-    //                 "forward": 0,
-    //                 "cancel": 0,
-    //                 "date": {
-    //                     $gte: moment(firstDayOfYear).toDate(),
-    //                     $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
-    //                 },
-    //             }
-
-    //             conditionMatchFT = {
-    //                 "forward": 0,
-    //                 "cancel": 0,
-    //                 "date": {
-    //                     $gte: moment(firstDayOfYear).toDate(), // Tính từ ngày 1/1
-    //                     $lte: moment(toDate).toDate(),
-    //                 },
-    //             }
-
-    //             // if(!arrCompanyIDs){
-    //             //     conditionGroup =  {
-    //             //         _id: { customerDebit: "$customerDebit", debit: "$debit" },
-    //             //         amount: { $sum: "$amount" }
-    //             //     }
-    //             // }else{
-    //             //     conditionGroup =  {
-    //             //         _id: { customerDebit: "$customerDebit", debit: "$debit" },
-    //             //         amount: { $sum: "$amount" }
-    //             //     }
-    //             // }
-
-    //             conditionGroupDebit = {
-    //                 _id: { customerDebit: "$customerDebit", debit: "$debit" },
-    //                 amount: { $sum: "$amount" }
-    //             }
-                
-    //             conditionGroupCredit = {
-    //                 _id: { customerCredit: "$customerCredit", credit: "$credit" },
-    //                 amount: { $sum: "$amount" }
-    //             }
-
-    //             /**
-    //              * Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau: SỐ ĐẦU NĂM (31/12/2019-1/1/2020)
-    //              * - Tức trường "forward" = 1 và Không phải là phiếu hủy "cancel" = 0
-    //              */
-    //             // let listDataOpeningS = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-    //             //     {
-    //             //         $facet: {
-    //             //             _debit:[
-    //             //                 {
-    //             //                     $match: conditionObj1
-    //             //                 },
-    //             //                 {
-    //             //                     $project : conditionProject
-    //             //                 },
-    //             //                 {
-    //             //                     $match: conditionMatchS
-    //             //                 },
-    //             //                 {
-    //             //                     $group: conditionGroupDebit
-    //             //                 }
-    //             //             ],
-    //             //             _credit:[
-    //             //                 {
-    //             //                     $match: conditionObj2
-    //             //                 },
-    //             //                 {
-    //             //                     $project : conditionProject
-    //             //                 },
-    //             //                 {
-    //             //                     $match: conditionMatchS
-    //             //                 },
-
-    //             //                 {
-    //             //                     $group: conditionGroupCredit
-    //             //                 }
-    //             //             ],
-
-    //             //         }
-    //             //     }
-    //             // ]);
-    //             // console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
-    //             // console.log({_____PSNo:listDataOpeningS[0]._debit})
-    //             // console.log({_____PSCo: listDataOpeningS[0]._credit})
-
-    //             /**
-    //             * Số liệu của các phiếu từ ngày fromDate tới toDate và không phải là phiếu kết chuyển: SỐ ĐẦU KỲ->CUỐI KỲ
-    //             * - Tức trường "forward" = 0 và Không phải là phiếu hủy "cancel" = 0
-    //             */
-    //             let listDataIncurred = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-    //                 {
-    //                     $facet: {
-    //                         _debit:[
-    //                             {
-    //                                 $match: conditionObj1
-    //                             },
-    //                             {
-    //                                 $match: conditionMatchFT
-    //                             },
-    //                             {
-    //                                 $group: conditionGroupDebit
-    //                             }
-    //                         ],
-
-    //                         _credit:[
-    //                             {
-    //                                 $match: conditionObj2
-    //                             },
-    //                             {
-    //                                 $match: conditionMatchFT
-    //                             },
-    //                             {
-    //                                 $group: conditionGroupCredit
-    //                             }
-    //                         ],
-
-    //                     }
-    //                 }
-    //             ]);
-    //             console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
-    //             console.log({_____PSNo:listDataIncurred[0]._debit})
-    //             console.log({_____PSCo: listDataIncurred[0]._credit})
-
-    //             console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
-    //             console.log({_____PSNo:listDataIncurred[0]._debit[0]})
-    //             console.log({_____PSCo: listDataIncurred[0]._credit[0]})
-
-    //             console.log({_____PSNo:listDataIncurred[0]._debit[1]})
-    //             console.log({_____PSCo: listDataIncurred[0]._credit[1]})
-
-
-
-    //             // let openingBalanceS = listDataOpeningS[0], incurredBalance = listDataIncurred[0]
-
-    //             // let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalIncurredDebit = 0, totaIncurredCredit = 0
-
-    //             // // Số liệu đầu năm
-    //             // if(openingBalanceS._debit.length > 0){
-    //             //     totalOpeningDebitS = openingBalanceS._debit[0].amount;
-    //             // }
-    //             // if(openingBalanceS._credit.length > 0){
-    //             //     totalOpeningCreditS = openingBalanceS._credit[0].amount;
-    //             // }
-
-    //             // // Số liệu đầu kỳ tới cuối kỳ đang xét
-    //             // if(incurredBalance._debit.length > 0){
-    //             //     totalIncurredDebit = incurredBalance._debit[0].amount;
-    //             // }
-    //             // if(incurredBalance._credit.length > 0){
-    //             //     totaIncurredCredit = incurredBalance._credit[0].amount;
-    //             // }
-
-    //             // return resolve({ error: false, data: { totalOpeningDebitS, totalOpeningCreditS, totalIncurredDebit, totaIncurredCredit } })
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     });
-    // }
 }
 
 exports.MODEL = new Model
