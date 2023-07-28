@@ -116,7 +116,7 @@
                 let { workID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await BUDGET__WORK_MODEL.remove({
-                workID
+                    workID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -138,6 +138,7 @@
             groupID     : { type: "string", optional: true },
             itemID      : { type: "string", optional: true },
             budgetID    : { type: "string", optional: true },
+            companyID   : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -149,8 +150,12 @@
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { workID, groupID, itemID, budgetID, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { companyID, workID, groupID, itemID, budgetID, keyword, limit, lastestID, populates, select } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id;
+                }
 
                 let resultAfterCallHandler;
                 if(workID){
@@ -159,7 +164,7 @@
                     });
                 }else{
                     resultAfterCallHandler = await BUDGET__WORK_MODEL.getList({
-                        companyID: company._id, budgetID, itemID, groupID, userID, keyword, limit, lastestID, select, populates
+                        companyID, budgetID, itemID, groupID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 
