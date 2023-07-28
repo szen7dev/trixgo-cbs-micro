@@ -13,46 +13,46 @@ module.exports  = DATABASE_MIDDLEWARE("budget_submittal", {
         ref : "company",
         require: true,
     },
-    //_________Dự án/phòng ban (Thuộc dự án)
-    project: {
+    // //_________Dự án/phòng ban (Thuộc dự án)
+    // project: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "department",
+    // },
+    // //_________Hợp đồng
+    // contract: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "contract"
+    // },
+    // //_________Ngân sách
+    // budget: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "budget",
+    //     require: true,
+    // },    
+    // //_________Hạng mục
+    // item: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "budget_item",
+    //     require: true,
+    // },  
+    // //_________Nhóm
+    // group: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "budget_group",
+    //     require: true,
+    // }, 
+    //_________Chủ đề đệ trình
+    subject: {
         type: Schema.Types.ObjectId,
-        ref : "department",
-    },
-    //_________Hợp đồng
-    contract: {
-        type: Schema.Types.ObjectId,
-        ref: "contract"
-    },
-    //_________Ngân sách
-    budget: {
-        type: Schema.Types.ObjectId,
-        ref: "budget",
+        ref: "pcm_plan_task",
         require: true,
-    },    
-    //_________Hạng mục
-    item: {
-        type: Schema.Types.ObjectId,
-        ref: "budget_item",
-        require: true,
-    },  
-    //_________Nhóm
-    group: {
-        type: Schema.Types.ObjectId,
-        ref: "budget_group",
-        require: true,
-    },     
+    },       
     //_________Công việc
     work: {
         type: Schema.Types.ObjectId,
         ref: "budget_work",
         require: true,
     },      
-    //_________Chủ đề đệ trình
-    subject: {
-        type: Schema.Types.ObjectId,
-        ref: "pcm_plan_task",
-        require: true,
-    },   
     /**
      * THÔNG TIN NGÂN SÁCH
      */
