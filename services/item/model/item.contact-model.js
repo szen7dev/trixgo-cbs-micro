@@ -25,6 +25,7 @@ const { CONTACT_GENDER }                = require('../helper/item.keys-constant'
 /**
  * COLLECTIONS
  */
+const USER_COLL                                     = require('../../auth/database/auth.user-coll')
 const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll')
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll')
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
@@ -300,6 +301,12 @@ class Model extends BaseModel {
                 // Cập nhật linkUser với tài khoản
                 if(linkUser && checkObjectIDs(linkUser)){
                     // Cập nhật vào user-coll
+                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser, 
+                        { 
+                            $addToSet: {contact: infoAfterInsert._id }
+                        }, 
+                        { new: true })
+                    // console.log(infoUser)
                 }
 
                 // Cập nhật vào đơn vị cơ sở
@@ -734,6 +741,12 @@ class Model extends BaseModel {
                 // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
                 if(linkUser && checkObjectIDs(linkUser)){
                     // Cập nhật vào user-coll
+                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser, 
+                        { 
+                            $addToSet: {contact: contactID }
+                        }, 
+                        { new: true })
+                    // console.log(infoUser)
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
