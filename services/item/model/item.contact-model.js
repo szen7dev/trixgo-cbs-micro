@@ -297,6 +297,11 @@ class Model extends BaseModel {
                     }, { new: true })
                 }
 
+                // Cập nhật linkUser với tài khoản
+                if(linkUser && checkObjectIDs(linkUser)){
+                    // Cập nhật vào user-coll
+                }
+
                 // Cập nhật vào đơn vị cơ sở
                 await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, { $inc: { numberOfCustomers: 1 }}, { new: true })
 
@@ -724,7 +729,12 @@ class Model extends BaseModel {
 
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Cập nhật thất bại" });
+                    return resolve({ error: true, message: "Cập nhật thất bại" })
+            
+                // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
+                if(linkUser && checkObjectIDs(linkUser)){
+                    // Cập nhật vào user-coll
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
