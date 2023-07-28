@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */
-    insert({ ctx, userID, groupID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) { 
+    insert({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -107,6 +107,10 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
+                if(!isNaN(type) && Number(type) >= 0){
+                    dataInsert.type     = type;
+                }
+
                 //______Giá trị
                 if(!isNaN(quantity) && Number(quantity) >= 0){
                     dataInsert.quantity     = quantity;
@@ -156,7 +160,7 @@ class Model extends BaseModel {
      * Date  : 10/4/2022 
      */
     update({ 
-        workID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount, userID, ctx
+        workID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount, userID
     }){ 
         return new Promise(async (resolve) => {
             try {
@@ -219,7 +223,11 @@ class Model extends BaseModel {
                 if(note){
                     dataUpdate.note = note;
                 }
-
+                
+                if(!isNaN(type) && Number(type) >= 0){
+                    dataUpdate.type     = type;
+                }
+                
                 //______Giá trị
                 if(!isNaN(quantity) && Number(quantity) >= 0){
                     dataUpdate.quantity     = quantity;
