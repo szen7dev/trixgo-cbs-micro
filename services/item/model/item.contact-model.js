@@ -826,7 +826,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getListV2({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID }) {
+    getListV2({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID }) {
         // console.log({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
@@ -892,14 +892,6 @@ class Model extends BaseModel {
                     // ]
                 }
 
-                // if(select && typeof select === 'string'){
-                //     if(!IsJsonString(select))
-                //         return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-                //     select = JSON.parse(select);
-                // }
-                // console.log(conditionObj)
-
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
@@ -958,9 +950,6 @@ class Model extends BaseModel {
         keyword, limit = 5, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = { };
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
@@ -968,12 +957,6 @@ class Model extends BaseModel {
                 if(limit > 5){
                     limit = 5
                 }
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -987,11 +970,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
