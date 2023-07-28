@@ -7,6 +7,13 @@ const Schema    = require('mongoose').Schema;
  * NHÓM NGÂN SÁCH
  */
 module.exports  = DATABASE_MIDDLEWARE("budget_group", {
+    /**
+     * Phân loại
+     * 1-Doanh thu
+     * 2-Chi phí
+     * 3-Khác
+     */
+    type: { type: Number, default: 2, enum: [1,2,3] },  
     //_________Công ty 
     company: {
         type: Schema.Types.ObjectId,

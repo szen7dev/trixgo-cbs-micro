@@ -36,7 +36,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 10/4/2022
      */
-    insert({ userID, itemID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity }) {
+    insert({ userID, itemID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, type, quantity }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -87,6 +87,10 @@ class Model extends BaseModel {
                     dataInsert.unit = unit;
                 }
 
+                if(!isNaN(type) && Number(type) >= 0){
+                    dataInsert.type     = type;
+                }
+
                 if(unitPrice){
                     dataInsert.unitPrice = unitPrice;
                 }
@@ -129,7 +133,7 @@ class Model extends BaseModel {
      * Date: 10/4/2022
      */
     update({
-        groupID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity, userID
+        groupID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, type, quantity, userID
     }){
         return new Promise(async (resolve) => {
             try {
@@ -170,6 +174,10 @@ class Model extends BaseModel {
 
                 if(unit){
                     dataUpdate.unit = unit;
+                }
+
+                if(!isNaN(type) && Number(type) >= 0){
+                    dataUpdate.type     = type;
                 }
 
                 if(unitPrice){
