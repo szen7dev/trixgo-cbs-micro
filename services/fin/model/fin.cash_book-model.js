@@ -1,7 +1,7 @@
 "use strict";
 
 const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany } = require('../../../tools/utils/utils');
 const ObjectID = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -19,6 +19,7 @@ const FIN__CASH_BOOK_COLL                = require('../database/fin.cash_book-co
 const ACCOUNT_COLL                       = require('../../item/database/item.account-coll')
 const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
 const CONTRACT_COLL                      = require('../../item/database/item.contract-coll')
+const FINANCIAL_GENERAL_JOURNAL_COLL     = require('../.../../../accounting/database/accounting.financial_general_journal-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -763,78 +764,223 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 25/7/2023
      */
+    // downloadTemplateExcel({ option, companyID, parentID, userID }) {
+    //     // console.log({ option, companyID, parentID, userID })
+    //     return new Promise(async resolve => {
+    //         try {
+
+    //             let listItems1 = await ACCOUNT_COLL.find({company: companyID})
+    //             .limit(200)
+    //             .select('name')
+    //             // .populate({
+    //             //     path: 'members',
+    //             //     select: 'fullname'
+    //             // })
+    //             // console.log(listItems1)
+
+    //             let listItems2 = await CONTACT_COLL.find({company: companyID})
+    //             .limit(200)
+    //             .select('name phone taxid')
+
+    //             let listItems3 = await CONTRACT_COLL.find({company: companyID})
+    //             .limit(200)
+    //             .select('name sign')
+
+    //             /**
+    //              * DỮ LIỆU SỔ QUỸ
+    //              */
+    //             let listData = await FIN__CASH_BOOK_COLL.find({parent: parentID})
+    //             .limit(2000)
+    //             .select('date name account customer contract income expense note')
+    //             .populate({
+    //                 path: 'account customer contract',
+    //                 select: 'name phone'
+    //             })
+    //             .sort({date: 1})
+    //             // console.log(listData)
+
+    //             // Modify the workbook.
+    //             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))
+    //             .then(async workbook => {
+    //                 var i = 3
+    //                 listItems1?.forEach((item, index) => {
+    //                     workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
+    //                     workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
+    //                     i++
+    //                 })
+
+    //                 var i = 3
+    //                 listItems2?.forEach((item, index) => {
+    //                     workbook.sheet("Export").row(i).cell(3).value(`${item._id}`)
+    //                     workbook.sheet("Export").row(i).cell(4).value(`${item.name}_${item?.phone}_${item?.taxid}`)
+    //                     i++
+    //                 })
+
+    //                 var i = 3
+    //                 listItems3?.forEach((item, index) => {
+    //                     workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
+    //                     workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
+    //                     i++
+    //                 })
+
+    //                 var i = 3
+    //                 listData?.forEach((item, index) => {
+    //                     workbook.sheet("DataImport").row(i).cell(1).value(Number(index+1))
+    //                     workbook.sheet("DataImport").row(i).cell(2).value(item.date)
+    //                     workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
+    //                     workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
+    //                     workbook.sheet("DataImport").row(i).cell(5).value(`${(item?.customer && item?.customer != null) ? item.customer.name : ""}`)
+    //                     workbook.sheet("DataImport").row(i).cell(6).value(`${(item?.contract && item?.contract != null) ? item.contract.name : ""}`)
+    //                     workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
+    //                     workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
+    //                     workbook.sheet("DataImport").row(i).cell(9).value(`${(item?.note && item?.note != "") ? item?.note : ""}`)
+    //                     i++
+    //                 })
+
+    //                 const now = new Date();
+    //                 const filePath = '../../../files/temporary_uploads/';
+    //                 const fileName = `fin_cashbook_import_${now.getTime()}.xlsm`;
+    //                 const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+    //                 await workbook.toFileAsync(pathWriteFile);
+    //                 const result = await uploadFileS3(pathWriteFile, fileName);
+
+    //                 fs.unlinkSync(pathWriteFile);
+    //                 return resolve({ error: false, data: result?.Location, status: 200 });
+    //             });
+
+    //         } catch (error) {
+    //             console.log({ error })
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
+
     downloadTemplateExcel({ option, companyID, parentID, userID }) {
+        const that = this
         // console.log({ option, companyID, parentID, userID })
         return new Promise(async resolve => {
             try {
 
-                let listItems1 = await ACCOUNT_COLL.find({company: companyID})
-                .limit(200)
-                .select('name')
+                // let listData = await ACCOUNT_COLL.find({company: companyID, parent: {$exists: false }})
+                // .limit(200)
+                // .select('name description nestedChilds nestedParents')
                 // .populate({
                 //     path: 'members',
                 //     select: 'fullname'
                 // })
-                // console.log(listItems1)
-
-                let listItems2 = await CONTACT_COLL.find({company: companyID})
-                .limit(200)
-                .select('name phone taxid')
-
-                let listItems3 = await CONTRACT_COLL.find({company: companyID})
-                .limit(200)
-                .select('name sign')
-
-                /**
-                 * DỮ LIỆU SỔ QUỸ
-                 */
-                let listData = await FIN__CASH_BOOK_COLL.find({parent: parentID})
-                .limit(2000)
-                .select('date name account customer contract income expense note')
-                .populate({
-                    path: 'account customer contract',
-                    select: 'name phone'
-                })
-                .sort({date: 1})
                 // console.log(listData)
+                // for(const item of listData){
+                //     console.log(item)
+                    
+                // }
+
+                // console.log('=============Lấy cây menu đệ quy================')
+
+                // //__________Lấy levelMax của các phần tử
+                // let levelForRecursive = await _getLevelMaxInRecursiveByCompany(ACCOUNT_COLL, companyID)
+                // console.log({levelForRecursive})
+
+
+
+                // let arrObjectID = []
+                // //__________Khai báo mảng chứa phần tử cha và các con
+                // let getListIDRecursiveForAny = (arr) => {
+                //     for(const item of arr){
+                //         arrObjectID.push(item._id)
+                //         // console.log(arrObjectID)
+
+                //         if (Array.isArray(item.childs) && item.childs.length) {
+                //             getListIDRecursiveForAny(item.childs)
+                //         }
+                //     }
+                // }
+
+                // let accountID = "64c0ca9af8a43a0011a3435d"
+
+                // //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
+                // let infoItemOrigin = await ACCOUNT_COLL.findById(accountID)
+                // .populate(
+                //     _constructForAny(levelForRecursive, 'childs') 
+                // )
+                // console.log(infoItemOrigin)
+
+                // //__________Gọi hàm đệ quy để lấy mảng nestedArray
+                // getListIDRecursiveForAny([infoItemOrigin], levelForRecursive)
+
+                // console.log(arrObjectID)
+
+                let listAccounts = await that.getListByCompany({ companyID, status: 1 })
+                // console.log(listAccounts)
+
+                // let recursive = (arr) => {
+                //     for(const item of arr){
+                //         console.log(item)
+
+                //         // if (item.childs && item.childs instanceof Array) {
+                //         //     console.log('==============Lặp lại phần tử===============')
+                //         //     recursive(item.childs)
+                //         // }
+
+                //         if (item.childs && item.childs.length) {
+                //             console.log('==============Lặp lại phần tử===============')
+                //             recursive(item.childs)
+                //         }
+                //     }
+                // }
+
+                // recursive([listAccounts.data])
+
+
+                // (function recursive(arr) {
+                //     arr && arr.length > 0 && arr.forEach(function (item, index) {
+
+                //         console.log(item)
+
+                //         if (item.childs && item.childs instanceof Array) {
+                //             recursive(item.childs)
+                //         }
+
+                //     })
+                // })(listAccounts.data)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))
                 .then(async workbook => {
-                    var i = 3
-                    listItems1?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
-                        workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
-                        i++
-                    })
+                    // var i = 3
+                    // listItems1?.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
+                    //     workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
+                    //     i++
+                    // })
 
-                    var i = 3
-                    listItems2?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(3).value(`${item._id}`)
-                        workbook.sheet("Export").row(i).cell(4).value(`${item.name}_${item?.phone}_${item?.taxid}`)
-                        i++
-                    })
+                    // var i = 3
+                    // listItems2?.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(3).value(`${item._id}`)
+                    //     workbook.sheet("Export").row(i).cell(4).value(`${item.name}_${item?.phone}_${item?.taxid}`)
+                    //     i++
+                    // })
 
-                    var i = 3
-                    listItems3?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
-                        workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
-                        i++
-                    })
+                    // var i = 3
+                    // listItems3?.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
+                    //     workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
+                    //     i++
+                    // })
 
-                    var i = 3
-                    listData?.forEach((item, index) => {
-                        workbook.sheet("DataImport").row(i).cell(1).value(Number(index+1))
-                        workbook.sheet("DataImport").row(i).cell(2).value(item.date)
-                        workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
-                        workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
-                        workbook.sheet("DataImport").row(i).cell(5).value(`${(item?.customer && item?.customer != null) ? item.customer.name : ""}`)
-                        workbook.sheet("DataImport").row(i).cell(6).value(`${(item?.contract && item?.contract != null) ? item.contract.name : ""}`)
-                        workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
-                        workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
-                        workbook.sheet("DataImport").row(i).cell(9).value(`${(item?.note && item?.note != "") ? item?.note : ""}`)
-                        i++
-                    })
+                    // var i = 3
+                    // listData?.forEach((item, index) => {
+                    //     workbook.sheet("DataImport").row(i).cell(1).value(Number(index+1))
+                    //     workbook.sheet("DataImport").row(i).cell(2).value(item.date)
+                    //     workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
+                    //     workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
+                    //     workbook.sheet("DataImport").row(i).cell(5).value(`${(item?.customer && item?.customer != null) ? item.customer.name : ""}`)
+                    //     workbook.sheet("DataImport").row(i).cell(6).value(`${(item?.contract && item?.contract != null) ? item.contract.name : ""}`)
+                    //     workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
+                    //     workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
+                    //     workbook.sheet("DataImport").row(i).cell(9).value(`${(item?.note && item?.note != "") ? item?.note : ""}`)
+                    //     i++
+                    // })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
@@ -851,6 +997,108 @@ class Model extends BaseModel {
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    //_________Danh sách đệ quy
+    getListByCompany({ companyID, status }){
+        return new Promise(async (resolve) => {
+            try {
+                if( !ObjectID.isValid(companyID))
+                       return resolve({ error: true, message: 'param_not_valid' });
+
+                let pathOrigin;
+                let constructPopulateConfigObj = (level, path) => {
+                    pathOrigin  = `${path}`;
+                    const oneLevel = () => ({ 
+                        path: pathOrigin, options: { sort: { 'name': 1 } }, 
+                    });
+                    let obj = oneLevel();
+
+                    while (level) {
+                        if (level !== 1) {
+                            obj.populate = Object.assign({}, obj);
+                        }
+                        obj = Object.assign({}, obj);
+                        --level;
+                    }
+                    
+                    return obj;
+                };
+
+                let levelMax = await ACCOUNT_COLL.aggregate(
+                    [
+                        {
+                            $match: {
+                                company: ObjectID(companyID)
+                            }
+                        },
+                        {
+                            $group:
+                            {
+                                _id: null,
+                                maxLevel: { $max: "$level" }
+                            }
+                        }
+                    ]
+                );
+                let ObjectQuery = { 
+                    company: ObjectID(companyID),   
+                    $or: [
+                        {
+                            parent: {
+                                $exists: false
+                            }  
+                        },
+                        {
+                            parent: null
+                        }
+                    ]
+                }
+                
+
+                // if(status){
+                //     ObjectQuery.status  = 1
+                // }
+
+                // Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
+                let listAppMenuParent = await ACCOUNT_COLL.find(ObjectQuery)
+                .populate(
+                    constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
+                )
+                .sort({name: 1})
+                // console.log(listAppMenuParent)
+
+                // console.log('==================')
+                // listAppMenuParent.forEach(item => {
+                //     console.log(item.name)
+                //     // console.log(item.childs)
+
+                //     item.childs && item.childs.length > 0 && item.childs.forEach((subitem, subindex) => {
+                //         console.log(subitem.name)
+                //         console.log(subitem.childs)
+                //     })
+                   
+                // })
+
+                let recursive = (arr) => {
+                    for(const item of arr){
+                        console.log(item.name)
+
+                        if (item.childs && item.childs.length) {
+                            recursive(item.childs)
+                        }
+                        // console.log('==============DONE===============')
+                    }
+                }
+
+                recursive(listAppMenuParent)
+
+
+                return resolve({ error: false, data: listAppMenuParent, maxLevel: Number(levelMax[0].maxLevel) });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
             }
         })
     }
