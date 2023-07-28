@@ -5,10 +5,10 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
-// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-// const ObjectID                          = require('mongoose').Types.ObjectId;
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
+const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const ObjectID                          = require('mongoose').Types.ObjectId;
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -16,7 +16,8 @@ const { setTimeZone  }                  = require('../../../tools/utils/time_uti
 const BUDGET__SUBMITTAL_COLL            = require('../database/budget.submittal-coll')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 
-const PCM_PLAN_TASK_COLL                = require('../.../../../subject_pcm/database/subject_pcm.pcm_plan_task-coll')
+const PCM_PLAN_TASK_COLL                = require('../.../../../subject_pcm/database/subject_pcm.pcm_plan_task-coll');
+const { ObjectId } = require('mongodb');
 
 /**
  * import inter-model, exter-model
@@ -27,11 +28,12 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert
-     * Author: Depv
+     * Name: Insert
+     * Author: Hiepnh
      * Code: 
      */
     insert({ userID, plus, taskID, workID, name, sign, note, quantity, unitPrice }) { 
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
@@ -70,9 +72,11 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
                 
-                let infoAfterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Không thể thêm", keyError: "can't_insert_budget_submittal " });
+                    return resolve({ error: true, message: "Không thể thêm", keyError: "can't_insert_budget_submittal " })
+
+                await that.updateValue( {taskID, userID })
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -82,18 +86,22 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update
-     * Author: Depv
+     * Name: Update
+     * Author: Hiepnh
      * Code: 
      */
-     update({ 
+    update({ 
         submitID, userID, plus, workID, name, sign, note, quantity, unitPrice
     }){ 
+        const that = this
         return new Promise(async (resolve) => {
             try {
 
                 if(!checkObjectIDs(submitID))
-                    return resolve({ error: true, message: "Mã sản lượng hợp đồng không đúng", keyError: "submitID_invalid" });
+                    return resolve({ error: true, message: "submitID_invalid", keyError: "submitID_invalid" })
+                
+                let inforSubmit = await BUDGET__SUBMITTAL_COLL.findById(submitID)
+                // console.log(inforSubmit)
                 
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
@@ -112,20 +120,71 @@ class Model extends BaseModel {
                 }
 
                 if(name){
-                    dataUpdate.name = name;
+                    dataUpdate.name = name
                 }
 
                 if(sign){
-                    dataUpdate.sign = sign;
+                    dataUpdate.sign = sign
                 }
 
                 if(note){
-                    dataUpdate.note = note;
+                    dataUpdate.note = note
                 }
 
-                let infoAfterUpdate = await BUDGET__SUBMITTAL_COLL.findByIdAndUpdate(submitID, dataUpdate, { new: true });
+                let infoAfterUpdate = await BUDGET__SUBMITTAL_COLL.findByIdAndUpdate(submitID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_submittal", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_submittal", status: 403 })
+
+                if(inforSubmit.task){
+                    await that.updateValue( {taskID: inforSubmit.task, userID })
+                }
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Cập nhật giá trị của Task
+     * Author: Hiepnh
+     * Code: 
+     */
+    updateValue({ 
+        taskID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
+                if(!infoTask)
+                    return resolve({ error: true, message: "taskID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
+                
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+                let listData = await BUDGET__SUBMITTAL_COLL.aggregate([
+                    {
+                        $match: {
+                            task: ObjectID(taskID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: {},
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+                ])
+                // console.log(listData)
+                let newAmount = 0
+                if(listData[0]){
+                    newAmount = listData[0].amount
+                }
+                dataUpdate.amount = Number(newAmount)
+
+                let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_task", status: 403 });
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -136,13 +195,13 @@ class Model extends BaseModel {
 
     /**
      * Name: Remove
-     * Author: Depv
+     * Author: Hiepnh
      * Code: 
      */
     
     /**
      * Name: Get info
-     * Author: Depv
+     * Author: Hiepnh
      * Code: 
      */
     getInfo({ submitID, 
@@ -180,7 +239,7 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách
-     * Author: Depv
+     * Author: Hiepnh
      * Code  : 
      */
     getList({ taskID, userID,
