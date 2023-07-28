@@ -130,7 +130,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 /**
                  * VALIDATION STEP (2)
@@ -199,44 +199,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     *
-     */
-    remove({ budgetsID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs([userID])){
-                    return resolve({
-                        error: true,
-                        message: "Tham số userID không hợp lệ",
-                        keyError: "params_userID_invalid",
-                        status: 400
-                    });
-                }
-
-                if(!checkObjectIDs(budgetsID)){
-                    return resolve({
-                        error: true,
-                        message: "Tham số budgetsID không hợp lệ",
-                        keyError: "params_budgetsID_invalid",
-                        status: 400
-                    });
-                }
-
-                const infoAfterDelete = await BUDGET_COLL.deleteMany({
-                    _id: {
-                        $in: budgetsID
-                    },
-                    userCreate: userID
-                })
-
-                return resolve({ error: false, data: infoAfterDelete, status: 201 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -345,7 +307,7 @@ class Model extends BaseModel {
                     }else{
                         if(companyID){
                             conditionObj.company = companyID
-                            conditionObj.members = { $in: [userID] }
+                            // conditionObj.members = { $in: [userID] }
                         }
                     }
                 }

@@ -12,57 +12,27 @@ module.exports  = DATABASE_MIDDLEWARE("budget_submittal", {
         type: Schema.Types.ObjectId,
         ref : "company",
         require: true,
-    },
-    //_________Dự án/phòng ban (Thuộc dự án)
-    project: {
-        type: Schema.Types.ObjectId,
-        ref : "department",
-    },
-    //_________Hợp đồng
-    contract: {
-        type: Schema.Types.ObjectId,
-        ref: "contract"
-    },
-    //_________Ngân sách
-    budget: {
-        type: Schema.Types.ObjectId,
-        ref: "budget",
-        require: true,
-    },    
-    //_________Hạng mục
-    item: {
-        type: Schema.Types.ObjectId,
-        ref: "budget_item",
-        require: true,
-    },  
-    //_________Nhóm
-    group: {
-        type: Schema.Types.ObjectId,
-        ref: "budget_group",
-        require: true,
+    }, 
+    //________Công việc
+    task: {
+        type:  Schema.Types.ObjectId,
+        ref: 'pcm_plan_task'
     },     
     //_________Công việc
     work: {
         type: Schema.Types.ObjectId,
-        ref: "budget_work",
-        require: true,
+        ref: "budget_work"
     },      
-    //_________Chủ đề đệ trình
-    subject: {
-        type: Schema.Types.ObjectId,
-        ref: "pcm_plan_task",
-        require: true,
-    },   
     /**
      * THÔNG TIN NGÂN SÁCH
      */
     /**
      * Phát sinh
-     * 0-Không phát sinh
-     * 1-Phát sinh hợp lệ
-     * 2-Phát sinh không hợp lệ
+     * 1-Không phát sinh
+     * 2-Phát sinh hợp lệ
+     * 3-Phát sinh không hợp lệ
      */
-    plus: { type: Number, default: 0 },        
+    plus: { type: Number, default: 1 },        
     //_________Lý do phát sinh
     reason: {
         type: Schema.Types.ObjectId,
@@ -74,8 +44,6 @@ module.exports  = DATABASE_MIDDLEWARE("budget_submittal", {
     sign: String,
     //_________Đơn vị tính
     unit: String,    
-    //_________Mô tả
-    description: String,
     //_________Ghi chú
     note: String,
     //______Khối lượng

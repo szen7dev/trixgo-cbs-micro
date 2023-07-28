@@ -144,7 +144,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 /**
                  * VALIDATION STEP (2)

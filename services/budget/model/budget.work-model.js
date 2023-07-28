@@ -184,7 +184,7 @@ class Model extends BaseModel {
                  if(!infoWork)
                      return resolve({ error: true, message: "workID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -320,28 +320,19 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getList({ groupID, itemID, budgetID, companyID, userID,
-        keyword, limit = 50, lastestID, select, populates= {} }) { 
+        keyword, limit = 20, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 50){
-                    limit = 50
+                if(limit > 20){
+                    limit = 20
                 }else{
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                  let sortBy;
                  let conditionObj = {};
                  let keys	     = ['createAt__-1', '_id__-1'];
-             
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -356,12 +347,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                
                 if(groupID && checkObjectIDs(groupID)){
                     conditionObj.group = groupID;
                 }else{

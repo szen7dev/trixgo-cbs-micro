@@ -17,25 +17,25 @@
      insert: {
          auth: "required",
          params: {
-            type                : { type: "number" },
-            projectID          : { type: "string", optional: true },
-            contractID          : { type: "string", optional: true },
-            name                : { type: "string" },
+            taskID              : { type: "string" },
+            workID              : { type: "string", optional: true },
+            name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
-            description         : { type: "string", optional: true },
-            date                : { type: "string", optional: true },
+            unit                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            budget          : { type: "number", optional: true },
+            plus                : { type: "number", optional: true },
+            quantity            : { type: "number" },
+            unitPrice           : { type: "number" },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { type, projectID, contractID, name, sign, description, date, note, budget } = ctx.params;
+                 let { plus, taskID, workID, name, sign, note, quantity, unitPrice } = ctx.params;
 
-                 const { _id: userID, company } = ctx.meta.infoUser;
+                 const { _id: userID } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await BUDGET__SUBMITTAL_MODEL.insert({
-                    ctx, userID, companyID: company._id, type, projectID, contractID, name, sign, description, date, note, budget
+                    ctx, userID, plus, taskID, workID, name, sign, note, quantity, unitPrice
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -53,32 +53,24 @@
      update: {
          auth: "required",
          params: {
-             contractIpcID       : { type: "string" },
-             type                : { type: "number", optional: true },
+            submitID       : { type: "string" },
+             workID              : { type: "string", optional: true },
              name                : { type: "string", optional: true },
              sign                : { type: "string", optional: true },
-             description         : { type: "string", optional: true },
-             date                : { type: "string", optional: true  },
+             unit                : { type: "string", optional: true },
              note                : { type: "string", optional: true },
-             acceptance          : { type: "number", optional: true },
-             vatAcceptance       : { type: "number", optional: true },
-             plusAcceptance      : { type: "number", optional: true },
-             vatPlusAcceptance   : { type: "number", optional: true },
-             retainedValue       : { type: "number", optional: true },
-             advancePaymentDeduction: { type: "number", optional: true },
-             otherDeduction         : { type: "number", optional: true },
-             timeForPayment         : { type: "string", optional: true },
-             amountPaid             : { type: "number", optional: true },
-             remainingPayment       : { type: "number", optional: true },
+             plus                : { type: "number", optional: true },
+             quantity            : { type: "number" },
+             unitPrice           : { type: "number" },
          },
          async handler(ctx) {  
              try {
                  await this.validateEntity(ctx.params);
-                 let { contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
+                 let { submitID, plus, workID, name, sign, note, quantity, unitPrice } = ctx.params;
                 
                  const { _id: userID } = ctx.meta.infoUser;
                  let resultAfterCallHandler = await BUDGET__SUBMITTAL_MODEL.update({
-                     contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
+                    submitID, plus, workID, name, sign, note, quantity, unitPrice, userID
                  });
                  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -96,15 +88,15 @@
      remove: {
          auth: "required",
          params: {
-             contractIpcID       : { type: "string" },
+            submitID       : { type: "string" },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { contractIpcID } = ctx.params;
+                 let { submitID } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
                  let resultAfterCallHandler = await BUDGET__SUBMITTAL_MODEL.remove({
-                     contractIpcID
+                    submitID
                  });
                  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -122,9 +114,8 @@
      getInfoAndGetList: {
          auth: "required",
          params: {
-             contractIpcID : { type: "string", optional: true },
-             type          : { type: "number", optional: true },
-             contractID    : { type: "string", optional: true },
+            submitID : { type: "string", optional: true },
+             taskID    : { type: "string", optional: true },
  
              // Field mặc định
              keyword     : { type: "string", optional: true },
@@ -136,17 +127,17 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { contractIpcID, type, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+                 let { submitID, taskID, keyword, limit, lastestID, populates, select } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
  
                  let resultAfterCallHandler;
-                 if(contractIpcID){
+                 if(submitID){
                      resultAfterCallHandler = await BUDGET__SUBMITTAL_MODEL.getInfo({
-                         contractIpcID, userID, select, populates
+                        submitID, userID, select, populates
                      });
                  }else{
                      resultAfterCallHandler = await BUDGET__SUBMITTAL_MODEL.getList({
-                         type, contractID, userID, keyword, limit, lastestID, select, populates
+                        taskID, userID, keyword, limit, lastestID, select, populates
                      });
                  }
                  

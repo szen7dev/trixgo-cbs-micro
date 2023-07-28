@@ -5,18 +5,18 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
+// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+// const ObjectID                          = require('mongoose').Types.ObjectId;
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
 
 /**
  * import inter-coll, exter-coll
  */
- const BUDGET__SUBMITTAL_COLL           = require('../database/budget.submittal-coll');
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { template }                      = require('lodash');
-const { ResumeToken }                   = require('mongodb');
+const BUDGET__SUBMITTAL_COLL            = require('../database/budget.submittal-coll')
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
+
+const PCM_PLAN_TASK_COLL                = require('../.../../../subject_pcm/database/subject_pcm.pcm_plan_task-coll')
 
 /**
  * import inter-model, exter-model
@@ -31,35 +31,31 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ ctx, userID, companyID, type, projectID, contractID, name, sign, description, date, note, budget }) { 
+    insert({ userID, plus, taskID, workID, name, sign, note, quantity, unitPrice }) { 
         return new Promise(async (resolve) => {
             try {
-                    
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataInsert = { userCreate: userID, company: companyID };
+                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
+                if(!infoTask)
+                    return resolve({ error: true, message: "taskID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(checkObjectIDs(projectID)){
-                    dataInsert.project = projectID
+                let dataInsert = { 
+                    userCreate: userID, 
+                    task: taskID,
+                    company: infoTask.company
                 }
 
-                if(checkObjectIDs(contractID)){
-                    dataInsert.contract = contractID
+                if(checkObjectIDs(workID)){
+                    dataInsert.work = workID
                 }
-                
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                if(type && [1,2,3].includes(Number(type))){
-                    dataInsert.type = type;
+
+                if(plus && [1,2,3].includes(Number(plus))){
+                    dataInsert.plus = plus;
+                }
+
+                if(!isNaN(quantity) && !isNaN(unitPrice) ){
+                    dataInsert.quantity = quantity;
+                    dataInsert.unitPrice = unitPrice;
+                    dataInsert.amount = quantity * unitPrice;
                 }
 
                 if(name){
@@ -70,25 +66,13 @@ class Model extends BaseModel {
                     dataInsert.sign = sign;
                 }
 
-                if(description){
-                    dataInsert.description = description;
-                }
-
-                if(date){
-                    dataInsert.date = date;
-                }
-
                 if(note){
                     dataInsert.note = note;
-                }
-                //______Giá trị nghiệm thu trước VAT (1)
-                if(!isNaN(budget) && Number(budget) >= 0){
-                    dataInsert.budget     = budget;
                 }
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget_submittal " });
+                    return resolve({ error: true, message: "Không thể thêm", keyError: "can't_insert_budget_submittal " });
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -103,30 +87,30 @@ class Model extends BaseModel {
      * Code: 
      */
      update({ 
-        contractProductionID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
+        submitID, userID, plus, workID, name, sign, note, quantity, unitPrice
     }){ 
         return new Promise(async (resolve) => {
             try {
 
-                if(!checkObjectIDs(contractProductionID))
-                    return resolve({ error: true, message: "Mã sản lượng hợp đồng không đúng", keyError: "contractProductionID_invalid" });
+                if(!checkObjectIDs(submitID))
+                    return resolve({ error: true, message: "Mã sản lượng hợp đồng không đúng", keyError: "submitID_invalid" });
                 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-             
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+                if(checkObjectIDs(workID)){
+                    dataUpdate.work = workID
+                }
+
+                if(plus && [1,2,3].includes(Number(plus))){
+                    dataUpdate.plus = plus;
+                }
+
+                if(!isNaN(quantity) && !isNaN(unitPrice) ){
+                    dataUpdate.quantity = quantity;
+                    dataUpdate.unitPrice = unitPrice;
+                    dataUpdate.amount = quantity * unitPrice;
+                }
+
                 if(name){
                     dataUpdate.name = name;
                 }
@@ -135,17 +119,13 @@ class Model extends BaseModel {
                     dataUpdate.sign = sign;
                 }
 
-                if(description){
-                    dataUpdate.description = description;
+                if(note){
+                    dataUpdate.note = note;
                 }
 
-                if(date){
-                    dataUpdate.date = date;
-                }
-             
-                let infoAfterUpdate = await BUDGET__SUBMITTAL_COLL.findByIdAndUpdate(contractProductionID, dataUpdate, { new: true });
+                let infoAfterUpdate = await BUDGET__SUBMITTAL_COLL.findByIdAndUpdate(submitID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget_submittal", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_submittal", status: 403 });
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -165,11 +145,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ contractIpcID, 
+    getInfo({ submitID, 
         select, populates }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(contractIpcID))
+                if (!checkObjectIDs(submitID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populates
@@ -185,7 +165,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BUDGET__SUBMITTAL_COLL.findById(contractIpcID)
+                let infoContractIPC = await BUDGET__SUBMITTAL_COLL.findById(submitID)
                                 .select(select)
                                 .populate(populates)
 
@@ -203,7 +183,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ type, contractID, userID,
+    getList({ taskID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -213,19 +193,11 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                  let sortBy;
                  let conditionObj = {};
-                 let keys	     = ['createAt__-1', '_id__-1'];
-             
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-				
+                 let keys	     = ['createAt__1', '_id__1'];
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -238,11 +210,10 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
+
+                if(taskID && checkObjectIDs(taskID)){
+                    conditionObj.task = taskID;
+                }
 
                 if(keyword){
                     keyword = keyword.split(" ");
