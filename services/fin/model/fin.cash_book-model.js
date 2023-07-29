@@ -912,79 +912,42 @@ class Model extends BaseModel {
 
                 let listAccounts = await that.getListByCompany({ companyID, status: 1 })
                 // console.log(listAccounts)
+                let listAppMenuParent = listAccounts.data
+                
 
-                // let recursive = (arr) => {
-                //     for(const item of arr){
-                //         console.log(item)
-
-                //         // if (item.childs && item.childs instanceof Array) {
-                //         //     console.log('==============Lặp lại phần tử===============')
-                //         //     recursive(item.childs)
-                //         // }
-
-                //         if (item.childs && item.childs.length) {
-                //             console.log('==============Lặp lại phần tử===============')
-                //             recursive(item.childs)
-                //         }
-                //     }
-                // }
-
-                // recursive([listAccounts.data])
-
-
-                // (function recursive(arr) {
-                //     arr && arr.length > 0 && arr.forEach(function (item, index) {
-
-                //         console.log(item)
-
-                //         if (item.childs && item.childs instanceof Array) {
-                //             recursive(item.childs)
-                //         }
-
-                //     })
-                // })(listAccounts.data)
 
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_financial_report.xlsm')))
                 .then(async workbook => {
-                    // var i = 3
+                    
+                    var i = 4
+                    let recursive = (arr) => {
+                        for(const item of arr){
+                            // console.log({acc: `${item.name}-${item.description}`})
+
+                            workbook.sheet("BangCDTK").row(i).cell(1).value(`${item.name}`)
+                            workbook.sheet("BangCDTK").row(i).cell(2).value(`${item.description}`)
+                            i++
+    
+                            if (item.childs && item.childs.length) {
+                                recursive(item.childs)
+                            }
+                        }
+                    }
+    
+                    recursive(listAppMenuParent)
+
                     // listItems1?.forEach((item, index) => {
                     //     workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
                     //     workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
                     //     i++
                     // })
 
-                    // var i = 3
-                    // listItems2?.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(3).value(`${item._id}`)
-                    //     workbook.sheet("Export").row(i).cell(4).value(`${item.name}_${item?.phone}_${item?.taxid}`)
-                    //     i++
-                    // })
-
-                    // var i = 3
-                    // listItems3?.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
-                    //     workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
-                    //     i++
-                    // })
-
-                    // var i = 3
-                    // listData?.forEach((item, index) => {
-                    //     workbook.sheet("DataImport").row(i).cell(1).value(Number(index+1))
-                    //     workbook.sheet("DataImport").row(i).cell(2).value(item.date)
-                    //     workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
-                    //     workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
-                    //     workbook.sheet("DataImport").row(i).cell(5).value(`${(item?.customer && item?.customer != null) ? item.customer.name : ""}`)
-                    //     workbook.sheet("DataImport").row(i).cell(6).value(`${(item?.contract && item?.contract != null) ? item.contract.name : ""}`)
-                    //     workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
-                    //     workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
-                    //     workbook.sheet("DataImport").row(i).cell(9).value(`${(item?.note && item?.note != "") ? item?.note : ""}`)
-                    //     i++
-                    // })
+                 
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `fin_cashbook_import_${now.getTime()}.xlsm`;
+                    const fileName = `fin_financial_report${now.getTime()}.xlsm`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
@@ -1082,18 +1045,18 @@ class Model extends BaseModel {
                    
                 // })
 
-                let recursive = (arr) => {
-                    for(const item of arr){
-                        console.log(item.name)
+                // let recursive = (arr) => {
+                //     for(const item of arr){
+                //         console.log({acc: `${item.name}-${item.description}`})
 
-                        if (item.childs && item.childs.length) {
-                            recursive(item.childs)
-                        }
-                        // console.log('==============DONE===============')
-                    }
-                }
+                //         if (item.childs && item.childs.length) {
+                //             recursive(item.childs)
+                //         }
+                //         // console.log('==============DONE===============')
+                //     }
+                // }
 
-                recursive(listAppMenuParent)
+                // recursive(listAppMenuParent)
 
 
                 return resolve({ error: false, data: listAppMenuParent, maxLevel: Number(levelMax[0].maxLevel) });
