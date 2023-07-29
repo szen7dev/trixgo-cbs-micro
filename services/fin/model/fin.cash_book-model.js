@@ -912,9 +912,71 @@ class Model extends BaseModel {
                 let listAccounts = await ACCOUNT_MODEL.getListRecursive({ companyID })
                 let listAppMenuParent = listAccounts.data
 
-                let option = 2
+                let option = 4, optionTerm = 1, fromDate = '2023-06-30', toDate = '2023-12-31'
+                let listDataCombine = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({ option, optionTerm, companyID, fromDate, toDate, userID })
+                // console.log(listDataCombine)
+                // console.log(listDataCombine.data.debitO)
+                // console.log(listDataCombine.data.creditO)
+                // console.log('=====================')
+                // console.log(listDataCombine.data.debitFT)
+                // console.log(listDataCombine.data.creditFT)
 
-            //    let listDataCombine = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID })
+                let arrDebitO = [], arrCreditO = [], arrDebitOF = [], arrCreditOF = [], arrDebitFT = [], arrCreditFT = []
+
+                listDataCombine.data.debitO.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrDebitO[key])) {
+                        arrDebitO[key] = [];
+                    }
+                    arrDebitO[key].push(element)
+                })
+
+                listDataCombine.data.creditO.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrCreditO[key])) {
+                        arrCreditO[key] = [];
+                    }
+                    arrCreditO[key].push(element)
+                })
+
+                listDataCombine.data.debitOF.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrDebitOF[key])) {
+                        arrDebitOF[key] = [];
+                    }
+                    arrDebitOF[key].push(element)
+                })
+
+                listDataCombine.data.creditOF.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrCreditOF[key])) {
+                        arrCreditOF[key] = [];
+                    }
+                    arrCreditOF[key].push(element)
+                })
+
+                listDataCombine.data.debitFT.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrDebitFT[key])) {
+                        arrDebitFT[key] = [];
+                    }
+                    arrDebitFT[key].push(element)
+                })
+
+                listDataCombine.data.creditFT.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrCreditFT[key])) {
+                        arrCreditFT[key] = [];
+                    }
+                    arrCreditFT[key].push(element)
+                })
+
+                // console.log(arrDebitO)
+                // console.log(arrCreditO)
+                // console.log(arrDebitOF)
+                // console.log(arrCreditOF)
+                // console.log(arrDebitFT)
+                // console.log(arrDebitFT)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_financial_report.xlsm')))
@@ -950,7 +1012,29 @@ class Model extends BaseModel {
                     let recursive = (arr) => {
                         for(const item of arr){
                             workbook.sheet("BangCDTaiKhoan").row(i).cell(1).value(`${item.name}`)
-                            workbook.sheet("BangCDTaiKhoan").row(i).cell(2).value(`${item.description}`)
+                            workbook.sheet("BangCDTaiKhoan").row(i).cell(2).value(`${item._id}`)
+                            workbook.sheet("BangCDTaiKhoan").row(i).cell(3).value(`${item.description}`)
+
+                            // Hiển thị giá trị
+                            if(arrDebitO[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(4).value(Number(arrDebitO[item._id][0].amount))
+                            }
+                            if(arrCreditO[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(5).value(Number(arrCreditO[item._id][0].amount))
+                            }
+                            if(arrDebitOF[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(6).value(Number(arrDebitOF[item._id][0].amount))
+                            }
+                            if(arrCreditOF[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(7).value(Number(arrCreditOF[item._id][0].amount))
+                            }
+                            if(arrDebitFT[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(8).value(Number(arrDebitFT[item._id][0].amount))
+                            }
+                            if(arrCreditFT[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(9).value(Number(arrCreditFT[item._id][0].amount))
+                            }
+
                             i++
     
                             if (item.childs && item.childs.length) {
@@ -977,76 +1061,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    // /**
-    //  * DANH SÁCH CÂY TÀI KHOẢN ĐỆ QUY CỦA CÔNG TY
-    //  */
-    // getListByCompany({ companyID, status }){
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if( !ObjectID.isValid(companyID))
-    //                 return resolve({ error: true, message: 'param_not_valid' })
-
-    //             let pathOrigin;
-    //             let constructPopulateConfigObj = (level, path) => {
-    //                 pathOrigin  = `${path}`
-    //                 const oneLevel = () => ({ 
-    //                     path: pathOrigin, options: { sort: { 'name': 1 } }
-    //                 })
-    //                 let obj = oneLevel()
-
-    //                 while (level) {
-    //                     if (level !== 1) {
-    //                         obj.populate = Object.assign({}, obj)
-    //                     }
-    //                     obj = Object.assign({}, obj)
-    //                     --level
-    //                 }
-                    
-    //                 return obj
-    //             }
-
-    //             let levelMax = await ACCOUNT_COLL.aggregate(
-    //                 [
-    //                     {
-    //                         $match: {
-    //                             company: ObjectID(companyID)
-    //                         }
-    //                     },
-    //                     {
-    //                         $group:
-    //                         {
-    //                             _id: null,
-    //                             maxLevel: { $max: "$level" }
-    //                         }
-    //                     }
-    //                 ]
-    //             )
-    //             let ObjectQuery = { 
-    //                 company: ObjectID(companyID),   
-    //                 $or: [
-    //                     { parent: { $exists: false} },
-    //                     { parent: null }
-    //                 ]
-    //             }
-                
-    //             if(status){
-    //                 ObjectQuery.status  = Number(status)
-    //             }
-
-    //             //_____Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
-    //             let listAppMenuParent = await ACCOUNT_COLL.find(ObjectQuery)
-    //             .populate(
-    //                 constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
-    //             )
-    //             .sort({name: 1})
-
-    //             return resolve({ error: false, data: listAppMenuParent, maxLevel: Number(levelMax[0].maxLevel) })
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     })
-    // }
 
     /**
      * Name: Import Excel

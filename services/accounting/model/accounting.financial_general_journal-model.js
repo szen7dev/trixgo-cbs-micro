@@ -1012,6 +1012,13 @@ class Model extends BaseModel {
 
                     // Báo cáo theo Tài khoản - Mã khách (quan hệ 1-1)
                     if(option == 3){
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+
                         conditionDebitObj.customerDebit = ObjectID(contactID)
                         conditionCreditObj.customerCredit = ObjectID(contactID)
         
@@ -1387,7 +1394,6 @@ class Model extends BaseModel {
                     
                     if(option == 4){
                         return resolve({ error: false, data: { 
-                            listAccounts,
                             debitO: listDataO[0]._debit,
                             creditO: listDataO[0]._credit,
                             debitOF: listDataOF[0]._debit,
