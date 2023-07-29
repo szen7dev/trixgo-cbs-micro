@@ -25,6 +25,7 @@ const { CONTACT_GENDER }                = require('../helper/item.keys-constant'
 /**
  * COLLECTIONS
  */
+const USER_COLL                                     = require('../../auth/database/auth.user-coll')
 const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll')
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll')
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
@@ -295,6 +296,17 @@ class Model extends BaseModel {
                         $addToSet: { childs: infoAfterInsert._id },
                         $inc: { amountChilds: 1 }
                     }, { new: true })
+                }
+
+                // Cập nhật linkUser với tài khoản
+                if(linkUser && checkObjectIDs(linkUser)){
+                    // Cập nhật vào user-coll
+                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser, 
+                        { 
+                            $addToSet: {contact: infoAfterInsert._id }
+                        }, 
+                        { new: true })
+                    // console.log(infoUser)
                 }
 
                 // Cập nhật vào đơn vị cơ sở
@@ -724,7 +736,18 @@ class Model extends BaseModel {
 
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Cập nhật thất bại" });
+                    return resolve({ error: true, message: "Cập nhật thất bại" })
+            
+                // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
+                if(linkUser && checkObjectIDs(linkUser)){
+                    // Cập nhật vào user-coll
+                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser, 
+                        { 
+                            $addToSet: {contact: contactID }
+                        }, 
+                        { new: true })
+                    // console.log(infoUser)
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -803,7 +826,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getListV2({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID }) {
+    getListV2({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID }) {
         // console.log({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
@@ -869,14 +892,6 @@ class Model extends BaseModel {
                     // ]
                 }
 
-                // if(select && typeof select === 'string'){
-                //     if(!IsJsonString(select))
-                //         return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-                //     select = JSON.parse(select);
-                // }
-                // console.log(conditionObj)
-
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
@@ -935,9 +950,6 @@ class Model extends BaseModel {
         keyword, limit = 5, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = { };
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
@@ -945,12 +957,6 @@ class Model extends BaseModel {
                 if(limit > 5){
                     limit = 5
                 }
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -964,11 +970,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';

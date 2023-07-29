@@ -1,7 +1,7 @@
 "use strict";
 
 const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany } = require('../../../tools/utils/utils');
 const ObjectID = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -19,6 +19,7 @@ const FIN__CASH_BOOK_COLL                = require('../database/fin.cash_book-co
 const ACCOUNT_COLL                       = require('../../item/database/item.account-coll')
 const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
 const CONTRACT_COLL                      = require('../../item/database/item.contract-coll')
+const FINANCIAL_GENERAL_JOURNAL_COLL     = require('../.../../../accounting/database/accounting.financial_general_journal-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -26,6 +27,9 @@ const { KEY_ERROR } = require('../../../tools/keys/index');
 /**
  * import inter-model, exter-model
  */
+const FINANCIAL_GENERAL_JOURNAL_MODEL   = require('../.../../../accounting/model/accounting.financial_general_journal-model').MODEL
+const ACCOUNT_MODEL                     = require('../.../../../item/model/item.account-model').MODEL
+
 class Model extends BaseModel {
     constructor() {
         super(FIN__CASH_BOOK_COLL);
@@ -763,82 +767,286 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 25/7/2023
      */
+    // downloadTemplateExcel({ option, companyID, parentID, userID }) {
+    //     // console.log({ option, companyID, parentID, userID })
+    //     return new Promise(async resolve => {
+    //         try {
+
+    //             let listItems1 = await ACCOUNT_COLL.find({company: companyID})
+    //             .limit(200)
+    //             .select('name')
+    //             // .populate({
+    //             //     path: 'members',
+    //             //     select: 'fullname'
+    //             // })
+    //             // console.log(listItems1)
+
+    //             let listItems2 = await CONTACT_COLL.find({company: companyID})
+    //             .limit(200)
+    //             .select('name phone taxid')
+
+    //             let listItems3 = await CONTRACT_COLL.find({company: companyID})
+    //             .limit(200)
+    //             .select('name sign')
+
+    //             /**
+    //              * DỮ LIỆU SỔ QUỸ
+    //              */
+    //             let listData = await FIN__CASH_BOOK_COLL.find({parent: parentID})
+    //             .limit(2000)
+    //             .select('date name account customer contract income expense note')
+    //             .populate({
+    //                 path: 'account customer contract',
+    //                 select: 'name phone'
+    //             })
+    //             .sort({date: 1})
+    //             // console.log(listData)
+
+    //             // Modify the workbook.
+    //             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))
+    //             .then(async workbook => {
+    //                 var i = 3
+    //                 listItems1?.forEach((item, index) => {
+    //                     workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
+    //                     workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
+    //                     i++
+    //                 })
+
+    //                 var i = 3
+    //                 listItems2?.forEach((item, index) => {
+    //                     workbook.sheet("Export").row(i).cell(3).value(`${item._id}`)
+    //                     workbook.sheet("Export").row(i).cell(4).value(`${item.name}_${item?.phone}_${item?.taxid}`)
+    //                     i++
+    //                 })
+
+    //                 var i = 3
+    //                 listItems3?.forEach((item, index) => {
+    //                     workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
+    //                     workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
+    //                     i++
+    //                 })
+
+    //                 var i = 3
+    //                 listData?.forEach((item, index) => {
+    //                     workbook.sheet("DataImport").row(i).cell(1).value(Number(index+1))
+    //                     workbook.sheet("DataImport").row(i).cell(2).value(item.date)
+    //                     workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
+    //                     workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
+    //                     workbook.sheet("DataImport").row(i).cell(5).value(`${(item?.customer && item?.customer != null) ? item.customer.name : ""}`)
+    //                     workbook.sheet("DataImport").row(i).cell(6).value(`${(item?.contract && item?.contract != null) ? item.contract.name : ""}`)
+    //                     workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
+    //                     workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
+    //                     workbook.sheet("DataImport").row(i).cell(9).value(`${(item?.note && item?.note != "") ? item?.note : ""}`)
+    //                     i++
+    //                 })
+
+    //                 const now = new Date();
+    //                 const filePath = '../../../files/temporary_uploads/';
+    //                 const fileName = `fin_cashbook_import_${now.getTime()}.xlsm`;
+    //                 const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+    //                 await workbook.toFileAsync(pathWriteFile);
+    //                 const result = await uploadFileS3(pathWriteFile, fileName);
+
+    //                 fs.unlinkSync(pathWriteFile);
+    //                 return resolve({ error: false, data: result?.Location, status: 200 });
+    //             });
+
+    //         } catch (error) {
+    //             console.log({ error })
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
+
     downloadTemplateExcel({ option, companyID, parentID, userID }) {
+        const that = this
         // console.log({ option, companyID, parentID, userID })
         return new Promise(async resolve => {
             try {
+                // //__________Lấy levelMax của các phần tử
+                // let levelForRecursive = await _getLevelMaxInRecursiveByCompany(ACCOUNT_COLL, companyID)
+                // console.log({levelForRecursive})
 
-                let listItems1 = await ACCOUNT_COLL.find({company: companyID})
-                .limit(200)
-                .select('name')
-                // .populate({
-                //     path: 'members',
-                //     select: 'fullname'
-                // })
-                // console.log(listItems1)
+                // let arrObjectID = []
+                // //__________Khai báo mảng chứa phần tử cha và các con
+                // let getListIDRecursiveForAny = (arr) => {
+                //     for(const item of arr){
+                //         arrObjectID.push(item._id)
+                //         // console.log(arrObjectID)
 
-                let listItems2 = await CONTACT_COLL.find({company: companyID})
-                .limit(200)
-                .select('name phone taxid')
+                //         if (Array.isArray(item.childs) && item.childs.length) {
+                //             getListIDRecursiveForAny(item.childs)
+                //         }
+                //     }
+                // }
 
-                let listItems3 = await CONTRACT_COLL.find({company: companyID})
-                .limit(200)
-                .select('name sign')
+                // let accountID = "64c0ca9af8a43a0011a3435d"
+
+                // //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
+                // let infoItemOrigin = await ACCOUNT_COLL.findById(accountID)
+                // .populate(
+                //     _constructForAny(levelForRecursive, 'childs') 
+                // )
+                // console.log(infoItemOrigin)
+
+                // //__________Gọi hàm đệ quy để lấy mảng nestedArray
+                // getListIDRecursiveForAny([infoItemOrigin], levelForRecursive)
+
+                // console.log(arrObjectID)
 
                 /**
-                 * DỮ LIỆU SỔ QUỸ
+                 * NHẬT KÝ CHUNG
                  */
-                let listData = await FIN__CASH_BOOK_COLL.find({parent: parentID})
-                .limit(2000)
-                .select('date name account customer contract income expense note')
+                let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find({ company: companyID })
+                // .select('')
                 .populate({
-                    path: 'account customer contract',
-                    select: 'name phone'
+                    path: 'funda contract debit credit customerDebit customerCredit goods warehouse budgetWork',
+                    select: 'name'
                 })
-                .sort({date: 1})
-                // console.log(listData)
+
+
+                /**
+                 * DANH SÁCH CÂY TÀI KHOẢN
+                 */
+                let listAccounts = await ACCOUNT_MODEL.getListRecursive({ companyID })
+                let listAppMenuParent = listAccounts.data
+
+                let option = 4, optionTerm = 1, fromDate = '2023-06-30', toDate = '2023-12-31'
+                let listDataCombine = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({ option, optionTerm, companyID, fromDate, toDate, userID })
+                // console.log(listDataCombine)
+                // console.log(listDataCombine.data.debitO)
+                // console.log(listDataCombine.data.creditO)
+                // console.log('=====================')
+                // console.log(listDataCombine.data.debitFT)
+                // console.log(listDataCombine.data.creditFT)
+
+                let arrDebitO = [], arrCreditO = [], arrDebitOF = [], arrCreditOF = [], arrDebitFT = [], arrCreditFT = []
+
+                listDataCombine.data.debitO.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrDebitO[key])) {
+                        arrDebitO[key] = [];
+                    }
+                    arrDebitO[key].push(element)
+                })
+
+                listDataCombine.data.creditO.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrCreditO[key])) {
+                        arrCreditO[key] = [];
+                    }
+                    arrCreditO[key].push(element)
+                })
+
+                listDataCombine.data.debitOF.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrDebitOF[key])) {
+                        arrDebitOF[key] = [];
+                    }
+                    arrDebitOF[key].push(element)
+                })
+
+                listDataCombine.data.creditOF.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrCreditOF[key])) {
+                        arrCreditOF[key] = [];
+                    }
+                    arrCreditOF[key].push(element)
+                })
+
+                listDataCombine.data.debitFT.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrDebitFT[key])) {
+                        arrDebitFT[key] = [];
+                    }
+                    arrDebitFT[key].push(element)
+                })
+
+                listDataCombine.data.creditFT.forEach(element=>{
+                    let key = element._id.account;
+                    if (!Array.isArray(arrCreditFT[key])) {
+                        arrCreditFT[key] = [];
+                    }
+                    arrCreditFT[key].push(element)
+                })
+
+                // console.log(arrDebitO)
+                // console.log(arrCreditO)
+                // console.log(arrDebitOF)
+                // console.log(arrCreditOF)
+                // console.log(arrDebitFT)
+                // console.log(arrDebitFT)
 
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_cashbook_import.xlsm')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_financial_report.xlsm')))
                 .then(async workbook => {
-                    var i = 3
-                    listItems1?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
-                        workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
+
+                    // NHẬT KÝ CHUNG
+                    var i = 4
+                    listData.forEach((item, index) =>{
+                        workbook.sheet("NhatKyChung").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("NhatKyChung").row(i).cell(2).value(`${item?.funda?.name}`)
+                        workbook.sheet("NhatKyChung").row(i).cell(3).value()
+                        workbook.sheet("NhatKyChung").row(i).cell(4).value(item.date)
+                        workbook.sheet("NhatKyChung").row(i).cell(5).value(item.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(6).value(item?.debit?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(7).value(item?.credit?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(8).value(item?.customerDebit?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(9).value(item?.customerCredit?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(10).value(item?.goods?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(11).value(item?.warehouse?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(12).value(item?.contract?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(13).value(item?.goods?.unit)
+                        workbook.sheet("NhatKyChung").row(i).cell(14).value(Number(item.quantity))
+                        workbook.sheet("NhatKyChung").row(i).cell(15).value(Number(item.unitprice))
+                        workbook.sheet("NhatKyChung").row(i).cell(16).value(Number(item.amount))
+                        workbook.sheet("NhatKyChung").row(i).cell(17).value(item?.budgetWork?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(18).value(Number(item.updown))
+                        workbook.sheet("NhatKyChung").row(i).cell(19).value(item?.note)
                         i++
                     })
 
-                    var i = 3
-                    listItems2?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(3).value(`${item._id}`)
-                        workbook.sheet("Export").row(i).cell(4).value(`${item.name}_${item?.phone}_${item?.taxid}`)
-                        i++
-                    })
+                    // BẢNG CÂN ĐỐI TÀI KHOẢN
+                    var i = 4
+                    let recursive = (arr) => {
+                        for(const item of arr){
+                            workbook.sheet("BangCDTaiKhoan").row(i).cell(1).value(`${item.name}`)
+                            workbook.sheet("BangCDTaiKhoan").row(i).cell(2).value(`${item._id}`)
+                            workbook.sheet("BangCDTaiKhoan").row(i).cell(3).value(`${item.description}`)
 
-                    var i = 3
-                    listItems3?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(5).value(`${item._id}`)
-                        workbook.sheet("Export").row(i).cell(6).value(`${item.name}_${item?.sign}`)
-                        i++
-                    })
+                            // Hiển thị giá trị
+                            if(arrDebitO[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(4).value(Number(arrDebitO[item._id][0].amount))
+                            }
+                            if(arrCreditO[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(5).value(Number(arrCreditO[item._id][0].amount))
+                            }
+                            if(arrDebitOF[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(6).value(Number(arrDebitOF[item._id][0].amount))
+                            }
+                            if(arrCreditOF[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(7).value(Number(arrCreditOF[item._id][0].amount))
+                            }
+                            if(arrDebitFT[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(8).value(Number(arrDebitFT[item._id][0].amount))
+                            }
+                            if(arrCreditFT[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(9).value(Number(arrCreditFT[item._id][0].amount))
+                            }
 
-                    var i = 3
-                    listData?.forEach((item, index) => {
-                        workbook.sheet("DataImport").row(i).cell(1).value(Number(index+1))
-                        workbook.sheet("DataImport").row(i).cell(2).value(item.date)
-                        workbook.sheet("DataImport").row(i).cell(3).value(`${item.name}`)
-                        workbook.sheet("DataImport").row(i).cell(4).value(`${item?.account?.name}`)
-                        workbook.sheet("DataImport").row(i).cell(5).value(`${(item?.customer && item?.customer != null) ? item.customer.name : ""}`)
-                        workbook.sheet("DataImport").row(i).cell(6).value(`${(item?.contract && item?.contract != null) ? item.contract.name : ""}`)
-                        workbook.sheet("DataImport").row(i).cell(7).value(Number(item.income))
-                        workbook.sheet("DataImport").row(i).cell(8).value(Number(item.expense))
-                        workbook.sheet("DataImport").row(i).cell(9).value(`${(item?.note && item?.note != "") ? item?.note : ""}`)
-                        i++
-                    })
+                            i++
+    
+                            if (item.childs && item.childs.length) {
+                                recursive(item.childs)
+                            }
+                        }
+                    }
+                    recursive(listAppMenuParent)
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `fin_cashbook_import_${now.getTime()}.xlsm`;
+                    const fileName = `fin_financial_report${now.getTime()}.xlsm`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
@@ -849,7 +1057,6 @@ class Model extends BaseModel {
                 });
 
             } catch (error) {
-                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

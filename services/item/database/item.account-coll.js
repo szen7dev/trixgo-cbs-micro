@@ -15,7 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
      */
     status: {
         type: Number,
-        default: 0
+        default: 1
     },  
     //_________Thuộc về công ty nào
     company: {

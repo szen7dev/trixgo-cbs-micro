@@ -58,11 +58,11 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-    //_______Link với danh bạ
-    contact: {
+    //_______Link với các danh bạ của các phân vùng
+    contact: [{
         type: Schema.Types.ObjectId,
         ref : 'contact'
-    },
+    }],
     //_______Ảnh đại diện
     image: {
         type: String,
@@ -172,7 +172,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         }
     }],
     /**
-     * Group default
+     * Group default để chọn khi tạo chủ đề
      */
     groupDefault: {
         type: Schema.Types.ObjectId,

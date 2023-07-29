@@ -333,6 +333,78 @@ class Model extends BaseModel {
         })
     }
 
+     /**
+     * Name : Danh sách tài khoản + con cháu của công ty
+	 * Author : Hiepnh
+	 * Date: 29/7/2023
+	 */
+    getListRecursive({ companyID, status }){
+        return new Promise(async (resolve) => {
+            try {
+                if( !ObjectID.isValid(companyID))
+                    return resolve({ error: true, message: 'param_not_valid' })
+
+                let pathOrigin;
+                let constructPopulateConfigObj = (level, path) => {
+                    pathOrigin  = `${path}`
+                    const oneLevel = () => ({ 
+                        path: pathOrigin, options: { sort: { 'name': 1 } }
+                    })
+                    let obj = oneLevel()
+
+                    while (level) {
+                        if (level !== 1) {
+                            obj.populate = Object.assign({}, obj)
+                        }
+                        obj = Object.assign({}, obj)
+                        --level
+                    }
+                    
+                    return obj
+                }
+
+                let levelMax = await ITEM__ACCOUNT_COLL.aggregate(
+                    [
+                        {
+                            $match: {
+                                company: ObjectID(companyID)
+                            }
+                        },
+                        {
+                            $group:
+                            {
+                                _id: null,
+                                maxLevel: { $max: "$level" }
+                            }
+                        }
+                    ]
+                )
+                let ObjectQuery = { 
+                    company: ObjectID(companyID),   
+                    $or: [
+                        { parent: { $exists: false} },
+                        { parent: null }
+                    ]
+                }
+                
+                if(status){
+                    ObjectQuery.status  = Number(status)
+                }
+
+                //_____Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
+                let listAppMenuParent = await ITEM__ACCOUNT_COLL.find(ObjectQuery)
+                .populate(
+                    constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
+                )
+                .sort({name: 1})
+
+                return resolve({ error: false, data: listAppMenuParent, maxLevel: Number(levelMax[0].maxLevel) })
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
     /**
      * Name  : Lấy thông tin tài khoản theo tên
      * Author: Hiepnh
@@ -489,88 +561,6 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message });
             }
         });
-    }
-
-    /**
-     * Name : Danh sách tài khoản + con cháu của công ty
-	 * Author : Hiepnh
-	 * Date: 03/5/2022
-	 */
-    getListByCompany({ companyID, status, showInReportMonth }){
-        return new Promise(async (resolve) => {
-            try {
-                if( !ObjectID.isValid(companyID))
-                       return resolve({ error: true, message: 'param_not_valid' });
-
-                let pathOrigin;
-                let constructPopulateConfigObj = (level, path) => {
-                    pathOrigin  = `${path}`;
-                    const oneLevel = () => ({
-                        path: pathOrigin, options: { sort: { 'name': 1 } },
-                    });
-                    let obj = oneLevel();
-
-                    while (level) {
-                        if (level !== 1) {
-                            obj.populate = Object.assign({}, obj);
-                        }
-                        obj = Object.assign({}, obj);
-                        --level;
-                    }
-
-                    return obj;
-                };
-
-                let levelMax = await ITEM__ACCOUNT_COLL.aggregate(
-                    [
-                        {
-                            $match: {
-                                company: ObjectID(companyID)
-                            }
-                        },
-                        {
-                            $group:
-                            {
-                                _id: null,
-                                maxLevel: { $max: "$level" }
-                            }
-                        }
-                    ]
-                );
-                let ObjectQuery = {
-                    company: companyID,
-                    $or: [
-                        {
-                            parent: {
-                                $exists: false
-                            }
-                        },
-                        {
-                            parent: null
-                        }
-                    ]
-                }
-
-                if(status){
-                    ObjectQuery.status  = 1
-                }
-
-                if(showInReportMonth){
-                    ObjectQuery.showInReportMonth  = 1
-                }
-
-                // Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
-                let listParent = await ITEM__ACCOUNT_COLL.find(ObjectQuery)
-                .populate(
-                    constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
-                )
-                .sort({name: 1})
-
-                return resolve({ error: false, data: listParent, maxLevel: Number(levelMax[0].maxLevel) });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        })
     }
 }
 
