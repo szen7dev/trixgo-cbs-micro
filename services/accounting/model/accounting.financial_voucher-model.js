@@ -233,8 +233,7 @@ class Model extends BaseModel {
                          * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
                          */
                         if(infoJournal){
-                            let newInfoVoucher = await that.updateValue({ voucherID })
-                            // console.log(newInfoVoucher)
+                            await that.updateValue({ voucherID })
                         }
                     }
                 }

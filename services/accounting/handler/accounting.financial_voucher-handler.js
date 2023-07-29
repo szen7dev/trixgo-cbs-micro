@@ -22,9 +22,6 @@ module.exports = {
      */
     insert: {
         auth: "required",
-        params: {
-            
-        },
         async handler(ctx) {
             try {
                 let { 
@@ -40,15 +37,13 @@ module.exports = {
                     isImport,
                 } = ctx.params;
 
-                // console.log(ctx.params)
-
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let  resultAfterCallHandler;
 
                 if(!fundaID){
                     let infoFundaCompany = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ })
-                    // console.log(infoFundaCompany.data.listRecords[0])
+                    console.log(infoFundaCompany)
                 
                     if(infoFundaCompany.error){
                         resultAfterCallHandler.message = 'Not found funda comany ';
