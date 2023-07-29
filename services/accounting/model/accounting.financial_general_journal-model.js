@@ -807,6 +807,16 @@ class Model extends BaseModel {
                     }
 
                     // Theo toàn bộ tài khoản của công ty
+                    if(optionAccount == 2){
+                        listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID })
+                            .select('name description nestedChilds')
+                        if(listAccounts){
+                            for(const item of listAccounts){
+                                arrObjectID.push(item._id)
+                                arrObjectID = [...arrObjectID,...item.nestedChilds]
+                            }
+                        }
+                    }
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
@@ -902,17 +912,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * Điều kiện bút toán theo tài khoản
-                 */
-                conditionDebitObj.debit = {
-                    $in: arrObjectID
-                }
-
-                conditionCreditObj.credit = {
-                    $in: arrObjectID
-                }
-
                 if(!option){
                     // 1 tài khoản - Không mã khách
                     conditionProject = {
@@ -923,11 +922,17 @@ class Model extends BaseModel {
                         amount: 1
                     }
 
+                    conditionDebitObj.debit = {
+                        $in: arrObjectID
+                    }
+                    conditionCreditObj.credit = {
+                        $in: arrObjectID
+                    }
+
                     conditionGroupDebit = {
                         _id: { },
                         amount: { $sum: "$amount" }
                     }
-                    
                     conditionGroupCredit = {
                         _id: { },
                         amount: { $sum: "$amount" }
@@ -945,11 +950,17 @@ class Model extends BaseModel {
                             credit: 1
                         }
 
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+
                         conditionGroupDebit = {
                             _id: { account: "$debit" },
                             amount: { $sum: "$amount" }
                         }
-                        
                         conditionGroupCredit = {
                             _id: { account: "$credit" },
                             amount: { $sum: "$amount" }
@@ -981,6 +992,13 @@ class Model extends BaseModel {
                         //     _id: { contact: "$customerCredit", account: "$credit" },
                         //     amount: { $sum: "$amount" }
                         // }
+
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
 
                         conditionGroupDebit = {
                             _id: { contact: "$customerDebit" },
@@ -1021,6 +1039,29 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Báo cáo Bảng cân đối tài khoản
+                if(option == 4){
+                    conditionProject = {
+                        year : {$year : "$date"},
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        date: 1,
+                        amount: 1,
+                        debit: 1,
+                        credit: 1
+                    }
+
+                    conditionGroupDebit = {
+                        _id: { account: "$debit" },
+                        amount: { $sum: "$amount" }
+                    }
+                    conditionGroupCredit = {
+                        _id: { account: "$credit" },
+                        amount: { $sum: "$amount" }
+                    }
+                }
+                
+
                 /**
                  * DATA KẾT CHUYỂN/ĐẦU NĂM
                  */
@@ -1032,7 +1073,7 @@ class Model extends BaseModel {
                                     $match: conditionDebitObj
                                 },
                                 {
-                                    $project : conditionProject
+                                    $project: conditionProject
                                 },
                                 {
                                     $match: conditionMatchO
@@ -1046,12 +1087,11 @@ class Model extends BaseModel {
                                     $match: conditionCreditObj
                                 },
                                 {
-                                    $project : conditionProject
+                                    $project: conditionProject
                                 },
                                 {
                                     $match: conditionMatchO
                                 },
-
                                 {
                                     $group: conditionGroupCredit
                                 }
@@ -1345,6 +1385,17 @@ class Model extends BaseModel {
                         }})
                     }
                     
+                    if(option == 4){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitOF: listDataOF[0]._debit,
+                            creditOF: listDataOF[0]._credit,
+                            debitFT: listDataFT[0]._debit,
+                            creditFT: listDataFT[0]._credit,
+                        }})
+                    }
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message })

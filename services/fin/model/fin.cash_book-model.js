@@ -27,6 +27,9 @@ const { KEY_ERROR } = require('../../../tools/keys/index');
 /**
  * import inter-model, exter-model
  */
+const FINANCIAL_GENERAL_JOURNAL_MODEL   = require('../.../../../accounting/model/accounting.financial_general_journal-model').MODEL
+const ACCOUNT_MODEL                     = require('../.../../../item/model/item.account-model').MODEL
+
 class Model extends BaseModel {
     constructor() {
         super(FIN__CASH_BOOK_COLL);
@@ -861,27 +864,9 @@ class Model extends BaseModel {
         // console.log({ option, companyID, parentID, userID })
         return new Promise(async resolve => {
             try {
-
-                // let listData = await ACCOUNT_COLL.find({company: companyID, parent: {$exists: false }})
-                // .limit(200)
-                // .select('name description nestedChilds nestedParents')
-                // .populate({
-                //     path: 'members',
-                //     select: 'fullname'
-                // })
-                // console.log(listData)
-                // for(const item of listData){
-                //     console.log(item)
-                    
-                // }
-
-                // console.log('=============Lấy cây menu đệ quy================')
-
                 // //__________Lấy levelMax của các phần tử
                 // let levelForRecursive = await _getLevelMaxInRecursiveByCompany(ACCOUNT_COLL, companyID)
                 // console.log({levelForRecursive})
-
-
 
                 // let arrObjectID = []
                 // //__________Khai báo mảng chứa phần tử cha và các con
@@ -910,23 +895,62 @@ class Model extends BaseModel {
 
                 // console.log(arrObjectID)
 
-                let listAccounts = await that.getListByCompany({ companyID, status: 1 })
-                // console.log(listAccounts)
-                let listAppMenuParent = listAccounts.data
-                
+                /**
+                 * NHẬT KÝ CHUNG
+                 */
+                let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find({ company: companyID })
+                // .select('')
+                .populate({
+                    path: 'funda contract debit credit customerDebit customerCredit goods warehouse budgetWork',
+                    select: 'name'
+                })
 
+
+                /**
+                 * DANH SÁCH CÂY TÀI KHOẢN
+                 */
+                let listAccounts = await ACCOUNT_MODEL.getListRecursive({ companyID })
+                let listAppMenuParent = listAccounts.data
+
+                let option = 2
+
+            //    let listDataCombine = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID })
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_financial_report.xlsm')))
                 .then(async workbook => {
-                    
+
+                    // NHẬT KÝ CHUNG
+                    var i = 4
+                    listData.forEach((item, index) =>{
+                        workbook.sheet("NhatKyChung").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("NhatKyChung").row(i).cell(2).value(`${item?.funda?.name}`)
+                        workbook.sheet("NhatKyChung").row(i).cell(3).value()
+                        workbook.sheet("NhatKyChung").row(i).cell(4).value(item.date)
+                        workbook.sheet("NhatKyChung").row(i).cell(5).value(item.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(6).value(item?.debit?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(7).value(item?.credit?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(8).value(item?.customerDebit?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(9).value(item?.customerCredit?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(10).value(item?.goods?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(11).value(item?.warehouse?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(12).value(item?.contract?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(13).value(item?.goods?.unit)
+                        workbook.sheet("NhatKyChung").row(i).cell(14).value(Number(item.quantity))
+                        workbook.sheet("NhatKyChung").row(i).cell(15).value(Number(item.unitprice))
+                        workbook.sheet("NhatKyChung").row(i).cell(16).value(Number(item.amount))
+                        workbook.sheet("NhatKyChung").row(i).cell(17).value(item?.budgetWork?.name)
+                        workbook.sheet("NhatKyChung").row(i).cell(18).value(Number(item.updown))
+                        workbook.sheet("NhatKyChung").row(i).cell(19).value(item?.note)
+                        i++
+                    })
+
+                    // BẢNG CÂN ĐỐI TÀI KHOẢN
                     var i = 4
                     let recursive = (arr) => {
                         for(const item of arr){
-                            // console.log({acc: `${item.name}-${item.description}`})
-
-                            workbook.sheet("BangCDTK").row(i).cell(1).value(`${item.name}`)
-                            workbook.sheet("BangCDTK").row(i).cell(2).value(`${item.description}`)
+                            workbook.sheet("BangCDTaiKhoan").row(i).cell(1).value(`${item.name}`)
+                            workbook.sheet("BangCDTaiKhoan").row(i).cell(2).value(`${item.description}`)
                             i++
     
                             if (item.childs && item.childs.length) {
@@ -934,16 +958,7 @@ class Model extends BaseModel {
                             }
                         }
                     }
-    
                     recursive(listAppMenuParent)
-
-                    // listItems1?.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
-                    //     workbook.sheet("Export").row(i).cell(2).value(`${item.name}`)
-                    //     i++
-                    // })
-
-                 
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
@@ -958,113 +973,80 @@ class Model extends BaseModel {
                 });
 
             } catch (error) {
-                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
-    //_________Danh sách đệ quy
-    getListByCompany({ companyID, status }){
-        return new Promise(async (resolve) => {
-            try {
-                if( !ObjectID.isValid(companyID))
-                       return resolve({ error: true, message: 'param_not_valid' });
+    // /**
+    //  * DANH SÁCH CÂY TÀI KHOẢN ĐỆ QUY CỦA CÔNG TY
+    //  */
+    // getListByCompany({ companyID, status }){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if( !ObjectID.isValid(companyID))
+    //                 return resolve({ error: true, message: 'param_not_valid' })
 
-                let pathOrigin;
-                let constructPopulateConfigObj = (level, path) => {
-                    pathOrigin  = `${path}`;
-                    const oneLevel = () => ({ 
-                        path: pathOrigin, options: { sort: { 'name': 1 } }, 
-                    });
-                    let obj = oneLevel();
+    //             let pathOrigin;
+    //             let constructPopulateConfigObj = (level, path) => {
+    //                 pathOrigin  = `${path}`
+    //                 const oneLevel = () => ({ 
+    //                     path: pathOrigin, options: { sort: { 'name': 1 } }
+    //                 })
+    //                 let obj = oneLevel()
 
-                    while (level) {
-                        if (level !== 1) {
-                            obj.populate = Object.assign({}, obj);
-                        }
-                        obj = Object.assign({}, obj);
-                        --level;
-                    }
+    //                 while (level) {
+    //                     if (level !== 1) {
+    //                         obj.populate = Object.assign({}, obj)
+    //                     }
+    //                     obj = Object.assign({}, obj)
+    //                     --level
+    //                 }
                     
-                    return obj;
-                };
+    //                 return obj
+    //             }
 
-                let levelMax = await ACCOUNT_COLL.aggregate(
-                    [
-                        {
-                            $match: {
-                                company: ObjectID(companyID)
-                            }
-                        },
-                        {
-                            $group:
-                            {
-                                _id: null,
-                                maxLevel: { $max: "$level" }
-                            }
-                        }
-                    ]
-                );
-                let ObjectQuery = { 
-                    company: ObjectID(companyID),   
-                    $or: [
-                        {
-                            parent: {
-                                $exists: false
-                            }  
-                        },
-                        {
-                            parent: null
-                        }
-                    ]
-                }
+    //             let levelMax = await ACCOUNT_COLL.aggregate(
+    //                 [
+    //                     {
+    //                         $match: {
+    //                             company: ObjectID(companyID)
+    //                         }
+    //                     },
+    //                     {
+    //                         $group:
+    //                         {
+    //                             _id: null,
+    //                             maxLevel: { $max: "$level" }
+    //                         }
+    //                     }
+    //                 ]
+    //             )
+    //             let ObjectQuery = { 
+    //                 company: ObjectID(companyID),   
+    //                 $or: [
+    //                     { parent: { $exists: false} },
+    //                     { parent: null }
+    //                 ]
+    //             }
                 
+    //             if(status){
+    //                 ObjectQuery.status  = Number(status)
+    //             }
 
-                // if(status){
-                //     ObjectQuery.status  = 1
-                // }
+    //             //_____Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
+    //             let listAppMenuParent = await ACCOUNT_COLL.find(ObjectQuery)
+    //             .populate(
+    //                 constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
+    //             )
+    //             .sort({name: 1})
 
-                // Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
-                let listAppMenuParent = await ACCOUNT_COLL.find(ObjectQuery)
-                .populate(
-                    constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
-                )
-                .sort({name: 1})
-                // console.log(listAppMenuParent)
-
-                // console.log('==================')
-                // listAppMenuParent.forEach(item => {
-                //     console.log(item.name)
-                //     // console.log(item.childs)
-
-                //     item.childs && item.childs.length > 0 && item.childs.forEach((subitem, subindex) => {
-                //         console.log(subitem.name)
-                //         console.log(subitem.childs)
-                //     })
-                   
-                // })
-
-                // let recursive = (arr) => {
-                //     for(const item of arr){
-                //         console.log({acc: `${item.name}-${item.description}`})
-
-                //         if (item.childs && item.childs.length) {
-                //             recursive(item.childs)
-                //         }
-                //         // console.log('==============DONE===============')
-                //     }
-                // }
-
-                // recursive(listAppMenuParent)
-
-
-                return resolve({ error: false, data: listAppMenuParent, maxLevel: Number(levelMax[0].maxLevel) });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        })
-    }
+    //             return resolve({ error: false, data: listAppMenuParent, maxLevel: Number(levelMax[0].maxLevel) })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
 
     /**
      * Name: Import Excel
