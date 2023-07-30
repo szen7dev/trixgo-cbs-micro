@@ -4161,6 +4161,10 @@ class Model extends BaseModel {
                 // Báo cáo hóa đơn
                 if(option == 2){
                     let listData = await PCM_PLAN_TASK_COLL.find({ project: projectID, subtype: 12 })
+                    .populate({
+                        path: 'contact',
+                        select: 'name taxid phone',
+                    })
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_invoice_report.xlsx')))
@@ -4168,14 +4172,16 @@ class Model extends BaseModel {
                         var i = 3;
                         listData?.forEach((item, index) => {
                             workbook.sheet("BangKeMuaVao").row(i).cell(1).value(Number(index + 1))
-                            workbook.sheet("BangKeMuaVao").row(i).cell(2).value(item?.actualFinishTime)
-                            workbook.sheet("BangKeMuaVao").row(i).cell(3).value(item?.sign)
-                            workbook.sheet("BangKeMuaVao").row(i).cell(4).value(item?.name)
-                            workbook.sheet("BangKeMuaVao").row(i).cell(5).value(Number(item?.amount))
-                            workbook.sheet("BangKeMuaVao").row(i).cell(6).value(Number(item?.vatAmount))
-                            workbook.sheet("BangKeMuaVao").row(i).cell(7).value(Number(item?.amount || 0 + item?.vatAmount || 0))
-                            workbook.sheet("BangKeMuaVao").row(i).cell(8).value(item?.status)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(2).value(item?.sign)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(3).value(item?.actualFinishTime)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(4).value(item?.contact?.name)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(5).value(item?.contact?.taxid)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(6).value(item?.name)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(7).value(Number(item?.amount))
+                            workbook.sheet("BangKeMuaVao").row(i).cell(8).value(Number(item?.vatAmount))
+                            workbook.sheet("BangKeMuaVao").row(i).cell(9).value(Number(item?.amount || 0 + item?.vatAmount || 0))
                             workbook.sheet("BangKeMuaVao").row(i).cell(10).value(item?.description)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(11).value(item?.status)
                             workbook.sheet("BangKeMuaVao").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com//pcm/detail/${item._id}`)
 
                             i++
