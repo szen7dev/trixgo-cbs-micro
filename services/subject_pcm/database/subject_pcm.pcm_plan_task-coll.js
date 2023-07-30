@@ -330,6 +330,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * Thành tiền = quantity*unitPrice
      */
     amount: { type: Number, default: 0 },
+    //_________VAT
+    vatAmount: { type: Number, default: 0 },
+    //_________Mã khách
+    contact: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
     //_________Dự kiến thời lượng-phục vụ tính tổng số giờ/số ngày để bổ sung việc (h)
     amountoftime: { type: Number, default: 0 },
     //________Thực tế thời lượng-dùng để thống kê cho các việc ước lượng về sau (h)
