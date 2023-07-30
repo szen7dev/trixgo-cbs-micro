@@ -175,6 +175,9 @@ class Model extends BaseModel {
                 if(description && description != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(description)
                 }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
 
                 dataInsert = {
                     name,
@@ -680,6 +683,9 @@ class Model extends BaseModel {
                     }
                     if(description && description != ""){
                         convertStr = convertStr + stringUtils.removeAccents(description)
+                    }
+                    if(sign && sign != ""){
+                        convertStr = convertStr + " " + stringUtils.removeAccents(sign)
                     }
                     dataUpdate.namecv = convertStr
                     dataUpdate.descriptioncv = convertStr
