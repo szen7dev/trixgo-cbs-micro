@@ -4176,6 +4176,7 @@ class Model extends BaseModel {
                             workbook.sheet("BangKeMuaVao").row(i).cell(7).value(Number(item?.amount || 0 + item?.vatAmount || 0))
                             workbook.sheet("BangKeMuaVao").row(i).cell(8).value(item?.status)
                             workbook.sheet("BangKeMuaVao").row(i).cell(10).value(item?.description)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com//pcm/detail/${item._id}`)
 
                             i++
                         })
