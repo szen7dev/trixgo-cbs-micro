@@ -4166,7 +4166,7 @@ class Model extends BaseModel {
 
                 // Báo cáo hóa đơn
                 if(option == 2){
-                    let listData = await PCM_PLAN_TASK_COLL.find({ project: projectID, subtype: 12 })
+                    let listData = await PCM_PLAN_TASK_COLL.find({ project: projectID, subtype: 12, amount: {$gt: 0} })
                     .populate({
                         path: 'contact',
                         select: 'name taxid phone',
