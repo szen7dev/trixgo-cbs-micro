@@ -4107,56 +4107,93 @@ class Model extends BaseModel {
      * Func: Download template import excel
      * Date: 15/09/2022
      */
-    downloadTemplateImportExcel({ projectID, userID }) {
+    downloadTemplateImportExcel({ option, projectID, userID }) {
+        console.log({ option, projectID, userID })
         return new Promise(async resolve => {
             try {
+                // Mẫu Import excel
+                if(option == 1){
+                    let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
+                    if(infoProject.error)
+                        return res.json(infoProject);
+    
+                    let memberInProject     = infoProject.members;
+                    let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID, members: {$in: [userID]} }).select("name sign");
+                    let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
+    
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
+                    .then(async workbook => {
+                        var i = 2;
+                        planGroupInProject?.forEach((item, index) => {
+                            workbook.sheet("Export").row(i).cell(1).value(`${item._id}`);
+                            workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`);
+                            i++
+                        });
+    
+                        var i = 2;
+                        memberInProject.forEach((item, index) => {
+                            workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
+                            workbook.sheet("Export").row(i).cell(5).value(item.fullname);
+                            i++
+                        });
+    
+                        var i = 2;
+                        listContracts.forEach((item, index) => {
+                            workbook.sheet("Export").row(i).cell(7).value(`${item._id}`);
+                            workbook.sheet("Export").row(i).cell(8).value(`${item.sign}-${item.name}`);
+                            i++
+                        });
+    
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `Template_import_task_${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    })
+                }
 
-                let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
-                if(infoProject.error)
-                    return res.json(infoProject);
+                // Báo cáo hóa đơn
+                if(option == 2){
+                    let listData = await PCM_PLAN_TASK_COLL.find({ project: projectID, subtype: 12 })
 
-                let memberInProject     = infoProject.members;
-                let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID, members: {$in: [userID]} }).select("name sign");
-                let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_invoice_report.xlsx')))
+                    .then(async workbook => {
+                        var i = 3;
+                        listData?.forEach((item, index) => {
+                            workbook.sheet("BangKeMuaVao").row(i).cell(1).value(Number(index + 1))
+                            workbook.sheet("BangKeMuaVao").row(i).cell(2).value(item?.actualFinishTime)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(3).value(item?.sign)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(4).value(item?.name)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(5).value(Number(item?.amount))
+                            workbook.sheet("BangKeMuaVao").row(i).cell(6).value(Number(item?.vatAmount))
+                            workbook.sheet("BangKeMuaVao").row(i).cell(7).value(Number(item?.amount || 0 + item?.vatAmount || 0))
+                            workbook.sheet("BangKeMuaVao").row(i).cell(8).value(item?.status)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(10).value(item?.description)
 
-                // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
-                .then(async workbook => {
-                    var i = 2;
-                    planGroupInProject?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`);
-                        workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`);
-                        i++
-                    });
+                            i++
+                        })
 
-                    var i = 2;
-                    memberInProject.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
-                        workbook.sheet("Export").row(i).cell(5).value(item.fullname);
-                        i++
-                    });
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `invoice_report${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-                    var i = 2;
-                    listContracts.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(7).value(`${item._id}`);
-                        workbook.sheet("Export").row(i).cell(8).value(`${item.sign}-${item.name}`);
-                        i++
-                    });
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
 
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `Template_import_task_${now.getTime()}.xlsm`;
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
-                });
-
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 })
+                    })
+                }
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
