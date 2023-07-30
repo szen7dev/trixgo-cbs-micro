@@ -823,13 +823,17 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách nhân sự
-     * Author: Depv
-     * Code  :
+     * Author: HiepNH
+     * Code  : 30/7/2023
      */
-    getListV2({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID }) {
-        // console.log({ companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID })
+    getList({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID, month }) {
+        // console.log({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID, month })
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * https://www.w3resource.com/mongodb/mongodb-where-operators.php#:~:text=The%20MongoDB%20%24where%20operator%20is,referred%20as%20this%20or%20obj.
+                 */
                 if(Number(limit) > 5){
                     limit = 5;
                 } else{
@@ -843,6 +847,21 @@ class Model extends BaseModel {
                 // Theo phân loại
                 if(type){
                     conditionObj.type = type
+                }
+
+                // Lấy những danh bạ có sinh nhật vào hôm nay
+                if(isBirthday == 1){
+                    const day = (new Date()).getDate()
+                    const month = (new Date()).getMonth()
+                    // console.log({day})
+                    // console.log({month})
+                    conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
+                }
+
+                // Danh sách sinh nhật theo tháng
+                if(month){
+                    // console.log({month})
+                    conditionObj.$where = `return this.birthday && this.birthday.getMonth() === ${Number(month - 1)}`
                 }
 
                 // Lấy theo Voucher
@@ -891,6 +910,7 @@ class Model extends BaseModel {
                     //     { phone: regSearch }
                     // ]
                 }
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -1037,10 +1057,10 @@ class Model extends BaseModel {
     /**
      * Name: Danh sách theo phân loại
      * Author: HiepNH
-     * Code: 24/12/2022
+     * Code: 30/7/2023
      */
     getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
-        // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
+        console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             let duration = getTimeBetween(toDate, fromDate)
             try {
@@ -1050,7 +1070,7 @@ class Model extends BaseModel {
                     let conditionObj = {
                         company: ObjectID(companyID)
                     }
-                    let conditionGroup = {}
+                    let conditionGroup = {}, conditionProject = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
 
                     /**
@@ -1067,12 +1087,24 @@ class Model extends BaseModel {
                         conditionObj.funda = { $in: arrFun }
                     }else{
                         let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
-                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id))
                         if(fundasIDIsMember.length) {
-                            conditionObj.funda = { $in: fundasIDIsMember };
-                        } else{
+                            conditionObj.funda = { $in: fundasIDIsMember }
+                        }else{
                             conditionObj.funda = { $in: [] }
                         }
+                    }
+
+                    conditionProject = {
+                        year : {$year : "$joinedDate"},
+                        month : {$month : "$joinedDate"},
+                        hour : {$hour : "$joinedDate"},
+                        funda : 1,
+                        sector1 : 1,
+                        sector2 : 1,
+                        sector3 : 1,
+                        new : 1,
+                        joinedDate : 1
                     }
 
                     // Phân loại theo thời khoảng
@@ -1161,10 +1193,27 @@ class Model extends BaseModel {
                         }
                     }
 
+                    if(option && Number(option) == 5){
+                        conditionObj.birthday = {$exists: true, $ne: null}
+                        conditionGroup = {
+                            _id: { month: "$month" },
+                            quantity: { $sum: 1 }
+                        }
+                        delete conditionObj.funda
+
+                        conditionProject = {
+                            month : {$month : "$birthday"},
+                            funda : 1,
+                            birthday : 1
+                        }
+                        sortBy = {"_id.month": 1}
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionPopulate)
                     // console.log(conditionObjYear)
                     // console.log(conditionGroup)
+                    // console.log(conditionProject)
 
                     // Danh sách đang triển khai
                     let listData = await ITEM__CONTACT_COLL.aggregate([
@@ -1172,17 +1221,7 @@ class Model extends BaseModel {
                             $match: conditionObj
                         },
                         {
-                            $project : {
-                                year : {$year : "$joinedDate"},
-                                month : {$month : "$joinedDate"},
-                                hour : {$hour : "$joinedDate"},
-                                funda : 1,
-                                sector1 : 1,
-                                sector2 : 1,
-                                sector3 : 1,
-                                new : 1,
-                                joinedDate : 1
-                            }
+                            $project : conditionProject
                         },
                         {
                             $match: conditionObjYear
@@ -1199,10 +1238,10 @@ class Model extends BaseModel {
                         await ITEM__CONTACT_COLL.populate(listData, conditionPopulate)
                     }
 
-                    return resolve({ error: false, data: listData });
+                    return resolve({ error: false, data: listData })
                 }
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
