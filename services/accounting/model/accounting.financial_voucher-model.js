@@ -322,6 +322,7 @@ class Model extends BaseModel {
                  const dataUpdateVoucher = {
                     userUpdate: authorID, 
                     modifyAt: Date.now(),
+                    customer: customerID,
                     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 

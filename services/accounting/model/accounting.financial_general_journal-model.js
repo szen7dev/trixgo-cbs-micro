@@ -62,8 +62,8 @@ class Model extends BaseModel {
                  * 2-Kiểm tra Danh mục thuộc công ty
                  * 3-Kiểm tra khác
                  */
-                if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, debit, credit, customerDebit,
-                    customerCredit]))
+                if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, customerDebit, customerCredit]))
+                // if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, debit, credit, customerDebit, customerCredit]))
                     return { error: true, message: 'params_invalid', status: 400 };
 
                 // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID
@@ -198,8 +198,8 @@ class Model extends BaseModel {
                  * 2-Kiểm tra Danh mục thuộc công ty
                  * 3-Kiểm tra khác
                  */
-                 if(!checkObjectIDs([authorID, journalID, debit, credit, customerDebit,
-                    customerCredit]))
+                 if(!checkObjectIDs([authorID, journalID, customerDebit, customerCredit]))
+                //  if(!checkObjectIDs([authorID, journalID, debit, credit, customerDebit, customerCredit]))
                     return { error: true, message: 'params_invalid', status: 400 };
 
                 // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID

@@ -975,8 +975,8 @@ class Model extends BaseModel {
                 // console.log(arrCreditO)
                 // console.log(arrDebitOF)
                 // console.log(arrCreditOF)
-                // console.log(arrDebitFT)
-                // console.log(arrDebitFT)
+                console.log(arrDebitFT)
+                // console.log(arrCreditFT)
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_financial_report.xlsm')))
@@ -1009,40 +1009,129 @@ class Model extends BaseModel {
 
                     // BẢNG CÂN ĐỐI TÀI KHOẢN
                     var i = 4
+                    // let recursive = (arr) => {
+                    //     arr.forEach(item => {
+                    //         item.debitO = 10
+                    //         item.creditO = 10
+                    //         item.debitOF= 10
+                    //         item.creditOF = 10
+                    //         item.debitFT = 10
+                    //         item.creditFT = 10
+    
+                    //         if (item.childs && item.childs.length) {
+                    //             recursive(item.childs)
+                    //             item.debitO = item.debitO + 10
+                    //         }
+
+                    //         // console.log(item.debitO)
+                    //     })
+                    // }
+                    // recursive(listAppMenuParent)
+
+                    // let recursive2 = (arr) => {
+                    //     arr.forEach(item => {
+                    //         console.log(item.debitO)
+
+                    //         if (item.childs && item.childs.length) {
+                    //             recursive2(item.childs)
+                    //         }
+                           
+                    //     })
+                    // }
+                    // recursive2(listAppMenuParent)
+
                     let recursive = (arr) => {
-                        for(const item of arr){
+                        arr.forEach(item => {
                             workbook.sheet("BangCDTaiKhoan").row(i).cell(1).value(`${item.name}`)
                             workbook.sheet("BangCDTaiKhoan").row(i).cell(2).value(`${item._id}`)
                             workbook.sheet("BangCDTaiKhoan").row(i).cell(3).value(`${item.description}`)
 
+                            // console.log(item.nestedChilds)
+
+                            // Định dạng bôi đậm nhạt
+
+                            // Bổ sung tính tổng các phần tử con
+                            let debitFT = 0, allSubDebitFT = 0, totalDebitFT = 0
+                            for(const element of item.nestedChilds){
+                                if(arrDebitFT[`${element}`]){
+                                    // console.log('========yessssssssssss')
+                                    allSubDebitFT = allSubDebitFT + Number(arrDebitFT[element][0].amount)
+                                }
+                            }
+                            // console.log(allSubDebitFT)
+
                             // Hiển thị giá trị
                             if(arrDebitO[item._id]){
-                                workbook.sheet("BangCDTaiKhoan").row(i).cell(4).value(Number(arrDebitO[item._id][0].amount))
+                                workbook.sheet("BangCDTaiKhoan").row(i+1).cell(4).value(Number(arrDebitO[item._id][0].amount))
                             }
                             if(arrCreditO[item._id]){
-                                workbook.sheet("BangCDTaiKhoan").row(i).cell(5).value(Number(arrCreditO[item._id][0].amount))
+                                workbook.sheet("BangCDTaiKhoan").row(i+1).cell(5).value(Number(arrCreditO[item._id][0].amount))
                             }
                             if(arrDebitOF[item._id]){
-                                workbook.sheet("BangCDTaiKhoan").row(i).cell(6).value(Number(arrDebitOF[item._id][0].amount))
+                                workbook.sheet("BangCDTaiKhoan").row(i+1).cell(6).value(Number(arrDebitOF[item._id][0].amount))
                             }
                             if(arrCreditOF[item._id]){
-                                workbook.sheet("BangCDTaiKhoan").row(i).cell(7).value(Number(arrCreditOF[item._id][0].amount))
-                            }
-                            if(arrDebitFT[item._id]){
-                                workbook.sheet("BangCDTaiKhoan").row(i).cell(8).value(Number(arrDebitFT[item._id][0].amount))
-                            }
-                            if(arrCreditFT[item._id]){
-                                workbook.sheet("BangCDTaiKhoan").row(i).cell(9).value(Number(arrCreditFT[item._id][0].amount))
+                                workbook.sheet("BangCDTaiKhoan").row(i+1).cell(7).value(Number(arrCreditOF[item._id][0].amount))
                             }
 
-                            i++
+                            if(arrDebitFT[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i+1).cell(8).value(Number(arrDebitFT[item._id][0].amount))
+                                debitFT = Number(arrDebitFT[item._id][0].amount)
+                            }
+
+                            if(arrCreditFT[item._id]){
+                                workbook.sheet("BangCDTaiKhoan").row(i+1).cell(9).value(Number(arrCreditFT[item._id][0].amount))
+                            }
+
+                            totalDebitFT = debitFT + allSubDebitFT
+
+                            // console.log(`${item.name}-${item.description}`)
+                            // console.log({allSubDebitFT})
+                            // console.log({totalDebitFT})
+                            // console.log('===================')
+
+                            workbook.sheet("BangCDTaiKhoan").row(i).cell(8).value(Number(totalDebitFT))
+                            workbook.sheet("BangCDTaiKhoan").row(i+2).cell(8).value(Number(allSubDebitFT))
+
+                            if(item.childs.length){
+                                workbook.sheet("BangCDTaiKhoan").row(i).cell(1).style({bold : true, fill: "0000ff"})
+                            }
+
+                            i = i + 3
     
                             if (item.childs && item.childs.length) {
                                 recursive(item.childs)
                             }
-                        }
+                        })
                     }
                     recursive(listAppMenuParent)
+
+                    // let recursive = (arr) => {
+                    //     arr.forEach(item => {
+                    //         item.total1 = 'red';
+                    //         item.total2 = 'big';
+
+                    //         console.log(`${item.name}-${item.description}`)
+                    //         console.log(item.total1)
+                    //         console.log(item.total2)
+                    //         console.log(item)
+                    //         console.log('========================')
+
+                    //         if (item.childs && item.childs.length) {
+                    //             recursive(item.childs)
+                    //         }
+                    //     })
+
+                    //     // for(const item of arr){
+
+
+    
+                    //     //     if (item.childs && item.childs.length) {
+                    //     //         recursive(item.childs)
+                    //     //     }
+                    //     // }
+                    // }
+                    // recursive(listAppMenuParent)
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
