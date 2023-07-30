@@ -126,8 +126,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates, ctx }) {
-        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, select, populates })
+    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, amount, vatAmount, contactID, select, populates, ctx }) {
+        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, company, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -288,6 +288,19 @@ class Model extends BaseModel {
                     if(infoGroup && infoGroup.contract){
                         dataInsert.contract = infoGroup.contract
                     }
+                }
+
+                //_________Mã khách
+                if(contactID && ObjectID.isValid(contactID)){
+                    dataInsert.contact = contactID;
+                }
+
+                if(amount && !isNaN(amount)){
+                    dataInsert.amount = Number(amount);
+                }
+
+                if(vatAmount && !isNaN(vatAmount)){
+                    dataInsert.vatAmount = Number(vatAmount);
                 }
 
                 //_________Phân loại khác
