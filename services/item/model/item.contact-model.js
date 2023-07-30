@@ -1060,7 +1060,7 @@ class Model extends BaseModel {
      * Code: 30/7/2023
      */
     getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
-        console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
+        // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             let duration = getTimeBetween(toDate, fromDate)
             try {
