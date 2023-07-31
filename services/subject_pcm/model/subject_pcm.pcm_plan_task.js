@@ -2005,7 +2005,6 @@ class Model extends BaseModel {
                 if(read && read == 1){
                     conditionObj.news = { $in: [userID] }
                 }
-
                 // Đã xem (user bị xoá ra khỏi mảng news)
                 if(read && read == 2){
                     conditionObj.news = { $nin: [userID] }
@@ -2140,6 +2139,159 @@ class Model extends BaseModel {
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 21/9/2022
+     */
+    getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}
+
+                //__________Danh sách các nhóm dữ liệu mà userID là members
+                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                // Lấy công việc mà user được quyền truy cập
+                conditionObj.$or = [
+                    { author: ObjectID(userID) },
+                    { assignee: ObjectID(userID) },
+                    { related: { $in: [ObjectID(userID)] }},
+                    { group: { $in: listGroups.map(item => item._id) }},
+                ]
+
+                /**
+                 * Tính tổng số lượng theo các phân loại của Nhà thầu
+                 */
+                if(option == 1 || option == 2){
+                    let listTasks = await PCM_PLAN_TASK_COLL.find(conditionObj).select('_id')
+                    // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
+
+                    let objectGroup, conditionPopulateProject, conditionPopulateCompany, sortProject, sortCompany
+
+                    if(option == 1){
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAuthor',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        objectGroup = { project: '$project', companyOfAuthor: '$companyOfAuthor' }
+
+                        sortProject = { "_id.project": 1 }
+                        sortCompany = { "_id.companyOfAuthor": 1 }
+                    }
+
+                    if(option == 2){
+
+                        conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign image',
+                            model: 'department'
+                        }
+
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAssignee',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        objectGroup = { project: '$project', companyOfAssignee: '$companyOfAssignee' }
+
+                        sortProject = { "_id.project": 1 }
+                        sortCompany = { "_id.companyOfAssignee": 1 }
+                    }
+
+                    let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listTasks.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                        { $sort: sortProject},
+                    ])
+
+                    let listDataProjectCompany = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listTasks.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: objectGroup,
+                                amount: { $sum: 1 },
+                            }
+                        },
+                        { $sort: sortCompany},
+                    ])
+
+                    if(listDataProject.length){
+                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
+                    }
+
+                    if(listDataProjectCompany.length){
+                        await DEPARTMENT_COLL.populate(listDataProjectCompany, conditionPopulateCompany)
+                    }
+
+                    return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
+                }
+
+                // Danh sách các công việc theo phân loại
+                if(option == 3){
+                    conditionObj.project = ObjectID(projectID)
+                    conditionObj.companyOfAuthor = ObjectID(companyID)
+                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: '$subtype' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listDataTasks });
+                }
+
+                // Theo công ty người thực hiện
+                if(option == 4){
+                    conditionObj.project = ObjectID(projectID)
+                    conditionObj.companyOfAssignee = ObjectID(companyID)
+                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: '$subtype' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listDataTasks })
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }
@@ -2295,19 +2447,26 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, option, reportType, status, fromDate, toDate }){
+    getDynamicReport({ userID, option, reportType, status, subtypes, fromDate, toDate }){
+        // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}
+                let conditionObj = { }
+
+                conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
+
                 if(Array.isArray(status)){
-                    conditionObj = {status: {$in: status.map(item=>Number(item))}} // Do sử dụng agg nên phải pas sang Number
+                    conditionObj.status = {$in: status.map(item=>Number(item))}
                 }
+                if(Array.isArray(subtypes)){
+                    conditionObj.subtype = {$in: subtypes.map(item=>Number(item))}
+                }
+
                 let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
                 // Việc của tôi
                 if(reportType && reportType == 1){
                     conditionObj.assignee = ObjectID(userID)
-                    conditionObj.usersDelete = { $nin: [userID] }
                 }
 
                 // Theo thời hạn
@@ -2407,11 +2566,14 @@ class Model extends BaseModel {
                     if(option && Number(option) == 2){
                         objectGroup = { author: '$author' }
                         sortBy = { "_id.author": 1 }
+
                         conditionPopulateUser = {
                             path: '_id.author',
                             select: '_id name sign image fullname',
                             model: 'user'
                         }
+                        // console.log(conditionObj)
+                        // console.log(objectGroup)
 
                         let listDataUser = await PCM_PLAN_TASK_COLL.aggregate([
                             {
@@ -2425,6 +2587,7 @@ class Model extends BaseModel {
                             },
                             { $sort: sortBy},
                         ])
+                        // console.log(listDataUser)
 
                         if(listDataUser.length){
                             await PCM_PLAN_TASK_COLL.populate(listDataUser, conditionPopulateUser)
@@ -3868,162 +4031,6 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoAfterCloneTask?.data, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Name: Gom nhóm theo thuộc tính
-     * Author: Hiepnh
-     * Date: 21/9/2022
-     */
-    getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
-        return new Promise(async resolve => {
-            try {
-                /**
-                 * BA
-                 * 1-Lấy danh sách các công việc
-                 * 2-Gom nhóm dữ liệu
-                 */
-                let conditionObj = {}
-                //__________Danh sách các nhóm dữ liệu mà userID là members
-                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
-
-                // Lấy công việc mà user được quyền truy cập
-                conditionObj.$or = [
-                    { author: ObjectID(userID) },
-                    { assignee: ObjectID(userID) },
-                    { related: { $in: [ObjectID(userID)] }},
-                    { group: { $in: listGroups.map(item => item._id) }},
-                ]
-
-                /**
-                 * Tính tổng số lượng theo các phân loại của Nhà thầu
-                 */
-                if(option == 1 || option == 2){
-                    let listTasks = await PCM_PLAN_TASK_COLL.find(conditionObj).select('_id')
-                    // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
-
-                    let objectGroup, conditionPopulateProject, conditionPopulateCompany, sortProject, sortCompany
-
-                    if(option == 1){
-                        conditionPopulateProject = {
-                            path: '_id.project',
-                            select: '_id name sign image',
-                            model: 'department'
-                        }
-
-                        conditionPopulateCompany = {
-                            path: '_id.companyOfAuthor',
-                            select: '_id name sign image',
-                            model: 'company'
-                        }
-
-                        objectGroup = { project: '$project', companyOfAuthor: '$companyOfAuthor' }
-
-                        sortProject = { "_id.project": 1 }
-                        sortCompany = { "_id.companyOfAuthor": 1 }
-                    }
-
-                    if(option == 2){
-
-                        conditionPopulateProject = {
-                            path: '_id.project',
-                            select: '_id name sign image',
-                            model: 'department'
-                        }
-
-                        conditionPopulateCompany = {
-                            path: '_id.companyOfAssignee',
-                            select: '_id name sign image',
-                            model: 'company'
-                        }
-
-                        objectGroup = { project: '$project', companyOfAssignee: '$companyOfAssignee' }
-
-                        sortProject = { "_id.project": 1 }
-                        sortCompany = { "_id.companyOfAssignee": 1 }
-                    }
-
-                    let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
-                        {
-                            $match: {
-                                _id: {$in: listTasks.map(item=>item._id)}
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { project: '$project' },
-                                amount: { $sum: 1 },
-                            }
-                        },
-                        { $sort: sortProject},
-                    ])
-
-                    let listDataProjectCompany = await PCM_PLAN_TASK_COLL.aggregate([
-                        {
-                            $match: {
-                                _id: {$in: listTasks.map(item=>item._id)}
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: objectGroup,
-                                amount: { $sum: 1 },
-                            }
-                        },
-                        { $sort: sortCompany},
-                    ])
-
-                    if(listDataProject.length){
-                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
-                    }
-
-                    if(listDataProjectCompany.length){
-                        await DEPARTMENT_COLL.populate(listDataProjectCompany, conditionPopulateCompany)
-                    }
-
-                    return resolve({ error: false, data: { listDataProject, listDataProjectCompany } });
-                }
-
-                // Danh sách các công việc theo phân loại
-                if(option == 3){
-                    conditionObj.project = ObjectID(projectID)
-                    conditionObj.companyOfAuthor = ObjectID(companyID)
-                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: { subtype: '$subtype' },
-                                amount: { $sum: 1 },
-                            }
-                        },
-                    ])
-
-                    return resolve({ error: false, data: listDataTasks });
-                }
-
-                if(option == 4){
-                    conditionObj.project = ObjectID(projectID)
-                    conditionObj.companyOfAssignee = ObjectID(companyID)
-                    let listDataTasks = await PCM_PLAN_TASK_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: { subtype: '$subtype' },
-                                amount: { $sum: 1 },
-                            }
-                        },
-                    ])
-
-                    return resolve({ error: false, data: listDataTasks });
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
             }
         })
     }
