@@ -386,7 +386,7 @@ class Model extends BaseModel {
                     // Cập nhật việc cha
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
                         $inc: { amountSubtask: 1 },
-                        $addToSet: { news: authorID },
+                        $addToSet: { news: authorID, childs: infoAfterInsert._id },
                         $set: {
                             modifyAt: new Date(),
                         }
@@ -1906,13 +1906,6 @@ class Model extends BaseModel {
         // })
         return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 */
-
-                /**
-                 * VALIDATION (1)
-                 */
                 const validation = validateParamsObjectID({
                     companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
                     assigneesID         : { value: assigneesID, isRequire: false },
@@ -1935,9 +1928,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * DECALARTION VARIABLE (2)
-                 */
                 let conditionObj = {
                     usersDelete: { $nin: [userID] },
                 };
@@ -1947,9 +1937,6 @@ class Model extends BaseModel {
                 let keys	 = ['modifyAt__-1', '_id__-1'];
                 // let keys	    = ['actualFinishTime__-1', '_id__-1'];
 
-                /**
-                 * LOGIC CODE (3)
-                 */
                 if(limit > 20 && isNaN(limit)){
                     limit = 20;
                 } else{

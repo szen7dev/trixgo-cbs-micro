@@ -29,6 +29,10 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
     },
+    childs: [{
+        type: Schema.Types.ObjectId,
+        ref: "pcm_plan_task"
+    }],
     level: {
         type: Number,
         default: 1
