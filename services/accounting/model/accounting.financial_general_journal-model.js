@@ -420,9 +420,9 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID,
+    getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-            // console.log({companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates})
+            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, contacts})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -434,7 +434,8 @@ class Model extends BaseModel {
                 let sortBy;
                 // let conditionObj = { forward: 0, cancel: 0 };
                 let conditionObj = {  };
-                let keys = ['createAt__1', '_id__1'];
+                // let keys = ['createAt__1', '_id__1'];
+                let keys = ['date__1'];
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
@@ -568,6 +569,32 @@ class Model extends BaseModel {
                         ]
                         // console.log(conditionObj)
                     }
+                }
+
+                // Báo cáo theo Tài khoản-Mã khách
+                if(option == 1){
+                    // console.log('=================1111111111111111')
+                    let arrObjectID = []
+                    let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                    if(!infoAccount)
+                        return resolve({ error: true, message: 'cannot_get_account_info' })
+
+                    arrObjectID.push(accountID)
+                    arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
+                    // console.log(arrObjectID)
+
+                    if(contacts){
+                        conditionObj.$or = [
+                            { debit: { $in: arrObjectID }, customerDebit: {$in: contacts.map(item=>ObjectID(item._id))} },
+                            { credit: { $in: arrObjectID }, customerCredit: {$in: contacts.map(item=>ObjectID(item._id))} },
+                        ]
+                    }else{
+                        conditionObj.$or = [
+                            { debit: { $in: arrObjectID }, customerDebit: null },
+                            { credit: { $in: arrObjectID }, customerCredit: null },
+                        ]
+                    }
+                    // console.log(conditionObj)
                 }
          
                 /**
@@ -1070,19 +1097,19 @@ class Model extends BaseModel {
 
                 // Công nợ userID đang truy cập
                 if(option == 5){
-                    if(contacts){
-                        conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
-                        conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
-                    }else{
-                        conditionDebitObj.customerDebit = {$in: []}
-                        conditionCreditObj.customerCredit = {$in: []}
-                    }
-
                     conditionDebitObj.debit = {
                         $in: arrObjectID
                     }
                     conditionCreditObj.credit = {
                         $in: arrObjectID
+                    }
+
+                    if(contacts){
+                        conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
+                        conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
+                    }else{
+                        conditionDebitObj.customerDebit = null
+                        conditionCreditObj.customerCredit = null
                     }
                 
                     conditionProject = {
@@ -1108,11 +1135,51 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Công nợ userID đang truy cập
+                if(option == 6){
+                    conditionDebitObj.debit = {
+                        $in: arrObjectID
+                    }
+                    conditionCreditObj.credit = {
+                        $in: arrObjectID
+                    }
+
+                    if(contacts){
+                        conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
+                        conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
+                    }else{
+                        conditionDebitObj.customerDebit = {$in: []}
+                        conditionCreditObj.customerCredit = {$in: []}
+                    }
+    
+                    conditionProject = {
+                        year : {$year : "$date"},
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        date: 1,
+                        amount: 1,
+                        customerDebit: 1,
+                        customerCredit: 1,
+                        debit: 1,
+                        credit: 1
+                    }
+
+                    conditionGroupDebit = {
+                        _id: { },
+                        amount: { $sum: "$amount" }
+                    }
+                    
+                    conditionGroupCredit = {
+                        _id: {  },
+                        amount: { $sum: "$amount" }
+                    }
+                }
                 // console.log(conditionDebitObj)
                 // console.log(conditionCreditObj)
                 // console.log(conditionProject)
                 // console.log(conditionMatchO)
                 // console.log(conditionMatchIn)
+
                 /**
                  * DATA KẾT CHUYỂN/ĐẦU NĂM
                  */
@@ -1526,6 +1593,19 @@ class Model extends BaseModel {
                             // creditO: listDataO[0]._credit,
                             // debitIn: listDataIn[0]._debit,
                             // creditIn: listDataIn[0]._credit,
+                        }})
+                    }
+
+                    // Chi tiết công nợ theo tài khoản-mã khách
+                    if(option == 6){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitOF: listDataOF[0]._debit,
+                            creditOF: listDataOF[0]._credit,
+                            debitFT: listDataFT[0]._debit,
+                            creditFT: listDataFT[0]._credit,
                         }})
                     }
 
