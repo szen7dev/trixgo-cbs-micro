@@ -2162,62 +2162,141 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getAmountNotification({ userID }){
+    getAmountNotification({ userID, option }){
         return new Promise(async resolve => {
             try {
                 let start = new Date();
-                start.setHours(0,0,0,0);
+                // console.log({start })
+                // start.setHours(0,0,0,0);
+                // console.log({start })
+
                 let end = new Date();
                 end.setHours(23,59,59,999);
 
-                let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
+                let amountUnreadTask=0, amountMyTaskToday=0, amountMyTaskComing = 0, amountMyApproval = 0
+                let amountMyTask1=0, amountMyTask2=0, amountMyTask3=0, amountMyTask4=0
 
-                // Số công việc chưa xem
-                amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
-                    news: { $in: [userID] },
-                    usersDelete: { $nin: [userID] }
-                })
+                if(!option){
+                    // Số công việc chưa xem
+                    amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
+                        news: { $in: [userID] },
+                        usersDelete: { $nin: [userID] }
+                    })
 
-                // Số công việc của tôi - Quá hạn
-                amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
-                    assignee: userID,
-                    status: { $ne: 3 },
-                    usersDelete: { $nin: [userID] },
-                    actualFinishTime: { $lt: start }
-                })
+                    // Số công việc của tôi - Ngày nay
+                    amountMyTaskToday = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: { $gte: start, $lte: end }
+                    })
+                    // console.log({ $gte: start, $lte: end })
 
-                // Số công việc của tôi - Tuần tới
-                amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
-                    assignee: userID,
-                    status: { $ne: 3 },
-                    usersDelete: { $nin: [userID] },
-                    actualFinishTime: {
-                        $gte:  moment(start).startOf('day')._d,
-                        $lt: moment(addDate(7)).endOf('day')._d
+                    // Số công việc của tôi - Quá hạn
+                    amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: { $lt: start }
+                    })
+
+                    // Số công việc của tôi - Tuần tới
+                    amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: {
+                            $gte:  moment(start).startOf('day')._d,
+                            $lt: moment(addDate(7)).endOf('day')._d
+                        }
+                    })
+
+                    // Số công việc của tôi - Sau tuần tới
+                    amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        actualFinishTime: {
+                            $gte: addDate(7)
+                        }
+                    })
+
+                    // Số công việc của tôi - Quan trọng
+                    amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        priority: 3,
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    // Số công việc cần duyệt của tôi
+                    amountMyApproval = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        subtype: {$in: [2, 3]},
+                        usersDelete: { $nin: [userID] }
+                    })
+
+                    return resolve({ error: false, data: {
+                        amountUnreadTask, 
+                        amountMyTaskComing, 
+                        amountMyTaskToday, 
+                        amountMyApproval,
+                        amountMyTask1,
+                        amountMyTask2, 
+                        amountMyTask3, 
+                        amountMyTask4
+                    }})
+                }else{
+                    // Phê duyệt của tôi
+                    if(option == 1){
+                        // Số công việc của tôi - Ngày nay
+                        amountMyTaskToday = await PCM_PLAN_TASK_COLL.count({
+                            assignee: userID,
+                            status: { $ne: 3 },
+                            usersDelete: { $nin: [userID] },
+                            actualFinishTime: { $gte: start, $lte: end }
+                        })
+
+                        // Số công việc của tôi - Quá hạn
+                        amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
+                            assignee: userID,
+                            status: { $ne: 3 },
+                            usersDelete: { $nin: [userID] },
+                            actualFinishTime: { $lt: start }
+                        })
+
+                        // Số công việc của tôi - Tuần tới
+                        amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                            assignee: userID,
+                            status: { $ne: 3 },
+                            usersDelete: { $nin: [userID] },
+                            actualFinishTime: {
+                                $gte:  moment(start).startOf('day')._d,
+                                $lt: moment(addDate(7)).endOf('day')._d
+                            }
+                        })
+
+                        // Số công việc của tôi - Sau tuần tới
+                        amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                            assignee: userID,
+                            status: { $ne: 3 },
+                            usersDelete: { $nin: [userID] },
+                            actualFinishTime: {
+                                $gte: addDate(7)
+                            }
+                        })
+
+                        return resolve({ error: false, data: {
+                            amountMyTaskToday, 
+                            amountMyTask1,
+                            amountMyTask2, 
+                            amountMyTask3
+                        }})
                     }
-                })
+                }
 
-                // Số công việc của tôi - Sau tuần tới
-                amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
-                    assignee: userID,
-                    status: { $ne: 3 },
-                    usersDelete: { $nin: [userID] },
-                    actualFinishTime: {
-                        $gte: addDate(7)
-                    }
-                })
-
-                // Số công việc của tôi - Quan trọng
-                amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
-                    assignee: userID,
-                    status: { $ne: 3 },
-                    priority: 3,
-                    usersDelete: { $nin: [userID] }
-                })
-
-                return resolve({ error: false, data: {
-                    amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
-                }});
+                
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

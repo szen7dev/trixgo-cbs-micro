@@ -346,13 +346,14 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
-	 * Func: Lấy thông báo công việc (chưa đọc)
+	 * Name: Lấy thông báo công việc (chưa đọc)
+     * Dev: HiepNH
+     * Date: 31/7/2023
 	 */
     getAmountNotification: {
         auth: "required",
         params: {
-            option            : { type: 'string', optional: true },
+            option : { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
