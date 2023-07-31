@@ -170,7 +170,7 @@ class Model extends BaseModel {
                 let isExist = await AUTH__USER_COLL
                     .findOne({ email: emailValid })
                     .populate({
-                        path: 'company department contact',
+                        path: 'company department contacts',
                         select: '_id name sign image debt'
                     })
                 // console.log({isExist})
@@ -229,7 +229,7 @@ class Model extends BaseModel {
                     bizfullname: isExist.bizfullname,
                     company: isExist.company,
                     department: isExist.department,
-                    contact: isExist.contact,
+                    contacts: isExist.contacts,
                     image: isExist.image,
                     signature: isExist.signature,
                     status: isExist.status,

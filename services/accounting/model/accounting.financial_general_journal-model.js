@@ -420,9 +420,9 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID,
+    getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-            // console.log({companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates})
+            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, contacts})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -434,7 +434,8 @@ class Model extends BaseModel {
                 let sortBy;
                 // let conditionObj = { forward: 0, cancel: 0 };
                 let conditionObj = {  };
-                let keys = ['createAt__1', '_id__1'];
+                // let keys = ['createAt__1', '_id__1'];
+                let keys = ['date__1'];
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
@@ -568,6 +569,32 @@ class Model extends BaseModel {
                         ]
                         // console.log(conditionObj)
                     }
+                }
+
+                // Báo cáo theo Tài khoản-Mã khách
+                if(option == 1){
+                    // console.log('=================1111111111111111')
+                    let arrObjectID = []
+                    let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                    if(!infoAccount)
+                        return resolve({ error: true, message: 'cannot_get_account_info' })
+
+                    arrObjectID.push(accountID)
+                    arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
+                    // console.log(arrObjectID)
+
+                    if(contacts){
+                        conditionObj.$or = [
+                            { debit: { $in: arrObjectID }, customerDebit: {$in: contacts.map(item=>ObjectID(item._id))} },
+                            { credit: { $in: arrObjectID }, customerCredit: {$in: contacts.map(item=>ObjectID(item._id))} },
+                        ]
+                    }else{
+                        conditionObj.$or = [
+                            { debit: { $in: arrObjectID }, customerDebit: null },
+                            { credit: { $in: arrObjectID }, customerCredit: null },
+                        ]
+                    }
+                    // console.log(conditionObj)
                 }
          
                 /**
@@ -747,8 +774,8 @@ class Model extends BaseModel {
     /**
      * REPORT
      */
-    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID }) {
-        // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate})
+    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts }) {
+        // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
@@ -773,7 +800,7 @@ class Model extends BaseModel {
                 if(!optionAccount){
                     // console.log('============zzzzzzzzzzzz1111111111111111111111')
                     listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
-                    .select('name description nestedChilds')
+                    // .select('name description nestedChilds')
                     if(listAccounts){
                         for(const item of listAccounts){
                             arrObjectID.push(item._id)
@@ -786,7 +813,7 @@ class Model extends BaseModel {
                         if(!arrCompanyIDs){
                             // console.log('============zzzzzzzzzzzz2222222222222222222')
                             listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
-                            .select('name description nestedChilds')
+                            // .select('name description nestedChilds')
                             if(listAccounts){
                                 for(const item of listAccounts){
                                     arrObjectID.push(item._id)
@@ -796,7 +823,7 @@ class Model extends BaseModel {
                         }else{
                             // console.log('============zzzzzzzzzzzz333333333333333333')
                             listAccounts = await ITEM_ACCOUNT_COLL.find({ company: {$in: arrCompanyIDs}, name: {$in: arrAccNames} })
-                            .select('name description nestedChilds')
+                            // .select('name description nestedChilds')
                             if(listAccounts){
                                 for(const item of listAccounts){
                                     arrObjectID.push(item._id)
@@ -809,7 +836,7 @@ class Model extends BaseModel {
                     // Theo toàn bộ tài khoản của công ty
                     if(optionAccount == 2){
                         listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID })
-                            .select('name description nestedChilds')
+                            // .select('name description nestedChilds')
                         if(listAccounts){
                             for(const item of listAccounts){
                                 arrObjectID.push(item._id)
@@ -1067,7 +1094,91 @@ class Model extends BaseModel {
                         amount: { $sum: "$amount" }
                     }
                 }
+
+                // Công nợ userID đang truy cập
+                if(option == 5){
+                    conditionDebitObj.debit = {
+                        $in: arrObjectID
+                    }
+                    conditionCreditObj.credit = {
+                        $in: arrObjectID
+                    }
+
+                    if(contacts){
+                        conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
+                        conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
+                    }else{
+                        conditionDebitObj.customerDebit = null
+                        conditionCreditObj.customerCredit = null
+                    }
                 
+                    conditionProject = {
+                        company: 1,
+                        year : {$year : "$date"},
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        date: 1,
+                        amount: 1,
+                        debit: 1,
+                        credit: 1,
+                        customerDebit: 1,
+                        customerCredit: 1,
+                    }
+
+                    conditionGroupDebit = {
+                        _id: { company: "$company", account: "$debit" },
+                        amount: { $sum: "$amount" }
+                    }
+                    conditionGroupCredit = {
+                        _id: { company: "$company", account: "$credit" },
+                        amount: { $sum: "$amount" }
+                    }
+                }
+
+                // Công nợ userID đang truy cập
+                if(option == 6){
+                    conditionDebitObj.debit = {
+                        $in: arrObjectID
+                    }
+                    conditionCreditObj.credit = {
+                        $in: arrObjectID
+                    }
+
+                    if(contacts){
+                        conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
+                        conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
+                    }else{
+                        conditionDebitObj.customerDebit = {$in: []}
+                        conditionCreditObj.customerCredit = {$in: []}
+                    }
+    
+                    conditionProject = {
+                        year : {$year : "$date"},
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        date: 1,
+                        amount: 1,
+                        customerDebit: 1,
+                        customerCredit: 1,
+                        debit: 1,
+                        credit: 1
+                    }
+
+                    conditionGroupDebit = {
+                        _id: { },
+                        amount: { $sum: "$amount" }
+                    }
+                    
+                    conditionGroupCredit = {
+                        _id: {  },
+                        amount: { $sum: "$amount" }
+                    }
+                }
+                // console.log(conditionDebitObj)
+                // console.log(conditionCreditObj)
+                // console.log(conditionProject)
+                // console.log(conditionMatchO)
+                // console.log(conditionMatchIn)
 
                 /**
                  * DATA KẾT CHUYỂN/ĐẦU NĂM
@@ -1108,14 +1219,11 @@ class Model extends BaseModel {
                     }
                 ])
                 // console.log('=========MỐC ĐẦU NĂM=========')
+                // console.log(listDataO)
                 // console.log({_____No: listDataO[0]._debit})
                 // console.log({_____Co: listDataO[0]._credit})
 
                 if(!optionTerm){
-                    // console.log(conditionDebitObj)
-                    // console.log(conditionCreditObj)
-                    // console.log(conditionProject)
-                    // console.log(conditionMatchIn)
                     listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
                             $facet: {
@@ -1380,6 +1488,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: listCustomers })
                     }
 
+                    // Báo cáo theo Tài khoản - Mã khách (quan hệ 1-1)
                     if(option == 3){
                         return resolve({ error: false, data: { 
                             listAccounts,
@@ -1391,7 +1500,8 @@ class Model extends BaseModel {
                             creditFT: listDataFT[0]._credit,
                         }})
                     }
-                    
+
+                    // Báo cáo Bảng cân đối tài khoản
                     if(option == 4){
                         return resolve({ error: false, data: { 
                             debitO: listDataO[0]._debit,
@@ -1402,6 +1512,103 @@ class Model extends BaseModel {
                             creditFT: listDataFT[0]._credit,
                         }})
                     }
+
+                    // Công nợ userID đang truy cập
+                    if(option == 5){
+                        let listAccountNew = []
+
+                        listAccounts.forEach(item => {
+                            item.total = 0
+
+                            if([1,2,6,8].includes(Number(item.name.charAt(0)))){
+                                listDataO[0]._debit.forEach(element=>{
+                                    let key = element._id.account;
+                                    if(item?._id.toString() === key.toString() || item?.nestedChilds.includes(key)){
+                                        item.total = item.total + Number(element.amount)
+                                    }
+                                })
+        
+                                listDataO[0]._credit.forEach(element=>{
+                                    let key = element._id.account;
+                                    if(item?._id.toString() === key.toString() || item?.nestedChilds.includes(key)){
+                                        item.total = item.total - Number(element.amount)
+                                    }
+                                })
+        
+                                listDataIn[0]._debit.forEach(element=>{
+                                    let key = element._id.account;
+                                    if(item?._id.toString() === key.toString() || item?.nestedChilds.includes(key)){
+                                        item.total = item.total + Number(element.amount)
+                                    }
+                                })
+        
+                                listDataIn[0]._credit.forEach(element=>{
+                                    let key = element._id.account;
+                                    if(item?._id.toString() === key.toString() || item?.nestedChilds.includes(key)){
+                                        item.total = item.total - Number(element.amount)
+                                    }
+                                })
+                            }else{
+                                listDataO[0]._debit.forEach(element=>{
+                                    let key = element._id.account;
+                                    if(item?._id.toString() === key.toString() || item?.nestedChilds.includes(key)){
+                                        item.total = item.total - Number(element.amount)
+                                    }
+                                })
+        
+                                listDataO[0]._credit.forEach(element=>{
+                                    let key = element._id.account;
+                                    if(item?._id.toString() === key.toString() || item?.nestedChilds.includes(key)){
+                                        item.total = item.total + Number(element.amount)
+                                    }
+                                })
+        
+                                listDataIn[0]._debit.forEach(element=>{
+                                    let key = element._id.account;
+                                    if(item?._id.toString() === key.toString() || item?.nestedChilds.includes(key)){
+                                        item.total = item.total - Number(element.amount)
+                                    }
+                                })
+        
+                                listDataIn[0]._credit.forEach(element=>{
+                                    let key = element._id.account;
+                                    if(item?._id.toString() === key.toString() || item?.nestedChilds.includes(key)){
+                                        item.total = item.total + Number(element.amount)
+                                    }
+                                })
+                            }
+
+                            listAccountNew.push({_id: item._id, name: item.name, description: item.description, total: item.total})
+                        })
+                        
+                        // console.log(arrDebitO)
+                        // console.log(arrCreditO)
+                        // console.log(arrDebitIn)
+                        // console.log(arrCreditIn)
+
+                        return resolve({ error: false, data: { 
+                            listAccountNew,
+                            // listAccounts,
+                            // debitO: listDataO[0]._debit,
+                            // creditO: listDataO[0]._credit,
+                            // debitIn: listDataIn[0]._debit,
+                            // creditIn: listDataIn[0]._credit,
+                        }})
+                    }
+
+                    // Chi tiết công nợ theo tài khoản-mã khách
+                    if(option == 6){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitOF: listDataOF[0]._debit,
+                            creditOF: listDataOF[0]._credit,
+                            debitFT: listDataFT[0]._debit,
+                            creditFT: listDataFT[0]._credit,
+                        }})
+                    }
+
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message })

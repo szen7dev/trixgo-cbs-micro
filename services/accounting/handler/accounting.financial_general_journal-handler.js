@@ -121,9 +121,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 
-                const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID, company, contacts } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
@@ -136,7 +136,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
-                        companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, sortKey, ctx
+                        option, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, contacts, keyword, limit, lastestID, select, populates, sortKey, ctx
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -248,7 +248,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
                 
-                const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID, company, contacts } = ctx.meta.infoUser;
+                // console.log(ctx.meta.infoUser)
 
                 if(!companyID){
                     companyID = company._id
@@ -261,7 +262,7 @@ module.exports = {
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({
-                    userID, ctx, option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
+                    userID, contacts, option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

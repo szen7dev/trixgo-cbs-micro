@@ -303,7 +303,7 @@ class Model extends BaseModel {
                     // Cập nhật vào user-coll
                     let infoUser = await USER_COLL.findByIdAndUpdate(linkUser, 
                         { 
-                            $addToSet: {contact: infoAfterInsert._id }
+                            $addToSet: {contacts: infoAfterInsert._id }
                         }, 
                         { new: true })
                     // console.log(infoUser)
@@ -743,7 +743,7 @@ class Model extends BaseModel {
                     // Cập nhật vào user-coll
                     let infoUser = await USER_COLL.findByIdAndUpdate(linkUser, 
                         { 
-                            $addToSet: {contact: contactID }
+                            $addToSet: {contacts: contactID }
                         }, 
                         { new: true })
                     // console.log(infoUser)
