@@ -1654,11 +1654,6 @@ class Model extends BaseModel {
                 if(limit > 20){
                     limit = 20
                 }
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 // POPULATE
                 if(populates && typeof populates === 'string'){
