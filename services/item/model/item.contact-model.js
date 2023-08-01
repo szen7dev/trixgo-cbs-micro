@@ -1,15 +1,16 @@
 "use strict";
 
-const XlsxPopulate                      = require('xlsx-populate');
-const fs                                = require('fs');
-const path                              = require('path');
-const moment                            = require('moment');
-const _isValid                          = require('mongoose').Types.ObjectId;
+// const XlsxPopulate                      = require('xlsx-populate');
+// const fs                                = require('fs');
+// const path                              = require('path');
+// const moment                            = require('moment');
+// const _isValid                          = require('mongoose').Types.ObjectId;
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
+const stringUtils					            = require('../../../tools/utils/string_utils');
 
 /**
  * TOOLS
@@ -17,9 +18,9 @@ const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-co
 const { checkObjectIDs, IsJsonString, validateParamsObjectID, regexPhoneNumber } = require('../../../tools/utils/utils')
 const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
-const { uploadFileS3 }                  = require('../../../tools/s3')
-const { INSURANCE_STATUS }              = require('../../../tools/constants')
-const { CONTACT_GENDER }                = require('../helper/item.keys-constant')
+// const { uploadFileS3 }                  = require('../../../tools/s3')
+// const { INSURANCE_STATUS }              = require('../../../tools/constants')
+// const { CONTACT_GENDER }                = require('../helper/item.keys-constant')
 // const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
@@ -63,13 +64,13 @@ class Model extends BaseModel {
                 if(!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })
 
-                if(!regexPhoneNumber(phone))
-                    return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
+                // if(!regexPhoneNumber(phone))
+                //     return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
 
                 let checkPhone = phone.replace(/\s/g, "").length
                 // console.log(checkPhone)
-                if(Number(checkPhone) != 10)
-                    return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
+                if(Number(checkPhone) < 10)
+                    return resolve({ error: true, message: 'Số điện thoại phải trên 10 ký tự' })
 
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if(!infoFunda)
@@ -131,6 +132,27 @@ class Model extends BaseModel {
                     email,
                     status: status ? Number(status) : Number(1)
                 }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(phone && phone != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(phone.replace(/\s/g, ""))
+                }
+                if(taxid && taxid != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(taxid)
+                }
+                dataInsert.namecv = convertStr
 
                 // Người giới thiệu
                 if(referrerID && checkObjectIDs(referrerID)){
@@ -495,6 +517,28 @@ class Model extends BaseModel {
                 if(phone){
                     dataUpdate.phone = phone.replace(/\s/g, "")
                 }
+
+                // NameCV
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(phone && phone != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(phone.replace(/\s/g, ""))
+                }
+                if(taxid && taxid != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(taxid)
+                }
+                dataUpdate.namecv = convertStr
 
                 if(email){
                     dataUpdate.email = email;
