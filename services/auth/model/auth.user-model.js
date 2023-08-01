@@ -157,7 +157,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let emailValid          = email.toLowerCase().trim();
-                let listPlatformValid   = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB];
+                // let listPlatformValid   = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB];
 
                 /**
                  * VALIDATION STEP (2)
@@ -234,6 +234,7 @@ class Model extends BaseModel {
                     signature: isExist.signature,
                     status: isExist.status,
                     level: isExist.level,
+                    lang: isExist.lang,
                     groupDefault: isExist.groupDefault,
                     _id: isExist._id,
                 }
@@ -1305,7 +1306,7 @@ class Model extends BaseModel {
                     dataUpdate.gender = gender;
                 }
 
-                if(lang){
+                if(lang && ['vn','en'].includes(lang.toString())){
                     dataUpdate.lang = lang;
                 }
 
