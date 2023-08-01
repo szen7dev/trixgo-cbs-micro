@@ -2461,7 +2461,7 @@ class Model extends BaseModel {
 
                 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message })
             }
         })
     }
