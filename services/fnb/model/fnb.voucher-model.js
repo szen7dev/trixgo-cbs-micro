@@ -757,8 +757,7 @@ class Model extends BaseModel {
                                 // console.log(dataInsert)
 
                                 let info = await ITEM__CONTACT_MODEL.insert(dataInsert)
-                                // let info = await ITEM__CONTACT_COLL.insert(dataInsert)
-                                //    console.log(info)
+                                // console.log(info)
                             }
         
                             index ++;
