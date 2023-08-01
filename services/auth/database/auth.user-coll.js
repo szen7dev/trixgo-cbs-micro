@@ -124,7 +124,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Ngôn ngữ hiển thị (đồng bộ với moment.js)
     lang: {
         type   : String,
-        default: "vi"
+        default: "vn"
     },
     //_______Yêu cầu gửi đi tới người khác(Mình gửi đi)
     sendToFriends: [{

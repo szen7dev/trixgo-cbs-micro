@@ -147,6 +147,18 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 11-Biên bản họp
      */
     subtype: { type: Number, default: 0 },
+    /**
+    /**
+     * Upcoming-Sắp diễn ra/tới lượt
+     * 1-Mặc định diễn ra
+     * 2-Sắp diễn ra
+     */
+    upcoming: { type: Number, default: 1 },
+    /**
+     * Phân loại công việc và công việc con
+     * 1-Công việc
+     * 2-Checklist/Công việc con
+     */
     //_________PHÂN LOẠI
     field: {
         type: Schema.Types.ObjectId,
@@ -275,11 +287,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
-    //_________File của người thực hiện (!!! Cân nhắc bỏ => đưa sang phản hồi liên quan)
-    assigneeAttachs: [{
-        type: Schema.Types.ObjectId,
-        ref: "file"
-    }],
+    // //_________File của người thực hiện (!!! Cân nhắc bỏ => đưa sang phản hồi liên quan)
+    // assigneeAttachs: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: "file"
+    // }],
     //_________Bình luận cuối cùng
     lastComment: {
         type   : Schema.Types.ObjectId,
