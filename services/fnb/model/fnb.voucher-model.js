@@ -750,7 +750,9 @@ class Model extends BaseModel {
                                     phone: item?.__EMPTY_1,
                                     name: item?.__EMPTY_2,
                                     gender: item?.__EMPTY_3,
-                                    note: item?.__EMPTY_4
+                                    note: item?.__EMPTY_4,
+                                    address: item?.__EMPTY_5,
+                                    taxid: item?.__EMPTY_6,
                                 }
                                 // console.log(dataInsert)
 
