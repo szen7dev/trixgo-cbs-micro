@@ -106,6 +106,7 @@ module.exports = {
             assigneeAttachs     : { type: "array", optional: true },
             milestone           : { type: "number", optional: true },
             subType             : { type: "number", optional: true },
+            upcoming            : { type: "number", optional: true },
             isUpdateNews        : { type: "boolean", optional: true },
         },
         async handler(ctx) {
@@ -114,7 +115,7 @@ module.exports = {
                 const {
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                    contractID, draft, subType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, amountoftime,
                     ontime, quality, usersDeleteID
@@ -124,7 +125,7 @@ module.exports = {
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                    contractID, draft, subType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email }, unit, unitPrice, quantity,
                     companyOfUser: company._id, milestone, alert, groupID, ontime, quality, fullnameUpdate: fullname, usersDeleteID, ctx
@@ -207,6 +208,7 @@ module.exports = {
             milestone           : { type: "string", optional: true },
             sortKey             : { type: "string", optional: true },
             isParent            : { type: "string", optional: true },
+            upcoming            : { type: "string", optional: true },
 
             // Field mặc định
             keyword             : { type: "string", optional: true },
@@ -223,7 +225,7 @@ module.exports = {
                 let {
                     taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe, groupID, sortKey,
-                    keyword, limit, unlimit, lastestID, select, populates, isPassPermision, milestone, isParent
+                    keyword, limit, unlimit, lastestID, select, populates, isPassPermision, milestone, isParent, upcoming
                 } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;
@@ -238,7 +240,7 @@ module.exports = {
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
-                        keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent
+                        keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming
                     });
                 }
 
@@ -254,42 +256,42 @@ module.exports = {
      * Func: Danh sách chủ đề
      * Date: 19/8/2022
      */
-    getListSubject: {
-        auth: 'required',
-        params: {
-            draft               : { type: 'string', optional: true },
-            sortKey             : { type: 'string', optional: true },
-            isParent            : { type: 'string', optional: true },
-            isActive            : { type: 'string', optional: true },
-            isGroup             : { type: 'string', optional: true },
-            read                : { type: 'string', optional: true },
+    // getListSubject: {
+    //     auth: 'required',
+    //     params: {
+    //         draft               : { type: 'string', optional: true },
+    //         sortKey             : { type: 'string', optional: true },
+    //         isParent            : { type: 'string', optional: true },
+    //         isActive            : { type: 'string', optional: true },
+    //         isGroup             : { type: 'string', optional: true },
+    //         read                : { type: 'string', optional: true },
 
-            keyword             : { type: "string", optional: true },
-            limit               : { type: "string", optional: true },
-            lastestID           : { type: "string", optional: true },
-            select              : { type: "string", optional: true },
-            populates           : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                const { _id: userID } = ctx.meta.infoUser;
-                const {
-                    draft, sortKey, isParent, isActive, isGroup, read, keyword,
-                    limit, lastestID, select, populates
-                } = ctx.params;
+    //         keyword             : { type: "string", optional: true },
+    //         limit               : { type: "string", optional: true },
+    //         lastestID           : { type: "string", optional: true },
+    //         select              : { type: "string", optional: true },
+    //         populates           : { type: "string", optional: true },
+    //     },
+    //     async handler(ctx) {
+    //         try {
+    //             await this.validateEntity(ctx.params);
+    //             const { _id: userID } = ctx.meta.infoUser;
+    //             const {
+    //                 draft, sortKey, isParent, isActive, isGroup, read, keyword,
+    //                 limit, lastestID, select, populates
+    //             } = ctx.params;
 
-                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListSubject({
-                    draft, sortKey, isParent, isActive, isGroup, read, 
-                    keyword, limit, lastestID, select, populates, userID
-                })
+    //             const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListSubject({
+    //                 draft, sortKey, isParent, isActive, isGroup, read, 
+    //                 keyword, limit, lastestID, select, populates, userID
+    //             })
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
+    //             return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+    //         } catch (error) {
+    //             return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+    //         }
+    //     }
+    // },
 
     /**
      * Dev: MinhVH
@@ -315,6 +317,7 @@ module.exports = {
             isGroup             : { type: 'string', optional: true }, 
             reportType          : { type: 'string', optional: true }, 
             priority            : { type: 'string', optional: true }, 
+            upcoming            : { type: 'string', optional: true }, 
 
             keyword             : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
@@ -329,13 +332,13 @@ module.exports = {
                 const {
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
-                    limit, lastestID, select, populates, reportID
+                    limit, lastestID, select, populates, reportID, upcoming
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
-                    limit, lastestID, select, populates, userID, reportID
+                    limit, lastestID, select, populates, userID, reportID, upcoming
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -385,6 +388,7 @@ module.exports = {
         auth: "required",
         params: {
             option : { type: 'string', optional: true },
+            upcoming : { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
@@ -392,10 +396,10 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const {
-                    option
+                    option, upcoming
                 } = ctx.params;
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID, option });
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID, option, upcoming });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

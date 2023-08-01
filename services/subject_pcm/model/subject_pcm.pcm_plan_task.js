@@ -549,13 +549,13 @@ class Model extends BaseModel {
      */
     update({ typeUpdate,
         taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
         // console.log({ typeUpdate,
         //     taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        //     contractID, draft, subType, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        //     contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
         //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate
         // })
@@ -688,7 +688,6 @@ class Model extends BaseModel {
                         convertStr = convertStr + " " + stringUtils.removeAccents(sign)
                     }
                     dataUpdate.namecv = convertStr
-                    dataUpdate.descriptioncv = convertStr
 
                     /**
                      * Ngày kết thúc
@@ -744,7 +743,6 @@ class Model extends BaseModel {
                     if(infoTask.subtype === 9 || infoTask.subtype === 11){
                         if(description){
                             dataUpdate.description = description;
-                            dataUpdate.descriptioncv = stringUtils.removeAccents(description);
                         }
                     }
                 }
@@ -794,6 +792,10 @@ class Model extends BaseModel {
                     if(!subTypes.includes(infoTask.subtype)){
                         dataUpdate.subtype = +subType;
                     }
+                }
+
+                if(upcoming && !isNaN(upcoming)){
+                    dataUpdate.upcoming = +upcoming;
                 }
 
                 /**
@@ -2312,37 +2314,40 @@ class Model extends BaseModel {
                 let end = new Date();
                 end.setHours(23,59,59,999);
 
-                let amountUnreadTask=0, amountMyTaskToday=0, amountMyTaskComing = 0, amountMyApproval = 0
-                let amountMyTask1=0, amountMyTask2=0, amountMyTask3=0, amountMyTask4=0
+                let amountUnreadTaskSync=0, amountMyTaskTodaySync=0, amountMyTaskComingSync = 0, amountMyApprovalSync = 0
+                let amountMyTask1Sync=0, amountMyTask2Sync=0, amountMyTask3Sync=0, amountMyTask4Sync=0
 
                 if(!option){
                     // Số công việc chưa xem
-                    amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
+                    amountUnreadTaskSync = PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
-                        usersDelete: { $nin: [userID] }
+                        usersDelete: { $nin: [userID] },
                     })
 
                     // Số công việc của tôi - Ngày nay
-                    amountMyTaskToday = await PCM_PLAN_TASK_COLL.count({
+                    amountMyTaskTodaySync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
-                        actualFinishTime: { $gte: start, $lte: end }
+                        actualFinishTime: { $gte: start, $lte: end },
                     })
                     // console.log({ $gte: start, $lte: end })
 
                     // Số công việc của tôi - Quá hạn
-                    amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
+                    amountMyTask1Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: { $lt: start }
                     })
 
                     // Số công việc của tôi - Tuần tới
-                    amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                    amountMyTask2Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: {
                             $gte:  moment(start).startOf('day')._d,
@@ -2351,9 +2356,10 @@ class Model extends BaseModel {
                     })
 
                     // Số công việc của tôi - Sau tuần tới
-                    amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                    amountMyTask3Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: {
                             $gte: addDate(7)
@@ -2361,20 +2367,32 @@ class Model extends BaseModel {
                     })
 
                     // Số công việc của tôi - Quan trọng
-                    amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
+                    amountMyTask4Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
+                        upcoming: 1,
                         priority: 3,
                         usersDelete: { $nin: [userID] }
                     })
 
                     // Số công việc cần duyệt của tôi
-                    amountMyApproval = await PCM_PLAN_TASK_COLL.count({
+                    amountMyApprovalSync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
+                        upcoming: 1,
                         subtype: {$in: [2, 3]},
                         usersDelete: { $nin: [userID] }
                     })
+
+                    // Số công việc của tôi - Sắp tới lượt
+                    amountMyTaskComingSync = PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        usersDelete: { $nin: [userID] },
+                        upcoming: 2
+                    })
+
+                    let [ amountUnreadTask, amountMyTaskToday, amountMyTaskComing, amountMyApproval, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4 ] = await Promise.all([amountUnreadTaskSync, amountMyTaskTodaySync, amountMyTaskComingSync, amountMyApprovalSync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync])
 
                     return resolve({ error: false, data: {
                         amountUnreadTask, 
@@ -2390,25 +2408,28 @@ class Model extends BaseModel {
                     // Phê duyệt của tôi
                     if(option == 1){
                         // Số công việc của tôi - Ngày nay
-                        amountMyTaskToday = await PCM_PLAN_TASK_COLL.count({
+                        amountMyTaskTodaySync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
                             status: { $ne: 3 },
+                            upcoming: 1,
                             usersDelete: { $nin: [userID] },
                             actualFinishTime: { $gte: start, $lte: end }
                         })
 
                         // Số công việc của tôi - Quá hạn
-                        amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
+                        amountMyTask1Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
                             status: { $ne: 3 },
+                            upcoming: 1,
                             usersDelete: { $nin: [userID] },
                             actualFinishTime: { $lt: start }
                         })
 
                         // Số công việc của tôi - Tuần tới
-                        amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
+                        amountMyTask2Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
                             status: { $ne: 3 },
+                            upcoming: 1,
                             usersDelete: { $nin: [userID] },
                             actualFinishTime: {
                                 $gte:  moment(start).startOf('day')._d,
@@ -2417,14 +2438,17 @@ class Model extends BaseModel {
                         })
 
                         // Số công việc của tôi - Sau tuần tới
-                        amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
+                        amountMyTask3Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
                             status: { $ne: 3 },
+                            upcoming: 1,
                             usersDelete: { $nin: [userID] },
                             actualFinishTime: {
                                 $gte: addDate(7)
                             }
                         })
+
+                        let [ amountMyTaskToday, amountMyTask1, amountMyTask2, amountMyTask3 ] = await Promise.all([amountMyTaskTodaySync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync])
 
                         return resolve({ error: false, data: {
                             amountMyTaskToday, 
