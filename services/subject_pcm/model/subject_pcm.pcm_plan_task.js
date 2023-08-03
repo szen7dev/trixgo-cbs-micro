@@ -4211,7 +4211,7 @@ class Model extends BaseModel {
      * Date: 15/09/2022
      */
     downloadTemplateImportExcel({ option, projectID, userID }) {
-        console.log({ option, projectID, userID })
+        // console.log({ option, projectID, userID })
         return new Promise(async resolve => {
             try {
                 // Mẫu Import excel
@@ -4265,9 +4265,10 @@ class Model extends BaseModel {
                 if(option == 2){
                     let listData = await PCM_PLAN_TASK_COLL.find({ project: projectID, subtype: 12, amount: {$gt: 0} })
                     .populate({
-                        path: 'contact',
-                        select: 'name taxid phone',
+                        path: 'contact author',
+                        select: 'name taxid phone fullname',
                     })
+                    .sort({actualFinishTime: 1})
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_invoice_report.xlsx')))
@@ -4286,6 +4287,9 @@ class Model extends BaseModel {
                             workbook.sheet("BangKeMuaVao").row(i).cell(10).value(item?.description)
                             workbook.sheet("BangKeMuaVao").row(i).cell(11).value(item?.status)
                             workbook.sheet("BangKeMuaVao").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com//pcm/detail/${item._id}`)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(14).value(item?.author?.fullname)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(15).value(moment(item?.createAt).format('DD/MM/YYYY HH:mm'))
+                            workbook.sheet("BangKeMuaVao").row(i).cell(16).value(`${item._id}`)
 
                             i++
                         })
