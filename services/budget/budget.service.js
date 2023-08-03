@@ -50,6 +50,9 @@ module.exports = {
 		[CF_ACTIONS_BUDGET.BUDGET_REMOVE]				 							: BUDGET__HANDLER.remove,
 		[CF_ACTIONS_BUDGET.BUDGET_GET_INFO_AND_GET_LIST]							: BUDGET__HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE]										: BUDGET__HANDLER.updateValue,
+		[CF_ACTIONS_BUDGET.BUDGET_DOWNLOAD_TEMPLATE_EXCEL]				 			: BUDGET__HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_BUDGET.BUDGET_IMPORT_EXCEL]										: BUDGET__HANDLER.importExcel,
+		[CF_ACTIONS_BUDGET.BUDGET_EXPORT_EXCEL]										: BUDGET__HANDLER.exportExcel,
 
 		//==========================================   BUDGET ITEM   ================================//
 		[CF_ACTIONS_BUDGET.BUDGET_ITEM_INSERT]   			 						: BUDGET__ITEM_HANDLER.insert,

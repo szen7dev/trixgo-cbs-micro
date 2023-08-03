@@ -7,6 +7,11 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.actions-constant');
 
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**
  * import inter-coll, exter-coll
  */
@@ -457,6 +462,119 @@ class Model extends BaseModel {
         })
     }
 
+        /**
+     * Name: Download Template Excel
+     * Author: HiepNH
+     * Date: 21/3/2023
+     */
+    downloadTemplateExcel({ option, projectID, userID }) {
+        // console.log({ option, projectID, userID })
+        return new Promise(async resolve => {
+            try {
+                // let listData  = await PCM_PLAN_GROUP_COLL.find({ project: projectID }).select('name sign members')
+                // .sort({_id: -1})
+                // .limit(200)
+                // console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import.xlsm')))
+                .then(async workbook => {
+                    var i = 4;
+                    // infoProject.members?.forEach((item, index) => {
+                    //     workbook.sheet("ThanhVienDuAn").row(i).cell(1).value(Number(index+1))
+                    //     workbook.sheet("ThanhVienDuAn").row(i).cell(2).value(item.fullname)
+                    //     workbook.sheet("ThanhVienDuAn").row(i).cell(3).value(`${item._id}`)
+
+                    //     if(infoProject?.admins.includes(item._id)){
+                    //         workbook.sheet("ThanhVienDuAn").row(i).cell(4).value(1)
+                    //     }
+
+                    //     workbook.sheet("ThanhVienDuAn").row(i).cell(5).value(1)
+
+                    //     i++
+                    // });
+
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `budget_import_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: Depv
+     * Func: Tạo task từ dữ liệu excel
+     * Date: 15/09/2022
+     */
+    importExcel({ option, projectID, dataImport, userID }) {
+        // console.log({option, projectID, userID})
+        return new Promise(async resolve => {
+            try {
+                // if(!checkObjectIDs(projectID))
+                //     return resolve({ error: true, message: 'projectID_invalid', status: 400 })
+
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        let dataInsert = {
+                            name: data?.__EMPTY_1,
+                            groupID: data?.__EMPTY_12,
+                            authorID: userID,
+                            sign: data?.__EMPTY_8,
+                            type: data?.__EMPTY_9,
+                            description: data?.__EMPTY_10,
+                            startTime:  data?.__EMPTY_14,
+                            expiredTime:  data?.__EMPTY_15,
+                            assigneeID: data?.__EMPTY_13,
+                            draft: data?.__EMPTY_17,
+                            contractID: data?.__EMPTY_16,
+                            subType: data?.__EMPTY_9,
+                        }
+                        console.log(dataInsert)
+
+                       
+                        // let infoAfterInsert = await this.insert(dataInsert);
+                        // // console.log(infoAfterInsert)
+                        
+                        // // Công việc cha
+                        // if(data?.__EMPTY_1){
+                        //     parentID = infoAfterInsert?.data?._id;
+                        // }
+                        
+                        // if(infoAfterInsert.error){
+                        //     errorNumber++;
+                        // }
+
+                    }
+
+                    index ++;
+                }
+
+                if(errorNumber != 0)
+                return resolve({ error: true, message: "import field" });
+
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
