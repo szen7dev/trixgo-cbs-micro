@@ -1306,7 +1306,7 @@ class Model extends BaseModel {
                     dataUpdate.gender = gender;
                 }
 
-                if(lang && ['vn','en'].includes(lang.toString())){
+                if(lang && ['vn','en','ja'].includes(lang.toString())){
                     dataUpdate.lang = lang;
                 }
 
