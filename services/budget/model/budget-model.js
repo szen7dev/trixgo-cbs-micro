@@ -462,7 +462,7 @@ class Model extends BaseModel {
         })
     }
 
-        /**
+    /**
      * Name: Download Template Excel
      * Author: HiepNH
      * Date: 21/3/2023
@@ -546,20 +546,7 @@ class Model extends BaseModel {
                             contractID: data?.__EMPTY_16,
                             subType: data?.__EMPTY_9,
                         }
-                        console.log(dataInsert)
-
-                       
-                        // let infoAfterInsert = await this.insert(dataInsert);
-                        // // console.log(infoAfterInsert)
-                        
-                        // // Công việc cha
-                        // if(data?.__EMPTY_1){
-                        //     parentID = infoAfterInsert?.data?._id;
-                        // }
-                        
-                        // if(infoAfterInsert.error){
-                        //     errorNumber++;
-                        // }
+                        // console.log(dataInsert)
 
                     }
 

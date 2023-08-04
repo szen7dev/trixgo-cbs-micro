@@ -11,6 +11,11 @@ const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.consta
 const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
 const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.actions-constant');
 
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3');
+
 /**
  * import inter-coll, exter-coll
  */
@@ -491,6 +496,142 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Download Template Excel
+     * Author: HiepNH
+     * Date: 21/3/2023
+     */
+    downloadTemplateExcel({ option, itemID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import.xlsm')))
+                .then(async workbook => {
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `budget_import_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: Depv
+     * Func: Tạo task từ dữ liệu excel
+     * Date: 15/09/2022
+     */
+    importExcel({ option, budgetID, dataImport, userID }) {
+        // console.log({option, budgetID, userID})
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(budgetID))
+                    return resolve({ error: true, message: 'budgetID_invalid', status: 400 })
+
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+                let groupID;
+
+                /**
+                 * XÁC THỰC DỮ LIỆU
+                 */
+                let indexCheck = 0
+                let errorValidate = 0;
+                let arrItems = []
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+                        if(data?.__EMPTY_16 && data?.__EMPTY_16 != ""){
+                            if(!arrItems.includes(data?.__EMPTY_16)){
+                                arrItems.push(data?.__EMPTY_16)
+                            }
+                        }
+                    }
+
+                    index ++;
+                }
+                // console.log(arrItems)
+                let listItems = await BUDGET__ITEM_COLL.find({_id: {$in: arrItems}})
+                // console.log(listItems)
+                // console.log(listItems.map(item => item.budget))
+                // console.log(!listItems.map(item => item.budget).includes(budgetID))
+
+                if(listItems){
+                    for(const item of listItems){
+                        if(item.budget.toString() != budgetID.toString() ){
+                            errorValidate++
+                        }
+                    }
+                }
+                // console.log(errorValidate)
+
+                if(errorValidate != 0)
+                    return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" })
+                
+
+                /**
+                 * IMPORT DỮ LIỆU
+                 */
+                for (const data of dataImportJSON) {
+                    if(index > 0){
+
+                        if(data?.__EMPTY_1 && data?.__EMPTY_1 != ""){
+                            // console.log(data)
+                            let dataGroupInsert = {
+                                userID,
+                                name: data?.__EMPTY_1,
+                                itemID: data?.__EMPTY_16,
+                            }
+
+                            let infoGroup = await BUDGET__GROUP_MODEL.insert(dataGroupInsert)
+                            // console.log(infoGroup)
+
+                            groupID = infoGroup?.data?._id
+                        }
+
+                        if(data?.__EMPTY_2 && data?.__EMPTY_2 != "" && groupID){
+                            let dataInsert = {userID}
+                            // console.log(data)
+                            // console.log({groupID})
+                            dataInsert.groupID = groupID;
+                            dataInsert.name = data.__EMPTY_2;
+                            dataInsert.sign = data.__EMPTY_3;
+                            dataInsert.type = data.__EMPTY_4;
+                            dataInsert.unit = data.__EMPTY_5;
+                            dataInsert.quantity = data.__EMPTY_6;
+                            dataInsert.unitPrice = data.__EMPTY_7;
+                            dataInsert.amount = data.__EMPTY_8;
+
+                            let infoWork = await this.insert(dataInsert)
+                            // console.log(infoWork)
+                        }
+                    }
+
+                    index ++;
+                }
+
+                if(errorNumber != 0)
+                return resolve({ error: true, message: "import failed" });
+
+                return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

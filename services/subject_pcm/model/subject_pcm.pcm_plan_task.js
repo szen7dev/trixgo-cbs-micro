@@ -4339,22 +4339,22 @@ class Model extends BaseModel {
                 let errorValidate = 0;
                 let inforTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                 .select('name project')
-                // console.log(inforTask)
+
                 for (const data of dataImportJSON) {
                     if(indexCheck > 0){
-                        // console.log(data?.__EMPTY_12)
                         let infoGroup = await PCM_PLAN_GROUP_COLL.findById(ObjectID(data?.__EMPTY_12)).select('name project')
-                        // console.log(infoGroup)
                         if(infoGroup.project.toString() !== inforTask.project.toString()){
                             errorValidate ++
-                            // console.log({errorValidate})
                         }
                     }
                     indexCheck ++;
                 }
                 if(errorValidate != 0)
-                    return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" });
+                    return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" })
 
+                /**
+                 * IMPORT DỮ LIỆU
+                 */
                 for (const data of dataImportJSON) {
                     if(index > 0){
                         let dataInsert = {
