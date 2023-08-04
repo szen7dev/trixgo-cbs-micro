@@ -4347,7 +4347,7 @@ class Model extends BaseModel {
                         // console.log(infoGroup)
                         if(infoGroup.project.toString() !== inforTask.project.toString()){
                             errorValidate ++
-                            console.log({errorValidate})
+                            // console.log({errorValidate})
                         }
                     }
                     indexCheck ++;

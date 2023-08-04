@@ -13,6 +13,9 @@ const CF_ROUTINGS_BUDGET = {
     // ================================BUDGET============================================//
     BUDGET                                                         : `${BASE_ROUTE}`,
     BUDGET_UPDATE_VALUE                                            : `${BASE_ROUTE}/update-value`,
+    BUDGET_DOWNLOAD_TEMPLATE_EXCEL                                 : `${BASE_ROUTE}/download-template-excel`,
+    BUDGET_IMPORT_EXCEL                                            : `${BASE_ROUTE}/import-excel`,
+    BUDGET_EXPORT_EXCEL                                            : `${BASE_ROUTE}/export-excel`,
 
     // ================================BUDGET_ITEM============================================//
     BUDGET_ITEM                                                    : `${BASE_ROUTE}${BUDGET_ITEM}`,
