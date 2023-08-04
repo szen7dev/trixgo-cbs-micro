@@ -265,12 +265,12 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getList({ itemID, budgetID, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 100, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 50){
-                    limit = 50
+                if(limit > 100){
+                    limit = 100
                 }else{
                     limit = +limit;
                 }
