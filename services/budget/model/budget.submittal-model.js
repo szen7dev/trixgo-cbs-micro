@@ -96,7 +96,6 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-
                 if(!checkObjectIDs(submitID))
                     return resolve({ error: true, message: "submitID_invalid", keyError: "submitID_invalid" })
                 
