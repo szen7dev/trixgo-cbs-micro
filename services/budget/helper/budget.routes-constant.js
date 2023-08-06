@@ -34,6 +34,7 @@ const CF_ROUTINGS_BUDGET = {
     
     // ================================BUDGET_SUBMITTAL============================================//
     BUDGET_SUBMITTAL                                               : `${BASE_ROUTE}${BUDGET_SUBMITTAL}`,    
+    BUDGET_SUBMITTAL_GET_LIST_BY_PROPERTY                          : `${BASE_ROUTE}${BUDGET_SUBMITTAL}/get-list-by-property`,
 }
 
 exports.CF_ROUTINGS_BUDGET = CF_ROUTINGS_BUDGET;

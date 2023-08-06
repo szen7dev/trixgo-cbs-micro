@@ -2117,6 +2117,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_BUDGET.BUDGET_SUBMITTAL}`] :
 		[`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_GET_INFO_AND_GET_LIST}`],
 
+		[`GET ${CF_ROUTINGS_BUDGET.BUDGET_SUBMITTAL_GET_LIST_BY_PROPERTY}`] :
+		[`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_GET_LIST_BY_PROPERTY}`],
+
 		//---------------------------🏁 END SERVICE BUDGET 🏁---------------------------//
 
 		//---------------------------🏁 START SERVICE FNB 🏁---------------------------//
