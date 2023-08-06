@@ -228,6 +228,8 @@ module.exports = {
                     keyword, limit, unlimit, lastestID, select, populates, isPassPermision, milestone, isParent, upcoming
                 } = ctx.params;
 
+                // console.log({select})
+
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -236,6 +238,8 @@ module.exports = {
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
                         taskID, userID, select, populates
                     });
+                    
+                    // console.log(resultAfterCallHandler)
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
