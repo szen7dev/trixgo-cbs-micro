@@ -333,6 +333,41 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 21/9/2022
+     */
+    getListByProperty({ userID, option, taskID, companyID }){
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}
+                if(!option){
+                    conditionObj = {
+                        task: ObjectID(taskID)
+                    }
+                    let listData = await BUDGET__SUBMITTAL_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { work: '$work' },
+                                quantity: { $sum: "$quantity" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    
+                    return resolve({ error: false, data: listData })
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
