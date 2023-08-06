@@ -1139,7 +1139,17 @@ class Model extends BaseModel {
 
                     // console.log({initialCommentAfterUpdate})
                 }else{
-                    
+                    await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
+                        taskID: taskID.toString(),
+                        type: 5,
+                        files: authorAttachs,
+                        content: name,
+                        rawContent: convertStr,
+                    }, {
+                        meta: {
+                            infoUser: { _id: userID, bizfullname, company: companyOfUser }
+                        }
+                    })
                 }
 
                 /**
