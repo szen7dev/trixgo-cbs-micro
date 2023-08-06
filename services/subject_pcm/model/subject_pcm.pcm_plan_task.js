@@ -134,11 +134,17 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = {};
-                let accessUsers = [authorID, assigneeID];
+                let accessUsers = [];
                 let infoGroup = null;
                 let companyID = null;
                 let infoTaskParent = null;
                 let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+
+                if(authorID.toString() != assigneeID.toString()){
+                    accessUsers = [authorID, assigneeID]
+                }else{
+                    accessUsers = [authorID]
+                }
 
                 if(!name || !checkObjectIDs(projectID) || !checkObjectIDs(groupID) || !checkObjectIDs(assigneeID))
                     return resolve({ error: true, message: 'name|project|group|assignee_invalid', status: 400 })
@@ -259,7 +265,14 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "relatedIDs_invalid", status: 400 });
                     }
                     dataInsert.related = relatedIDs;
-                    accessUsers.push(...relatedIDs);
+
+                    let arrRaletedTemp = []
+                    for(const item of relatedIDs){
+                        if(item.toString() != authorID.toString() && !accessUsers.includes(item)){
+                            arrRaletedTemp.push(item)
+                        }
+                    }
+                    accessUsers.push(...arrRaletedTemp)
                 }
 
                 if(description){
@@ -328,13 +341,14 @@ class Model extends BaseModel {
                  */
                 dataInsert.news = accessUsers.filter(userId => userId !== authorID);
 
-                let infoAfterInsert = null;
+                let infoAfterInsert = null, checkAddNewTask = 0;
                 if(taskID) {
                     // Cập nhật thành việc chính thức
                     dataInsert.draft = 0
 
                     // Khi bấm submit
                     infoAfterInsert = await this.updateById(taskID, dataInsert)
+                    checkAddNewTask ++
                 } else {
 
                     // Tự động lưu việc nháp
@@ -351,182 +365,191 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Thêm reminder nhắc công việc đến hạn
-                 * - Mặc định không thêm
-                 * - Nếu user chọn thì mới thêm
+                 * XỬ LÝ CÁC SỰ KIỆN SAU KHI TẠO TASK CHÍNH THỨC
                  */
-                // ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
-                //     senderMail,
-                //     status: infoAfterInsert.status,
-                //     taskID: infoAfterInsert._id?.toString(),
-                //     userID: infoAfterInsert.author?.toString(),
-                //     alert: 0.4, // Mặc định khi tạo task, nhắc hẹn trước 15 phút
-                //     actualFinishTime: dataInsert.actualFinishTime?.toString(),
-                // })
-
-                // Thêm record vào bảng pcm_comment phục vụ search (****)
-                let infoCommentAfter = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
-                    taskID: infoAfterInsert._id?.toString(),
-                    type: 5,
-                    files: authorAttachs,
-                    content: name,
-                    rawContent: convertStr,
-                }, {
-                    meta: {
-                        infoUser: { _id: authorID, bizfullname, company: infoAuthor.data.company }
-                    }
-                })
-
-                /**
-                 * KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
-                 */
-                if(parentID && checkObjectIDs(parentID)){
-                    let infoParentTask = await PCM_PLAN_TASK_COLL.findById(parentID).select('_id level')
-
-                    // Cập nhật việc cha
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
-                        $inc: { amountSubtask: 1 },
-                        $addToSet: { news: authorID, childs: infoAfterInsert._id },
-                        $set: {
-                            modifyAt: new Date(),
-                        }
-                    });
-
-                    // Cập nhật Level cho việc con
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
-                        $set: {
-                            level: Number(infoParentTask.level) + Number(1)
-                        }
-                    });
-                }
-
-                /**
-                 * CẬP NHẬT SỐ LƯỢNG CÔNG VIỆC CHO GROUP
-                 */
-                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
-
-                /**
-                 * Tạo việc con mới
-                 * + Insert thông báo vào DB và bắn Cloud MSS
-                 */
-                if([1,2].includes(type)) {
-                    let webUrl              = '';
-                    let titleMSS            = '';
-                    let descriptionMSS      = '';
-                    let languageKey         = '';
-                    let dataSend 		    = { app: APP_KEYS.PCM_PLAN_TASK };
-                    let taskID              = parentID;
-
-                    if(!parentID) {
-                        taskID = infoAfterInsert._id;
-                        webUrl = `/pcm/detail/${taskID}`;
-                        languageKey = LANGUAGE_KEYS.CREATE_NEW_TASK;
-                    } else {
-                        webUrl = `/pcm/detail/${taskID}#${'childtask'}_${infoAfterInsert._id}`;
-                        languageKey = LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
-                    }
-
-                    let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
-                    let { name: taskName, author, assignee, related, accessUsers } = infoTask;
-                    let arrReceiver = [];
-
+                // console.log({checkAddNewTask})
+                if(Number(checkAddNewTask) > 0){
                      /**
-                     * 0: Chính thức
-                     * 1: Việc nháp
+                     * Thêm reminder nhắc công việc đến hạn
+                     * - Mặc định không thêm
+                     * - Nếu user chọn thì mới thêm
                      */
-                    if(infoAfterInsert.draft == 0) {
-                        if(accessUsers && accessUsers.length) {
-                            arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
-                        } else{
-                            related = related.map(userID => userID.toString());
+                    // ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK}`, {
+                    //     senderMail,
+                    //     status: infoAfterInsert.status,
+                    //     taskID: infoAfterInsert._id?.toString(),
+                    //     userID: infoAfterInsert.author?.toString(),
+                    //     alert: 0.4, // Mặc định khi tạo task, nhắc hẹn trước 15 phút
+                    //     actualFinishTime: dataInsert.actualFinishTime?.toString(),
+                    // })
 
-                            let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-                            arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                    /**
+                     * SỰ KIỆN 1: THÊM COMMENT ĐỂ PHỤC VỤ TÌM KIẾM THEO CHỦ ĐỀ
+                     */
+                    await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
+                        taskID: infoAfterInsert._id?.toString(),
+                        type: 5,
+                        files: authorAttachs,
+                        content: name,
+                        rawContent: convertStr,
+                    }, {
+                        meta: {
+                            infoUser: { _id: authorID, bizfullname, company: infoAuthor.data.company }
+                        }
+                    })
+
+                    /**
+                     * SỰ KIỆN 2: KIỂM TRA NẾU CÓ CÔNG VIỆC CHA
+                     */
+                    if(parentID && checkObjectIDs(parentID)){
+                        let infoParentTask = await PCM_PLAN_TASK_COLL.findById(parentID).select('_id level')
+
+                        // Cập nhật việc cha
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
+                            $inc: { amountSubtask: 1 },
+                            $addToSet: { news: authorID, childs: infoAfterInsert._id },
+                            $set: {
+                                modifyAt: new Date(),
+                            }
+                        });
+
+                        // Cập nhật Level cho việc con
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                            $set: {
+                                level: Number(infoParentTask.level) + Number(1)
+                            }
+                        });
+                    }
+
+                    /**
+                     * SỰ KIỆN 3: CẬP NHẬT SỐ LƯỢNG CÔNG VIỆC CHO GROUP
+                     */
+                    await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { $inc: { amountTasks: 1 }})
+
+                    /**
+                     * SỰ KIỆN 4: TẠO VIỆC CON MỚI
+                     * + Insert thông báo vào DB và bắn Cloud MSS
+                     */
+                    if([1,2,3,4,5,6,7,8,9,10,11,12].includes(type)) {
+                        let webUrl              = '';
+                        let titleMSS            = '';
+                        let descriptionMSS      = '';
+                        let languageKey         = '';
+                        let dataSend 		    = { app: APP_KEYS.PCM_PLAN_TASK };
+                        let taskID              = parentID;
+
+                        if(!parentID) {
+                            taskID = infoAfterInsert._id;
+                            webUrl = `/pcm/detail/${taskID}`;
+                            languageKey = LANGUAGE_KEYS.CREATE_NEW_TASK;
+                        } else {
+                            webUrl = `/pcm/detail/${taskID}#${'childtask'}_${infoAfterInsert._id}`;
+                            languageKey = LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
+                        }
+
+                        let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+                        let { name: taskName, author, assignee, related, accessUsers } = infoTask;
+                        let arrReceiver = [];
+
+                        /**
+                         * Xử lý người nhận ứng với việc nháp/chính thức
+                         * 0: Chính thức
+                         * 1: Việc nháp
+                         */
+                        if(infoAfterInsert.draft == 0) {
+                            if(accessUsers && accessUsers.length) {
+                                arrReceiver = accessUsers.filter(receiverID => receiverID !== authorID.toString());
+                            } else{
+                                related = related.map(userID => userID.toString());
+
+                                let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+                                arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                            }
+                        }
+
+                        /**
+                         * Bắn thông báo realtime
+                         */
+                        if(arrReceiver && arrReceiver.length) {
+                            if(parentID) {
+                                let { related } = infoTaskParent;
+                                related = related.map(userID => userID.toString());
+
+                                let listReceivers = [...new Set([assigneeID, ...related])];
+                                arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+
+                                dataSend = {
+                                    ...dataSend,
+                                    languageKey,
+                                    mainColl: {
+                                        kind: 'pcm_plan_task',
+                                        item: { _id: taskID }
+                                    },
+                                };
+                                titleMSS        = taskName;
+                                descriptionMSS  = `${bizfullname} đã tạo 1 việc con`;
+                            } else {
+                                dataSend = {
+                                    ...dataSend,
+                                    languageKey,
+                                    mainColl: {
+                                        kind: 'pcm_plan_task',
+                                        item: { _id: taskID }
+                                    }
+                                };
+                                titleMSS        = taskName;
+                                descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
+                            }
+
+                            for (let i = 0; i < arrReceiver.length; i++) {
+                                const receiver = arrReceiver[i];
+                                const dataAmountNoti = await this.getAmountNotification({ userID: receiver });
+                                const amountNoti = dataAmountNoti?.data?.amountUnreadTask;
+
+                                if(assigneeID === receiver) {
+                                    descriptionMSS = `${bizfullname} đã tạo 1 công việc cho bạn`;
+                                }
+
+                                if(related.includes(receiver)) {
+                                    descriptionMSS = `${bizfullname} đã gán bạn là người liên quan`;
+                                }
+
+                                ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                                    users: [receiver],
+                                    title: titleMSS,
+                                    description: descriptionMSS,
+                                    amountNoti,
+                                    dataSend,
+                                    web_url: webUrl,
+                                    env: ENV_DEVICE_WEB_CBS
+                                });
+
+                                ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                                    users: [receiver],
+                                    title: titleMSS,
+                                    description: descriptionMSS,
+                                    amountNoti,
+                                    dataSend,
+                                    web_url: webUrl,
+                                    env: ENV_DEVICE_APP_FNB
+                                });
+                            }
                         }
                     }
 
                     /**
-                     * BẮN THÔNG BÁO REALTIME
+                     * SỰ KIỆN 5: GỬI EMAIL THÔNG BÁO
                      */
-                    if(arrReceiver && arrReceiver.length) {
-                        if(parentID) {
-                            let { related } = infoTaskParent;
-                            related = related.map(userID => userID.toString());
-
-                            let listReceivers = [...new Set([assigneeID, ...related])];
-                            arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
-
-                            dataSend = {
-                                ...dataSend,
-                                languageKey,
-                                mainColl: {
-                                    kind: 'pcm_plan_task',
-                                    item: { _id: taskID }
-                                },
-                            };
-                            titleMSS        = taskName;
-                            descriptionMSS  = `${bizfullname} đã tạo 1 việc con`;
-                        } else {
-                            dataSend = {
-                                ...dataSend,
-                                languageKey,
-                                mainColl: {
-                                    kind: 'pcm_plan_task',
-                                    item: { _id: taskID }
-                                }
-                            };
-                            titleMSS        = taskName;
-                            descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
-                        }
-
-                        for (let i = 0; i < arrReceiver.length; i++) {
-                            const receiver = arrReceiver[i];
-                            const dataAmountNoti = await this.getAmountNotification({ userID: receiver });
-                            const amountNoti = dataAmountNoti?.data?.amountUnreadTask;
-
-                            if(assigneeID === receiver) {
-                                descriptionMSS = `${bizfullname} đã tạo 1 công việc cho bạn`;
-                            }
-
-                            if(related.includes(receiver)) {
-                                descriptionMSS = `${bizfullname} đã gán bạn là người liên quan`;
-                            }
-
-                            ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                                users: [receiver],
-                                title: titleMSS,
-                                description: descriptionMSS,
-                                amountNoti,
-                                dataSend,
-                                web_url: webUrl,
-                                env: ENV_DEVICE_WEB_CBS
-                            });
-
-                            ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                                users: [receiver],
-                                title: titleMSS,
-                                description: descriptionMSS,
-                                amountNoti,
-                                dataSend,
-                                web_url: webUrl,
-                                env: ENV_DEVICE_APP_FNB
-                            });
-                        }
+                    if(isNotiEmail) {
+                        this.sendEmailToMembersInTask({
+                            taskID: infoAfterInsert._id,
+                            title: infoAfterInsert.name,
+                            notice: infoAfterInsert.description,
+                            sender: senderMail,
+                            receivers: [infoAfterInsert.assignee, ...infoAfterInsert.related],
+                            ctx
+                        })
                     }
-                }
-
-                /**
-                 * Gửi mail thông báo
-                 */
-                if(isNotiEmail) {
-                    this.sendEmailToMembersInTask({
-                        taskID: infoAfterInsert._id,
-                        title: infoAfterInsert.name,
-                        notice: infoAfterInsert.description,
-                        sender: senderMail,
-                        receivers: [infoAfterInsert.assignee, ...infoAfterInsert.related],
-                        ctx
-                    })
                 }
 
                 const infoTask = await PCM_PLAN_TASK_COLL
@@ -739,10 +762,18 @@ class Model extends BaseModel {
                     }
 
                 }else{
+                    //_________Mã hiệu công việc
+                    if(sign && sign != ""){
+                        convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                    }
+
                     //_________Mô tả: chỉ áp dụng cho Báo cáo, Họp
                     if(infoTask.subtype === 9 || infoTask.subtype === 11){
                         if(description){
                             dataUpdate.description = description;
+                        }
+                        if(description && description != ""){
+                            convertStr = convertStr + stringUtils.removeAccents(description)
                         }
                     }
                 }
@@ -1095,15 +1126,30 @@ class Model extends BaseModel {
                 let initialComment = await PCM_COMMENT_COLL.findOne({type: 5, task: taskID })
                 // console.log({initialComment})
                 if(initialComment){
-                    let initialCommentAfterUpdate = await PCM_COMMENT_COLL.findByIdAndUpdate(initialComment, 
-                        {
-                            content: name,
-                            contentcv: convertStr,
-                            accessUsers: infoTask.accessUsers
-                        } , 
+                    await PCM_COMMENT_COLL.updateMany(
+                        {type: 5, task: taskID }, 
+                        {$set : 
+                            {
+                                content: name,
+                                contentcv: convertStr,
+                                accessUsers: infoTask.accessUsers
+                            }
+                        }, 
                         { new: true })
 
                     // console.log({initialCommentAfterUpdate})
+                }else{
+                    await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
+                        taskID: taskID.toString(),
+                        type: 5,
+                        files: authorAttachs,
+                        content: name,
+                        rawContent: convertStr,
+                    }, {
+                        meta: {
+                            infoUser: { _id: userID, bizfullname, company: companyOfUser }
+                        }
+                    })
                 }
 
                 /**
@@ -1120,7 +1166,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Khi link việc A vào Hồ sơ B thì ở trong Hồ sơ B, links cũng chứa A
+                 * Link hồ sơ vào công việc
                  */
                 if(checkObjectIDs(linksDocs)){
                     await DOCUMENT_DOC_COLL.updateMany({
@@ -1132,7 +1178,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                // Cập nhật amountFinishedChecklist hoặc amountFinishedSubtask cho việc cha
+                // Cập nhật số lượng việc con cho việc cha
                 if(infoAfterUpdate.parent && status == 3){
                     // Việc con
                     if(infoAfterUpdate.type == 1){
@@ -1144,6 +1190,7 @@ class Model extends BaseModel {
                 }
                 let { name: taskName } = infoAfterUpdate;
 
+                // Cập nhật trạng thái công việc
                 if(status) {
                     const { author, assignee, related } = infoTask;
                     const relatedIDs = related?.map(userId => userId.toString());
@@ -1179,7 +1226,6 @@ class Model extends BaseModel {
                      * Thêm người liên quan trong công việc
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
-
                     const amountNoti = await this.getAmountNotification({ userID });
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
