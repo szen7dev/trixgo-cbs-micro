@@ -212,7 +212,7 @@ class Model extends BaseModel {
                     dataInsert.paymentMethod = Number(paymentMethod);
                 }
 
-                if(!isNaN(salesChannel) && [1,2,3,4,5,6,7].includes(Number(salesChannel))){
+                if(!isNaN(salesChannel) && [1,2,3,4,5,6,7,8,9].includes(Number(salesChannel))){
                     dataInsert.salesChannel = Number(salesChannel);
 
                     if(salesChannel != 1){
@@ -589,6 +589,30 @@ class Model extends BaseModel {
                         "numberOfOrders": 1,
                         "numberOfOrders7": 1,
                         "total7": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 8){
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders8": 1,
+                        "total8": Number(total),
+                        "numberOfSizeM": Number(totalSizeM),
+                        "numberOfSizeL": Number(totalSizeL),
+                    }
+                }
+                if(!isNaN(salesChannel) && Number(salesChannel) === 9){
+                    dataUpdateFw.$inc = {
+                        "total": Number(total),
+                        "amount": Number(amount),
+                        "numberOfProducts": totalQuantity,
+                        "numberOfOrders": 1,
+                        "numberOfOrders9": 1,
+                        "total9": Number(total),
                         "numberOfSizeM": Number(totalSizeM),
                         "numberOfSizeL": Number(totalSizeL),
                     }
@@ -1017,8 +1041,6 @@ class Model extends BaseModel {
                 let numberOfOrders = 0
                 let numberOfCancelOrders = 0
                 let totalOfCancelOrders = 0
-                let numberOfMistakes = 0
-                let amountOfMistakes = 0
                 let cashAmount = 0
                 let transferAmount = 0
                 let numberOfSizeM = 0
@@ -1030,6 +1052,8 @@ class Model extends BaseModel {
                 let numberOfOrders5 = 0
                 let numberOfOrders6 = 0
                 let numberOfOrders7 = 0
+                let numberOfOrders8 = 0
+                let numberOfOrders9 = 0
                 let total = 0
                 let total1 = 0
                 let total2 = 0
@@ -1038,6 +1062,8 @@ class Model extends BaseModel {
                 let total5 = 0
                 let total6 = 0
                 let total7 = 0
+                let total8 = 0
+                let total9 = 0
 
                 // Tổng hợp thông tin từ các đơn hàng: Đơn HOÀN THÀNH
                 let listData = await FNB_ORDER_COLL.aggregate([
@@ -1119,6 +1145,16 @@ class Model extends BaseModel {
                                     numberOfOrders7 = Number(numberOfOrders7) + Number(item.quantity)
                                     total7 = Number(total7) + Number(item.total)
                                 }
+
+                                if(item._id.salesChannel && item._id.salesChannel == 8){
+                                    numberOfOrders8 = Number(numberOfOrders8) + Number(item.quantity)
+                                    total8 = Number(total8) + Number(item.total)
+                                }
+
+                                if(item._id.salesChannel && item._id.salesChannel == 9){
+                                    numberOfOrders9 = Number(numberOfOrders9) + Number(item.quantity)
+                                    total9 = Number(total9) + Number(item.total)
+                                }
                             }
                         }
 
@@ -1176,6 +1212,8 @@ class Model extends BaseModel {
                 dataInUpdate.numberOfOrders5 = Number(numberOfOrders5)
                 dataInUpdate.numberOfOrders6 = Number(numberOfOrders6)
                 dataInUpdate.numberOfOrders7 = Number(numberOfOrders7)
+                dataInUpdate.numberOfOrders8 = Number(numberOfOrders8)
+                dataInUpdate.numberOfOrders9 = Number(numberOfOrders9)
                 dataInUpdate.total = Number(total)
                 dataInUpdate.total1 = Number(total1)
                 dataInUpdate.total2 = Number(total2)
@@ -1184,6 +1222,8 @@ class Model extends BaseModel {
                 dataInUpdate.total5 = Number(total5)
                 dataInUpdate.total6 = Number(total6)
                 dataInUpdate.total7 = Number(total7)
+                dataInUpdate.total8 = Number(total8)
+                dataInUpdate.total9 = Number(total9)
 
                 // console.log(dataInUpdate)
 

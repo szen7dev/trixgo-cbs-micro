@@ -185,12 +185,12 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Number,
         default: 0
     },
-    //______Số đơn Grab
+    //______Số đơn Grab Food
     numberOfOrders2: {
         type: Number,
         default: 0
     },
-    //______Số đơn Shopee
+    //______Số đơn Shopee Food
     numberOfOrders3: {
         type: Number,
         default: 0
@@ -212,6 +212,16 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     },
     //______Số đơn Bee
     numberOfOrders7: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn TikTok Shop
+    numberOfOrders8: {
+        type: Number,
+        default: 0
+    },
+    //______Số đơn Shopee
+    numberOfOrders9: {
         type: Number,
         default: 0
     },
@@ -240,6 +250,14 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         default : 0
     },
     total7: {
+        type: Number,
+        default : 0
+    },
+    total8: {
+        type: Number,
+        default : 0
+    },
+    total9: {
         type: Number,
         default : 0
     },

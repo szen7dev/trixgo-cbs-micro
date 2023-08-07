@@ -143,12 +143,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * Phân loại kênh bán hàng
      * 1-Offline
-     * 2-Grab
-     * 3-Shopee
+     * 2-Grab Food
+     * 3-Shopee Food
      * 4-Gojek
      * 5-Baemin
      * 6-Loship
      * 7-Bee
+     * 8-TikTok Shop
+     * 9-Shopee
      */
     salesChannel: {
         type: Number,
