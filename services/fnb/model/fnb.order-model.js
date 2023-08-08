@@ -735,8 +735,6 @@ class Model extends BaseModel {
                                 },
                                 templateId: "257162",
                             }
-                            let infoOA2 = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2)
-                            // console.log(infoOA2)
 
                             /**
                              * Bắn Zalo OA cho Công ty
@@ -752,8 +750,11 @@ class Model extends BaseModel {
                                 },
                                 templateId: "257162",
                             }
-                            let infoOA3 = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA3)
-                            // console.log(infoOA3)
+
+                            await Promise.all([
+                                ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2),
+                                ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA3)
+                            ])
                         }
 
                         /**
@@ -773,7 +774,6 @@ class Model extends BaseModel {
                         })
                         .sort({expired: 1 })
                         .select("_id name sign")
-                        // console.log(infoOffer2)
 
                         if(infoOffer2){
                             // console.log('===========Tồn tại Voucher và tiến hành Cấp phát M2==================')
