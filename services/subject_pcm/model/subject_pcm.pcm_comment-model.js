@@ -573,6 +573,7 @@ class Model extends BaseModel {
                 if(arrReceiver && arrReceiver.length) {
                     const sendNotiAsync = arrReceiver.map(async receiverId => {
                         const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: receiverId });
+                        // console.log({note: amountNoti?.data?.amountUnreadTask})
 
                         // App Trixgo
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
@@ -585,16 +586,16 @@ class Model extends BaseModel {
                             env: ENV_DEVICE_WEB_CBS
                         });
 
-                        // App CBS
-                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                            users: [receiverId],
-                            title: titleMSS,
-                            description: descriptionMSS,
-                            amountNoti: amountNoti?.data?.amountUnreadTask,
-                            dataSend,
-                            web_url: webUrl,
-                            env: ENV_DEVICE_APP_FNB
-                        })
+                        // // App FNB
+                        // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        //     users: [receiverId],
+                        //     title: titleMSS,
+                        //     description: descriptionMSS,
+                        //     amountNoti: amountNoti?.data?.amountUnreadTask,
+                        //     dataSend,
+                        //     web_url: webUrl,
+                        //     env: ENV_DEVICE_APP_FNB
+                        // })
                     });
                     await Promise.all(sendNotiAsync);
                 }
