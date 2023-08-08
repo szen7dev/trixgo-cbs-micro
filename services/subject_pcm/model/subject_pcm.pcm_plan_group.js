@@ -23,6 +23,8 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 const USER_COLL                         = require('../../auth/database/auth.user-coll')
 const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll')
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll')
+const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll')
+const PCM_COMMENT_COLL                  = require('../database/subject_pcm.pcm_comment-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 // const { template } = require('lodash');
@@ -92,12 +94,14 @@ class Model extends BaseModel {
      * Code:
      */
     update({ groupID, name, sign, userID, parentID, contractID, image, members, membersRemove, admins, adminsRemove }) {
+        // console.log({ groupID, name, sign, userID, parentID, contractID, image, members, membersRemove, admins, adminsRemove })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(groupID))
+                let infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID)
+                if(!infoGroup)
                     return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ _id: { $ne: groupID }, name, sign });
+                let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ project: infoGroup.project, _id: { $ne: groupID }, sign });
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
@@ -141,12 +145,33 @@ class Model extends BaseModel {
                     dataInUpdate.parent = parentID;
                 }
 
-                console.log({ dataInUpdate })
-                let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
-
+                // console.log({ dataInUpdate })
+                let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
+                /**
+                 * NẾU GÁN HỢP ĐỒNG => CẬP NHẬT CHO CÁC GROUP CON + TASK + COMMENT
+                 */
+                if(checkObjectIDs(contractID)){
+                    await PCM_PLAN_GROUP_COLL.updateMany(
+                        {parent: ObjectID(groupID)},
+                        {$set: {contract: ObjectID(contractID)}},
+                    )
+
+                    await PCM_PLAN_TASK_COLL.updateMany(
+                        {group: ObjectID(groupID)},
+                        {$set: {contract: ObjectID(contractID)}},
+                    )
+
+                    await PCM_COMMENT_COLL.updateMany(
+                        {group: ObjectID(groupID)},
+                        {$set: {contract: ObjectID(contractID)}},
+                    )
+
+                    
+                }
+                
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -209,7 +234,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) {
-        console.log({ userID, parentID, projectID, lastestID, keyword, limit, select, populates, isShowAll, isShowParentAndChild })
+        // console.log({ userID, parentID, projectID, lastestID, keyword, limit, select, populates, isShowAll, isShowParentAndChild })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20 || isNaN(limit)){

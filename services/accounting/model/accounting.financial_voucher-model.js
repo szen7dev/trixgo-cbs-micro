@@ -624,7 +624,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve, reject) => {
             try {
                 let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({ company: companyID })
-                console.log({totalVoucher: listData.length})
+                // console.log({totalVoucher: listData.length})
                 // console.log(listData)
                 for(const item of listData){
                     let infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.updateMany(

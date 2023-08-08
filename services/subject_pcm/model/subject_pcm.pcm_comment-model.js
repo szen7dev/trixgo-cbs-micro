@@ -276,7 +276,7 @@ class Model extends BaseModel {
 
                 let infoTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
-                    .populate('project', '_id name sign')
+                    .populate('project group', '_id name sign contract')
                     .populate('author', '_id bizfullname image')
                     .lean();
 
@@ -295,10 +295,12 @@ class Model extends BaseModel {
 
                 if(infoTask.contract) {
                     dataInsert.contract = infoTask.contract;
+                }else{
+                    dataInsert.contract = infoTask.group?.contract;
                 }
 
                 if(infoTask.group) {
-                    dataInsert.group = infoTask.group;
+                    dataInsert.group = infoTask.group._id;
                 }
 
                 /**
@@ -569,29 +571,33 @@ class Model extends BaseModel {
                  * BẮN THÔNG BÁO REALTIME MOBILE
                  */
                 if(arrReceiver && arrReceiver.length) {
-                    let amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    const sendNotiAsync = arrReceiver.map(async receiverId => {
+                        const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: receiverId });
+                        // console.log({note: amountNoti?.data?.amountUnreadTask})
 
-                    // App Trixgo
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: arrReceiver,
-                        title: titleMSS,
-                        description: descriptionMSS,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
-                        dataSend,
-                        web_url: webUrl,
-                        env: ENV_DEVICE_WEB_CBS
+                        // App Trixgo
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                            users: [receiverId],
+                            title: titleMSS,
+                            description: descriptionMSS,
+                            amountNoti: amountNoti?.data?.amountUnreadTask,
+                            dataSend,
+                            web_url: webUrl,
+                            env: ENV_DEVICE_WEB_CBS
+                        });
+
+                        // // App FNB
+                        // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        //     users: [receiverId],
+                        //     title: titleMSS,
+                        //     description: descriptionMSS,
+                        //     amountNoti: amountNoti?.data?.amountUnreadTask,
+                        //     dataSend,
+                        //     web_url: webUrl,
+                        //     env: ENV_DEVICE_APP_FNB
+                        // })
                     });
-
-                    // App CBS
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: arrReceiver,
-                        title: titleMSS,
-                        description: descriptionMSS,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
-                        dataSend,
-                        web_url: webUrl,
-                        env: ENV_DEVICE_APP_FNB
-                    })
+                    await Promise.all(sendNotiAsync);
                 }
 
                 infoAfterInsert = await PCM_COMMENT_COLL
