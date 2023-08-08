@@ -276,7 +276,7 @@ class Model extends BaseModel {
 
                 let infoTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
-                    .populate('project', '_id name sign')
+                    .populate('project group', '_id name sign contract')
                     .populate('author', '_id bizfullname image')
                     .lean();
 
@@ -295,10 +295,12 @@ class Model extends BaseModel {
 
                 if(infoTask.contract) {
                     dataInsert.contract = infoTask.contract;
+                }else{
+                    dataInsert.contract = infoTask.group?.contract;
                 }
 
                 if(infoTask.group) {
-                    dataInsert.group = infoTask.group;
+                    dataInsert.group = infoTask.group._id;
                 }
 
                 /**

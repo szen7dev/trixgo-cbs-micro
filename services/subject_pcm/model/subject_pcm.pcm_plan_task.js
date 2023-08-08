@@ -1365,6 +1365,7 @@ class Model extends BaseModel {
      * Code: 20/8/2022
      */
     updateStatusMutiple({ taskIDs, parentID, type, option, userID }){
+        // console.log({ taskIDs, parentID, type, option, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -1511,12 +1512,12 @@ class Model extends BaseModel {
                 let result = viewedUsers.filter(item => item != null);
 
                 if(!result.map(item=>item.toString()).includes(userID.toString())){
-                    console.log('========Bạn chưa xem công việc============')
+                    // console.log('========Bạn chưa xem công việc============')
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                         $addToSet: { viewedUsers: userID },
                     });
                 }else{
-                    console.log('========Bạn đã xem công việc============')
+                    // console.log('========Bạn đã xem công việc============')
                 }
 
                 /**
