@@ -25,6 +25,7 @@ const DEPARTMENT_COLL                   = require('../../item/database/item.depa
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll')
 const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll')
 const PCM_COMMENT_COLL                  = require('../database/subject_pcm.pcm_comment-coll')
+const PCM_FILE_COLL                     = require('../database/subject_pcm.pcm_file-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 // const { template } = require('lodash');
@@ -169,7 +170,10 @@ class Model extends BaseModel {
                         {$set: {contract: ObjectID(contractID)}},
                     )
 
-                    
+                    await PCM_FILE_COLL.updateMany(
+                        {group: ObjectID(groupID)},
+                        {$set: {contract: ObjectID(contractID)}},
+                    )                    
                 }
                 
                 return resolve({ error: false, data: infoAfterUpdate });
