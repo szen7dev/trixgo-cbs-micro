@@ -569,29 +569,32 @@ class Model extends BaseModel {
                  * BẮN THÔNG BÁO REALTIME MOBILE
                  */
                 if(arrReceiver && arrReceiver.length) {
-                    let amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: authorID });
+                    const sendNotiAsync = arrReceiver.map(async receiverId => {
+                        const amountNoti = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID: receiverId });
 
-                    // App Trixgo
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: arrReceiver,
-                        title: titleMSS,
-                        description: descriptionMSS,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
-                        dataSend,
-                        web_url: webUrl,
-                        env: ENV_DEVICE_WEB_CBS
+                        // App Trixgo
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                            users: [receiverId],
+                            title: titleMSS,
+                            description: descriptionMSS,
+                            amountNoti: amountNoti?.data?.amountUnreadTask,
+                            dataSend,
+                            web_url: webUrl,
+                            env: ENV_DEVICE_WEB_CBS
+                        });
+
+                        // App CBS
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                            users: [receiverId],
+                            title: titleMSS,
+                            description: descriptionMSS,
+                            amountNoti: amountNoti?.data?.amountUnreadTask,
+                            dataSend,
+                            web_url: webUrl,
+                            env: ENV_DEVICE_APP_FNB
+                        })
                     });
-
-                    // App CBS
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: arrReceiver,
-                        title: titleMSS,
-                        description: descriptionMSS,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
-                        dataSend,
-                        web_url: webUrl,
-                        env: ENV_DEVICE_APP_FNB
-                    })
+                    await Promise.all(sendNotiAsync);
                 }
 
                 infoAfterInsert = await PCM_COMMENT_COLL

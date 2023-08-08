@@ -118,9 +118,11 @@ module.exports = {
                     appID, mimeType, type, name, size, typeUpload,
                     companyID, projectID, groupID, packageID, conversationID, taskID
                 } = ctx.params;
-                let { _id: userID } = ctx.meta.infoUser;
+                const infoUser = ctx.meta.infoUser;
+                const userID = infoUser._id;
 
                 let generatePathS3  = GET_PATH_S3({
+                    infoUser,
                     appID,
                     companyID,
                     projectID,

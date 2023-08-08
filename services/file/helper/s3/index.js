@@ -208,7 +208,7 @@ const getPathByType = (params) => {
  * @returns { error: boolean, data: string }
  */
 const getPathS3 = ({
-    typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID,
+    infoUser, typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID,
     otherIDs,
 }) => {
     switch (typeUpload) {
