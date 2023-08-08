@@ -4,6 +4,7 @@ let { nonAccentVietnamese }             = require('../../../../tools/utils/strin
 let { APP_KEYS }                        = require('../../../../tools/keys');
 let uuidv4                              = require('uuid').v4;
 let AWS                                 = require('aws-sdk');
+const moment                            = require('moment');
 
 AWS.config.update({
     accessKeyId : config.aws_access_key_id,
@@ -235,6 +236,20 @@ const getPathS3 = ({
     let pathS3      = '';
     let newFileName = '';
 
+    // console.log({
+    //     infoUser, typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID,
+    //     otherIDs,
+    // })
+    // let infoProject = await DEPARTMENT_COLL.findById(projectID)
+    // console.log({infoProject})
+
+    let currentDate = moment(new Date()).format('YYYYMMDD')
+    let currentTime = moment(new Date()).format('HHmmss')
+    // let ms = currentDate.getMilliseconds()
+    // console.log({ms})
+    // console.log({currentDate})
+    // console.log({infoUser})
+
     if(['in-project'].includes(typeUpload)) {
         const result = getPathByType({
             typeUpload, companyID, projectID
@@ -243,6 +258,9 @@ const getPathS3 = ({
 
         pathS3 = result.pathS3;
         newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}.${extension}`;
+        // newFileName = `${currentDate}-${infoUser?.company?.sign}.${infoUser.fullname}-${nonAccentVietnamese(fileName)}___${currentTime}.${extension}`
+        // newFileName = newFileName.trim()
+        // console.log({newFileName})
     } else {
         if(!appID || !checkObjectIDs([appID])) {
             return {
@@ -259,8 +277,29 @@ const getPathS3 = ({
         if(result.error) return result;
 
         pathS3 = result.pathS3;
-        newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${result.appName}.${extension}`;
+        newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${result.appName}.${extension}`
+        // newFileName = `${currentDate}-${infoUser?.company?.sign}-${nonAccentVietnamese(fileName)}___${uuidv4()}.${extension}`
+        // newFileName = newFileName.trim()
+        // console.log({newFileName})
     }
+
+    let userName = ''
+    if(infoUser.fullname.includes('-')){
+        userName = infoUser.fullname.slice(0, infoUser.fullname.indexOf('-'))
+    }else{
+        userName = infoUser.fullname
+    }
+     
+    // userName = userName.split(" ").pop()
+    // userName = nonAccentVietnamese(userName)
+    // let orgFileName = fileName.slice(0, fileName.indexOf('.'))
+    // const arr = orgFileName.split(" ");
+    // for (var i = 0; i < arr.length; i++) {
+    //     arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
+    // }
+    // orgFileName = arr.join(" ");
+    // newFileName = `${currentDate}-${infoUser?.company?.sign}.${userName}-${nonAccentVietnamese(orgFileName).replace(/\s/g, '')}__${currentTime}.${extension}`
+    // newFileName = newFileName.trim()
 
     return {
         error: false,
