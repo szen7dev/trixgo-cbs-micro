@@ -84,7 +84,6 @@ module.exports = {
             actualFinishTime    : { type: "string", optional: true },
             expiredHour         : { type: "string", optional: true },
             alert               : { type: "number", optional: true },
-            amountoftime        : { type: "string", optional: true },
             amountPerHour       : { type: "string", optional: true },
             assigneeID          : { type: "string", optional: true },
             progressType        : { type: "string", optional: true },
