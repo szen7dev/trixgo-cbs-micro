@@ -335,7 +335,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const checkMatchExact = await AUTH__USER_COLL.findOne({
-                    email, codeReset
+                    email: email.toLowerCase().trim(), codeReset
                 });
                 if (!checkMatchExact) {
                     return resolve({
@@ -372,7 +372,7 @@ class Model extends BaseModel {
 
                 const newPassHash = await hash(newPassword, 8);
                 const updatePass = await AUTH__USER_COLL.findOneAndUpdate({
-                    email
+                    email: email.toLowerCase().trim()
                 }, {
                     password: newPassHash, codeReset: ''
                 }, { new: true });
