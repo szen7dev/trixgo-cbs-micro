@@ -1617,9 +1617,7 @@ class Model extends BaseModel {
 
                 // Lấy công việc mà user được quyền truy cập
                 conditionObj.$or = [
-                    { author: userID },
-                    { assignee: userID },
-                    { related: { $in: [userID] }},
+                    { accessUsers: {$in: [userID]}},
                     { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
                 ]
 
@@ -1706,9 +1704,7 @@ class Model extends BaseModel {
                  */
                 if(!type || type == 0){
                     conditionObj.$or = [
-                        { author: userID },
-                        { assignee: userID },
-                        { related: { $in: [userID] }},
+                        { accessUsers: {$in: [userID]}},
                         { group: { $in: listGroups.map(item => item._id) }}
                     ]
                 }
@@ -1944,11 +1940,11 @@ class Model extends BaseModel {
      * Date: 11/05/2022
      */
     getListByFilter({
-        companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID, reportID
     }) {
-        console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
+        // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
         // console.log({
         //     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         //     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
@@ -2088,6 +2084,10 @@ class Model extends BaseModel {
                     conditionObj.priority = Number(priority)
                 }
 
+                if(option && option == 1){
+                    conditionObj.company = companyID
+                }
+
                 // Tìm kiếm theo keyword
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -2100,6 +2100,7 @@ class Model extends BaseModel {
                     let infoReport = await PCM_PLAN_REPORT_COLL.findById(reportID).select('subjects')
                     conditionObj._id = {$in: infoReport.subjects}
                 }
+                // console.log(conditionObj)
 
                 let conditionObjOrg = {...conditionObj};
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -3414,17 +3415,6 @@ class Model extends BaseModel {
                     objectSearch.subtype = +subtype;
                 }
 
-                // Lấy danh sách các nhóm dữ liệu mà userID là members
-                // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
-
-                // // Lấy công việc mà mình được quyền truy cập
-                // conditionObj.$or = [
-                //     { author: userID },
-                //     { assignee: userID },
-                //     { related: { $in: [userID] }},
-                //     { group: { $in: listGroups.map(item => item._id) }},
-                // ]
-
                 let listCompanyOfAuthor = await PCM_PLAN_TASK_COLL.aggregate([
                     { $match: objectSearch },
                     { $group: { _id: "$companyOfAuthor" } },
@@ -3844,11 +3834,7 @@ class Model extends BaseModel {
                 */
                 const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
                     _id: taskID,
-                    project,
-                    // $or: [
-                    //     { author: userID },
-                    //     { assignee: userID },
-                    // ]
+                    project
                 },
                 {
                     $set: {
