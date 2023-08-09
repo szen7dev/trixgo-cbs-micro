@@ -45,7 +45,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
-    //_________Công ty của người tạo việc
+    //_________Phòng ban của người tạo việc
     departmentOfAuthor: {
         type: Schema.Types.ObjectId,
         ref: 'department'
@@ -60,7 +60,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
-    //_________Công ty của người tạo việc
+    //_________Phòng ban của người tạo việc
     departmentOfAssignee: {
         type: Schema.Types.ObjectId,
         ref: 'department'

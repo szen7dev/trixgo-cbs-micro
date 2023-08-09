@@ -254,49 +254,7 @@ module.exports = {
             }
         }
     },
-
-    /**
-     * Dev: HiepNH
-     * Func: Danh sách chủ đề
-     * Date: 19/8/2022
-     */
-    // getListSubject: {
-    //     auth: 'required',
-    //     params: {
-    //         draft               : { type: 'string', optional: true },
-    //         sortKey             : { type: 'string', optional: true },
-    //         isParent            : { type: 'string', optional: true },
-    //         isActive            : { type: 'string', optional: true },
-    //         isGroup             : { type: 'string', optional: true },
-    //         read                : { type: 'string', optional: true },
-
-    //         keyword             : { type: "string", optional: true },
-    //         limit               : { type: "string", optional: true },
-    //         lastestID           : { type: "string", optional: true },
-    //         select              : { type: "string", optional: true },
-    //         populates           : { type: "string", optional: true },
-    //     },
-    //     async handler(ctx) {
-    //         try {
-    //             await this.validateEntity(ctx.params);
-    //             const { _id: userID } = ctx.meta.infoUser;
-    //             const {
-    //                 draft, sortKey, isParent, isActive, isGroup, read, keyword,
-    //                 limit, lastestID, select, populates
-    //             } = ctx.params;
-
-    //             const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListSubject({
-    //                 draft, sortKey, isParent, isActive, isGroup, read, 
-    //                 keyword, limit, lastestID, select, populates, userID
-    //             })
-
-    //             return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-    //         } catch (error) {
-    //             return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-    //         }
-    //     }
-    // },
-
+    
     /**
      * Dev: MinhVH
      * Func: Search Task
@@ -332,7 +290,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
                 const {
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
@@ -340,6 +299,7 @@ module.exports = {
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
+                    companyID: company._id,
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
                     limit, lastestID, select, populates, userID, reportID, upcoming
@@ -365,16 +325,22 @@ module.exports = {
             toDate              : { type: 'string', optional: true },
             projectID           : { type: "string", optional: true  },
             companyID           : { type: "string", optional: true  },
+            year                : { type: "string", optional: true  },
+            outin               : { type: "string", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, fromDate, toDate, projectID, companyID } = ctx.params;
-                const { _id: userID } = ctx.meta.infoUser;
+                let { option, fromDate, toDate, projectID, companyID, year, outin } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByProperty({
-                    option, fromDate, toDate, projectID, companyID, userID
-                    });
+                    option, fromDate, toDate, projectID, companyID, userID, year, outin
+                })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
