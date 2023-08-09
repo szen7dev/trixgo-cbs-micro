@@ -744,8 +744,12 @@ class Model extends BaseModel {
                         // Gán vào mảng user được quyền truy cập
                         if(!accessUsers.includes(assigneeID)){
                             accessUsers.push(assigneeID)
-                            dataUpdate.accessUsers = accessUsers;
 
+                            dataAddToset = {
+                                ...dataAddToset,
+                                accessUsers: [assigneeID],
+                                news: [assigneeID]
+                            }
                         }
 
                         let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
