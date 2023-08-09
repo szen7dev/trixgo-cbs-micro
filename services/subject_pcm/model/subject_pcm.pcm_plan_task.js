@@ -143,7 +143,7 @@ class Model extends BaseModel {
                 if(authorID.toString() != assigneeID.toString()){
                     accessUsers = [authorID, assigneeID]
                 }else{
-                    accessUsers = [authorID]
+                    accessUsers = [authorID] // Nếu tạo xong Task mới đổi người thực hiện thì sẽ bị sai ở đây
                 }
 
                 if(!name || !checkObjectIDs(projectID) || !checkObjectIDs(groupID) || !checkObjectIDs(assigneeID))
@@ -596,9 +596,10 @@ class Model extends BaseModel {
                     path: 'project assignee',
                     select: '_id admins name fullname bizfullname'
                 }).lean()
-
                 if(!infoTask)
-                    return resolve({ error: true, message: 'task_not_exists', status: 400 });
+                    return resolve({ error: true, message: 'task_not_exists', status: 400 })
+
+                let accessUsers = infoTask.accessUsers
 
                 /**
                  * Công việc phân loại "LỰA CHỌN NHÀ THẦU"
@@ -739,6 +740,13 @@ class Model extends BaseModel {
                     // Người thực hiện
                     if(checkObjectIDs(assigneeID)){
                         dataUpdate.assignee = assigneeID;
+
+                        // Gán vào mảng user được quyền truy cập
+                        if(!accessUsers.includes(assigneeID)){
+                            accessUsers.push(assigneeID)
+                            dataUpdate.accessUsers = accessUsers;
+
+                        }
 
                         let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                             userID: assigneeID, select: "_id company fullname"
