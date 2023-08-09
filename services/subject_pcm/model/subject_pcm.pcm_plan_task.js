@@ -524,15 +524,15 @@ class Model extends BaseModel {
                                     env: ENV_DEVICE_WEB_CBS
                                 });
 
-                                ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                                    users: [receiver],
-                                    title: titleMSS,
-                                    description: descriptionMSS,
-                                    amountNoti,
-                                    dataSend,
-                                    web_url: webUrl,
-                                    env: ENV_DEVICE_APP_FNB
-                                });
+                                // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                                //     users: [receiver],
+                                //     title: titleMSS,
+                                //     description: descriptionMSS,
+                                //     amountNoti,
+                                //     dataSend,
+                                //     web_url: webUrl,
+                                //     env: ENV_DEVICE_APP_FNB
+                                // });
                             }
                         }
                     }
@@ -1447,6 +1447,7 @@ class Model extends BaseModel {
      * Code:
      */
     getInfo({ taskID, userID, select, populates }){
+        // console.log({ taskID, userID, select, populates })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(taskID))
@@ -1943,11 +1944,11 @@ class Model extends BaseModel {
      * Date: 11/05/2022
      */
     getListByFilter({
-        fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID, reportID
     }) {
-        // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ==========>>>>>>>>>>>>>>')
+        console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
         // console.log({
         //     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         //     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
@@ -1999,24 +2000,14 @@ class Model extends BaseModel {
                     // Lấy danh sách các nhóm dữ liệu mà userID là members
                     const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
-                    // Lấy công việc mà mình được quyền truy cập
+                    // Lấy công việc mà userID được quyền truy cập
                     conditionObj.$or = [
-                        { author: userID },
-                        { assignee: userID },
-                        { related: { $in: [userID] }},
+                        { accessUsers: {$in: [userID]}},
                         { group: { $in: listGroups.map(item => item._id) }},
                     ]
                 }else{
-                    // Lấy danh sách các nhóm dữ liệu mà userID là members
-                    // const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
-
-                    // Lấy công việc mà mình được quyền truy cập
-                    conditionObj.$or = [
-                        { author: userID },
-                        { assignee: userID },
-                        { related: { $in: [userID] }},
-                        // { group: { $in: listGroups.map(item => item._id) }},
-                    ]
+                    // Lấy công việc mà userID được quyền truy cập
+                    conditionObj.accessUsers = {$in: [userID]}
                 }
 
                 /**
@@ -2197,19 +2188,24 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, fromDate, toDate, projectID, companyID }){
+    getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin }){
+        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}
+                let conditionObj = {}, conditionProject = {}
+                
+                // Tổng hợp từ các Task mà user được quyền truy cập
+                // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
 
-                //__________Danh sách các nhóm dữ liệu mà userID là members
+                // //__________Danh sách các nhóm dữ liệu mà userID là members
                 let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
 
                 // Lấy công việc mà user được quyền truy cập
                 conditionObj.$or = [
-                    { author: ObjectID(userID) },
-                    { assignee: ObjectID(userID) },
-                    { related: { $in: [ObjectID(userID)] }},
+                    // { author: ObjectID(userID) },
+                    // { assignee: ObjectID(userID) },
+                    // { related: { $in: [ObjectID(userID)] }},
+                    { accessUsers: {$in: [userID]}},
                     { group: { $in: listGroups.map(item => item._id) }},
                 ]
 
@@ -2218,7 +2214,6 @@ class Model extends BaseModel {
                  */
                 if(option == 1 || option == 2){
                     let listTasks = await PCM_PLAN_TASK_COLL.find(conditionObj).select('_id')
-                    // let listTasks = await PCM_PLAN_TASK_COLL.find({accessUsers: {$in: [userID]}}).select('_id')
 
                     let objectGroup, conditionPopulateProject, conditionPopulateCompany, sortProject, sortCompany
 
@@ -2339,6 +2334,43 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, data: listDataTasks })
                 }
+
+                // Báo cáo hóa đơn
+                if(option == 5){
+                    if(outin == 1 || outin == 2){
+                        conditionProject = {
+                            year : {$year : "$actualFinishTime"},
+                            month : {$month : "$actualFinishTime"},
+                            company: 1,
+                            subtype: 1,
+                            actualFinishTime: 1,
+                            amount: 1,
+                            vatAmount: 1,
+                        }
+    
+                        delete conditionObj.$or
+                        conditionObj.company = ObjectID(companyID)
+                        conditionObj.subtype = 12
+                        conditionObj.year = Number(year)
+                        let listData = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: { month: "$month" },
+                                    amount: { $sum: "$amount" },
+                                }
+                            },
+                        ])
+    
+                        return resolve({ error: false, data: listData })
+                    }
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
