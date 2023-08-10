@@ -348,6 +348,7 @@ class Model extends BaseModel {
 
                     // Khi bấm submit
                     infoAfterInsert = await this.updateById(taskID, dataInsert)
+
                     checkAddNewTask ++
                 } else {
 
@@ -367,7 +368,7 @@ class Model extends BaseModel {
                 /**
                  * XỬ LÝ CÁC SỰ KIỆN SAU KHI TẠO TASK CHÍNH THỨC
                  */
-                // console.log({checkAddNewTask})
+                // console.log({_____________checkAddNewTask:checkAddNewTask})
                 if(Number(checkAddNewTask) > 0){
                      /**
                      * Thêm reminder nhắc công việc đến hạn
@@ -389,12 +390,12 @@ class Model extends BaseModel {
                     await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
                         taskID: infoAfterInsert._id?.toString(),
                         type: 5,
-                        files: authorAttachs,
+                        files: authorAttachs?.map(file => file.toString()),
                         content: name,
                         rawContent: convertStr,
                     }, {
                         meta: {
-                            infoUser: { _id: authorID, bizfullname, company: infoAuthor.data.company }
+                            infoUser: { _id: authorID.toString(), bizfullname, company: infoAuthor.data.company.toString() }
                         }
                     })
 
@@ -704,14 +705,19 @@ class Model extends BaseModel {
 
                     if(name && name != ""){
                         convertStr = stringUtils.removeAccents(name)
+                    }else{
+                        convertStr = stringUtils.removeAccents(infoTask.name)
                     }
                     if(description && description != ""){
-                        convertStr = convertStr + stringUtils.removeAccents(description)
+                        convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                    }else{
+                        convertStr = convertStr + " " + stringUtils.removeAccents(infoTask.description)
                     }
                     if(sign && sign != ""){
                         convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                    }else{
+                        convertStr = convertStr + " " + stringUtils.removeAccents(infoTask.sign)
                     }
-                    dataUpdate.namecv = convertStr
 
                     /**
                      * Ngày kết thúc
@@ -788,6 +794,11 @@ class Model extends BaseModel {
                             convertStr = convertStr + stringUtils.removeAccents(description)
                         }
                     }
+                }
+
+                // console.log({convertStr})
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
                 }
 
                 //_________userUpdate
@@ -1135,33 +1146,32 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT COMMENT GỐC LINK VỚI TÊN/MÔ TẢ CÔNG VIỆC
                  */
-                let initialComment = await PCM_COMMENT_COLL.findOne({type: 5, task: taskID })
-                // console.log({initialComment})
-                if(initialComment){
-                    await PCM_COMMENT_COLL.updateMany(
-                        {type: 5, task: taskID }, 
-                        {$set : 
-                            {
-                                content: name,
-                                contentcv: convertStr,
-                                accessUsers: infoTask.accessUsers
+                if(convertStr != ""){
+                    let initialComment = await PCM_COMMENT_COLL.findOne({type: 5, task: taskID })
+                    if(initialComment){
+                        await PCM_COMMENT_COLL.updateMany(
+                            {type: 5, task: taskID }, 
+                            {$set : 
+                                {
+                                    content: infoAfterUpdate.name,
+                                    contentcv: convertStr,
+                                    accessUsers: infoAfterUpdate.accessUsers
+                                }
+                            }, 
+                            { new: true })
+                    }else{
+                        await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
+                            taskID: taskID.toString(),
+                            type: 5,
+                            files: authorAttachs?.map(file => file.toString()),
+                            content: infoAfterUpdate.name,
+                            rawContent: convertStr,
+                        }, {
+                            meta: {
+                                infoUser: { _id: userID.toString(), bizfullname, company: companyOfUser.toString() }
                             }
-                        }, 
-                        { new: true })
-
-                    // console.log({initialCommentAfterUpdate})
-                }else{
-                    await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
-                        taskID: taskID.toString(),
-                        type: 5,
-                        files: authorAttachs,
-                        content: name,
-                        rawContent: convertStr,
-                    }, {
-                        meta: {
-                            infoUser: { _id: userID, bizfullname, company: companyOfUser }
-                        }
-                    })
+                        })
+                    }
                 }
 
                 /**
@@ -4500,6 +4510,72 @@ class Model extends BaseModel {
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
 
                 return resolve({ error: false, message: "import success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    repairData({ ctx, option, email, password, userID, bizfullname, companyID, page, fromDate, toDate }) {
+        // console.log({ option, email, password, userID, bizfullname, companyID, page, fromDate, toDate })
+        return new Promise(async (resolve) => {
+            try {
+                if(password.toString() != `noPass12345${email}`)
+                    return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
+                
+
+                /**
+                 * CẬP NHẬT COMMENT TYPE = 5 CHO CÁC TASKS NẾU CHƯA CÓ
+                 * Xử lý dữ liệu theo từng khoảng thời gian
+                 */
+                if(option == 1){
+                    let listDataAgg = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                // createAt: {
+                                //     $gte: new Date(fromDate),
+                                //     $lte: new Date(toDate),
+                                // },
+                                type: 5,
+                                task: {$exists: true, $ne: null},
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { task: "$task" }
+                            }
+                        }
+                    ])
+                    // console.log(listDataAgg)
+
+                    let listTasks = await PCM_PLAN_TASK_COLL.find({ 
+                        _id: {$nin: listDataAgg.map(item => item._id.task)},
+                        createAt: {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }).select('_id name namecv authorAttachs')
+                    // console.log(listTasks.length)
+
+                    for(const item of listTasks){
+
+                        let infoComment = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
+                            taskID: item?._id.toString(),
+                            type: 5,
+                            files: (item.authorAttachs && item.authorAttachs.length) ? item.authorAttachs.map(file => file.toString()) : [],/** QUAN TRỌNG LÀ PHẢI CONVERT TO STRING */
+                            content: item.name,
+                            rawContent: item?.namecv,
+                        }, {
+                            meta: {
+                                infoUser: { _id: userID.toString(), bizfullname, company: companyID.toString() } /** QUAN TRỌNG LÀ PHẢI CONVERT TO STRING */
+                            }
+                        })
+                        // console.log(infoComment)
+                    }
+
+                    return resolve({ error: false, message: 'Reset thành công', data: listTasks });
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

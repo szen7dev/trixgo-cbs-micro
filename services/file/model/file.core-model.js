@@ -196,6 +196,8 @@ class Model extends BaseModel {
     }
 
     getInfoFile({ fileID, authorID, select, populates }) {
+        // console.log('=============Thông tin file=====================')
+        // console.log({ fileID, authorID, select, populates })
         return new Promise(async resolve => {
             try {
                 /** 

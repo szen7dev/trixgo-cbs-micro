@@ -777,4 +777,34 @@ module.exports = {
             }
         }
     },
+    
+    /**
+     * Dev: HiepNH
+     * Func: Reset All Data
+     * Date: 25/12/2022
+     */
+    repairData: {
+        auth: 'required',
+        params: {
+            option      : { type: "string" },
+            page        : { type: "string", optional: true },
+            password    : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID, email, bizfullname, company } = ctx.meta.infoUser;
+                let { option, password, page, fromDate, toDate } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.repairData({
+                    ctx, option, email, password, userID, bizfullname, companyID: company._id, page, fromDate, toDate
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    }
+        
 }

@@ -18,15 +18,15 @@ const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-consta
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
-const { ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_FNB }                    = require('../../notification/helper/notification.keys-constant');
+const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 const stringUtils					            = require('../../../tools/utils/string_utils');
 
 /**
  * import inter-coll, exter-coll
  */
-const AUTH__COMPANY_COLL                        = require('../../auth/database/auth.company-coll');
-const DEPARTMENT_COLL                           = require('../../item/database/item.department-coll');
-const PCM_PLAN_GROUP_COLL                       = require('../database/subject_pcm.pcm_plan_group-coll');
+// const AUTH__COMPANY_COLL                        = require('../../auth/database/auth.company-coll');
+// const DEPARTMENT_COLL                           = require('../../item/database/item.department-coll');
+// const PCM_PLAN_GROUP_COLL                       = require('../database/subject_pcm.pcm_plan_group-coll');
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
@@ -346,17 +346,23 @@ class Model extends BaseModel {
                 }
 
                 if(files && files.length) {
+                    // console.log('================111111111111111111111111111111==============')
+                    // console.log(files)
                     const { errors } = await PromisePool
                         .for(files)
                         .withConcurrency(2)
                         .process(async fileID => {
+                            // console.log({fileID})
                             const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
 								fileID: fileID
 							}, {
 								meta: {
 									infoUser: { _id: authorID }
 								}
-							});
+							})
+                            // console.log({infoFileCore})
+                            // console.log('================22222222222222222222222222==============')
+                            
 
 							if(!infoFileCore.error) {
 								const {
@@ -374,6 +380,8 @@ class Model extends BaseModel {
                                     authorID: author,
 									name, nameOrg, path, size, mimeType, description, type
 								});
+                                // console.log('================33333333333333333333==============')
+                                // console.log({infoAfterInserted})
 
 								return infoAfterInserted.data && infoAfterInserted.data._id;
 							}
@@ -1510,11 +1518,11 @@ class Model extends BaseModel {
         taskID, contractID, projectID, parentID, isHaveImage, type, official,
         limit = 10, lastestID, sortKey, select, populates, authorID, isGetReaction = 'true', switchType
     }) {
-        // console.log('==============********************=============DS comment')
-        // console.log({
-        //     taskID, contractID, projectID, parentID, isHaveImage, type, official,
-        //     limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
-        // })
+        console.log('==============GET LIST COMMENT=============')
+        console.log({
+            taskID, contractID, projectID, parentID, isHaveImage, type, official,
+            limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
+        })
         return new Promise(async (resolve) => {
             try {
                 /**

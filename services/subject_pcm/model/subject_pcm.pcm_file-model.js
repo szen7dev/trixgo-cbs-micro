@@ -89,6 +89,11 @@ class Model extends BaseModel {
         companyID, projectID, groupID, contractID, taskID, commentID, fileID,
         type, nameOrg, name, description, path, size, mimeType, authorID, companyOfAuthor
     }) {
+        // console.log('=============INSERT PCM FILE ===============')
+        // console.log({
+        //     companyID, projectID, groupID, contractID, taskID, commentID, fileID,
+        //     type, nameOrg, name, description, path, size, mimeType, authorID, companyOfAuthor
+        // })
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = {
@@ -142,6 +147,7 @@ class Model extends BaseModel {
                 if(description){
                     dataInsert.description = description;
                 }
+                // console.log(dataInsert)
 
                 let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
@@ -513,6 +519,8 @@ class Model extends BaseModel {
                         { description  :  new RegExp(keyword, 'i') },
                     ]
                 }
+
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 
