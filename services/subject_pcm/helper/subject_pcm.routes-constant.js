@@ -33,6 +33,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     PCM__PCM_PLAN_TASK_DOWNLOAD_EXCEL                           : `${BASE_ROUTE}${PCM_PLAN_TASK}/download-excel`,
     PCM__PCM_PLAN_TASK_DOWNLOAD_TEMPLATE_IMPORT_EXCEL           : `${BASE_ROUTE}${PCM_PLAN_TASK}/download-template-import-excel`,
     PCM__PCM_PLAN_TASK_IMPORT_TASK_FROM_EXCEL                   : `${BASE_ROUTE}${PCM_PLAN_TASK}/import-task-from-excel`,
+    PCM__PCM_PLAN_TASK_REPAIR_DATA                              : `${BASE_ROUTE}${PCM_PLAN_TASK}/repair-data`,
 
     // Report
     SUBJECT__PCM_PLAN_REPORT                            : `${BASE_ROUTE}${PCM_PLAN_REPORT}`,
