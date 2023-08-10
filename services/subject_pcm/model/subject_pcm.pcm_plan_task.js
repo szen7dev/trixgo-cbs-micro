@@ -573,13 +573,13 @@ class Model extends BaseModel {
      */
     update({ typeUpdate,
         taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
     }){
         // console.log({ typeUpdate,
         //     taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        //     contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, amountoftime,
+        //     contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
         //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate
         // })
@@ -968,6 +968,10 @@ class Model extends BaseModel {
 
                 if(unitPrice >= 0 && quantity >= 0){
                     dataUpdate.amount = Number(unitPrice)*Number(quantity);
+                }
+
+                if(vatAmount >= 0){
+                    dataUpdate.vatAmount = vatAmount;
                 }
 
                 //_________Dự kiến thời lượng (h)
@@ -1862,10 +1866,7 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.$or = [
-                        { name  :  new RegExp(keyword, 'i') },
-                        { description  :  new RegExp(keyword, 'i') }
-                    ]
+                    conditionObj.namecv = new RegExp(keyword, 'i')
                 }
 
                 let conditionObjOrg = {...conditionObj};
@@ -2114,7 +2115,7 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i')
+                    conditionObj.namecv = new RegExp(keyword, 'i')
                 }
 
                 // Tìm theo báo cáo
@@ -4573,7 +4574,7 @@ class Model extends BaseModel {
                         // console.log(infoComment)
                     }
 
-                    return resolve({ error: false, message: 'Reset thành công', data: listTasks });
+                    return resolve({ error: false, message: 'Repair Data thành công', data: listTasks });
                 }
 
             } catch (error) {

@@ -1518,11 +1518,11 @@ class Model extends BaseModel {
         taskID, contractID, projectID, parentID, isHaveImage, type, official,
         limit = 10, lastestID, sortKey, select, populates, authorID, isGetReaction = 'true', switchType
     }) {
-        console.log('==============GET LIST COMMENT=============')
-        console.log({
-            taskID, contractID, projectID, parentID, isHaveImage, type, official,
-            limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
-        })
+        // console.log('==============GET LIST COMMENT=============')
+        // console.log({
+        //     taskID, contractID, projectID, parentID, isHaveImage, type, official,
+        //     limit, lastestID, sortKey, select, populates, authorID, isGetReaction, switchType
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
