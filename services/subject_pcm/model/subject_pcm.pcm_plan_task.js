@@ -204,6 +204,7 @@ class Model extends BaseModel {
                 if(parentID){
                     infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
                     dataInsert.subtype = infoTaskParent.subtype;
+                    dataInsert.upcoming = infoTaskParent.upcoming;
                 }else{
                     dataInsert.subtype = subType;
                 }
@@ -1237,7 +1238,52 @@ class Model extends BaseModel {
                         },
                         web_url: `/pcm/detail/${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
-                    });
+                    })
+                }
+
+                /**
+                 * Kích hoạt trong quy trình động
+                 * Không can thiệp với Phân loại Thầu và mua sắm
+                 */
+                if(status && status == 3 && ![4].includes(infoTask.subtype)){
+                    // Cập nhật công việc này về trạng thái Mặc định
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
+                        { upcoming: 1 }, 
+                        { new: true })
+
+                    // Nếu công việc cha là Quy trình động thì kích hoạt công việc kế tiếp
+                    if(infoAfterUpdate.parent){
+                        let infoParentTask = await PCM_PLAN_TASK_COLL.findById(infoAfterUpdate?.parent)
+                        if(infoParentTask.upcoming == 2){
+
+                            let nextSubTaskID, isLastestElement = 0;
+                            let listSubTasks = await PCM_PLAN_TASK_COLL.find({parent: infoAfterUpdate?.parent}).sort({ actualFinishTime: 1 }).select('_id name upcoming actualFinishTime')
+
+                            listSubTasks?.forEach((item, index) => {
+
+                                // Kiểm tra lấy phần tử có ID là taskID
+                                if(item._id.toString() === taskID.toString()){
+                                    if(Number(index) === Number(listSubTasks.length - 1)){
+                                        isLastestElement = 1
+                                    }else{
+                                        nextSubTaskID = listSubTasks[Number(index + 1)]._id
+                                    }
+                                }
+                            })
+
+                            if(isLastestElement === 1){
+                                // Cập nhật trạng thái quy trình động cho phần tử cha
+                                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate?.parent,
+                                { upcoming: 1 }, 
+                                { new: true })
+                            }else{
+                                // Cập nhật trạng thái quy trình động cho phần tử cuối cùng
+                                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(nextSubTaskID,
+                                { upcoming: 1 }, 
+                                { new: true })
+                            }
+                        }
+                    }
                 }
 
                 /**
@@ -1965,7 +2011,7 @@ class Model extends BaseModel {
     getListByFilter({
         option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
-        limit = 20, lastestID, select, populates, userID, reportID
+        limit = 20, lastestID, select, populates, userID, reportID, upcoming
     }) {
         // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
         // console.log({
@@ -2027,6 +2073,14 @@ class Model extends BaseModel {
                 }else{
                     // Lấy công việc mà userID được quyền truy cập
                     conditionObj.accessUsers = {$in: [userID]}
+                }
+
+                if(!upcoming){
+                    conditionObj.upcoming = 1
+                }else{
+                    if(upcoming == 2){
+                        conditionObj.upcoming = 2
+                    }
                 }
 
                 /**

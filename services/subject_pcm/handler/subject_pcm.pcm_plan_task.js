@@ -279,7 +279,6 @@ module.exports = {
             reportType          : { type: 'string', optional: true }, 
             priority            : { type: 'string', optional: true }, 
             upcoming            : { type: 'string', optional: true }, 
-
             keyword             : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
