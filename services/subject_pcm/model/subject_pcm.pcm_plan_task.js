@@ -848,7 +848,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(upcoming && !isNaN(upcoming)){
+                if(upcoming && upcoming != ""){
                     dataUpdate.upcoming = +upcoming;
                 }
 

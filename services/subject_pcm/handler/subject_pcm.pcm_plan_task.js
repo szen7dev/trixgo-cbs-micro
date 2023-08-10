@@ -105,7 +105,7 @@ module.exports = {
             assigneeAttachs     : { type: "array", optional: true },
             milestone           : { type: "number", optional: true },
             subType             : { type: "number", optional: true },
-            upcoming            : { type: "number", optional: true },
+            upcoming            : { type: "string", optional: true },
             isUpdateNews        : { type: "boolean", optional: true },
         },
         async handler(ctx) {
