@@ -4635,6 +4635,66 @@ class Model extends BaseModel {
                     return resolve({ error: false, message: 'Repair Data thành công', data: listTasks });
                 }
 
+                if(option == 2){
+                    // Danh sách các chủ đề
+                    let listTasks = await PCM_PLAN_TASK_COLL.find({ 
+                        createAt: {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }).select('_id name namecv authorAttachs author assignee related')
+                    console.log(listTasks.length)
+
+                    /**
+                     * ĐỐI VỚI TASK
+                     * 1. accessUsers[]
+                     * 2. nameCV
+                     */
+                    // 1. Cập nhật namecv
+                    for(const item of listTasks){
+                        let convertStr = '';
+                        if(item.name && item.name != ""){
+                            convertStr = stringUtils.removeAccents(item.name)
+                        }
+                        if(item.sign && item.sign != ""){
+                            convertStr = convertStr + " " + stringUtils.removeAccents(item.sign)
+                        }
+
+                        let accessUsers = [];
+
+                        if(item.author.toString() != item.assignee.toString()){
+                            accessUsers = [item.author, item.assignee]
+                        }else{
+                            accessUsers = [item.author]
+                        }
+                        if(item.related && item.related.length){
+                            accessUsers.push(...item?.related)
+                        }
+
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(item._id, 
+                            { 
+                                namecv: convertStr,
+                                accessUsers: accessUsers,
+                            }, 
+                            { new: true })
+                    }
+
+                     /**
+                     * ĐỐI VỚI COMMENT => UPDATE VỚI TYPE = 5 CHO
+                     * 1. accessUsers[]
+                     * 2. nameCV
+                     */
+
+                     /**
+                     * ĐỐI VỚI PCM_FILE CỦA COMMENT TYPE = 5 -> UPDATE taskID
+                     * 1. accessUsers[]
+                     * 2. nameCV
+                     */
+
+                    return resolve({ error: false, message: 'Repair Data thành công', data: listTasks });
+                }
+
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
