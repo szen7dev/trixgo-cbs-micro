@@ -1942,7 +1942,6 @@ class Model extends BaseModel {
                     let keywordCV =  stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    const regSearch = new RegExp(keyword, 'i');
                     
                     keywordCV = keywordCV.split(" ");
                     keywordCV = '.*' + keywordCV.join(".*") + '.*';
