@@ -4662,10 +4662,10 @@ class Model extends BaseModel {
 
                         let accessUsers = [];
 
-                        if(item.author.toString() != item.assignee.toString()){
+                        if(item?.author && item?.assignee && item?.author.toString() != item?.assignee.toString()){
                             accessUsers = [item.author, item.assignee]
                         }else{
-                            accessUsers = [item.author]
+                            accessUsers = [item?.author]
                         }
                         if(item.related && item.related.length){
                             accessUsers.push(...item?.related)
@@ -4691,7 +4691,7 @@ class Model extends BaseModel {
                      * 2. nameCV
                      */
 
-                    return resolve({ error: false, message: 'Repair Data thành công', data: listTasks });
+                    return resolve({ error: false, message: 'Repair Data thành công' });
                 }
 
 
