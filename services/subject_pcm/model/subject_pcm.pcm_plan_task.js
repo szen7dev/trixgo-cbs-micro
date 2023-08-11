@@ -1910,7 +1910,9 @@ class Model extends BaseModel {
 
                 // Tìm kiếm theo keyword
 				if(keyword){
-                    keyword = keyword.split(" ");
+                    keyword = stringUtils.removeAccents(keyword)
+                    keyword = keyword.split(" ")
+
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.namecv = new RegExp(keyword, 'i')
                 }
@@ -2167,7 +2169,9 @@ class Model extends BaseModel {
 
                 // Tìm kiếm theo keyword
 				if(keyword){
-                    keyword = keyword.split(" ");
+                    keyword = stringUtils.removeAccents(keyword)
+                    keyword = keyword.split(" ")
+
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.namecv = new RegExp(keyword, 'i')
                 }
