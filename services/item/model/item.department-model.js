@@ -944,8 +944,13 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.name = { sign  :  new RegExp(keyword, 'i') }
+                    // conditionObj.name = regSearch
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch }
+                    ]
                 }
 
                 let conditionObjOrg = { ...conditionObj }
@@ -1067,8 +1072,13 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.name = { sign  :  new RegExp(keyword, 'i') }
+                    // conditionObj.name = regSearch
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch }
+                    ]
                 }
                 // console.log('===========>>>>>>>>>>>>>')
                 // console.log(conditionObj)
