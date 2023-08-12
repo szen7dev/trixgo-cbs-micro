@@ -1641,12 +1641,8 @@ class Model extends BaseModel {
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isMember, isExportExcel = false,
         startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
-            // console.log('2222222222222222222222222')
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = { members: { $in: [userID] } };
                 let keys	     = ['date__-1', '_id__-1'];
                 let sortBy;
