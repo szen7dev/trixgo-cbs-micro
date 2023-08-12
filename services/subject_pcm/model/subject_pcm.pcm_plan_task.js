@@ -2632,7 +2632,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, option, reportType, status, subtypes, fromDate, toDate }){
+    getDynamicReport({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming }){
         // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate })
         return new Promise(async resolve => {
             try {
@@ -2659,6 +2659,14 @@ class Model extends BaseModel {
                     conditionObj.actualFinishTime = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
+                    }
+                }
+
+                if(!upcoming){
+                    conditionObj.upcoming = 1
+                }else{
+                    if(upcoming == 2){
+                        conditionObj.upcoming = 2
                     }
                 }
 
