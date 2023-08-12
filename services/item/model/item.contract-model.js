@@ -883,7 +883,7 @@ class Model extends BaseModel {
 
                 //1-Cập nhật Sản lượng
                 if(option && Number(option) === 1){
-                    console.log('1-Cập nhật Sản lượng')
+                    // console.log('1-Cập nhật Sản lượng')
                     let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
                         userID, contractID
                     })
@@ -908,11 +908,11 @@ class Model extends BaseModel {
 
                 //2-Cập nhật Doanh thu, tiền về
                 if(option && Number(option) === 2){
-                    console.log('2-Cập nhật Doanh thu, tiền về HỢP ĐỒNG=====>>>>>')
+                    // console.log('2-Cập nhật Doanh thu, tiền về HỢP ĐỒNG=====>>>>>')
                     let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
                         userID, contractID
                     })
-                    console.log(infoIpcContract)
+                    // console.log(infoIpcContract)
 
                     if(infoIpcContract){
                         dataUpdate.acceptance = Number(infoIpcContract.data.acceptance);
@@ -928,12 +928,12 @@ class Model extends BaseModel {
                         dataUpdate.remainingPayment = Number(infoIpcContract.data.recommendedPayment) - Number(infoIpcContract.data.advancePaymentPaid) - Number(infoIpcContract.data.amountPaid)
                     }
 
-                    console.log(dataUpdate)
+                    // console.log(dataUpdate)
                 }
 
                 //3-Cập nhật Chi phí
                 if(option && Number(option) === 3){
-                    console.log('3-Cập nhật Chi phí')
+                    // console.log('3-Cập nhật Chi phí')
                     let infoExpenseContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT}`, {
                         userID, contractID
                     })
@@ -1020,7 +1020,7 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!info)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
-                console.log(info)
+                // console.log(info)
 
                 return resolve({ error: false, data: info, status: 200 });
             } catch (error) {
@@ -1314,7 +1314,7 @@ class Model extends BaseModel {
                 start.setHours(0,0,0,0);
 
                 if(!option){
-                    console.log('===============Danh sách bảo lãnh===================')
+                    // console.log('===============Danh sách bảo lãnh===================')
 
                     // Danh sách mẩu tin theo điều kiện
                     if(limit > 20){
@@ -1357,7 +1357,7 @@ class Model extends BaseModel {
 
                     // Bảo lãnh tạm ứng
                     if(guaranteeType && Number(guaranteeType) == 1){
-                        console.log('===============Bảo lãnh tạm ứng===================')
+                        // console.log('===============Bảo lãnh tạm ứng===================')
                         conditionObj.status = { $ne: 3 }
                         conditionObj.expiredAg = {
                             $exists: true,
@@ -1398,7 +1398,7 @@ class Model extends BaseModel {
 
                     // Bảo lãnh hợp đồng
                     if(guaranteeType && Number(guaranteeType) == 2){
-                        console.log('===============Bảo lãnh hợp đồng===================')
+                        // console.log('===============Bảo lãnh hợp đồng===================')
                         conditionObj.status = { $ne: 3 }
                         conditionObj.expiredCg = {
                             $exists: true,
@@ -1439,7 +1439,7 @@ class Model extends BaseModel {
 
                     // Bảo lãnh bảo hành
                     if(guaranteeType && Number(guaranteeType) == 3){
-                        console.log('===============Bảo lãnh bảo hành===================')
+                        // console.log('===============Bảo lãnh bảo hành===================')
                         conditionObj.status = { $ne: 3 }
                         conditionObj.expiredInsurance = {
                             $exists: true,
@@ -1534,7 +1534,7 @@ class Model extends BaseModel {
                     }, status: 200 });
 
                 }else{
-                    console.log('==============Tổng hợp phân loại bảo lãnh===================')
+                    // console.log('==============Tổng hợp phân loại bảo lãnh===================')
 
                     // Bảo lãnh tạm ứng
                     if(guaranteeType && Number(guaranteeType) == 1){
@@ -2004,7 +2004,7 @@ class Model extends BaseModel {
      * Date: 05/04/2022
      */
     getAmountByMonth({ userID, form, outin, real, companyID, projectID, contractID, year, option }){
-        console.log('====================================')
+        // console.log('====================================')
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
@@ -2033,7 +2033,7 @@ class Model extends BaseModel {
                 }
                 
                 if(!option){
-                    console.log('SỐ LIỆU HỢP ĐỒNG NĂM NAY====================================')
+                    // console.log('SỐ LIỆU HỢP ĐỒNG NĂM NAY====================================')
                     conditionGroup = {
                         _id: { month: "$month", year: "$year" },
                         amount: { $sum: "$amount" },
@@ -2074,7 +2074,7 @@ class Model extends BaseModel {
                 }else{
                     // Số liệu cùng kỳ năm ngoái
                     if(option && option == 1){
-                        console.log('SỐ LIỆU HỢP ĐỒNG NĂM NGOÁI====================================')
+                        // console.log('SỐ LIỆU HỢP ĐỒNG NĂM NGOÁI====================================')
 
                         conditionGroup = {
                             _id: { year: "$year" },
@@ -2183,7 +2183,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // TÍNH TỔNG THEO TẤT CẢ/THEO NĂM
                 if(Number(optionTime) === 1){
@@ -2598,8 +2598,8 @@ class Model extends BaseModel {
                     {$sort: {"date": 1}}
                 ])
 
-                console.log(conditionObjAgg)
-                console.log(listData)
+                // console.log(conditionObjAgg)
+                // console.log(listData)
 
                 conditionObj._id = {$in: listData.map(item=>item._id)}
 

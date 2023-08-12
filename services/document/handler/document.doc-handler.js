@@ -299,6 +299,8 @@ module.exports = {
                     types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
+                // console.log(ctx.params)
+
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListByFilter({
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
                     types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID: datahubContactsID, userID, keyword,

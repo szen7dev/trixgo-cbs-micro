@@ -913,9 +913,9 @@ class Model extends BaseModel {
                 }
 
                 // Lấy các dự án mà có budget > 0
-                if(isBudget && Number(isBudget) > 0){
-                    conditionObj.budget = { $gt: 0 }
-                }
+                // if(isBudget && Number(isBudget) > 0){
+                //     conditionObj.budget = { $gt: 0 }
+                // }
 
                 // Lấy các dự án của companyID
                 if(companyID && !checkObjectIDs(companyID))
@@ -945,13 +945,7 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
 
-                    conditionObj = {
-                        ...conditionObj,
-                        $or: [
-                            { name  :  new RegExp(keyword, 'i') },
-                            { sign  :  new RegExp(keyword, 'i') },
-                        ]
-                    }
+                    conditionObj.name = { sign  :  new RegExp(keyword, 'i') }
                 }
 
                 let conditionObjOrg = { ...conditionObj }
@@ -1015,7 +1009,7 @@ class Model extends BaseModel {
      */
     getListByMembers({ companyID, keyword, type, userID, limit = 20, isBudget, unLimit, lastestID, select, populates={} }) {
         // console.log('==============Danh mục dự án mà user là MEMBER')
-        // console.log({ companyID, keyword, type, userID, isBudget, limit })
+        // console.log({ companyID, keyword, type, userID, isBudget, limit, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1025,7 +1019,6 @@ class Model extends BaseModel {
                  * +++Nếu CĐT không trả phí => Ngắt kết nối Nhà thầu với dự án
                  * +++Nhà thầu nào không trả phí => Ngắt nhà thầu đó ra khỏi dự án (Hệ thống xóa thành viên, giảm số lượng thành viên xuống)
                  */
-
                 if(!checkObjectIDs(userID))
                      return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
@@ -1046,17 +1039,15 @@ class Model extends BaseModel {
                 }
                 
                 // Lấy các dự án mà có budget > 0
-                if(isBudget && Number(isBudget) > 0){
-                    conditionObj.budget = { $gt: 0 }
-                }
+                // if(isBudget && Number(isBudget) > 0){
+                //     conditionObj.budget = { $gt: 0 }
+                // }
 
                 // Lấy các dự án của companyID
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID
                 }
 
-                // console.log(type)
-                // console.log(+type)
                 // Phân loại dự án, phòng ban
                 if(type && [1,2].includes(Number(type))){
                     conditionObj.type = +type;
@@ -1080,15 +1071,8 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
 
-                    conditionObj = {
-                        ...conditionObj,
-                        $or: [
-                            { name  :  new RegExp(keyword, 'i') },
-                            { sign  :  new RegExp(keyword, 'i') },
-                        ]
-                    }
+                    conditionObj.name = { sign  :  new RegExp(keyword, 'i') }
                 }
-
                 // console.log('===========>>>>>>>>>>>>>')
                 // console.log(conditionObj)
 
