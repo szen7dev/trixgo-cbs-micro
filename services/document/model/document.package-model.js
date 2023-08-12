@@ -42,7 +42,6 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Request params projectID|companyID|userID invalid' })
-                let suid = await stringUtils.randomAndCheckExists(DOCUMENT__PACKAGE_COLL, 'suid');
                 
                 // Thông tin dự án
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
@@ -50,18 +49,14 @@ class Model extends BaseModel {
                 })
 
                 if (!infoProject)
-                    return resolve({ error: true, message: 'Can not get Project info' });
-                    
-                // if (!infoProject.data.area || !_isValid(infoProject.data.area))
-                //     return resolve({ error: true, message: 'Không tồn tại khu vực trong dự án' })
+                    return resolve({ error: true, message: 'Can not get Project info' })
 
                 let dataInsert = { 
                     userCreate: userID, 
                     area: infoProject?.data?.area, 
                     client: infoProject.data.company, 
                     admins: [userID], 
-                    members: [userID],
-                    suid
+                    members: [userID]
                 }
 
                 if (checkObjectIDs(parentID)) {
@@ -164,8 +159,7 @@ class Model extends BaseModel {
                     dataInsert.vatTenderPrice = vatTenderPrice;
                 }
 
-                let infoAfterInsert = await this.insertData(dataInsert);
-                console.log({infoAfterInsert})
+                let infoAfterInsert = await this.insertData(dataInsert)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
@@ -209,7 +203,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: Date.now() };
 
                 if (!checkObjectIDs(packageID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
@@ -353,24 +347,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-     /**
-     * Name: Remove
-     * Author: Hiepnh
-     * Date: 30/4/2022
-     */
-
-    /**
-	 * Name: Remove document package 
-	 * Author: Depv
-	 * Code:
-	 */
-
-    /**
-	 * Name: Remove document package many 
-	 * Author: Depv
-	 * Code:
-	 */
 
 	/**
 	 * Name: get info document package 

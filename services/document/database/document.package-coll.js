@@ -7,15 +7,11 @@ const Schema                = require('mongoose').Schema;
  *  Gói thầu/Thư mục hồ sơ dự án
  */
 module.exports = DATABASE_MIDDLEWARE("document_package", {
-    //_________Mã hiệu bằng số do hệ thống tự phát sinh
-    suid : {
-        type   : String,
-        require:  true,
-        unique : true
+    //_________Công ty
+    company: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
     },
-    /**
-     * THÔNG TIN CHUNG
-     */
     //_________Lĩnh vực
     field: {
         type: Schema.Types.ObjectId,
@@ -61,11 +57,6 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
      * 5-Khác
      */
     type: { type: Number, default: 1 },
-    //_________Công ty
-    company: {
-        type: Schema.Types.ObjectId,
-        ref: 'company'
-    },
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
@@ -81,7 +72,6 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
     sign: String,
     //_________Ghi chú
     note: String,
-
     /**
      * Trạng thái triển khai
      * 1-Chưa thực hiện

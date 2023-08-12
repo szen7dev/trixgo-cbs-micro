@@ -398,12 +398,6 @@ class Model extends BaseModel {
         })
     }
 
-    /**
-	 * Dev: Depv
-	 * Func: Xóa văn bản
-	 * Date: 30/10/2021
-	 */
-
      /**
      * Name: get văn bản
      * Author: Depv
@@ -676,7 +670,7 @@ class Model extends BaseModel {
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {} }) {
             // console.log({
-            //     parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, datahubContactsID, isExportExcel,
+            //     parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, isExportExcel,
             //     requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
             //     keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {

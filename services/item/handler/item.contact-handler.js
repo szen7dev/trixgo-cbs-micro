@@ -438,9 +438,9 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
 
                 // console.log(dataImport)
 
