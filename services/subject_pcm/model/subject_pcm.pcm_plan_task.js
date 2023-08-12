@@ -1585,12 +1585,9 @@ class Model extends BaseModel {
                 let result = viewedUsers.filter(item => item != null);
 
                 if(!result.map(item=>item.toString()).includes(userID.toString())){
-                    // console.log('========Bạn chưa xem công việc============')
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                         $addToSet: { viewedUsers: userID },
                     });
-                }else{
-                    // console.log('========Bạn đã xem công việc============')
                 }
 
                 /**
@@ -1629,7 +1626,7 @@ class Model extends BaseModel {
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited
+        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited, upcoming
     }) {
         // console.log('=============DANH SÁCH CHỦ ĐỀ==========>>>>>>>>>>>>>>')
         // console.log({
@@ -1640,10 +1637,6 @@ class Model extends BaseModel {
         // })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * BA
-                 */
-
                 if(Number(limit) > 20){
                     limit = 20;
                 } else{
@@ -1654,6 +1647,14 @@ class Model extends BaseModel {
                 let conditionObj = {
                     usersDelete: { $nin: [userID] },
                 };
+
+                if(!upcoming){
+                    conditionObj.upcoming = 1
+                }else{
+                    if(upcoming == 2){
+                        conditionObj.upcoming = 2
+                    }
+                }
 
                 // Các việc chưa hoàn thành
                 if(statusNe){
@@ -2465,8 +2466,8 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getAmountNotification({ userID, option }){
-        console.log('=================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log({ userID, option })
+        // console.log('=================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log({ userID, option })
         return new Promise(async resolve => {
             try {
                 let start = new Date();
