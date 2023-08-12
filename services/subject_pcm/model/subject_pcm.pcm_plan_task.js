@@ -1277,7 +1277,7 @@ class Model extends BaseModel {
                                 { upcoming: 1 }, 
                                 { new: true })
                             }else{
-                                // Cập nhật trạng thái quy trình động cho phần tử cuối cùng
+                                // Cập nhật trạng thái quy trình động cho phần tử tiếp theo
                                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(nextSubTaskID,
                                 { upcoming: 1 }, 
                                 { new: true })
@@ -1648,7 +1648,7 @@ class Model extends BaseModel {
                     usersDelete: { $nin: [userID] },
                 };
 
-                if(upcoming && [1,2].includes(upcoming)){
+                if(upcoming && [1,2].includes(Number(upcoming))){
                     conditionObj.upcoming = Number(upcoming)
                 }
 
@@ -2014,9 +2014,9 @@ class Model extends BaseModel {
     }) {
         // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
         // console.log({
-        //     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        //     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
-        //     limit, lastestID, select, populates, userID
+        //     option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        // projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
+        // limit, lastestID, select, populates, userID, reportID, upcoming
         // })
         return new Promise(async resolve => {
             try {
@@ -2074,7 +2074,7 @@ class Model extends BaseModel {
                     conditionObj.accessUsers = {$in: [userID]}
                 }
 
-                if(upcoming && [1,2].includes(upcoming)){
+                if(upcoming && [1,2].includes(Number(upcoming))){
                     conditionObj.upcoming = Number(upcoming)
                 }
 
@@ -2477,7 +2477,7 @@ class Model extends BaseModel {
                     // Số công việc chưa xem
                     amountUnreadTaskSync = PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
-                        // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                     })
 
@@ -2485,7 +2485,7 @@ class Model extends BaseModel {
                     amountMyTaskTodaySync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: { $gte: start, $lte: end },
                     })
@@ -2495,7 +2495,7 @@ class Model extends BaseModel {
                     amountMyTask1Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: { $lt: start }
                     })
@@ -2504,7 +2504,7 @@ class Model extends BaseModel {
                     amountMyTask2Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: {
                             $gte:  moment(start).startOf('day')._d,
@@ -2516,7 +2516,7 @@ class Model extends BaseModel {
                     amountMyTask3Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: {
                             $gte: addDate(7)
@@ -2527,7 +2527,7 @@ class Model extends BaseModel {
                     amountMyTask4Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        // upcoming: 1,
+                        upcoming: 1,
                         priority: 3,
                         usersDelete: { $nin: [userID] }
                     })
@@ -2536,7 +2536,7 @@ class Model extends BaseModel {
                     amountMyApprovalSync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        // upcoming: 1,
+                        upcoming: 1,
                         subtype: {$in: [2, 3]},
                         usersDelete: { $nin: [userID] }
                     })
@@ -2633,7 +2633,7 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getDynamicReport({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming }){
-        console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
+        // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
         return new Promise(async resolve => {
             try {
                 let conditionObj = { }
@@ -2664,7 +2664,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(upcoming && [1,2].includes(upcoming)){
+                if(upcoming && [1,2].includes(Number(upcoming))){
+                    // console.log('=============Truyền biến upcoming===============>>>>>>>>>>>>>>>')
                     conditionObj.upcoming = Number(upcoming)
                 }
 
@@ -2679,14 +2680,14 @@ class Model extends BaseModel {
                     // Số công việc chưa xem
                     amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
-                        // // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] }
                     })
 
                     // Số công việc của tôi - Quá hạn
                     amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: { $lt: start }
@@ -2695,7 +2696,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Tuần tới
                     amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: {
@@ -2707,7 +2708,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Sau tuần tới
                     amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        // upcoming: 1,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: {
@@ -2718,7 +2719,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Quan trọng
                     amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        // upcoming: 1,
+                        upcoming: 1,
                         status: { $ne: 3 },
                         priority: 3,
                         usersDelete: { $nin: [userID] }
@@ -2732,7 +2733,10 @@ class Model extends BaseModel {
                         amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
                     }});
                 }else{
-                    // Theo đơn vị giao việc
+                    
+                    /**
+                     * Theo đơn vị giao việc
+                     */
                     if(option && Number(option) == 1){
                         objectGroup = { companyOfAuthor: '$companyOfAuthor' }
                         sortBy = { "_id.companyOfAuthor": 1 }
@@ -2762,7 +2766,9 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: { listDataCompany } });
                     }
 
-                    // Theo người giao việc
+                    /**
+                     * Theo người giao việc
+                     */
                     if(option && Number(option) == 2){
                         objectGroup = { author: '$author' }
                         sortBy = { "_id.author": 1 }
@@ -2796,7 +2802,9 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: { listDataUser } });
                     }
 
-                    // Theo dự án
+                    /**
+                     * Theo dự án chứa việc
+                     */
                     if(option && Number(option) == 5){
                         objectGroup = { project: '$project' }
                         sortBy = { "_id.project": 1 }
@@ -2805,7 +2813,6 @@ class Model extends BaseModel {
                             select: '_id name sign image',
                             model: 'department'
                         }
-
 
                         let listDataProject = await PCM_PLAN_TASK_COLL.aggregate([
                             {
@@ -2827,7 +2834,9 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: { listDataProject } });
                     }
 
-                    // Theo tính chất
+                    /**
+                     * Theo tính chất công việc
+                     */
                     if(option && Number(option) == 6){
                         objectGroup = { subtype: '$subtype' }
                         sortBy = { "_id.subtype": 1 }
@@ -2848,7 +2857,9 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: { listDataSubtype } });
                     }
 
-                    // Theo trạng thái
+                    /**
+                     * Theo trạng thái công việc
+                     */
                     if(option && Number(option) == 7){
                         objectGroup = { status: '$status' }
                         sortBy = { "_id.status": 1 }
