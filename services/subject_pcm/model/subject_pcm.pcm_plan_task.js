@@ -2465,6 +2465,8 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getAmountNotification({ userID, option }){
+        console.log('=================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        console.log({ userID, option })
         return new Promise(async resolve => {
             try {
                 let start = new Date();
@@ -2482,6 +2484,7 @@ class Model extends BaseModel {
                     // Số công việc chưa xem
                     amountUnreadTaskSync = PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                     })
 
@@ -2554,6 +2557,10 @@ class Model extends BaseModel {
                     })
 
                     let [ amountUnreadTask, amountMyTaskToday, amountMyTaskComing, amountMyApproval, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4 ] = await Promise.all([amountUnreadTaskSync, amountMyTaskTodaySync, amountMyTaskComingSync, amountMyApprovalSync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync])
+
+                    // console.log({amountMyTask1})
+                    // console.log({amountMyTask2})
+                    // console.log({amountMyTask3})
 
                     return resolve({ error: false, data: {
                         amountUnreadTask, 
@@ -2681,12 +2688,14 @@ class Model extends BaseModel {
                     // Số công việc chưa xem
                     amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] }
                     })
 
                     // Số công việc của tôi - Quá hạn
                     amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: { $lt: start }
@@ -2695,6 +2704,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Tuần tới
                     amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: {
@@ -2706,6 +2716,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Sau tuần tới
                     amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
+                        upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: {
@@ -2716,10 +2727,15 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Quan trọng
                     amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
+                        upcoming: 1,
                         status: { $ne: 3 },
                         priority: 3,
                         usersDelete: { $nin: [userID] }
                     })
+
+                    // console.log({amountMyTask1})
+                    // console.log({amountMyTask2})
+                    // console.log({amountMyTask3})
 
                     return resolve({ error: false, data: {
                         amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
