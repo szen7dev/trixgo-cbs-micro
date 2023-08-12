@@ -274,11 +274,6 @@ module.exports = {
 
     /**
 	 * Dev: Depv
-	 * Func: Xoá dự án phòng ban => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
-	 */
-
-    /**
-	 * Dev: Depv
 	 * Func: Danh sách dự án (Hàm dùng chung)
 	 */
     getInfoAndGetList: {
@@ -334,6 +329,7 @@ module.exports = {
             type            : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             isBudget        : { type: "string", optional: true },
+            option          : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -346,11 +342,15 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, isBudget, keyword, limit, unLimit, lastestID, select, populates } = ctx.params;
-				let { _id: userID } = ctx.meta.infoUser;
+                let { option, companyID, type, isBudget, keyword, limit, unLimit, lastestID, select, populates } = ctx.params;
+				let { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getListByMembers({
-                    companyID, lastestID, userID, type, isBudget, keyword, limit, unLimit, select, populates
+                    option, companyID, lastestID, userID, type, isBudget, keyword, limit, unLimit, select, populates
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

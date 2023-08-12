@@ -1007,9 +1007,9 @@ class Model extends BaseModel {
      * Author: HiepNH 
      * Code  : 1/9/2022
      */
-    getListByMembers({ companyID, keyword, type, userID, limit = 20, isBudget, unLimit, lastestID, select, populates={} }) {
+    getListByMembers({ option, companyID, keyword, type, userID, limit = 20, isBudget, unLimit, lastestID, select, populates={} }) {
         // console.log('==============Danh mục dự án mà user là MEMBER')
-        // console.log({ companyID, keyword, type, userID, isBudget, limit, select, populates })
+        // console.log({ option, companyID, keyword, type, userID, isBudget, limit, select, populates })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1022,9 +1022,6 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                      return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj  =  {
                     members: { $in: [userID] }
                 }
@@ -1037,17 +1034,17 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit
                 }
-                
-                // Lấy các dự án mà có budget > 0
-                // if(isBudget && Number(isBudget) > 0){
-                //     conditionObj.budget = { $gt: 0 }
-                // }
 
-                // Lấy các dự án của companyID
-                if(companyID && checkObjectIDs(companyID)){
+                // Của công ty tôi
+                if(option && option == 1){
                     conditionObj.company = companyID
                 }
 
+                // Của đối tác
+                if(option && option == 2){
+                    conditionObj.company = {$nin: [companyID]}
+                }
+                
                 // Phân loại dự án, phòng ban
                 if(type && [1,2].includes(Number(type))){
                     conditionObj.type = +type;
