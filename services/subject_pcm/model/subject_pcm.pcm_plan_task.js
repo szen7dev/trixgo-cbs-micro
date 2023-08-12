@@ -204,7 +204,7 @@ class Model extends BaseModel {
                 if(parentID){
                     infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
                     dataInsert.subtype = infoTaskParent.subtype;
-                    dataInsert.upcoming = infoTaskParent.upcoming;
+                    // dataInsert.upcoming = infoTaskParent.upcoming;
                 }else{
                     dataInsert.subtype = subType;
                 }
@@ -2633,7 +2633,7 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getDynamicReport({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming }){
-        // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate })
+        console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
         return new Promise(async resolve => {
             try {
                 let conditionObj = { }
@@ -2649,7 +2649,9 @@ class Model extends BaseModel {
 
                 let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
-                // Việc của tôi
+                /**
+                 * VIỆC CỦA TÔI
+                 */
                 if(reportType && reportType == 1){
                     conditionObj.assignee = ObjectID(userID)
                 }
