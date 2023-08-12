@@ -1648,12 +1648,8 @@ class Model extends BaseModel {
                     usersDelete: { $nin: [userID] },
                 };
 
-                if(!upcoming){
-                    conditionObj.upcoming = 1
-                }else{
-                    if(upcoming == 2){
-                        conditionObj.upcoming = 2
-                    }
+                if(upcoming && [1,2].includes(upcoming)){
+                    conditionObj.upcoming = Number(upcoming)
                 }
 
                 // Các việc chưa hoàn thành
@@ -2078,12 +2074,8 @@ class Model extends BaseModel {
                     conditionObj.accessUsers = {$in: [userID]}
                 }
 
-                if(!upcoming){
-                    conditionObj.upcoming = 1
-                }else{
-                    if(upcoming == 2){
-                        conditionObj.upcoming = 2
-                    }
+                if(upcoming && [1,2].includes(upcoming)){
+                    conditionObj.upcoming = Number(upcoming)
                 }
 
                 /**
@@ -2485,7 +2477,7 @@ class Model extends BaseModel {
                     // Số công việc chưa xem
                     amountUnreadTaskSync = PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
-                        upcoming: 1,
+                        // upcoming: 1,
                         usersDelete: { $nin: [userID] },
                     })
 
@@ -2493,7 +2485,7 @@ class Model extends BaseModel {
                     amountMyTaskTodaySync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        upcoming: 1,
+                        // upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: { $gte: start, $lte: end },
                     })
@@ -2503,7 +2495,7 @@ class Model extends BaseModel {
                     amountMyTask1Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        upcoming: 1,
+                        // upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: { $lt: start }
                     })
@@ -2512,7 +2504,7 @@ class Model extends BaseModel {
                     amountMyTask2Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        upcoming: 1,
+                        // upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: {
                             $gte:  moment(start).startOf('day')._d,
@@ -2524,7 +2516,7 @@ class Model extends BaseModel {
                     amountMyTask3Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        upcoming: 1,
+                        // upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         actualFinishTime: {
                             $gte: addDate(7)
@@ -2535,7 +2527,7 @@ class Model extends BaseModel {
                     amountMyTask4Sync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        upcoming: 1,
+                        // upcoming: 1,
                         priority: 3,
                         usersDelete: { $nin: [userID] }
                     })
@@ -2544,7 +2536,7 @@ class Model extends BaseModel {
                     amountMyApprovalSync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
                         status: { $ne: 3 },
-                        upcoming: 1,
+                        // upcoming: 1,
                         subtype: {$in: [2, 3]},
                         usersDelete: { $nin: [userID] }
                     })
@@ -2580,7 +2572,7 @@ class Model extends BaseModel {
                         amountMyTaskTodaySync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
                             status: { $ne: 3 },
-                            upcoming: 1,
+                            // upcoming: 1,
                             usersDelete: { $nin: [userID] },
                             actualFinishTime: { $gte: start, $lte: end }
                         })
@@ -2589,7 +2581,7 @@ class Model extends BaseModel {
                         amountMyTask1Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
                             status: { $ne: 3 },
-                            upcoming: 1,
+                            // upcoming: 1,
                             usersDelete: { $nin: [userID] },
                             actualFinishTime: { $lt: start }
                         })
@@ -2598,7 +2590,7 @@ class Model extends BaseModel {
                         amountMyTask2Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
                             status: { $ne: 3 },
-                            upcoming: 1,
+                            // upcoming: 1,
                             usersDelete: { $nin: [userID] },
                             actualFinishTime: {
                                 $gte:  moment(start).startOf('day')._d,
@@ -2610,7 +2602,7 @@ class Model extends BaseModel {
                         amountMyTask3Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
                             status: { $ne: 3 },
-                            upcoming: 1,
+                            // upcoming: 1,
                             usersDelete: { $nin: [userID] },
                             actualFinishTime: {
                                 $gte: addDate(7)
@@ -2670,12 +2662,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!upcoming){
-                    conditionObj.upcoming = 1
-                }else{
-                    if(upcoming == 2){
-                        conditionObj.upcoming = 2
-                    }
+                if(upcoming && [1,2].includes(upcoming)){
+                    conditionObj.upcoming = Number(upcoming)
                 }
 
                 if(!option){
@@ -2689,14 +2677,14 @@ class Model extends BaseModel {
                     // Số công việc chưa xem
                     amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
-                        upcoming: 1,
+                        // // upcoming: 1,
                         usersDelete: { $nin: [userID] }
                     })
 
                     // Số công việc của tôi - Quá hạn
                     amountMyTask1 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        upcoming: 1,
+                        // upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: { $lt: start }
@@ -2705,7 +2693,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Tuần tới
                     amountMyTask2 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        upcoming: 1,
+                        // upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: {
@@ -2717,7 +2705,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Sau tuần tới
                     amountMyTask3 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        upcoming: 1,
+                        // upcoming: 1,
                         usersDelete: { $nin: [userID] },
                         status: { $ne: 3 },
                         actualFinishTime: {
@@ -2728,7 +2716,7 @@ class Model extends BaseModel {
                     // Số công việc của tôi - Quan trọng
                     amountMyTask4 = await PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
-                        upcoming: 1,
+                        // upcoming: 1,
                         status: { $ne: 3 },
                         priority: 3,
                         usersDelete: { $nin: [userID] }
