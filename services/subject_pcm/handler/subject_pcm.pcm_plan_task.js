@@ -20,6 +20,7 @@ module.exports = {
             projectID        : { type: "string" },
             groupID          : { type: "string" },
             assigneeID       : { type: "string" },
+            descriptioncv    : { type: "string", optional: true },
             taskID           : { type: "string", optional: true },
             contactID        : { type: "string", optional: true },
             authorAttachs    : { type: "array", optional: true },
@@ -55,10 +56,11 @@ module.exports = {
 
 				const { _id: authorID, bizfullname, email, fullname, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
-                const { projectID, groupID, taskID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, amount, vatAmount, contactID, select, populates } = ctx.params;
+                const { projectID, groupID, taskID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, amount, vatAmount, contactID, descriptioncv, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, amount, vatAmount, contactID, select, populates, senderMail: { email, fullname }, company, ctx
+                    projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, amount, vatAmount, contactID, select, populates, senderMail: { email, fullname }, company, ctx,
+                    descriptioncv,
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -80,6 +82,7 @@ module.exports = {
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
+            descriptioncv       : { type: "string", optional: true },
             actualStartTime     : { type: "string", optional: true },
             actualFinishTime    : { type: "string", optional: true },
             expiredHour         : { type: "string", optional: true },
@@ -117,7 +120,7 @@ module.exports = {
                     contractID, draft, subType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
-                    ontime, quality, usersDeleteID
+                    ontime, quality, usersDeleteID, descriptioncv
                  } = ctx.params;
 				const { _id: userID, bizfullname, fullname, email, company } = ctx.meta.infoUser;
 
@@ -127,7 +130,7 @@ module.exports = {
                     contractID, draft, subType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email }, unit, unitPrice, quantity, vatAmount,
-                    companyOfUser: company._id, milestone, alert, groupID, ontime, quality, fullnameUpdate: fullname, usersDeleteID, ctx
+                    companyOfUser: company._id, milestone, alert, groupID, ontime, quality, fullnameUpdate: fullname, usersDeleteID, descriptioncv, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
