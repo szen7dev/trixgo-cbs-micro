@@ -544,7 +544,7 @@ module.exports = {
                         userID, companyID: company._id, departmentID, packageID
                     });
                 }
-                console.log({ resultAfterCallHandler })
+                // console.log(resultAfterCallHandler.data.listRecords)
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

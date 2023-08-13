@@ -668,11 +668,11 @@ class Model extends BaseModel {
         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {} }) {
-            console.log('=============TRA CỨU HỒ SƠ TẠI TRANG CHỦ=============>>>>>>>>>>>>>>')
-            console.log({
-                parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
-        requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit, lastestID, select, populates })
+        //     console.log('=============TRA CỨU HỒ SƠ TẠI TRANG CHỦ=============>>>>>>>>>>>>>>')
+        //     console.log({
+        //         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
+        // requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
+        // keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 const validation = validateParamsObjectID({
@@ -842,6 +842,8 @@ class Model extends BaseModel {
      * Date: 27/10/2021
      */
     statisticalByType({ userID, companyID, departmentID, packageID }) {
+        // console.log('===========Thống kê hồ sơ===========')
+        // console.log({ userID, companyID, departmentID, packageID })
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([userID])) {
@@ -877,7 +879,7 @@ class Model extends BaseModel {
                 departmentID    && (conditionObj.project = ObjectID(departmentID));
 
                 // User phải nằm trong members của gói thầu.
-                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
+                // let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
                 // if(listPackageAccess.length){
                 //     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
                 // }
@@ -957,6 +959,8 @@ class Model extends BaseModel {
      * Date: 27/10/2021
      */
     statisticalByDatahubContact({ userID, companyID, departmentID, packageID }) {
+        console.log('===========Thống kê hồ sơ===========')
+        console.log({ userID, companyID, departmentID, packageID })
         return new Promise(async (resolve) => {
             try {
                 if(departmentID && !checkObjectIDs([departmentID])) {
