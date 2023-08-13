@@ -126,7 +126,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, company, amount, vatAmount, contactID, select, populates, ctx }) {
+    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx }) {
         // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, company, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -179,7 +179,7 @@ class Model extends BaseModel {
                     convertStr = stringUtils.removeAccents(name)
                 }
                 if(description && description != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                    convertStr = convertStr + " " + (descriptioncv || stringUtils.removeAccents(description));
                 }
                 if(sign && sign != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(sign)
@@ -188,6 +188,7 @@ class Model extends BaseModel {
                 dataInsert = {
                     name,
                     namecv: convertStr,
+                    descriptioncv,
                     company : companyID,
                     project : projectID,
                     group   : groupID,
