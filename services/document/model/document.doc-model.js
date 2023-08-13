@@ -526,7 +526,6 @@ class Model extends BaseModel {
                 if(companyID){
                     conditionObj.company = companyID
                 }
-
                
                 if(type){
                     conditionObj.type = type
@@ -669,15 +668,13 @@ class Model extends BaseModel {
         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {} }) {
-            // console.log({
-            //     parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, isExportExcel,
-            //     requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-            //     keyword, limit, lastestID, select, populates })
+            console.log('=============TRA CỨU HỒ SƠ TẠI TRANG CHỦ=============>>>>>>>>>>>>>>')
+            console.log({
+                parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
+        requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
+        keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * VALIDATION (1)
-                 */
                 const validation = validateParamsObjectID({
                     packagesID              : { value: packagesID, isRequire: false },
                     sendersID               : { value: sendersID, isRequire: false },

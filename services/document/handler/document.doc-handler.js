@@ -266,7 +266,6 @@ module.exports = {
     getListByFilter: {
         auth: "required",
         params: {
-            // datahubContactsID: { type: "array", optional: true }, // Chủ thể ban hành
             datahubContactsID : { type: "array", optional: true }, // Chủ thể ban hành
             sendersID	    : { type: "array", optional: true }, // Người ban hành
             types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
