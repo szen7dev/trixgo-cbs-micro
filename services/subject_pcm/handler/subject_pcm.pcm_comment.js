@@ -307,7 +307,7 @@ module.exports = {
 
                 let resultAfterCallHandler = await PCM_COMMENT_MODEL.getListByProperty({
                     option, fromDate, toDate, userID
-                 });
+                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
