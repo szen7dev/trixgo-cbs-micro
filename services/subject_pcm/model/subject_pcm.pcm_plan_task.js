@@ -188,7 +188,6 @@ class Model extends BaseModel {
                 dataInsert = {
                     name,
                     namecv: convertStr,
-                    // descriptioncv,
                     company : companyID,
                     project : projectID,
                     group   : groupID,
@@ -279,7 +278,7 @@ class Model extends BaseModel {
 
                 if(description){
                     dataInsert.description = description;
-                    dataInsert.descriptioncv = stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description);
+                    dataInsert.descriptioncv = (stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description))
                 }
 
                 if(sign){
@@ -577,13 +576,13 @@ class Model extends BaseModel {
         taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
         contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, ctx
+        openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, descriptioncv, ctx
     }){
         // console.log({ typeUpdate,
         //     taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
         //     contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
         //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate
+        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, descriptioncv
         // })
         return new Promise(async (resolve) => {
             try {
@@ -692,6 +691,7 @@ class Model extends BaseModel {
                      */
                     if(description){
                         dataUpdate.description = description
+                        dataUpdate.descriptioncv = (stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description))
 
                          /**
                          * Ghi log
@@ -711,7 +711,8 @@ class Model extends BaseModel {
                         convertStr = stringUtils.removeAccents(infoTask.name)
                     }
                     if(description && description != ""){
-                        convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                        // convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                        convertStr = convertStr + " " + (stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description));
                     }else{
                         convertStr = convertStr + " " + stringUtils.removeAccents(infoTask.description)
                     }
@@ -791,9 +792,10 @@ class Model extends BaseModel {
                     if(infoTask.subtype === 9 || infoTask.subtype === 11){
                         if(description){
                             dataUpdate.description = description;
+                            dataUpdate.descriptioncv = (stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description))
                         }
                         if(description && description != ""){
-                            convertStr = convertStr + stringUtils.removeAccents(description)
+                            convertStr = convertStr + " " + (stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description));
                         }
                     }
                 }
@@ -1145,6 +1147,7 @@ class Model extends BaseModel {
                 /**
                  * TIẾN HÀNH CẬP NHẬT CÔNG VIỆC
                  */
+                console.log(dataUpdate)
                 let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
