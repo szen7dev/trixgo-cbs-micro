@@ -298,15 +298,16 @@ module.exports = {
             option              : { type: "string", optional: true  },
             fromDate            : { type: 'string', optional: true },
             toDate              : { type: 'string', optional: true },
+            projectID           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, fromDate, toDate } = ctx.params;
+                let { option, fromDate, toDate, projectID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_COMMENT_MODEL.getListByProperty({
-                    option, fromDate, toDate, userID
+                    option, fromDate, toDate, userID, projectID
                  })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
