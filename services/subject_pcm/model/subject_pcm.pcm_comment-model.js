@@ -25,7 +25,7 @@ const stringUtils					            = require('../../../tools/utils/string_utils')
  * import inter-coll, exter-coll
  */
 // const AUTH__COMPANY_COLL                        = require('../../auth/database/auth.company-coll');
-// const DEPARTMENT_COLL                           = require('../../item/database/item.department-coll');
+const DEPARTMENT_COLL                           = require('../../item/database/item.department-coll');
 // const PCM_PLAN_GROUP_COLL                       = require('../database/subject_pcm.pcm_plan_group-coll');
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
@@ -345,6 +345,14 @@ class Model extends BaseModel {
                     })
                 }
 
+                // Cập nhật lại thay đổi mới nhất cho Dự án
+                await DEPARTMENT_COLL.findByIdAndUpdate(infoTask.project?._id, {
+                    modifyAt: new Date()
+                });
+
+                /**
+                 * XỬ LÝ FILE VÀ ẢNH ĐÍNH KÈM
+                 */
                 if(files && files.length) {
                     // console.log('================111111111111111111111111111111==============')
                     // console.log(files)
@@ -508,6 +516,7 @@ class Model extends BaseModel {
                         break;
                 }
 
+                // CẬP NHẬT LẠI CHO TASK
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                     $inc: {
                         ...incPreCalculate,
@@ -528,7 +537,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Insert notification and cloud messaging
+                 * BẮN CLOUD MSSS
                  */
                 let { name: taskName, sign: taskSign, author, project } = infoTask;
                 let arrReceiver = dataInsert.receivers;
@@ -614,6 +623,7 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
+                // Cung cấp về cho Mobile
                 infoAfterInsert.receiversNoti = arrReceiver;
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
@@ -2018,157 +2028,99 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 24/9/2022
      */
-    // getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
-    //     console.log('============Gom nhóm theo thuộc tính 222================')
-    //     console.log({ userID, option, fromDate, toDate, isParent, isGroup })
-    //     return new Promise(async resolve => {
-    //         try {
-    //             /**
-    //              * BA
-    //              * 1-Lấy danh sách các comment mà user được quyền truy cập receivers/thông qua Task
-    //              * 2-Gom nhóm dữ liệu
-    //              */
+    getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
+        // console.log('============Gom nhóm theo thuộc tính/Báo cáo theo dự án================')
+        // console.log({ userID, option, fromDate, toDate, isParent, isGroup })
+        return new Promise(async resolve => {
+            try {
+                let listComments = []
+                if(fromDate && toDate){
+                    listComments = await PCM_COMMENT_COLL.find({
+                        accessUsers: { $in: [userID] },
+                        createAt: {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        },
+                        project: { $exists: true, $ne: null },
+                        companyOfAuthor: { $exists: true, $ne: null },
+                    })
+				}else{
+                    listComments = await PCM_COMMENT_COLL.find({
+                        accessUsers: { $in: [userID] },
+                        project: { $exists: true, $ne: null },
+                        companyOfAuthor: { $exists: true, $ne: null },
+                    })
+                }
 
-    //             let conditionSubjectObj = {} // Điều kiện tìm kiếm Task
+                /**
+                 * Tính tổng số lượng theo các phân loại của Nhà thầu
+                 */
+                if(option == 1){
+                    let conditionPopulateProject = {
+                        path: '_id.project',
+                        select: '_id name sign image modifyAt',
+                        options: { sort: { 'modifyAt': -1 } },
+                        model: 'department'
+                    }
 
-    //             // Chỉ lấy task cha
-    //             if(isParent == 1){
-    //                 conditionSubjectObj.parent = { $exists: false };
-    //             }
+                    let conditionPopulateCompany = {
+                        path: '_id.companyOfAuthor',
+                        select: '_id name sign image',
+                        model: 'company'
+                    }
 
-    //             conditionSubjectObj.usersDelete = { $nin: [userID] }
+                    let sortProject = { "_id.project": -1 }
+                    let sortCompany = { "_id.companyOfAuthor": 1 }
 
-    //             // Lấy các chủ đề mà user được quyền truy cập (members của group)
-    //             if(isGroup && isGroup == 1){
-    //                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-    //                 let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    let listDataProject = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listComments.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                        { $sort: sortProject},
+                    ])
+                    // console.log(listDataProject)
 
-    //                 // Lấy công việc mà userID được quyền truy cập
-    //                 conditionSubjectObj.$or = [
-    //                     { author: userID },
-    //                     { assignee: userID },
-    //                     { related: { $in: [userID] }},
-    //                     { group: { $in: listGroups.map(item => item._id) }},
-    //                 ]
-    //             }else{
-    //                 // conditionSubjectObj.$or = [
-    //                 //     { author: userID },
-    //                 //     { assignee: userID },
-    //                 //     { related: { $in: [userID] }},
-    //                 // ]
+                    let listDataProjectCompanyAuthor = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                _id: {$in: listComments.map(item=>item._id)}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project', companyOfAuthor: '$companyOfAuthor' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                        { $sort: sortCompany},
+                    ])
 
-    //                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-    //                 let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    if(listDataProject.length){
+                        await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
+                    }
+                    // console.log(listDataProject[0])
 
-    //                 // Lấy công việc mà userID được quyền truy cập
-    //                 conditionSubjectObj.$or = [
-    //                     { author: userID },
-    //                     { assignee: userID },
-    //                     { related: { $in: [userID] }},
-    //                     { group: { $in: listGroups.map(item => item._id) }},
-    //                 ]
-    //             }
+                    if(listDataProjectCompanyAuthor.length){
+                        await DEPARTMENT_COLL.populate(listDataProjectCompanyAuthor, conditionPopulateCompany)
+                    }
+                    // console.log(listDataProjectCompanyAuthor)
 
-    //             let listTask = await PCM_PLAN_TASK_COLL.find(conditionSubjectObj).select('_id name')
-    //             // console.log(listTask)
+                    return resolve({ error: false, data: { listDataProject, listDataProjectCompanyAuthor } })
+                }
 
-    //             let listComments
-    //             if(fromDate && toDate){
-    //                 listComments = await PCM_COMMENT_COLL.find({
-    //                     task: {$in: listTask.map(item=>item._id)},
-    //                     createAt: {
-    //                         $gte: new Date(fromDate),
-    //                         $lte: new Date(toDate),
-    //                     },
-    //                     project: { $exists: true, $ne: null },
-    //                     companyOfAuthor: { $exists: true, $ne: null },
-    //                 })
-	// 			}else{
-    //                 listComments = await PCM_COMMENT_COLL.find({
-    //                     task: {$in: listTask.map(item=>item._id)},
-    //                     project: { $exists: true, $ne: null },
-    //                     companyOfAuthor: { $exists: true, $ne: null },
-    //                 })
-    //             }
-    //             // let listComments = await PCM_COMMENT_COLL.find({receivers: {$in: [userID]}})
-    //             // console.log(listComments)
-    //             // console.log(listComments.length)
-
-    //             /**
-    //              * Tính tổng số lượng theo các phân loại của Nhà thầu
-    //              */
-    //             if(option == 1){
-    //                 let conditionPopulateProject = {
-    //                     path: '_id.project',
-    //                     select: '_id name sign image modifyAt',
-    //                     // options: { sort: { '_id.project.modifyAt': -1 } },
-    //                     model: 'department'
-    //                 }
-
-    //                 let conditionPopulateCompany = {
-    //                     path: '_id.companyOfAuthor',
-    //                     select: '_id name sign image',
-    //                     model: 'company'
-    //                 }
-
-    //                 let sortProject = { "_id.project": 1 }
-    //                 let sortCompany = { "_id.companyOfAuthor": 1 }
-
-    //                 let listDataProject = await PCM_COMMENT_COLL.aggregate([
-    //                     {
-    //                         $match: {
-    //                             _id: {$in: listComments.map(item=>item._id)}
-    //                         }
-    //                     },
-    //                     {
-    //                         $group: {
-    //                             _id: { project: '$project' },
-    //                             amount: { $sum: 1 },
-    //                         }
-    //                     },
-    //                     { $sort: sortProject},
-    //                 ])
-
-    //                 let listDataProjectCompanyAuthor = await PCM_COMMENT_COLL.aggregate([
-    //                     {
-    //                         $match: {
-    //                             _id: {$in: listComments.map(item=>item._id)}
-    //                         }
-    //                     },
-    //                     {
-    //                         $group: {
-    //                             _id: { project: '$project', companyOfAuthor: '$companyOfAuthor' },
-    //                             amount: { $sum: 1 },
-    //                         }
-    //                     },
-    //                     { $sort: sortCompany},
-    //                 ])
-
-    //                 if(listDataProject.length){
-    //                     await DEPARTMENT_COLL.populate(listDataProject, conditionPopulateProject)
-    //                 }
-    //                 // console.log(listDataProject)
-
-    //                 if(listDataProjectCompanyAuthor.length){
-    //                     await DEPARTMENT_COLL.populate(listDataProjectCompanyAuthor, conditionPopulateCompany)
-    //                 }
-    //                 // console.log(listDataProjectCompanyAuthor)
-
-    //                 return resolve({ error: false, data: { listDataProject, listDataProjectCompanyAuthor } });
-    //             }
-
-    //             /**
-    //              * Danh sách chi tiết các thông báo
-    //              */
-    //             if(option == 2){
-
-    //             }
-
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message });
-    //         }
-    //     })
-    // }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 
 }
 
