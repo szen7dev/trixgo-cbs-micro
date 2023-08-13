@@ -179,7 +179,7 @@ class Model extends BaseModel {
                     convertStr = stringUtils.removeAccents(name)
                 }
                 if(description && description != ""){
-                    convertStr = convertStr + " " + (descriptioncv || stringUtils.removeAccents(description));
+                    convertStr = convertStr + " " + (stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description));
                 }
                 if(sign && sign != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(sign)
@@ -188,7 +188,7 @@ class Model extends BaseModel {
                 dataInsert = {
                     name,
                     namecv: convertStr,
-                    descriptioncv,
+                    // descriptioncv,
                     company : companyID,
                     project : projectID,
                     group   : groupID,
@@ -279,7 +279,7 @@ class Model extends BaseModel {
 
                 if(description){
                     dataInsert.description = description;
-                    dataInsert.descriptioncv = stringUtils.removeAccents(description);
+                    dataInsert.descriptioncv = stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description);
                 }
 
                 if(sign){
