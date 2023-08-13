@@ -360,7 +360,7 @@ class Model extends BaseModel {
     updatePasswordRecover({ email, newPassword }) {
         return new Promise(async resolve => {
             try {
-                const isExist = await AUTH__USER_COLL.findOne({ email });
+                const isExist = await AUTH__USER_COLL.findOne({ email: email.toLowerCase().trim() });
                 if (!isExist) {
                     return resolve({
 						error: true,
