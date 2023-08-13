@@ -31,6 +31,7 @@ const PCM_PLAN_TASK_COLL                        = require('../database/subject_p
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
 const PCM_FILE_COLL                             = require('../database/subject_pcm.pcm_file-coll');
+const { ObjectID } = require('mongodb');
 const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
 
@@ -1873,9 +1874,9 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
 	 * Date: 19/8/2022
 	 */
-	searchCommentBySubject({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 10, unlimit, lastestID, select, populates = {} }){
+	searchCommentBySubject({ sortKey, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 10, unlimit, lastestID, select, populates = {} }){
         // console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu comment================')
-        // console.log({ draft, sortKey, isParent, isActive, isGroup, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
+        // console.log({ sortKey, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
 			try {
                 /**
@@ -2028,28 +2029,48 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 24/9/2022
      */
-    getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup }){
+    getListByProperty({ userID, option, fromDate, toDate, isParent, isGroup, projectID }){
         // console.log('============Gom nhóm theo thuộc tính/Báo cáo theo dự án================')
-        // console.log({ userID, option, fromDate, toDate, isParent, isGroup })
+        // console.log({ userID, option, fromDate, toDate, isParent, isGroup, projectID })
         return new Promise(async resolve => {
             try {
                 let listComments = []
-                if(fromDate && toDate){
-                    listComments = await PCM_COMMENT_COLL.find({
-                        accessUsers: { $in: [userID] },
-                        createAt: {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
-                        },
-                        project: { $exists: true, $ne: null },
-                        companyOfAuthor: { $exists: true, $ne: null },
-                    })
-				}else{
-                    listComments = await PCM_COMMENT_COLL.find({
-                        accessUsers: { $in: [userID] },
-                        project: { $exists: true, $ne: null },
-                        companyOfAuthor: { $exists: true, $ne: null },
-                    })
+                if(!projectID){
+                    if(fromDate && toDate){
+                        listComments = await PCM_COMMENT_COLL.find({
+                            accessUsers: { $in: [userID] },
+                            createAt: {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
+                            },
+                            project: { $exists: true, $ne: null },
+                            companyOfAuthor: { $exists: true, $ne: null },
+                        })
+                    }else{
+                        listComments = await PCM_COMMENT_COLL.find({
+                            accessUsers: { $in: [userID] },
+                            project: { $exists: true, $ne: null },
+                            companyOfAuthor: { $exists: true, $ne: null },
+                        })
+                    }
+                }else{
+                    if(fromDate && toDate){
+                        listComments = await PCM_COMMENT_COLL.find({
+                            accessUsers: { $in: [userID] },
+                            createAt: {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
+                            },
+                            project: projectID,
+                            companyOfAuthor: { $exists: true, $ne: null },
+                        })
+                    }else{
+                        listComments = await PCM_COMMENT_COLL.find({
+                            accessUsers: { $in: [userID] },
+                            project: projectID,
+                            companyOfAuthor: { $exists: true, $ne: null },
+                        })
+                    }
                 }
 
                 /**
