@@ -434,11 +434,11 @@ class Model extends BaseModel {
         companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
         limit = 20, lastestID, select, populates, userID
     }) {
-        console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu File================')
-        console.log({
-            companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
-            limit, lastestID, select, populates, userID
-        })
+        // console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu File================')
+        // console.log({
+        //     companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
+        //     limit, lastestID, select, populates, userID
+        // })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -482,9 +482,7 @@ class Model extends BaseModel {
 
                 // Danh sách Task mà user được quyền truy cập
                 conditionObjTask.$or = [
-                    { author: userID },
-                    { assignee: userID },
-                    { related: { $in: [userID] } },
+                    { accessUsers: {$in: [userID]}},
                     { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
                 ]
 
