@@ -2457,7 +2457,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy thông báo công việc
+     * Name: Lấy số lượng các phân loại tại Trang chủ
      * Author: HiepNH
      * Date: 29/10/2022
      */
