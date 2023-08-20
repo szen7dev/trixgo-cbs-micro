@@ -276,7 +276,8 @@ class Model extends BaseModel {
                                 .populate(populates)
                                 .lean();
                 if(!infoData)
-                    return resolve({ error: true, message: "Can't get info subject", keyError: KEY_ERROR.GET_INFO_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Can't get info subject", keyError: KEY_ERROR.GET_INFO_FAILED, status: 403 })
+                // console.log(infoData)
 
                 return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {
@@ -291,6 +292,7 @@ class Model extends BaseModel {
      * Code:
      */
     getList({ keyword, limit = 10, lastestID, type, parentID, userID, select, populates= {} }) {
+        // console.log('=================>>>>>>>>>>>>>>Báo cáo động================')
         // console.log({ keyword, limit, lastestID, type, parentID, userID, select, populates })
         return new Promise(async (resolve) => {
             try {

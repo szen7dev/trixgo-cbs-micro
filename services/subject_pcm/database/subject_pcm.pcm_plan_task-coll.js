@@ -287,11 +287,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
-    // //_________File của người thực hiện (!!! Cân nhắc bỏ => đưa sang phản hồi liên quan)
-    // assigneeAttachs: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "file"
-    // }],
     //_________Bình luận cuối cùng
     lastComment: {
         type   : Schema.Types.ObjectId,

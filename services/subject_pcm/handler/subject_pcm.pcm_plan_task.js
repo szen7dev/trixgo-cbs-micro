@@ -211,6 +211,7 @@ module.exports = {
             sortKey             : { type: "string", optional: true },
             isParent            : { type: "string", optional: true },
             upcoming            : { type: "string", optional: true },
+            isMileStone         : { type: "string", optional: true },
 
             // Field mặc định
             keyword             : { type: "string", optional: true },
@@ -227,7 +228,7 @@ module.exports = {
                 let {
                     taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe, groupID, sortKey,
-                    keyword, limit, unlimit, lastestID, select, populates, isPassPermision, milestone, isParent, upcoming
+                    keyword, limit, unlimit, lastestID, select, populates, isPassPermision, milestone, isParent, upcoming, isMileStone
                 } = ctx.params;
 
                 // console.log({select})
@@ -246,7 +247,7 @@ module.exports = {
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
-                        keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming
+                        keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming, isMileStone
                     });
                 }
 
