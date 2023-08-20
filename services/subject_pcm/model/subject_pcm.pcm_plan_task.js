@@ -1630,14 +1630,14 @@ class Model extends BaseModel {
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited, upcoming
+        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited, upcoming, isMileStone
     }) {
         // console.log('=============DANH SÁCH CHỦ ĐỀ==========>>>>>>>>>>>>>>')
         // console.log({
         //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        //     keyword, limit, unlimit, lastestID, select, populates, unlimited
+        //     keyword, limit, unlimit, lastestID, select, populates, unlimited, isMileStone
         // })
         return new Promise(async (resolve) => {
             try {
@@ -1751,6 +1751,11 @@ class Model extends BaseModel {
                 // Việc theo cột mốc
                 if(!isNaN(milestone)){
                     conditionObj.milestone = milestone;
+                }
+
+                if(isMileStone && isMileStone == 1){
+                    conditionObj.milestone = {$gt: 0}
+                    conditionObj.$where = `return this.actualFinishTime > this.actualStartTime`
                 }
 
                 /**
@@ -1941,6 +1946,8 @@ class Model extends BaseModel {
                 if(unlimit == 1){
                     limit = totalRecord;
                 }
+                // console.log({limit})
+
                 /**
                  * Dùng để lấy all data, Chỉ:
                  * - Dùng internal services
@@ -1952,12 +1959,13 @@ class Model extends BaseModel {
                         .select(select)
                         .populate(populates)
                         .sort(sortBy)
-                        .lean();
+                        .lean()
 
                     return resolve({
                         data: infoDataAfterGet
                     });
                 }
+                // console.log(conditionObj)
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
@@ -2016,12 +2024,12 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID, reportID, upcoming
     }) {
-        // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
-        // console.log({
-        //     option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        // projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
-        // limit, lastestID, select, populates, userID, reportID, upcoming
-        // })
+        console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
+        console.log({
+            option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
+        limit, lastestID, select, populates, userID, reportID, upcoming
+        })
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
@@ -3657,6 +3665,7 @@ class Model extends BaseModel {
      * Code:
      */
     getAmountTaskByMilestone({ projectID, ctx }){
+        // console.log('=============Get list by MileStone==================')
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
