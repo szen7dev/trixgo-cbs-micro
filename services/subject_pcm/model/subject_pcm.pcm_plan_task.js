@@ -1832,10 +1832,11 @@ class Model extends BaseModel {
                  * 2-Tuần tới
                  * 3->7 ngày tới
                  * 4-Hoàn thành
+                 * 5-Quan trọng
                  */
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $lt: start
+                        $lt: new Date()
                     }
                 }
 
@@ -1857,6 +1858,11 @@ class Model extends BaseModel {
                 // Hoàn thành
                 if(typeStatus && typeStatus == 4){
                     conditionObj.status = 3
+                }
+
+                // Quan trọng
+                if(typeStatus && typeStatus == 5){
+                    conditionObj.priority = 3
                 }
 
                 // Lấy việc của người thực hiện
@@ -2024,12 +2030,12 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID, reportID, upcoming
     }) {
-        console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
-        console.log({
-            option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
-        limit, lastestID, select, populates, userID, reportID, upcoming
-        })
+        // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
+        // console.log({
+        //     option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        // projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
+        // limit, lastestID, select, populates, userID, reportID, upcoming
+        // })
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
@@ -2467,20 +2473,19 @@ class Model extends BaseModel {
     /**
      * Name: Lấy số lượng các phân loại tại Trang chủ
      * Author: HiepNH
-     * Date: 29/10/2022
+     * Date: 22/8/2023
      */
     getAmountNotification({ userID, option }){
         // console.log('=================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         // console.log({ userID, option })
         return new Promise(async resolve => {
             try {
-                let start = new Date();
-                // console.log({start })
-                // start.setHours(0,0,0,0);
+                let start = new Date()
+                start.setHours(0,0,0,0)
                 // console.log({start })
 
-                let end = new Date();
-                end.setHours(23,59,59,999);
+                let end = new Date()
+                end.setHours(23,59,59,999)
 
                 let amountUnreadTaskSync=0, amountMyTaskTodaySync=0, amountMyTaskComingSync = 0, amountMyApprovalSync = 0
                 let amountMyTask1Sync=0, amountMyTask2Sync=0, amountMyTask3Sync=0, amountMyTask4Sync=0
@@ -2509,7 +2514,7 @@ class Model extends BaseModel {
                         status: { $ne: 3 },
                         upcoming: 1,
                         usersDelete: { $nin: [userID] },
-                        actualFinishTime: { $lt: start }
+                        actualFinishTime: { $lt: new Date() }
                     })
 
                     // Số công việc của tôi - Tuần tới
@@ -2595,7 +2600,7 @@ class Model extends BaseModel {
                             status: { $ne: 3 },
                             // upcoming: 1,
                             usersDelete: { $nin: [userID] },
-                            actualFinishTime: { $lt: start }
+                            actualFinishTime: { $lt: new Date() }
                         })
 
                         // Số công việc của tôi - Tuần tới
