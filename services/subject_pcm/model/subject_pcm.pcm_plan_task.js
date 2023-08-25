@@ -2588,6 +2588,7 @@ class Model extends BaseModel {
                         // Số công việc của tôi - Ngày nay
                         amountMyTaskTodaySync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
+                            subtype: { $in: [2, 3] },
                             status: { $ne: 3 },
                             // upcoming: 1,
                             usersDelete: { $nin: [userID] },
@@ -2597,6 +2598,7 @@ class Model extends BaseModel {
                         // Số công việc của tôi - Quá hạn
                         amountMyTask1Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
+                            subtype: { $in: [2, 3] },
                             status: { $ne: 3 },
                             // upcoming: 1,
                             usersDelete: { $nin: [userID] },
@@ -2606,6 +2608,7 @@ class Model extends BaseModel {
                         // Số công việc của tôi - Tuần tới
                         amountMyTask2Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
+                            subtype: { $in: [2, 3] },
                             status: { $ne: 3 },
                             // upcoming: 1,
                             usersDelete: { $nin: [userID] },
@@ -2618,6 +2621,7 @@ class Model extends BaseModel {
                         // Số công việc của tôi - Sau tuần tới
                         amountMyTask3Sync = PCM_PLAN_TASK_COLL.count({
                             assignee: userID,
+                            subtype: { $in: [2, 3] },
                             status: { $ne: 3 },
                             // upcoming: 1,
                             usersDelete: { $nin: [userID] },
@@ -2626,13 +2630,25 @@ class Model extends BaseModel {
                             }
                         })
 
-                        let [ amountMyTaskToday, amountMyTask1, amountMyTask2, amountMyTask3 ] = await Promise.all([amountMyTaskTodaySync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync])
+                        // Số công việc của tôi - Quan trọng
+                        amountMyTask4Sync = PCM_PLAN_TASK_COLL.count({
+                            assignee: userID,
+                            subtype: { $in: [2, 3] },
+                            status: { $ne: 3 },
+                            // upcoming: 1,
+                            priority: 3,
+                            usersDelete: { $nin: [userID] }
+                        })
+
+
+                        let [ amountMyTaskToday, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4 ] = await Promise.all([amountMyTaskTodaySync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync])
 
                         return resolve({ error: false, data: {
                             amountMyTaskToday, 
                             amountMyTask1,
                             amountMyTask2, 
-                            amountMyTask3
+                            amountMyTask3,
+                            amountMyTask4
                         }})
                     }
                 }
