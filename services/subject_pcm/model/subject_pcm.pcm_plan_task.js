@@ -2444,6 +2444,12 @@ class Model extends BaseModel {
                     delete conditionObj.$or
                 }
 
+                // Việc giao người khác
+                if(reportType && reportType == 2){
+                    conditionObj.author = ObjectID(userID)
+                    delete conditionObj.$or
+                }
+
                 /**
                  * Bộ lọc với nhiều lựa chọn
                  */
@@ -3011,6 +3017,11 @@ class Model extends BaseModel {
 
                 conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
 
+                // Theo dự án chứa việc
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+                }
+
                 if(Array.isArray(status)){
                     conditionObj.status = {$in: status.map(item=>Number(item))}
                 }
@@ -3028,6 +3039,15 @@ class Model extends BaseModel {
                 // Việc giao người khác
                 if(reportType && reportType == 2){
                     conditionObj.author = ObjectID(userID)
+                }
+
+                // Việc liên quan/của tôi/giao
+                if(reportType && reportType == 3){
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    conditionObj.$or = [
+                        { accessUsers: {$in: [ObjectID(userID)]}},
+                        { group: { $in: listGroups.map(item => ObjectID(item._id)) }},
+                    ]
                 }
 
                 // Theo thời hạn
@@ -3186,6 +3206,7 @@ class Model extends BaseModel {
                             select: '_id name sign image',
                             model: 'company'
                         }
+                        // console.log(conditionObj)
 
                         let listDataCompany = await PCM_PLAN_TASK_COLL.aggregate([
                             {

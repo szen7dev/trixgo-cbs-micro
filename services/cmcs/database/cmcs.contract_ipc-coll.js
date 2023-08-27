@@ -93,7 +93,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
     //_________Mã hiệu
     sign: String,
     
-    //_________Ngày hoạch toán(*)
+    //_________Ngày hoạch toán (*)
     date: { type: Date, default: Date.now },
 
     //_________Mô tả
