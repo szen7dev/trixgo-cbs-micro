@@ -2180,7 +2180,7 @@ class Model extends BaseModel {
                 // lấy việc tới hạn Tuần tới
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
-                        $gte:  moment(start).startOf('day')._d,
+                        $gte:  new Date(),
                         $lt: moment(addDate(7)).endOf('day')._d
                     }
                 }
