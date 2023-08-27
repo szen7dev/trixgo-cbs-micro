@@ -1518,6 +1518,343 @@ class Model extends BaseModel {
     }
 
     /**
+	 * Dev: MinhVH
+	 * Func: Di chuyển công việc đến việc cha
+     * Date: 22/04/2022
+	 */
+    moveTaskToParent({ parentID, taskID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({
+                    parentID,
+                    taskID,
+                    userID
+                })
+                if(validation.error) return resolve(validation);
+
+                if(parentID.toString() == taskID.toString()) {
+                    return resolve({
+                        error: true,
+                        message: 'Không thể tự di chuyển vào chính công việc này',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                /**
+                 * Thông tin công việc cha
+                 */
+                const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID)
+
+                if(!infoParent) {
+                    return resolve({
+                        error: true,
+                        message: 'Công việc cha không tồn tại',
+                        keyError: 'parent_task_not_exists',
+                        status: 400
+                    });
+                }
+
+                const { project } = infoParent;
+
+                /**
+                * Gán project từ việc cha sang việc con (không gán Group)
+                * - Chỉ cho phép người tạo việc, thực hiện di chuyển
+                * - Tăng số lượng subtask của task cha
+                */
+                const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
+                    _id: taskID,
+                    project
+                },
+                {
+                    $set: {
+                        parent: parentID,
+                    },
+                }, { new: true })
+
+                // Cập nhật số lượng công việc con của việc cha
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,
+                {
+                    $inc: {
+                        amountSubtask: 1,
+                    }
+                }, { new: true })
+
+                if(!result) {
+                    return resolve({
+                        error: true,
+                        message: 'Di chuyển không thành công (công việc không tồn tại hoặc không cùng dự án)',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                return resolve({ error: false, data: result, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Di chuyển công việc đến nhóm dữ liệu khác (trong cùng dự án)
+     * Date: 22/04/2022
+	 */
+    moveTaskToGroup({ groupID, taskID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({
+                    groupID,
+                    taskID,
+                    userID
+                })
+
+                if(validation.error) return resolve(validation);
+
+                const infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID);
+
+                if(!infoGroup) {
+                    return resolve({
+                        error: true,
+                        message: 'Nhóm dữ liệu không tồn tại',
+                        keyError: 'group_not_exists',
+                        status: 400
+                    });
+                }
+
+                const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
+                    _id: taskID,
+                    project: infoGroup.project,
+                    $or: [
+                        { author: userID },
+                        { assignee: userID },
+                    ]
+                }, {
+                    $set: {
+                        group: groupID
+                    }
+                }, { new: true })
+
+                if(!result) {
+                    return resolve({
+                        error: true,
+                        message: 'Di chuyển không thành công (công việc không tồn tại hoặc không cùng dự án)',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                return resolve({ error: false, data: result, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Copy child task
+     * Date: 01/09/2022
+     */
+    cloneChildTask({ parentId, parentTask, isDraftTask, callback = null }) {
+        // console.log('===========copy công việc connnnnnnnnn===========>>>>>>>>>>')
+        // console.log({ parentId, parentTask, isDraftTask })
+        return new Promise(async resolve => {
+            try {
+                // Công việc con của công việc CHA-GỐC
+                const listTasks = await PCM_PLAN_TASK_COLL
+                    .find({ parent: parentId })
+                    .populate('parent', 'startTime expiredTime')
+                    .lean();
+
+                if(!listTasks || !listTasks.length) {
+                    return resolve({
+                        results: [],
+                        errors: ['not found tasks']
+                    })
+                }
+                // console.log(listTasks)
+
+                const { results, errors } = await PromisePool
+                    .for(listTasks)
+                    .withConcurrency(4)
+                    .process(async childTask => {
+                        const childTaskID = childTask._id;
+
+                        // Thời hạn công việc cha gốc
+                        let orgParentExpiredTime = childTask.parent?.expiredTime
+                        // console.log({ orgParentExpiredTime })
+
+                        // Thời hạn công việc cha mới
+                        let newParentExpiredTime = parentTask?.expiredTime
+                        // console.log({ newParentExpiredTime })
+
+                        let duaration = calculateExpire(orgParentExpiredTime, newParentExpiredTime, 'days');
+                        // console.log({ duaration })
+
+                        // // Thời gian bắt đầu task cha (1)
+                        // let startTime = childTask.parent?.startTime;
+                        // console.log({ startTime_TaskCha: startTime })
+
+                        // // Deadline task con (2)
+                        // let expiredTime = childTask.expiredTime;
+                        // console.log({ expiredTime_TaskCon: expiredTime })
+
+                        // // Tổng ngày từ startTime task cha -> deadline task con (3)
+                        // let totalDayStartTimeToExpiredTime = calculateExpire(startTime, expiredTime, 'days');
+                        // console.log({ totalDayStartTimeToExpiredTime })
+
+                        /**
+                         * Lấy startTime của task CHA MỚI (new) + thêm (3)
+                         * => Deadline mới cho task con (new)
+                         */
+                        // let newExpiredTime = moment(parentTask.startTime, "DD-MM-YYYY")
+                            // .add(totalDayStartTimeToExpiredTime, 'days');
+
+                        let newExpiredTime = moment(childTask.expiredTime, "DD-MM-YYYY")
+                            .add(duaration, 'days');
+
+                        let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+
+                        delete childTask._id;
+                        const newChildTask = await PCM_PLAN_TASK_COLL.create({
+                            ...childTask,
+                            suid,
+                            status: 1,
+                            percentage: 0,
+                            parent: parentTask._id,
+                            startTime: new Date(),
+                            actualStartTime: new Date(),
+                            expiredTime: new Date(newExpiredTime),
+                            actualFinishTime: new Date(newExpiredTime),
+                            draft: isDraftTask ? 1 : 0,
+                            signatures: [],
+                            description: "",
+                            descriptioncv: "",
+                            note: "",
+                            notecv: ""
+                        })
+
+                        if(callback) {
+                            await callback(childTaskID, newChildTask);
+                        }
+
+                        return newChildTask;
+                    })
+
+                return resolve({ results, errors });
+            } catch(error) {
+                return resolve({
+                    results: [],
+                    errors: [error.message]
+                });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Copy task
+     * Date: 22/04/2022
+     * Updated: 01/09/2022 - MinhVH
+     */
+    copyTask({
+        taskID, name, projectID, groupID, assigneeID, relatedIDs,
+        authorAttachs, type, subtype, description, startTime, expiredHour,
+        expiredTime, contractID, isDraftTask, isCloneChildTask,
+        userID, bizfullname, ctx
+    }) {
+        // console.log('===========copy công việc===========>>>>>>>>>>')
+        // console.log({
+        //     taskID, name, projectID, groupID, assigneeID, relatedIDs,
+        //     authorAttachs, type, subtype, description, startTime, expiredHour,
+        //     expiredTime, contractID, isDraftTask, isCloneChildTask,
+        //     userID, bizfullname
+        // })
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({
+                    taskID          : { value: taskID, isRequire: true },
+                    projectID       : { value: projectID, isRequire: true },
+                    groupID         : { value: groupID, isRequire: true },
+                    assigneeID      : { value: assigneeID, isRequire: true },
+                    relatedIDs      : { value: relatedIDs, isRequire: false },
+                    contractID      : { value: contractID, isRequire: false },
+                    authorAttachs   : { value: authorAttachs, isRequire: false },
+                    userID          : { value: userID, isRequire: true },
+                });
+                if(validation.error) return resolve(validation);
+
+                // Công việc GỐC sẽ copy sang
+                const infoOldTask = await PCM_PLAN_TASK_COLL
+                    .findById(taskID)
+                    .lean();
+
+                if(!infoOldTask) {
+                    return resolve({
+                        error: true,
+                        message: 'Công việc cũ không tồn tại',
+                        keyError: 'old_task_not_exists',
+                        status: 400
+                    });
+                }
+
+                const { amountoftime, parent } = infoOldTask;
+
+                // Clone task (CÔNG VIỆC CHA MỚI)
+                const infoAfterCloneTask = await this.insert({
+                    name,
+                    description,
+                    projectID,
+                    groupID,
+                    contractID,
+                    authorID: userID,
+                    assigneeID,
+                    relatedIDs,
+                    parentID: parent,
+                    authorAttachs,
+                    type,
+                    subType: subtype,
+                    // startTime,
+                    startTime: new Date(),
+                    expiredHour,
+                    expiredTime,
+                    draft: isDraftTask ? 1 : 0,
+                    signatures: [],
+                    amountoftime,
+                    bizfullname,
+                    ctx
+                })
+                if(infoAfterCloneTask.error) return resolve(infoAfterCloneTask);
+                
+                // Copy các công việc con nếu có
+                if(isCloneChildTask) {
+                    // Clone child task (level 2)
+                    await this.cloneChildTask({
+                        parentId: taskID,
+                        parentTask: infoAfterCloneTask.data,
+                        isDraftTask,
+                        callback: async (childTaskID, newChildTask) => {
+
+                            // Clone grand child task (level 3)
+                            await this.cloneChildTask({
+                                parentId: childTaskID,
+                                parentTask: newChildTask,
+                                isDraftTask
+                            })
+                        }
+                    })
+                }
+
+                return resolve({ error: false, data: infoAfterCloneTask?.data, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Name: get info task
      * Author: Depv
      * Code:
@@ -2277,10 +2614,10 @@ class Model extends BaseModel {
         })
     }
 
-    /**
+     /**
      * Name: Gom nhóm theo thuộc tính
-     * Author: Hiepnh
-     * Date: 21/9/2022
+     * Dev: HiepNH
+     * Date: 27/8/2023
      */
     getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin }){
         // console.log({ option, userID, fromDate, toDate, projectID, companyID, year })
@@ -2666,11 +3003,11 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming }){
+    getDynamicReport({ userID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
         // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
         return new Promise(async resolve => {
             try {
-                let conditionObj = { }
+                let conditionObj = { }, conditionProject = {}, conditionMatch = { }
 
                 conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
 
@@ -2770,7 +3107,6 @@ class Model extends BaseModel {
                         amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
                     }});
                 }else{
-                    
                     /**
                      * Theo đơn vị tạo việc
                      */
@@ -3006,6 +3342,55 @@ class Model extends BaseModel {
                         ])
 
                         return resolve({ error: false, data: { listDataPriority } });
+                    }
+
+                    /**
+                     * Tổng hợp số lượng và phân loại theo tháng, năm của dự án
+                     */
+                    if(option && Number(option) == 9){
+                        conditionObj = {project: ObjectID(projectID)}
+
+                        conditionProject = {
+                            year : {$year : "$actualFinishTime"},
+                            month : {$month : "$actualFinishTime"},
+                            actualFinishTime: 1,
+                            milestone: 1,
+                            project: 1,
+                        }
+
+                        if(isMilestone && isMilestone == 1){
+                            conditionObj.milestone = {$gt: 0}
+                        }
+
+                        if(year){
+                            conditionMatch.year = Number(year)
+                        }
+
+                        objectGroup = { month: '$month', year: '$year' }
+                        // sortBy = { "_id.year": 1 }
+
+                        // console.log(conditionObj)
+
+                        let listData = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionMatch
+                            }, 
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            // { $sort: sortBy},
+                        ])
+
+                        return resolve({ error: false, data: listData });
                     }
                 }
 
@@ -3483,18 +3868,19 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án V2
-     * Author: Depv
-     * Code:
+     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án
+     * Author: HiepNH
+     * Date: 27/8/2023
      */
-    getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx }){
+    getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID_invalid' });
 
                 let objectSearch = {
-                    project: ObjectID(projectID), companyOfAssignee: { $exists: true },
+                    project: ObjectID(projectID), 
+                    companyOfAssignee: { $exists: true }
                 }
 
                 if(subtype){
@@ -3508,7 +3894,7 @@ class Model extends BaseModel {
                 ]);
 
                 let conditionObjCompany = {};
-                if(keyword){
+                if(keyword && keyword != ""){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObjCompany.name = new RegExp(keyword, 'i');
@@ -3521,13 +3907,11 @@ class Model extends BaseModel {
                     match: conditionObjCompany
                 }
 
-                let listData = await PCM_PLAN_TASK_COLL.populate(listCompanyOfAssignee, conditionPopulate);
+                await PCM_PLAN_TASK_COLL.populate(listCompanyOfAssignee, conditionPopulate)
+                let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean)
 
-                // let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean);
-                let listCompany = listCompanyOfAssignee.map(item => item._id).filter(Boolean);
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
+                let start = new Date()
+                // start.setHours(0,0,0,0)
 
                 let conditionSearchTask = {
                     project: ObjectID(projectID),
@@ -3544,8 +3928,8 @@ class Model extends BaseModel {
                             ...conditionSearchTask,
                             actualFinishTime: {
                                 $lt: start,
-                                $exists: true,
-                                $ne: null
+                                // $exists: true,
+                                // $ne: null
                             },
                             status: { $ne: 3 }
                         }
@@ -3566,8 +3950,8 @@ class Model extends BaseModel {
                             actualFinishTime: {
                                 $gte: start,
                                 $lt: addDate(7),
-                                $exists: true,
-                                $ne: null
+                                // $exists: true,
+                                // $ne: null
                             },
                             status: { $ne: 3 }
                         }
@@ -3587,8 +3971,8 @@ class Model extends BaseModel {
                             ...conditionSearchTask,
                             actualFinishTime: {
                                 $gte: addDate(7),
-                                $exists: true,
-                                $ne: null
+                                // $exists: true,
+                                // $ne: null
                             },
                             status: { $ne: 3 }
                         }
@@ -3620,7 +4004,9 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listCompany,
-                    listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
+                    listCompanyAndTaskOverdueWork, 
+                    listCompanyAndTaskNextWeekWork, 
+                    listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
                     } });
 
@@ -3930,7 +4316,7 @@ class Model extends BaseModel {
                 ]);
 
                 let start = new Date();
-                start.setHours(0,0,0,0);
+                // start.setHours(0,0,0,0);
 
                 // Số lượng công việc quá hạn
                 let listAmountTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
@@ -3940,8 +4326,8 @@ class Model extends BaseModel {
                             status: { $ne: 3 },
                             actualFinishTime: {
                                 $lt: start,
-                                $exists: true,
-                                $ne: null
+                                // $exists: true,
+                                // $ne: null
                             }
                         }
                     },
@@ -3963,8 +4349,8 @@ class Model extends BaseModel {
                             actualFinishTime: {
                                 $gte: start,
                                 $lt: addDate(7),
-                                $exists: true,
-                                $ne: null
+                                // $exists: true,
+                                // $ne: null
                             }
                         }
                     },
@@ -3985,8 +4371,8 @@ class Model extends BaseModel {
                             status: { $ne: 3 },
                             actualFinishTime: {
                                 $gte: addDate(7),
-                                $exists: true,
-                                $ne: null
+                                // $exists: true,
+                                // $ne: null
                             }
                         }
                     },
@@ -4019,343 +4405,6 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: { listProject, listAmountTask, listAmountTaskOverdueWork, listAmountTaskNextWeekWork, listAmountTaskMoreThan7Days, listAmountTaskFinish } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Di chuyển công việc đến việc cha
-     * Date: 22/04/2022
-	 */
-    moveTaskToParent({ parentID, taskID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                const validation = validateParamsObjectID({
-                    parentID,
-                    taskID,
-                    userID
-                })
-                if(validation.error) return resolve(validation);
-
-                if(parentID.toString() == taskID.toString()) {
-                    return resolve({
-                        error: true,
-                        message: 'Không thể tự di chuyển vào chính công việc này',
-                        keyError: 'error_occurred',
-                        status: 422
-                    });
-                }
-
-                /**
-                 * Thông tin công việc cha
-                 */
-                const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID)
-
-                if(!infoParent) {
-                    return resolve({
-                        error: true,
-                        message: 'Công việc cha không tồn tại',
-                        keyError: 'parent_task_not_exists',
-                        status: 400
-                    });
-                }
-
-                const { project } = infoParent;
-
-                /**
-                * Gán project từ việc cha sang việc con (không gán Group)
-                * - Chỉ cho phép người tạo việc, thực hiện di chuyển
-                * - Tăng số lượng subtask của task cha
-                */
-                const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
-                    _id: taskID,
-                    project
-                },
-                {
-                    $set: {
-                        parent: parentID,
-                    },
-                }, { new: true })
-
-                // Cập nhật số lượng công việc con của việc cha
-                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,
-                {
-                    $inc: {
-                        amountSubtask: 1,
-                    }
-                }, { new: true })
-
-                if(!result) {
-                    return resolve({
-                        error: true,
-                        message: 'Di chuyển không thành công (công việc không tồn tại hoặc không cùng dự án)',
-                        keyError: 'error_occurred',
-                        status: 422
-                    });
-                }
-
-                return resolve({ error: false, data: result, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Di chuyển công việc đến nhóm dữ liệu khác (trong cùng dự án)
-     * Date: 22/04/2022
-	 */
-    moveTaskToGroup({ groupID, taskID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                const validation = validateParamsObjectID({
-                    groupID,
-                    taskID,
-                    userID
-                })
-
-                if(validation.error) return resolve(validation);
-
-                const infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID);
-
-                if(!infoGroup) {
-                    return resolve({
-                        error: true,
-                        message: 'Nhóm dữ liệu không tồn tại',
-                        keyError: 'group_not_exists',
-                        status: 400
-                    });
-                }
-
-                const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
-                    _id: taskID,
-                    project: infoGroup.project,
-                    $or: [
-                        { author: userID },
-                        { assignee: userID },
-                    ]
-                }, {
-                    $set: {
-                        group: groupID
-                    }
-                }, { new: true })
-
-                if(!result) {
-                    return resolve({
-                        error: true,
-                        message: 'Di chuyển không thành công (công việc không tồn tại hoặc không cùng dự án)',
-                        keyError: 'error_occurred',
-                        status: 422
-                    });
-                }
-
-                return resolve({ error: false, data: result, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Dev: MinhVH
-     * Func: Copy child task
-     * Date: 01/09/2022
-     */
-    cloneChildTask({ parentId, parentTask, isDraftTask, callback = null }) {
-        // console.log('===========copy công việc connnnnnnnnn===========>>>>>>>>>>')
-        // console.log({ parentId, parentTask, isDraftTask })
-        return new Promise(async resolve => {
-            try {
-                // Công việc con của công việc CHA-GỐC
-                const listTasks = await PCM_PLAN_TASK_COLL
-                    .find({ parent: parentId })
-                    .populate('parent', 'startTime expiredTime')
-                    .lean();
-
-                if(!listTasks || !listTasks.length) {
-                    return resolve({
-                        results: [],
-                        errors: ['not found tasks']
-                    })
-                }
-                // console.log(listTasks)
-
-                const { results, errors } = await PromisePool
-                    .for(listTasks)
-                    .withConcurrency(4)
-                    .process(async childTask => {
-                        const childTaskID = childTask._id;
-
-                        // Thời hạn công việc cha gốc
-                        let orgParentExpiredTime = childTask.parent?.expiredTime
-                        // console.log({ orgParentExpiredTime })
-
-                        // Thời hạn công việc cha mới
-                        let newParentExpiredTime = parentTask?.expiredTime
-                        // console.log({ newParentExpiredTime })
-
-                        let duaration = calculateExpire(orgParentExpiredTime, newParentExpiredTime, 'days');
-                        // console.log({ duaration })
-
-                        // // Thời gian bắt đầu task cha (1)
-                        // let startTime = childTask.parent?.startTime;
-                        // console.log({ startTime_TaskCha: startTime })
-
-                        // // Deadline task con (2)
-                        // let expiredTime = childTask.expiredTime;
-                        // console.log({ expiredTime_TaskCon: expiredTime })
-
-                        // // Tổng ngày từ startTime task cha -> deadline task con (3)
-                        // let totalDayStartTimeToExpiredTime = calculateExpire(startTime, expiredTime, 'days');
-                        // console.log({ totalDayStartTimeToExpiredTime })
-
-                        /**
-                         * Lấy startTime của task CHA MỚI (new) + thêm (3)
-                         * => Deadline mới cho task con (new)
-                         */
-                        // let newExpiredTime = moment(parentTask.startTime, "DD-MM-YYYY")
-                            // .add(totalDayStartTimeToExpiredTime, 'days');
-
-                        let newExpiredTime = moment(childTask.expiredTime, "DD-MM-YYYY")
-                            .add(duaration, 'days');
-
-                        let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
-
-                        delete childTask._id;
-                        const newChildTask = await PCM_PLAN_TASK_COLL.create({
-                            ...childTask,
-                            suid,
-                            status: 1,
-                            percentage: 0,
-                            parent: parentTask._id,
-                            startTime: new Date(),
-                            actualStartTime: new Date(),
-                            expiredTime: new Date(newExpiredTime),
-                            actualFinishTime: new Date(newExpiredTime),
-                            draft: isDraftTask ? 1 : 0,
-                            signatures: [],
-                            description: "",
-                            descriptioncv: "",
-                            note: "",
-                            notecv: ""
-                        })
-
-                        if(callback) {
-                            await callback(childTaskID, newChildTask);
-                        }
-
-                        return newChildTask;
-                    })
-
-                return resolve({ results, errors });
-            } catch(error) {
-                return resolve({
-                    results: [],
-                    errors: [error.message]
-                });
-            }
-        })
-    }
-
-    /**
-     * Dev: MinhVH
-     * Func: Copy task
-     * Date: 22/04/2022
-     * Updated: 01/09/2022 - MinhVH
-     */
-    copyTask({
-        taskID, name, projectID, groupID, assigneeID, relatedIDs,
-        authorAttachs, type, subtype, description, startTime, expiredHour,
-        expiredTime, contractID, isDraftTask, isCloneChildTask,
-        userID, bizfullname, ctx
-    }) {
-        // console.log('===========copy công việc===========>>>>>>>>>>')
-        // console.log({
-        //     taskID, name, projectID, groupID, assigneeID, relatedIDs,
-        //     authorAttachs, type, subtype, description, startTime, expiredHour,
-        //     expiredTime, contractID, isDraftTask, isCloneChildTask,
-        //     userID, bizfullname
-        // })
-        return new Promise(async resolve => {
-            try {
-                const validation = validateParamsObjectID({
-                    taskID          : { value: taskID, isRequire: true },
-                    projectID       : { value: projectID, isRequire: true },
-                    groupID         : { value: groupID, isRequire: true },
-                    assigneeID      : { value: assigneeID, isRequire: true },
-                    relatedIDs      : { value: relatedIDs, isRequire: false },
-                    contractID      : { value: contractID, isRequire: false },
-                    authorAttachs   : { value: authorAttachs, isRequire: false },
-                    userID          : { value: userID, isRequire: true },
-                });
-                if(validation.error) return resolve(validation);
-
-                // Công việc GỐC sẽ copy sang
-                const infoOldTask = await PCM_PLAN_TASK_COLL
-                    .findById(taskID)
-                    .lean();
-
-                if(!infoOldTask) {
-                    return resolve({
-                        error: true,
-                        message: 'Công việc cũ không tồn tại',
-                        keyError: 'old_task_not_exists',
-                        status: 400
-                    });
-                }
-
-                const { amountoftime, parent } = infoOldTask;
-
-                // Clone task (CÔNG VIỆC CHA MỚI)
-                const infoAfterCloneTask = await this.insert({
-                    name,
-                    description,
-                    projectID,
-                    groupID,
-                    contractID,
-                    authorID: userID,
-                    assigneeID,
-                    relatedIDs,
-                    parentID: parent,
-                    authorAttachs,
-                    type,
-                    subType: subtype,
-                    // startTime,
-                    startTime: new Date(),
-                    expiredHour,
-                    expiredTime,
-                    draft: isDraftTask ? 1 : 0,
-                    signatures: [],
-                    amountoftime,
-                    bizfullname,
-                    ctx
-                })
-                if(infoAfterCloneTask.error) return resolve(infoAfterCloneTask);
-                
-                // Copy các công việc con nếu có
-                if(isCloneChildTask) {
-                    // Clone child task (level 2)
-                    await this.cloneChildTask({
-                        parentId: taskID,
-                        parentTask: infoAfterCloneTask.data,
-                        isDraftTask,
-                        callback: async (childTaskID, newChildTask) => {
-
-                            // Clone grand child task (level 3)
-                            await this.cloneChildTask({
-                                parentId: childTaskID,
-                                parentTask: newChildTask,
-                                isDraftTask
-                            })
-                        }
-                    })
-                }
-
-                return resolve({ error: false, data: infoAfterCloneTask?.data, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

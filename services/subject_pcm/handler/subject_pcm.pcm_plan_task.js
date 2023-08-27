@@ -173,6 +173,111 @@ module.exports = {
     },
 
     /**
+	 * Dev: MinhVH
+	 * Func: Di chuyển công việc đến việc cha
+     * Date: 22/04/2022
+	 */
+    moveTaskToParent: {
+        auth: "required",
+        params: {
+            parentID    : { type: "string" },
+            taskID      : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const { parentID, taskID } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.moveTaskToParent({
+                    parentID, taskID, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Di chuyển công việc đến nhóm dữ liệu khác (trong cùng dự án)
+     * Date: 22/04/2022
+	 */
+    moveTaskToGroup: {
+        auth: "required",
+        params: {
+            groupID    : { type: "string" },
+            taskID     : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const { groupID, taskID } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.moveTaskToGroup({
+                    groupID, taskID, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: MinhVH
+     * Func: Copy công việc
+     * Date: 22/04/2022
+     */
+    copyTask: {
+        auth: 'required',
+        params: {
+            taskID           : { type: "string" },
+            name             : { type: "string" },
+            projectID        : { type: "string" },
+            groupID          : { type: "string" },
+            assigneeID       : { type: "string" },
+            relatedIDs       : { type: "array", optional: true },
+            authorAttachs    : { type: "array", optional: true },
+            type             : { type: "number", optional: true },
+            subtype          : { type: "number", optional: true },
+            description      : { type: "string", optional: true },
+            startTime        : { type: "string", optional: true },
+            expiredHour      : { type: "string", optional: true },
+            expiredTime      : { type: "string", optional: true },
+            contractID       : { type: "string", optional: true },
+            isDraftTask      : { type: "boolean", optional: true },
+            isCloneChildTask : { type: "boolean", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID, company, bizfullname } = ctx.meta.infoUser;
+                const {
+                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
+                    authorAttachs, type, subtype, description, startTime, expiredHour,
+                    expiredTime, contractID, isDraftTask, isCloneChildTask
+                } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.copyTask({
+                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
+                    authorAttachs, type, subtype, description, startTime, expiredHour,
+                    expiredTime, contractID, isDraftTask, isCloneChildTask,
+                    userID, companyOfUser: company._id, bizfullname, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
 	 * Dev: Depv
 	 * Func: getList and getInfo pcm_plan_report
 	 */
@@ -316,9 +421,9 @@ module.exports = {
     },
 
      /**
+     * Name: Gom nhóm theo thuộc tính
      * Dev: HiepNH
-     * Func: Gom nhóm theo tính chất
-     * Date: 17/9/2022
+     * Date: 27/8/2023
      */
     getListByProperty: {
         auth: "required",
@@ -388,13 +493,17 @@ module.exports = {
     getDynamicReport: {
         auth: "required",
         params: {
-            reportType          : { type: 'string' },
+            reportType          : { type: 'string', optional: true },
             option              : { type: 'string', optional: true },
+            projectID           : { type: 'string', optional: true },
             status              : { type: 'array', optional: true },
             subtypes            : { type: 'array', optional: true },
             fromDate            : { type: 'string', optional: true },
             toDate              : { type: 'string', optional: true },
             upcoming            : { type: "string", optional: true },
+            upcoming            : { type: "string", optional: true },
+            isMilestone         : { type: "string", optional: true },
+            year                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -402,10 +511,10 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const {
-                    reportType, option, status, fromDate, toDate, subtypes, upcoming
+                    reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year
                 } = ctx.params;
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option, status, fromDate, toDate, subtypes, upcoming })
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year })
                 // console.log(resultAfterCallHandler)
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -488,9 +597,10 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
-	 * Func: Lấy số lượng công việc của companyOfAssignee trong dự án
-	 */
+     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án
+     * Author: HiepNH
+     * Date: 27/8/2023
+     */
     getAmountTaskOfCompanyOfAssignee: {
         auth: "required",
         params: {
@@ -508,11 +618,11 @@ module.exports = {
                 // console.log({option, company, projectID, keyword, subtype})
 
                 if(!option){
-                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx });
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx })
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
                 }else{
-                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV1({ option, companyID: company._id, projectID, keyword, subtype, ctx });
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV1({ option, companyID: company._id, projectID, keyword, subtype, ctx })
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
                 }
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -574,9 +684,10 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
-	 * Func: Lấy số lượng công việc của tất cả project mà user là members
-	 */
+     * Name: Lấy số lượng công việc của tất cả Project mà user là members
+     * Author: HiepNH
+     * Date: 27/8/2023
+     */
     getAmountTaskByProjects: {
         auth: "required",
         params: {
@@ -592,111 +703,6 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Di chuyển công việc đến việc cha
-     * Date: 22/04/2022
-	 */
-    moveTaskToParent: {
-        auth: "required",
-        params: {
-            parentID    : { type: "string" },
-            taskID      : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                const { _id: userID } = ctx.meta.infoUser;
-                const { parentID, taskID } = ctx.params;
-
-                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.moveTaskToParent({
-                    parentID, taskID, userID
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Di chuyển công việc đến nhóm dữ liệu khác (trong cùng dự án)
-     * Date: 22/04/2022
-	 */
-    moveTaskToGroup: {
-        auth: "required",
-        params: {
-            groupID    : { type: "string" },
-            taskID     : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                const { _id: userID } = ctx.meta.infoUser;
-                const { groupID, taskID } = ctx.params;
-
-                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.moveTaskToGroup({
-                    groupID, taskID, userID
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
-
-    /**
-     * Dev: MinhVH
-     * Func: Copy công việc
-     * Date: 22/04/2022
-     */
-    copyTask: {
-        auth: 'required',
-        params: {
-            taskID           : { type: "string" },
-            name             : { type: "string" },
-            projectID        : { type: "string" },
-            groupID          : { type: "string" },
-            assigneeID       : { type: "string" },
-            relatedIDs       : { type: "array", optional: true },
-            authorAttachs    : { type: "array", optional: true },
-            type             : { type: "number", optional: true },
-            subtype          : { type: "number", optional: true },
-            description      : { type: "string", optional: true },
-            startTime        : { type: "string", optional: true },
-            expiredHour      : { type: "string", optional: true },
-            expiredTime      : { type: "string", optional: true },
-            contractID       : { type: "string", optional: true },
-            isDraftTask      : { type: "boolean", optional: true },
-            isCloneChildTask : { type: "boolean", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                const { _id: userID, company, bizfullname } = ctx.meta.infoUser;
-                const {
-                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
-                    authorAttachs, type, subtype, description, startTime, expiredHour,
-                    expiredTime, contractID, isDraftTask, isCloneChildTask
-                } = ctx.params;
-
-                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.copyTask({
-                    taskID, name, projectID, groupID, assigneeID, relatedIDs,
-                    authorAttachs, type, subtype, description, startTime, expiredHour,
-                    expiredTime, contractID, isDraftTask, isCloneChildTask,
-                    userID, companyOfUser: company._id, bizfullname, ctx
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
