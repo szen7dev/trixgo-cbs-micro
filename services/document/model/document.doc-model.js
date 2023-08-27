@@ -49,6 +49,61 @@ class Model extends BaseModel {
     constructor() {
         super(DOCUMENT__DOC_COLL);
     }
+    /**
+	 * Dev: MinhVH
+	 * Func: Thêm file đính kèm trong hồ sơ
+	 * Date: 13/11/2021
+	 */
+    addFileAttachment({ authorID, documentID, filesID }) {
+        // console.log('===========THÊM FILE VÀO HỒ SƠ===========>>>>>>>>>>')
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid' });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid' });
+
+                if(!filesID || !filesID.length || !checkObjectIDs(filesID))
+                    return resolve({ error: true, message: 'Request params filesID invalid' });
+
+                const listFilesInsert = filesID.map(file => ({
+                    document: documentID,
+                    user: authorID,
+                    file,
+                    createAt: timeUtils.getCurrentTime(),
+                    modifyAt: timeUtils.getCurrentTime()
+                }))
+
+                let infoAfterInsert = await DOCUMENT__FILE_COLL.insertMany(listFilesInsert);
+
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: 'Add files attachment failed' });
+
+                const infoAfterInsertTemp = [...infoAfterInsert];
+                const infoLastFile = infoAfterInsertTemp.pop();
+
+                const dataUpdateDoc = {
+                    lastFile: infoLastFile.file,
+                    $addToSet: {
+                        files: filesID
+                    }
+                };
+
+                // Cập nhật trường lastFile vào trong document
+               let infoDoc = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
+            //    console.log(infoDoc)
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterInsert
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
 	/**
 	 * Dev: Depv
@@ -392,6 +447,175 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
+            }
+        })
+    }
+
+     /**
+ 	 * Dev: MinhVH
+ 	 * Func: Chia sẻ văn bản
+ 	 * Date: 05/11/2021
+ 	 */
+ 	updateShareDocument({ authorID, documentID, usersID, isShare }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+                if(!usersID || !usersID.length || !checkObjectIDs(usersID))
+                    return resolve({ error: true, message: 'Request params usersID invalid', status: 400 });
+
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: authorID,
+                    permission: 1
+                }).lean()
+
+                if(!checkPermission)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
+                let infoAfterShare = null;
+
+                if(isShare){
+                    let listUserShared = usersID.map(user => ({
+                        document: documentID,
+                        user,
+                        permission: 2,
+                        createAt: timeUtils.getCurrentTime(),
+                        modifyAt: timeUtils.getCurrentTime()
+                    }))
+
+                    infoAfterShare = await DOCUMENT__USER_COLL.insertMany(listUserShared);
+                } else{
+                    let listUserRemoveShare = usersID.map(user => ({
+                        document: documentID,
+                        user
+                    }))
+
+                    infoAfterShare = await DOCUMENT__USER_COLL.deleteMany(listUserRemoveShare);
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterShare
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+ 	 * Dev: MinhVH
+ 	 * Func: Cập nhật quyền người được chia sẻ văn bản
+ 	 * Date: 05/11/2021
+ 	 */
+    updatePermissionShare({ authorID, documentID, userID, permission }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+                if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(![2,3].includes(permission))
+                    return resolve({ error: true, message: 'Request params permission invalid', status: 400 });
+
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: authorID,
+                    permission: 1
+                }).lean();
+
+                if(!checkPermission)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
+                let infoUserShared = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: userID
+                }).lean()
+
+                if(!infoUserShared)
+                    return resolve({ error: true, message: 'User has not yet shared the document', status: 400 });
+
+                let infoAfterUpdate = await DOCUMENT__USER_COLL.findByIdAndUpdate(infoUserShared._id, {
+                    $set: {
+                        permission
+                    }
+                }, { new: true })
+
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Update permission failed', status: 422 });
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterUpdate
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Đánh dấu hồ sơ
+	 * Date: 30/12/2021
+	 */
+    updateMarkDocument({ userID, documentID, isMark }) {
+        return new Promise(async (resolve) => {
+            try {
+
+                if(!checkObjectIDs(documentID)) {
+                    return resolve({
+                        error: true,
+                        message: 'Request params documentID invalid',
+                        keyError: 'params_documentID_invalid',
+                        status: 400
+                    });
+                }
+                
+                let infoAfterUpdate = null;
+
+                if(isMark) {
+                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
+                        $addToSet: {
+                            usersMarked: userID
+                        }
+                    }, { new: true });
+                } else{
+                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
+                        $pull: {
+                            usersMarked: userID
+                        }
+                    }, { new: true });
+                }
+
+                if(!infoAfterUpdate) {
+                    return resolve({
+                        error: true,
+                        message: "Can't highlight document",
+                        keyError: 'highlight_document_failed',
+                        status: 422
+                    });
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterUpdate
+                });
             } catch (error) {
                 return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
             }
@@ -1073,121 +1297,6 @@ class Model extends BaseModel {
 
     /**
  	 * Dev: MinhVH
- 	 * Func: Chia sẻ văn bản
- 	 * Date: 05/11/2021
- 	 */
- 	updateShareDocument({ authorID, documentID, usersID, isShare }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([authorID]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
-
-                if(!checkObjectIDs([documentID]))
-                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
-
-                if(!usersID || !usersID.length || !checkObjectIDs(usersID))
-                    return resolve({ error: true, message: 'Request params usersID invalid', status: 400 });
-
-                let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: authorID,
-                    permission: 1
-                }).lean()
-
-                if(!checkPermission)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
-
-                let infoAfterShare = null;
-
-                if(isShare){
-                    let listUserShared = usersID.map(user => ({
-                        document: documentID,
-                        user,
-                        permission: 2,
-                        createAt: timeUtils.getCurrentTime(),
-                        modifyAt: timeUtils.getCurrentTime()
-                    }))
-
-                    infoAfterShare = await DOCUMENT__USER_COLL.insertMany(listUserShared);
-                } else{
-                    let listUserRemoveShare = usersID.map(user => ({
-                        document: documentID,
-                        user
-                    }))
-
-                    infoAfterShare = await DOCUMENT__USER_COLL.deleteMany(listUserRemoveShare);
-                }
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: infoAfterShare
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
- 	 * Dev: MinhVH
- 	 * Func: Cập nhật quyền người được chia sẻ văn bản
- 	 * Date: 05/11/2021
- 	 */
-    updatePermissionShare({ authorID, documentID, userID, permission }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([authorID]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
-
-                if(!checkObjectIDs([documentID]))
-                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
-
-                if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-                if(![2,3].includes(permission))
-                    return resolve({ error: true, message: 'Request params permission invalid', status: 400 });
-
-                let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: authorID,
-                    permission: 1
-                }).lean();
-
-                if(!checkPermission)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
-
-                let infoUserShared = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: userID
-                }).lean()
-
-                if(!infoUserShared)
-                    return resolve({ error: true, message: 'User has not yet shared the document', status: 400 });
-
-                let infoAfterUpdate = await DOCUMENT__USER_COLL.findByIdAndUpdate(infoUserShared._id, {
-                    $set: {
-                        permission
-                    }
-                }, { new: true })
-
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Update permission failed', status: 422 });
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: infoAfterUpdate
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
- 	 * Dev: MinhVH
  	 * Func: Danh sách user được truy cập hồ sơ
  	 * Date: 10/11/2021
  	 */
@@ -1275,116 +1384,6 @@ class Model extends BaseModel {
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
-            }
-        })
-    }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Thêm file đính kèm trong hồ sơ
-	 * Date: 13/11/2021
-	 */
-    addFileAttachment({ authorID, documentID, filesID }) {
-        // console.log('===========THÊM FILE VÀO HỒ SƠ===========>>>>>>>>>>')
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([authorID]))
-                    return resolve({ error: true, message: 'Request params authorID invalid' });
-
-                if(!checkObjectIDs([documentID]))
-                    return resolve({ error: true, message: 'Request params documentID invalid' });
-
-                if(!filesID || !filesID.length || !checkObjectIDs(filesID))
-                    return resolve({ error: true, message: 'Request params filesID invalid' });
-
-                const listFilesInsert = filesID.map(file => ({
-                    document: documentID,
-                    user: authorID,
-                    file,
-                    createAt: timeUtils.getCurrentTime(),
-                    modifyAt: timeUtils.getCurrentTime()
-                }))
-
-                let infoAfterInsert = await DOCUMENT__FILE_COLL.insertMany(listFilesInsert);
-
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: 'Add files attachment failed' });
-
-                const infoAfterInsertTemp = [...infoAfterInsert];
-                const infoLastFile = infoAfterInsertTemp.pop();
-
-                const dataUpdateDoc = {
-                    lastFile: infoLastFile.file,
-                    $addToSet: {
-                        files: filesID
-                    }
-                };
-
-                // Cập nhật trường lastFile vào trong document
-               let infoDoc = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
-            //    console.log(infoDoc)
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: infoAfterInsert
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Đánh dấu hồ sơ
-	 * Date: 30/12/2021
-	 */
-    updateMarkDocument({ userID, documentID, isMark }) {
-        return new Promise(async (resolve) => {
-            try {
-
-                if(!checkObjectIDs(documentID)) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params documentID invalid',
-                        keyError: 'params_documentID_invalid',
-                        status: 400
-                    });
-                }
-                
-                let infoAfterUpdate = null;
-
-                if(isMark) {
-                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
-                        $addToSet: {
-                            usersMarked: userID
-                        }
-                    }, { new: true });
-                } else{
-                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
-                        $pull: {
-                            usersMarked: userID
-                        }
-                    }, { new: true });
-                }
-
-                if(!infoAfterUpdate) {
-                    return resolve({
-                        error: true,
-                        message: "Can't highlight document",
-                        keyError: 'highlight_document_failed',
-                        status: 422
-                    });
-                }
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: infoAfterUpdate
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
             }
         })
     }
