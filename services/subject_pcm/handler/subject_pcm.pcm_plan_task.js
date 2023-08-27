@@ -275,6 +275,7 @@ module.exports = {
             projectsID          : { type: 'array', optional: true },
             subtypes            : { type: 'array', optional: true },
             status              : { type: 'array', optional: true },
+            prioritys           : { type: 'array', optional: true },
             fieldsID            : { type: 'array', optional: true },
             isExpired           : { type: 'string', optional: true },
             read                : { type: 'string', optional: true },
@@ -296,14 +297,14 @@ module.exports = {
 
                 const {
                     option, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
+                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, prioritys, keyword,
                     limit, lastestID, select, populates, reportID, upcoming
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
                     option, companyID: company._id,
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, keyword,
+                    projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, prioritys, keyword,
                     limit, lastestID, select, populates, userID, reportID, upcoming
                 })
 
@@ -404,8 +405,9 @@ module.exports = {
                     reportType, option, status, fromDate, toDate, subtypes, upcoming
                 } = ctx.params;
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option, status, fromDate, toDate, subtypes, upcoming });
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option, status, fromDate, toDate, subtypes, upcoming })
+                // console.log(resultAfterCallHandler)
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
                 return { error:  true, message: error.message };
             }

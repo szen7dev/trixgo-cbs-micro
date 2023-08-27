@@ -2027,13 +2027,13 @@ class Model extends BaseModel {
      */
     getListByFilter({
         option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
+        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID, reportID, upcoming
     }) {
         // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
         // console.log({
         //     option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        // projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, reportType, keyword, unlimited,
+        // projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, unlimited,
         // limit, lastestID, select, populates, userID, reportID, upcoming
         // })
         return new Promise(async resolve => {
@@ -2110,6 +2110,7 @@ class Model extends BaseModel {
                 /**
                  * Bộ lọc với nhiều lựa chọn
                  */
+                prioritys && prioritys.length                       && (conditionObj.priority = { $in: prioritys });
                 status && status.length                             && (conditionObj.status = { $in: status });
                 projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
                 subtypes && subtypes.length                         && (conditionObj.subtype = { $in: subtypes });
@@ -2682,11 +2683,14 @@ class Model extends BaseModel {
 
                 let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
-                /**
-                 * VIỆC CỦA TÔI
-                 */
+                // Việc của tôi
                 if(reportType && reportType == 1){
                     conditionObj.assignee = ObjectID(userID)
+                }
+
+                // Việc giao người khác
+                if(reportType && reportType == 2){
+                    conditionObj.author = ObjectID(userID)
                 }
 
                 // Theo thời hạn
@@ -2768,7 +2772,7 @@ class Model extends BaseModel {
                 }else{
                     
                     /**
-                     * Theo đơn vị giao việc
+                     * Theo đơn vị tạo việc
                      */
                     if(option && Number(option) == 1){
                         objectGroup = { companyOfAuthor: '$companyOfAuthor' }
@@ -2800,7 +2804,7 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Theo người giao việc
+                     * Theo người tạo việc
                      */
                     if(option && Number(option) == 2){
                         objectGroup = { author: '$author' }
@@ -2835,8 +2839,76 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: { listDataUser } });
                     }
 
+                     /**
+                     * Theo đơn vị thực hiện
+                     */
+                     if(option && Number(option) == 3){
+                        objectGroup = { companyOfAssignee: '$companyOfAssignee' }
+                        sortBy = { "_id.companyOfAssignee": 1 }
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAssignee',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        let listDataCompany = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+
+                        if(listDataCompany.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataCompany, conditionPopulateCompany)
+                        }
+
+                        return resolve({ error: false, data: { listDataCompany } });
+                    }
+
                     /**
-                     * Theo dự án chứa việc
+                     * Theo người thực hiện
+                     */
+                    if(option && Number(option) == 4){
+                        objectGroup = { assignee: '$assignee' }
+                        sortBy = { "_id.assignee": 1 }
+
+                        conditionPopulateUser = {
+                            path: '_id.assignee',
+                            select: '_id name sign image fullname',
+                            model: 'user'
+                        }
+                        // console.log(conditionObj)
+                        // console.log(objectGroup)
+
+                        let listDataUser = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        // console.log(listDataUser)
+
+                        if(listDataUser.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataUser, conditionPopulateUser)
+                        }
+
+                        return resolve({ error: false, data: { listDataUser } });
+                    }
+
+                    /**
+                     * Theo Dự án/Phòng ban chứa công việc
                      */
                     if(option && Number(option) == 5){
                         objectGroup = { project: '$project' }
@@ -2911,6 +2983,29 @@ class Model extends BaseModel {
                         ])
 
                         return resolve({ error: false, data: { listDataStatus } });
+                    }
+
+                    /**
+                     * Theo mức độ ưu tiên
+                     */
+                    if(option && Number(option) == 8){
+                        objectGroup = { priority: '$priority' }
+                        sortBy = { "_id.priority": 1 }
+
+                        let listDataPriority = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+
+                        return resolve({ error: false, data: { listDataPriority } });
                     }
                 }
 

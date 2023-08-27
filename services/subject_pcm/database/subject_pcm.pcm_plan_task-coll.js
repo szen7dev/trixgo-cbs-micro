@@ -132,7 +132,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      */
     type: { type: Number, default: 1 },
     /**
-     * TÍNH CHẤT
+     * Tính chất
      * 0-Việc thông thường
      * 1-Yêu cầu thông tin
      * 2-Yêu cầu phê duyệt
@@ -145,6 +145,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 9-Báo cáo
      * 10-Tiến độ
      * 11-Biên bản họp
+     * 12-Hóa đơn
      */
     subtype: { type: Number, default: 0 },
     /**
@@ -165,18 +166,17 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         ref : "doctype"
     },
     /**
-     * Phân loại trạng thái (gồm cả trạng thái Lock)
+     * Trạng thái
      * 1-Khởi tạo
      * 2-Đang triển khai
      * 3-Hoàn thành
      * 4-Treo lại
      * 5-Chờ người khác giải quyết
      * 6-Tiếp tục theo dõi
-     * 7-Khóa
      */
     status: { type: Number, default: 1 },
     /**
-     * Phân loại mức độ quan trọng
+     * Mức độ quan trọng
      * 1-Thấp
      * 2-Bình thường
      * 3-Cao
