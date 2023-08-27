@@ -2683,11 +2683,14 @@ class Model extends BaseModel {
 
                 let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
-                /**
-                 * VIỆC CỦA TÔI
-                 */
+                // Việc của tôi
                 if(reportType && reportType == 1){
                     conditionObj.assignee = ObjectID(userID)
+                }
+
+                // Việc giao người khác
+                if(reportType && reportType == 2){
+                    conditionObj.author = ObjectID(userID)
                 }
 
                 // Theo thời hạn
@@ -2840,14 +2843,68 @@ class Model extends BaseModel {
                      * Theo đơn vị thực hiện
                      */
                      if(option && Number(option) == 3){
-                       
+                        objectGroup = { companyOfAssignee: '$companyOfAssignee' }
+                        sortBy = { "_id.companyOfAssignee": 1 }
+                        conditionPopulateCompany = {
+                            path: '_id.companyOfAssignee',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        let listDataCompany = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+
+                        if(listDataCompany.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataCompany, conditionPopulateCompany)
+                        }
+
+                        return resolve({ error: false, data: { listDataCompany } });
                     }
 
                     /**
                      * Theo người thực hiện
                      */
                     if(option && Number(option) == 4){
-                        
+                        objectGroup = { assignee: '$assignee' }
+                        sortBy = { "_id.assignee": 1 }
+
+                        conditionPopulateUser = {
+                            path: '_id.assignee',
+                            select: '_id name sign image fullname',
+                            model: 'user'
+                        }
+                        // console.log(conditionObj)
+                        // console.log(objectGroup)
+
+                        let listDataUser = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            { $sort: sortBy},
+                        ])
+                        // console.log(listDataUser)
+
+                        if(listDataUser.length){
+                            await PCM_PLAN_TASK_COLL.populate(listDataUser, conditionPopulateUser)
+                        }
+
+                        return resolve({ error: false, data: { listDataUser } });
                     }
 
                     /**
