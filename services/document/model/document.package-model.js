@@ -404,7 +404,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách gói thầu
 	 * Date: 26/10/2021
 	 */
-    getListPackage({ departmentID, parentID, userID, lastestID, isShowAll, keyword, limit = 10, select, populates = {}}){
+    getListPackage({ departmentID, parentID, status, userID, lastestID, isShowAll, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(departmentID))
@@ -437,6 +437,10 @@ class Model extends BaseModel {
 					}
 				}
 
+                if(status && !isNaN(status)) {
+                    conditionObj.status = +status;
+                }
+
                 if(parentID && checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
                 }
@@ -451,7 +455,7 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
-
+                // console.log(conditionObj)
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await DOCUMENT__PACKAGE_COLL.findById(lastestID);

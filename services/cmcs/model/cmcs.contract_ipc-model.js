@@ -2,7 +2,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
+// const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
@@ -19,18 +19,18 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
  * import inter-coll, exter-coll
  */
 const ITEM__CONTRACT_COLL              = require('../../item/database/item.contract-coll');
-const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_production-coll');
+// const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
 
 /**
  * SAU BỎ ĐI, CALL QUA SERVICE
  */
-const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll'); // Kiểm tra fix lại, không Import trực tiếp
+// const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll'); // Kiểm tra fix lại, không Import trực tiếp
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { template }                      = require('lodash');
-const { ResumeToken }                   = require('mongodb');
+// const { template }                      = require('lodash');
+// const { ResumeToken }                   = require('mongodb');
 
 /**
  * import inter-model, exter-model
@@ -722,8 +722,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObjAgg)
-                console.log(conditionObjYear)
+                // console.log(conditionObjAgg)
+                // console.log(conditionObjYear)
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -957,7 +957,7 @@ class Model extends BaseModel {
      * Date: 5/4/2022
      */
     getAmountByMonth({ userID, companyID, projectID, contractID, outin, year, option, plan }){
-        console.log({ userID, companyID, projectID, contractID, outin, year, option, plan })
+        // console.log({ userID, companyID, projectID, contractID, outin, year, option, plan })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
@@ -982,7 +982,7 @@ class Model extends BaseModel {
                 }
 
                 if(!plan){
-                    console.log('SỐ LIỆU THỰC TẾ====================================')
+                    // console.log('SỐ LIỆU THỰC TẾ====================================')
                     if(!option){
                         // console.log('SỐ LIỆU NĂM NAY====================================')
                         conditionGroup = {
@@ -1028,7 +1028,7 @@ class Model extends BaseModel {
                                 $gte: new Date(firstDayOfLastYear),
                                 $lte: new Date(lastDayOfLastYear)
                             }
-                            console.log(conditionObj)
+                            // console.log(conditionObj)
                         }
                     }
     
@@ -1060,7 +1060,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData });
                 }else{
                     if(!option){
-                        console.log('SỐ LIỆU KẾ HOẠCH====================================')
+                        // console.log('SỐ LIỆU KẾ HOẠCH====================================')
                         conditionGroup = {
                             _id: { month: "$month", year: "$year" },
                             amount: { $sum: "$amount" },
@@ -1096,7 +1096,7 @@ class Model extends BaseModel {
                                 }
                             }
                         ])
-                        console.log(listData)
+                        // console.log(listData)
 
                         return resolve({ error: false, data: listData });
                     }else{
