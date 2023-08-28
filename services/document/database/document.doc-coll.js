@@ -122,7 +122,6 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
      * 1-Đang triển khai
      * 2-Hoàn thành
      */
-    // finish: { type: Number, default: 1 },
     //_________Trạng thái hoàn thành (0-Chưa hoàn thành/ 1-Hoàn thành)
     completeStatus: {
         type: Number,

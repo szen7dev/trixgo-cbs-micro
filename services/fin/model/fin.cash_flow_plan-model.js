@@ -423,8 +423,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                if(limit > 50){
-                    limit = 50
+                if(limit > 20){
+                    limit = 20
                 } else{
                     limit = +limit;
                 }

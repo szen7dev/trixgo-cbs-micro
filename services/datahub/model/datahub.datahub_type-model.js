@@ -171,8 +171,8 @@ class Model extends BaseModel {
                 let sortBy; 
                 let keys	     = ['createAt__-1', '_id__-1'];
 
-                if(limit > 50){
-                    limit = 50;
+                if(limit > 20){
+                    limit = 20;
                 }else{
                     limit = +limit
                 }

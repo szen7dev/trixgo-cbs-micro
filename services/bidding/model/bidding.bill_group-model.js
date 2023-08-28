@@ -223,8 +223,8 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 50){
-                    limit = 50
+                if(limit > 20){
+                    limit = 20
                 }else{
                     limit = +limit;
                 }

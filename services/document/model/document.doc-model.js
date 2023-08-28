@@ -892,7 +892,7 @@ class Model extends BaseModel {
         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {} }) {
-        //     console.log('=============TRA CỨU HỒ SƠ TẠI TRANG CHỦ=============>>>>>>>>>>>>>>')
+        //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
         //     console.log({
         //         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
         // requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
@@ -933,8 +933,8 @@ class Model extends BaseModel {
                 /**
                  * LOGIC CODE (3)
                  */
-                if(limit > 50){
-                    limit = 50;
+                if(limit > 20){
+                    limit = 20;
                 } else{
                     limit = +limit;
                 }
@@ -1062,7 +1062,7 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Thông kê số lượng văn bản theo type
+     * Func: Thống kê số lượng văn bản theo type
      * Date: 27/10/2021
      */
     statisticalByType({ userID, companyID, departmentID, packageID }) {
@@ -1179,7 +1179,7 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Thông kê số lượng văn bản theo datahubContact
+     * Func: Thống kê số lượng văn bản theo datahubContact
      * Date: 27/10/2021
      */
     statisticalByDatahubContact({ userID, companyID, departmentID, packageID }) {
@@ -1419,6 +1419,72 @@ class Model extends BaseModel {
                 ]);
 
                 return resolve({ error: false, data: { listProject, listAmountDocument } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Báo cáo linh hoạt
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getDynamicReport({ userID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
+        // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, conditionProject = {}, conditionMatch = {}, objectGroup = {}
+                conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
+              
+                /**
+                 * Tổng hợp số lượng và phân loại theo tháng, năm của dự án
+                 */
+                if(!option){
+                    conditionObj = {project: ObjectID(projectID)}
+
+                    conditionProject = {
+                        year : {$year : "$date"},
+                        month : {$month : "$date"},
+                        date: 1,
+                        project: 1,
+                    }
+
+                    if(isMilestone && isMilestone == 1){
+                        conditionObj.milestone = {$gt: 0}
+                    }
+
+                    if(year){
+                        conditionMatch.year = Number(year)
+                    }
+
+                    objectGroup = { month: '$month', year: '$year' }
+                    // sortBy = { "_id.year": 1 }
+
+                    // console.log(conditionObj)
+
+                    let listData = await DOCUMENT__DOC_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: conditionProject
+                        },
+                        {
+                            $match: conditionMatch
+                        }, 
+                        {
+                            $group: {
+                                _id: objectGroup,
+                                amount: { $sum: 1 },
+                            }
+                        },
+                        // { $sort: sortBy},
+                    ])
+
+                    return resolve({ error: false, data: listData });
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

@@ -580,6 +580,43 @@ module.exports = {
         }
     },
 
+    /**
+     * Name: Báo cáo linh hoạt
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getDynamicReport: {
+        auth: "required",
+        params: {
+            reportType          : { type: 'string', optional: true },
+            option              : { type: 'string', optional: true },
+            projectID           : { type: 'string', optional: true },
+            status              : { type: 'array', optional: true },
+            subtypes            : { type: 'array', optional: true },
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            upcoming            : { type: "string", optional: true },
+            upcoming            : { type: "string", optional: true },
+            isMilestone         : { type: "string", optional: true },
+            year                : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const {
+                    reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year
+                } = ctx.params;
+
+                let resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getDynamicReport({ userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming, isMilestone, year })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
      /**
      * Dev: HiepNH
      * Func: Download Template Excel
