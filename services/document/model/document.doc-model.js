@@ -680,27 +680,18 @@ class Model extends BaseModel {
     getList({
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, publishID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
-        keyword, limit = 30, lastestID, select, populates= {} }) {
-            // console.log('========12345========================>>>>>>>>>>>>')
-            // console.log({parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel,
-            //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate,
-            //     keyword, limit})
+        keyword, limit = 20, lastestID, select, populates= {} }) {
+            // console.log('========getListDocument========================>>>>>>>>>>>>')
+            // console.log({parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, publishID, isExportExcel,
+            //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate, keyword, limit })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = {};
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(limit > 30){
-                    limit = 30;
+                if(limit > 20){
+                    limit = 20;
                 } else{
                     limit = +limit;
                 }
@@ -734,11 +725,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 // User phải nằm trong member của gói thầu.
                 let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
                 if(listPackageAccess.length){
@@ -833,6 +819,8 @@ class Model extends BaseModel {
                     return resolve({ data: conditionObj, error: false });
                 }
 
+                // console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
@@ -848,7 +836,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
-                console.log({ conditionObj });
+                
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
