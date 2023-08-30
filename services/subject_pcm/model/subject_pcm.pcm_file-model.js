@@ -82,7 +82,7 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Thêm pcm file
+	 * Name: Thêm pcm file
 	 * Date: ...
 	 */
     insert({
@@ -161,7 +161,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Func: Danh sách file
+	 * Name: Danh sách file
      * Dev: MinhVH
      * Update: HiepNH
 	 * Date: 21/8/2022
@@ -426,7 +426,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Func: Tìm kiếm file
+	 * Name: Tìm kiếm file
      * Dev: HiepNH
 	 * Date: 24/8/2022
 	 */
@@ -587,22 +587,15 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Lấy danh sách file, group theo tháng năm
+	 * Name: Lấy danh sách file, group theo tháng năm
 	 * Date: 12/08/2021
 	 */
-	getListFilesGroupByDate({ companyID, projectID, userID, ctx }){
+	getListFilesGroupByDate({ companyID, projectID, userID, year, ctx }){
+        // console.log({ companyID, projectID, userID })
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([userID])) {
-					return resolve({
-                        error: true,
-                        message: "Tham số userID không hợp lệ",
-                        keyError: "params_userID_invalid",
-                        status: 400
-                    });
-                }
-
 				let conditionObj = { type: 1 }; // Hình ảnh (type = 1)
+                let conditionMatch = {}
 
 				if(projectID){
                     if(!checkObjectIDs([projectID])) {
@@ -628,6 +621,10 @@ class Model extends BaseModel {
 					};
 				}
 
+                if(year){
+                    conditionMatch.year = Number(year)
+                }
+
 				const groupObj = {
 					_id: { $dateToString: { format: "%Y-%m", date: "$createAt" } },
 					dataFormat: {
@@ -643,6 +640,17 @@ class Model extends BaseModel {
                         $match: conditionObj
                     },
                     {
+                        $project: {
+                            year : {$year : "$createAt"},
+                            type : 1,
+                            project : 1,
+                            createAt : 1,
+                        }
+                    },
+                    {
+                        $match: conditionMatch
+                    },
+                    {
                         $group: groupObj
                     },
                     {
@@ -651,8 +659,10 @@ class Model extends BaseModel {
                         }
                     }
                 ]
+                // console.log(pipeline)
 
-                const dataFilesGroupByDate = await PCM_FILE__COLL.aggregate(pipeline);
+                const dataFilesGroupByDate = await PCM_FILE__COLL.aggregate(pipeline)
+                // console.log(dataFilesGroupByDate)
 
                 if(!dataFilesGroupByDate) {
                     return resolve({
@@ -679,30 +689,26 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Lấy danh sách file, group theo hợp đồng
+	 * Name: Lấy danh sách file, group theo hợp đồng
 	 * Date: 12/08/2021
 	 */
-	getListFilesGroupByContract({ keyword, projectID, userID }){
-        // console.log('==============123232=================')
+	getListFilesGroupByContract({ keyword, projectID, year, userID }){
+        // console.log('==============getListFilesGroupByContract=================')
         // console.log({ keyword, projectID, userID })
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([userID])) {
-					return resolve({
-                        error: true,
-                        message: "Tham số userID không hợp lệ",
-                        keyError: "params_userID_invalid",
-                        status: 400
-                    });
-                }
-
                 // Hình ảnh (type = 1)
 				let conditionObj = {
                     type: 1,
                     project: ObjectID(projectID),
                     contract: { $exists: true, $ne: null }
-                };
-                let conditionKeyword = {};
+                }
+
+                let conditionKeyword = {}, conditionMatch = {}
+
+                if(year){
+                    conditionMatch.year = Number(year)
+                }
 
 				const groupObj = {
 					_id: "$contract",
@@ -715,6 +721,18 @@ class Model extends BaseModel {
                         $match: conditionObj
                     },
                     {
+                        $project: {
+                            year : {$year : "$createAt"},
+                            type : 1,
+                            project : 1,
+                            contract : 1,
+                            createAt : 1,
+                        }
+                    },
+                    {
+                        $match: conditionMatch
+                    },
+                    {
                         $group: groupObj
                     },
                     {
@@ -723,8 +741,10 @@ class Model extends BaseModel {
                         }
                     }
                 ]
+                // console.log(pipeline)
 
-                const dataFilesGroupByContract = await PCM_FILE__COLL.aggregate(pipeline);
+                const dataFilesGroupByContract = await PCM_FILE__COLL.aggregate(pipeline)
+                // console.log(dataFilesGroupByContract)
 
                 if(!dataFilesGroupByContract) {
                     return resolve({
@@ -750,6 +770,7 @@ class Model extends BaseModel {
                         select: "nameOrg path description"
                     }
                 })
+                // console.log(dataFilesGroupByContract)
 
 				return resolve({
 					error: false,
@@ -767,7 +788,7 @@ class Model extends BaseModel {
     /**
      * @deprecated Use downloadFilesV2 instead
      * Dev: MinhVH
-     * Func: Download files
+     * Name: Download files
      * Date: 21/12/2022
      */
     downloadFiles({ taskID }){
@@ -909,6 +930,9 @@ class Model extends BaseModel {
         })
     }
 
+     /**
+     * Tải file trong GroupID
+     */
     downloadFilesInGroup({ groupID, userID }) {
         return new Promise(async resolve => {
             try {
@@ -958,7 +982,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Tải file trong GroupID
+     * Tải file trong GroupID theo đệ quy
      */
     downloadFilesRecursiveInGroup({ groupID, userID }) {
         return new Promise(async resolve => {
