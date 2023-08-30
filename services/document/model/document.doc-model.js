@@ -49,6 +49,61 @@ class Model extends BaseModel {
     constructor() {
         super(DOCUMENT__DOC_COLL);
     }
+    /**
+	 * Dev: MinhVH
+	 * Func: Thêm file đính kèm trong hồ sơ
+	 * Date: 13/11/2021
+	 */
+    addFileAttachment({ authorID, documentID, filesID }) {
+        // console.log('===========THÊM FILE VÀO HỒ SƠ===========>>>>>>>>>>')
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid' });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid' });
+
+                if(!filesID || !filesID.length || !checkObjectIDs(filesID))
+                    return resolve({ error: true, message: 'Request params filesID invalid' });
+
+                const listFilesInsert = filesID.map(file => ({
+                    document: documentID,
+                    user: authorID,
+                    file,
+                    createAt: timeUtils.getCurrentTime(),
+                    modifyAt: timeUtils.getCurrentTime()
+                }))
+
+                let infoAfterInsert = await DOCUMENT__FILE_COLL.insertMany(listFilesInsert);
+
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: 'Add files attachment failed' });
+
+                const infoAfterInsertTemp = [...infoAfterInsert];
+                const infoLastFile = infoAfterInsertTemp.pop();
+
+                const dataUpdateDoc = {
+                    lastFile: infoLastFile.file,
+                    $addToSet: {
+                        files: filesID
+                    }
+                };
+
+                // Cập nhật trường lastFile vào trong document
+               let infoDoc = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
+            //    console.log(infoDoc)
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterInsert
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
 	/**
 	 * Dev: Depv
@@ -399,6 +454,175 @@ class Model extends BaseModel {
     }
 
      /**
+ 	 * Dev: MinhVH
+ 	 * Func: Chia sẻ văn bản
+ 	 * Date: 05/11/2021
+ 	 */
+ 	updateShareDocument({ authorID, documentID, usersID, isShare }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+                if(!usersID || !usersID.length || !checkObjectIDs(usersID))
+                    return resolve({ error: true, message: 'Request params usersID invalid', status: 400 });
+
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: authorID,
+                    permission: 1
+                }).lean()
+
+                if(!checkPermission)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
+                let infoAfterShare = null;
+
+                if(isShare){
+                    let listUserShared = usersID.map(user => ({
+                        document: documentID,
+                        user,
+                        permission: 2,
+                        createAt: timeUtils.getCurrentTime(),
+                        modifyAt: timeUtils.getCurrentTime()
+                    }))
+
+                    infoAfterShare = await DOCUMENT__USER_COLL.insertMany(listUserShared);
+                } else{
+                    let listUserRemoveShare = usersID.map(user => ({
+                        document: documentID,
+                        user
+                    }))
+
+                    infoAfterShare = await DOCUMENT__USER_COLL.deleteMany(listUserRemoveShare);
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterShare
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+ 	 * Dev: MinhVH
+ 	 * Func: Cập nhật quyền người được chia sẻ văn bản
+ 	 * Date: 05/11/2021
+ 	 */
+    updatePermissionShare({ authorID, documentID, userID, permission }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+                if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(![2,3].includes(permission))
+                    return resolve({ error: true, message: 'Request params permission invalid', status: 400 });
+
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: authorID,
+                    permission: 1
+                }).lean();
+
+                if(!checkPermission)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
+                let infoUserShared = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: userID
+                }).lean()
+
+                if(!infoUserShared)
+                    return resolve({ error: true, message: 'User has not yet shared the document', status: 400 });
+
+                let infoAfterUpdate = await DOCUMENT__USER_COLL.findByIdAndUpdate(infoUserShared._id, {
+                    $set: {
+                        permission
+                    }
+                }, { new: true })
+
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Update permission failed', status: 422 });
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterUpdate
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Đánh dấu hồ sơ
+	 * Date: 30/12/2021
+	 */
+    updateMarkDocument({ userID, documentID, isMark }) {
+        return new Promise(async (resolve) => {
+            try {
+
+                if(!checkObjectIDs(documentID)) {
+                    return resolve({
+                        error: true,
+                        message: 'Request params documentID invalid',
+                        keyError: 'params_documentID_invalid',
+                        status: 400
+                    });
+                }
+                
+                let infoAfterUpdate = null;
+
+                if(isMark) {
+                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
+                        $addToSet: {
+                            usersMarked: userID
+                        }
+                    }, { new: true });
+                } else{
+                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
+                        $pull: {
+                            usersMarked: userID
+                        }
+                    }, { new: true });
+                }
+
+                if(!infoAfterUpdate) {
+                    return resolve({
+                        error: true,
+                        message: "Can't highlight document",
+                        keyError: 'highlight_document_failed',
+                        status: 422
+                    });
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterUpdate
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
+            }
+        })
+    }
+
+     /**
      * Name: get văn bản
      * Author: Depv
      * Code:
@@ -456,27 +680,18 @@ class Model extends BaseModel {
     getList({
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, publishID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
-        keyword, limit = 30, lastestID, select, populates= {} }) {
-            // console.log('========12345========================>>>>>>>>>>>>')
-            // console.log({parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID, isExportExcel,
-            //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate,
-            //     keyword, limit})
+        keyword, limit = 20, lastestID, select, populates= {}, isParent }) {
+            // console.log('========getListDocument========================>>>>>>>>>>>>')
+            // console.log({parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, publishID, isExportExcel,
+            //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate, keyword, limit, isParent })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = {};
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(limit > 30){
-                    limit = 30;
+                if(limit > 20){
+                    limit = 20;
                 } else{
                     limit = +limit;
                 }
@@ -493,34 +708,14 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Ngày nhận văn bản
-                if(receivedDate && typeof receivedDate === 'string'){
-					if(!IsJsonString(receivedDate))
-						return resolve({ error: true, message: 'Request params receivedDate invalid', status: 400 });
-
-					receivedDate = JSON.parse(receivedDate);
-				}
-
-                if(receivedDate){
-                    let fromDate = receivedDate.from;
-                    let toDate   = receivedDate.to;
-                    // Lấy những văn bản từ ngày đến ngày
-                    if(fromDate && toDate){
-                        conditionObj.receivedDate = { $gte: new Date(fromDate), $lte: moment(new Date(toDate)).endOf('day')._d }
-                    }
+                // Chỉ lấy các mẩu tin cha
+                if(isParent){
+                    conditionObj.parent = { $exists: false }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                // User phải nằm trong member của gói thầu.
-                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
-                if(listPackageAccess.length){
-                    conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
-                } else{
-                    return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
+                // Mẩu tin đã quan tâm
+                if(marked){
+                    conditionObj.usersMarked = { $in: [userID] }
                 }
 
                 if(companyID){
@@ -531,12 +726,25 @@ class Model extends BaseModel {
                     conditionObj.type = type
                 }
 
-                if(fromDate && toDate){
-                    conditionObj.date = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                // Ngày nhận văn bản
+                if(receivedDate && typeof receivedDate === 'string'){
+                    if(!IsJsonString(receivedDate))
+                        return resolve({ error: true, message: 'Request params receivedDate invalid', status: 400 });
+
+                    receivedDate = JSON.parse(receivedDate);
                 }
 
-                if(packageID){
-                    conditionObj.package = packageID
+                if(receivedDate){
+                    let fromDate = receivedDate.from;
+                    let toDate   = receivedDate.to;
+                    // Lấy những văn bản từ ngày đến ngày
+                    if(fromDate && toDate){
+                        conditionObj.receivedDate = { $gte: new Date(fromDate), $lte: moment(new Date(toDate)).endOf('day')._d }
+                    }
+                }
+
+                if(fromDate && toDate){
+                    conditionObj.date = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                 }
 
                 if(direction){
@@ -571,23 +779,37 @@ class Model extends BaseModel {
                     conditionObj.field = fieldID
                 }
 
-                if(checkObjectIDs(departmentID)){
-                    conditionObj.project = departmentID
-                }
-
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
-                } else{
-                    conditionObj.parent = { $exists: false }
+                }
+
+                if(checkObjectIDs(departmentID)){
+                    // conditionObj.project = departmentID
+
+                    let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ project: departmentID, members: { $in: [userID]} })?.select("_id");
+                    if(listPackageAccess.length){
+                        conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                    } else{
+                        return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
+                    }
+                }else{
+                    if(!packageID && !parentID){
+                        let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
+                        if(listPackageAccess.length){
+                            conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                        } else{
+                            return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
+                        }
+                    }               
+                }
+
+                if(checkObjectIDs(packageID)){
+                    conditionObj.package = packageID
                 }
 
                 if(publishID){
                     conditionObj.publish = publishID;
                     delete conditionObj.parent
-                }
-
-                if(marked){
-                    conditionObj.usersMarked = { $in: [userID] }
                 }
 
                 if(keyword){
@@ -606,8 +828,10 @@ class Model extends BaseModel {
                  * Function: exportDocument (model)
                  */
                 if(isExportExcel) {
-                    return resolve({ data: conditionObj, error: false });
+                    return resolve({ data: conditionObj, error: false })
                 }
+
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -624,26 +848,26 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
-                console.log({ conditionObj });
+                
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean();
+                    .lean()
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", status: 403 })
 
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]?._id;
-                        infoDataAfterGet.length = limit;
+                        nextCursor = infoDataAfterGet[limit - 1]?._id
+                        infoDataAfterGet.length = limit
                     }
                 }
-                let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit);
+                let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObjOrg)
+                let totalPage   = Math.ceil(totalRecord/limit)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -651,10 +875,10 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
-                }, status: 200 });
+                }, status: 200 })
 
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
@@ -667,14 +891,20 @@ class Model extends BaseModel {
     getListByFilter({
         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 20, lastestID, select, populates= {} }) {
-        //     console.log('=============TRA CỨU HỒ SƠ TẠI TRANG CHỦ=============>>>>>>>>>>>>>>')
+        keyword, limit = 20, lastestID, select, populates= {}, isParent }) {
+        //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
         //     console.log({
         //         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
         // requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-        // keyword, limit, lastestID, select, populates })
+        // keyword, limit, lastestID, select, populates, isParent })
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
+
                 const validation = validateParamsObjectID({
                     packagesID              : { value: packagesID, isRequire: false },
                     sendersID               : { value: sendersID, isRequire: false },
@@ -699,31 +929,34 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * DECALARTION VARIABLE (2)
-                 */
                 let conditionObj = {};
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * LOGIC CODE (3)
-                 */
-                if(limit > 50){
-                    limit = 50;
-                } else{
-                    limit = +limit;
+                // Chỉ lấy các mẩu tin cha
+                if(isParent){
+                    conditionObj.parent = { $exists: false }
                 }
 
                 /**
                 * User phải nằm trong member của gói thầu
                 */
-                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
-                if(listPackageAccess.length){
-                    conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
-                } else{
-                    return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
+                if(checkObjectIDs(departmentsID)){
+                    let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ project: { $in: departmentsID}, members: { $in: [userID]} })?.select("_id")
+                    if(listPackageAccess.length){
+                        conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                    } else{
+                        return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" })
+                    }
+                }else{
+                    let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id")
+                    if(listPackageAccess.length){
+                        conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                    } else{
+                        return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" })
+                    }
                 }
+                
 
                 /**
                  * Bộ lọc với nhiều lựa chọn
@@ -758,8 +991,6 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
-                } else{
-                    conditionObj.parent = { $exists: false }
                 }
 
                 if(marked){
@@ -785,6 +1016,8 @@ class Model extends BaseModel {
                 if(isExportExcel) {
                     return resolve({ data: conditionObj, error: false });
                 }
+
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -838,7 +1071,7 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Thông kê số lượng văn bản theo type
+     * Func: Thống kê số lượng văn bản theo type
      * Date: 27/10/2021
      */
     statisticalByType({ userID, companyID, departmentID, packageID }) {
@@ -955,7 +1188,7 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Thông kê số lượng văn bản theo datahubContact
+     * Func: Thống kê số lượng văn bản theo datahubContact
      * Date: 27/10/2021
      */
     statisticalByDatahubContact({ userID, companyID, departmentID, packageID }) {
@@ -1073,121 +1306,6 @@ class Model extends BaseModel {
 
     /**
  	 * Dev: MinhVH
- 	 * Func: Chia sẻ văn bản
- 	 * Date: 05/11/2021
- 	 */
- 	updateShareDocument({ authorID, documentID, usersID, isShare }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([authorID]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
-
-                if(!checkObjectIDs([documentID]))
-                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
-
-                if(!usersID || !usersID.length || !checkObjectIDs(usersID))
-                    return resolve({ error: true, message: 'Request params usersID invalid', status: 400 });
-
-                let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: authorID,
-                    permission: 1
-                }).lean()
-
-                if(!checkPermission)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
-
-                let infoAfterShare = null;
-
-                if(isShare){
-                    let listUserShared = usersID.map(user => ({
-                        document: documentID,
-                        user,
-                        permission: 2,
-                        createAt: timeUtils.getCurrentTime(),
-                        modifyAt: timeUtils.getCurrentTime()
-                    }))
-
-                    infoAfterShare = await DOCUMENT__USER_COLL.insertMany(listUserShared);
-                } else{
-                    let listUserRemoveShare = usersID.map(user => ({
-                        document: documentID,
-                        user
-                    }))
-
-                    infoAfterShare = await DOCUMENT__USER_COLL.deleteMany(listUserRemoveShare);
-                }
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: infoAfterShare
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
- 	 * Dev: MinhVH
- 	 * Func: Cập nhật quyền người được chia sẻ văn bản
- 	 * Date: 05/11/2021
- 	 */
-    updatePermissionShare({ authorID, documentID, userID, permission }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([authorID]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
-
-                if(!checkObjectIDs([documentID]))
-                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
-
-                if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-                if(![2,3].includes(permission))
-                    return resolve({ error: true, message: 'Request params permission invalid', status: 400 });
-
-                let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: authorID,
-                    permission: 1
-                }).lean();
-
-                if(!checkPermission)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
-
-                let infoUserShared = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: userID
-                }).lean()
-
-                if(!infoUserShared)
-                    return resolve({ error: true, message: 'User has not yet shared the document', status: 400 });
-
-                let infoAfterUpdate = await DOCUMENT__USER_COLL.findByIdAndUpdate(infoUserShared._id, {
-                    $set: {
-                        permission
-                    }
-                }, { new: true })
-
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Update permission failed', status: 422 });
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: infoAfterUpdate
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
- 	 * Dev: MinhVH
  	 * Func: Danh sách user được truy cập hồ sơ
  	 * Date: 10/11/2021
  	 */
@@ -1280,116 +1398,6 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH
-	 * Func: Thêm file đính kèm trong hồ sơ
-	 * Date: 13/11/2021
-	 */
-    addFileAttachment({ authorID, documentID, filesID }) {
-        // console.log('===========THÊM FILE VÀO HỒ SƠ===========>>>>>>>>>>')
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([authorID]))
-                    return resolve({ error: true, message: 'Request params authorID invalid' });
-
-                if(!checkObjectIDs([documentID]))
-                    return resolve({ error: true, message: 'Request params documentID invalid' });
-
-                if(!filesID || !filesID.length || !checkObjectIDs(filesID))
-                    return resolve({ error: true, message: 'Request params filesID invalid' });
-
-                const listFilesInsert = filesID.map(file => ({
-                    document: documentID,
-                    user: authorID,
-                    file,
-                    createAt: timeUtils.getCurrentTime(),
-                    modifyAt: timeUtils.getCurrentTime()
-                }))
-
-                let infoAfterInsert = await DOCUMENT__FILE_COLL.insertMany(listFilesInsert);
-
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: 'Add files attachment failed' });
-
-                const infoAfterInsertTemp = [...infoAfterInsert];
-                const infoLastFile = infoAfterInsertTemp.pop();
-
-                const dataUpdateDoc = {
-                    lastFile: infoLastFile.file,
-                    $addToSet: {
-                        files: filesID
-                    }
-                };
-
-                // Cập nhật trường lastFile vào trong document
-               let infoDoc = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, dataUpdateDoc);
-            //    console.log(infoDoc)
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: infoAfterInsert
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Đánh dấu hồ sơ
-	 * Date: 30/12/2021
-	 */
-    updateMarkDocument({ userID, documentID, isMark }) {
-        return new Promise(async (resolve) => {
-            try {
-
-                if(!checkObjectIDs(documentID)) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params documentID invalid',
-                        keyError: 'params_documentID_invalid',
-                        status: 400
-                    });
-                }
-                
-                let infoAfterUpdate = null;
-
-                if(isMark) {
-                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
-                        $addToSet: {
-                            usersMarked: userID
-                        }
-                    }, { new: true });
-                } else{
-                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
-                        $pull: {
-                            usersMarked: userID
-                        }
-                    }, { new: true });
-                }
-
-                if(!infoAfterUpdate) {
-                    return resolve({
-                        error: true,
-                        message: "Can't highlight document",
-                        keyError: 'highlight_document_failed',
-                        status: 422
-                    });
-                }
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: infoAfterUpdate
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
-            }
-        })
-    }
-
-    /**
      * Name: Lấy số lượng công việc của tất cả project mà user là members
      * Author: Depv
      */
@@ -1420,6 +1428,72 @@ class Model extends BaseModel {
                 ]);
 
                 return resolve({ error: false, data: { listProject, listAmountDocument } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Báo cáo linh hoạt
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getDynamicReport({ userID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
+        // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, conditionProject = {}, conditionMatch = {}, objectGroup = {}
+                conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
+              
+                /**
+                 * Tổng hợp số lượng và phân loại theo tháng, năm của dự án
+                 */
+                if(!option){
+                    conditionObj = {project: ObjectID(projectID)}
+
+                    conditionProject = {
+                        year : {$year : "$date"},
+                        month : {$month : "$date"},
+                        date: 1,
+                        project: 1,
+                    }
+
+                    if(isMilestone && isMilestone == 1){
+                        conditionObj.milestone = {$gt: 0}
+                    }
+
+                    if(year){
+                        conditionMatch.year = Number(year)
+                    }
+
+                    objectGroup = { month: '$month', year: '$year' }
+                    // sortBy = { "_id.year": 1 }
+
+                    // console.log(conditionObj)
+
+                    let listData = await DOCUMENT__DOC_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: conditionProject
+                        },
+                        {
+                            $match: conditionMatch
+                        }, 
+                        {
+                            $group: {
+                                _id: objectGroup,
+                                amount: { $sum: 1 },
+                            }
+                        },
+                        // { $sort: sortBy},
+                    ])
+
+                    return resolve({ error: false, data: listData });
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

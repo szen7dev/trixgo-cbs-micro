@@ -13,6 +13,8 @@ const compressing                       = require('compressing');
 const rimraf                            = require('rimraf');
 const path                              = require('path');
 const PromisePool                       = require('@supercharge/promise-pool');
+const archiver                          = require('archiver');
+const stream                            = require('stream');
 
 /**
  * Tools
@@ -29,7 +31,6 @@ const {
     checkObjectIDs,
     IsJsonString,
     validateParamsObjectID,
-    getExtension,
 } = require('../../../tools/utils/utils');
 const {
     downloadFileS3,
@@ -38,7 +39,6 @@ const {
     downloadFileS3V2,
     zipFileToS3,
     copyFileS3,
-    listObjectsS3,
 } = require('../../../tools/s3');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -66,18 +66,18 @@ class Model extends BaseModel {
           signatureVersion: 'v2',
         });
 
-        // this.client = s3.createClient({
-        //     maxAsyncS3: 20,     // this is the default
-        //     s3RetryCount: 3,    // this is the default
-        //     s3RetryDelay: 1000, // this is the default
-        //     multipartUploadThreshold: 20971520, // this is the default (20 MB)
-        //     multipartUploadSize: 15728640, // this is the default (15 MB)
-        //     s3Options: {
-        //         accessKeyId : config.aws_access_key_id,
-        //         secretAccessKey : config.aws_secret_access_key,
-        //         region: config.aws_region,
-        //     },
-        // });
+        this.s3Client = s3.createClient({
+            maxAsyncS3: 20,     // this is the default
+            s3RetryCount: 3,    // this is the default
+            s3RetryDelay: 1000, // this is the default
+            multipartUploadThreshold: 20971520, // this is the default (20 MB)
+            multipartUploadSize: 15728640, // this is the default (15 MB)
+            s3Options: {
+                accessKeyId: config.aws_access_key_id,
+                secretAccessKey: config.aws_secret_access_key,
+                region: config.aws_region,
+            },
+        });
     }
 
     /**
@@ -842,10 +842,125 @@ class Model extends BaseModel {
         })
     }
 
+    testDownload() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const archiveStream = archiver('zip');
+
+                const groupID = '60a8ce770400462461cc0428';
+                const bucketName = `${config.bucket}`;
+                const destFolderKey = `root/storage/5dfe4b9051dc622100bb9d89/5eee9ea6d8b12d649ffa03a0/60a8cb540400462461cbff9f/60a8ce770400462461cc0428/`;
+
+                archiveStream.on('error', (error) => {
+                    console.error('Archival encountered an error:', error)
+                    reject(error)
+                })
+
+                const passThrough = new stream.PassThrough();
+
+                const bucketNameDemo = `${config.bucketDemo}/archive/temp`;
+                const fileNameZip = `${groupID}-${Date.now()}.zip`; // File name you want to save as in S3
+
+                const params = {
+                    Bucket: bucketNameDemo,
+                    Key: fileNameZip,
+                    Body: passThrough,
+                    ACL: 'public-read',
+                    ContentType: 'application/zip',
+                };
+
+                this.s3Object.upload(params, function(err, data) {
+                    if (err) reject(err);
+
+                    console.log(`File uploaded successfully. ${data.Location}`);
+                    resolve(data);
+                });
+
+                archiveStream.pipe(passThrough);
+
+                const listObjectParams = {
+                    Bucket: bucketName,
+                    Prefix: destFolderKey,
+                };
+
+                this.s3Object.listObjectsV2(listObjectParams, async (err, data) => {
+                    if(err) {
+                        reject(err)
+                    }
+
+                    for(const file of data.Contents) {
+                        const fileKey = file.Key;
+
+                        const fileParams = {
+                            Bucket: bucketName,
+                            Key: fileKey
+                        }
+                        // console.log({ file, fileParams, basename: path.basename(fileKey) })
+
+                        const response = await this.s3Object.getObject(fileParams).promise();
+                        archiveStream.append(response.Body, { name: path.basename(fileKey) })
+                    }
+                    console.log('Append stream done!!!');
+                    archiveStream.finalize();
+                })
+            } catch(err) {
+                console.error(err);
+            }
+        })
+    }
+
+    downloadFilesInGroup({ groupID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const group = await PCM_PLAN_GROUP__COLL
+                    .findOne({
+                        _id: groupID,
+                        $or: [
+                            { author: userID },
+                            { admins: { $in: [userID] }},
+                            { members: { $in: [userID] }},
+                        ]
+                    })
+                    .select('name sign company project')
+                    .populate('project', 'company')
+                    .lean();
+
+                if(!group) {
+                    return resolve({
+                        error: true,
+                        message: "You don't have permission to access this group",
+                        status: 403
+                    })
+                }
+
+                const { project, company } = group;
+                const destFolder = `root/storage/${APP_KEYS.PCM_PLAN_TASK}/${company._id}/${project._id}/${group._id}/`;
+                const result = await downloadFileS3V2({
+                    folderName: destFolder, 
+                    fileName: `${group.name}-${uuidv4()}-${Date.now()}.zip`, 
+                    zipTo: `files/temporary_uploads`, 
+                    bucketName: config.bucket
+                });
+
+                return resolve({
+                    error: false,
+                    data: result,
+                    status: 200
+                })
+            } catch(err) {
+                return resolve({
+                    error: true,
+                    message: err.message,
+                    status: 500
+                })
+            }
+        })
+    }
+
     /**
      * Tải file trong GroupID
      */
-    downloadFilesInGroup({ groupID, userID }) {
+    downloadFilesRecursiveInGroup({ groupID, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -892,7 +1007,7 @@ class Model extends BaseModel {
                     await PromisePool
                         .for(foldersChild)
                         .withConcurrency(10)
-                        .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
+                        .handleError((err) => console.log({ error: true, message: err.message, status: 500 }))
                         .process(async childGroup => {
                             const folderChildName = childGroup.name;
                             const folderGroupChildParams = {
@@ -914,7 +1029,7 @@ class Model extends BaseModel {
                             return !error && await PromisePool
                                 .for(data.tasks)
                                 .withConcurrency(10)
-                                .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
+                                .handleError((err) => console.log({ error: true, message: err.message, status: 500 }))
                                 .process(async task => {
                                     const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
 
@@ -939,7 +1054,7 @@ class Model extends BaseModel {
                     await PromisePool
                         .for(data.tasks)
                         .withConcurrency(10)
-                        .handleError(async (err) => console.log({ error: true, message: err.message, status: 500 }))
+                        .handleError((err) => console.log({ error: true, message: err.message, status: 500 }))
                         .process(task => {
                             const taskName = replaceSpaceWithChar(nonAccentVietnamese(task.namecv || task.name), '_');
 

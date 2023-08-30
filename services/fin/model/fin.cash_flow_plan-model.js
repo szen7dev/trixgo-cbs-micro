@@ -20,7 +20,7 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index')
  */
 class Model extends BaseModel {
     constructor() {
-        super(FIN__CASH_FLOW_PLAN_COLL);
+        super(FIN__CASH_FLOW_PLAN_COLL)
     }
 
     /**
@@ -423,8 +423,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                if(limit > 50){
-                    limit = 50
+                if(limit > 20){
+                    limit = 20
                 } else{
                     limit = +limit;
                 }

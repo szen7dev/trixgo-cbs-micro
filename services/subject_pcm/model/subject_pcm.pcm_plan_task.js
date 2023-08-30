@@ -3013,7 +3013,8 @@ class Model extends BaseModel {
         // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
         return new Promise(async resolve => {
             try {
-                let conditionObj = { }, conditionProject = {}, conditionMatch = { }
+                let conditionObj = {}, conditionProject = {}, conditionMatch = {}
+                let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
                 conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
 
@@ -3028,8 +3029,6 @@ class Model extends BaseModel {
                 if(Array.isArray(subtypes)){
                     conditionObj.subtype = {$in: subtypes.map(item=>Number(item))}
                 }
-
-                let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
                 // Việc của tôi
                 if(reportType && reportType == 1){

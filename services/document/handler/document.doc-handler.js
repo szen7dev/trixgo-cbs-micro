@@ -17,10 +17,31 @@ const { CF_ACTIONS_ANALYSIS } 		    = require('../../analysis/helper/analysis.ac
 
 module.exports = {
     /**
-	 * ============================ ****************** ===============================
-	 * ============================ 	 DOCUMENT  	   ===============================
-	 * ============================ ****************** ===============================
+	 * Dev: MinhVH
+	 * Func: Thêm file đính kèm trong hồ sơ
+	 * Date: 13/11/2021
 	 */
+    addFileAttachment: {
+        auth: "required",
+        params: {
+			documentID: { type: "string" }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { documentID, filesID } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.addFileAttachment({
+                    authorID, documentID, filesID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 
 	/**
 	 * Dev: MinhVH
@@ -84,6 +105,7 @@ module.exports = {
             }
         }
     },
+
     /**
 	 * Dev: MinhVH
 	 * Func: Cập nhật văn bản
@@ -227,6 +249,7 @@ module.exports = {
 			companyID       : { type: "string", optional: true }, // Thuộc công ty
             marked          : { type: "string", optional: true }, // Được đánh dấu
             keyword         : { type: "string", optional: true }, // Keyword
+            isParent        : { type: "string", optional: true },
 
             lastestID       : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
@@ -234,21 +257,22 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                // Call traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
-                    appID: `${APP_ID.DOCUMENT.id}`, menuID: `${APP_ID.DOCUMENT.menuDocumentApp.dashboard.id}`, type: 1
-                })
+                // // Call traffic
+                // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
+                //     appID: `${APP_ID.DOCUMENT.id}`, menuID: `${APP_ID.DOCUMENT.menuDocumentApp.dashboard.id}`, type: 1
+                // })
 
 				await this.validateEntity(ctx.params);
+
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let {
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, datahubContactID,
-                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
+                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates, isParent
                 } = ctx.params;
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, publishID: datahubContactID, userID, keyword,
-                    limit, lastestID, select, populates
+                    limit, lastestID, select, populates, isParent
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -283,6 +307,7 @@ module.exports = {
 			companyID       : { type: "string", optional: true }, // Thuộc công ty
             marked          : { type: "string", optional: true }, // Được đánh dấu
             keyword         : { type: "string", optional: true }, // Keyword
+            isParent        : { type: "string", optional: true },
 
             lastestID       : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
@@ -295,7 +320,7 @@ module.exports = {
 
                 let {
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
-                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates, isParent
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -303,7 +328,7 @@ module.exports = {
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListByFilter({
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
                     types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID: datahubContactsID, userID, keyword,
-                    limit, lastestID, select, populates
+                    limit, lastestID, select, populates, isParent
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -491,33 +516,6 @@ module.exports = {
     },
 
     /**
-	 * Dev: MinhVH
-	 * Func: Thêm file đính kèm trong hồ sơ
-	 * Date: 13/11/2021
-	 */
-    addFileAttachment: {
-        auth: "required",
-        params: {
-			documentID: { type: "string" }
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
-                const { documentID, filesID } = ctx.params;
-
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.addFileAttachment({
-                    authorID, documentID, filesID
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-    /**
 	 * Dev: Depv
 	 * Func: Thống kê theo type
 	 * Date: 13/11/2021
@@ -576,6 +574,43 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+     * Name: Báo cáo linh hoạt
+     * Author: HiepNH
+     * Date: 29/10/2022
+     */
+    getDynamicReport: {
+        auth: "required",
+        params: {
+            reportType          : { type: 'string', optional: true },
+            option              : { type: 'string', optional: true },
+            projectID           : { type: 'string', optional: true },
+            status              : { type: 'array', optional: true },
+            subtypes            : { type: 'array', optional: true },
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            upcoming            : { type: "string", optional: true },
+            upcoming            : { type: "string", optional: true },
+            isMilestone         : { type: "string", optional: true },
+            year                : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const {
+                    reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year
+                } = ctx.params;
+
+                let resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getDynamicReport({ userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming, isMilestone, year })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return { error:  true, message: error.message };
             }
         }
     },
