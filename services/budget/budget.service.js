@@ -78,7 +78,7 @@ module.exports = {
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_IMPORT_EXCEL]								: BUDGET__WORK_HANDLER.importExcel,
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_EXPORT_EXCEL]								: BUDGET__WORK_HANDLER.exportExcel,
 
-		//==========================================   BUDGET HANDLER   ================================//
+		//==========================================   BUDGET_SUBMITTAL   ================================//
 		[CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_INSERT]   			 					: BUDGET__SUBMITTAL_HANDLER.insert,
 		[CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_UPDATE]   			 					: BUDGET__SUBMITTAL_HANDLER.update,
 		[CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_REMOVE]				 					: BUDGET__SUBMITTAL_HANDLER.remove,

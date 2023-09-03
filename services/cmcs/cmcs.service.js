@@ -12,6 +12,7 @@ const CMCS__CONTRACT_BILL_ITEM_COLL		= require('./database/cmcs.contract_bill_it
 const CMCS__CONTRACT_BILL_GROUP_COLL	= require('./database/cmcs.contract_bill_group-coll');
 const CMCS__CONTRACT_BILL_JOB_COLL		= require('./database/cmcs.contract_bill_job-coll');
 const CMCS__CONTRACT_IPC_DETAIL_COLL	= require('./database/cmcs.contract_ipc_detail-coll.js');
+const CMCS__CONTRACT_SUBMITTAL_COLL		= require('./database/cmcs.contract_submittal-coll.js');
 
 const CMCS__CONTRACT_IPC_HANDLER   				= require('./handler/cmcs.contract_ipc-handler');
 const CMCS__CONTRACT_PRODUCTION_HANDLER 		= require('./handler/cmcs.contract_production-handler');
@@ -21,6 +22,7 @@ const CMCS__CONTRACT_BILL_ITEM_HANDLER   		= require('./handler/cmcs.contract_bi
 const CMCS__CONTRACT_BILL_GROUP_HANDLER   		= require('./handler/cmcs.contract_bill_group-handler');
 const CMCS__CONTRACT_BILL_JOB_HANDLER   		= require('./handler/cmcs.contract_bill_job-handler');
 const CMCS__CONTRACT_IPC_DETAIL_HANDLER   		= require('./handler/cmcs.contract_ipc_detail-handler');
+const CMCS__CONTRACT_SUBMITTAL_HANDLER   		= require('./handler/cmcs.contract_submittal-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CMCS,
@@ -33,6 +35,7 @@ module.exports = {
 		DbService(CMCS__CONTRACT_BILL_GROUP_COLL), 
 		DbService(CMCS__CONTRACT_BILL_JOB_COLL), 
 		DbService(CMCS__CONTRACT_IPC_DETAIL_HANDLER), 
+		DbService(CMCS__CONTRACT_SUBMITTAL_HANDLER), 
 		CacheCleaner([CF_DOMAIN_SERVICES.CMCS])
     ],
 
@@ -120,6 +123,13 @@ module.exports = {
 		[CF_ACTIONS_CMCS.CONTRACT_IPC_DETAIL_UPDATE]   								: CMCS__CONTRACT_IPC_DETAIL_HANDLER.update,
 		[CF_ACTIONS_CMCS.CONTRACT_IPC_DETAIL_REMOVE]   								: CMCS__CONTRACT_IPC_DETAIL_HANDLER.remove,
 		[CF_ACTIONS_CMCS.CONTRACT_IPC_DETAIL_GET_INFO_AND_GET_LIST] 				: CMCS__CONTRACT_IPC_DETAIL_HANDLER.getInfoAndGetList,
+
+		//==========================================   CONTRACT_SUBMITTAL   ================================//
+		[CF_ACTIONS_CMCS.CONTRACT_SUBMITTAL_INSERT]   			 					: CMCS__CONTRACT_SUBMITTAL_HANDLER.insert,
+		[CF_ACTIONS_CMCS.CONTRACT_SUBMITTAL_UPDATE]   			 					: CMCS__CONTRACT_SUBMITTAL_HANDLER.update,
+		[CF_ACTIONS_CMCS.CONTRACT_SUBMITTAL_REMOVE]				 					: CMCS__CONTRACT_SUBMITTAL_HANDLER.remove,
+		[CF_ACTIONS_CMCS.CONTRACT_SUBMITTAL_GET_INFO_AND_GET_LIST]					: CMCS__CONTRACT_SUBMITTAL_HANDLER.getInfoAndGetList,	
+		[CF_ACTIONS_CMCS.CONTRACT_SUBMITTAL_GET_LIST_BY_PROPERTY]					: CMCS__CONTRACT_SUBMITTAL_HANDLER.getListByProperty,
 	},
 
 	/**
