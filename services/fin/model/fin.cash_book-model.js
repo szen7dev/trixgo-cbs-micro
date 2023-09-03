@@ -870,7 +870,7 @@ class Model extends BaseModel {
                 }else{
                     // BẢNG CHẤM CÔNG
                     if(option == 1){
-                        let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID}).select('name hours unitprice amount status date')
+                        let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID}).select('name hours unitprice amount status date note')
                         // console.log(listData)
 
                          // Modify the workbook.
