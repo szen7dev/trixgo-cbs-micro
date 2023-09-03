@@ -200,6 +200,16 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
+    //_________Phòng ban của người tạo việc
+    departmentOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'department'
+    },
+    //_________Công ty của người tạo việc
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : "user"
