@@ -870,15 +870,18 @@ class Model extends BaseModel {
                 }else{
                     // BẢNG CHẤM CÔNG
                     if(option == 1){
+                        let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note')
                         let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID}).select('name hours unitprice amount status date note')
                         // console.log(listData)
 
                          // Modify the workbook.
                          XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_report.xlsx')))
                          .then(async workbook => {
+
+                            workbook.sheet("Data").row(2).cell(1).value(infoParent.name)
  
                              // NHẬT KÝ CHUNG
-                             var i = 3
+                             var i = 4
                              listData.forEach((item, index) =>{
                                  workbook.sheet("Data").row(i).cell(1).value(item.date)
                                  workbook.sheet("Data").row(i).cell(2).value(item.name)
