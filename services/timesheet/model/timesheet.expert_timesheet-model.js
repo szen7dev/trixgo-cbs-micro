@@ -282,48 +282,6 @@ class Model extends BaseModel {
     }
 
     /**
-    * Name: Remove expert timesheet
-    * Author: Depv
-    * Code:
-    */
-    remove({ expertTimesheetID }) {
-        return new Promise(async (resolve) => {
-            try {
-                    /**
-                    * DECALARTION VARIABLE (1)
-                    */
-
-                    /**
-                    * VALIDATION STEP (2)
-                    *  - Kiểm tra valid từ các input
-                    *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                    */
-                    if(!checkObjectIDs(expertTimesheetID))
-                        return resolve({
-                        error: true,
-                        message: 'Request params expertTimesheetID invalid',
-                        keyError: 'request_params_expertTimesheetID_invalid',
-                        status: 400
-                        });
-
-                    /**
-                    * LOGIC STEP (3)
-                    * 3.1: Convert type + update name (ví dụ: string -> number)
-                    * 3.2: Operation database
-                    */
-                    let infoAterRemove = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(expertTimesheetID)
-
-                    if(!infoAterRemove)
-                    return resolve({ error: true, message: "can't_remove", status: 403 });
-
-                    return resolve({ error: false, data: infoAterRemove, status: 200 });
-                } catch (error) {
-                    return resolve({ error: true, message: error.message, status: 500 });
-                }
-        })
-    }
-
-    /**
      * Name: get info expert timesheet
      * Author: Depv
      * Code:
@@ -473,7 +431,7 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                    console.log(infoDataAfterGet)
+                    // console.log(infoDataAfterGet)
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -504,4 +462,4 @@ class Model extends BaseModel {
     }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model
