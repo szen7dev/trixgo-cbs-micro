@@ -2637,7 +2637,7 @@ class Model extends BaseModel {
      * Date: 27/8/2023
      */
     getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin }){
-        console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin })
+        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionProject = {}
@@ -3021,8 +3021,8 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getDynamicReport({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
-        console.log('========>>>>>>>>>>>>>>>>>>>')
-        console.log({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year })
+        // console.log('========>>>>>>>>>>>>>>>>>>>')
+        // console.log({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionProject = {}, conditionMatch = {}
