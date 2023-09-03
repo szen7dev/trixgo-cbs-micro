@@ -51,7 +51,10 @@ const DOCUMENT_DOC_COLL                 = require('../../document/database/docum
 // const { email } = require('../../../tools/mailer/config/cf_mailer');
 // const { sortBy } = require('lodash');
 
-const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
+const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL
+const ANALYSIS__HISTORY_TRAFFIC_MODEL   = require('../../analysis/model/analysis.history_traffic').MODEL
+
+// const AUTH__APP_ROLE_MENU_COLL              = require('../database/permission/auth.app_role_menu-coll');
 class Model extends BaseModel {
 
     constructor() {
@@ -1859,7 +1862,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ taskID, userID, select, populates }){
+    getInfo({ taskID, companyID, userID, select, populates }){
         // console.log({ taskID, userID, select, populates })
         return new Promise(async resolve => {
             try {
@@ -1913,13 +1916,6 @@ class Model extends BaseModel {
                 if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
                     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
-                // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem(Đệ bỏ đi)
-                // if(Number(infoTaskForCheck.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
-                //     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
-                /**
-                 * Kết thúc kiểm tra quyền
-                 */
-
                 /**
                  * Cập nhật thông tin người truy cập
                  */
@@ -1934,7 +1930,7 @@ class Model extends BaseModel {
                 /**
                  * Cập nhật trạng thái triển khai
                  */
-                if(assignee.toString() == userID.toString() && status == 1){
+                if(status == 1 && assignee.toString() == userID.toString()){
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
                         {
                             $set: {
@@ -1948,7 +1944,19 @@ class Model extends BaseModel {
                                 .populate(populates).lean();
 
 				if (!infoTask)
-                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
+                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
+                
+                if(infoTask.subtype == 14){
+                    let infoTF = await ANALYSIS__HISTORY_TRAFFIC_MODEL.insert({ 
+                        appID: "60390cb12b367a1cdd9f3fb2", //DataHub
+                        menuID: "623f239fe998e94feda0cd9f", // Hồ sơ mời thầu
+                        type: 2, 
+                        companyOfAuthor: companyID, 
+                        userCreate: userID
+                    })
+                    // console.log('==================>>>>>>>>>>>>>>>>>')
+                    // console.log(infoTF)
+                }
 
                 return resolve({ error: false, data: infoTask });
             } catch (error) {

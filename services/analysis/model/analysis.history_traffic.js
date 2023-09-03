@@ -28,7 +28,7 @@ const AUTH__APP_MENU_COLL               = require('../../auth/database/permissio
 class Model extends BaseModel {
 
     constructor() {
-        super(ANALYSIS__HISTORY_TRAFFIC_COLL);
+        super(ANALYSIS__HISTORY_TRAFFIC_COLL)
     }
 
 	/**
@@ -36,7 +36,7 @@ class Model extends BaseModel {
 	 * Func: Tạo history traffic
 	 * Date: 13/12/2021
 	 */
-	insert({ appID, menuID, type, companyOfAuthor, userCreate}){
+	insert({ appID, menuID, type, companyOfAuthor, userCreate }){
         return new Promise(async resolve => { 
             try {
                 let dataInsert = { companyOfAuthor, userCreate}; 
