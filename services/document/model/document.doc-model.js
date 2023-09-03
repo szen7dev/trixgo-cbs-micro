@@ -14,6 +14,7 @@ const ISOdate                                  	    = require('isodate');
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH }                           = require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-constant');
 
 /**
@@ -126,45 +127,33 @@ class Model extends BaseModel {
                  * BA
                  * 1-departmentID phải có định dạng String
                  */
-                if (!checkObjectIDs(departmentID) || !name || name == "") {
+                if (!checkObjectIDs(departmentID) || !name || name == "" || !checkObjectIDs(packageID) || !checkObjectIDs(publishID)) {
 					return resolve({
                         error: true,
-                        message: 'Request params departmentID|name invalid',
+                        message: 'Request params departmentID|name|packageID|publishID invalid',
                         keyError: 'params_invalid',
                     });
                 }
 
-                if (!checkObjectIDs(packageID)) {
-					return resolve({
-                        error: true,
-                        message: 'Request params packageID invalid',
-                        keyError: 'params_invalid',
-                    });
-                }
+                // if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
+                //     return resolve({
+                //         error: true,
+                //         message: 'Request params direction invalid',
+                //         keyError: 'params_direction_invalid',
+                //     });
+                // }
 
-                if (!checkObjectIDs(publishID)) {
-					return resolve({
-                        error: true,
-                        message: 'Request params publishID invalid',
-                        keyError: 'params_invalid',
-                    });
-                }
+                // if (!checkNumberIsValidWithRange({ arrValid: DOC_TYPE, val: type })) {
+                //     return resolve({
+                //         error: true,
+                //         message: 'Request params type invalid',
+                //         keyError: 'params_type_invalid',
+                //     });
+                // }
 
-                if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params direction invalid',
-                        keyError: 'params_direction_invalid',
-                    });
-                }
-
-                if (!checkNumberIsValidWithRange({ arrValid: DOC_TYPE, val: type })) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params type invalid',
-                        keyError: 'params_type_invalid',
-                    });
-                }
+                let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                    userID, select: "_id company department fullname"
+                })
 
                 let infoDepartment = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID
@@ -194,6 +183,11 @@ class Model extends BaseModel {
                     description,
                     value,
                     completeStatus
+                }
+
+                if(!infoAuthor.error){
+                    dataInsert.companyOfAuthor = infoAuthor.data.company;
+                    dataInsert.departmentOfAuthor = infoAuthor.data.department;
                 }
 
                 amount               && (dataInsert.amount           = +amount || 1);

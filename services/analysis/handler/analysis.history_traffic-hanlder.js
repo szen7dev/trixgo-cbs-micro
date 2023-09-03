@@ -93,17 +93,19 @@ module.exports = {
     statisticsAccessByApp: {
         auth: "required",
         params: {
-            fromDate      : { type: "string" },
-            toDate        : { type: "string" },
+            fromDate      : { type: "string", optional: true },
+            toDate        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fromDate, toDate } = ctx.params;
+                let { option, appID, fromDate, toDate, year } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler = await ANALYSIS__HISTORY_TRAFFIC_MODEL.statisticsAccessByApp({
-                    fromDate, toDate
-                });
+                    option, appID, fromDate, toDate, year
+                })
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

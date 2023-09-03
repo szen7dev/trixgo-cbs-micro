@@ -22,12 +22,13 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 /**
  * COLLECTIONS
  */
-const ANALYSIS__HISTORY_TRAFFIC_COLL    = require('../database/analysis.history_traffic-coll');
+const ANALYSIS__HISTORY_TRAFFIC_COLL    = require('../database/analysis.history_traffic-coll')
+const AUTH__APP_MENU_COLL               = require('../../auth/database/permission/auth.app_menu-coll')
 
 class Model extends BaseModel {
 
     constructor() {
-        super(ANALYSIS__HISTORY_TRAFFIC_COLL);
+        super(ANALYSIS__HISTORY_TRAFFIC_COLL)
     }
 
 	/**
@@ -35,7 +36,7 @@ class Model extends BaseModel {
 	 * Func: Tạo history traffic
 	 * Date: 13/12/2021
 	 */
-	insert({ appID, menuID, type, companyOfAuthor, userCreate}){
+	insert({ appID, menuID, type, companyOfAuthor, userCreate }){
         return new Promise(async resolve => { 
             try {
                 let dataInsert = { companyOfAuthor, userCreate}; 
@@ -152,39 +153,125 @@ class Model extends BaseModel {
 	 * Func: Thống kê truy cập theo app
 	 * Date: 13/12/2021
 	 */
-    statisticsAccessByApp({ fromDate, toDate }){
+    statisticsAccessByApp({ option, appID, fromDate, toDate, year }){
         return new Promise(async resolve => { 
             try {
-                if(!fromDate || !toDate)
-                    return resolve({ error: true, message: "Request params fromDate or toDate invalid" });
-                let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
-                    {
-                        $match: {
-                            createAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
-                        }
-                    },
-                    { 
-                        $group: {
-                            _id: { 
-                                app:  "$app"
-                            }, 
-                            amountAccesses: { $sum: 1 },
-                        }
-                    },
-                    { 
-                        $sort: {
-                            "_id.app": -1
-                        }
-                    },
-                ])
+                let conditionObj = {}, conditionProject = {}, conditionMatch = {}
 
-                await ANALYSIS__HISTORY_TRAFFIC_COLL.populate(infoData, {  
-                    path: '_id.app',
-                    select: 'name',
-                    model: 'app' 
-                })
-                
-            return resolve({ error: false, data: infoData });
+                if(appID && checkObjectIDs(appID)){
+                    conditionObj.app = ObjectID(appID)
+                }
+
+                if(!option){
+                    if(!fromDate || !toDate)
+                        return resolve({ error: true, message: "Request params fromDate or toDate invalid" })
+                    
+                    conditionObj.createAt = { 
+                        $gte: new Date(fromDate), 
+                        $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d 
+                    }
+
+                    let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        { 
+                            $group: {
+                                _id: { 
+                                    app:  "$app"
+                                }, 
+                                amountAccesses: { $sum: 1 },
+                            }
+                        },
+                        { 
+                            $sort: {
+                                "_id.app": -1
+                            }
+                        },
+                    ])
+
+                    await ANALYSIS__HISTORY_TRAFFIC_COLL.populate(infoData, {  
+                        path: '_id.app',
+                        select: 'name',
+                        model: 'app' 
+                    })
+                    
+                    return resolve({ error: false, data: infoData })
+                }else{
+                    if(option == 1){
+                        if(year){
+                            conditionMatch.year = Number(year)
+                        }
+
+                        conditionProject = {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            app: 1,
+                            createAt: 1,
+                        }
+
+                        let listData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionMatch
+                            }, 
+                            { 
+                                $group: {
+                                    _id: { app: "$app", month: "$month" }, 
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                        ])
+
+                        return resolve({ error: false, data: listData })
+                    }
+
+                    if(option == 2){
+                        if(year){
+                            conditionMatch.year = Number(year)
+                        }
+
+                        conditionProject = {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            app: 1,
+                            menu: 1,
+                            createAt: 1,
+                        }
+
+                        // console.log(conditionMatch)
+                        // console.log(conditionProject)
+                        // console.log(conditionObj)
+
+                        let listData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionMatch
+                            }, 
+                            { 
+                                $group: {
+                                    _id: { app: "$app", menu: "$menu", month: "$month" }, 
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                        ])
+
+                        let listMenu = await AUTH__APP_MENU_COLL.find({ _id: {$in: listData.map(item => item._id.menu) } }).select('name slug')
+                        // console.log(listMenu)
+
+                        return resolve({ error: false, data: { listData, listMenu } })
+                    }
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -414,4 +501,4 @@ class Model extends BaseModel {
     }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model

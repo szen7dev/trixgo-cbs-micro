@@ -338,13 +338,13 @@ module.exports = {
 
                 // console.log({select})
 
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
-                        taskID, userID, select, populates
+                        taskID, userID, select, populates, companyID: company._id
                     });
                     
                     // console.log(resultAfterCallHandler)
