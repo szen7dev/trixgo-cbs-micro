@@ -132,15 +132,6 @@ class Model extends BaseModel {
     getInfo({ companyID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
@@ -156,11 +147,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await AUTH__COMPANY_COLL.findById(companyID)
                                     .select(select)
                                     .populate(populates)
@@ -181,8 +168,8 @@ class Model extends BaseModel {
     getList({
         userID, arrayID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
-            console.log({userID, arrayID,
-                keyword, limit, lastestID, select, populates})
+            // console.log({userID, arrayID,
+            //     keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
 
@@ -191,17 +178,10 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let sortBy;
                 let conditionObj = {};
                 let keys	 = ['createAt__-1', '_id__-1'];
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))

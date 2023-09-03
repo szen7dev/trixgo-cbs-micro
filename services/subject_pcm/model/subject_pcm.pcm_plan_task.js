@@ -1964,14 +1964,14 @@ class Model extends BaseModel {
      * Code  : 20/8/2022
      */
     getList({
-        projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        option, projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited, upcoming, isMileStone
     }) {
         // console.log('=============DANH SÁCH CHỦ ĐỀ==========>>>>>>>>>>>>>>')
         // console.log({
-        //     projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
+        //     option, projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         //     keyword, limit, unlimit, lastestID, select, populates, unlimited, isMileStone
@@ -1984,288 +1984,299 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                // Các việc user đang active
-                let conditionObj = {
-                    usersDelete: { $nin: [userID] },
-                };
-
-                if(upcoming && [1,2].includes(Number(upcoming))){
-                    conditionObj.upcoming = Number(upcoming)
-                }
-
-                // Các việc chưa hoàn thành
-                if(statusNe){
-                    conditionObj.status = { $ne: statusNe };
-                }
-
-                let sortBy;
-                // let keys	 = ['actualFinishTime__-1', '_id__-1'];
-                // let keys	 = ['actualFinishTime__1', '_id__1'];
-                let keys	 = ['modifyAt__-1'];
-                let totalTaskDone = 0;
-
-                if(isSortChecklist == 1 || isSortChildTask == 1){
-                    keys = ['actualFinishTime__1', '_id__1'];
-                    // keys = ['modifyAt__', '_id__1'];
-                }
-
-                // Làm rõ mục đích để làm gì?
-                if (sortKey && typeof sortKey === 'string') {
-                    if (!IsJsonString(sortKey))
-                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
-
-                    keys = JSON.parse(sortKey);
-                }
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                //__________Danh sách các nhóm dữ liệu mà userID là members
-                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
-
-                // Lấy công việc mà user được quyền truy cập
-                conditionObj.$or = [
-                    { accessUsers: {$in: [userID]}},
-                    { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
-                ]
-
-                // Tìm kiếm nếu có trạng thái công việc
-                if(status){
-                    conditionObj.status = { $in: [status] }
-                }
-
-                /**
-                 * Quá hạn
-                 */
-                if(isExpired){
-                    // Đã quá hạn
-                    if(isExpired == 1) {
-                        conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
-                        conditionObj.actualFinishTime = {
-                            $lt: new Date()
-                        }
-                    }
-
-                    // Chưa quá hạn
-                    if(isExpired == 2) {
-                        conditionObj.actualFinishTime = {
-                            $gt: new Date()
-                        }
-                    }
-                }else{
-                    /**
-                     * Lấy những công việc từ ngày đến ngày
-                     * - Sẽ không cùng diễn ra với Lọc quá hạn
-                     */
-                    if(fromDate && toDate){
-                        conditionObj.actualFinishTime = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
-                        }
-                    }
-                }
-
-                // Lấy những việc nháp hoặc không phải việc nháp
-                if(draft){
-                    conditionObj.draft = draft;
-                }
-
-                // Lấy việc trong dự án
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = projectID;
-                }
-
-                // Lấy việc trong group
-                if(groupID && checkObjectIDs(groupID)){
-                    conditionObj.group = groupID
-                    // conditionObj.parent = { $exists: false } // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
-                    conditionObj.level = 1; // Chỉ lấy các việc cha
-                    delete conditionObj.$or;
-                }
-
-                // Việc theo cột mốc
-                if(!isNaN(milestone)){
-                    conditionObj.milestone = milestone;
-                }
-
-                if(isMileStone && isMileStone == 1){
-                    conditionObj.milestone = {$gt: 0}
-                    conditionObj.$where = `return this.actualFinishTime > this.actualStartTime`
-                }
-
-                /**
-                * Phân loại chủ đề
-                * 1-Công việc
-                * 2-Checklist
-                */
-                if(collection){
-                    conditionObj.type = collection;
-                }
-
-                // Phân loại công việc
-                if(!isNaN(subtype)){
-                    conditionObj.subtype = +subtype;
-                }
-
-                /**
-                 * Type = 0 Việc của tôi + Giao + Liên quan(All)
-                 * Type = 1 Việc của tôi
-                 * Type = 2 Việc giao người khác
-                 * Type = 3 Việc đánh dấu quan tâm
-                 * Type = 4 Việc nháp
-                 * Type = 5 Việc liên quan
-                 */
-                if(!type || type == 0){
-                    conditionObj.$or = [
-                        { accessUsers: {$in: [userID]}},
-                        { group: { $in: listGroups.map(item => item._id) }}
-                    ]
-                }
-
-                // Việc của tôi
-                if(type == 1){
-                    conditionObj.assignee = userID;
-                    delete conditionObj.$or
-                }
-
-                // Việc giao người khác
-                if(type == 2){
-                    conditionObj.author = userID;
-                    delete conditionObj.$or
-                }
-
-                // Việc đánh dấu quan tâm
-                if(type == 3){
-                    conditionObj.flags = { $in: [userID]};
-                    delete conditionObj.$or
-                    delete conditionObj.status
-                }
-
-                 // Việc nháp
-                if(type == 4){
-                    conditionObj.$or = [
-                        { author: userID }, // Người tạo việc được xem
-                        { related: { $in: [userID] } }, // Người liên quan được xem
-                    ],
-                    conditionObj.draft = 1; // Gồm cả việc nháp
-                    delete conditionObj.status
-                }
-
-                // Việc liên quan
-                if(type == 5){
-                    conditionObj.related = { $in: [userID] };
-                    delete conditionObj.$or
-                }
-
-                if(level){
-                    conditionObj.level = level;
-                }
-
-                /**
-                 * Lấy việc quá hạn
-                 * 1-Quá hạn
-                 * 2-Tuần tới
-                 * 3->7 ngày tới
-                 * 4-Hoàn thành
-                 * 5-Quan trọng
-                 */
-                if(typeStatus && typeStatus == 1){
-                    conditionObj.actualFinishTime = {
-                        $lt: new Date()
-                    }
-                }
-
-                // lấy việc tới hạn Tuần tới
-                if(typeStatus && typeStatus == 2){
-                    conditionObj.actualFinishTime = {
-                        $gte:  new Date(),
-                        $lt: moment(addDate(7)).endOf('day')._d
-                    }
-                }
-
-                // Tới hạn + 7 ngày tới
-                if(typeStatus && typeStatus == 3){
-                    conditionObj.actualFinishTime = {
-                        $gte: addDate(7)
-                    }
-                }
-
-                // Hoàn thành
-                if(typeStatus && typeStatus == 4){
-                    conditionObj.status = 3
-                }
-
-                // Quan trọng
-                if(typeStatus && typeStatus == 5){
-                    conditionObj.priority = 3
-                }
-
-                // Lấy việc của người thực hiện
-                if(assigneeID && checkObjectIDs(assigneeID)){
-                    conditionObj.assignee = assigneeID;
-                }
-
-                // Lấy việc của người tạo việc
-                if(authorID && checkObjectIDs(authorID)){
-                    conditionObj.author = authorID;
-                }
-
-                // ID công việc cha, công việc chứa checklist
-                if(parentID && checkObjectIDs(parentID)){
-                    conditionObj.parent = parentID;
-                    delete conditionObj.$or
-                    delete conditionObj.status;
-                }
-
-                // Chỉ lấy task cha
-                if(isParent == 1){
-                    // conditionObj.parent = { $exists: false }; // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
-                    conditionObj.level = 1;
-                }
-
-                // Công ty của người tạo việc
-                if(companyOfAuthor && checkObjectIDs(companyOfAuthor)){
-                    conditionObj.companyOfAuthor = companyOfAuthor;
-                }
-
-                // Công ty của người thực hiện
-                if(companyOfAssignee && checkObjectIDs(companyOfAssignee)){
-                    conditionObj.companyOfAssignee = companyOfAssignee;
-                }
-
-                // isPassPermision dùng để bỏ qua 1 trong 4 quyền
-                if(isPassPermision == 1){
-                    delete conditionObj.$or;
-                }
-
-                if(fieldID && checkObjectIDs(fieldID)){
-                    conditionObj.field = fieldID;
-                }
+                let conditionObj = {}, sortBy, keys = ['modifyAt__-1'], totalTaskDone = 0
 
                 // Kiểm tra điều kiện populates
                 if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				}else{
+                    populates = JSON.parse(populates);
+                }else{
                     populates = {
                         path: "",
                         select: ""
                     }
                 }
 
-                // Tìm kiếm theo keyword
-				if(keyword){
-                    keyword = stringUtils.removeAccents(keyword)
-                    keyword = keyword.split(" ")
+                /**
+                 * Tính chất chủ đề
+                 */
+                if(!option){
+                    // Các việc user đang active
+                    conditionObj = {
+                        usersDelete: { $nin: [userID] },
+                    };
 
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.namecv = new RegExp(keyword, 'i')
+                    if(upcoming && [1,2].includes(Number(upcoming))){
+                        conditionObj.upcoming = Number(upcoming)
+                    }
+
+                    // Các việc chưa hoàn thành
+                    if(statusNe){
+                        conditionObj.status = { $ne: statusNe };
+                    }
+
+                    if(isSortChecklist == 1 || isSortChildTask == 1){
+                        keys = ['actualFinishTime__1', '_id__1'];
+                        // keys = ['modifyAt__', '_id__1'];
+                    }
+
+                    //__________Danh sách các nhóm dữ liệu mà userID là members
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                    // Lấy công việc mà user được quyền truy cập
+                    conditionObj.$or = [
+                        { accessUsers: {$in: [userID]}},
+                        { group: { $in: listGroups.map(item => item._id) }}, // Bỏ, vì việc tra cứu theo thẻ lọc mới cần đến. Còn lại đi theo đường thư mục
+                    ]
+
+                    // Tìm kiếm nếu có trạng thái công việc
+                    if(status){
+                        conditionObj.status = { $in: [status] }
+                    }
+
+                    /**
+                     * Quá hạn
+                     */
+                    if(isExpired){
+                        // Đã quá hạn
+                        if(isExpired == 1) {
+                            conditionObj.status = { $ne: 3 }; // Chưa hoàn thành
+                            conditionObj.actualFinishTime = {
+                                $lt: new Date()
+                            }
+                        }
+
+                        // Chưa quá hạn
+                        if(isExpired == 2) {
+                            conditionObj.actualFinishTime = {
+                                $gt: new Date()
+                            }
+                        }
+                    }else{
+                        /**
+                         * Lấy những công việc từ ngày đến ngày
+                         * - Sẽ không cùng diễn ra với Lọc quá hạn
+                         */
+                        if(fromDate && toDate){
+                            conditionObj.actualFinishTime = {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
+                            }
+                        }
+                    }
+
+                    // Lấy những việc nháp hoặc không phải việc nháp
+                    if(draft){
+                        conditionObj.draft = draft;
+                    }
+
+                    // Lấy việc trong dự án
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = projectID;
+                    }
+
+                    // Lấy việc trong group
+                    if(groupID && checkObjectIDs(groupID)){
+                        conditionObj.group = groupID
+                        // conditionObj.parent = { $exists: false } // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
+                        conditionObj.level = 1; // Chỉ lấy các việc cha
+                        delete conditionObj.$or;
+                    }
+
+                    // Việc theo cột mốc
+                    if(!isNaN(milestone)){
+                        conditionObj.milestone = milestone;
+                    }
+
+                    if(isMileStone && isMileStone == 1){
+                        conditionObj.milestone = {$gt: 0}
+                        conditionObj.$where = `return this.actualFinishTime > this.actualStartTime`
+                    }
+
+                    /**
+                    * Phân loại chủ đề
+                    * 1-Công việc
+                    * 2-Checklist
+                    */
+                    if(collection){
+                        conditionObj.type = collection;
+                    }
+
+                    /**
+                     * Type = 0 Việc của tôi + Giao + Liên quan(All)
+                     * Type = 1 Việc của tôi
+                     * Type = 2 Việc giao người khác
+                     * Type = 3 Việc đánh dấu quan tâm
+                     * Type = 4 Việc nháp
+                     * Type = 5 Việc liên quan
+                     */
+                    if(!type || type == 0){
+                        conditionObj.$or = [
+                            { accessUsers: {$in: [userID]}},
+                            { group: { $in: listGroups.map(item => item._id) }}
+                        ]
+                    }
+
+                    // Việc của tôi
+                    if(type == 1){
+                        conditionObj.assignee = userID;
+                        delete conditionObj.$or
+                    }
+
+                    // Việc giao người khác
+                    if(type == 2){
+                        conditionObj.author = userID;
+                        delete conditionObj.$or
+                    }
+
+                    // Việc đánh dấu quan tâm
+                    if(type == 3){
+                        conditionObj.flags = { $in: [userID]};
+                        delete conditionObj.$or
+                        delete conditionObj.status
+                    }
+
+                    // Việc nháp
+                    if(type == 4){
+                        conditionObj.$or = [
+                            { author: userID }, // Người tạo việc được xem
+                            { related: { $in: [userID] } }, // Người liên quan được xem
+                        ],
+                        conditionObj.draft = 1; // Gồm cả việc nháp
+                        delete conditionObj.status
+                    }
+
+                    // Việc liên quan
+                    if(type == 5){
+                        conditionObj.related = { $in: [userID] };
+                        delete conditionObj.$or
+                    }
+
+                    if(level){
+                        conditionObj.level = level;
+                    }
+
+                    /**
+                     * Lấy việc quá hạn
+                     * 1-Quá hạn
+                     * 2-Tuần tới
+                     * 3->7 ngày tới
+                     * 4-Hoàn thành
+                     * 5-Quan trọng
+                     */
+                    if(typeStatus && typeStatus == 1){
+                        conditionObj.actualFinishTime = {
+                            $lt: new Date()
+                        }
+                    }
+
+                    // lấy việc tới hạn Tuần tới
+                    if(typeStatus && typeStatus == 2){
+                        conditionObj.actualFinishTime = {
+                            $gte:  new Date(),
+                            $lt: moment(addDate(7)).endOf('day')._d
+                        }
+                    }
+
+                    // Tới hạn + 7 ngày tới
+                    if(typeStatus && typeStatus == 3){
+                        conditionObj.actualFinishTime = {
+                            $gte: addDate(7)
+                        }
+                    }
+
+                    // Hoàn thành
+                    if(typeStatus && typeStatus == 4){
+                        conditionObj.status = 3
+                    }
+
+                    // Quan trọng
+                    if(typeStatus && typeStatus == 5){
+                        conditionObj.priority = 3
+                    }
+
+                    // Lấy việc của người thực hiện
+                    if(assigneeID && checkObjectIDs(assigneeID)){
+                        conditionObj.assignee = assigneeID;
+                    }
+
+                    // Lấy việc của người tạo việc
+                    if(authorID && checkObjectIDs(authorID)){
+                        conditionObj.author = authorID;
+                    }
+
+                    // ID công việc cha, công việc chứa checklist
+                    if(parentID && checkObjectIDs(parentID)){
+                        conditionObj.parent = parentID;
+                        delete conditionObj.$or
+                        delete conditionObj.status;
+                    }
+
+                    // Chỉ lấy task cha
+                    if(isParent == 1){
+                        // conditionObj.parent = { $exists: false }; // Không còn đúng nữa với các công việc Cha => Di chuyển vào Cha khác (Level=1)
+                        conditionObj.level = 1;
+                    }
+
+                    // Công ty của người tạo việc
+                    if(companyOfAuthor && checkObjectIDs(companyOfAuthor)){
+                        conditionObj.companyOfAuthor = companyOfAuthor;
+                    }
+
+                    // Công ty của người thực hiện
+                    if(companyOfAssignee && checkObjectIDs(companyOfAssignee)){
+                        conditionObj.companyOfAssignee = companyOfAssignee;
+                    }
+
+                    // isPassPermision dùng để bỏ qua 1 trong 4 quyền
+                    if(isPassPermision == 1){
+                        delete conditionObj.$or;
+                    }
+
+                    if(fieldID && checkObjectIDs(fieldID)){
+                        conditionObj.field = fieldID;
+                    }
+
+                    if (sortKey && typeof sortKey === 'string') {
+                        if (!IsJsonString(sortKey))
+                            return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                        keys = JSON.parse(sortKey);
+                    }
+
+                    // Tìm kiếm theo keyword
+                    if(keyword){
+                        keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        conditionObj.namecv = new RegExp(keyword, 'i')
+                    }
+
+                    if(!isNaN(subtype)){
+                        conditionObj.subtype = +subtype;
+                    }                   
+                }else{
+                    // Quảng bá sản phẩm dịch vụ
+                    if(option == 1){
+                        conditionObj = { subtype: 13 }
+                    }
+
+                     // Thông báo mời thầu
+                    if(option == 2){
+                        conditionObj = { subtype: 14 }
+                    }
+
+                    // Thông báo từ hệ thống
+                    if(option == 3){
+                        conditionObj = { subtype: 15 }
+                    }
                 }
-
+                
+                // console.log('============================')
+                // console.log(conditionObj)
                 let conditionObjOrg = {...conditionObj};
 
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -2626,7 +2637,7 @@ class Model extends BaseModel {
      * Date: 27/8/2023
      */
     getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin }){
-        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year })
+        console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionProject = {}
@@ -3009,8 +3020,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
-        // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
+    getDynamicReport({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
+        console.log('========>>>>>>>>>>>>>>>>>>>')
+        console.log({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionProject = {}, conditionMatch = {}
@@ -3061,6 +3073,8 @@ class Model extends BaseModel {
                     // console.log('=============Truyền biến upcoming===============>>>>>>>>>>>>>>>')
                     conditionObj.upcoming = Number(upcoming)
                 }
+
+                // console.log(conditionObj)
 
                 if(!option){
                     let start = new Date();
@@ -3411,6 +3425,146 @@ class Model extends BaseModel {
                         ])
 
                         return resolve({ error: false, data: listData });
+                    }
+
+                    /**
+                     * Tổng hợp số lượng cho Báo cáo quản trị
+                     */
+                    if(option && Number(option) == 10){
+                        // console.log('conditionObj======================')
+                        if(checkObjectIDs(projectID)){
+                            conditionObj = {project: ObjectID(projectID)}
+                        }else{
+                            conditionObj = {company: ObjectID(companyID)}
+                        }
+
+                        // console.log(conditionObj)
+
+                        conditionProject = {
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            company: 1,
+                            project: 1,
+                            companyOfAuthor: 1,
+                            author: 1,
+                            createAt: 1,
+                        }
+
+                        if(year){
+                            conditionMatch.year = Number(year)
+                        }
+
+                        objectGroup = { month: '$month' }
+                        // sortBy = { "_id.year": 1 }
+
+                        // console.log(conditionObj)
+
+                        // Gom nhóm theo tháng
+                        let listData = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionMatch
+                            }, 
+                            {
+                                $group: {
+                                    _id: objectGroup,
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            // { $sort: sortBy},
+                        ])
+
+                        // Gom nhóm theo dự án, phòng ban chứa mẩu tin
+                        let listData2 = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionMatch
+                            }, 
+                            {
+                                $group: {
+                                    _id: { project: '$project', month: '$month'},
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            // { $sort: sortBy},
+                        ])
+
+                        let conditionPopulateProject = {
+                            path: '_id.project',
+                            select: '_id name sign',
+                            model: 'department'
+                        }
+
+                        await PCM_PLAN_TASK_COLL.populate(listData2, conditionPopulateProject)
+
+                        // Gom nhóm theo đơn vị tạo
+                        let listData3 = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionMatch
+                            }, 
+                            {
+                                $group: {
+                                    _id: { companyOfAuthor: '$companyOfAuthor', month: '$month'},
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            // { $sort: sortBy},
+                        ])
+
+                        let conditionPopulateCompanyOfAuthor = {
+                            path: '_id.companyOfAuthor',
+                            select: '_id name sign image',
+                            model: 'company'
+                        }
+
+                        await PCM_PLAN_TASK_COLL.populate(listData3, conditionPopulateCompanyOfAuthor)
+
+
+                        // Gom nhóm theo tài khoản tạo
+                        let listData4 = await PCM_PLAN_TASK_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionMatch
+                            }, 
+                            {
+                                $group: {
+                                    _id: { author: '$author', month: '$month'},
+                                    amount: { $sum: 1 },
+                                }
+                            },
+                            // { $sort: sortBy},
+                        ])
+
+                        let conditionPopulateAuthor = {
+                            path: '_id.author',
+                            select: '_id fullname image',
+                            model: 'user'
+                        }
+
+                        await PCM_PLAN_TASK_COLL.populate(listData4, conditionPopulateAuthor)
+
+                        return resolve({ error: false, data: {listData, listData2, listData3, listData4 } });
                     }
                 }
 
