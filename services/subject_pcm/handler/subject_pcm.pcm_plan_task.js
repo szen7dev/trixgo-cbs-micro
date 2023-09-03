@@ -331,7 +331,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 
                 let {
-                    taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
+                    option, taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe, groupID, sortKey,
                     keyword, limit, unlimit, lastestID, select, populates, isPassPermision, milestone, isParent, upcoming, isMileStone
                 } = ctx.params;
@@ -350,7 +350,7 @@ module.exports = {
                     // console.log(resultAfterCallHandler)
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
+                        option, userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                         keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming, isMileStone
                     });
@@ -495,6 +495,7 @@ module.exports = {
         params: {
             reportType          : { type: 'string', optional: true },
             option              : { type: 'string', optional: true },
+            companyID           : { type: 'string', optional: true },
             projectID           : { type: 'string', optional: true },
             status              : { type: 'array', optional: true },
             subtypes            : { type: 'array', optional: true },
@@ -508,13 +509,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
 
-                const {
-                    reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year
+                let {
+                    companyID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year
                 } = ctx.params;
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year })
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ companyID, userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year })
                 // console.log(resultAfterCallHandler)
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {

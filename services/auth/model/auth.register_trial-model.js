@@ -169,23 +169,9 @@ class Model extends BaseModel {
     remove({ registerTrialID }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(registerTrialID))
                     return resolve({ error: true, message: 'Request params registerTrialID invalid', status: 400 });
                     
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 let infoAterRemove = await AUTH__REGISTER_TRIAL_COLL.findByIdAndDelete(registerTrialID);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_remove", status: 403 });
