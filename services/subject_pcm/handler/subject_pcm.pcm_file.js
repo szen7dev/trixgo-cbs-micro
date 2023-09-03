@@ -68,11 +68,39 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { companyID, projectID } = ctx.params;
+                const { companyID, projectID, year } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await PCM_FILE_MODEL.getListFilesGroupByDate({
-                    companyID, projectID, userID, ctx
+                    companyID, projectID, userID, year, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: MinhVH
+     * Func: Lấy danh sách file, group theo hợp đồng
+     * Date: 02/04/2022
+     */
+    getListFilesGroupByContract: {
+        auth: "required",
+        params: {
+            projectID   : { type: "string" },
+            keyword     : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { keyword, projectID, year } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await PCM_FILE_MODEL.getListFilesGroupByContract({
+                    keyword, projectID, year, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -111,34 +139,6 @@ module.exports = {
 
                 const resultAfterCallHandler = await PCM_FILE_MODEL.getListByFilter({
                     fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates, userID, ctx
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
-
-    /**
-     * Dev: MinhVH
-     * Func: Lấy danh sách file, group theo hợp đồng
-     * Date: 02/04/2022
-     */
-    getListFilesGroupByContract: {
-        auth: "required",
-        params: {
-            projectID   : { type: "string" },
-            keyword     : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                const { keyword, projectID } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
-
-                const resultAfterCallHandler = await PCM_FILE_MODEL.getListFilesGroupByContract({
-                    keyword, projectID, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

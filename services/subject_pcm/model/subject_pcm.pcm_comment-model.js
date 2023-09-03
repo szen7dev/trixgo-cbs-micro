@@ -1536,18 +1536,9 @@ class Model extends BaseModel {
         // })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = { type: { $in: [1, 2] } };
                 let keys = ['createAt__-1', '_id__-1'];
                 let sortBy = {};
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 if(+limit > 20 || isNaN(limit)){
 					limit = 20;
@@ -1579,7 +1570,6 @@ class Model extends BaseModel {
                 if(official === 'true') {
                     conditionObj.official = true;
                 }
-                // console.log(conditionObj)
 
                 if(taskID){
                     if(!checkObjectIDs([taskID])) {
@@ -1650,6 +1640,7 @@ class Model extends BaseModel {
                 if(switchType === this.SWITCH_TYPE.PROJECT) {
                     conditionObj.task = { $exists: false };
                 }
+
                 // console.log({ conditionObj, type })
 
                 let conditionObjOrg = { ...conditionObj };
@@ -1875,7 +1866,7 @@ class Model extends BaseModel {
 	 * Date: 19/8/2022
 	 */
 	searchCommentBySubject({ sortKey, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 10, unlimit, lastestID, select, populates = {} }){
-        // console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu comment================')
+        // console.log('=================searchCommentBySubjectt================')
         // console.log({ sortKey, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
 			try {

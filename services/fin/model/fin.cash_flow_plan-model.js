@@ -20,7 +20,7 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index')
  */
 class Model extends BaseModel {
     constructor() {
-        super(FIN__CASH_FLOW_PLAN_COLL);
+        super(FIN__CASH_FLOW_PLAN_COLL)
     }
 
     /**
