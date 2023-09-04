@@ -1203,6 +1203,35 @@ class Model extends BaseModel {
                             amount: { $sum: "$amount" }
                         }
                     }
+
+                    // Tổng hợp Khoản mục phí
+                    if(option == 8){
+                        conditionProject = {
+                            year : { $year : "$date" },
+                            month : { $month : "$date" },
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1,
+                            feeItem: 1,
+                        }
+    
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+    
+                        conditionGroupDebit = {
+                            _id: { feeItem: "$feeItem" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { feeItem: "$feeItem" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
                 }
 
                 /**
@@ -1635,8 +1664,19 @@ class Model extends BaseModel {
                         }})
                     }
 
-                      // Tổng hợp Tài khoản-Tháng
+                    // Tổng hợp Tài khoản-Tháng
                     if(option == 7){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitIn: listDataIn[0]._debit,
+                            creditIn: listDataIn[0]._credit,
+                        }})
+                    }
+                    
+                    // Tổng hợp Khoản mục phí
+                    if(option == 8){
                         return resolve({ error: false, data: { 
                             listAccounts,
                             debitO: listDataO[0]._debit,
