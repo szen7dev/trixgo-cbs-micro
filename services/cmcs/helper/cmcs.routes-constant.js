@@ -10,6 +10,7 @@ const CONTRACT_BILL_ITEM    = '/contract_bill_items';
 const CONTRACT_BILL_GROUP   = '/contract_bill_groups';
 const CONTRACT_BILL_JOB     = '/contract_bill_jobs';
 const CONTRACT_IPC_DETAIL   = '/contract_ipc_details';
+const CONTRACT_SUBMITTAL    = '/contract_submittals';
 
 const CF_ROUTINGS_CMCS = {
     ORIGIN_APP: BASE_ROUTE,
@@ -58,6 +59,10 @@ const CF_ROUTINGS_CMCS = {
     
     // ================================CONTRACT IPC DETAIL=======================================//
     CONTRACT_IPC_DETAIL                                     : `${BASE_ROUTE}${CONTRACT_IPC_DETAIL}`,
+
+    // ================================CONTRACT_SUBMITTAL=======================================//
+    CONTRACT_SUBMITTAL                                       : `${BASE_ROUTE}${CONTRACT_SUBMITTAL}`,    
+    CONTRACT_SUBMITTAL_GET_LIST_BY_PROPERTY                  : `${BASE_ROUTE}${CONTRACT_SUBMITTAL}/get-list-by-property`,
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;
