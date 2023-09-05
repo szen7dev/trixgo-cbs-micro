@@ -4,7 +4,7 @@
  * 1-Công việc
  * 2-Checklist
  * 3-Bài viết
- * 4...
+ * 4..
  */
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
