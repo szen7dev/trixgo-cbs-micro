@@ -17,15 +17,25 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'funda'
     }, 
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref: 'department'
+    }, 
+    //_________Hợp đồng
+    contract: {
+        type: Schema.Types.ObjectId,
+        ref: 'contract'
+    }, 
     /**
      * LINK NGÂN SÁCH
      */
-    //_________Link tới dự án
+    //_________Link tới dự án (***)
     budgetProject: {
         type: Schema.Types.ObjectId,
         ref: 'department'
     }, 
-    //_________Link tới hợp đồng
+    //_________Link tới hợp đồng (***)
     budgetContract: {
         type: Schema.Types.ObjectId,
         ref: 'contract'
@@ -123,20 +133,10 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'warehouse'
     },
-    //_________Hàng hóa/Thành phẩm/Nguyên vật liệu
+    //_________Hàng hóa/Thành phẩm/Nguyên vật liệu/Tài sản
     goods: {
         type: Schema.Types.ObjectId,
         ref: 'goods'
-    }, 
-    //_________Dự án
-    project: {
-        type: Schema.Types.ObjectId,
-        ref: 'department'
-    }, 
-    //_________Hợp đồng
-    contract: {
-        type: Schema.Types.ObjectId,
-        ref: 'contract'
     }, 
     //_________Diễn giải nội dung
     name: String,
@@ -156,19 +156,11 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     cash: { type: Number, default: 1 },  
     //_________Tiền về thực tế (áp dụng theo dõi cho các hoá đơn VAT)
     amountPayment: { type: Number, default: 0 }, 
-    /**
-     * Phân loại khoản mục phí
-     * 1-Chung
-     * 2-Chi phí
-     * 3-Doanh thu
-     */
-    // feeType: { type: Number, default: 1 },
     //_________Khoản mục phí
-    // fee: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'doctype'
-    // },
-
+    feeItem: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
     /**
      * USD-NGOẠI TỆ
      */ 

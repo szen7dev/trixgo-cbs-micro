@@ -346,7 +346,7 @@ module.exports = {
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
                         taskID, userID, select, populates, companyID: company._id
                     });
-                    
+
                     // console.log(resultAfterCallHandler)
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
@@ -362,7 +362,7 @@ module.exports = {
             }
         }
     },
-    
+
     /**
      * Dev: MinhVH
      * Func: Search Task
@@ -384,11 +384,11 @@ module.exports = {
             fieldsID            : { type: 'array', optional: true },
             isExpired           : { type: 'string', optional: true },
             read                : { type: 'string', optional: true },
-            isParent            : { type: 'string', optional: true }, 
-            isGroup             : { type: 'string', optional: true }, 
-            reportType          : { type: 'string', optional: true }, 
-            priority            : { type: 'string', optional: true }, 
-            upcoming            : { type: 'string', optional: true }, 
+            isParent            : { type: 'string', optional: true },
+            isGroup             : { type: 'string', optional: true },
+            reportType          : { type: 'string', optional: true },
+            priority            : { type: 'string', optional: true },
+            upcoming            : { type: 'string', optional: true },
             keyword             : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
@@ -730,7 +730,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadExcelTask({
-                    option, conditionDownload, userID 
+                    option, conditionDownload, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -754,10 +754,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { option, projectID } = ctx.params;
-                
+
 				const { _id: userID } = ctx.meta.infoUser;
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadTemplateImportExcel({
-                    option, projectID, userID 
+                    option, projectID, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -794,7 +794,7 @@ module.exports = {
             }
         }
     },
-    
+
     /**
      * Dev: HiepNH
      * Func: Reset All Data
@@ -823,5 +823,5 @@ module.exports = {
             }
         }
     }
-        
+
 }

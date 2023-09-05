@@ -375,13 +375,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove
-     * Author: Hiepnh
-     * Date: 9/4/2022
-     */
-
-    /**
-     * Name: Get info
+     * Name: Info
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -772,7 +766,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * REPORT
+     * Name  : getListByProperty
+     * Author: Hiepnh
+     * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts }) {
         // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
@@ -939,8 +935,8 @@ class Model extends BaseModel {
                     }
                 }
 
+                // 1 tài khoản - Không mã khách
                 if(!option){
-                    // 1 tài khoản - Không mã khách
                     conditionProject = {
                         year : {$year : "$date"},
                         forward: '$forward',
@@ -1071,114 +1067,172 @@ class Model extends BaseModel {
                             amount: { $sum: "$amount" }
                         }
                     }
-                }
 
-                // Báo cáo Bảng cân đối tài khoản
-                if(option == 4){
-                    conditionProject = {
-                        year : {$year : "$date"},
-                        forward: '$forward',
-                        cancel: '$cancel',
-                        date: 1,
-                        amount: 1,
-                        debit: 1,
-                        credit: 1
-                    }
-
-                    conditionGroupDebit = {
-                        _id: { account: "$debit" },
-                        amount: { $sum: "$amount" }
-                    }
-                    conditionGroupCredit = {
-                        _id: { account: "$credit" },
-                        amount: { $sum: "$amount" }
-                    }
-                }
-
-                // Công nợ userID đang truy cập
-                if(option == 5){
-                    conditionDebitObj.debit = {
-                        $in: arrObjectID
-                    }
-                    conditionCreditObj.credit = {
-                        $in: arrObjectID
-                    }
-
-                    if(contacts){
-                        conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
-                        conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
-                    }else{
-                        conditionDebitObj.customerDebit = null
-                        conditionCreditObj.customerCredit = null
-                    }
-                
-                    conditionProject = {
-                        company: 1,
-                        year : {$year : "$date"},
-                        forward: '$forward',
-                        cancel: '$cancel',
-                        date: 1,
-                        amount: 1,
-                        debit: 1,
-                        credit: 1,
-                        customerDebit: 1,
-                        customerCredit: 1,
-                    }
-
-                    conditionGroupDebit = {
-                        _id: { company: "$company", account: "$debit" },
-                        amount: { $sum: "$amount" }
-                    }
-                    conditionGroupCredit = {
-                        _id: { company: "$company", account: "$credit" },
-                        amount: { $sum: "$amount" }
-                    }
-                }
-
-                // Công nợ userID đang truy cập
-                if(option == 6){
-                    conditionDebitObj.debit = {
-                        $in: arrObjectID
-                    }
-                    conditionCreditObj.credit = {
-                        $in: arrObjectID
-                    }
-
-                    if(contacts){
-                        conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
-                        conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
-                    }else{
-                        conditionDebitObj.customerDebit = {$in: []}
-                        conditionCreditObj.customerCredit = {$in: []}
-                    }
-    
-                    conditionProject = {
-                        year : {$year : "$date"},
-                        forward: '$forward',
-                        cancel: '$cancel',
-                        date: 1,
-                        amount: 1,
-                        customerDebit: 1,
-                        customerCredit: 1,
-                        debit: 1,
-                        credit: 1
-                    }
-
-                    conditionGroupDebit = {
-                        _id: { },
-                        amount: { $sum: "$amount" }
-                    }
                     
-                    conditionGroupCredit = {
-                        _id: {  },
-                        amount: { $sum: "$amount" }
+                    // Báo cáo Bảng cân đối tài khoản
+                    if(option == 4){
+                        conditionProject = {
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1,
+                            debit: 1,
+                            credit: 1
+                        }
+
+                        conditionGroupDebit = {
+                            _id: { account: "$debit" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { account: "$credit" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+
+                    // Công nợ userID đang truy cập
+                    if(option == 5){
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+
+                        if(contacts){
+                            conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
+                            conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
+                        }else{
+                            conditionDebitObj.customerDebit = null
+                            conditionCreditObj.customerCredit = null
+                        }
+                    
+                        conditionProject = {
+                            company: 1,
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1,
+                            debit: 1,
+                            credit: 1,
+                            customerDebit: 1,
+                            customerCredit: 1,
+                        }
+
+                        conditionGroupDebit = {
+                            _id: { company: "$company", account: "$debit" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { company: "$company", account: "$credit" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+
+                    // Công nợ userID đang truy cập
+                    if(option == 6){
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+
+                        if(contacts){
+                            conditionDebitObj.customerDebit = {$in: contacts.map(item=>ObjectID(item._id))}
+                            conditionCreditObj.customerCredit = {$in: contacts.map(item=>ObjectID(item._id))}
+                        }else{
+                            conditionDebitObj.customerDebit = {$in: []}
+                            conditionCreditObj.customerCredit = {$in: []}
+                        }
+        
+                        conditionProject = {
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1,
+                            customerDebit: 1,
+                            customerCredit: 1,
+                            debit: 1,
+                            credit: 1
+                        }
+
+                        conditionGroupDebit = {
+                            _id: { },
+                            amount: { $sum: "$amount" }
+                        }
+                        
+                        conditionGroupCredit = {
+                            _id: {  },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+                    // console.log(conditionDebitObj)
+                    // console.log(conditionCreditObj)
+                    // console.log(conditionProject)
+                    // console.log(conditionMatchO)
+                    // console.log(conditionMatchIn)
+
+                    // Tổng hợp Tài khoản-Tháng
+                    if(option == 7){
+                        conditionProject = {
+                            year : { $year : "$date" },
+                            month : { $month : "$date" },
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1
+                        }
+    
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+    
+                        conditionGroupDebit = {
+                            _id: { month: "$month" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { month: "$month" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+
+                    // Tổng hợp Khoản mục phí
+                    if(option == 8){
+                        conditionProject = {
+                            year : { $year : "$date" },
+                            month : { $month : "$date" },
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            amount: 1,
+                            feeItem: 1,
+                        }
+    
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+    
+                        conditionGroupDebit = {
+                            _id: { feeItem: "$feeItem" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { feeItem: "$feeItem" },
+                            amount: { $sum: "$amount" }
+                        }
                     }
                 }
-                // console.log(conditionDebitObj)
-                // console.log(conditionCreditObj)
-                // console.log(conditionProject)
-                // console.log(conditionMatchO)
-                // console.log(conditionMatchIn)
 
                 /**
                  * DATA KẾT CHUYỂN/ĐẦU NĂM
@@ -1385,6 +1439,7 @@ class Model extends BaseModel {
                         totalCreditFT,
                     }})
                 }else{
+                     // Nhiều tài khoản - Không mã khách
                     if(option == 1){
                         return resolve({ error: false, data: { 
                             listAccounts,
@@ -1609,6 +1664,27 @@ class Model extends BaseModel {
                         }})
                     }
 
+                    // Tổng hợp Tài khoản-Tháng
+                    if(option == 7){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitIn: listDataIn[0]._debit,
+                            creditIn: listDataIn[0]._credit,
+                        }})
+                    }
+                    
+                    // Tổng hợp Khoản mục phí
+                    if(option == 8){
+                        return resolve({ error: false, data: { 
+                            listAccounts,
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitIn: listDataIn[0]._debit,
+                            creditIn: listDataIn[0]._credit,
+                        }})
+                    }
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message })

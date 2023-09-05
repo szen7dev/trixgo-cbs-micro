@@ -395,8 +395,8 @@ exports.SUBJECT_SOCKET = {
 			let { author, assignee, related } = infoTask;
 			related = related.map(userID => userID.toString());
 
-			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+			const receivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+			// const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
 			await PromisePool
 				.for(receivers)
