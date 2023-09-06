@@ -771,7 +771,8 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts }) {
-        // console.log({option, optionAccount, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
+        console.log('==================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
