@@ -1862,7 +1862,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ taskID, companyID, userID, select, populates }){
+    getInfo({ option, taskID, companyID, userID, select, populates }){
         // console.log({ taskID, userID, select, populates })
         return new Promise(async resolve => {
             try {
@@ -1888,33 +1888,35 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Not found task', status: 404 });
                 }
 
-                let { author, assignee, related, group, viewedUsers, status } = infoTaskForCheck;
+                let { author, assignee, related, group, viewedUsers, status, subtype } = infoTaskForCheck;
 
-                let isAuthor = false;
-                let isAssignee = false;
-                let isRelated = false;
-                let isMemberGroup = false;
-
-                if(author.toString() == userID.toString()){
-                    isAuthor = true;
+                if([0,1,2,3,4,5,6,7,8,9,10,11,12].includes(subtype)){
+                    let isAuthor = false;
+                    let isAssignee = false;
+                    let isRelated = false;
+                    let isMemberGroup = false;
+    
+                    if(author.toString() == userID.toString()){
+                        isAuthor = true;
+                    }
+    
+                    if(assignee.toString() == userID.toString()){
+                        isAssignee = true;
+                    }
+    
+                    related = related.map(item => `${item}`);
+                    if(related.includes(userID)){
+                        isRelated = true;
+                    }
+    
+                    let memberInGroup = group?.members?.map(item => `${item}`) || [];
+                    if(memberInGroup.includes(userID.toString())){
+                        isMemberGroup = true;
+                    }
+    
+                    if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
+                        return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED })
                 }
-
-                if(assignee.toString() == userID.toString()){
-                    isAssignee = true;
-                }
-
-                related = related.map(item => `${item}`);
-                if(related.includes(userID)){
-                    isRelated = true;
-                }
-
-                let memberInGroup = group?.members?.map(item => `${item}`) || [];
-                if(memberInGroup.includes(userID.toString())){
-                    isMemberGroup = true;
-                }
-
-                if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
-                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
                 /**
                  * Cập nhật thông tin người truy cập
@@ -1930,14 +1932,14 @@ class Model extends BaseModel {
                 /**
                  * Cập nhật trạng thái triển khai
                  */
-                if(status == 1 && assignee.toString() == userID.toString()){
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
-                        {
-                            $set: {
-                                status: 2
-                            }
-                        }, { new: true })
-                }
+                // if(status == 1 && assignee.toString() == userID.toString()){
+                //     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
+                //         {
+                //             $set: {
+                //                 status: 2
+                //             }
+                //         }, { new: true })
+                // }
 
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
