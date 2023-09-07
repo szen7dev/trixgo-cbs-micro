@@ -2819,6 +2819,7 @@ class Model extends BaseModel {
                                 $group: {
                                     _id: { month: "$month" },
                                     amount: { $sum: "$amount" },
+                                    vatAmount: { $sum: "$vatAmount" },
                                 }
                             },
                         ])
