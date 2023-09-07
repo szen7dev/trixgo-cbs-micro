@@ -32,7 +32,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ companyID, projectID, type, name, description, parentID, userID }) {
+    insert({ companyID, projectID, type, name, description, conditionPin, parentID, userID }) {
+        // console.log('============Tạo báo cáo động===============')
+        // console.log({ companyID, projectID, type, name, description, conditionPin, parentID, userID })
         return new Promise(async (resolve) => {
             try {
 
@@ -57,7 +59,12 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                dataInsert = { company: companyID, author: userID, userUpdate: userID, members: [userID] };
+                dataInsert = { 
+                    company: companyID, 
+                    author: userID, 
+                    userUpdate: userID, 
+                    members: [userID] 
+                }
 
                 if(type){
                     dataInsert.type = type;
@@ -69,6 +76,10 @@ class Model extends BaseModel {
 
                 if(description) {
                     dataInsert.description = description;
+                }
+
+                if(conditionPin){
+                    dataInsert.conditionPin = conditionPin;
                 }
 
                 if(ObjectID.isValid(parentID)){
@@ -97,6 +108,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID, reportsRemoveID }) {
+        // console.log('============Cập nhật báo cáo động===============')
         // console.log({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID, reportsRemoveID })
         return new Promise(async (resolve) => {
             try {
