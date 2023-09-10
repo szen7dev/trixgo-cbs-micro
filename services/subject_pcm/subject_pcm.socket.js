@@ -366,7 +366,6 @@ exports.SUBJECT_SOCKET = {
 			let userID          						= socket.client.user;
 			let io              						= socket.$service.io;
 			let { taskID, isGetCountNotification } 		= data;
-			console.log({ SUBJECT_PCM_CSS_UPDATE_NOTIFICATION: data });
 
 			if(!taskID){
 				return sendDataToMultilSocketsOfListUser({
@@ -395,7 +394,7 @@ exports.SUBJECT_SOCKET = {
 			related = related.map(userID => userID.toString());
 
 			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+			const listReceiversExceptMe = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
 			if (isGetCountNotification) {
 				await PromisePool
@@ -424,7 +423,7 @@ exports.SUBJECT_SOCKET = {
 
 			sendDataToMultilSocketsOfListUser({
 				listUserConnected: listUserActive,
-				arrReceiver: receivers,
+				arrReceiver: listReceiversExceptMe,
 				data: {
 					error: false,
 					data: { infoTask },
