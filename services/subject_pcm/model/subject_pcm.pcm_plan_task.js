@@ -1150,7 +1150,6 @@ class Model extends BaseModel {
                 /**
                  * TIẾN HÀNH CẬP NHẬT CÔNG VIỆC
                  */
-                console.log(dataUpdate)
                 let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
