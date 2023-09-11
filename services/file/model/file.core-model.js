@@ -14,10 +14,10 @@ class Model extends BaseModel {
     /**
      * 1/ insert (processing)
      * 2/ insert bulk
-     * 
+     *
      * 3/ update status (success, error)
      * 4/ update status bulk
-     * 
+     *
      * 6/ get list by status SYSTEM
      * 7/ get info
      * 8/ get list with list fileID with status
@@ -30,16 +30,16 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 const dataInsert = {
-                    nameOrg, 
-                    name, 
-                    path, 
-                    size, 
-                    mimeType, 
-                    type, 
+                    nameOrg,
+                    name,
+                    path,
+                    size,
+                    mimeType,
+                    type,
                     author: userID
                 }
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -75,7 +75,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
-                 */    
+                 */
                 if(appID) {
                     if(!checkObjectIDs([appID])) {
                         return resolve({
@@ -133,14 +133,14 @@ class Model extends BaseModel {
         })
     }
 
-    /** 
-     * 
+    /**
+     *
     // cập nhật trạng thái thành công hoặc thất bại
      * @param {*} fileID
      * @param {*} status
      * @param {*} description
      * @param {*} userID
-     * @returns 
+     * @returns
      */
     update({ fileID, status, description, userID }) {
         return new Promise(async resolve => {
@@ -151,7 +151,7 @@ class Model extends BaseModel {
                 let listStatusForUpdateValid = [FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS]; // chỉ có các file_processing -> mới được update
                 let dataUpdate = { modifyAt: Date.now() };
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -163,7 +163,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
-                 */  
+                 */
                 const infoFile = await FILE__CORE_COLL.findById(fileID).lean();
 
                 if(status) {
@@ -179,7 +179,7 @@ class Model extends BaseModel {
 
                     dataUpdate.status = status;
                 }
-                
+
                 if(description) {
                     dataUpdate.description = description;
                 }
@@ -195,12 +195,39 @@ class Model extends BaseModel {
         })
     }
 
+    deleteFiles({ fileIDs, authorID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs([...fileIDs, authorID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số fileIDs hoặc authorID không hợp lệ",
+                        keyError: "params_fileIDs_or_authorID_invalid",
+                        status: 400
+                    })
+                }
+
+                const infoBeforeDelete = await FILE__CORE_COLL.find({ _id: { $in: fileIDs }, author: authorID });
+                if(!infoBeforeDelete.length)
+                    return resolve({ error: true, message: 'cannot_find_files' });
+
+                const infoAfterDelete = await FILE__CORE_COLL.deleteMany({ _id: { $in: fileIDs } });
+                if(!infoAfterDelete)
+                    return resolve({ error: true, message: 'cannot_delete_files' });
+
+                return resolve({ error: false, data: infoAfterDelete });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
     getInfoFile({ fileID, authorID, select, populates }) {
         // console.log('=============Thông tin file=====================')
         // console.log({ fileID, authorID, select, populates })
         return new Promise(async resolve => {
             try {
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -230,7 +257,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
-                 */    
+                 */
                 let infoFile = await FILE__CORE_COLL
                     .findById(fileID)
                     .select(select)
@@ -261,7 +288,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                 /** 
+                 /**
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -272,7 +299,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
-                 */    
+                 */
 
                 let conditionObj = {
                     _id: {
@@ -298,14 +325,14 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let listStatusValid = [FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS];
-                 /** 
+                 /**
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if (!checkNumberIsValidWithRange({ arrValid: listStatusValid, val: status }) && status != 'all')
                     return resolve({ error: true, message: 'status_invalid' });
-                    
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
@@ -329,7 +356,7 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
 }
 
 exports.MODEL = new Model;
