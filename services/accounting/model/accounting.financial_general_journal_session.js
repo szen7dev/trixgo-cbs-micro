@@ -3582,7 +3582,6 @@ insertFull({
                         }
                     }
                 }
-                console.log({ conditionObj1, conditionObj2,arrObjectID: arrObjectID.data })
 
                 let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {

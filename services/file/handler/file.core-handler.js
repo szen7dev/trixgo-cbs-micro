@@ -41,6 +41,23 @@ module.exports = {
         }
     },
 
+    deleteFiles: {
+        params: {
+            ids: { type: "array" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: authorID } = ctx.meta.infoUser;
+                const { ids: fileIDs } = ctx.params;
+
+                return await FILE__CORE_MODEL.deleteFiles({ fileIDs, authorID });
+            } catch (error) {
+                return { error: true, message: error.message, status: 500 };
+            }
+        }
+    },
+
     getInfoFile: {
         params: {
             fileID      : { type: "string" },

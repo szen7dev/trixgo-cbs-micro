@@ -9,7 +9,6 @@ const { EVENT_SOCKET_CONSTANT_SUBJECT_PCM }		= require('./helper/subject_pcm.eve
 // const { CF_ACTIONS_ITEM }						= require('../item/helper/item.actions-constant');
 const { APP_KEYS, LANGUAGE_KEYS }				= require('../../tools/keys');
 const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant')
-
 /**
  * Utils
  */
@@ -19,7 +18,6 @@ const PCM_PLAN_TASK_COLL                		= require('./database/subject_pcm.pcm_
 const PCM_PLAN_TASK_MODEL                		= require('./model/subject_pcm.pcm_plan_task').MODEL;
 
 exports.SUBJECT_SOCKET = {
-
 	/**
 	 * Tạo mới checklist
 	 */
@@ -361,20 +359,20 @@ exports.SUBJECT_SOCKET = {
 	/**
 	 * Cập nhật số lượng thông báo (badge)
 	 */
-	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_UPDATE_COUNT_NOTIFICATION]: async function(data) {
+	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_UPDATE_NOTIFICATION]: async function(data) {
         try {
-			let socket          = this;
-			let listUserActive  = socket.$service.listUserConnected;
-			let userID          = socket.client.user;
-			let io              = socket.$service.io;
-			let { taskID } 		= data;
+			let socket          						= this;
+			let listUserActive  						= socket.$service.listUserConnected;
+			let userID          						= socket.client.user;
+			let io              						= socket.$service.io;
+			let { taskID, isGetCountNotification } 		= data;
 
 			if(!taskID){
 				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
 					data: { error: true, message: "Tham số taskID không hợp lệ" },
-					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_COUNT_NOTIFICATION], io
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_NOTIFICATION], io
 				});
 			}
 
@@ -388,40 +386,51 @@ exports.SUBJECT_SOCKET = {
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
 					data: { error: true, message: "Task không tồn tại" },
-					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_COUNT_NOTIFICATION], io
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_NOTIFICATION], io
 				});
 			}
 
 			let { author, assignee, related } = infoTask;
 			related = related.map(userID => userID.toString());
 
-			const receivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-			// const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+			const listReceiversExceptMe = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
-			await PromisePool
-				.for(receivers)
-				.withConcurrency(4)
-				.process(async userId => {
-					const { error, data } = await PCM_PLAN_TASK_MODEL.getAmountNotification({
-						userID: userId
+			if (isGetCountNotification) {
+				await PromisePool
+					.for(listReceivers)
+					.withConcurrency(4)
+					.process(async userId => {
+						const { error, data } = await PCM_PLAN_TASK_MODEL.getAmountNotification({
+							userID: userId
+						})
+
+						if(error) return !error;
+
+						// SEND SOCKET
+						sendDataToMultilSocketsOfListUser({
+							listUserConnected: listUserActive,
+							arrReceiver: [userId],
+							data: {
+								error: false,
+								data,
+							},
+							event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_NOTIFICATION],
+							io,
+						});
 					})
+			}
 
-					if(error) return !error;
-
-					// SEND SOCKET
-					sendDataToMultilSocketsOfListUser({
-						listUserConnected: listUserActive,
-						arrReceiver: [userId],
-						data: {
-							error: false,
-							data,
-						},
-						event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_COUNT_NOTIFICATION],
-						io,
-					});
-				})
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
+				arrReceiver: listReceiversExceptMe,
+				data: {
+					error: false,
+					data: { infoTask },
+				}, event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_UPDATE_NOTIFICATION], io
+			});
 		} catch (error) {
-			console.info('======EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_UPDATE_COUNT_NOTIFICATION=====');
+			console.info('======EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_UPDATE_NOTIFICATION=====');
 			console.error(error);
 		}
 	},

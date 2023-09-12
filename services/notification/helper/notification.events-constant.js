@@ -44,6 +44,10 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             // console.log("Metadata:", ctx.meta);
             // console.log("The called event name:", ctx.eventName);
 
+            if(process.env.NODE_ENV == 'development') {
+                return;
+            }
+
             /**
              *  =========== env(auth.user-coll) =================
             *  1/ WEB_CBS
@@ -54,7 +58,6 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
                 users: listRecievers, title, description, web_url, amountNoti, dataSend, env
             } = ctx.params;
 
-             // ctx.emit("accounts.created", { user: ctx.params.user });
             await NOTIFICATION__LOG_MODEL.sendNotiMobileAndWebPush({
                 users: listRecievers,
                 title: title,
