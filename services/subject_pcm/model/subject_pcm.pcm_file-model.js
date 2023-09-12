@@ -14,7 +14,7 @@ const rimraf                            = require('rimraf');
 const path                              = require('path');
 const PromisePool                       = require('@supercharge/promise-pool');
 const archiver                          = require('archiver');
-const stream                            = require('stream');
+const stream                            = require('stream')
 
 /**
  * Tools
