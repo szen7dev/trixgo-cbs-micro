@@ -14,9 +14,9 @@
   *      - //TODO service reminder: nhắc sau bao lâu không thanh toán (chỉ là ví dụ)
   */
  exports.EXAMPLE__CASE1_FAIL       = `EXAMPLE__CASE1_FAIL`;
- 
+
  // ----------------------------------------------------------------------------------------------- //
- 
+
  /**
   * định nghĩa các EVENT mà SERVICE(EXAMPLE) sẽ subscribe (nhận job từ các service khác)
   */
@@ -32,7 +32,7 @@
              /**
               * 1/ lấy dữ liệu đầu vào
               * 2/ thực hiện công việc
-              *      + update process (db, redis) 
+              *      + update process (db, redis)
               */
              console.log("Payload:", ctx.params);
              console.log("Sender:", ctx.nodeID);

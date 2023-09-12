@@ -2,7 +2,7 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
-const { 
+const {
     FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS
 }                           = require('../helper/file.keys-constant');
 
@@ -23,16 +23,16 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
         ref: 'department'
     },
     //______Tên gốc
-    nameOrg     : { type: String, require: true }, 
+    nameOrg     : { type: String, require: true },
     //______Tên uuidv1
     name        : { type: String, require: true },
     //______Mô tả file
     description : { type: String },
     //_____Trạng thái upload file(Hệ thống cũ không có)
-    status: { 
-        type: Number, 
+    status: {
+        type: Number,
         enum: [FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS],
-        require: true, 
+        require: true,
         default: FILE_PROCESSING
     },
     //_____Đường dẫn đến file s3 (root/test/image.png)
@@ -47,7 +47,7 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
      * 3. Audio
      * 4. Video
      */
-    type: { 
+    type: {
         type: Number,
         default: 1
     },
