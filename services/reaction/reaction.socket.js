@@ -8,7 +8,7 @@ const { CF_ACTIONS_SUBJECT_PCM }				= require('../subject_pcm/helper/subject_pcm
 const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM }						= require('../item/helper/item.actions-constant');
 const { APP_KEYS, LANGUAGE_KEYS }				= require('../../tools/keys');
-const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant');
+// const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant');
 
 /**
  * Utils
