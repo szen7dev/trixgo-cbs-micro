@@ -19,6 +19,64 @@ const PCM_PLAN_TASK_MODEL                		= require('./model/subject_pcm.pcm_pl
 
 exports.SUBJECT_SOCKET = {
 	/**
+	 * Tạo mới việc con
+	 */
+	[EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_TASK]: async function(data) {
+        try {
+			let socket          = this;
+			let listUserActive  = socket.$service.listUserConnected;
+			let userID          = socket.client.user;
+			let io              = socket.$service.io;
+			let { taskID } 		= data;
+
+			if(!taskID){
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, message: "Tham số taskID không hợp lệ" },
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_TASK], io
+				});
+			}
+
+			const infoTask = await PCM_PLAN_TASK_COLL
+				.findById(taskID)
+				.select('_id author assignee related')
+				.lean();
+
+			if(!infoTask) {
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, message: "Task không tồn tại" },
+					event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_TASK], io
+				});
+			}
+
+			let { author, assignee, related } = infoTask;
+			related = related.map(userID => userID.toString());
+
+			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+
+			// SEND SOCKET
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
+				arrReceiver: receivers,
+				data: {
+					error: false,
+					data: {
+						infoTask,
+						senderID: userID
+					}
+				}, event: [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_TASK], io
+			});
+		} catch (error) {
+			console.info('======EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_SSC_ADD_TASK=====');
+			console.error(error);
+		}
+	},
+
+	/**
 	 * Tạo mới checklist
 	 */
     [EVENT_SOCKET_CONSTANT_SUBJECT_PCM.SUBJECT_PCM_CSS_ADD_CHECKLIST]: async function(data) {
