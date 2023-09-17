@@ -118,7 +118,9 @@ module.exports = {
         auth: "required",
         params: {
             datahubPackageID : { type: "string", optional: true },
-            contractorID     : { type: "string" },
+            contractorID     : { type: "string", optional: true },
+            fieldID          : { type: "string", optional: true },
+
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -129,7 +131,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractorID, datahubPackageID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { contractorID, fieldID, datahubPackageID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -139,7 +141,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.getList({
-                        contractorID, userID, lastestID, keyword, limit, select, populates
+                        contractorID, fieldID, userID, lastestID, keyword, limit, select, populates
                     });
                 }
 
@@ -158,28 +160,31 @@ module.exports = {
      getListByProperty: {
         auth: "required",
         params: {
+            option   : { type: "string", optional: true  },
+            contractorID   : { type: "string", optional: true  },
             fieldID  : { type: "string", optional: true },
             areaID  : { type: "string", optional: true  },
             level   : { type: "string", optional: true  },
-            option   : { type: "string", optional: true  },
-            contractorID   : { type: "string", optional: true  },
-
-            // Field mặc định
-            keyword     : { type: "string", optional: true },
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
-            populates   : { type: "string", optional: true },
+            buildingType   : { type: "string", optional: true  },
+            buildingGrade   : { type: "string", optional: true  },
+            basementNumber   : { type: "string", optional: true  },
+            basementArea   : { type: "string", optional: true  },
+            floorNumber   : { type: "string", optional: true  },
+            floorArea   : { type: "string", optional: true  },
+            status   : { type: "string", optional: true  },
+            fromDate   : { type: "string", optional: true  },
+            toDate   : { type: "string", optional: true  },
+            quality   : { type: "string", optional: true  }
         },
         async handler(ctx) {
             try {
                 // console.log('========================12322222222222222')
                 await this.validateEntity(ctx.params);
-                let { fieldID, areaID, level, option, contractorID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { option, fieldID, contractorID, areaID, level, buildingType, buildingGrade, basementNumber, basementArea, floorNumber, floorArea, status, fromDate, toDate, quality } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.getListByProperty({
-                    fieldID, areaID, level, option, contractorID, userID, lastestID, keyword, limit, select, populates
+                    option, fieldID, contractorID, areaID, level, buildingType, buildingGrade, basementNumber, basementArea, floorNumber, floorArea, status, fromDate, toDate, quality, userID
                  });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

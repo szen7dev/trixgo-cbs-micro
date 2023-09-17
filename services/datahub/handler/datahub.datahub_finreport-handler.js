@@ -146,4 +146,32 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: Gom nhóm theo tính chất
+     * Code: HiepNH
+     * Date: 17/9/2023
+     */
+     getListByProperty: {
+        auth: "required",
+        params: {
+            option   : { type: "string", optional: true  },
+            contractorID   : { type: "string", optional: true  },
+        },
+        async handler(ctx) {
+            try {
+                // console.log('========================12322222222222222')
+                await this.validateEntity(ctx.params);
+                let { option, contractorID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await DATAHUB_FINREPORT_MODEL.getListByProperty({
+                    option, contractorID });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }

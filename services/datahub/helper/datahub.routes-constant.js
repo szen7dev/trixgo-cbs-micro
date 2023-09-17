@@ -15,6 +15,7 @@ const DATAHUB_JOB                       = '/datahub_jobs';
 const DATAHUB_JOBLINE                   = '/datahub_joblines';
 const DATAHUB_PRODUCT                   = '/datahub_products';
 const DATAHUB_TEMPLATE                  = '/datahub_templates';
+const DATAHUB_MATERIAL                  = '/datahub_materials'
 
 const CF_ROUTINGS_DATAHUB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -26,8 +27,10 @@ const CF_ROUTINGS_DATAHUB = {
     DATAHUB_PACKAGE             : `${BASE_ROUTE}${DATAHUB_PACKAGES}`, 
     DATAHUB_PACKAGE_GET_LIST_BY_PROPERTY             : `${BASE_ROUTE}${DATAHUB_PACKAGES}/get-list-by-property`, 
     DATAHUB_FINREPORT           : `${BASE_ROUTE}${DATAHUB_FINREPORT}`, 
+    DATAHUB_FINREPORT_GET_LIST_BY_PROPERTY             : `${BASE_ROUTE}${DATAHUB_FINREPORT}/get-list-by-property`, 
     DATAHUB_CONTRACTOR          : `${BASE_ROUTE}${DATAHUB_CONTRACTOR}`, 
     DATAHUB_PROFILE             : `${BASE_ROUTE}${DATAHUB_PROFILE}`, 
+    DATAHUB_MATERIAL             : `${BASE_ROUTE}${DATAHUB_MATERIAL}`, 
     DATAHUB_INSPECTION_DOC      : `${BASE_ROUTE}${DATAHUB_INSPECTION_DOC}`, 
     DATAHUB_INSPECTION_CHECKLIST: `${BASE_ROUTE}${DATAHUB_INSPECTION_CHECKLIST}`, 
     DATAHUB_JOB                 : `${BASE_ROUTE}${DATAHUB_JOB}`, 

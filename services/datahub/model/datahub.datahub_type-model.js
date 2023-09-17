@@ -165,6 +165,7 @@ class Model extends BaseModel {
 	 * Date: 26/10/2021
 	 */
     getList({ type, popular, parentID, userID, lastestID, keyword, limit = 50, select, populates = {}}){
+        // console.log({type, popular, parentID, userID, lastestID, keyword})
         return new Promise(async resolve => {
             try {
                 let conditionObj = {};

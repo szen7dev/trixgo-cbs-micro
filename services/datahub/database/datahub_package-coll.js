@@ -82,6 +82,8 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
     property: { type: Number, default: 1 },
     //_________Tình trạng hợp đồng
     status: { type: Number, default: 1 },
+    //_________Đánh giá chất lượng
+    quality: { type: Number, default: 0, max: 5 },
     //_________Tài liệu đính kèm
     files: [{
         type: Schema.Types.ObjectId,
