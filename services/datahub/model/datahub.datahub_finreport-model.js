@@ -39,7 +39,7 @@ class Model extends BaseModel {
 	 * Code:
 	 */
     insert({ contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID }) {
-        console.log({ contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID })
+        // console.log({ contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID })
         return new Promise(async resolve => {
             try {
 
@@ -104,7 +104,7 @@ class Model extends BaseModel {
 	 * Code:
 	 */
     update({ datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, files, userID  }) {
-        console.log({ fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID })
+        // console.log({ fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID })
         return new Promise(async resolve => {
             try {
 
@@ -173,22 +173,22 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code:
 	 */
-	remove({ datahubFinreportID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(datahubFinreportID))
-                    return resolve({ error: true, message: 'Mã datahubFinreportID không hợp lệ', keyError: "datahubFinreportID_invalid", status: 400 });
+	// remove({ datahubFinreportID }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!checkObjectIDs(datahubFinreportID))
+    //                 return resolve({ error: true, message: 'Mã datahubFinreportID không hợp lệ', keyError: "datahubFinreportID_invalid", status: 400 });
 
-                let infoAterRemove = await DATAHUB_FINDREPORT_COLL.findByIdAndDelete(datahubFinreportID)
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
+    //             let infoAterRemove = await DATAHUB_FINDREPORT_COLL.findByIdAndDelete(datahubFinreportID)
+    //             if(!infoAterRemove)
+    //                 return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoAterRemove, status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
 	/**
 	 * Name: get info datahub finreport
@@ -271,13 +271,6 @@ class Model extends BaseModel {
 						select: ""
 					}
 				}
-                // SEARCH TEXT
-                // if(keyword){
-                //     keyword = keyword.split(" ");
-                //     keyword = '.*' + keyword.join(".*") + '.*';
-                //     let regSearch = new RegExp(keyword, 'i');
-                //     conditionObj.name = regSearch;
-                // }
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -328,6 +321,42 @@ class Model extends BaseModel {
 				});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+        /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 17/9/2022
+     */
+    getListByProperty({ userID, option, contractorID }){
+        // console.log({ userID, option, contractorID })
+        return new Promise(async resolve => {
+            try {
+                if(option == 1){
+                    // let conditionObj = {}, conditionGroup = {}, conditionPopulate = {}, sortBy = {"amount": -1}
+
+                    let listData = await DATAHUB_FINDREPORT_COLL.aggregate([
+                        {
+                            $match: {
+                                contractor: ObjectID(contractorID)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { year: "$fiscalYear" },
+                                amount: { $sum: "$grossConstructionRevenue" },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
+
+                    return resolve({ error: false, data: listData });
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }

@@ -262,10 +262,11 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách datahub package
 	 * Date: 26/10/2021
 	 */
-    getList({ contractorID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getList({ contractorID, fieldID, userID, lastestID, keyword, limit = 10, select, populates = {} }){
+        // console.log({ contractorID, fieldID, userID, lastestID, keyword, limit, select, populates })
         return new Promise(async resolve => {
             try {
-                let conditionObj = { contractor: contractorID };
+                let conditionObj = { };
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
@@ -275,8 +276,13 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-				if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+                if(contractorID && checkObjectIDs(contractorID)){
+                    conditionObj.contractor = ObjectID(contractorID)
+                }
+
+                if(fieldID && checkObjectIDs(fieldID)){
+                    conditionObj.field = ObjectID(fieldID)
+                }
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -289,6 +295,7 @@ class Model extends BaseModel {
 						select: ""
 					}
 				}
+                
                 // SEARCH TEXT
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -478,6 +485,7 @@ class Model extends BaseModel {
                  * Tính tổng số lượng theo các phân loại của Nhà thầu
                  */
                 if(option == 2){
+                    // Tổng hợp theo Lĩnh vực
                     let listData1 = await DATAHUB_PACKAGE_COLL.aggregate([
                         {
                             $match: {
@@ -492,6 +500,7 @@ class Model extends BaseModel {
                         },
                     ])
 
+                    // Tổng hợp theo Dự án
                     let listData2 = await DATAHUB_PACKAGE_COLL.aggregate([
                         {
                             $match: {
@@ -506,6 +515,7 @@ class Model extends BaseModel {
                         },
                     ])
 
+                    // Tổng hợp theo Hợp đồng
                     let listData3 = await DATAHUB_PACKAGE_COLL.aggregate([
                         {
                             $match: {
@@ -520,6 +530,7 @@ class Model extends BaseModel {
                         },
                     ])
 
+                    // Tổng hợp theo Chủ đầu tư
                     let listData4 = await DATAHUB_PACKAGE_COLL.aggregate([
                         {
                             $match: {

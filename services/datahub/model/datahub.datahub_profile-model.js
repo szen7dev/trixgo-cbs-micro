@@ -92,22 +92,22 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code:
 	 */
-	remove({ datahubProfileID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(datahubProfileID))
-                    return resolve({ error: true, message: 'Mã datahubProfileID không hợp lệ', keyError: "datahubProfileID_invalid", status: 400 });
+	// remove({ datahubProfileID }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!checkObjectIDs(datahubProfileID))
+    //                 return resolve({ error: true, message: 'Mã datahubProfileID không hợp lệ', keyError: "datahubProfileID_invalid", status: 400 });
 
-                let infoAterRemove = await DATAHUB_PROFILE_COLL.findByIdAndDelete(datahubProfileID)
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
+    //             let infoAterRemove = await DATAHUB_PROFILE_COLL.findByIdAndDelete(datahubProfileID)
+    //             if(!infoAterRemove)
+    //                 return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoAterRemove, status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
 	/**
 	 * Name: get info datahub profile
@@ -164,6 +164,7 @@ class Model extends BaseModel {
 	 * Date: 26/10/2021
 	 */
     getList({ contractorID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
+        // console.log({ contractorID, userID, lastestID, keyword, limit, select, populates})
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(contractorID))

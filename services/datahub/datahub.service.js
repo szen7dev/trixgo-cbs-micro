@@ -17,6 +17,7 @@ const DATAHUB_JOB_COLL					= require('./database/datahub_job-coll');
 const DATAHUB_JOBLINE_COLL				= require('./database/datahub_jobline-coll');
 const DATAHUB_PRODUCT_COLL				= require('./database/datahub_product-coll');
 const DATAHUB_TEMPLATE_COLL				= require('./database/datahub_template-coll');
+const DATAHUB_MATERIAL_COLL				= require('./database/datahub_material-coll');
 
 const DATAHUB_CONTACT_HANDLER   		= require('./handler/datahub.datahub_contact-handler');
 const DATAHUB_TYPE_HANDLER   			= require('./handler/datahub.datahub_type-handler');
@@ -31,6 +32,7 @@ const DATAHUB_JOB_HANDLER  					= require('./handler/datahub.datahub_job-handler
 const DATAHUB_JOBLINE_HANDLER  				= require('./handler/datahub.datahub_jobline-handler');
 const DATAHUB_PRODUCT_HANDLER  				= require('./handler/datahub.datahub_product-handler');
 const DATAHUB_TEMPLATE_HANDLER   			= require('./handler/datahub.datahub_template-handler');
+const DATAHUB_MATERIAL_HANDLER   			= require('./handler/datahub.datahub_material-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DATAHUB,
@@ -48,6 +50,7 @@ module.exports = {
 		DbService(DATAHUB_JOBLINE_COLL), 
 		DbService(DATAHUB_PRODUCT_COLL), 
 		DbService(DATAHUB_TEMPLATE_COLL), 
+		DbService(DATAHUB_MATERIAL_COLL), 
 		CacheCleaner([CF_DOMAIN_SERVICES.DATAHUB])
     ],
 
@@ -99,6 +102,13 @@ module.exports = {
 		[CF_ACTIONS_DATAHUB.DATAHUB_FINREPORT_UPDATE]   			 	: DATAHUB_FINREPORT_HANDLER.update,
 		[CF_ACTIONS_DATAHUB.DATAHUB_FINREPORT_REMOVE]					: DATAHUB_FINREPORT_HANDLER.remove,
 		[CF_ACTIONS_DATAHUB.DATAHUB_FINREPORT_GET_INFO_AND_GET_LIST]	: DATAHUB_FINREPORT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_DATAHUB.DATAHUB_FINREPORT_GET_LIST_BY_PROPERTY]		: DATAHUB_FINREPORT_HANDLER.getListByProperty,
+
+		//==========================================   DATAHUB_MATERIAL   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_MATERIAL_INSERT]   			 	: DATAHUB_MATERIAL_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_MATERIAL_UPDATE]   			 	: DATAHUB_MATERIAL_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_MATERIAL_REMOVE]					: DATAHUB_MATERIAL_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_MATERIAL_GET_INFO_AND_GET_LIST]	: DATAHUB_MATERIAL_HANDLER.getInfoAndGetList,
 
 		//==========================================   DATAHUB CONTRACTOR   ================================
 		[CF_ACTIONS_DATAHUB.DATAHUB_CONTRACTOR_INSERT]   			 	: DATAHUB_CONTRACTOR_HANDLER.insert,
