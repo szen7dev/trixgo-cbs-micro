@@ -355,8 +355,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 17/9/2022
      */
-    getListByProperty({ userID, option, contractorID, fieldID, areaID, level, ctx }){
-        // console.log({ userID, fieldID, areaID, contractorID, option, level })
+    getListByProperty({ userID, option, fieldID, contractorID, areaID, level, buildingType, buildingGrade, basementNumber, basementArea, floorNumber, floorArea, status, fromDate, toDate, quality }){
+        // console.log({ userID, option, fieldID, contractorID, areaID, level, buildingType, buildingGrade, basementNumber, basementArea, floorNumber, floorArea, status, fromDate, toDate, quality })
         return new Promise(async resolve => {
             try {
                 /**
@@ -384,6 +384,45 @@ class Model extends BaseModel {
                                 userViews: userID,
                             }
                         }, { new: true });
+                    }
+
+                    if(buildingType){
+                        conditionObj.buildingType = Number(buildingType)
+                    }
+
+                    if(buildingGrade){
+                        conditionObj.buildingGrade = Number(buildingGrade)
+                    }
+
+                    if(basementNumber){
+                        conditionObj.basementNumber = Number(basementNumber)
+                    }
+
+                    if(basementArea){
+                        conditionObj.basementArea = Number(basementArea)
+                    }
+
+                    if(floorNumber){
+                        conditionObj.floorNumber = Number(floorNumber)
+                    }
+
+                    if(floorArea){
+                        conditionObj.floorArea = Number(floorArea)
+                    }
+
+                    if(status){
+                        conditionObj.status = Number(status)
+                    }
+
+                    if(quality){
+                        conditionObj.quality = {$gt: 0}
+                    }
+
+                    if(fromDate && toDate){
+                        conditionObj.endTime = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
                     }
 
                     if(areaID && checkObjectIDs(areaID) && level){

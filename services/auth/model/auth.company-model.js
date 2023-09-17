@@ -166,7 +166,7 @@ class Model extends BaseModel {
      * Code  : 20/12/2021
      */
     getList({
-        userID, arrayID,
+        userID, arrayID, show,
         keyword, limit = 10, lastestID, select, populates= {} }) {
             // console.log({userID, arrayID,
             //     keyword, limit, lastestID, select, populates})
@@ -195,13 +195,17 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(show && show == 1){
+                    conditionObj.show = Number(show)
+                }
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.$or  = [
                         { name: new RegExp(keyword, 'i') },
                         { sign: new RegExp(keyword, 'i') },
-                        { phone: new RegExp(keyword, 'i') },
+                        // { phone: new RegExp(keyword, 'i') },
                     ]
                 }
 

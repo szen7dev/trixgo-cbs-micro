@@ -79,6 +79,7 @@ module.exports = {
             // Field bổ sung
             companyID       : { type: "string", optional: true },
             arrayID         : { type: "string",  optional: true },
+            show            : { type: "string",  optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -91,7 +92,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    companyID, arrayID,
+                    companyID, arrayID, show,
                     keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
@@ -102,7 +103,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await AUTH__COMPANY_MODEL.getList({
-                        arrayID, userID, keyword, limit, lastestID, select, populates
+                        arrayID, show, userID, keyword, limit, lastestID, select, populates
                     });
                 }
 

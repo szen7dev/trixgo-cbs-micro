@@ -105,15 +105,6 @@ class Model extends BaseModel {
     getInfo({ areaID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(areaID))
                     return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
                 
@@ -129,11 +120,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await ITEM__AREA_COLL.findById(areaID)
                                     .select(select)
                                     .populate(populates)
@@ -152,8 +139,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({
-            keyword, limit = 10, lastestID, select, populates= {} }) { 
+    getList({ keyword, limit = 10, lastestID, select, populates= {} }) { 
+        // console.log({keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
                 /**
