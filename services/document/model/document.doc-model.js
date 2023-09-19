@@ -1186,8 +1186,8 @@ class Model extends BaseModel {
      * Date: 27/10/2021
      */
     statisticalByDatahubContact({ userID, companyID, departmentID, packageID }) {
-        console.log('===========Thống kê hồ sơ===========')
-        console.log({ userID, companyID, departmentID, packageID })
+        // console.log('===========Thống kê hồ sơ===========')
+        // console.log({ userID, companyID, departmentID, packageID })
         return new Promise(async (resolve) => {
             try {
                 if(departmentID && !checkObjectIDs([departmentID])) {

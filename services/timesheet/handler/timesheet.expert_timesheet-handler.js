@@ -153,5 +153,34 @@ module.exports = {
                 return { error: true, message: error.message };
             }
         }
-    }
+    },
+
+    /**
+     * Dev: HiepNH
+     * Func: Gom nhóm theo tính chất
+     * Date: 6/8/2023
+     */
+    getListByProperty: {
+        auth: "required",
+        params: {
+            option              : { type: "string", optional: true  },
+            taskID              : { type: "string", optional: true  },
+            companyID           : { type: "string", optional: true  },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, taskID, companyID } = ctx.params;
+                const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getListByProperty({
+                        option, taskID, companyID, userID
+                    });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }
