@@ -164,17 +164,17 @@ module.exports = {
         auth: "required",
         params: {
             option              : { type: "string", optional: true  },
-            taskID              : { type: "string", optional: true  },
+            year              : { type: "string", optional: true  },
             companyID           : { type: "string", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, taskID, companyID } = ctx.params;
+                let { option, year, companyID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getListByProperty({
-                        option, taskID, companyID, userID
+                        option, year, companyID, userID
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

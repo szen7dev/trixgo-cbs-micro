@@ -467,23 +467,37 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, taskID, companyID }){
+    getListByProperty({ userID, option, year, companyID }){
+        console.log({ userID, option, year, companyID })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}
                 if(!option){
-                    conditionObj = {
-                        task: ObjectID(taskID)
-                    }
+                    // conditionObj = {
+                    //     task: ObjectID(taskID)
+                    // }
                     
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: conditionObj
                         },
                         {
+                            $project: {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(year)
+                            }
+                        },
+                        {
                             $group: {
-                                _id: { work: '$work' },
-                                quantity: { $sum: "$quantity" },
+                                _id: { month: '$month' },
+                                quantity: { $sum: "$hours" },
                                 amount: { $sum: "$amount" },
                             }
                         },
