@@ -16,6 +16,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         type: Schema.Types.ObjectId,
         ref : "funda"
     }],
+    //_________Phân loại dịch vụ
+    doctype: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
     //_________Cha
     parent: {
         type: Schema.Types.ObjectId,
