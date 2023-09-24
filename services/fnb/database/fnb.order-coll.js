@@ -20,6 +20,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref : "funda"
     },
+    //_________Phân loại dịch vụ
+    doctype: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
     /**
      * CẤU TRÚC ĐỆ QUY
      */
@@ -151,6 +156,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * 7-Bee
      * 8-TikTok Shop
      * 9-Shopee
+     * 10-Lazada
      */
     salesChannel: {
         type: Number,

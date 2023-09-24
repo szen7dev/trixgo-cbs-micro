@@ -338,6 +338,7 @@ class Model extends BaseModel {
             }
         })
     }
+
     /**
      * Name  : Danh sách expert timesheet
      * Author: Depv
@@ -457,6 +458,56 @@ class Model extends BaseModel {
 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 21/9/2022
+     */
+    getListByProperty({ userID, option, year, companyID }){
+        console.log({ userID, option, year, companyID })
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}
+                if(!option){
+                    // conditionObj = {
+                    //     task: ObjectID(taskID)
+                    // }
+                    
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(year)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { month: '$month' },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    
+                    return resolve({ error: false, data: listData })
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }
