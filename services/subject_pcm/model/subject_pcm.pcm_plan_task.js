@@ -4347,8 +4347,8 @@ class Model extends BaseModel {
 
     /**
      * Name: Lấy số lượng công việc theo milestone
-     * Author: Depv
-     * Code:
+     * Author: HiepNH
+     * Code: 24/9/2023
      */
     getAmountTaskByMilestone({ projectID, ctx }){
         // console.log('=============Get list by MileStone==================')
@@ -4364,11 +4364,10 @@ class Model extends BaseModel {
                     {
                         $match: {
                             project: ObjectID(projectID),
-                            milestone: { $exists: true },
+                            milestone: { $gt: 0 },
+                            // milestone: { $exists: true },
                             actualFinishTime: {
                                 $lt: start,
-                                $exists: true,
-                                $ne: null
                             },
                             status: { $ne: 3 }
                         }
@@ -4386,12 +4385,10 @@ class Model extends BaseModel {
                     {
                         $match: {
                             project: ObjectID(projectID),
-                            milestone: { $exists: true },
+                            milestone: { $gt: 0 },
                             actualFinishTime: {
                                 $gte:  moment(start).startOf('day')._d,
                                 $lt: moment(addDate(7)).endOf('day')._d,
-                                $exists: true,
-                                $ne: null
                             },
                             status: { $ne: 3 }
                         }
@@ -4409,11 +4406,9 @@ class Model extends BaseModel {
                     {
                         $match: {
                             project: ObjectID(projectID),
-                            milestone: { $exists: true },
+                            milestone: { $gt: 0 },
                             actualFinishTime: {
-                                $gte: addDate(7),
-                                $exists: true,
-                                $ne: null
+                                $gte: addDate(7)
                             },
                             status: { $ne: 3 }
                         }
@@ -4431,9 +4426,10 @@ class Model extends BaseModel {
                     {
                         $match: {
                             project: ObjectID(projectID),
-                            milestone: { $exists: true },
+                            milestone: { $gt: 0 },
                             status: 3
                         }
+
                     },
                     {
                         $group: {
@@ -4448,7 +4444,7 @@ class Model extends BaseModel {
                     {
                         $match: {
                             project: ObjectID(projectID),
-                            milestone: { $exists: true },
+                            milestone: { $gt: 0 },
                         }
                     },
                     {
