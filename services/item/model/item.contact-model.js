@@ -806,6 +806,7 @@ class Model extends BaseModel {
      * Code:
      */
     getInfo({ contactID, linkUserID, select, populates }) {
+        // console.log('===========Thông tin danh bạ========')
         // console.log({ contactID, linkUserID, select, populates })
         return new Promise(async (resolve) => {
             try {

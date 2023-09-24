@@ -157,6 +157,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * 8-TikTok Shop
      * 9-Shopee
      * 10-Lazada
+     * 11-FB Reels
      */
     salesChannel: {
         type: Number,
