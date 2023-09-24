@@ -2101,7 +2101,7 @@ class Model extends BaseModel {
 
                     if(isMileStone && isMileStone == 1){
                         conditionObj.milestone = {$gt: 0}
-                        conditionObj.$where = `return this.actualFinishTime > this.actualStartTime`
+                        // conditionObj.$where = `return this.actualFinishTime > this.actualStartTime` // Quản lý cho mốc tiến độ
                     }
 
                     /**
@@ -2286,6 +2286,7 @@ class Model extends BaseModel {
                 
                 // console.log('============================')
                 // console.log(conditionObj)
+
                 let conditionObjOrg = {...conditionObj};
 
 				if(lastestID && checkObjectIDs(lastestID)){
