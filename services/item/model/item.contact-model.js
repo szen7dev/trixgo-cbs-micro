@@ -947,12 +947,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    // conditionObj.namecv = regSearch
+                    conditionObj.namecv = regSearch
 
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { phone: regSearch }
-                    ]
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
                 // console.log(conditionObj)
 
