@@ -418,8 +418,12 @@ class Model extends BaseModel {
                 if(products && products.length){
                     for(const prodSize of products){
                         // console.log('=============1.1: Bắt đầu SP==========================>>>>>>>>>>>>>>>>>')
+                        // console.log(prodSize)
                         // console.log(prodSize.variants)
                         // console.log(prodSize.fundas)
+                        if(prodSize.doctype && checkObjectIDs(prodSize.doctype)){
+                            dataInsert.doctype = prodSize.doctype
+                        }
                         if(prodSize.size == 1){
                             totalSizeM = Number(totalSizeM) + Number(prodSize.quantity)
                         }
