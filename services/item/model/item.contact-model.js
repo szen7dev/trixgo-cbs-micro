@@ -105,6 +105,8 @@ class Model extends BaseModel {
                     conditionObj.$or.push({phone: phone.replace(/\s/g, "")})
                 }
 
+                // console.log(conditionObj)
+
                 // console.log(phone.replace(/\s/g, ""))
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
                 // console.log(infoContact)
@@ -872,7 +874,7 @@ class Model extends BaseModel {
      * Code  : 30/7/2023
      */
     getList({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID, month }) {
-        // console.log({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID, month })
+        console.log({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID, month })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -948,12 +950,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.namecv = regSearch
+                    // conditionObj.namecv = regSearch
 
-                    // conditionObj.$or = [
-                    //     { name: regSearch },
-                    //     { phone: regSearch }
-                    // ]
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { phone: regSearch }
+                    ]
                 }
                 // console.log(conditionObj)
 

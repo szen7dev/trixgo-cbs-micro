@@ -9,6 +9,7 @@ const fs                                            = require('fs');
 const path                                          = require('path');
 const moment                                  	    = require('moment');
 const ISOdate                                  	    = require('isodate');
+const stringUtils					                = require('../../../tools/utils/string_utils');
 
 /**
  * CONSTANTS
@@ -135,22 +136,6 @@ class Model extends BaseModel {
                     });
                 }
 
-                // if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Request params direction invalid',
-                //         keyError: 'params_direction_invalid',
-                //     });
-                // }
-
-                // if (!checkNumberIsValidWithRange({ arrValid: DOC_TYPE, val: type })) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Request params type invalid',
-                //         keyError: 'params_type_invalid',
-                //     });
-                // }
-
                 let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     userID, select: "_id company department fullname"
                 })
@@ -184,6 +169,30 @@ class Model extends BaseModel {
                     value,
                     completeStatus
                 }
+
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(storeSign && storeSign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(storeSign)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(approver && approver != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(approver)
+                }
+                dataInsert.namecv = convertStr
 
                 if(!infoAuthor.error){
                     dataInsert.companyOfAuthor = infoAuthor.data.company;
@@ -327,23 +336,23 @@ class Model extends BaseModel {
                     });
                 }
 
-                if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params direction invalid',
-                        keyError: 'params_direction_invalid',
-                        status: 400
-                    });
-                }
+                // if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
+                //     return resolve({
+                //         error: true,
+                //         message: 'Request params direction invalid',
+                //         keyError: 'params_direction_invalid',
+                //         status: 400
+                //     });
+                // }
 
-                if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse })) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params requestResponse invalid',
-                        keyError: 'paramas_requestResponse_invalid',
-                        status: 400
-                    });
-                }
+                // if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse })) {
+                //     return resolve({
+                //         error: true,
+                //         message: 'Request params requestResponse invalid',
+                //         keyError: 'paramas_requestResponse_invalid',
+                //         status: 400
+                //     });
+                // }
 
                 let dataUpdate = {
                     userUpdate: userID,
@@ -409,6 +418,31 @@ class Model extends BaseModel {
                 if(!isNaN(completeStatus)){
                     dataUpdate.completeStatus = completeStatus;
                 }
+
+                
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(storeSign && storeSign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(storeSign)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(approver && approver != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(approver)
+                }
+                dataUpdate.namecv = convertStr
 
                 direction       && (dataUpdate.direction        = +direction || 1);
                 requestResponse && (dataUpdate.requestResponse  = +requestResponse || 0);

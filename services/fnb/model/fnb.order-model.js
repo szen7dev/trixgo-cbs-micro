@@ -1789,15 +1789,15 @@ class Model extends BaseModel {
                      */
                     if(option && Number(option) == 1){
                         conditionGroup = {
-                            _id: { new: "$new", shiftType: "$shiftType", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod" },
+                            _id: { new: "$new", shiftType: "$shiftType", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod", doctype: "$doctype" },
                             quantity: { $sum: 1 },
                             total: { $sum: "$total" },
                             discount: { $sum: "$discount" },
                             salesoff: { $sum: "$salesoff" },
                             credit: { $sum: "$credit" },
                             offer: { $sum: "$offer" },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
+                            // amount: { $sum: "$amount" },
+                            // vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
                         }
                     }
