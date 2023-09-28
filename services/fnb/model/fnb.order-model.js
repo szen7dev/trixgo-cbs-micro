@@ -1796,8 +1796,8 @@ class Model extends BaseModel {
                             salesoff: { $sum: "$salesoff" },
                             credit: { $sum: "$credit" },
                             offer: { $sum: "$offer" },
-                            // amount: { $sum: "$amount" },
-                            // vatAmount: { $sum: "$vatAmount" },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
                             numberOfProducts: { $sum: "$numberOfProducts" },
                         }
                     }
