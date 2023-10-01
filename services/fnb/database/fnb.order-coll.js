@@ -212,16 +212,20 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     },
     /**
      * Trạng thái đơn
-     * 1-Đang giao hàng/Phục vụ
-     * 2-Hoàn tiền một phần
-     * 3-Hoàn tiền toàn bộ
-     * 4-Đã hủy (không tính vào doanh số)
-     * 5-Hoàn thành
+     * 1-Khởi tạo
+     * 2-Chờ lấy hàng
+     * 3-Đang vận chuyển/giao hàng
+     * 4-Đã hủy
+     * 5-Đã giao/Hoàn thành
+     * 6-Trả hàng/Hoàn tiền
+     * 7-Giao không thành công
      */
     status: {
         type: Number,
         default: 5
     },
+    //_________Ngày tháng đơn hàng
+    date: { type: Date, default: Date.now },
     //_________Nội dung
     name: String,
     //_________Mã hiệu

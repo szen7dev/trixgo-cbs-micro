@@ -62,8 +62,8 @@ class Model extends BaseModel {
      * Author: HiepNH--
      * Code: 24/11/2022
      */
-    insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID, ctx }) {
-        // console.log({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID })
+    insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID, ctx }) {
+        console.log({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -206,6 +206,10 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
+                }
+
+                if(!isNaN(sources) && [1,2,3,4,5].includes(Number(sources))){
+                    dataInsert.sources = Number(sources);
                 }
 
                 if(!isNaN(paymentMethod)&& [1,2].includes(Number(paymentMethod))){
@@ -421,9 +425,9 @@ class Model extends BaseModel {
                         // console.log(prodSize)
                         // console.log(prodSize.variants)
                         // console.log(prodSize.fundas)
-                        if(prodSize.doctype && checkObjectIDs(prodSize.doctype)){
-                            dataInsert.doctype = prodSize.doctype
-                        }
+                        // if(prodSize.doctype && checkObjectIDs(prodSize.doctype)){
+                        //     dataInsert.doctype = prodSize.doctype
+                        // }
                         if(prodSize.size == 1){
                             totalSizeM = Number(totalSizeM) + Number(prodSize.quantity)
                         }
@@ -1717,7 +1721,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar }) {
+    getListByProperty({ companyID, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration }) {
         // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID, optionStar })
         return new Promise(async (resolve) => {
             try {
@@ -1789,7 +1793,8 @@ class Model extends BaseModel {
                      */
                     if(option && Number(option) == 1){
                         conditionGroup = {
-                            _id: { new: "$new", shiftType: "$shiftType", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod", doctype: "$doctype" },
+                            // _id: { new: "$new", shiftType: "$shiftType", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod", doctype: "$doctype" },
+                            _id: { new: "$new", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod"},
                             quantity: { $sum: 1 },
                             total: { $sum: "$total" },
                             discount: { $sum: "$discount" },
