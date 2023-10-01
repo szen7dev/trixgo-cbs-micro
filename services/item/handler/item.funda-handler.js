@@ -35,16 +35,17 @@ module.exports = {
             utilityExpense      : { type: "number", optional: true },
             humanExpense        : { type: "number", optional: true },
             otherExpense        : { type: "number", optional: true },
+            platform            : { type: "number", optional: true },
             activeCampaign      : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, parentID, materialExpenseRate,
+                const { platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, parentID, materialExpenseRate,
                      materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -92,18 +93,18 @@ module.exports = {
             trialStaffSalary         : { type: "number", optional: true },
             officialStaffSalar         : { type: "number", optional: true },
             lunchStaffAllowance         : { type: "number", optional: true },
+            platform            : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
+                const { fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
                     adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  } = ctx.params;
 
-                // console.log({ fundaID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
-                //     adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID })
+                // console.log({ fundaID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID })
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members,
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members,
                     admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense,
                     otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -125,6 +126,7 @@ module.exports = {
             parentID                    : { type: "string", optional: true },
             isListParentOfListChilds    : { type: "string", optional: true },
             isMember                    : { type: "string", optional: true },
+            platform                    : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -136,7 +138,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, isMember } = ctx.params;
+                let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, platform, isListParentOfListChilds, isMember } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -151,7 +153,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__FUNDA_MODEL.getList({
-                        companyID, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, isMember, userID
+                        companyID, lastestID, keyword, select, limit, populates, parentID, platform, isListParentOfListChilds, isMember, userID
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

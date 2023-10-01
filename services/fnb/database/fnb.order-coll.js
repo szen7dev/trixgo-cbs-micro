@@ -78,7 +78,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     }, 
-    //_________Người thực hiện
+    //_________Người thực hiện/Sale
     assignee: [{
         type: Schema.Types.ObjectId,
         ref: "user"
@@ -164,7 +164,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 1
     },
     /**
-     * Phân loại nguồn
+     * Phân loại nguồn***
      * 1-Thông thường
      * 2-Video
      * 3-Affiliate
@@ -175,21 +175,21 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 1
     },
-    //_________Affiliate mang lại doanh số
-    affiliate: {
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    },
     /**
-     * Nhân viên chốt sale/kinh doanh
+     * Nhân viên chốt sale/kinh doanh***
      * Người chăm sóc Affiliate
      * Người live stream
      * Người quảng cáo
      * ....
      */
-    sale: {
+    customerCare: {
         type: Schema.Types.ObjectId,
         ref : "user"
+    },
+    //_________Affiliate mang lại doanh số***
+    affiliate: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
     },
     /**
      * Phương thức thanh toán
@@ -252,7 +252,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 0
     },  
     /**
-     * Phân loại lý do hủy đơn
+     * Phân loại lý do hủy đơn***
      * Phân loại phản hồi của khách
      */
     complaints: [{

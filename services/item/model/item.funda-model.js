@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate }){
+	insert({ companyID, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
@@ -96,6 +96,10 @@ class Model extends BaseModel {
 
                 if(initialDay && initialDay != ""){
                     dataInsert.initialDay = initialDay;
+                }
+
+                if(platform && !isNaN(platform) && [1, 2].includes(platform)){
+                    dataInsert.platform = +platform;
                 }
 
                 //_________Bật hoặc tắt chiến dịch truyền thông
@@ -162,8 +166,8 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, projectID, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance }){
-        // console.log({ fundaID, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
+	update({ fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance }){
+        // console.log({ fundaID, platform, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -287,6 +291,10 @@ class Model extends BaseModel {
                         ...dataPullAll,
                         getNotification: getNotificationRemove
                     }
+                }
+
+                if(platform && !isNaN(platform) && [1, 2].includes(platform)){
+                    dataUpdate.platform = +platform;
                 }
 
                 //_________Bật hoặc tắt chiến dịch truyền thông
@@ -422,23 +430,20 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, parentID, isListParentOfListChilds, isMember,
-        keyword, limit = 20, lastestID, select, populates= {}, userID } ) {
-        // console.log({companyID, parentID, isListParentOfListChilds, isMember,
+        companyID, parentID, platform, isListParentOfListChilds, isMember,
+        keyword, limit = 40, lastestID, select, populates= {}, userID } ) {
+        // console.log({companyID, parentID, platform, isListParentOfListChilds, isMember,
         //     keyword, limit, lastestID, select, populates, userID})
         //     console.log('========================')
         // console.log('ĐƠN VỊ CƠ SỞ========================')
         return new Promise(async (resolve) => {
             try {
-                if(limit > 300){
-                    limit = 300
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let sortBy;
                 let conditionObj = { };
                 let keys	 = ['createAt__-1', '_id__-1'];
@@ -467,10 +472,10 @@ class Model extends BaseModel {
                     if(parentID){
                         conditionObj.parent = parentID;
                     }
-                    // else{
-                    //     conditionObj.parent = { $exists: false };
-                    //     conditionObj.parent = null;
-                    // }
+                }
+
+                if(platform){
+                    conditionObj.platform = Number(platform)
                 }
 
                 if(keyword){
