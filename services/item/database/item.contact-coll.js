@@ -107,6 +107,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
+    //_________Sale/CSKH
+    sale: {
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },
     //_________Link với nhân viên sale
     linkSale: {
         type: Schema.Types.ObjectId,

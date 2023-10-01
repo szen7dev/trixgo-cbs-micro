@@ -201,6 +201,11 @@ class Model extends BaseModel {
                 }
 
                 if(affiliateID && checkObjectIDs(affiliateID)){
+                    let infoAffiliate = await ITEM__CONTACT_COLL.findById(affiliateID)
+                    if(infoAffiliate && infoAffiliate.sale){
+                        dataInsert.sale = infoAffiliate.sale
+                    }
+                    
                     dataInsert.affiliate = affiliateID
                 }
 

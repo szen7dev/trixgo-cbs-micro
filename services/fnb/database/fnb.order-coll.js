@@ -182,7 +182,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * Người quảng cáo
      * ....
      */
-    customerCare: {
+    sale: {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
