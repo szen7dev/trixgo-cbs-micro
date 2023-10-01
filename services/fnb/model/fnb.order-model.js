@@ -62,8 +62,8 @@ class Model extends BaseModel {
      * Author: HiepNH--
      * Code: 24/11/2022
      */
-    insert({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID, ctx }) {
-        console.log({ voucherID, fundaID, parentID, customerID, shiftID, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID })
+    insert({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID, ctx }) {
+        // console.log({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -194,6 +194,14 @@ class Model extends BaseModel {
                     if(infoCustomer.nonResident == 2){
                         dataInsert.new = 3 // Khách vãng lai
                     }
+                }
+
+                if(date && date != ""){
+                    dataInsert.date = date;
+                }
+
+                if(affiliateID && checkObjectIDs(affiliateID)){
+                    dataInsert.affiliate = affiliateID
                 }
 
                 if(appOrderSign && appOrderSign != ""){
