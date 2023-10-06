@@ -24,8 +24,8 @@ const {
 /**
  * COLLECTIONS
  */
-const DATAHUB_JOB_COLL           				    = require('../database/datahub_job-coll');
-const DATAHUB_JOBLINE_COLL           				= require('../database/datahub_jobline-coll');
+const DATAHUB_JOB_COLL           				    = require('../database/datahub_job-coll')
+const DATAHUB_JOBLINE_COLL           				= require('../database/datahub_jobline-coll')
 const DATAHUB_PRODUCT_COLL                          = require('../database/datahub_product-coll') 
 
 class Model extends BaseModel {
@@ -388,18 +388,10 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let sortBy;
                 let conditionObj = { };
                 let keys = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -419,11 +411,6 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID
                 }
