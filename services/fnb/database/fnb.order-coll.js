@@ -213,12 +213,12 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * Trạng thái đơn
      * 1-Khởi tạo
-     * 2-Chờ lấy hàng
+     * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
      * 3-Đang vận chuyển/giao hàng
-     * 4-Đã hủy
+     * 4-Giao không thành công
      * 5-Đã giao/Hoàn thành
-     * 6-Trả hàng/Hoàn tiền
-     * 7-Giao không thành công
+     * 6-Đã hủy (cũ là 4)
+     * 7-Trả hàng/Hoàn tiền
      */
     status: {
         type: Number,
