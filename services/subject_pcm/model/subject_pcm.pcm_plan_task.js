@@ -4794,7 +4794,7 @@ class Model extends BaseModel {
 
                 // Báo cáo hóa đơn
                 if(option == 2){
-                    let listData = await PCM_PLAN_TASK_COLL.find({ project: projectID, subtype: 12, amount: {$gt: 0} })
+                    let listData = await PCM_PLAN_TASK_COLL.find({ project: projectID, subtype: 12 })
                     .select('actualFinishTime name sign taxid amount vatAmount description status contact author parent createAt')
                     .populate({
                         path: 'contact author parent',
