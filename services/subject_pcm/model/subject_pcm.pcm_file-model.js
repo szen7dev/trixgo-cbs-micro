@@ -698,7 +698,7 @@ class Model extends BaseModel {
         // console.log({ keyword, projectID, userID })
 		return new Promise(async resolve => {
 			try {
-                let listContract = await ITEM__CONTRACT_COLL.file({members: {$in: [userID]}}).select('_id')
+                let listContract = await ITEM__CONTRACT_COLL.find({members: {$in: [userID]}}).select('_id')
 
                 // Hình ảnh (type = 1)
 				let conditionObj = {
