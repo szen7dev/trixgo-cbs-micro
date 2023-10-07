@@ -171,7 +171,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, year, companyID } = ctx.params;
-                const { _id: userID } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getListByProperty({
                         option, year, companyID, userID
