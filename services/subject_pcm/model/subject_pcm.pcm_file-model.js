@@ -50,6 +50,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const PCM_FILE__COLL                    = require('../database/subject_pcm.pcm_file-coll');
 const PCM_PLAN_TASK__COLL               = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP__COLL              = require('../database/subject_pcm.pcm_plan_group-coll');
+const ITEM__CONTRACT_COLL            	= require('../../item/database/item.contract-coll');
 
 class Model extends BaseModel {
 
@@ -697,11 +698,14 @@ class Model extends BaseModel {
         // console.log({ keyword, projectID, userID })
 		return new Promise(async resolve => {
 			try {
+                let listContract = await ITEM__CONTRACT_COLL.file({members: {$in: [userID]}}).select('_id')
+
                 // Hình ảnh (type = 1)
 				let conditionObj = {
                     type: 1,
                     project: ObjectID(projectID),
-                    contract: { $exists: true, $ne: null }
+                    // contract: { $exists: true, $ne: null },
+                    contract: { $in: listContract.map(item=>ObjectID(item._id)) }
                 }
 
                 let conditionKeyword = {}, conditionMatch = {}
