@@ -3,6 +3,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const _isValid                          = require('mongoose').Types.ObjectId;
+const ObjectID                          = require('mongoose').Types.ObjectId;
 
 /**
  * DOMAIN AND ACTIONS
@@ -468,15 +469,11 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, year, companyID }){
-        console.log({ userID, option, year, companyID })
+        // console.log({ userID, option, year, companyID })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}
+                let conditionObj = {company: ObjectID(companyID)}
                 if(!option){
-                    // conditionObj = {
-                    //     task: ObjectID(taskID)
-                    // }
-                    
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: conditionObj
