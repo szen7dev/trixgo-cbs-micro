@@ -11,6 +11,15 @@ const Schema    = require('mongoose').Schema;
  * - Cập nhật kế hoạch chi hàng tháng
  */
 module.exports  = DATABASE_MIDDLEWARE("funda", {
+    /**
+     * Phân loại sàn
+     * 1-Bán tại quán và Food App
+     * 2-Bán set mang về pha chế
+     */
+    platform: {
+        type: Number,
+        default: 1 
+    },
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,

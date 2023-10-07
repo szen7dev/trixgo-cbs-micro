@@ -21,6 +21,8 @@ module.exports = {
             parentID            : { type: "string", optional: true },
             fundaID             : { type: "string" },
             customerID          : { type: "string" },
+            affiliateID         : { type: "string", optional: true },
+            date                : { type: "string", optional: true },
             shiftID             : { type: "string" },
             assigneeID          : { type: "string", optional: true },
             name                : { type: "string" },
@@ -28,6 +30,7 @@ module.exports = {
             note                : { type: "string", optional: true },
             salesChannel        : { type: "string" },
             paymentMethod       : { type: "string" },
+            sources       : { type: "string" },
             service             : { type: "string", optional: true },
             total               : { type: "string", optional: true },
             discount            : { type: "string", optional: true },
@@ -40,12 +43,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, offer, vatAmount, products } = ctx.params;
+                let { voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    voucherID, fundaID, parentID, customerID, shiftID, assigneeID, name, appOrderSign, note, service, salesChannel, paymentMethod, total, discount, salesoff, credit, offer, vatAmount, products, userID, ctx
+                    voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, userID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -78,7 +78,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     }, 
-    //_________Người thực hiện
+    //_________Người thực hiện/Sale
     assignee: [{
         type: Schema.Types.ObjectId,
         ref: "user"
@@ -164,6 +164,34 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         default: 1
     },
     /**
+     * Phân loại nguồn***
+     * 1-Thông thường
+     * 2-Video
+     * 3-Affiliate
+     * 4-Live stream
+     * 5-Quảng cáo
+     */
+    sources: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Nhân viên chốt sale/kinh doanh***
+     * Người chăm sóc Affiliate
+     * Người live stream
+     * Người quảng cáo
+     * ....
+     */
+    sale: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
+    //_________Affiliate mang lại doanh số***
+    affiliate: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
+    /**
      * Phương thức thanh toán
      * 1-Tiền mặt
      * 2-Chuyển khoản
@@ -184,16 +212,20 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     },
     /**
      * Trạng thái đơn
-     * 1-Đang giao hàng/Phục vụ
-     * 2-Hoàn tiền một phần
-     * 3-Hoàn tiền toàn bộ
-     * 4-Đã hủy (không tính vào doanh số)
-     * 5-Hoàn thành
+     * 1-Khởi tạo
+     * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
+     * 3-Đang vận chuyển/giao hàng
+     * 4-Giao không thành công
+     * 5-Đã giao/Hoàn thành
+     * 6-Đã hủy (cũ là 4)
+     * 7-Trả hàng/Hoàn tiền
      */
     status: {
         type: Number,
         default: 5
     },
+    //_________Ngày tháng đơn hàng
+    date: { type: Date, default: Date.now },
     //_________Nội dung
     name: String,
     //_________Mã hiệu
@@ -223,7 +255,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default: 0
     },  
-    //_________Sự khiếu nại
+    /**
+     * Phân loại lý do hủy đơn***
+     * Phân loại phản hồi của khách
+     */
     complaints: [{
         type: Schema.Types.ObjectId,
         ref: "doctype"

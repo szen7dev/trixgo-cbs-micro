@@ -23,11 +23,13 @@ const {
 /**
  * COLLECTIONS
  */
-const AUTH__COMPANY_COLL                            = require('../../auth/database/auth.company-coll');
-const AUTH__USER_COLL                               = require('../../auth/database/auth.user-coll');
-const DATAHUB_PACKAGE_COLL           				= require('../database/datahub_package-coll');
-const DATAHUB_PROJECT_COLL           				= require('../database/datahub_project-coll');
-const DATAHUB_TYPE_COLL           				    = require('../database/datahub_type-coll');
+const AUTH__COMPANY_COLL                            = require('../../auth/database/auth.company-coll')
+const AUTH__USER_COLL                               = require('../../auth/database/auth.user-coll')
+const PCM_PLAN_TASK_COLL                            = require('../../subject_pcm/database/subject_pcm.pcm_plan_task-coll')
+const DATAHUB_PACKAGE_COLL           				= require('../database/datahub_package-coll')
+const DATAHUB_PROJECT_COLL           				= require('../database/datahub_project-coll')
+const DATAHUB_TYPE_COLL           				    = require('../database/datahub_type-coll')
+const DATAHUB_PRODUCT_COLL                          = require('../database/datahub_product-coll') 
 
 class Model extends BaseModel {
 
@@ -601,6 +603,17 @@ class Model extends BaseModel {
                     // console.log(listData)
 
                     return resolve({ error: false, data: listData });
+                }
+
+                /**
+                 * Tổng số lượng phân loại của DataHub
+                 */
+                if(option == 4){
+                    let number1 = await PCM_PLAN_TASK_COLL.count({ subtype: 14 })
+                    let number2 = await AUTH__COMPANY_COLL.count({ show: 1 })
+                    let number3 = await DATAHUB_PRODUCT_COLL.count({ })
+
+                    return resolve({ error: false, data: {number1, number2, number3} });
                 }
 
             } catch (error) {
