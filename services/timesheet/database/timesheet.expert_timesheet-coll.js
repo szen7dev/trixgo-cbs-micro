@@ -81,6 +81,12 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     //_________Thời điểm phê duyệt
     timeApproved: { type: Date, default: null },
 
+    //________Link với biểu khối lượng công việc
+    task: {
+        type: Schema.Types.ObjectId,
+        ref : "pcm_plan_task"
+    },
+
     //________Ghi chú
     note: String,
 
