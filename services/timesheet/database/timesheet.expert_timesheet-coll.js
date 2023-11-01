@@ -87,6 +87,12 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         ref : "pcm_plan_task"
     },
 
+    //________Link với biểu khối lượng công việc
+    work: {
+        type: Schema.Types.ObjectId,
+        ref : "budget_work"
+    },
+
     //________Ghi chú
     note: String,
 

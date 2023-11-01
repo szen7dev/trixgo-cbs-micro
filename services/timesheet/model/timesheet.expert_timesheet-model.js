@@ -32,7 +32,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, date, type, note, projectID, assigneeID, ctx }) {
+    insert({ userCreate, companyID, parentID, name, date, type, note, projectID, assigneeID }) {
         return new Promise(async resolve => {
             try {
 
@@ -99,7 +99,9 @@ class Model extends BaseModel {
      * Code:
      */
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID }){
+        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
+            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID})
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(expertTimesheetID))
@@ -132,6 +134,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
+                }
+
+                if(checkObjectIDs(workID)){
+                    dataUpdate.work = workID;
                 }
 
                 if(name){
