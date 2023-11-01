@@ -31,7 +31,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({
-                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, projectID, assigneeID, ctx
+                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, projectID, assigneeID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -53,6 +53,7 @@ module.exports = {
             date                    : { type: "string", optional: true },
             type                    : { type: "string", optional: true },
             assigneeID              : { type: "string", optional: true },
+            workID                  : { type: "string", optional: true },
             hours                   : { type: "string", optional: true },
             unitprice               : { type: "string", optional: true },
             amount                  : { type: "string", optional: true },
@@ -72,12 +73,13 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
-                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove } = ctx.params;
+                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID } = ctx.params;
+                     
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
                     expertTimesheetID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
-                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, ctx
+                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
