@@ -23,10 +23,10 @@ const FNB_ORDER_COLL                           = require('../database/fnb.order-
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
 const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
-const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
-const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
-const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
+// const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
+// const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
+// const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
+// const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 
 /**
  * import inter-model, exter-model
@@ -35,6 +35,14 @@ const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
+
+const {
+    FNB_FACTOR,
+    FNB_SHIFT_TYPES,
+    FNB_SALES_CHANNEL,
+    FNB_PAYMENT_METHOD,
+    FNB_STATUS
+ } = require('../helper/fnb.keys-constant')
 
  const { 
     FNB_ACC,
@@ -798,16 +806,44 @@ class Model extends BaseModel {
                         path: "shift",
                         select: "name sign",
                     })
-                    .limit(1500)
+                    .limit(2000)
                     .sort({createAt: -1})
+                    // console.log(listData)
 
-                    let yearFilter
-                    let currentYear = new Date().getFullYear()
-                    if(year && !isNaN(year)){
-                        yearFilter = Number(year)
-                    }else{
-                        yearFilter = Number(currentYear)
-                    }
+                    let listData2 = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                $match: {
+                                    order: {$in: listData.map(item => ObjectID(item._id))}
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: { funda: '$funda', product: '$product' },
+                                    quantity: { $sum: "$quantity" }
+                                }
+                            },
+                            {
+                                $sort: {
+                                    '_id.product': 1
+                                }
+                            }
+                        ])
+
+                        let conditionPopulate1 = {
+                            path: '_id.product',
+                            select: '_id name',
+                            model: 'fnb_product'
+                        }
+
+                        let conditionPopulate2 = {
+                            path: '_id.funda',
+                            select: '_id name',
+                            model: 'funda'
+                        }
+
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate1)
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate2)
+                        // console.log(listData2)
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
@@ -855,6 +891,16 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? item?.referrer?.name : "");
 
                             workbook.sheet("Order").row(i).cell(34).value(item?.campaignType ? item?.campaignType?.name : "");
+
+                            i++
+                        });
+
+                        var i = 3;
+                        listData2?.forEach((item, index) => {
+                            workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Product").row(i).cell(2).value(`${item._id.product.name}`);
+                            workbook.sheet("Product").row(i).cell(3).value(`${item._id.funda.name}`);
+                            workbook.sheet("Product").row(i).cell(4).value(Number(item?.quantity));
 
                             i++
                         });

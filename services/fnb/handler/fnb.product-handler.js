@@ -247,7 +247,7 @@
                 }
 
                 const resultAfterCallHandler = await FNB_PRODUCT_MODEL.exportExcel({
-                    userID, companyID, filterParams, ctx
+                    userID, companyID, filterParams
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

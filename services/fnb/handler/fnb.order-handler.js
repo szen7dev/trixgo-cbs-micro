@@ -364,7 +364,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel2({
-                    userID, email, companyID, option, month, year, filterParams, ctx
+                    userID, email, companyID, option, month, year, filterParams
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
