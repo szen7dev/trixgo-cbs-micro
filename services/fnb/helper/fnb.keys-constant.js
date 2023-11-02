@@ -46,12 +46,17 @@ exports.FNB_SEASONS = [
 
 exports.FNB_SALES_CHANNEL = [
     { value: 1, text: 'Offline' },
-    { value: 2, text: 'Grab' },
-    { value: 3, text: 'Shopee' },
+    { value: 2, text: 'Grab Food' },
+    { value: 3, text: 'Shopee Food' },
     { value: 4, text: 'Gojek' },
     { value: 5, text: 'Baemin' },
     { value: 6, text: 'Loship' },
     { value: 7, text: 'Bee' },
+    { value: 8, text: 'TikTok Shop' },
+    { value: 9, text: 'Shopee' },
+    { value: 10, text: 'Lazada' },
+    { value: 11, text: 'FB Reels' },
+    { value: 12, text: 'Khác' },
 ]
 
 exports.FNB_PAYMENT_METHOD = [
