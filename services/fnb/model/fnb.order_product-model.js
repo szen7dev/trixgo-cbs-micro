@@ -829,21 +829,41 @@ class Model extends BaseModel {
                             }
                         ])
 
-                        let conditionPopulate1 = {
-                            path: '_id.product',
-                            select: '_id name',
-                            model: 'fnb_product'
-                        }
+                    let conditionPopulate1 = {
+                        path: '_id.product',
+                        select: '_id name',
+                        model: 'fnb_product'
+                    }
 
-                        let conditionPopulate2 = {
-                            path: '_id.funda',
-                            select: '_id name',
-                            model: 'funda'
-                        }
+                    let conditionPopulate2 = {
+                        path: '_id.funda',
+                        select: '_id name',
+                        model: 'funda'
+                    }
 
-                        await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate1)
-                        await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate2)
-                        // console.log(listData2)
+                    await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate1)
+                    await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate2)
+                    // console.log(listData2)
+
+                    let listData3 = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: {
+                                order: {$in: listData.map(item => ObjectID(item._id))}
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { product: '$product' },
+                                quantity: { $sum: "$quantity" }
+                            }
+                        },
+                        {
+                            $sort: {
+                                '_id.product': 1
+                            }
+                        }
+                    ])
+                    await FNB_ORDER_PRODUCT_COLL.populate(listData3, conditionPopulate1)
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
@@ -901,6 +921,15 @@ class Model extends BaseModel {
                             workbook.sheet("Product").row(i).cell(2).value(`${item._id.product.name}`);
                             workbook.sheet("Product").row(i).cell(3).value(`${item._id.funda.name}`);
                             workbook.sheet("Product").row(i).cell(4).value(Number(item?.quantity));
+
+                            i++
+                        });
+
+                        var i = 3;
+                        listData3?.forEach((item, index) => {
+                            workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Report").row(i).cell(2).value(`${item._id.product.name}`);
+                            workbook.sheet("Report").row(i).cell(3).value(Number(item?.quantity));
 
                             i++
                         });
