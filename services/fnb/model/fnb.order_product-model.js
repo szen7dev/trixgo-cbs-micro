@@ -692,7 +692,7 @@ class Model extends BaseModel {
         // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
+                if(FNB_ACC.taichinh.includes(email.toString())){
                     let conditionObj = { company: companyID }
 
                     let obj = JSON.parse(filterParams);
