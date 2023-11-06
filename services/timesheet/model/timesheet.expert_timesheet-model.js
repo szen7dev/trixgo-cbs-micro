@@ -20,6 +20,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  * COLLECTIONS
  */
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll');
+const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll');
 
 class Model extends BaseModel {
 
@@ -44,26 +45,27 @@ class Model extends BaseModel {
                     });
                 }
 
-                if(checkObjectIDs(parentID)){
-                    let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID);
-                    companyID = infoParent.company;
-                }
-
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     userCreate, name, admins: [userCreate], members: [userCreate]
                 }
 
+                if(companyID){
+                    dataInsert.company = companyID;
+                }
+
                 if(checkObjectIDs(parentID)){
+                    let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID);
+
+                    dataInsert.company = infoParent.company;
                     dataInsert.parent = parentID
+                    dataInsert.assignee = infoParent.assignee
+
+                    // console.log(infoParent)
                 }
 
                 if(assigneeID){
                     dataInsert.assignee = assigneeID;
-                }
-
-                if(companyID){
-                    dataInsert.company = companyID;
                 }
 
                 if(projectID){
@@ -81,6 +83,7 @@ class Model extends BaseModel {
                 if(note){
                     dataInsert.note = note;
                 }
+                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
@@ -136,10 +139,6 @@ class Model extends BaseModel {
                     dataUpdate.assignee = assigneeID;
                 }
 
-                if(checkObjectIDs(workID)){
-                    dataUpdate.work = workID;
-                }
-
                 if(name){
                     dataUpdate.name = name;
                 }
@@ -162,24 +161,36 @@ class Model extends BaseModel {
                     }
                 }
 
+                let unitprice2 = 0
                 if(unitprice){
-                    dataUpdate.unitprice = unitprice;
+                    unitprice2 = Number(unitprice)
+                }
+                
+                if(checkObjectIDs(workID)){
+                    dataUpdate.work = workID;
 
-                    if(infoTimeSheetID.parent){
-                        let unitPriceCurrent = infoTimeSheetID.unitprice;
-                        let unitPriceAfter   = unitprice - unitPriceCurrent;
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { unitprice: unitPriceAfter }})
+                    let infoWork = await BUDGET__WORK_COLL.findById(workID).select('unitPrice')
+                    if(infoWork){
+                        unitprice2 = Number(infoWork.unitPrice)
                     }
                 }
 
-                if(hours && unitprice){
-                    let amount  = hours * unitprice;
+                if(unitprice2 != 0){
+                    let amount  = hours * unitprice2
+
+                    dataUpdate.unitprice = unitprice2
                     dataUpdate.amount = amount
-                    // Cập nhật amount cho parent
+
+                    // Cập nhật cho Parent
                     if(infoTimeSheetID.parent){
+
+                        let unitPriceCurrent = infoTimeSheetID.unitprice;
+                        let unitPriceAfter   = unitprice2 - unitPriceCurrent;
+
                         let amountCurrent = infoTimeSheetID.amount;
                         let amountAfter   = amount - amountCurrent;
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { amount: amountAfter }})
+
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { unitprice: unitPriceAfter, amount: amountAfter }})
                     }
                 }
 
