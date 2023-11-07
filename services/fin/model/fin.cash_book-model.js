@@ -555,7 +555,7 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
-        console.log({ userID, companyID, parentID, accountID, year, option })
+        // console.log({ userID, companyID, parentID, accountID, year, option })
         return new Promise(async resolve => {
             try {
                 /**
@@ -768,7 +768,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 25/7/2023
      */
-    downloadTemplateExcel({ option, companyID, parentID, userID }) {
+    downloadTemplateExcel({ option, companyID, parentID, year, userID }) {
         // const that = this
         // console.log({ option, companyID, parentID, userID })
         return new Promise(async resolve => {
@@ -871,6 +871,29 @@ class Model extends BaseModel {
                         .select('name hours unitprice amount status date note')
                         // console.log(listData)
 
+                        // Tổng hợp theo Sản lượng
+                        let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                            {
+                                $match: {
+                                    work: { $exists: true, $ne: null },
+                                    company: ObjectID(companyID),
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: { work: "$work" },
+                                    quantity: { $sum: "$hours" },
+                                }
+                            },
+                        ])
+                        let  conditionPopulate1 = {
+                            path: '_id.work',
+                            select: '_id name unit unitPrice',
+                            model: 'budget_work'
+                        }
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
+                        // console.log(listData1)
+
                         // Tổng hợp theo người thực hiện
                         let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                             {
@@ -895,7 +918,15 @@ class Model extends BaseModel {
                         await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate2)
                         // console.log(listData2)
 
-                        // Tổng hợp theo Sản lượng
+                        // Tổng hợp theo Sản lượng-Tháng
+                        let yearFilter
+                        let currentYear = new Date().getFullYear()
+                        if(year && !isNaN(year)){
+                            yearFilter = Number(year)
+                        }else{
+                            yearFilter = Number(currentYear)
+                        }
+
                         let listData3 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                             {
                                 $match: {
@@ -904,18 +935,28 @@ class Model extends BaseModel {
                                 }
                             },
                             {
+                                $project : {
+                                    year : {$year : "$date"},
+                                    month : {$month : "$date"},
+                                    work: 1,
+                                    hours: 1,
+                                    amount: 1,
+                                    date: 1,
+                                }
+                            },
+                            {
+                                $match: {
+                                    year: Number(yearFilter)
+                                }
+                            },
+                            {
                                 $group: {
-                                    _id: { work: "$work" },
+                                    _id: { work: "$work", month: "$month"},
                                     quantity: { $sum: "$hours" },
+                                    amount: { $sum: "$amount" },
                                 }
                             },
                         ])
-                        let  conditionPopulate3 = {
-                            path: '_id.work',
-                            select: '_id name unit unitPrice',
-                            model: 'budget_work'
-                        }
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData3, conditionPopulate3)
                         // console.log(listData3)
 
                          // Modify the workbook.
@@ -947,23 +988,47 @@ class Model extends BaseModel {
                              })
 
                              var i = 4
+                             listData1.forEach((item, index) =>{
+                                 workbook.sheet("Report1").row(i).cell(1).value(Number(index+1))
+                                 workbook.sheet("Report1").row(i).cell(2).value(item._id.work?.name)
+                                 workbook.sheet("Report1").row(i).cell(3).value(item._id.work?.unit)
+                                 workbook.sheet("Report1").row(i).cell(4).value(Number(item.quantity))
+                                 workbook.sheet("Report1").row(i).cell(5).value(Number(item._id.work?.unitPrice))
+                                 workbook.sheet("Report1").row(i).cell(6).value(Number(item.quantity * item._id.work?.unitPrice))
+
+                                 workbook.sheet("Report3").row(i).cell(1).value(Number(index+1))
+                                 workbook.sheet("Report3").row(i).cell(2).value(item._id.work?.name)
+                                 workbook.sheet("Report3").row(i).cell(3).value(`${item._id.work?._id}`)
+                                 workbook.sheet("Report3").row(i).cell(4).value(item._id.work?.unit)
+                                 workbook.sheet("Report3").row(i).cell(5).value(Number(item.quantity))
+                                 workbook.sheet("Report3").row(i).cell(6).value(Number(item._id.work?.unitPrice))
+                                 workbook.sheet("Report3").row(i).cell(7).value(Number(item.quantity * item._id.work?.unitPrice))
+
+                                 i++
+                             })
+
+                             listData3?.forEach((item, index) => {
+                                for(var m = 1; m<=12; m++){
+                                    if(Number(item._id.month) === Number(m)){
+                                        for(let i=4; i<=Number(listData1.length + 3); i++){
+
+                                            let workID = workbook.sheet(`Report3`).row(i).cell(3).value()
+                                            
+                                            if(item._id.work.toString() === workID.toString()){
+
+                                                workbook.sheet(`Report3`).row(i).cell(Number(m+7)).value(item.amount)
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+
+                             var i = 4
                              listData2.forEach((item, index) =>{
                                  workbook.sheet("Report2").row(i).cell(1).value(Number(index+1))
                                  workbook.sheet("Report2").row(i).cell(2).value(item._id.assignee?.fullname)
                                  workbook.sheet("Report2").row(i).cell(3).value(Number(item.quantity))
                                  workbook.sheet("Report2").row(i).cell(4).value(Number(item.amount))
-
-                                 i++
-                             })
-
-                             var i = 4
-                             listData3.forEach((item, index) =>{
-                                 workbook.sheet("Report1").row(i).cell(1).value(Number(index+1))
-                                 workbook.sheet("Report1").row(i).cell(2).value(item._id.work?.name)
-                                 workbook.sheet("Report1").row(i).cell(3).value(item._id.work?.unit)
-                                 workbook.sheet("Report1").row(i).cell(4).value(Number(item._id.work?.unitPrice))
-                                 workbook.sheet("Report1").row(i).cell(5).value(Number(item.quantity))
-                                 workbook.sheet("Report1").row(i).cell(6).value(Number(item.quantity * item._id.work?.unitPrice))
 
                                  i++
                              })
