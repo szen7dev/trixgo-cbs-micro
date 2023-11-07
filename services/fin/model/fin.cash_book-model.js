@@ -1016,7 +1016,7 @@ class Model extends BaseModel {
                                             
                                             if(item._id.work.toString() === workID.toString()){
 
-                                                workbook.sheet(`Report3`).row(i).cell(Number(m+7)).value(item.amount)
+                                                workbook.sheet(`Report3`).row(i).cell(Number(m+7)).value(Number(item.amount))
                                             }
                                         }
                                     }
