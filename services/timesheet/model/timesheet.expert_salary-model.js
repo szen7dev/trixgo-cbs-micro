@@ -60,8 +60,7 @@ class Model extends BaseModel {
 
                     dataInsert.company = infoParent.company;
                     dataInsert.parent = parentID
-                    dataInsert.human = infoParent.human
-
+                    // dataInsert.human = infoParent.human
                     // console.log(infoParent)
                 }
 
@@ -108,35 +107,31 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
+                    // console.log(infoAfterInsert)
 
                 /**
                  * TẠO CHI TIẾT BẢNG LƯƠNG
                  * - Company
                  * - Project
-                 * - Level
                  * - Parent
                  */
-                // let listHuman = await AUTH__USER_COLL.find({company: companyID}).select('fullname')
-                // // console.log(listHuman)
-                // for(const item of listHuman){
-                //     let dataInsertDetail = {
-                //         userCreate, 
-                //         name: 'Default',
-                //         admins: [userCreate], 
-                //         members: [userCreate],
-                //         human: item._id
-                //     }
-
-                //     if(companyID){
-                //         dataInsertDetail.company = companyID;
-                //     }
-
-                //     if(projectID){
-                //         dataInsertDetail.project = projectID;
-                //     }
+                let listHuman = await AUTH__USER_COLL.find({company: companyID}).select('fullname')
+                // console.log(listHuman)
+                for(const item of listHuman){
+                    let dataInsertDetail = {
+                        userCreate, 
+                        name: 'Default',
+                        admins: [userCreate], 
+                        members: [userCreate],
+                        human: item._id,
+                        parent: infoAfterInsert._id,
+                        company: infoAfterInsert.company,
+                        project: infoAfterInsert.project,
+                        date: infoAfterInsert.date,
+                    }
                     
-                //     await this.insertData(dataInsertDetail)
-                // }
+                    await this.insertData(dataInsertDetail)
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
