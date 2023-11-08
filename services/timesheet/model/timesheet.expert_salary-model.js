@@ -19,7 +19,8 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
 /**
  * COLLECTIONS
  */
-const TIMESHEET__EXPERT_SALARY_COLL  = require('../database/timesheet.expert_salary-coll');
+const TIMESHEET__EXPERT_SALARY_COLL     = require('../database/timesheet.expert_salary-coll')
+const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll')
 
 class Model extends BaseModel {
 
@@ -33,6 +34,7 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ userCreate, companyID, parentID, name, date, type, note, projectID, humanID, salary, reward, punishment, advance, remaining, paid }) {
+        // const that = this
         return new Promise(async resolve => {
             try {
 
@@ -101,11 +103,40 @@ class Model extends BaseModel {
                 if(paid){
                     dataInsert.paid = Number(paid);
                 }
-                console.log(dataInsert)
+                // console.log(dataInsert)
 
-                let infoAfterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert" });
+                    return resolve({ error: true, message: "cannot_insert" })
+
+                /**
+                 * TẠO CHI TIẾT BẢNG LƯƠNG
+                 * - Company
+                 * - Project
+                 * - Level
+                 * - Parent
+                 */
+                // let listHuman = await AUTH__USER_COLL.find({company: companyID}).select('fullname')
+                // // console.log(listHuman)
+                // for(const item of listHuman){
+                //     let dataInsertDetail = {
+                //         userCreate, 
+                //         name: 'Default',
+                //         admins: [userCreate], 
+                //         members: [userCreate],
+                //         human: item._id
+                //     }
+
+                //     if(companyID){
+                //         dataInsertDetail.company = companyID;
+                //     }
+
+                //     if(projectID){
+                //         dataInsertDetail.project = projectID;
+                //     }
+                    
+                //     await this.insertData(dataInsertDetail)
+                // }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
