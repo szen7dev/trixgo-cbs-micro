@@ -1,0 +1,88 @@
+"use strict";
+
+const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
+const Schema                = require('mongoose').Schema;
+
+module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
+    //________Công ty
+    company: {
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    },
+    
+    //________Dự án/Phòng ban
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "department"
+    },
+
+    //________Hạng mục cha
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref : "expert_salary"
+    },
+    //_________Admin (được quyền xem, sửa)
+    admins : [{
+        type   : Schema.Types.ObjectId,
+        ref: 'user'
+    }],
+    //_________Thành viên (được quyền xem)
+    members : [{
+        type   : Schema.Types.ObjectId,
+        ref: 'user'
+    }],
+    //________Phân loại
+    type: {
+        type: Number,
+        default: 1
+    },
+    //________Nội dung (*)
+    name: String,
+    //________Nhân sự
+    human: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
+    //_______Ngày tháng
+    date: { type: Date, default: Date.now },
+    //________Lương
+    salary: {
+        type: Number,
+        default: 0 
+    },
+    //________Thưởng
+    reward: {
+        type: Number,
+        default: 0 
+    },
+    //________Phạt
+    punishment: {
+        type: Number,
+        default: 0 
+    },
+    //________Đã tạm ứng
+    advance: {
+        type: Number,
+        default: 0 
+    },
+    //________Còn lại phải trả
+    remaining: {
+        type: Number,
+        default: 0 
+    },
+    //_________Đã chi trả
+    paid:  { type: Number, default: 0},
+    //________Ghi chú
+    note: String,
+    /**
+     * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
+     */
+    userCreate: {
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    },
+    userUpdate: {
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    }
+});
