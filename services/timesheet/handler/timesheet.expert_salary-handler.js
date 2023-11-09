@@ -123,7 +123,7 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
-            expertTimesheetID : { type: "string", optional: true },
+            expertSalaryID    : { type: "string", optional: true },
             companyID         : { type: "string", optional: true },
             projectID         : { type: "string", optional: true },
             parentID          : { type: "string", optional: true },
@@ -138,7 +138,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { expertSalaryID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -147,16 +147,16 @@ module.exports = {
                 }
                 
                 let resultAfterCallHandler;
-                if(expertTimesheetID){
+                if(expertSalaryID){
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getInfo({
-                        expertTimesheetID, userID, select, populates
+                        expertSalaryID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
                         parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates
                     });
 
-                    console.log(resultAfterCallHandler)
+                    // console.log(resultAfterCallHandler)
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

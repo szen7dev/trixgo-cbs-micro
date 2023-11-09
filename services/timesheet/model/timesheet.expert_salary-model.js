@@ -348,20 +348,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertTimesheetID, userID, select, populates }) {
+    getInfo({ expertSalaryID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(expertTimesheetID))
-                    return resolve({ error: true, message: 'Request params expertTimesheetID invalid', status: 400 });
+                if(!checkObjectIDs(expertSalaryID))
+                    return resolve({ error: true, message: 'Request params expertSalaryID invalid', status: 400 });
 
                  // populates
                  if(populates && typeof populates === 'string'){
@@ -375,13 +366,9 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                    _id: expertTimesheetID,
+                    _id: expertSalaryID,
                     $or: [
                         {userCreate: userID},
                         {admins: { $in: [userID] }},
@@ -447,8 +434,8 @@ class Model extends BaseModel {
                 }
                 let conditionObjOrg = { ...conditionObj };
 
-                console.log(conditionObj)
-                console.log(limit)
+                // console.log(conditionObj)
+                // console.log(limit)
                 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
