@@ -53,7 +53,7 @@ module.exports = {
 	 */
     update: {
         params: {
-            expertTimesheetID       : { type: "string" },
+            expertSalaryID       : { type: "string" },
             projectID               : { type: "string", optional: true },
             name                    : { type: "string", optional: true },
             date                    : { type: "string", optional: true },
@@ -78,13 +78,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
+                let { expertSalaryID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
                      dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID } = ctx.params;
                      
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                    expertTimesheetID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
+                    expertSalaryID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
                     note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID
                 });
 

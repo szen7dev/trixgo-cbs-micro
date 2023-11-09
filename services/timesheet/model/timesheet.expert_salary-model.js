@@ -145,23 +145,23 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+    update({ expertSalaryID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
         dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
-            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID})
+            console.log({ expertSalaryID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+                dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID})
         return new Promise(async (resolve) => {
             try {
-                if(!_isValid(expertTimesheetID))
+                if(!_isValid(expertSalaryID))
                     return resolve({
                         error: true,
-                        message: 'expertTimesheetID invalid',
-                        keyError: "expertTimesheetID_invalid",
+                        message: 'expertSalaryID invalid',
+                        keyError: "expertSalaryID_invalid",
                         status: 400
                     });
 
-                let infoTimeSheetID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertTimesheetID);
+                let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
 
-                if(!infoTimeSheetID) {
+                if(!infoSalaryID) {
                     return resolve({
                         error: true,
                         message: 'Timesheet không tồn tại',
@@ -198,10 +198,10 @@ class Model extends BaseModel {
                 if(hours){
                     dataUpdate.hours = hours;
                     // Cập nhật hours cho parent
-                    if(infoTimeSheetID.parent){
-                        let hoursCurrent = infoTimeSheetID.hours;
+                    if(infoSalaryID.parent){
+                        let hoursCurrent = infoSalaryID.hours;
                         let hoursAfter   = hours - hoursCurrent;
-                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { hours: hoursAfter }})
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoSalaryID.parent, { $inc: { hours: hoursAfter }})
                     }
                 }
 
@@ -226,15 +226,15 @@ class Model extends BaseModel {
                     dataUpdate.amount = amount
 
                     // Cập nhật cho Parent
-                    if(infoTimeSheetID.parent){
+                    if(infoSalaryID.parent){
 
-                        let unitPriceCurrent = infoTimeSheetID.unitprice;
+                        let unitPriceCurrent = infoSalaryID.unitprice;
                         let unitPriceAfter   = unitprice2 - unitPriceCurrent;
 
-                        let amountCurrent = infoTimeSheetID.amount;
+                        let amountCurrent = infoSalaryID.amount;
                         let amountAfter   = amount - amountCurrent;
 
-                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { unitprice: unitPriceAfter, amount: amountAfter }})
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoSalaryID.parent, { $inc: { unitprice: unitPriceAfter, amount: amountAfter }})
                     }
                 }
 
@@ -278,7 +278,7 @@ class Model extends BaseModel {
                 let dataAddToSet = {};
                 let dataPullAll  = {};
 
-                const adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString()), infoTimeSheetID.userCreate?.toString()];
+                const adminsID = [...infoSalaryID.admins?.map(item => item?.toString()), infoSalaryID.userCreate?.toString()];
 
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
@@ -326,7 +326,7 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
-                let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
+                let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true });
 
                 if(!infoAfterUpdate) {
                     return resolve({
