@@ -413,18 +413,10 @@ class Model extends BaseModel {
             //     keyword, limit, lastestID, select})
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = {};
 
                 let sortBy   = { createAt: 1, _id: 1 };
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                // POPULATE
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -437,12 +429,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 				}else{
@@ -454,22 +440,15 @@ class Model extends BaseModel {
 					conditionObj.parent = { $exists: false };
                 }
 
-                // console.log(conditionObj)
-
-                // if(checkObjectIDs(companyID)){
-				// 	conditionObj.company = companyID;
-				// }
-
-                // if(checkObjectIDs(projectID)){
-				// 	conditionObj.project = projectID;
-				// }
-
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 let conditionObjOrg = { ...conditionObj };
+
+                console.log(conditionObj)
+                console.log(limit)
                 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){

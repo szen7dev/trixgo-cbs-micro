@@ -139,6 +139,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates } = ctx.params;
+
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -154,6 +155,8 @@ module.exports = {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
                         parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates
                     });
+
+                    console.log(resultAfterCallHandler)
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
