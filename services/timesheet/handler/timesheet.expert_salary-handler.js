@@ -53,7 +53,7 @@ module.exports = {
 	 */
     update: {
         params: {
-            expertTimesheetID       : { type: "string" },
+            expertSalaryID       : { type: "string" },
             projectID               : { type: "string", optional: true },
             name                    : { type: "string", optional: true },
             date                    : { type: "string", optional: true },
@@ -78,13 +78,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
+                let { expertSalaryID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
                      dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID } = ctx.params;
                      
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                    expertTimesheetID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
+                    expertSalaryID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
                     note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID
                 });
 
@@ -123,7 +123,7 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
-            expertTimesheetID : { type: "string", optional: true },
+            expertSalaryID    : { type: "string", optional: true },
             companyID         : { type: "string", optional: true },
             projectID         : { type: "string", optional: true },
             parentID          : { type: "string", optional: true },
@@ -138,7 +138,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { expertSalaryID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates } = ctx.params;
+
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -146,14 +147,16 @@ module.exports = {
                 }
                 
                 let resultAfterCallHandler;
-                if(expertTimesheetID){
+                if(expertSalaryID){
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getInfo({
-                        expertTimesheetID, userID, select, populates
+                        expertSalaryID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
                         parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates
                     });
+
+                    // console.log(resultAfterCallHandler)
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
