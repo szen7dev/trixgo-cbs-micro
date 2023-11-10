@@ -33,8 +33,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, date, type, note, projectID, humanID, salary, reward, punishment, advance, remaining, paid }) {
-        // const that = this
+    insert({ userCreate, companyID, projectID, parentID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid }) {
         return new Promise(async resolve => {
             try {
 
@@ -55,14 +54,14 @@ class Model extends BaseModel {
                     dataInsert.company = companyID;
                 }
 
-                if(checkObjectIDs(parentID)){
-                    let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID);
+                // if(checkObjectIDs(parentID)){
+                //     let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID);
 
-                    dataInsert.company = infoParent.company;
-                    dataInsert.parent = parentID
-                    // dataInsert.human = infoParent.human
-                    // console.log(infoParent)
-                }
+                //     dataInsert.company = infoParent.company;
+                //     dataInsert.parent = parentID
+                //     // dataInsert.human = infoParent.human
+                //     // console.log(infoParent)
+                // }
 
                 if(humanID){
                     dataInsert.human = humanID;
@@ -128,6 +127,7 @@ class Model extends BaseModel {
                         company: infoAfterInsert.company,
                         project: infoAfterInsert.project,
                         date: infoAfterInsert.date,
+                        type: infoAfterInsert.type,
                     }
                     
                     await this.insertData(dataInsertDetail)
@@ -145,22 +145,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertSalaryID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
-            console.log({ expertSalaryID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-                dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID})
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid  }){
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
         return new Promise(async (resolve) => {
             try {
-                if(!_isValid(expertSalaryID))
-                    return resolve({
-                        error: true,
-                        message: 'expertSalaryID invalid',
-                        keyError: "expertSalaryID_invalid",
-                        status: 400
-                    });
-
                 let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
-
                 if(!infoSalaryID) {
                     return resolve({
                         error: true,
@@ -175,12 +164,12 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                if(projectID){
+                if(checkObjectIDs(projectID)){
                     dataUpdate.project = projectID;
                 }
 
-                if(checkObjectIDs(assigneeID)){
-                    dataUpdate.assignee = assigneeID;
+                if(checkObjectIDs(humanID)){
+                    dataUpdate.human = humanID;
                 }
 
                 if(name){
@@ -193,49 +182,6 @@ class Model extends BaseModel {
 
                 if(type){
                     dataUpdate.type = type;
-                }
-
-                if(hours){
-                    dataUpdate.hours = hours;
-                    // Cập nhật hours cho parent
-                    if(infoSalaryID.parent){
-                        let hoursCurrent = infoSalaryID.hours;
-                        let hoursAfter   = hours - hoursCurrent;
-                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoSalaryID.parent, { $inc: { hours: hoursAfter }})
-                    }
-                }
-
-                let unitprice2 = 0
-                if(unitprice){
-                    unitprice2 = Number(unitprice)
-                }
-                
-                if(checkObjectIDs(workID)){
-                    dataUpdate.work = workID;
-
-                    let infoWork = await BUDGET__WORK_COLL.findById(workID).select('unitPrice')
-                    if(infoWork){
-                        unitprice2 = Number(infoWork.unitPrice)
-                    }
-                }
-
-                if(unitprice2 != 0){
-                    let amount  = hours * unitprice2
-
-                    dataUpdate.unitprice = unitprice2
-                    dataUpdate.amount = amount
-
-                    // Cập nhật cho Parent
-                    if(infoSalaryID.parent){
-
-                        let unitPriceCurrent = infoSalaryID.unitprice;
-                        let unitPriceAfter   = unitprice2 - unitPriceCurrent;
-
-                        let amountCurrent = infoSalaryID.amount;
-                        let amountAfter   = amount - amountCurrent;
-
-                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoSalaryID.parent, { $inc: { unitprice: unitPriceAfter, amount: amountAfter }})
-                    }
                 }
 
                 if(status){
@@ -251,28 +197,23 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                if(dateIn1){
-                    dataUpdate.dateIn1 = dateIn1;
+                if(!isNaN(salary)){
+                    dataUpdate.salary = salary;
                 }
-
-                if(dateOut1){
-                    dataUpdate.dateOut1 = dateOut1;
+                if(!isNaN(reward)){
+                    dataUpdate.reward = reward;
                 }
-
-                if(dateIn2){
-                    dataUpdate.dateIn2 = dateIn2;
+                if(!isNaN(punishment)){
+                    dataUpdate.punishment = punishment;
                 }
-
-                if(dateOut2){
-                    dataUpdate.dateOut2 = dateOut2;
+                if(!isNaN(advance)){
+                    dataUpdate.advance = advance;
                 }
-
-                if(dateIn3){
-                    dataUpdate.dateIn3 = dateIn3;
+                if(!isNaN(remaining)){
+                    dataUpdate.remaining = remaining;
                 }
-
-                if(dateOut3){
-                    dataUpdate.dateOut3 = dateOut3;
+                if(!isNaN(paid)){
+                    dataUpdate.paid = paid;
                 }
 
                 let dataAddToSet = {};
@@ -402,7 +343,7 @@ class Model extends BaseModel {
             try {
                 let conditionObj = {};
 
-                let sortBy   = { createAt: 1, _id: 1 };
+                let sortBy   = { date: 1, _id: 1 };
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -507,8 +448,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
                                 hours: 1,
                                 amount: 1
                             }

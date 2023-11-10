@@ -60,8 +60,6 @@ class Model extends BaseModel {
                     dataInsert.company = infoParent.company;
                     dataInsert.parent = parentID
                     dataInsert.assignee = infoParent.assignee
-
-                    // console.log(infoParent)
                 }
 
                 if(assigneeID){
@@ -104,19 +102,10 @@ class Model extends BaseModel {
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
         dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
             // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID})
+            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
         return new Promise(async (resolve) => {
             try {
-                if(!_isValid(expertTimesheetID))
-                    return resolve({
-                        error: true,
-                        message: 'expertTimesheetID invalid',
-                        keyError: "expertTimesheetID_invalid",
-                        status: 400
-                    });
-
                 let infoTimeSheetID = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
-
                 if(!infoTimeSheetID) {
                     return resolve({
                         error: true,
@@ -307,15 +296,6 @@ class Model extends BaseModel {
     getInfo({ expertTimesheetID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(expertTimesheetID))
                     return resolve({ error: true, message: 'Request params expertTimesheetID invalid', status: 400 });
 
@@ -331,11 +311,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
                     _id: expertTimesheetID,
                     $or: [
@@ -369,18 +345,9 @@ class Model extends BaseModel {
             //     keyword, limit, lastestID, select})
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = {};
+                let sortBy   = { date: 1, _id: 1 };
 
-                let sortBy   = { createAt: 1, _id: 1 };
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -393,12 +360,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 				}else{
@@ -409,16 +370,6 @@ class Model extends BaseModel {
                     ]
 					conditionObj.parent = { $exists: false };
                 }
-
-                // console.log(conditionObj)
-
-                // if(checkObjectIDs(companyID)){
-				// 	conditionObj.company = companyID;
-				// }
-
-                // if(checkObjectIDs(projectID)){
-				// 	conditionObj.project = projectID;
-				// }
 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -449,8 +400,6 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .populate(populates)
                     .lean();
-
-                    // console.log(infoDataAfterGet)
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -497,8 +446,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
                                 hours: 1,
                                 amount: 1
                             }

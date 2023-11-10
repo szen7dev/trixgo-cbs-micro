@@ -19,7 +19,7 @@ module.exports = {
             name               : { type: "string"},
             parentID           : { type: "string", optional: true },
             date               : { type: "string", optional: true },
-            type               : { type: "string", optional: true },
+            type               : { type: "number", optional: true },
             note               : { type: "string", optional: true },
             projectID          : { type: "string", optional: true },
             humanID             : { type: "string", optional: true },
@@ -53,39 +53,33 @@ module.exports = {
 	 */
     update: {
         params: {
-            expertSalaryID       : { type: "string" },
-            projectID               : { type: "string", optional: true },
-            name                    : { type: "string", optional: true },
-            date                    : { type: "string", optional: true },
-            type                    : { type: "string", optional: true },
-            assigneeID              : { type: "string", optional: true },
-            workID                  : { type: "string", optional: true },
-            hours                   : { type: "string", optional: true },
-            unitprice               : { type: "string", optional: true },
-            amount                  : { type: "string", optional: true },
-            status                  : { type: "string", optional: true },
-            approver                : { type: "string", optional: true },
-            note                    : { type: "string", optional: true },
-            dateIn1                 : { type: "string", optional: true },
-            dateOut1                : { type: "string", optional: true },
-            dateIn2                 : { type: "string", optional: true },
-            dateOut2                : { type: "string", optional: true },
-            dateIn3                 : { type: "string", optional: true },
-            dateOut3                : { type: "string", optional: true },
-            members                 : { type: "array", optional: true },
-            admins                  : { type: "array", optional: true },
+            expertSalaryID      : { type: "string" },
+            members             : { type: "array", optional: true },
+            admins              : { type: "array", optional: true },
+            status              : { type: "string", optional: true },
+            name                : { type: "string", optional: true},
+            parentID            : { type: "string", optional: true },
+            date                : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
+            note                : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            humanID             : { type: "string", optional: true },
+            salary              : { type: "string", optional: true },
+            reward              : { type: "string", optional: true },
+            punishment          : { type: "string", optional: true },
+            advance             : { type: "string", optional: true },
+            remaining           : { type: "string", optional: true },
+            paid                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertSalaryID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
-                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID } = ctx.params;
+                let {  expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid } = ctx.params;
                      
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                    expertSalaryID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
-                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID
+                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -101,14 +95,14 @@ module.exports = {
 	 */
     remove: {
         params: {
-            expertTimesheetID : { type: "string"},
+            expertSalaryID : { type: "string"},
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 
-                let { expertTimesheetID } = ctx.params;
-                let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.remove({ expertTimesheetID });
+                let { expertSalaryID } = ctx.params;
+                let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.remove({ expertSalaryID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -175,7 +169,7 @@ module.exports = {
         auth: "required",
         params: {
             option              : { type: "string", optional: true  },
-            year              : { type: "string", optional: true  },
+            year                : { type: "string", optional: true  },
             companyID           : { type: "string", optional: true  },
         },
         async handler(ctx) {
