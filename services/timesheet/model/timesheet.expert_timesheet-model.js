@@ -6,12 +6,6 @@ const _isValid                          = require('mongoose').Types.ObjectId;
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 /**
- * DOMAIN AND ACTIONS
- */
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ITEM } 		    = require('../../item/helper/item.actions-constant');
-
-/**
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
