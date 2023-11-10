@@ -104,6 +104,7 @@ class Model extends BaseModel {
             // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
             //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
         return new Promise(async (resolve) => {
+            const that = this
             try {
                 let infoTimeSheetID = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
                 if(!infoTimeSheetID) {
@@ -169,18 +170,6 @@ class Model extends BaseModel {
 
                     dataUpdate.unitprice = unitprice2
                     dataUpdate.amount = amount
-
-                    // Cập nhật cho Parent
-                    if(infoTimeSheetID.parent){
-
-                        let unitPriceCurrent = infoTimeSheetID.unitprice;
-                        let unitPriceAfter   = unitprice2 - unitPriceCurrent;
-
-                        let amountCurrent = infoTimeSheetID.amount;
-                        let amountAfter   = amount - amountCurrent;
-
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { unitprice: unitPriceAfter, amount: amountAfter }})
-                    }
                 }
 
                 if(status){
@@ -224,7 +213,6 @@ class Model extends BaseModel {
                 let dataPullAll  = {};
 
                 const adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString()), infoTimeSheetID.userCreate?.toString()];
-
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
                         if(admins.length && checkObjectIDs(admins)) {
@@ -272,7 +260,54 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
+                if(!infoAfterUpdate) {
+                    return resolve({
+                        error: true,
+                        message: "Cannot update",
+                        keyError: "cannot_update",
+                    });
+                }
 
+                // Cập nhật cho mẩu tin cha
+                if(infoAfterUpdate.parent){
+                    await that.updateValue({ parentID: infoAfterUpdate.parent, userID })
+                }
+
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    updateValue({ parentID, userID }){
+        return new Promise(async (resolve) => {
+            try {
+                let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(parentID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            hours: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData)
+
+                let dataUpdate = {
+                    userUpdate: userID,
+                    modifyAt: Date.now(),
+                    hours: listData[0].hours,
+                    amount: listData[0].amount,
+                    unitprice: Number(listData[0].amount / listData[0].hours),
+                }
+
+                let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(parentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate) {
                     return resolve({
                         error: true,
