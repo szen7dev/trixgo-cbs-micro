@@ -60,8 +60,6 @@ class Model extends BaseModel {
                     dataInsert.company = infoParent.company;
                     dataInsert.parent = parentID
                     dataInsert.assignee = infoParent.assignee
-
-                    // console.log(infoParent)
                 }
 
                 if(assigneeID){
@@ -103,20 +101,12 @@ class Model extends BaseModel {
      */
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
         dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
-            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID})
+            console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+                dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
         return new Promise(async (resolve) => {
+            const that = this
             try {
-                if(!_isValid(expertTimesheetID))
-                    return resolve({
-                        error: true,
-                        message: 'expertTimesheetID invalid',
-                        keyError: "expertTimesheetID_invalid",
-                        status: 400
-                    });
-
                 let infoTimeSheetID = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
-
                 if(!infoTimeSheetID) {
                     return resolve({
                         error: true,
@@ -153,19 +143,12 @@ class Model extends BaseModel {
 
                 if(hours){
                     dataUpdate.hours = hours;
-                    // Cập nhật hours cho parent
-                    if(infoTimeSheetID.parent){
-                        let hoursCurrent = infoTimeSheetID.hours;
-                        let hoursAfter   = hours - hoursCurrent;
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { hours: hoursAfter }})
-                    }
                 }
 
                 let unitprice2 = 0
                 if(unitprice){
                     unitprice2 = Number(unitprice)
                 }
-                
                 if(checkObjectIDs(workID)){
                     dataUpdate.work = workID;
 
@@ -180,18 +163,6 @@ class Model extends BaseModel {
 
                     dataUpdate.unitprice = unitprice2
                     dataUpdate.amount = amount
-
-                    // Cập nhật cho Parent
-                    if(infoTimeSheetID.parent){
-
-                        let unitPriceCurrent = infoTimeSheetID.unitprice;
-                        let unitPriceAfter   = unitprice2 - unitPriceCurrent;
-
-                        let amountCurrent = infoTimeSheetID.amount;
-                        let amountAfter   = amount - amountCurrent;
-
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { unitprice: unitPriceAfter, amount: amountAfter }})
-                    }
                 }
 
                 if(status){
@@ -231,11 +202,7 @@ class Model extends BaseModel {
                     dataUpdate.dateOut3 = dateOut3;
                 }
 
-                let dataAddToSet = {};
-                let dataPullAll  = {};
-
                 const adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString()), infoTimeSheetID.userCreate?.toString()];
-
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
                         if(admins.length && checkObjectIDs(admins)) {
@@ -274,16 +241,55 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(dataAddToSet){
-                    dataUpdate.$addToSet = dataAddToSet;
-                }
-
-                if(dataPullAll){
-                    dataUpdate.$pullAll = dataPullAll;
-                }
-
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
+                if(!infoAfterUpdate) {
+                    return resolve({
+                        error: true,
+                        message: "Cannot update",
+                        keyError: "cannot_update",
+                    });
+                }
 
+                // Cập nhật cho mẩu tin cha
+                if(infoAfterUpdate.parent){
+                    await that.updateValue({ parentID: infoAfterUpdate.parent, userID })
+                }
+
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    updateValue({ parentID, userID }){
+        return new Promise(async (resolve) => {
+            try {
+                let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(parentID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            hours: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData)
+
+                let dataUpdate = {
+                    userUpdate: userID,
+                    modifyAt: Date.now(),
+                    hours: listData[0].hours,
+                    amount: listData[0].amount,
+                    unitprice: Number(listData[0].amount / listData[0].hours),
+                }
+
+                let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(parentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate) {
                     return resolve({
                         error: true,
@@ -307,15 +313,6 @@ class Model extends BaseModel {
     getInfo({ expertTimesheetID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(expertTimesheetID))
                     return resolve({ error: true, message: 'Request params expertTimesheetID invalid', status: 400 });
 
@@ -331,11 +328,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
                     _id: expertTimesheetID,
                     $or: [
@@ -369,18 +362,9 @@ class Model extends BaseModel {
             //     keyword, limit, lastestID, select})
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = {};
+                let sortBy   = { date: 1, _id: 1 };
 
-                let sortBy   = { createAt: 1, _id: 1 };
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -393,12 +377,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 				}else{
@@ -409,16 +387,6 @@ class Model extends BaseModel {
                     ]
 					conditionObj.parent = { $exists: false };
                 }
-
-                // console.log(conditionObj)
-
-                // if(checkObjectIDs(companyID)){
-				// 	conditionObj.company = companyID;
-				// }
-
-                // if(checkObjectIDs(projectID)){
-				// 	conditionObj.project = projectID;
-				// }
 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -449,8 +417,6 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .populate(populates)
                     .lean();
-
-                    // console.log(infoDataAfterGet)
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -497,8 +463,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
                                 hours: 1,
                                 amount: 1
                             }
