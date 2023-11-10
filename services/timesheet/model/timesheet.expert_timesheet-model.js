@@ -101,8 +101,8 @@ class Model extends BaseModel {
      */
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
         dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
-            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
+            console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+                dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -143,19 +143,12 @@ class Model extends BaseModel {
 
                 if(hours){
                     dataUpdate.hours = hours;
-                    // Cập nhật hours cho parent
-                    if(infoTimeSheetID.parent){
-                        let hoursCurrent = infoTimeSheetID.hours;
-                        let hoursAfter   = hours - hoursCurrent;
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { hours: hoursAfter }})
-                    }
                 }
 
                 let unitprice2 = 0
                 if(unitprice){
                     unitprice2 = Number(unitprice)
                 }
-                
                 if(checkObjectIDs(workID)){
                     dataUpdate.work = workID;
 
@@ -209,9 +202,6 @@ class Model extends BaseModel {
                     dataUpdate.dateOut3 = dateOut3;
                 }
 
-                let dataAddToSet = {};
-                let dataPullAll  = {};
-
                 const adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString()), infoTimeSheetID.userCreate?.toString()];
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
@@ -249,14 +239,6 @@ class Model extends BaseModel {
                             status: 403
                         });
                     }
-                }
-
-                if(dataAddToSet){
-                    dataUpdate.$addToSet = dataAddToSet;
-                }
-
-                if(dataPullAll){
-                    dataUpdate.$pullAll = dataPullAll;
                 }
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
