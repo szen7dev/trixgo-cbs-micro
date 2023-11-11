@@ -19,7 +19,7 @@ module.exports = {
             name               : { type: "string"},
             parentID           : { type: "string", optional: true },
             date               : { type: "string", optional: true },
-            type               : { type: "number", optional: true },
+            type               : { type: "string", optional: true },
             note               : { type: "string", optional: true },
             projectID          : { type: "string", optional: true },
             humanID             : { type: "string", optional: true },
@@ -64,12 +64,12 @@ module.exports = {
             note                : { type: "string", optional: true },
             projectID           : { type: "string", optional: true },
             humanID             : { type: "string", optional: true },
-            salary              : { type: "string", optional: true },
-            reward              : { type: "string", optional: true },
-            punishment          : { type: "string", optional: true },
-            advance             : { type: "string", optional: true },
-            remaining           : { type: "string", optional: true },
-            paid                : { type: "string", optional: true },
+            // salary              : { type: "string", optional: true },
+            // reward              : { type: "string", optional: true },
+            // punishment          : { type: "string", optional: true },
+            // advance             : { type: "string", optional: true },
+            // remaining           : { type: "string", optional: true },
+            // paid                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -147,7 +147,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
-                        parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates
+                        parentID, companyID, projectID, userID, keyword, limit: 200, lastestID, select, populates
                     });
 
                     // console.log(resultAfterCallHandler)
