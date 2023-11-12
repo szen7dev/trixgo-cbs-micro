@@ -241,8 +241,8 @@ module.exports = {
     downloadTemplateExcel: {
         auth: 'required',
         params: {
-            parentID: { type: 'string', optional: true  },
-            option     : { type: "string", optional: true }
+            parentID    : { type: 'string', optional: true  },
+            option      : { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
