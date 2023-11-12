@@ -19,8 +19,9 @@ const FIN__CASH_BOOK_COLL                = require('../database/fin.cash_book-co
 const ACCOUNT_COLL                       = require('../../item/database/item.account-coll')
 const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
 const CONTRACT_COLL                      = require('../../item/database/item.contract-coll')
-const TIMESHEET__EXPERT_TIMESHEET_COLL   = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL     = require('../.../../../accounting/database/accounting.financial_general_journal-coll')
+const TIMESHEET__EXPERT_TIMESHEET_COLL   = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const TIMESHEET__EXPERT_SALARY_COLL      = require('../../timesheet/database/timesheet.expert_salary-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -769,7 +770,6 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     downloadTemplateExcel({ option, companyID, parentID, year, userID }) {
-        // const that = this
         // console.log({ option, companyID, parentID, userID })
         return new Promise(async resolve => {
             try {
@@ -1046,8 +1046,61 @@ class Model extends BaseModel {
                          });
                     }
 
-                    // NHẬT KÝ CHUNG KẾ TOÁN
+                     /**
+                     * TẢI BẢNG TÍNH LƯƠNG
+                     */
                     if(option == 2){
+                        let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID).select('name status date note salary')
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: parentID})
+                        .populate({
+                            path: 'human',
+                            select:'fullname',
+                            // populate: {
+                            //     path: 'human',
+                            //     select:'fullname',
+                            // }
+                        })
+                        .select('name status date note salary reward punishment advance remaining paid')
+                        // console.log(listData)
+
+                         // Modify the workbook.
+                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_report.xlsx')))
+                         .then(async workbook => {
+
+                            workbook.sheet("Report4").row(1).cell(1).value(infoParent.name)
+ 
+                             // NHẬT KÝ CHUNG
+                             var i = 4
+                             listData.forEach((item, index) =>{
+                                workbook.sheet("Report4").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("Report4").row(i).cell(2).value(item?.human?.fullname)
+                                 workbook.sheet("Report4").row(i).cell(4).value(Number(item.salary))
+                                 workbook.sheet("Report4").row(i).cell(5).value(Number(item.reward))
+                                 workbook.sheet("Report4").row(i).cell(6).value(Number(item.punishment))
+                                 workbook.sheet("Report4").row(i).cell(7).value(Number(item.salary + item.reward - item.punishment))
+                                 workbook.sheet("Report4").row(i).cell(8).value(Number(item.advance))
+                                 workbook.sheet("Report4").row(i).cell(9).value(Number(item.salary + item.reward - item.punishment - item.advance))
+                                 workbook.sheet("Report4").row(i).cell(10).value(Number(item.remaining))
+                                 workbook.sheet("Report4").row(i).cell(11).value(Number(item.paid))
+                                 workbook.sheet("Report4").row(i).cell(12).value(item?.note)
+                                 i++
+                             })
+                       
+                             const now = new Date();
+                             const filePath = '../../../files/temporary_uploads/';
+                             const fileName = `timesheet_report${now.getTime()}.xlsx`;
+                             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+ 
+                             await workbook.toFileAsync(pathWriteFile);
+                             const result = await uploadFileS3(pathWriteFile, fileName);
+ 
+                             fs.unlinkSync(pathWriteFile);
+                             return resolve({ error: false, data: result?.Location, status: 200 });
+                         });
+                    }
+
+                    // NHẬT KÝ CHUNG KẾ TOÁN
+                    if(option == 3){
                         // //__________Lấy levelMax của các phần tử
                         // let levelForRecursive = await _getLevelMaxInRecursiveByCompany(ACCOUNT_COLL, companyID)
                         // console.log({levelForRecursive})

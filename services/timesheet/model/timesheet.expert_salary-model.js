@@ -146,10 +146,11 @@ class Model extends BaseModel {
      * Code:
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid  }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
+        console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
         return new Promise(async (resolve) => {
             try {
                 let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
+                console.log(infoSalaryID)
                 if(!infoSalaryID) {
                     return resolve({
                         error: true,
@@ -188,11 +189,6 @@ class Model extends BaseModel {
                     dataUpdate.status = status;
                 }
 
-                if(approver){
-                    dataUpdate.approver = approver;
-                    dataUpdate.timeApprover =  Date.now();
-                }
-
                 if(note){
                     dataUpdate.note = note;
                 }
@@ -216,58 +212,50 @@ class Model extends BaseModel {
                     dataUpdate.paid = paid;
                 }
 
-                let dataAddToSet = {};
-                let dataPullAll  = {};
+                console.log(dataUpdate)
 
-                const adminsID = [...infoSalaryID.admins?.map(item => item?.toString()), infoSalaryID.userCreate?.toString()];
+                // const adminsID = [...infoSalaryID.admins?.map(item => item?.toString()), infoSalaryID.userCreate?.toString()];
 
-                if(adminsID.includes(userID.toString())) {
-                    if(admins) {
-                        if(admins.length && checkObjectIDs(admins)) {
-                            admins = [...new Set(admins)];
-                            dataUpdate.admins = admins;
-                        } else{
-                            dataUpdate.admins = [];
-                        }
-                    }
+                // if(adminsID.includes(userID.toString())) {
+                //     if(admins) {
+                //         if(admins.length && checkObjectIDs(admins)) {
+                //             admins = [...new Set(admins)];
+                //             dataUpdate.admins = admins;
+                //         } else{
+                //             dataUpdate.admins = [];
+                //         }
+                //     }
 
-                    if(members) {
-                        if(members.length && checkObjectIDs(members)) {
-                            members = [...new Set(members)];
-                            dataUpdate.members = members;
-                        } else{
-                            dataUpdate.members = [];
-                        }
-                    }
-                } else{
-                    if(checkObjectIDs(admins)) {
-                        return resolve({
-                            error: true,
-                            message: 'Bạn không có quyền chia sẻ',
-                            keyError: "permission_denined",
-                            status: 403
-                        });
-                    }
+                //     if(members) {
+                //         if(members.length && checkObjectIDs(members)) {
+                //             members = [...new Set(members)];
+                //             dataUpdate.members = members;
+                //         } else{
+                //             dataUpdate.members = [];
+                //         }
+                //     }
+                // } else{
+                //     if(checkObjectIDs(admins)) {
+                //         return resolve({
+                //             error: true,
+                //             message: 'Bạn không có quyền chia sẻ',
+                //             keyError: "permission_denined",
+                //             status: 403
+                //         });
+                //     }
 
-                    if(checkObjectIDs(members)) {
-                        return resolve({
-                            error: true,
-                            message: 'Bạn không có quyền chia sẻ',
-                            keyError: "permission_denined",
-                            status: 403
-                        });
-                    }
-                }
+                //     if(checkObjectIDs(members)) {
+                //         return resolve({
+                //             error: true,
+                //             message: 'Bạn không có quyền chia sẻ',
+                //             keyError: "permission_denined",
+                //             status: 403
+                //         });
+                //     }
+                // }
 
-                if(dataAddToSet){
-                    dataUpdate.$addToSet = dataAddToSet;
-                }
-
-                if(dataPullAll){
-                    dataUpdate.$pullAll = dataPullAll;
-                }
-
-                let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true });
+                let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true })
+                console.log(infoAfterUpdate)
 
                 if(!infoAfterUpdate) {
                     return resolve({
