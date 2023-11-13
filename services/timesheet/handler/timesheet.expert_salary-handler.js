@@ -145,13 +145,12 @@ module.exports = {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getInfo({
                         expertSalaryID, userID, select, populates
                     });
-                }else{
+                } else {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
                         parentID, companyID, projectID, userID, keyword, limit: 200, lastestID, select, populates
                     });
-
-                    // console.log(resultAfterCallHandler)
                 }
+
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

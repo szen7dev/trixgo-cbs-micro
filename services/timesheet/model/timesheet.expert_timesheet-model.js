@@ -346,14 +346,11 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách expert timesheet
-     * Author: Depv
-     * Code  :
+     * Author: HiepNH
      */
     getList({
-        parentID, companyID, projectID, userID,
+        parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
-            // console.log({parentID, companyID, projectID, userID,
-            //     keyword, limit, lastestID, select})
         return new Promise(async (resolve) => {
             try {
                 let conditionObj = {};
@@ -388,14 +385,14 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 let conditionObjOrg = { ...conditionObj };
-                
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let keys	 = ['createAt__1', '_id__1'];
+					let keys = ['createAt__1', '_id__1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 
 					if(!dataPagingAndSort || dataPagingAndSort.error)
@@ -407,7 +404,7 @@ class Model extends BaseModel {
 
                 let infoDataAfterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
                     .select(select)
-                    .limit(+limit+1)
+                    .limit(+limit + 1)
                     .sort(sortBy)
                     .populate(populates)
                     .lean();
@@ -433,7 +430,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -476,7 +472,7 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-                    
+
                     return resolve({ error: false, data: listData })
                 }
 
