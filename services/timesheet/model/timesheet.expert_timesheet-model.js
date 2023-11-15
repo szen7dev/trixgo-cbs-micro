@@ -95,8 +95,8 @@ class Model extends BaseModel {
      */
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
         dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
-            console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-                dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
+            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -449,8 +449,18 @@ class Model extends BaseModel {
         // console.log({ userID, option, year, companyID })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {company: ObjectID(companyID)}
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                // Tổng hợp chấm công của công ty theo tháng
                 if(!option){
+                    let conditionObj = {company: ObjectID(companyID)}
+
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: conditionObj
@@ -465,7 +475,7 @@ class Model extends BaseModel {
                         },
                         {
                             $match: {
-                                year: Number(year)
+                                year: Number(yearFilter)
                             }
                         },
                         {
@@ -476,6 +486,38 @@ class Model extends BaseModel {
                             }
                         },
                     ])
+                    
+                    return resolve({ error: false, data: listData })
+                }
+                // Bảng chấm công của tôi theo tháng
+                else if(option == 1){
+                    let conditionObj = {assignee: ObjectID(userID)}
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { month: '$month' },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    console.log(listData)
                     
                     return resolve({ error: false, data: listData })
                 }
