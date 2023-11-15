@@ -78,7 +78,6 @@ let _ = require('lodash');
    * @returns { find: findObject, sort: sortObject }
    */
   const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
-    console.log({ nextInfo, keys })
     return new Promise(async resolve => {
       let find = {};
       let sort = {};
