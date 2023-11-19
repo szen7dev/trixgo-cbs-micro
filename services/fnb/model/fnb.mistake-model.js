@@ -196,7 +196,7 @@ class Model extends BaseModel {
                 
                 // Thêm mới mẩu tin
                 if(!info){
-                    console.log('==========TẠO MỚI KPI============')
+                    // console.log('==========TẠO MỚI KPI============')
                     dataInsert = { 
                         userCreate: userID,
                         company: companyID,
@@ -226,7 +226,7 @@ class Model extends BaseModel {
 
                 // Cập nhật mẩu tin
                 else{
-                    console.log('==========CẬP NHẬT KPI============')
+                    // console.log('==========CẬP NHẬT KPI============')
                     dataUpdate = { 
                         userUpdate: userID, 
                         modifyAt: new Date() 
@@ -255,18 +255,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-     * Name: Update value
-     * Author: HiepNH
-     * Code: 24/11/2022
-     */
-
-    /**
-     * Name: Remove 
-     * Author: HiepNH
-     * Code: 24/11/2022
-     */
 
     /**
      * Name: Get info 
@@ -310,8 +298,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, month, year, userID }) {
-        // console.log({ companyID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID })
+    getList({ companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, month, year, userID, option }) {
+        // console.log({ companyID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID, option })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -366,12 +354,19 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Chi tiết lỗi của userID
+                if(option && option == 1){
+                    if(month & year){
+                        conditionObj.$where = `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(year)}`
+                    }
+                }	
+
                 // Phân loại theo thời khoảng
-                if(month && year){
-                    keys	 = ['score__-1']
-                    conditionObj.month = Number(month)
-                    conditionObj.year = Number(year)
-                }
+                // if(month && year){
+                //     keys	 = ['score__-1']
+                //     conditionObj.month = Number(month)
+                //     conditionObj.year = Number(year)
+                // }
 
                 // Làm rõ mục đích để làm gì?
                 // console.log({sortKey})
@@ -387,6 +382,7 @@ class Model extends BaseModel {
                 //     console.log(keys)
                 // }
                 // console.log({keys})
+                
                 // console.log(conditionObj)
 
                 /**
@@ -696,7 +692,7 @@ class Model extends BaseModel {
                         conditionObjYear = {
                             "year": Number(year),
                         }
-                        
+
                         conditionGroup = {
                             _id: { month: "$month", year: "$year" },
                             quantity: { $sum: 1 },
