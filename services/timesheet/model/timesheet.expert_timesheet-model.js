@@ -350,8 +350,9 @@ class Model extends BaseModel {
      */
     getList({
         parentID, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID }) {
         return new Promise(async (resolve) => {
+            // console.log({ parentID, userID, keyword, limit, lastestID, select, populates, option, month, year })
             try {
                 let conditionObj = {};
                 let sortBy   = { date: 1, _id: 1 };
@@ -371,13 +372,36 @@ class Model extends BaseModel {
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 				}else{
-                    conditionObj.$or = [
-                        {userCreate: userID},
-                        {admins: { $in: [userID] }},
-                        {members: { $in: [userID] }}
-                    ]
-					conditionObj.parent = { $exists: false };
+                    // Danh sách bảng chấm công
+                    if(!option){
+                        conditionObj.parent = { $exists: false }
+                        conditionObj.$or = [
+                            {userCreate: userID},
+                            {admins: { $in: [userID] }},
+                            {members: { $in: [userID] }}
+                        ]
+                    }
+                    
+                    // Chi tiết chấm công của userID
+                    else if(option == 1){
+                        conditionObj.parent = { $exists: true, $ne: null }
+                        conditionObj.assignee = assigneeID
+                        if(month & year){
+                            conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                        }
+                    }	
+                    
+                    // Chi tiết chấm công của Công ty
+                    else if(option == 2){
+                        conditionObj.parent = { $exists: true, $ne: null }
+                        conditionObj.assignee = userID
+                        if(month & year){
+                            conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                        }
+                    }	
                 }
+                // console.log(conditionObj)
+                
 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -441,7 +465,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, companyID }){
+    getListByProperty({ userID, option, year, companyID, assigneeID }){
         // console.log({ userID, option, year, companyID })
         return new Promise(async resolve => {
             try {
@@ -455,7 +479,10 @@ class Model extends BaseModel {
 
                 // Tổng hợp chấm công của công ty theo tháng
                 if(!option){
-                    let conditionObj = {company: ObjectID(companyID)}
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null }  
+                    }
 
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
@@ -485,9 +512,15 @@ class Model extends BaseModel {
                     
                     return resolve({ error: false, data: listData })
                 }
-                // Bảng chấm công của tôi theo tháng
+
+                // Bảng chấm công của assigneeID theo tháng
                 else if(option == 1){
-                    let conditionObj = {assignee: ObjectID(userID)}
+
+                    let conditionObj = {
+                        assignee: ObjectID(assigneeID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: conditionObj

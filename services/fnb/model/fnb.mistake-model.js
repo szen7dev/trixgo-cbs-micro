@@ -495,9 +495,6 @@ class Model extends BaseModel {
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
 
-                    /**
-                     * VALIDATION (1)
-                     */
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
                     });
@@ -692,6 +689,22 @@ class Model extends BaseModel {
                         sortBy = {"_id.month": 1}
                     }
 
+                    // Tổng hợp KPI theo user/tháng/năm
+                    if(option && Number(option) == 7){
+                        conditionObj.executor = ObjectID(executorID)
+
+                        conditionObjYear = {
+                            "year": Number(year),
+                        }
+                        
+                        conditionGroup = {
+                            _id: { month: "$month", year: "$year" },
+                            quantity: { $sum: 1 },
+                            amount: { $sum: "$amount" },
+                            bonus: { $sum: "$bonus" },
+                        } 
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionPopulate)
                     // console.log(conditionObjYear)
@@ -729,6 +742,7 @@ class Model extends BaseModel {
                                     amount : 1,
                                     quantity : 1,
                                     score : 1,
+                                    bonus : 1,
                                 }
                             },
                             {

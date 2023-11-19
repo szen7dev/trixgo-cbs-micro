@@ -132,7 +132,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -146,7 +146,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates
+                        parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates, option, month, year, assigneeID
                     });
                 }
 
@@ -172,7 +172,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, year, companyID } = ctx.params;
+                let { option, year, companyID, assigneeID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -180,7 +180,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getListByProperty({
-                        option, year, companyID, userID
+                        option, year, companyID, userID, assigneeID
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
