@@ -95,8 +95,8 @@ class Model extends BaseModel {
      */
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
         dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
-            console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-                dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
+            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -346,15 +346,13 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách expert timesheet
-     * Author: Depv
-     * Code  :
+     * Author: HiepNH
      */
     getList({
-        parentID, companyID, projectID, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
-            // console.log({parentID, companyID, projectID, userID,
-            //     keyword, limit, lastestID, select})
+        parentID, userID,
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID }) {
         return new Promise(async (resolve) => {
+            // console.log({ parentID, userID, keyword, limit, lastestID, select, populates, option, month, year })
             try {
                 let conditionObj = {};
                 let sortBy   = { date: 1, _id: 1 };
@@ -374,13 +372,36 @@ class Model extends BaseModel {
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 				}else{
-                    conditionObj.$or = [
-                        {userCreate: userID},
-                        {admins: { $in: [userID] }},
-                        {members: { $in: [userID] }}
-                    ]
-					conditionObj.parent = { $exists: false };
+                    // Danh sách bảng chấm công
+                    if(!option){
+                        conditionObj.parent = { $exists: false }
+                        conditionObj.$or = [
+                            {userCreate: userID},
+                            {admins: { $in: [userID] }},
+                            {members: { $in: [userID] }}
+                        ]
+                    }
+                    
+                    // Chi tiết chấm công của userID
+                    else if(option == 1){
+                        conditionObj.parent = { $exists: true, $ne: null }
+                        conditionObj.assignee = assigneeID
+                        if(month & year){
+                            conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                        }
+                    }	
+                    
+                    // Chi tiết chấm công của Công ty
+                    else if(option == 2){
+                        conditionObj.parent = { $exists: true, $ne: null }
+                        conditionObj.assignee = userID
+                        if(month & year){
+                            conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                        }
+                    }	
                 }
+                // console.log(conditionObj)
+                
 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -388,14 +409,14 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 let conditionObjOrg = { ...conditionObj };
-                
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let keys	 = ['createAt__1', '_id__1'];
+					let keys = ['createAt__1', '_id__1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 
 					if(!dataPagingAndSort || dataPagingAndSort.error)
@@ -407,7 +428,7 @@ class Model extends BaseModel {
 
                 let infoDataAfterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
                     .select(select)
-                    .limit(+limit+1)
+                    .limit(+limit + 1)
                     .sort(sortBy)
                     .populate(populates)
                     .lean();
@@ -433,7 +454,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -445,12 +465,25 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, companyID }){
+    getListByProperty({ userID, option, year, companyID, assigneeID }){
         // console.log({ userID, option, year, companyID })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {company: ObjectID(companyID)}
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                // Tổng hợp chấm công của công ty theo tháng
                 if(!option){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: conditionObj
@@ -465,7 +498,7 @@ class Model extends BaseModel {
                         },
                         {
                             $match: {
-                                year: Number(year)
+                                year: Number(yearFilter)
                             }
                         },
                         {
@@ -477,6 +510,44 @@ class Model extends BaseModel {
                         },
                     ])
                     
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Bảng chấm công của assigneeID theo tháng
+                else if(option == 1){
+
+                    let conditionObj = {
+                        assignee: ObjectID(assigneeID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { month: '$month' },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
+
                     return resolve({ error: false, data: listData })
                 }
 

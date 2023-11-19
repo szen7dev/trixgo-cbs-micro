@@ -11,7 +11,7 @@ const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../model/timesheet.ex
 module.exports = {
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Insert expert timesheet
 	 */
     insert: {
@@ -42,7 +42,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Update expert timesheet
 	 */
     update: {
@@ -74,7 +74,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
                      dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID } = ctx.params;
-                     
+
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
@@ -90,7 +90,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Remove expert timesheet
 	 */
     remove: {
@@ -100,7 +100,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                
+
                 let { expertTimesheetID } = ctx.params;
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.remove({ expertTimesheetID });
 
@@ -110,9 +110,9 @@ module.exports = {
             }
         }
     },
-    
+
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Danh sách expert timesheet
 	 */
     getInfoAndGetList: {
@@ -121,8 +121,8 @@ module.exports = {
             companyID         : { type: "string", optional: true },
             projectID         : { type: "string", optional: true },
             parentID          : { type: "string", optional: true },
-            
-            // Field mặc định 
+
+            // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
@@ -132,21 +132,21 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
-                
+
                 let resultAfterCallHandler;
                 if(expertTimesheetID){
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getInfo({
                         expertTimesheetID, userID, select, populates
                     });
-                }else{
+                } else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates
+                        parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates, option, month, year, assigneeID
                     });
                 }
 
@@ -172,7 +172,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, year, companyID } = ctx.params;
+                let { option, year, companyID, assigneeID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -180,7 +180,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getListByProperty({
-                        option, year, companyID, userID
+                        option, year, companyID, userID, assigneeID
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

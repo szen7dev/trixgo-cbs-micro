@@ -19,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 1
     },
-    //_________Lỗi mắc phải (type=19: cập nhật sau khi tạo đơn)
+    //_________Lỗi mắc phải
     mistake: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
