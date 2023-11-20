@@ -183,7 +183,9 @@ module.exports = {
                         companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit, populates, gender, 
                         keywordContact, educationalBackground2, field2, certificateType, certificateName, certificateGrade, 
                         isCertificate, isToDate5Month, userID
-                    });
+                    })
+
+                    console.log(resultAfterCallHandler)
                 }
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
