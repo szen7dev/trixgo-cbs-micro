@@ -395,6 +395,9 @@ class Model extends BaseModel {
         companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
         certificateType, certificateName, certificateGrade, isToDate5Month,
         keyword, limit = 10, lastestID, select, populates= {}, userID }) {
+            console.log({companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
+                certificateType, certificateName, certificateGrade, isToDate5Month,
+                keyword, limit, lastestID, select, populates, userID})
         return new Promise(async (resolve) => {
             try {
                 
@@ -511,11 +514,7 @@ class Model extends BaseModel {
                         $lte: monthAdd5
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+
                 let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){

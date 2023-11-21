@@ -1,16 +1,15 @@
 "use strict";
 
-// const XlsxPopulate                      = require('xlsx-populate');
-// const fs                                = require('fs');
-// const path                              = require('path');
-// const moment                            = require('moment');
-// const _isValid                          = require('mongoose').Types.ObjectId;
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const moment                            = require('moment');
+const _isValid                          = require('mongoose').Types.ObjectId;
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
 // const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 // const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
-const stringUtils					            = require('../../../tools/utils/string_utils');
 
 /**
  * TOOLS
@@ -18,10 +17,10 @@ const stringUtils					            = require('../../../tools/utils/string_utils')
 const { checkObjectIDs, IsJsonString, validateParamsObjectID, regexPhoneNumber } = require('../../../tools/utils/utils')
 const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
-// const { uploadFileS3 }                  = require('../../../tools/s3')
+const { uploadFileS3 }                  = require('../../../tools/s3')
 // const { INSURANCE_STATUS }              = require('../../../tools/constants')
 // const { CONTACT_GENDER }                = require('../helper/item.keys-constant')
-// const stringUtils					    = require('../../../tools/utils/string_utils')
+const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
  * COLLECTIONS
@@ -30,10 +29,10 @@ const USER_COLL                                     = require('../../auth/databa
 const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll')
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll')
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
+const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll')
 
-const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll');
-const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL;
-
+const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL
+const CONTACT_DOCUMENT_MODEL                        = require('../../human/model/human.contact_document-model').MODEL
 class Model extends BaseModel {
 
     constructor() {
@@ -151,6 +150,9 @@ class Model extends BaseModel {
                 }
                 if(taxid && taxid != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(taxid)
+                }
+                if(email && email != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(email)
                 }
                 dataInsert.namecv = convertStr
 
@@ -526,6 +528,10 @@ class Model extends BaseModel {
                     dataUpdate.phone = phone.replace(/\s/g, "")
                 }
 
+                if(email){
+                    dataUpdate.email = email;
+                }
+
                 // NameCV
                 let convertStr = ''
                 if(name && name != ""){
@@ -546,11 +552,10 @@ class Model extends BaseModel {
                 if(taxid && taxid != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(taxid)
                 }
-                dataUpdate.namecv = convertStr
-
-                if(email){
-                    dataUpdate.email = email;
+                if(email && email != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(email)
                 }
+                dataUpdate.namecv = convertStr
 
                 if(status){
                     dataUpdate.status = status;
@@ -880,7 +885,7 @@ class Model extends BaseModel {
      * Code  : 30/7/2023
      */
     getList({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID, month }) {
-        console.log({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID, month })
+        // console.log({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID, month })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1657,112 +1662,175 @@ class Model extends BaseModel {
      * Func: Download Template Excel
      * Date: 8/12/2022
      */
-    //  downloadTemplateImportExcel({ companyID, userID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-    //             // .populate({
-    //             //     path: 'funda',
-    //             //     select:'_id  name'
-    //             // })
-    //             // console.log(listData)
+     downloadTemplateImportExcel({ companyID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                // .populate({
+                //     path: 'funda',
+                //     select:'_id  name'
+                // })
+                // console.log(listData)
 
-    //             let listFunda = await ITEM__FUNDA_COLL.find({ company: companyID })
+                let listFunda = await ITEM__FUNDA_COLL.find({ company: companyID })
 
-    //             // Modify the workbook.
-    //             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
-    //             .then(async workbook => {
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
+                .then(async workbook => {
 
-    //                 // var i = 3;
-    //                 // listData?.forEach((item, index) => {
-    //                 //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-    //                 //     workbook.sheet("Export").row(i).cell(2).value(item.name);
-    //                 //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
-    //                 //     workbook.sheet("Export").row(i).cell(4).value(item.address);
-    //                 //     workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
-    //                 //     workbook.sheet("Export").row(i).cell(6).value(item.birthday);
-    //                 //     workbook.sheet("Export").row(i).cell(7).value(item.note);
-    //                 //     workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
-    //                 //     i++
-    //                 // });
+                    // var i = 3;
+                    // listData?.forEach((item, index) => {
+                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
+                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
+                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
+                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
+                    //     workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
+                    //     workbook.sheet("Export").row(i).cell(6).value(item.birthday);
+                    //     workbook.sheet("Export").row(i).cell(7).value(item.note);
+                    //     workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
+                    //     i++
+                    // });
 
                     
-    //                 var i = 2;
-    //                 listFunda?.forEach((item, index) => {
-    //                     workbook.sheet("DanhMuc").row(i).cell(3).value(`${item._id}`);
-    //                     workbook.sheet("DanhMuc").row(i).cell(4).value(item.name);
-    //                     i++
-    //                 });
+                    var i = 2;
+                    listFunda?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(3).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(4).value(item.name);
+                        i++
+                    });
 
-    //                 const now = new Date();
-    //                 const filePath = '../../../files/temporary_uploads/';
-    //                 const fileName = `Template_import_contact_${now.getTime()}.xlsm`;
-    //                 const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `Template_import_contact_${now.getTime()}.xlsm`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-    //                 await workbook.toFileAsync(pathWriteFile);
-    //                 const result = await uploadFileS3(pathWriteFile, fileName);
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
 
-    //                 fs.unlinkSync(pathWriteFile);
-    //                 // console.log({ result })
-    //                 return resolve({ error: false, data: result?.Location, status: 200 });
-    //             });
+                    fs.unlinkSync(pathWriteFile);
+                    // console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
 
-    //         } catch (error) {
-    //             console.log({ error })
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Dev: HiepNH
      * Func: importFromExcel
      * Date: 8/12/2022
      */
-    // importFromExcel({ companyID, dataImport, userID, ctx }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             const dataImportJSON = JSON.parse(dataImport);
-    //             // console.log('=============Log data===================');
-    //             // return console.log({ dataImportJSON });
-    //             let index = 0;
-    //             let errorNumber = 0;
-    //             // let parentID;
-    //             for (const data of dataImportJSON) {
-    //                 // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-    //                 if(index > 0 && index < 200){
-    //                     let dataInsert = {
-    //                         company: companyID,
-    //                         authorID: userID,
-    //                         name: data?.__EMPTY,
-    //                         phone: data?.__EMPTY_1,
-    //                         address: data?.__EMPTY_2,
-    //                         gender: data?.__EMPTY_9, //
-    //                         birthday: data?.__EMPTY_10,//
-    //                         note: data?.__EMPTY_5,
-    //                         fundaID: data?.__EMPTY_11,//
-    //                         type: 2
-    //                     }
-    //                     // console.log(dataInsert);
+    importFromExcel({ companyID, dataImport, userID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                // console.log('=============Log data===================');
+                // return console.log({ dataImportJSON });
+                let index = 0;
+                let errorNumber = 0;
+                // let parentID;
+
+                /**
+                 * IMPORT DANH BẠ
+                 */
+                // for (const data of dataImportJSON) {
+                //     // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                //     if(index > 0 && index < 200){
+                //         let dataInsert = {
+                //             company: companyID,
+                //             authorID: userID,
+                //             name: data?.__EMPTY,
+                //             phone: data?.__EMPTY_1,
+                //             address: data?.__EMPTY_2,
+                //             gender: data?.__EMPTY_9, //
+                //             birthday: data?.__EMPTY_10,//
+                //             note: data?.__EMPTY_5,
+                //             fundaID: data?.__EMPTY_11,//
+                //             type: 2
+                //         }
+                //         // console.log(dataInsert);
                     
-    //                     let infoAfterInsert = await this.insert(dataInsert);
-    //                     if(infoAfterInsert.error){
-    //                         errorNumber++;
-    //                     }
+                //         let infoAfterInsert = await this.insert(dataInsert);
+                //         if(infoAfterInsert.error){
+                //             errorNumber++;
+                //         }
 
-    //                 }
-    //                 index ++;
-    //             }
-    //             if(errorNumber != 0)
-    //                 return resolve({ error: true, message: "Import failed" });
+                //     }
+                //     index ++;
+                // }
 
-    //             return resolve({ error: false, message: "Import successfull" });
-    //         } catch (error) {
-    //             console.log({ error })
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+                /**
+                 * IMPORT HỒ SƠ
+                 */
+                for (const data of dataImportJSON) {
+                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                    if(index > 0 && index < 200){
+                        let dataInsert = {
+                            // company: companyID,
+                            // authorID: userID,
+                            // name: data?.__EMPTY,
+                            // phone: data?.__EMPTY_1,
+                            // address: data?.__EMPTY_2,
+                            // gender: data?.__EMPTY_9, //
+                            // birthday: data?.__EMPTY_10,//
+                            // note: data?.__EMPTY_5,
+                            // fundaID: data?.__EMPTY_11,//
+                            // type: 2,//
+                            userCreate: userID, 
+                            contactID: data?.__EMPTY_11, 
+                            // type, 
+                            // number, 
+                            // status, 
+                            // certificateGrade, 
+                            // fromDate, 
+                            // toDate, 
+                            // workplace, 
+                            // reference, 
+                            // item, 
+                            // project, 
+                            // client, 
+                            name: 'Demo hồ sơ danh bạ', 
+                            // place, 
+                            // description, 
+                            // sign, 
+                            // note, 
+                            // store, 
+                            // field2, 
+                            // position2, 
+                            // certificateType, 
+                            // certificateName, 
+                            // educationalBackground2, 
+                            // contract, 
+                            // timeMobilize, 
+                            // factor, 
+                            ctx
+                        }
+                        // console.log(dataInsert);
+                    
+                        let infoAfterInsert = await CONTACT_DOCUMENT_MODEL.insert(dataInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+
+                    }
+                    index ++;
+                }
+
+
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "Import failed" });
+
+                return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
 }
 
