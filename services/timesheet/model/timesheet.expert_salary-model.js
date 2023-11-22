@@ -30,8 +30,8 @@ class Model extends BaseModel {
 
     /**
      * Name: Insert expert timesheet
-     * Author: Depv
-     * Code:
+     * Author: HiepNH
+     * Code: 22/11/2023
      */
     insert({ userCreate, companyID, projectID, parentID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid }) {
         return new Promise(async resolve => {
@@ -54,15 +54,6 @@ class Model extends BaseModel {
                     dataInsert.company = companyID;
                 }
 
-                // if(checkObjectIDs(parentID)){
-                //     let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID);
-
-                //     dataInsert.company = infoParent.company;
-                //     dataInsert.parent = parentID
-                //     // dataInsert.human = infoParent.human
-                //     // console.log(infoParent)
-                // }
-
                 if(humanID){
                     dataInsert.human = humanID;
                 }
@@ -82,7 +73,7 @@ class Model extends BaseModel {
                 if(note){
                     dataInsert.note = note;
                 }
-                
+
                 if(salary){
                     dataInsert.salary = Number(salary);
                 }
@@ -118,9 +109,9 @@ class Model extends BaseModel {
                 // console.log(listHuman)
                 for(const item of listHuman){
                     let dataInsertDetail = {
-                        userCreate, 
+                        userCreate,
                         name: 'Default',
-                        admins: [userCreate], 
+                        admins: [userCreate],
                         members: [userCreate],
                         human: item._id,
                         parent: infoAfterInsert._id,
@@ -129,7 +120,7 @@ class Model extends BaseModel {
                         date: infoAfterInsert.date,
                         type: infoAfterInsert.type,
                     }
-                    
+
                     await this.insertData(dataInsertDetail)
                 }
 
@@ -142,11 +133,11 @@ class Model extends BaseModel {
 
     /**
      * Name: Update expert timesheet
-     * Author: Depv
-     * Code:
+     * Author: HiepNH
+     * Code: 22/11/2023
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid  }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
+        console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
         return new Promise(async (resolve) => {
             try {
                 let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
@@ -205,17 +196,13 @@ class Model extends BaseModel {
                 if(!isNaN(advance) && Number(infoSalaryID.advance) != Number(advance)){
                     dataUpdate.advance = advance;
                 }
-                // if(!isNaN(remaining)){
-                //     dataUpdate.remaining = Number(salary + reward - punishment - advance);
-                // }
-                dataUpdate.remaining = Number(salary) + Number(reward) - Number(punishment) - Number(advance);
-                // if(!isNaN(remaining)){
-                //     dataUpdate.remaining = remaining;
-                // }
+                if(!isNaN(salary) || !isNaN(reward) || !isNaN(punishment) || !isNaN(advance)){
+                    dataUpdate.remaining = Number(salary) + Number(reward) - Number(punishment) - Number(advance)
+                }
+
                 if(!isNaN(paid) && Number(infoSalaryID.paid) != Number(paid)){
                     dataUpdate.paid = paid;
                 }
-
                 // console.log(dataUpdate)
 
                 const adminsID = [...infoSalaryID.admins?.map(item => item?.toString()), infoSalaryID.userCreate?.toString()];
@@ -327,14 +314,17 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        parentID, companyID, projectID, userID,
+        parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
-            // console.log({parentID, companyID, projectID, userID,
-            //     keyword, limit, lastestID, select})
         return new Promise(async (resolve) => {
             try {
-                let conditionObj = {};
+                if(Number(limit) > 50){
+                    limit = 50;
+                } else{
+                    limit = +Number(limit);
+                }
 
+                let conditionObj = {};
                 let sortBy   = { date: 1, _id: 1 };
 
                 if(populates && typeof populates === 'string'){
@@ -367,9 +357,7 @@ class Model extends BaseModel {
                 }
                 let conditionObjOrg = { ...conditionObj };
 
-                // console.log(conditionObj)
-                // console.log(limit)
-                
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TIMESHEET__EXPERT_SALARY_COLL.findById(lastestID);
@@ -386,6 +374,7 @@ class Model extends BaseModel {
 					sortBy       = dataPagingAndSort.data.sort;
 				}
 
+                console.log({ limit, sortBy, select })
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
@@ -459,7 +448,7 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-                    
+
                     return resolve({ error: false, data: listData })
                 }
 

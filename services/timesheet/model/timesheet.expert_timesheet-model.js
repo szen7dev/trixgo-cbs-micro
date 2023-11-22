@@ -354,6 +354,12 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             // console.log({ parentID, userID, keyword, limit, lastestID, select, populates, option, month, year })
             try {
+                if(Number(limit) > 50){
+                    limit = 50;
+                } else{
+                    limit = +Number(limit);
+                }
+                
                 let conditionObj = {};
                 let sortBy   = { date: 1, _id: 1 };
 
@@ -401,7 +407,6 @@ class Model extends BaseModel {
                     }	
                 }
                 // console.log(conditionObj)
-                
 
 				if(keyword){
                     keyword = keyword.split(" ");
