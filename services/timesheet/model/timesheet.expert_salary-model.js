@@ -137,7 +137,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid  }){
-        console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
         return new Promise(async (resolve) => {
             try {
                 let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
@@ -374,7 +374,7 @@ class Model extends BaseModel {
 					sortBy       = dataPagingAndSort.data.sort;
 				}
 
-                console.log({ limit, sortBy, select })
+                // console.log({ limit, sortBy, select })
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
@@ -417,12 +417,25 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, companyID }){
-        // console.log({ userID, option, year, companyID })
+    getListByProperty({ userID, option, year, companyID, assigneeID }){
+        console.log({ userID, option, year, companyID, assigneeID })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {company: ObjectID(companyID)}
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                // Tổng hợp chấm công của công ty theo tháng
                 if(!option){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                         {
                             $match: conditionObj
@@ -437,7 +450,7 @@ class Model extends BaseModel {
                         },
                         {
                             $match: {
-                                year: Number(year)
+                                year: Number(yearFilter)
                             }
                         },
                         {
@@ -448,6 +461,44 @@ class Model extends BaseModel {
                             }
                         },
                     ])
+                    
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Bảng chấm công của assigneeID theo tháng
+                else if(option == 1){
+
+                    let conditionObj = {
+                        assignee: ObjectID(assigneeID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
+                    let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { month: '$month' },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
 
                     return resolve({ error: false, data: listData })
                 }
