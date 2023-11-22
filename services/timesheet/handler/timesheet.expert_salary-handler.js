@@ -11,7 +11,7 @@ const TIMESHEET__EXPERT_SALARY_MODEL            = require('../model/timesheet.ex
 module.exports = {
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Insert expert timesheet
 	 */
     insert: {
@@ -48,7 +48,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Update expert timesheet
 	 */
     update: {
@@ -75,7 +75,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {  expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid } = ctx.params;
-                     
+
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.update({
@@ -90,7 +90,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Remove expert timesheet
 	 */
     remove: {
@@ -100,7 +100,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                
+
                 let { expertSalaryID } = ctx.params;
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.remove({ expertSalaryID });
 
@@ -110,9 +110,9 @@ module.exports = {
             }
         }
     },
-    
+
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Danh sách expert timesheet
 	 */
     getInfoAndGetList: {
@@ -121,8 +121,8 @@ module.exports = {
             companyID         : { type: "string", optional: true },
             projectID         : { type: "string", optional: true },
             parentID          : { type: "string", optional: true },
-            
-            // Field mặc định 
+
+            // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
@@ -139,7 +139,7 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id
                 }
-                
+
                 let resultAfterCallHandler;
                 if(expertSalaryID){
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getInfo({
@@ -147,7 +147,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
-                        parentID, companyID, projectID, userID, keyword, limit: 200, lastestID, select, populates
+                        parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
 

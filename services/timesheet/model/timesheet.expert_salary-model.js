@@ -82,7 +82,7 @@ class Model extends BaseModel {
                 if(note){
                     dataInsert.note = note;
                 }
-                
+
                 if(salary){
                     dataInsert.salary = Number(salary);
                 }
@@ -118,9 +118,9 @@ class Model extends BaseModel {
                 // console.log(listHuman)
                 for(const item of listHuman){
                     let dataInsertDetail = {
-                        userCreate, 
+                        userCreate,
                         name: 'Default',
-                        admins: [userCreate], 
+                        admins: [userCreate],
                         members: [userCreate],
                         human: item._id,
                         parent: infoAfterInsert._id,
@@ -129,7 +129,7 @@ class Model extends BaseModel {
                         date: infoAfterInsert.date,
                         type: infoAfterInsert.type,
                     }
-                    
+
                     await this.insertData(dataInsertDetail)
                 }
 
@@ -327,10 +327,8 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        parentID, companyID, projectID, userID,
+        parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
-            // console.log({parentID, companyID, projectID, userID,
-            //     keyword, limit, lastestID, select})
         return new Promise(async (resolve) => {
             try {
                 let conditionObj = {};
@@ -367,9 +365,7 @@ class Model extends BaseModel {
                 }
                 let conditionObjOrg = { ...conditionObj };
 
-                // console.log(conditionObj)
-                // console.log(limit)
-                
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TIMESHEET__EXPERT_SALARY_COLL.findById(lastestID);
@@ -386,6 +382,7 @@ class Model extends BaseModel {
 					sortBy       = dataPagingAndSort.data.sort;
 				}
 
+                console.log({ limit, sortBy, select })
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
@@ -459,7 +456,7 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-                    
+
                     return resolve({ error: false, data: listData })
                 }
 
