@@ -30,8 +30,8 @@ class Model extends BaseModel {
 
     /**
      * Name: Insert expert timesheet
-     * Author: Depv
-     * Code:
+     * Author: HiepNH
+     * Code: 22/11/2023
      */
     insert({ userCreate, companyID, projectID, parentID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid }) {
         return new Promise(async resolve => {
@@ -53,15 +53,6 @@ class Model extends BaseModel {
                 if(companyID){
                     dataInsert.company = companyID;
                 }
-
-                // if(checkObjectIDs(parentID)){
-                //     let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID);
-
-                //     dataInsert.company = infoParent.company;
-                //     dataInsert.parent = parentID
-                //     // dataInsert.human = infoParent.human
-                //     // console.log(infoParent)
-                // }
 
                 if(humanID){
                     dataInsert.human = humanID;
@@ -142,11 +133,11 @@ class Model extends BaseModel {
 
     /**
      * Name: Update expert timesheet
-     * Author: Depv
-     * Code:
+     * Author: HiepNH
+     * Code: 22/11/2023
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid  }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
+        console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
         return new Promise(async (resolve) => {
             try {
                 let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
@@ -205,17 +196,13 @@ class Model extends BaseModel {
                 if(!isNaN(advance) && Number(infoSalaryID.advance) != Number(advance)){
                     dataUpdate.advance = advance;
                 }
-                // if(!isNaN(remaining)){
-                //     dataUpdate.remaining = Number(salary + reward - punishment - advance);
-                // }
-                dataUpdate.remaining = Number(salary) + Number(reward) - Number(punishment) - Number(advance);
-                // if(!isNaN(remaining)){
-                //     dataUpdate.remaining = remaining;
-                // }
+                if(!isNaN(salary) || !isNaN(reward) || !isNaN(punishment) || !isNaN(advance)){
+                    dataUpdate.remaining = Number(salary) + Number(reward) - Number(punishment) - Number(advance)
+                }
+
                 if(!isNaN(paid) && Number(infoSalaryID.paid) != Number(paid)){
                     dataUpdate.paid = paid;
                 }
-
                 // console.log(dataUpdate)
 
                 const adminsID = [...infoSalaryID.admins?.map(item => item?.toString()), infoSalaryID.userCreate?.toString()];
@@ -331,8 +318,13 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
-                let conditionObj = {};
+                if(Number(limit) > 50){
+                    limit = 50;
+                } else{
+                    limit = +Number(limit);
+                }
 
+                let conditionObj = {};
                 let sortBy   = { date: 1, _id: 1 };
 
                 if(populates && typeof populates === 'string'){
