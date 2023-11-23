@@ -553,7 +553,7 @@ class Model extends BaseModel {
                                 salary: { $sum:"$salary" },
                                 reward: { $sum:"$reward" },
                                 punishment: { $sum:"$punishment" },
-                                advance: { $sum:"$saladvanceary" },
+                                advance: { $sum:"$advance" },
                                 remaining: { $sum:"$remaining" },
                                 paid: { $sum:"$paid" },
                             }
