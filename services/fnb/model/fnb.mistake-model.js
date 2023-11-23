@@ -46,14 +46,19 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID }) {
+    insert({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID }) {
         // console.log({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(fundaID) || !checkObjectIDs(userID))
+                if(!checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'orderID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
-                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                let infoFunda    
+                if(checkObjectIDs(fundaID)){
+                    infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                }else{
+                    infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
+                }
 
                 let countMistake = await FNB_MISTAKE_COLL.count({executor: executorID, mistake: mistakeID})
                 // console.log({countMistake})
@@ -63,11 +68,8 @@ class Model extends BaseModel {
                     mistake: mistakeID,
                     executor: executorID, 
                     number: countMistake | 1, 
-                    funda: fundaID, 
-                    company: infoFunda.company, 
-                    area1: infoFunda.area1, 
-                    area2: infoFunda.area2, 
-                    area3: infoFunda.area3,
+                    funda: infoFunda._id, 
+                    company: companyID,
                 }
 
                 let infoOrder;
@@ -81,14 +83,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Ca làm việc không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
                     
                     dataInsert.order            = orderID
-                    dataInsert.funda            = infoOrder.funda
                     dataInsert.customer         = infoOrder.customer
-                    dataInsert.internal         = infoOrder.internal
-                    dataInsert.salesChannel     = infoOrder.salesChannel
-                    dataInsert.service          = infoOrder.service
-                    dataInsert.shift            = infoOrder.shift
-                    dataInsert.shiftType        = infoShift.shiftType
-                    dataInsert.seasons          = infoShift.seasons
                 }
 
                 if(checkObjectIDs(files)) {
@@ -118,7 +113,7 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT SỐ LỖI VÀO ĐƠN VỊ CƠ SỞ, CA LÀM VIỆC, ĐƠN HÀNG
                  */
-                await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
+                await ITEM__FUNDA_COLL.findByIdAndUpdate(infoFunda._id, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
 
                 if(orderID && checkObjectIDs(orderID)){
                     await FNB_SHIFT_COLL.findByIdAndUpdate(infoOrder.shift, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })

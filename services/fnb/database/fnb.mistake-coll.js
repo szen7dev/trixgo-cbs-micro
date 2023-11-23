@@ -10,6 +10,26 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
+    //_________Công ty (Lấy từ orderID)
+    company: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
+    //_________Đơn vị cơ sở/Cửa hàng (Lấy từ orderID)
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : "funda"
+    },
+    //_________Đơn hàng gặp lỗi (add lỗi theo từng đơn hàng)
+    order: {
+        type: Schema.Types.ObjectId,
+        ref : "fnb_order"
+    },
+    //_________Mã khách (để biết các lỗi mà hay gặp ở khách để sau lưu ý)
+    customer: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
     /**
      * Phân loại lỗi
      * 1-Hệ thống phát hiện
@@ -55,99 +75,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 0
     },
-    /**
-     * KPI NHÂN VIÊN TRONG THÁNG
-     */
-    //_________Tháng
-    month: {
-        type: Number,
-        default: 0
-    },
-    //_________Năm
-    year: {
-        type: Number,
-        default: 0
-    },
-    //_________Số giờ làm việc trong tháng
-    workingHours: {
-        type: Number,
-        default: 0
-    },
-    //_________Số lượng sản phẩm trong tháng (cốc)
-    quantity: {
-        type: Number,
-        default: 0
-    },
-    //_________Số lỗi mắc phải trong tháng
-    numberOfMistakes: {
-        type: Number,
-        default: 0
-    },
-    /**
-     * Điểm số tích lũy trong tháng
-     * 1-Theo số giờ làm việc trong tháng: cập nhật theo ca làm việc
-     * 2-Theo số lượng sản phẩm trong tháng: cập nhật theo đơn hàng
-     * 3-Theo số lỗi mắc phải: cập nhật theo gán lỗi
-     */
-    score: {
-        type: Number,
-        default: 0
-    },
-    //_________Công ty (Lấy từ orderID)
-    company: {
-        type: Schema.Types.ObjectId,
-        ref: 'company'
-    },
-    //_________Đơn vị cơ sở/Cửa hàng (Lấy từ orderID)
-    funda: {
-        type: Schema.Types.ObjectId,
-        ref : "funda"
-    },
-    //_________Đơn hàng gặp lỗi (add lỗi theo từng đơn hàng)
-    order: {
-        type: Schema.Types.ObjectId,
-        ref : "fnb_order"
-    },
-    //_________Sản phẩm gặp lỗi (add lỗi theo từng sản phẩm)
-    product: {
-        type: Schema.Types.ObjectId,
-        ref : "fnb_product"
-    },
-    //_________Mã khách (để biết các lỗi mà hay gặp ở khách để sau lưu ý)
-    customer: {
-        type: Schema.Types.ObjectId,
-        ref: "contact"
-    },
-    //_________Ca làm việc
-    shift: {
-        type: Schema.Types.ObjectId,
-        ref: "fnb_shift"
-    },
-    //_________Phân loại trong hệ thống hoặc nhượng quyền
-    internal: Number,
-    //_________Tỉnh/Thành phố (lấy theo orderID)
-    area1: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Huyện/Quận (lấy theo orderID)
-    area2: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Xã/Phường (lấy theo orderID)
-    area3: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Mùa trong năm (theo lịch âm)
-    seasons: Number,
-    //_________Phân loại ca làm việc (cập nhật theo funda)
-    shiftType: Number,
-    //_________Phân loại kênh bán hàng
-    salesChannel: Number,
-    //_________Hình thức phục vụ
-    service: Number,
     //_________File/ảnh đính kèm
     files: [{
         type: Schema.Types.ObjectId,
