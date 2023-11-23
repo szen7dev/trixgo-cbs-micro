@@ -168,13 +168,15 @@ module.exports = {
         auth: "required",
         params: {
             option              : { type: "string", optional: true  },
-            year                : { type: "string", optional: true  },
             companyID           : { type: "string", optional: true  },
+            year                : { type: "string", optional: true  },
+            month               : { type: "string", optional: true  },
+            
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, year, companyID } = ctx.params;
+                let { option, year, companyID, assigneeID, month } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -182,7 +184,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getListByProperty({
-                        option, year, companyID, userID
+                        option, year, companyID, userID, assigneeID, month
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

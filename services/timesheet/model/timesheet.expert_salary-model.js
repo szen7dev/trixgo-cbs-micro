@@ -137,7 +137,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid  }){
-        console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
         return new Promise(async (resolve) => {
             try {
                 let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
@@ -374,7 +374,7 @@ class Model extends BaseModel {
 					sortBy       = dataPagingAndSort.data.sort;
 				}
 
-                console.log({ limit, sortBy, select })
+                // console.log({ limit, sortBy, select })
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
@@ -417,12 +417,25 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, companyID }){
-        // console.log({ userID, option, year, companyID })
+    getListByProperty({ userID, option, year, month, companyID, assigneeID }){
+        // console.log({ userID, option, year, companyID, assigneeID })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {company: ObjectID(companyID)}
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                // Tổng hợp chấm công của công ty theo tháng
                 if(!option){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                         {
                             $match: conditionObj
@@ -431,23 +444,122 @@ class Model extends BaseModel {
                             $project: {
                                 year : {$year : "$date"},
                                 month : {$month : "$date"},
-                                hours: 1,
-                                amount: 1
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
                             }
                         },
                         {
                             $match: {
-                                year: Number(year)
+                                year: Number(yearFilter)
                             }
                         },
                         {
                             $group: {
                                 _id: { month: '$month' },
-                                quantity: { $sum: "$hours" },
-                                amount: { $sum: "$amount" },
+                                salary: { $sum: "$salary" },
+                                paid: { $sum: "$paid" },
                             }
                         },
                     ])
+                    
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Bảng chấm công của assigneeID theo tháng
+                else if(option == 1){
+
+                    let conditionObj = {
+                        human: ObjectID(assigneeID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
+                    let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                // examTotal: { $sum: [ "$salary","$reward","-$punishment" ] },
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { month: '$month' },
+                                // examTotal: { $sum:"$examTotal" },
+                                // totalAmount: { $sum: { $multiply: [ "$salary", "$reward" ] } },
+                                // totalAmount2: { $sum: { $add: [ "$salary", "$reward" ] } },
+                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                // advance: { $sum: "$advance" },
+                                // salary: { $sum:"$salary" },
+                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Bảng chấm công của assigneeID 1 tháng
+                else if(option == 2){
+
+                    let conditionObj = {
+                        human: ObjectID(assigneeID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
+                    let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                salary: { $sum:"$salary" },
+                                reward: { $sum:"$reward" },
+                                punishment: { $sum:"$punishment" },
+                                advance: { $sum:"$saladvanceary" },
+                                remaining: { $sum:"$remaining" },
+                                paid: { $sum:"$paid" },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
 
                     return resolve({ error: false, data: listData })
                 }
