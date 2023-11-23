@@ -418,7 +418,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, year, companyID, assigneeID }){
-        console.log({ userID, option, year, companyID, assigneeID })
+        // console.log({ userID, option, year, companyID, assigneeID })
         return new Promise(async resolve => {
             try {
                 let yearFilter
@@ -444,8 +444,12 @@ class Model extends BaseModel {
                             $project: {
                                 year : {$year : "$date"},
                                 month : {$month : "$date"},
-                                hours: 1,
-                                amount: 1
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
                             }
                         },
                         {
@@ -456,8 +460,8 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { month: '$month' },
-                                quantity: { $sum: "$hours" },
-                                amount: { $sum: "$amount" },
+                                salary: { $sum: "$salary" },
+                                paid: { $sum: "$paid" },
                             }
                         },
                     ])
@@ -469,7 +473,7 @@ class Model extends BaseModel {
                 else if(option == 1){
 
                     let conditionObj = {
-                        assignee: ObjectID(assigneeID),
+                        human: ObjectID(assigneeID),
                         parent: { $exists: true, $ne: null }  
                     }
 
@@ -481,8 +485,13 @@ class Model extends BaseModel {
                             $project: {
                                 year : {$year : "$date"},
                                 month : {$month : "$date"},
-                                hours: 1,
-                                amount: 1
+                                // examTotal: { $sum: [ "$salary","$reward","-$punishment" ] },
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
                             }
                         },
                         {
@@ -493,8 +502,13 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { month: '$month' },
-                                quantity: { $sum: "$hours" },
-                                amount: { $sum: "$amount" },
+                                // examTotal: { $sum:"$examTotal" },
+                                // totalAmount: { $sum: { $multiply: [ "$salary", "$reward" ] } },
+                                // totalAmount2: { $sum: { $add: [ "$salary", "$reward" ] } },
+                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                // advance: { $sum: "$advance" },
+                                // salary: { $sum:"$salary" },
+                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
                             }
                         },
                     ])

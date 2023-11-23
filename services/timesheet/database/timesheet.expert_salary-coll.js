@@ -65,7 +65,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
-    //________Còn lại phải trả
+    //________Phải thanh toán
     remaining: {
         type: Number,
         default: 0 
