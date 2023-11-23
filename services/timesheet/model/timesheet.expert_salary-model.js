@@ -417,7 +417,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, companyID, assigneeID }){
+    getListByProperty({ userID, option, year, month, companyID, assigneeID }){
         // console.log({ userID, option, year, companyID, assigneeID })
         return new Promise(async resolve => {
             try {
@@ -509,6 +509,53 @@ class Model extends BaseModel {
                                 // advance: { $sum: "$advance" },
                                 // salary: { $sum:"$salary" },
                                 paid: { $sum: {$add: [ "$paid", "$advance" ]} },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Bảng chấm công của assigneeID 1 tháng
+                else if(option == 2){
+
+                    let conditionObj = {
+                        human: ObjectID(assigneeID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
+                    let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                salary: { $sum:"$salary" },
+                                reward: { $sum:"$reward" },
+                                punishment: { $sum:"$punishment" },
+                                advance: { $sum:"$saladvanceary" },
+                                remaining: { $sum:"$remaining" },
+                                paid: { $sum:"$paid" },
                             }
                         },
                     ])
