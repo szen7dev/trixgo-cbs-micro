@@ -31,10 +31,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files } = ctx.params;
 
-                const { _id: userID } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.insert({
-                    mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID
+                    mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID: company._id
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
