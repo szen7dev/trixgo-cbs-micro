@@ -32,5 +32,5 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment_reaction", {
     author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
-    },
+    }
 })
