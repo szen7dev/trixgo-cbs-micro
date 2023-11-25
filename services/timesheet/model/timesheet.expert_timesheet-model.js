@@ -13,8 +13,9 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
 /**
  * COLLECTIONS
  */
-const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll');
-const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll');
+const USER_COLL                         = require('../../auth/database/auth.user-coll')
+const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
+const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
 
 class Model extends BaseModel {
 
@@ -554,6 +555,91 @@ class Model extends BaseModel {
                     // console.log(listData)
 
                     return resolve({ error: false, data: listData })
+                }
+
+                // Báo cáo chấm công theo ngày
+                else if(option == 2){
+                    let start = new Date()
+                    start.setHours(0,0,0,0)
+                    let end = new Date()
+                    end.setHours(23,59,59,999)
+
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                        date: { $gte: start, $lte: end },
+                    }
+
+                    let numberUser = await USER_COLL.count({company: companyID})
+                    let numberToday = 0
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { assignee: '$assignee' },
+                            }
+                        },
+                    ])
+                    if(listData.length){
+                        numberToday = Number(listData.length)
+                    }
+                    // console.log({numberUser})
+                    // console.log(listData)
+
+                    return resolve({ error: false, numberUser, numberToday })
+                }
+
+                
+                // Danh sách user chấm công/chưa chấm ngày nay
+                else if(option == 3){
+                    let start = new Date()
+                    start.setHours(0,0,0,0)
+                    let end = new Date()
+                    end.setHours(23,59,59,999)
+
+                    let conditionPopulateUser = {
+                        path: '_id.assignee',
+                        select: '_id image fullname department',
+                        model: 'user',
+                        populate:{
+                            path: 'department',
+                            select: '_id name',
+                            model: 'department',
+                        }
+                    }
+
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                        date: { $gte: start, $lte: end },
+                    }
+
+                    let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { assignee: '$assignee' },
+                            }
+                        },
+                    ])
+
+                    let listData2 = await USER_COLL.find({company: companyID, _id: {$nin: listData1.map(item=>item._id.assignee)}})
+                    .select('image fullname department')
+                    .populate({
+                        path: 'department',
+                        select: '_id name',
+                    })
+
+
+                    if(listData1.length){
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulateUser)
+                    }
+
+                    return resolve({ error: false, listData1, listData2 })
                 }
 
             } catch (error) {

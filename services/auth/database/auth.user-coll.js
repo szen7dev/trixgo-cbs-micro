@@ -53,7 +53,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : 'department'
     },
-    //_______Chức vụ/vị trí
+    //_______Chức vụ/vị trí/Bộ phận
     position: {
         type: Schema.Types.ObjectId,
         ref : "position"
