@@ -417,7 +417,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, month, companyID, assigneeID }){
+    getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
         // console.log({ userID, option, year, companyID, assigneeID })
         return new Promise(async resolve => {
             try {
@@ -429,7 +429,7 @@ class Model extends BaseModel {
                     yearFilter = Number(currentYear)
                 }
 
-                // Tổng hợp chấm công của công ty theo tháng
+                // Tổng hợp Lương của công ty theo tháng
                 if(!option){
                     let conditionObj = {
                         company: ObjectID(companyID),
@@ -460,8 +460,8 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { month: '$month' },
-                                salary: { $sum: "$salary" },
-                                paid: { $sum: "$paid" },
+                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
                             }
                         },
                     ])
@@ -469,7 +469,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
-                // Bảng chấm công của assigneeID theo tháng
+                // Bảng lương của assigneeID theo tháng
                 else if(option == 1){
 
                     let conditionObj = {
@@ -517,7 +517,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
-                // Bảng chấm công của assigneeID 1 tháng
+                // Bảng lương của assigneeID 1 tháng
                 else if(option == 2){
 
                     let conditionObj = {
@@ -563,6 +563,181 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, data: listData })
                 }
+
+                // Gom nhóm theo Dự án/Bộ phận
+                else if(option == 3){
+                    let sortBy = { "_id.project": 1 }
+
+                    let conditionPopulate1 = {
+                        path: '_id.project',
+                        select: '_id name',
+                        model: 'department',
+                    }
+
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                    }
+
+                    let listData1 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                project: 1,
+                                position: 1,
+                                human: 1,
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project' },
+                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
+                            }
+                        },
+                        {
+                            $sort: sortBy
+                        },
+                    ])
+
+                    if(listData1.length){
+                        await TIMESHEET__EXPERT_SALARY_COLL.populate(listData1, conditionPopulate1)
+                    }
+
+                    return resolve({ error: false, data: listData1 })
+                }
+
+                // Gom nhóm theo Nhân sự trong bộ phận
+                else if(option == 4){
+                    let sortBy = { "_id.human": 1 }
+
+                    let conditionPopulate1 = {
+                        path: '_id.human',
+                        select: '_id fullname image',
+                        model: 'user',
+                    }
+
+                    let conditionObj = {
+                        project: ObjectID(projectID),
+                        parent: { $exists: true, $ne: null },
+                    }
+
+                    let listData1 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                project: 1,
+                                human: 1,
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { human: '$human' },
+                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
+                            }
+                        },
+                        {
+                            $sort: sortBy
+                        },
+                    ])
+
+                    if(listData1.length){
+                        await TIMESHEET__EXPERT_SALARY_COLL.populate(listData1, conditionPopulate1)
+                    }
+
+                    return resolve({ error: false, data: listData1 })
+                }
+
+                // Gom nhóm theo Nhân sự trong 1 tháng/
+                else if(option == 5){
+                    let sortBy = { "_id.human": 1 }
+
+                    let conditionPopulate1 = {
+                        path: '_id.human',
+                        select: '_id fullname',
+                        model: 'user',
+                    }
+
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                    }
+
+                    let listData1 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                human: 1,
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { human: '$human' },
+                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
+                            }
+                        },
+                        {
+                            $sort: sortBy
+                        },
+                    ])
+
+                    if(listData1.length){
+                        await TIMESHEET__EXPERT_SALARY_COLL.populate(listData1, conditionPopulate1)
+                    }
+
+                    return resolve({ error: false, data: listData1 })
+                }
+  
 
             } catch (error) {
                 return resolve({ error: true, message: error.message });

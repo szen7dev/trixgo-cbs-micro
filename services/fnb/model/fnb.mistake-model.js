@@ -356,30 +356,6 @@ class Model extends BaseModel {
                     }
                 }	
 
-                // Phân loại theo thời khoảng
-                // if(month && year){
-                //     keys	 = ['score__-1']
-                //     conditionObj.month = Number(month)
-                //     conditionObj.year = Number(year)
-                // }
-
-                // Làm rõ mục đích để làm gì?
-                // console.log({sortKey})
-                // console.log(IsJsonString(sortKey))
-                // if (sortKey && typeof sortKey === 'string') {
-
-                //     console.log('============>>>>>>>>>>>>>>>>>>>')
-
-                //     if (!IsJsonString(sortKey))
-                //         return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
-
-                //     keys = JSON.parse(sortKey);
-                //     console.log(keys)
-                // }
-                // console.log({keys})
-                
-                // console.log(conditionObj)
-
                 /**
                  * ĐIỀU KIỆN KHÁC
                  */
@@ -525,7 +501,7 @@ class Model extends BaseModel {
                     /**
                      * Gom nhóm theo thời gian
                      */
-                    if(option && Number(option) == 2){
+                    else if(option && Number(option) == 2){
                         // Theo năm
                         if(optionTime && Number(optionTime) == 1){
                             conditionGroup = {
@@ -560,7 +536,7 @@ class Model extends BaseModel {
                     /**
                      * Gom nhóm theo đơn vị cơ sở
                      */
-                    if(option && Number(option) == 3){
+                    else if(option && Number(option) == 3){
                         if(mistakeID && checkObjectIDs(mistakeID)){
                             conditionObj.mistake = ObjectID(mistakeID)
 
@@ -591,7 +567,7 @@ class Model extends BaseModel {
                      /**
                      * Gom nhóm theo Nhân sự + Lỗi mắc phải
                      */
-                    if(option && Number(option) == 4){
+                     else if(option && Number(option) == 4){
                         if(mistakeID){
                             conditionObj.mistake = ObjectID(mistakeID)
                         }
@@ -616,7 +592,7 @@ class Model extends BaseModel {
                     /**
                      * Gom nhóm theo Nhân sự mắc lỗi/Lỗi của tôi
                      */
-                    if(option && Number(option) == 5){
+                    else if(option && Number(option) == 5){
                         conditionObj.executor = ObjectID(userID)
 
                         conditionGroup = {
@@ -635,7 +611,7 @@ class Model extends BaseModel {
                     /**
                      * KPI nhân sự
                      */
-                    if(option && Number(option) == 6){
+                    else if(option && Number(option) == 6){
                         conditionObj = {
                             company: ObjectID(companyID),
                             executor: ObjectID(executorID),
@@ -681,8 +657,10 @@ class Model extends BaseModel {
                     }
 
                     // Tổng hợp KPI theo user/tháng/năm
-                    if(option && Number(option) == 7){
-                        conditionObj.executor = ObjectID(executorID)
+                    else if(option && Number(option) == 7){
+                        if(executorID && checkObjectIDs(executorID)){
+                            conditionObj.executor = ObjectID(executorID)
+                        }
 
                         conditionObjYear = {
                             "year": Number(year),

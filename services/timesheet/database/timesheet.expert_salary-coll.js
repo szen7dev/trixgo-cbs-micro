@@ -15,6 +15,12 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
+    
+    //_______Chức vụ/vị trí/Bộ phận
+    position: {
+        type: Schema.Types.ObjectId,
+        ref : "position"
+    },
 
     //________Hạng mục cha
     parent: {
