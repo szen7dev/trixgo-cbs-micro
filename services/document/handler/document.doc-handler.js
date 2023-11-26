@@ -633,9 +633,9 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log({projectID})
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.downloadTemplateExcel({
                     projectID, userID 
                 })
@@ -666,9 +666,9 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
 
                 // console.log({projectID, documentID})
                 // console.log(dataImport)
