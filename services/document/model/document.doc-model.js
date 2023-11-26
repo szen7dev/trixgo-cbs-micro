@@ -1467,18 +1467,19 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
+    getDynamicReport({ userID, option, companyID, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
         // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionProject = {}, conditionMatch = {}, objectGroup = {}
-                conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
               
                 // Tổng hợp số lượng và phân loại theo tháng, năm của dự án
                 if(!option){
                     
                     if(projectID && checkObjectIDs(projectID) ){
                         conditionObj.project = ObjectID(projectID)
+                    }else{
+                        conditionObj.company = ObjectID(companyID)
                     }
 
                     conditionProject = {
@@ -1498,6 +1499,7 @@ class Model extends BaseModel {
 
                     objectGroup = { month: '$month', year: '$year' }
                     // sortBy = { "_id.year": 1 }
+
                     // console.log(conditionObj)
 
                     let listData = await DOCUMENT__DOC_COLL.aggregate([

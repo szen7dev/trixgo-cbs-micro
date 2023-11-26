@@ -588,6 +588,7 @@ module.exports = {
         params: {
             reportType          : { type: 'string', optional: true },
             option              : { type: 'string', optional: true },
+            companyID           : { type: 'string', optional: true },
             projectID           : { type: 'string', optional: true },
             status              : { type: 'array', optional: true },
             subtypes            : { type: 'array', optional: true },
@@ -601,13 +602,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
 
-                const {
-                    reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year
+                let {
+                    reportType, option, companyID, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year
                 } = ctx.params;
 
-                let resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getDynamicReport({ userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming, isMilestone, year })
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getDynamicReport({ companyID, userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming, isMilestone, year })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
                 return { error:  true, message: error.message };
