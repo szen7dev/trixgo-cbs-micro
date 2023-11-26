@@ -9,11 +9,15 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    
     //________Dự án của công ty thuê chuyên giá (*)
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
+    },
+    //_______Chức vụ/vị trí/Bộ phận
+    position: {
+        type: Schema.Types.ObjectId,
+        ref : "position"
     },
     //________Hạng mục cha
     parent: {
