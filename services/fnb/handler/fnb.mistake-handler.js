@@ -143,6 +143,7 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
+            companyID           : { type: "string", optional: true },
             fundasID            : { type: "array", optional: true },
             executorID          : { type: "string", optional: true },
             orderID             : { type: "string", optional: true },
@@ -162,8 +163,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderMistakeID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, month, year, option } = ctx.params;
+                let { companyID, orderMistakeID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, month, year, option } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler;
                 if(orderMistakeID){
@@ -172,7 +177,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_MISTAKE_MODEL.getList({
-                        companyID: company._id, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID, month, year, option
+                        companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID, month, year, option
                     });
                 }
 
