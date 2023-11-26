@@ -1467,18 +1467,20 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
+    getDynamicReport({ userID, option, companyID, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
         // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionProject = {}, conditionMatch = {}, objectGroup = {}
-                conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
               
-                /**
-                 * Tổng hợp số lượng và phân loại theo tháng, năm của dự án
-                 */
+                // Tổng hợp số lượng và phân loại theo tháng, năm của dự án
                 if(!option){
-                    conditionObj = {project: ObjectID(projectID)}
+                    
+                    if(projectID && checkObjectIDs(projectID) ){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        conditionObj.company = ObjectID(companyID)
+                    }
 
                     conditionProject = {
                         year : {$year : "$date"},
@@ -1650,8 +1652,7 @@ class Model extends BaseModel {
                 }else{
                     departmentID = `${projectID}`
                 }
-
-                console.log({ departmentID, documentID })
+                // console.log({ departmentID, documentID })
 
                 const dataImportJSON = JSON.parse(dataImport);
                 let index = 0;
@@ -1698,18 +1699,7 @@ class Model extends BaseModel {
                             dataInsert.name = data.__EMPTY_1;
                         }
 
-                        // if(data.__EMPTY_2 && data.__EMPTY_2 != "" && parentID){
-                        //     dataInsert.parentID = parentID;
-                        //     dataInsert.name = data.__EMPTY_2;
-                        // }
-
-                        // if(data.__EMPTY_3 && data.__EMPTY_3 != "" && parentID){
-                        //     dataInsert.parentID = parentID;
-                        //     dataInsert.name = data.__EMPTY_3;
-                        // }
-
                         let infoAfterInsert = await this.insert(dataInsert)
-                        // console.log(infoAfterInsert)
                         if(data?.__EMPTY){
                             parentID = infoAfterInsert?.data?._id;
                         }
@@ -1722,12 +1712,9 @@ class Model extends BaseModel {
                     index ++;
                 }
                 if(errorNumber != 0)
-                    return resolve({ error: true, message: "import field" });
+                    return resolve({ error: true, message: "import field" })
 
-                // Update timeImportExcel trick reload việc con
-                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $set: { timeImportExcel: new Date() }}, { new: true });
-
-                return resolve({ error: false, message: "import success" });
+                return resolve({ error: false, message: "import success" })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1929,7 +1916,7 @@ class Model extends BaseModel {
      * Date: 15/12/2022
      */
     exportDocumentOfPackage({ userID, filterParams = {} }) {
-        console.log('==============ĐANG TẢI HỒ SƠ=======================')
+        // console.log('==============ĐANG TẢI HỒ SƠ=======================')
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({ userID });
@@ -2003,17 +1990,6 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	     = ['createAt__1', '_id__1'];
 
-                // const { data, error } = await this.getListByFilter({
-                //     ...filterParams,
-                //     userID,
-                //     isExportExcel: true
-                // });
-
-                // if(!error) {
-                //     conditionObj = { ...data };
-                // }
-                // console.log(conditionObj1)
-
                 let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj3 });
                 sortBy                = dataPagingAndSort.data.sort;
 
@@ -2052,18 +2028,6 @@ class Model extends BaseModel {
                 })
                 .sort(sortBy)
                 .lean();
-
-                // if(!listDocument) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Không tìm thấy hồ sơ văn bản',
-                //         keyError: 'documents_not_exists',
-                //         status: 400
-                //     });
-                // }
-
-                // console.log(listData3)
-                // console.log(listData4)
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/document_2_ListDocument.xlsm')))
                     .then(async workbook => {
@@ -2104,7 +2068,6 @@ class Model extends BaseModel {
 
                             i++
                         })
-
 
                         let indexExcel = 3;
                         const DATE_FORMAT = 'DD/MM/YYYY';
