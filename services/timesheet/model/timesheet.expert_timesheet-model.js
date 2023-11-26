@@ -59,6 +59,11 @@ class Model extends BaseModel {
 
                 if(assigneeID){
                     dataInsert.assignee = assigneeID;
+                    let infoAssignee = await USER_COLL.findById(assigneeID).select('department position')
+                    if(infoAssignee){
+                        dataInsert.project = infoAssignee.department;
+                        dataInsert.position = infoAssignee.position;
+                    }
                 }
 
                 if(projectID){
@@ -122,7 +127,15 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
+
+                    let infoAssignee = await USER_COLL.findById(assigneeID).select('department position')
+                    // console.log(infoAssignee)
+                    if(infoAssignee){
+                        dataUpdate.project = infoAssignee.department;
+                        dataUpdate.position = infoAssignee.position;
+                    }
                 }
+                // console.log(dataUpdate)
 
                 if(name){
                     dataUpdate.name = name;
@@ -471,7 +484,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, companyID, assigneeID }){
+    getListByProperty({ userID, option, year, month, companyID, assigneeID, projectID }){
         // console.log({ userID, option, year, companyID })
         return new Promise(async resolve => {
             try {
@@ -590,7 +603,6 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, numberUser, numberToday })
                 }
-
                 
                 // Danh sách user chấm công/chưa chấm ngày nay
                 else if(option == 3){
@@ -640,6 +652,152 @@ class Model extends BaseModel {
                     }
 
                     return resolve({ error: false, listData1, listData2 })
+                }
+
+                // Gom nhóm theo Dự án/Bộ phận
+                else if(option == 4){
+                    let sortBy = { "_id.project": 1 }
+
+                    let conditionPopulate1 = {
+                        path: '_id.project',
+                        select: '_id name',
+                        model: 'department',
+                    }
+
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                    }
+
+                    let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                project: 1,
+                                position: 1,
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { project: '$project' },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                        {
+                            $sort: sortBy
+                        },
+                    ])
+
+                    if(listData1.length){
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
+                    }
+
+                    return resolve({ error: false, data: listData1 })
+                }
+
+                // Gom nhóm theo Ngày trong tháng
+                else if(option == 5){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                    }
+
+                    let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                day : {$dayOfMonth : "$date"},
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { day: '$day' },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listData1 })
+                }
+
+                // Gom nhóm theo Nhân sự trong bộ phận
+                else if(option == 6){
+                    let sortBy = { "_id.assignee": 1 }
+
+                    let conditionPopulate1 = {
+                        path: '_id.assignee',
+                        select: '_id fullname image',
+                        model: 'user',
+                    }
+
+                    let conditionObj = {
+                        project: ObjectID(projectID),
+                        parent: { $exists: true, $ne: null },
+                    }
+
+                    let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                project: 1,
+                                assignee: 1,
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { assignee: '$assignee' },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                        {
+                            $sort: sortBy
+                        },
+                    ])
+
+                    if(listData1.length){
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
+                    }
+
+                    return resolve({ error: false, data: listData1 })
                 }
 
             } catch (error) {
