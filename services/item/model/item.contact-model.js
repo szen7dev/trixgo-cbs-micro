@@ -962,12 +962,12 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
 
                     // conditionObj.namecv = regSearch
-                    conditionObj.phone = regSearch
+                    // conditionObj.phone = regSearch
 
-                    // conditionObj.$or = [
-                    //     { name: regSearch },
-                    //     { phone: regSearch }
-                    // ]
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { phone: regSearch }
+                    ]
                 }
                 // console.log(conditionObj)
 
