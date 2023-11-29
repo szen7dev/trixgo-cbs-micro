@@ -45,6 +45,7 @@ const CF_ROUTINGS_ITEM = {
     // ================================CONTACT==========================================//
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,
     CONTACTS_PRODUCT_GET_LIST_BY_PROPERTY      : `${BASE_ROUTE}${CONTACT}/get-list-by-property`,
+    CONTACTS_GET_LIST_BY_FILTER                : `${BASE_ROUTE}${CONTACT}/filter-human`,
     CONTACTS_GET_LIST_OF_SYSTEM                : `${BASE_ROUTE}${CONTACT}/contact-of-system`,
     CONTACTS_GET_LIST_ACCESS_BY_CONTRACT       : `${BASE_ROUTE}${CONTACT}/list-access-by-contract`,
     CONTACT_DOWNLOAD_TEMPLATE_IMPORT_EXCEL     : `${BASE_ROUTE}${CONTACT}/download-template-import-excel`,
