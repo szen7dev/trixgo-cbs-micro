@@ -284,6 +284,66 @@ module.exports = {
     },
 
     /**
+     * Name  : Tìm kiếm văn bản
+     * Author: HiepNH
+     * Code  : 29/8/2022
+     */
+    getListByFilter: {
+        auth: "required",
+        params: {
+            datahubContactsID : { type: "array", optional: true }, // Chủ thể ban hành
+            sendersID	    : { type: "array", optional: true }, // Người ban hành
+            types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
+            propertysID      : { type: "array", optional: true }, // Phân loại hồ sơ (người dùng quy định)
+            fieldsID	    : { type: "array", optional: true }, // Phân loại khác
+            departmentsID    : { type: "array", optional: true }, // Dự án
+            directions       : { type: "array", optional: true }, // Hướng hồ sơ
+            contractsID	    : { type: "array", optional: true }, // Thuộc hợp đồng
+            packagesID	    : { type: "array", optional: true }, // Gói thầu
+            storagesID	    : { type: "array", optional: true }, // Địa chỉ lưu trữ
+
+            receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
+            requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
+			parentID        : { type: "string", optional: true }, // Phần tử cha
+			companyID       : { type: "string", optional: true }, // Thuộc công ty
+            marked          : { type: "string", optional: true }, // Được đánh dấu
+            keyword         : { type: "string", optional: true }, // Keyword
+            isParent        : { type: "string", optional: true },
+
+            lastestID       : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+			select          : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let {
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates, isParent
+                } = ctx.params;
+
+                // console.log(ctx.params)
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListByFilter({
+                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID: datahubContactsID, userID, keyword,
+                    limit, lastestID, select, populates, isParent
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
      * Name: Danh sách theo phân loại
      * Author: HiepNH
      * Code: 24/12/2022
