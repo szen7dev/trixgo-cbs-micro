@@ -1028,7 +1028,7 @@ class Model extends BaseModel {
     getListByFilter({
         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 20, lastestID, select, populates= {}, isParent, isPartner, type }) {
+        keyword, limit = 20, lastestID, select, populates= {}, isParent, isPartner, type, genders }) {
         //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
         //     console.log({
         //         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
@@ -1082,6 +1082,7 @@ class Model extends BaseModel {
                 /**
                  * Bộ lọc với nhiều lựa chọn
                  */
+                genders && genders.length                       && (conditionObj.gender = { $in: genders });
                 directions && directions.length                 && (conditionObj.direction = { $in: directions });
                 types && types.length                           && (conditionObj.type = { $in: types });
                 propertysID && propertysID.length               && (conditionObj.property = { $in: propertysID });
