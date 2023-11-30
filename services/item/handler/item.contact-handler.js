@@ -526,7 +526,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcel({
-                    userID, companyID, filterParams, ctx
+                    userID, companyID, filterParams
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

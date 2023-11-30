@@ -18,8 +18,8 @@ const { checkObjectIDs, IsJsonString, validateParamsObjectID, regexPhoneNumber }
 const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 }                  = require('../../../tools/s3')
-// const { INSURANCE_STATUS }              = require('../../../tools/constants')
-// const { CONTACT_GENDER }                = require('../helper/item.keys-constant')
+const { INSURANCE_STATUS }              = require('../../../tools/constants')
+const { CONTACT_GENDER }                = require('../helper/item.keys-constant')
 const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
@@ -1479,218 +1479,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Dev: MinhVH
-     * Func: Download Excel Contact
-     * Date: 21/06/2022
-     */
-    // exportExcel({ companyID, userID, filterParams, ctx }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             const validation = validateParamsObjectID({ userID, companyID });
-    //             if(validation.error) return resolve(validation);
-    //             // console.log({ filterParams })
-
-    //             let conditionObj = {};
-    //             const { data, error } = await this.getList({
-    //                 ...filterParams,
-    //                 userID,
-    //                 companyID,
-    //                 type: 1,
-    //                 // isMember: 1,
-    //                 isExportExcel: true
-    //             });
-
-    //             if(!error) {
-    //                 conditionObj = { ...data };
-    //             }
-    //             // console.log({ conditionObj, companyID })
-
-    //             const listHuman = await ITEM__CONTACT_COLL
-    //                 .find(conditionObj)
-    //                 .populate({
-    //                     path: 'position workingStatus educationalBackground contractType department documents'
-    //                 })
-    //                 .lean();
-
-    //             if(!listHuman) {
-    //                 return resolve({
-    //                     error: true,
-    //                     message: 'Không tìm thấy nhân sự trong công ty',
-    //                     keyError: 'humans_not_exists',
-    //                     status: 400
-    //                 });
-    //             }
-
-    //             await ITEM__CONTACT_COLL.populate(listHuman, {
-    //                 path: 'documents.certificateName'
-    //             })
-
-    //             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/human_1_HumanInCompany.xlsm')))
-    //                 .then(async workbook => {
-
-    //                     const { data: infoCompany, error } = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
-    //                         companyID,
-    //                         select: '_id name'
-    //                     });
-
-    //                     if(error) {
-    //                         return resolve({
-    //                             error: true,
-    //                             message: 'Không tìm thấy công ty',
-    //                             keyError: 'company_not_exists',
-    //                             status: 400
-    //                         });
-    //                     }
-
-    //                     let indexExcel = 4;
-    //                     const DATE_FORMAT = 'DD/MM/YYYY';
-    //                     const currentYear = new Date().getFullYear();
-
-    //                     workbook.sheet("DanhSachNhanSu").row(1).cell(1).value(`DANH SÁCH CÁN BỘ ${infoCompany?.name}`);
-
-    //                     listHuman.map((human, index) => {
-    //                         const {
-    //                             name, position, department, workingStatus, birthday, workStartDate,
-    //                             contractType, contractExpire, documents,
-    //                             insuranceNumber, taxid, phone, identity, dateProvice, place, note,
-    //                         } = human;
-
-    //                         let graduationYear = 0;
-    //                         let trainingPlace = '';
-    //                         let certificateGrade = '';
-    //                         let certificateName = '';
-    //                         let certificatePeriod = '';
-
-    //                         if(human.graduationYear) {
-    //                             graduationYear = new Date(human.graduationYear).getFullYear();
-    //                         }
-
-    //                         if(documents && documents.length) {
-    //                             documents.map(doc => {
-    //                                 // Trình độ học vấn
-    //                                 if(doc.type === 4) {
-    //                                     trainingPlace = doc.workplace;
-    //                                 }
-
-    //                                 // Bằng cấp chứng chỉ
-    //                                 if(doc.type === 5) {
-    //                                     certificateGrade = doc.certificateGrade;
-    //                                     certificateName = doc.certificateName?.name;
-    //                                     certificatePeriod = doc.toDate;
-    //                                 }
-    //                             })
-    //                         }
-
-    //                         const educationalBackground = human.educationalBackground?.map(item => item.name).join(', ');
-
-    //                         let humanInsuranceStatus = human.insuranceStatus || 1;
-    //                         const insuranceStatus = `${INSURANCE_STATUS[--humanInsuranceStatus].text}`;
-
-    //                         const currRow = workbook.sheet("DanhSachNhanSu").row(indexExcel);
-
-    //                         currRow.cell(1).value(index+1);
-    //                         // Họ và tên
-    //                         currRow.cell(2).value(name);
-    //                         // Chức vụ
-    //                         currRow.cell(3).value(position?.name);
-    //                         // Phòng ban
-    //                         currRow.cell(4).value(department?.name);
-    //                         // Tình trạng làm việc
-    //                         currRow.cell(5).value(workingStatus?.name);
-    //                         // Ngày tháng năm sinh
-    //                         if(birthday) {
-    //                             currRow.cell(6).value(moment(birthday).format(DATE_FORMAT));
-    //                         }
-    //                         // Thời gian tuyển dụng
-    //                         if(workStartDate) {
-    //                             currRow.cell(7).value(moment(workStartDate).format(DATE_FORMAT));
-    //                         }
-    //                         // Chuyên môn/Trình độ học vấn
-    //                         currRow.cell(8).value(educationalBackground);
-    //                         // Nơi đào tạo
-    //                         trainingPlace && currRow.cell(9).value(trainingPlace);
-
-    //                         if(graduationYear) {
-    //                             // Năm tốt nghiệp
-    //                             currRow.cell(10).value(graduationYear);
-    //                             // Năm kinh nghiệm
-    //                             currRow.cell(11).value(currentYear - graduationYear);
-    //                         }
-
-    //                         // Lĩnh vực chứng chỉ
-    //                         certificateName && currRow.cell(12).value(certificateName);
-    //                         // Hạng chứng chỉ
-    //                         certificateGrade && currRow.cell(13).value(`Hạng ${certificateGrade}`);
-
-    //                         // Ngày hết hạn chứng chỉ
-    //                         if(certificatePeriod) {
-    //                             currRow.cell(14).value(moment(certificatePeriod).format(DATE_FORMAT));
-    //                         }
-
-    //                         // Loại hợp đồng
-    //                         if(contractType?.name) {
-    //                             currRow.cell(15).value(contractType.name);
-    //                         }
-    //                         // Thời hạn hợp đồng
-    //                         if(contractExpire) {
-    //                             currRow.cell(16).value(moment(contractExpire).format(DATE_FORMAT));
-    //                         }
-
-    //                         // Số sổ BHXH
-    //                         insuranceNumber && currRow.cell(17).value(insuranceNumber);
-    //                         // Mã số thuế
-    //                         taxid && currRow.cell(18).value(taxid);
-    //                         // Số điện thoại
-    //                         phone && currRow.cell(19).value(phone);
-    //                         // Số CCCD
-    //                         identity && currRow.cell(20).value(identity);
-    //                         // Ngày cấp CCCD
-    //                         if(dateProvice) {
-    //                             currRow.cell(21).value(moment(dateProvice).format(DATE_FORMAT));
-    //                         }
-    //                         // Nơi cấp CCCD
-    //                         place && currRow.cell(22).value(place);
-    //                         // Tình trạng sổ BHXH
-    //                         insuranceStatus && currRow.cell(23).value(insuranceStatus);
-    //                         // Ghi chú
-    //                         note && currRow.cell(24).value(note);
-
-    //                         indexExcel++;
-    //                     })
-
-    //                     // const rangeUsed = workbook.sheet("DanhSachNhanSu").usedRange();
-    //                     const range = workbook.sheet('DanhSachNhanSu').range(`A4:X${listHuman.length + 3}`);
-
-    //                     range.style({
-    //                         fontFamily: 'Times New Roman',
-    //                         fontColor: 'black',
-    //                         fontSize: 13,
-    //                         bold: false,
-    //                         horizontalAlignment: 'center',
-    //                         border: true,
-    //                         borderColor: 'black',
-    //                         wrapText: true,
-    //                     })
-
-    //                     const now = new Date();
-    //                     const filePath = '../../../files/temporary_uploads/';
-    //                     const fileName = `human_1_HumanInCompany${now.getTime()}.xlsm`;
-    //                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-    //                     await workbook.toFileAsync(pathWriteFile);
-    //                     const result = await uploadFileS3(pathWriteFile, fileName);
-    //                     fs.unlinkSync(pathWriteFile);
-
-    //                     return resolve({ error: false, data: result?.Location, status: 200 });
-    //                 });
-    //         } catch (error) {
-    //             console.error(error)
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
-
-    /**
      * Name  : Danh bạ (bên mua, bên bán) mà user được quyền truy cập theo hợp đồng
      * Author: HiepNH
      * Code  : 7/9/2022
@@ -1999,6 +1787,54 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Import failed" });
 
                 return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    exportExcel({ userID, companyID, filterParams }) {
+        return new Promise(async resolve => {
+            try {
+                let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                .limit(500)
+                // .populate({
+                //     path: 'funda',
+                //     select:'_id  name'
+                // })
+                // console.log(listData)
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
+                .then(async workbook => {
+
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Export").row(i).cell(2).value(item.name);
+                        workbook.sheet("Export").row(i).cell(3).value(item.phone);
+                        workbook.sheet("Export").row(i).cell(4).value(item.address);
+                        workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
+                        workbook.sheet("Export").row(i).cell(6).value(item.birthday);
+                        workbook.sheet("Export").row(i).cell(7).value(item.note);
+                        workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
+                        i++
+                    });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `contact_export_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    // console.log({ result })
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
