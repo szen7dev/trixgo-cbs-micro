@@ -1083,21 +1083,21 @@ class Model extends BaseModel {
                  * Bộ lọc với nhiều lựa chọn
                  */
                 genders && genders.length                       && (conditionObj.gender = { $in: genders });
-                directions && directions.length                 && (conditionObj.direction = { $in: directions });
+                departmentsID && departmentsID.length           && (conditionObj.project = { $in: departmentsID });
                 types && types.length                           && (conditionObj.type = { $in: types });
+                directions && directions.length                 && (conditionObj.direction = { $in: directions });
                 propertysID && propertysID.length               && (conditionObj.property = { $in: propertysID });
                 fieldsID && fieldsID.length                     && (conditionObj.field = { $in: fieldsID });
                 packagesID && packagesID.length                 && (conditionObj.package = { $in: packagesID });
                 sendersID && sendersID.length                   && (conditionObj.sender = { $in: sendersID });
                 contractsID && contractsID.length               && (conditionObj.contract = { $in: contractsID });
                 publishsID && publishsID.length                 && (conditionObj.publish = { $in: publishsID });
-                departmentsID && departmentsID.length           && (conditionObj.project = { $in: departmentsID });
                 storagesID && storagesID.length                 && (conditionObj.storage = { $in: storagesID });
 
                 // Ngày nhận văn bản
-                if(fromDate && toDate){
-                    conditionObj.receivedDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
-                }
+                // if(fromDate && toDate){
+                //     conditionObj.receivedDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                // }
 
                 if(companyID){
                     conditionObj.company = companyID
