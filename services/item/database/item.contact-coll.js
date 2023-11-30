@@ -90,9 +90,9 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     taxid: String,
     //_________Năm tốt nghiệp
     graduationYear: { type: Date, default: null },
-    //_________Địa chỉ thường chú (Nơi ở)
+    //_________Địa chỉ thường trú (Nơi ở)
     address: String,
-    //_________Khu vực thường chú
+    //_________Khu vực thường trú (Nơi ở)
     area: {
         type: Schema.Types.ObjectId,
         ref : "area"

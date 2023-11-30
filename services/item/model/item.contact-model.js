@@ -1028,7 +1028,7 @@ class Model extends BaseModel {
     getListByFilter({
         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 20, lastestID, select, populates= {}, isParent }) {
+        keyword, limit = 20, lastestID, select, populates= {}, isParent, isPartner, type }) {
         //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
         //     console.log({
         //         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
@@ -1041,6 +1041,10 @@ class Model extends BaseModel {
                 } else{
                     limit = +limit;
                 }
+
+                let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
 
                 const validation = validateParamsObjectID({
                     packagesID              : { value: packagesID, isRequire: false },
@@ -1066,34 +1070,14 @@ class Model extends BaseModel {
                     }
                 }
 
-                let conditionObj = {};
-                let sortBy;
-                let keys	     = ['createAt__-1', '_id__-1'];
-
                 // Chỉ lấy các mẩu tin cha
                 if(isParent){
                     conditionObj.parent = { $exists: false }
                 }
 
-                /**
-                * User phải nằm trong member của gói thầu
-                */
-                // if(checkObjectIDs(departmentsID)){
-                //     let listPackageAccess = await ITEM__CONTACT_COLL.find({ project: { $in: departmentsID}, members: { $in: [userID]} })?.select("_id")
-                //     if(listPackageAccess.length){
-                //         conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
-                //     } else{
-                //         return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" })
-                //     }
-                // }else{
-                //     let listPackageAccess = await ITEM__CONTACT_COLL.find({ members: { $in: [userID]} })?.select("_id")
-                //     if(listPackageAccess.length){
-                //         conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
-                //     } else{
-                //         return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" })
-                //     }
-                // }
-                
+                if(type){
+                    conditionObj.type = Number(type)
+                }                
 
                 /**
                  * Bộ lọc với nhiều lựa chọn
@@ -1139,13 +1123,15 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
+                    // conditionObj.namecv = regSearch
+                    // conditionObj.phone = regSearch
+
                     conditionObj.$or = [
                         { name: regSearch },
-                        { sign: regSearch },
-                        { storeSign: regSearch },
+                        { phone: regSearch }
                     ]
                 }
-
+                
                 /**
                  * Purpose: Sử dụng trong export excel document (hoặc theo bộ lọc)
                  * Function: exportDocument (model)
