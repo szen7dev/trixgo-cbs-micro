@@ -294,6 +294,7 @@ module.exports = {
             datahubContactsID : { type: "array", optional: true }, // Chủ thể ban hành
             sendersID	    : { type: "array", optional: true }, // Người ban hành
             types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
+            genders          : { type: "array", optional: true },
             propertysID      : { type: "array", optional: true }, // Phân loại hồ sơ (người dùng quy định)
             fieldsID	    : { type: "array", optional: true }, // Phân loại khác
             departmentsID    : { type: "array", optional: true }, // Dự án
@@ -321,10 +322,8 @@ module.exports = {
 
                 let {
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
-                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates, isParent, isPartner, type
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates, isParent, isPartner, type, genders
                 } = ctx.params;
-
-                console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
@@ -333,7 +332,7 @@ module.exports = {
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListByFilter({
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
                     types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID: datahubContactsID, userID, keyword,
-                    limit, lastestID, select, populates, isParent, isPartner, type
+                    limit, lastestID, select, populates, isParent, isPartner, type, genders
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -460,17 +459,13 @@ module.exports = {
     downloadTemplateImportExcel: {
         auth: 'required',
         params: {
-            // projectID: { type: 'string' }
+            
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                // const { projectID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.downloadTemplateImportExcel({
                     companyID: company._id, userID 
                 })
@@ -531,7 +526,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcel({
-                    userID, companyID, filterParams, ctx
+                    userID, companyID, filterParams
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
