@@ -321,10 +321,10 @@ module.exports = {
 
                 let {
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
-                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates, isParent
+                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates, isParent, isPartner, type
                 } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
@@ -333,7 +333,7 @@ module.exports = {
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListByFilter({
                     parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
                     types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID: datahubContactsID, userID, keyword,
-                    limit, lastestID, select, populates, isParent
+                    limit, lastestID, select, populates, isParent, isPartner, type
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
