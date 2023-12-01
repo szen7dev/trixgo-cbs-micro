@@ -2525,7 +2525,7 @@ class Model extends BaseModel {
 
                     let conditionObjYear = {
                         "year": Number(yearFilter),
-                        "month": {$in: [currentMonth - 1, currentMonth]},
+                        "month": {$in: [currentMonth - 2, currentMonth - 1, currentMonth]},
                     }
 
                     conditionGroup = {
