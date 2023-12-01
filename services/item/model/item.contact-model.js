@@ -1083,7 +1083,7 @@ class Model extends BaseModel {
                  * Bộ lọc với nhiều lựa chọn
                  */
                 genders && genders.length                       && (conditionObj.gender = { $in: genders });
-                departmentsID && departmentsID.length           && (conditionObj.project = { $in: departmentsID });
+                departmentsID && departmentsID.length           && (conditionObj.department = { $in: departmentsID });
                 types && types.length                           && (conditionObj.type = { $in: types });
                 directions && directions.length                 && (conditionObj.direction = { $in: directions });
                 propertysID && propertysID.length               && (conditionObj.property = { $in: propertysID });
@@ -1795,8 +1795,15 @@ class Model extends BaseModel {
     }
 
     exportExcel({ userID, companyID, filterParams }) {
+        const that = this
         return new Promise(async resolve => {
             try {
+                // console.log(filterParams)
+                // let listData = await that.getListByFilter({
+                //     companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel: true,
+                //     requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
+                //     keyword, limit, lastestID, select, populates, isParent, isPartner, type, genders }) 
+
                 let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
                 .limit(500)
                 // .populate({

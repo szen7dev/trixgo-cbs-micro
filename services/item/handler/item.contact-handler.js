@@ -513,7 +513,7 @@ module.exports = {
     exportExcel: {
         auth: 'required',
         params: {
-            companyID: { type: "string", optional: true },
+            // companyID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -524,6 +524,9 @@ module.exports = {
                 if(!companyID) {
                     companyID = company._id;
                 }
+
+                console.log('=============>>>>>>>>>>>>>>>')
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcel({
                     userID, companyID, filterParams
