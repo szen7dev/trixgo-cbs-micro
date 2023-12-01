@@ -757,6 +757,9 @@ module.exports = {
                 const { filterParams, type } = ctx.params;
                 const companyID = company._id;
 
+                // console.log('=============>>>>>>>>>>>>>>>')
+                // console.log(ctx.params)
+
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.exportContract({
                     userID, companyID, filterParams, type, ctx
                 })

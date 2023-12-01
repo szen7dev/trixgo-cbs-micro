@@ -24,6 +24,14 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+    level: {
+        type: Number,
+        default: 1 
+    },
     /**
      * KHAI BÁO SỬ DỤNG
      */
@@ -220,17 +228,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     image: {
         type: String,
         default: 'contact_default.png'
-    },
-    /**
-     * ĐỆ QUY CHA CON
-     */
-    parent: {
-        type: Schema.Types.ObjectId,
-        ref: "contact"
-    },
-    level: {
-        type: Number,
-        default: 1 
     },
     //_________Người ký xác nhận vào (Người ký nhận)
     signerIn: String,

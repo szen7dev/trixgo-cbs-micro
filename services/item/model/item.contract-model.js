@@ -1853,9 +1853,6 @@ class Model extends BaseModel {
         //     keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = { members: { $in: [userID] } };
                 let keys	     = ['date__-1', '_id__-1'];
                 let sortBy;
@@ -1863,9 +1860,7 @@ class Model extends BaseModel {
                 if(limit > 20){
                     limit = 20
                 }
-                /**
-                 * VALIDATION
-                 */
+
                 const validation = validateParamsObjectID({
                     companysID         : { value: companysID, isRequire: false },
                     projectsID         : { value: projectsID, isRequire: false },
@@ -1874,7 +1869,6 @@ class Model extends BaseModel {
                 });
                 if(validation.error) return resolve(validation);
 
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -1904,23 +1898,6 @@ class Model extends BaseModel {
                         $lte: new Date(toDate),
                     }
                 }
-
-                /**
-                 * Hợp đồng của công ty hoặc theo dự án
-                 */
-                // if (checkObjectIDs(projectID)) {
-                //     conditionObj.project = projectID
-                // }else{
-                //     if(companyID){
-                //         conditionObj.company = companyID
-                //     }
-                // }
-                // if(checkObjectIDs(parentID)){
-                //     conditionObj.parent = parentID
-                // }
-                // if(isMember == 1){
-                //     conditionObj.members = { $in: [userID] }
-                // }
 
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -2000,7 +1977,6 @@ class Model extends BaseModel {
      * Date: 05/04/2022
      */
     getAmountByMonth({ userID, form, outin, real, companyID, projectID, contractID, year, option }){
-        // console.log('====================================')
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
@@ -2881,6 +2857,7 @@ class Model extends BaseModel {
                 if(!resultGetList.error) {
                     conditionObj = resultGetList.data;
                 }
+                // console.log({conditionObj})
 
                 let keys	     = ['date__-1', '_id__-1'];
                 let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });

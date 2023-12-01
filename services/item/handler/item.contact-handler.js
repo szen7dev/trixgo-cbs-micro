@@ -291,24 +291,10 @@ module.exports = {
     getListByFilter: {
         auth: "required",
         params: {
-            datahubContactsID : { type: "array", optional: true }, // Chủ thể ban hành
-            sendersID	    : { type: "array", optional: true }, // Người ban hành
-            types            : { type: "array", optional: true }, // Tính chất hồ sơ (hệ thống quy định)
             genders          : { type: "array", optional: true },
-            propertysID      : { type: "array", optional: true }, // Phân loại hồ sơ (người dùng quy định)
-            fieldsID	    : { type: "array", optional: true }, // Phân loại khác
-            departmentsID    : { type: "array", optional: true }, // Dự án
-            directions       : { type: "array", optional: true }, // Hướng hồ sơ
-            contractsID	    : { type: "array", optional: true }, // Thuộc hợp đồng
-            packagesID	    : { type: "array", optional: true }, // Gói thầu
-            storagesID	    : { type: "array", optional: true }, // Địa chỉ lưu trữ
-
-            receivedDate    : { type: "string", optional: true }, // Ngày nhận văn bản
-            requestResponse : { type: "string", optional: true }, // Yêu cầu phản hồi
-			parentID        : { type: "string", optional: true }, // Phần tử cha
-			companyID       : { type: "string", optional: true }, // Thuộc công ty
-            marked          : { type: "string", optional: true }, // Được đánh dấu
-            keyword         : { type: "string", optional: true }, // Keyword
+            departmentsID    : { type: "array", optional: true },
+			companyID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
             isParent        : { type: "string", optional: true },
 
             lastestID       : { type: "string", optional: true },
@@ -321,8 +307,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let {
-                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID, datahubContactsID,
-                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates, isParent, isPartner, type, genders
+                    parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, populate, isParent, type, genders
                 } = ctx.params;
 
                 if(!companyID) {
@@ -330,9 +315,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListByFilter({
-                    parentID, companyID, packagesID, departmentsID, directions, sendersID, receiverID, propertysID,
-                    types, contractsID, storagesID, requestResponse, fieldsID, fromDate, toDate, marked, publishsID: datahubContactsID, userID, keyword,
-                    limit, lastestID, select, populates, isParent, isPartner, type, genders
+                    userID, parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, populate, isParent, type, genders
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -513,7 +496,7 @@ module.exports = {
     exportExcel: {
         auth: 'required',
         params: {
-            companyID: { type: "string", optional: true },
+            // companyID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -524,6 +507,9 @@ module.exports = {
                 if(!companyID) {
                     companyID = company._id;
                 }
+
+                // console.log('=============>>>>>>>>>>>>>>>')
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcel({
                     userID, companyID, filterParams

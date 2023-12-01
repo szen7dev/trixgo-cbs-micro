@@ -1026,14 +1026,14 @@ class Model extends BaseModel {
      * Code  : 29/8/2022
      */
     getListByFilter({
-        parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
-        requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 20, lastestID, select, populates= {}, isParent, isPartner, type, genders }) {
+        parentID, companyID, receiverID, types, isExportExcel = false,
+        requestResponse, fromDate, toDate, marked, userID, departmentsID,
+        keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
         //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
         //     console.log({
-        //         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
-        // requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-        // keyword, limit, lastestID, select, populates, isParent })
+        //         parentID, companyID, receiverID, types, isExportExcel,
+        // requestResponse, fromDate, toDate, marked, userID, departmentsID,
+        // keyword, limit, lastestID, select, populates, isParent, type, genders })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -1047,14 +1047,7 @@ class Model extends BaseModel {
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 const validation = validateParamsObjectID({
-                    packagesID              : { value: packagesID, isRequire: false },
-                    sendersID               : { value: sendersID, isRequire: false },
-                    propertysID             : { value: propertysID, isRequire: false },
-                    fieldsID                : { value: fieldsID, isRequire: false },
-                    contractsID             : { value: contractsID, isRequire: false },
-                    publishsID              : { value: publishsID, isRequire: false },
                     departmentsID           : { value: departmentsID, isRequire: false },
-                    storagesID              : { value: storagesID, isRequire: false },
                 });
                 if(validation.error) return resolve(validation);
 
@@ -1079,25 +1072,15 @@ class Model extends BaseModel {
                     conditionObj.type = Number(type)
                 }                
 
-                /**
-                 * Bộ lọc với nhiều lựa chọn
-                 */
-                genders && genders.length                       && (conditionObj.gender = { $in: genders });
-                departmentsID && departmentsID.length           && (conditionObj.project = { $in: departmentsID });
-                types && types.length                           && (conditionObj.type = { $in: types });
-                directions && directions.length                 && (conditionObj.direction = { $in: directions });
-                propertysID && propertysID.length               && (conditionObj.property = { $in: propertysID });
-                fieldsID && fieldsID.length                     && (conditionObj.field = { $in: fieldsID });
-                packagesID && packagesID.length                 && (conditionObj.package = { $in: packagesID });
-                sendersID && sendersID.length                   && (conditionObj.sender = { $in: sendersID });
-                contractsID && contractsID.length               && (conditionObj.contract = { $in: contractsID });
-                publishsID && publishsID.length                 && (conditionObj.publish = { $in: publishsID });
-                storagesID && storagesID.length                 && (conditionObj.storage = { $in: storagesID });
+                // Bộ lọc với nhiều lựa chọn
+                genders && genders.length                       && (conditionObj.gender         = { $in: genders });
+                departmentsID && departmentsID.length           && (conditionObj.department     = { $in: departmentsID });
+                types && types.length                           && (conditionObj.type           = { $in: types });
 
-                // Ngày nhận văn bản
-                // if(fromDate && toDate){
-                //     conditionObj.receivedDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
-                // }
+                // Ngày làm việc
+                if(fromDate && toDate){
+                    conditionObj.workStartDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
 
                 if(companyID){
                     conditionObj.company = companyID
@@ -1134,13 +1117,12 @@ class Model extends BaseModel {
                 }
                 
                 /**
-                 * Purpose: Sử dụng trong export excel document (hoặc theo bộ lọc)
-                 * Function: exportDocument (model)
+                 * Sử dụng trong export excel document (hoặc theo bộ lọc)
+                 * Trả về điều kiện tra cứu
                  */
                 if(isExportExcel) {
                     return resolve({ data: conditionObj, error: false });
                 }
-
                 // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
@@ -1794,31 +1776,108 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcel({ userID, companyID, filterParams }) {
+    exportExcel({ userID, companyID, type, filterParams }) {
         return new Promise(async resolve => {
             try {
-                let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-                .limit(500)
-                // .populate({
-                //     path: 'funda',
-                //     select:'_id  name'
-                // })
-                // console.log(listData)
+                let conditionObj = {};
+                let resultGetList = { error: true };
 
+                switch (type) {
+                    case '1':
+                        resultGetList = await this.getListByFilter({
+                            ...filterParams,
+                            type: 1,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
+                    case '2':
+                        resultGetList = await this.getList({
+                            ...filterParams,
+                            type: 1,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
+                    default:
+                        resultGetList = await this.getListByFilter({
+                            ...filterParams,
+                            type: 1,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
+                }
+
+                if(!resultGetList.error) {
+                    conditionObj = resultGetList.data;
+                }
+                // console.log({conditionObj})
+
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
+                let sortBy            = dataPagingAndSort?.data?.sort;
+                const listData = await ITEM__CONTACT_COLL
+                    .find(conditionObj)
+                    .populate({
+                        path: 'department position field property area area1 area2 linkUser workingStatus contractType',
+                        select: 'name sign',
+                        populate:{
+                            path: 'parent',
+                            select: 'name',
+                            populate:{
+                                path: 'parent',
+                                select: 'name',
+                            }
+                        }
+                    })
+                    .sort(sortBy)
+                    .limit(500)
+                    .lean();
+
+                if(!listData) {
+                    return resolve({
+                        error: true,
+                        message: 'Không tìm thấy dữ liệu',
+                        keyError: 'data_not_exists',
+                        status: 400
+                    });
+                }
+            
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
                 .then(async workbook => {
 
                     var i = 3;
                     listData?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Export").row(i).cell(2).value(item.name);
-                        workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                        workbook.sheet("Export").row(i).cell(4).value(item.address);
-                        workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
-                        workbook.sheet("Export").row(i).cell(6).value(item.birthday);
-                        workbook.sheet("Export").row(i).cell(7).value(item.note);
-                        workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
+                        workbook.sheet("NhanSu").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("NhanSu").row(i).cell(2).value(item.name);
+                        workbook.sheet("NhanSu").row(i).cell(3).value(item?.department?.name);
+                        workbook.sheet("NhanSu").row(i).cell(4).value(item?.position?.name);
+                        workbook.sheet("NhanSu").row(i).cell(5).value(item.birthday);
+                        workbook.sheet("NhanSu").row(i).cell(6).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
+                        workbook.sheet("NhanSu").row(i).cell(7).value(item.phone);
+                        workbook.sheet("NhanSu").row(i).cell(8).value(item.email);
+                        workbook.sheet("NhanSu").row(i).cell(9).value(item.identity);
+                        workbook.sheet("NhanSu").row(i).cell(10).value(item.dateProvice);
+                        workbook.sheet("NhanSu").row(i).cell(11).value(item.place);
+                        workbook.sheet("NhanSu").row(i).cell(12).value((item?.area2 != null && item?.area2 != undefined) ? (`${item?.area2?.name}, ${item?.area2?.parent?.name}, ${item?.area2?.parent?.parent?.name}`) : "");
+                        workbook.sheet("NhanSu").row(i).cell(13).value((item?.area != null && item?.area != undefined) ? (`${item.address},${item?.area?.name}, ${item?.area?.parent?.name}, ${item?.area?.parent?.parent?.name}`) : "");
+                        workbook.sheet("NhanSu").row(i).cell(14).value(item.taxid);
+                        workbook.sheet("NhanSu").row(i).cell(15).value((!isNaN(item.insuranceNumber) && item.insuranceNumber != 0) ? Number(item.insuranceNumber) : 0);
+                        workbook.sheet("NhanSu").row(i).cell(16).value(item.insuranceSign);
+                        workbook.sheet("NhanSu").row(i).cell(17).value(item.insuranceDate);
+                        workbook.sheet("NhanSu").row(i).cell(18).value((!isNaN(item.sallaryBasic) && item.sallaryBasic != 0) ? Number(item.sallaryBasic) : 0);
+                        workbook.sheet("NhanSu").row(i).cell(19).value(item.bankAccount);
+                        workbook.sheet("NhanSu").row(i).cell(20).value(item.signerIn);
+                        workbook.sheet("NhanSu").row(i).cell(21).value(item.workStartDate);
+                        workbook.sheet("NhanSu").row(i).cell(22).value(item.contractDate);
+                        workbook.sheet("NhanSu").row(i).cell(23).value(item?.contractType?.name);
+                        workbook.sheet("NhanSu").row(i).cell(24).value(item.dayOff);
+                        workbook.sheet("NhanSu").row(i).cell(25).value(item.note);
                         i++
                     });
 
@@ -1831,7 +1890,6 @@ class Model extends BaseModel {
                     const result = await uploadFileS3(pathWriteFile, fileName);
 
                     fs.unlinkSync(pathWriteFile);
-                    // console.log({ result })
                     return resolve({ error: false, data: result?.Location, status: 200 });
                 });
 
