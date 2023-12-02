@@ -135,6 +135,7 @@ module.exports = {
                 let { expertSalaryID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
+                console.log({ EXPERT_SALARY_PARAMS: ctx.params })
 
                 if(!companyID){
                     companyID = company._id
@@ -172,7 +173,6 @@ module.exports = {
             projectID           : { type: "string", optional: true  },
             year                : { type: "string", optional: true  },
             month               : { type: "string", optional: true  },
-            
         },
         async handler(ctx) {
             try {

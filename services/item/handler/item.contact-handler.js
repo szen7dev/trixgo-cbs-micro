@@ -83,7 +83,7 @@ module.exports = {
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
                     authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID  
+                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -228,7 +228,7 @@ module.exports = {
             isContractExpire4month: { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
-            
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -257,7 +257,7 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id
                 }
-                
+
                 let resultAfterCallHandler;
                 if(contactID || linkUserID){
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getInfo({
@@ -340,7 +340,7 @@ module.exports = {
             year            : { type: "string", optional: true },
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
-            
+
             //_____________THÔNG SỐ MẶC ĐỊNH________________
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
@@ -357,10 +357,10 @@ module.exports = {
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListByProperty({
                     companyID: company._id,
                     option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey, 
+                     keyword, limit, lastestID, select, populates, sortKey,
                      userID
                     });
-             
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -417,13 +417,13 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
                 const {
-                    option, 
+                    option,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListAccessByContract({
-                    option, 
-                    keyword, limit, lastestID, select, populates, 
+                    option,
+                    keyword, limit, lastestID, select, populates,
                     userID
                 })
 
@@ -442,7 +442,7 @@ module.exports = {
     downloadTemplateImportExcel: {
         auth: 'required',
         params: {
-            
+
         },
         async handler(ctx) {
             try {
@@ -450,7 +450,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.downloadTemplateImportExcel({
-                    companyID: company._id, userID 
+                    companyID: company._id, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
