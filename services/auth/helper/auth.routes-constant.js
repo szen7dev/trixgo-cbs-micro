@@ -20,20 +20,18 @@ const CF_ROUTINGS_AUTH = {
     */
     USERS                               : `${BASE_ROUTE}${USER}`,
     ME                                  : `${BASE_ROUTE}${USER}/me`, //GET, PUT, DELETE /auth/users/me
-
     LOGIN                               : `${BASE_ROUTE}${USER}/login`,
     RECOVER_PASSWORD                    : `${BASE_ROUTE}${USER}/recover-password`,
     CHECK_OTP_RECOVER_PASSWORD          : `${BASE_ROUTE}${USER}/check-otp-recover-password`,
     UPDATE_PASSWORD_RECOVER             : `${BASE_ROUTE}${USER}/update-password-recover`,
     UPDATE_DEVICE_WHEN_LOGIN_MOBILE     : `${BASE_ROUTE}${USER}/update-device`,
-
     SEARCH_WITH_FIND                    : `${BASE_ROUTE}${USER}/search-with-find`,
     SEARCH_WITH_FULL_TEXT               : `${BASE_ROUTE}${USER}/search-with-fulltext`,
-
     GET_LIST_FRIEND                     : `${BASE_ROUTE}${USER}/list-friend`,
     GET_LIST_USER_SEND_TO_FRIENDS       : `${BASE_ROUTE}${USER}/list-user-send-to-friends`,
     GET_LIST_USER_RECEIVE_FROM_FRIENDS  : `${BASE_ROUTE}${USER}/list-user-receiver-from-friends`,
     GET_LIST_USER                       : `${BASE_ROUTE}${USER}/list-user`,
+    USER_IMPORT_FROM_EXCEL              : `${BASE_ROUTE}${USER}/import-from-excel`,
 
     /**
      * COMPANY

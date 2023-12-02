@@ -32,16 +32,6 @@ module.exports = {
 	 * Service settings
 	 */
 	settings: {
-		// fields: ["_id", "name", "products"],
-		// populates : {
-		// 	"products": {
-		// 		action: "products.get",
-		// 		params: ["name"]
-		// 	}
-		// },
-		// entityValidator: {
-		// 	name: { type: "string"}
-		// }
 		autoAliases: true,
 	},
 
@@ -70,7 +60,6 @@ module.exports = {
 		[CF_ACTIONS_AUTH.GET_LIST_FRIEND]							: AUTH__USER_HANDLER.getListFriend,
 		[CF_ACTIONS_AUTH.GET_LIST_USER_SEND_TO_FRIENDS]				: AUTH__USER_HANDLER.getListUserSendToFriends,
 		[CF_ACTIONS_AUTH.GET_LIST_USER_RECEIVE_FROM_FRIENDS]		: AUTH__USER_HANDLER.getListUserReceiveFromFriends,
-
 		[CF_ACTIONS_AUTH.GET_LIST_USER]								: AUTH__USER_HANDLER.getListUser,
 		[CF_ACTIONS_AUTH.GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH]		: AUTH__USER_HANDLER.getListUserByIdForPushMobile,
 		[CF_ACTIONS_AUTH.GET_INFO] 									: AUTH__USER_HANDLER.getInfo,
@@ -80,12 +69,11 @@ module.exports = {
 		[CF_ACTIONS_AUTH.RESOLVE_TOKEN] 							: AUTH__USER_HANDLER.resolveToken,
 		[CF_ACTIONS_AUTH.SEARCH_WITH_FIND] 							: AUTH__USER_HANDLER.searchWithFind,
 		[CF_ACTIONS_AUTH.SEARCH_WITH_FULL_TEXT] 					: AUTH__USER_HANDLER.searchWithFullText,
-
 		[CF_ACTIONS_AUTH.UPDATE_PIN_CONVERSATION] 					: AUTH__USER_HANDLER.updatePinConversation,
 		[CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION]					: AUTH__USER_HANDLER.getListPinConversation,
-
 		[CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA] 							: AUTH__USER_HANDLER.updatePinMedia,
 		[CF_ACTIONS_AUTH.GET_LIST_PIN_MEDIA]						: AUTH__USER_HANDLER.getListPinMedia,
+		[CF_ACTIONS_AUTH.USER_IMPORT_FROM_EXCEL]					: AUTH__USER_HANDLER.importFromExcel,
 
 		// Khu vực viết theo cách mới
 		[CF_ACTIONS_AUTH.USER_INSERT] 								: AUTH__USER_HANDLER.insert,

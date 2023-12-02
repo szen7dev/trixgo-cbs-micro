@@ -724,10 +724,6 @@ module.exports = {
     },
 
     /**
-     * KHU VỰC ĐỆ VIẾT THEO CÁCH MỚI
-     */
-
-    /**
 	 * Dev: Depv 
 	 * Func: getList and getInfo user
 	 */
@@ -774,6 +770,34 @@ module.exports = {
             } catch (error) {
                 console.log({ error })
                 return { error: true, message: error.message };
+            }
+        }
+    },
+
+     /**
+     * Name: Import Excel
+     * Code: HiepNH
+     * Date: 2/12/2023
+     */
+    importFromExcel: {
+        auth: 'required',
+        params: {
+            // taskID    : { type: 'string', optional: true },
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { dataImport } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log(dataImport)
+
+                const resultAfterCallHandler = await AUTH__USER_MODEL.importFromExcel({
+                    companyID: company._id, dataImport, userID, ctx
+                })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
