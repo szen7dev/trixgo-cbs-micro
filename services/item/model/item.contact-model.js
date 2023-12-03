@@ -1664,8 +1664,8 @@ class Model extends BaseModel {
     }
 
     /**
-     * Dev: HiepNH
-     * Func: importFromExcel
+     * Name: importFromExcel
+     * Code: HiepNH
      * Date: 8/12/2022
      */
     importFromExcel({ companyID, dataImport, userID, ctx }) {
