@@ -58,14 +58,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    /**
-     * Lĩnh vực chuyên môn
-     * Chuyên ngành đào tạo (/item/doctypes/?tab=7)
-     */
-    field2: {
-        type: Schema.Types.ObjectId,
-        ref : "doctype"
-    },
     //_________Gói thầu/Hạng mục tham gia
     item: String,
     //_________Dự án tham gia
@@ -87,22 +79,30 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
     /**
      * BẰNG CẤP CHỨNG CHỈ
      */
-    //_________Nơi cấp
-    place: String,
     //_________Nội dung
     name: String,
     //_________Ký hiệu
     sign: String,
+    //_________Nơi cấp
+    place: String,
     //_________Ghi chú
     note: String,
     //_________Mô tả
     description: String,
     //_________Số lượng
     number: { type: Number, default: 0 },
-    //_________Ví trí lưu trữ
+    //_________Vị trí lưu trữ
     store: String,
     //_________Trạng thái/Hiệu lực (1/2)
     status: { type: Number, default: 1 },
+    /**
+     * Lĩnh vực chuyên môn
+     * Chuyên ngành đào tạo (/item/doctypes/?tab=7)
+     */
+    field2: {
+        type: Schema.Types.ObjectId,
+        ref : "doctype"
+    },
     //_________Trình độ học vấn
     educationalBackground2: {
         type: Schema.Types.ObjectId,

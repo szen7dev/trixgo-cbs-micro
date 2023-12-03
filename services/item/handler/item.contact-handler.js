@@ -310,6 +310,8 @@ module.exports = {
                     parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, populate, isParent, type, genders
                 } = ctx.params;
 
+                // console.log(ctx.params)
+
                 if(!companyID) {
                     companyID = company._id;
                 }

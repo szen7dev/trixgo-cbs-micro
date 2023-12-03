@@ -44,11 +44,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID
     }) {
-        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID
+        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID
         // })
         return new Promise(async resolve => {
             try {
@@ -61,11 +61,7 @@ class Model extends BaseModel {
                 if(!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })
 
-                // if(!regexPhoneNumber(phone))
-                //     return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
-
                 let checkPhone = phone.replace(/\s/g, "").length
-                // console.log(checkPhone)
                 if(Number(checkPhone) < 10)
                     return resolve({ error: true, message: 'Số điện thoại phải trên 10 ký tự' })
 
@@ -101,25 +97,16 @@ class Model extends BaseModel {
                 if((phone && phone != "")){
                     conditionObj.$or.push({phone: phone.replace(/\s/g, "")})
                 }
-
                 // console.log(conditionObj)
 
-                // console.log(phone.replace(/\s/g, ""))
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
-                // console.log(infoContact)
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
                 let dataInsert = {
                     company: infoFunda.company,
                     funda: fundaID,
-                    inCRM: 1,
-                    inHuman: 0,
-                    inTimesheet: 0,
-                    inFinancial: 1,
-                    inDocument: 1,
                     type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 2, // Khách hàng
-                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
                     name,
                     description,
                     note,
@@ -414,14 +401,14 @@ class Model extends BaseModel {
      * Code:
      */
     update({
-        contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, fundaID, getVouchers, usedVouchers, saleID
     }){
         // console.log('================THAM BIẾN CẬP NHẬT DANH BẠ=================')
         // console.log({
-        //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         //     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID
@@ -470,11 +457,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
                 let dataUpdate = {
-                    inCRM: 1,
-                    inHuman: 0,
-                    inTimesheet: 0,
-                    inFinancial: 1,
-                    inDocument: 1,
                     modifyAt: new Date(),
                     userUpdate: authorID
                 }
@@ -486,10 +468,6 @@ class Model extends BaseModel {
 
                 if(type){
                     dataUpdate.type = type;
-                }
-
-                if(province){
-                    dataUpdate.province = province;
                 }
 
                 if(name){
