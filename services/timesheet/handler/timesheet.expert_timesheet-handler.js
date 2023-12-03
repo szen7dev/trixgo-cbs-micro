@@ -134,7 +134,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
+                // console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
 
                 if(!companyID){
                     companyID = company._id
