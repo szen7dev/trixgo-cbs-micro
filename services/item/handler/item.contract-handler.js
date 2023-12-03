@@ -759,7 +759,7 @@ module.exports = {
                 // console.log(dataImport)
 
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.importFromExcel({
-                    companyID: company._id, dataImport, userID, ctx
+                    companyID: company._id, dataImport, userID
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
