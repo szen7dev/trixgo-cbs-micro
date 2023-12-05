@@ -11,8 +11,6 @@ const { config }                = require('./config');
 // const { getExtension }          = require('../utils/utils');
 
 AWS.config.update({
-    accessKeyId: config.aws_access_key_id,
-    secretAccessKey: config.aws_secret_access_key,
     region: config.aws_region,
 })
 const s3Object = new AWS.S3();
