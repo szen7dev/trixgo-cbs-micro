@@ -8,6 +8,7 @@ const moment                            = require('moment');
 
 AWS.config.update({
     region: config.aws_region,
+    signatureVersion: 'v4',
 })
 let s3Object = new AWS.S3();
 
