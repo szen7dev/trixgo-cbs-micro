@@ -1,9 +1,6 @@
 "use strict";
 /**
  * CHỦ ĐỀ
- * 1-Công việc
- * 2-Checklist
- * 3-Bài viết
  */
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;

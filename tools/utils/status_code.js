@@ -23,15 +23,18 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
         }
 	}
 
+    const status = (resultAfterCallHandler && resultAfterCallHandler.status) ? resultAfterCallHandler.status : 400
+    const statusMessage = (resultAfterCallHandler && resultAfterCallHandler.statusMessage) ? resultAfterCallHandler.statusMessage : "success"
+
     if(Object.keys(error).length){
-        ctx.meta.$statusCode    = (resultAfterCallHandler && resultAfterCallHandler.status) ? resultAfterCallHandler.status : 200;
-        ctx.meta.$statusMessage = 'server_error';
+        ctx.meta.$statusCode    = status;
+        ctx.meta.$statusMessage = statusMessage;
 
 		return { error: true, status: ctx.meta.$statusCode, ...error };
     }
 
     ctx.meta.$statusCode    = 200;
-    ctx.meta.$statusMessage = resultAfterCallHandler?.message ?? 'success';
+    ctx.meta.$statusMessage = statusMessage;
 
 	return resultAfterCallHandler;
 };

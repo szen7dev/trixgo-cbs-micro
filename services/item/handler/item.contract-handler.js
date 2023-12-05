@@ -741,6 +741,34 @@ module.exports = {
     },
 
     /**
+     * Name: Import Excel
+     * Code: HiepNH
+     * Date: 2/12/2023
+     */
+    importFromExcel: {
+        auth: 'required',
+        params: {
+            // taskID    : { type: 'string', optional: true },
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { dataImport } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log(dataImport)
+
+                const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.importFromExcel({
+                    companyID: company._id, dataImport, userID
+                })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Dev: MinhVH
      * Func: Download Excel Contract
      * Date: 04/07/2022

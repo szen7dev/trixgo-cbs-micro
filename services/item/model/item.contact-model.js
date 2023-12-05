@@ -44,11 +44,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID  
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID
     }) {
-        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID  
+        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID
         // })
         return new Promise(async resolve => {
             try {
@@ -61,11 +61,7 @@ class Model extends BaseModel {
                 if(!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })
 
-                // if(!regexPhoneNumber(phone))
-                //     return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
-
                 let checkPhone = phone.replace(/\s/g, "").length
-                // console.log(checkPhone)
                 if(Number(checkPhone) < 10)
                     return resolve({ error: true, message: 'Số điện thoại phải trên 10 ký tự' })
 
@@ -101,25 +97,16 @@ class Model extends BaseModel {
                 if((phone && phone != "")){
                     conditionObj.$or.push({phone: phone.replace(/\s/g, "")})
                 }
-
                 // console.log(conditionObj)
 
-                // console.log(phone.replace(/\s/g, ""))
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
-                // console.log(infoContact)
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
                 let dataInsert = {
                     company: infoFunda.company,
                     funda: fundaID,
-                    inCRM: 1,
-                    inHuman: 0,
-                    inTimesheet: 0,
-                    inFinancial: 1,
-                    inDocument: 1,
                     type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 2, // Khách hàng
-                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
                     name,
                     description,
                     note,
@@ -329,10 +316,10 @@ class Model extends BaseModel {
                 // Cập nhật linkUser với tài khoản
                 if(linkUser && checkObjectIDs(linkUser)){
                     // Cập nhật vào user-coll
-                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser, 
-                        { 
+                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser,
+                        {
                             $addToSet: {contacts: infoAfterInsert._id }
-                        }, 
+                        },
                         { new: true })
                     // console.log(infoUser)
                 }
@@ -352,9 +339,9 @@ class Model extends BaseModel {
                      * 2-Còn thời hạn sử dụng
                      * 3-Voucher tặng Giá trị
                      */
-                    let infoVoucher1 = await FNB_VOUCHER_COLL.findOne({ 
-                        type: 3, 
-                        company: infoFunda.company, 
+                    let infoVoucher1 = await FNB_VOUCHER_COLL.findOne({
+                        type: 3,
+                        company: infoFunda.company,
                         expired: { $gt: new Date() },
                         salesoffAmount: { $gt: 0 },
                         salesoffRate: 0,
@@ -366,8 +353,8 @@ class Model extends BaseModel {
                     if(infoVoucher1){
                         let infoVoucherAfterUpdate1 = await FNB_ORDER_VOUCHER_MODEL.update({
                             companyID: infoFunda.company,
-                            userID: authorID, 
-                            voucherID: infoVoucher1._id, 
+                            userID: authorID,
+                            voucherID: infoVoucher1._id,
                             receivers:[infoAfterInsert._id]
                         })
                         // console.log(infoVoucherAfterUpdate1)
@@ -379,9 +366,9 @@ class Model extends BaseModel {
                      * 2-Còn thời hạn sử dụng
                      * 3-Voucher tặng Phần trăm
                      */
-                     let infoVoucher2 = await FNB_VOUCHER_COLL.findOne({ 
-                        type: 3, 
-                        company: infoFunda.company, 
+                     let infoVoucher2 = await FNB_VOUCHER_COLL.findOne({
+                        type: 3,
+                        company: infoFunda.company,
                         expired: { $gt: new Date() },
                         salesoffAmount: 0,
                         salesoffRate: { $gt: 0 },
@@ -393,8 +380,8 @@ class Model extends BaseModel {
                     if(infoVoucher2){
                         let infoVoucherAfterUpdate2 = await FNB_ORDER_VOUCHER_MODEL.update({
                             companyID: infoFunda.company,
-                            userID: authorID, 
-                            voucherID: infoVoucher2._id, 
+                            userID: authorID,
+                            voucherID: infoVoucher2._id,
                             receivers:[infoAfterInsert._id]
                         })
                         // console.log(infoVoucherAfterUpdate2)
@@ -414,17 +401,17 @@ class Model extends BaseModel {
      * Code:
      */
     update({
-        contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, fundaID, getVouchers, usedVouchers, saleID
     }){
         // console.log('================THAM BIẾN CẬP NHẬT DANH BẠ=================')
         // console.log({
-        //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+        //     contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         //     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         //     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-        //     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID 
+        //     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, fundaID
         // })
         return new Promise(async (resolve) => {
             try {
@@ -470,11 +457,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế/Điện thoại đã tồn tại' });
 
                 let dataUpdate = {
-                    inCRM: 1,
-                    inHuman: 0,
-                    inTimesheet: 0,
-                    inFinancial: 1,
-                    inDocument: 1,
                     modifyAt: new Date(),
                     userUpdate: authorID
                 }
@@ -486,10 +468,6 @@ class Model extends BaseModel {
 
                 if(type){
                     dataUpdate.type = type;
-                }
-
-                if(province){
-                    dataUpdate.province = province;
                 }
 
                 if(name){
@@ -741,11 +719,11 @@ class Model extends BaseModel {
                     if(infoFunda.area1){
                         dataUpdate.sector1 = infoFunda.area1
                     }
-    
+
                     if(infoFunda.area2){
                         dataUpdate.sector2 = infoFunda.area2
                     }
-    
+
                     if(infoFunda.area3){
                         dataUpdate.sector3 = infoFunda.area3
                     }
@@ -794,14 +772,14 @@ class Model extends BaseModel {
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cập nhật thất bại" })
-            
+
                 // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
                 if(linkUser && checkObjectIDs(linkUser)){
                     // Cập nhật vào user-coll
-                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser, 
-                        { 
+                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser,
+                        {
                             $addToSet: {contacts: contactID }
-                        }, 
+                        },
                         { new: true })
                     // console.log(infoUser)
                 }
@@ -854,7 +832,7 @@ class Model extends BaseModel {
                         if(populates && typeof populates === 'string'){
                             if(!IsJsonString(populates))
                                 return resolve({ error: true, message: 'Request params populates invalid', status: 400 })
-    
+
                             populates = JSON.parse(populates)
                         }else{
                             populates = {
@@ -867,7 +845,7 @@ class Model extends BaseModel {
                                             .populate(populates)
                         if(!infoAterGet)
                             return resolve({ error: true, message: "can't_get_info", status: 403 })
-    
+
                         return resolve({ error: false, data: infoAterGet, status: 200 })
                     }else{
                         return resolve({ error: true, message: "can't_get_info", status: 403 })
@@ -1070,7 +1048,7 @@ class Model extends BaseModel {
 
                 if(type){
                     conditionObj.type = Number(type)
-                }                
+                }
 
                 // Bộ lọc với nhiều lựa chọn
                 genders && genders.length                       && (conditionObj.gender         = { $in: genders });
@@ -1115,7 +1093,7 @@ class Model extends BaseModel {
                         { phone: regSearch }
                     ]
                 }
-                
+
                 /**
                  * Sử dụng trong export excel document (hoặc theo bộ lọc)
                  * Trả về điều kiện tra cứu
@@ -1273,7 +1251,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 30/7/2023
      */
-    getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) { 
+    getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) {
         // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             let duration = getTimeBetween(toDate, fromDate)
@@ -1340,7 +1318,7 @@ class Model extends BaseModel {
                                 quantity: { $sum: 1 },
                             }
                         }
-                        
+
                         // Theo tháng trong năm
                         if(optionTime && Number(optionTime) == 2){
                             if(!isNaN(year) && Number(year) >= 0){
@@ -1348,20 +1326,20 @@ class Model extends BaseModel {
                                     "year": Number(year),
                                 }
                             }
-    
+
                             conditionGroup = {
                                 _id: { month: "$month", year: "$year" },
                                 quantity: { $sum: 1 },
                             }
-                        }  
+                        }
 
                         // Theo giờ trong ngày
-                        if(optionTime && Number(optionTime) == 3){    
+                        if(optionTime && Number(optionTime) == 3){
                             conditionGroup = {
                                 _id: { hour: "$hour" },
                                 quantity: { $sum: 1 },
                             }
-                        } 
+                        }
                     }
 
                     /**
@@ -1521,7 +1499,7 @@ class Model extends BaseModel {
                     ]
                 }
                 // console.log(conditionObj)
-                
+
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
@@ -1635,7 +1613,7 @@ class Model extends BaseModel {
                     //     i++
                     // });
 
-                    
+
                     var i = 2;
                     listFunda?.forEach((item, index) => {
                         workbook.sheet("DanhMuc").row(i).cell(3).value(`${item._id}`);
@@ -1664,8 +1642,8 @@ class Model extends BaseModel {
     }
 
     /**
-     * Dev: HiepNH
-     * Func: importFromExcel
+     * Name: importFromExcel
+     * Code: HiepNH
      * Date: 8/12/2022
      */
     importFromExcel({ companyID, dataImport, userID, ctx }) {
@@ -1697,7 +1675,7 @@ class Model extends BaseModel {
                 //             type: 2
                 //         }
                 //         // console.log(dataInsert);
-                    
+
                 //         let infoAfterInsert = await this.insert(dataInsert);
                 //         if(infoAfterInsert.error){
                 //             errorNumber++;
@@ -1724,37 +1702,37 @@ class Model extends BaseModel {
                             // note: data?.__EMPTY_5,
                             // fundaID: data?.__EMPTY_11,//
                             // type: 2,//
-                            userCreate: userID, 
-                            contactID: data?.__EMPTY_11, 
-                            // type, 
-                            // number, 
-                            // status, 
-                            // certificateGrade, 
-                            // fromDate, 
-                            // toDate, 
-                            // workplace, 
-                            // reference, 
-                            // item, 
-                            // project, 
-                            // client, 
-                            name: 'Demo hồ sơ danh bạ', 
-                            // place, 
-                            // description, 
-                            // sign, 
-                            // note, 
-                            // store, 
-                            // field2, 
-                            // position2, 
-                            // certificateType, 
-                            // certificateName, 
-                            // educationalBackground2, 
-                            // contract, 
-                            // timeMobilize, 
-                            // factor, 
+                            userCreate: userID,
+                            contactID: data?.__EMPTY_11,
+                            // type,
+                            // number,
+                            // status,
+                            // certificateGrade,
+                            // fromDate,
+                            // toDate,
+                            // workplace,
+                            // reference,
+                            // item,
+                            // project,
+                            // client,
+                            name: 'Demo hồ sơ danh bạ',
+                            // place,
+                            // description,
+                            // sign,
+                            // note,
+                            // store,
+                            // field2,
+                            // position2,
+                            // certificateType,
+                            // certificateName,
+                            // educationalBackground2,
+                            // contract,
+                            // timeMobilize,
+                            // factor,
                             ctx
                         }
                         // console.log(dataInsert);
-                    
+
                         let infoAfterInsert = await CONTACT_DOCUMENT_MODEL.insert(dataInsert);
                         if(infoAfterInsert.error){
                             errorNumber++;
@@ -1846,7 +1824,7 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
-            
+
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
                 .then(async workbook => {

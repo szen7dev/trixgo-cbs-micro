@@ -373,7 +373,7 @@ class Model extends BaseModel {
                 } else{
                     limit = +Number(limit);
                 }
-                
+
                 let conditionObj = {};
                 let sortBy   = { date: 1, _id: 1 };
 
@@ -401,7 +401,7 @@ class Model extends BaseModel {
                             {members: { $in: [userID] }}
                         ]
                     }
-                    
+
                     // Chi tiết chấm công của userID
                     else if(option == 1){
                         conditionObj.parent = { $exists: true, $ne: null }
@@ -409,8 +409,8 @@ class Model extends BaseModel {
                         if(month & year){
                             conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                         }
-                    }	
-                    
+                    }
+
                     // Chi tiết chấm công của Công ty
                     else if(option == 2){
                         conditionObj.parent = { $exists: true, $ne: null }
@@ -418,7 +418,7 @@ class Model extends BaseModel {
                         if(month & year){
                             conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                         }
-                    }	
+                    }
                 }
                 // console.log(conditionObj)
 
@@ -500,7 +500,7 @@ class Model extends BaseModel {
                 if(!option){
                     let conditionObj = {
                         company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null }  
+                        parent: { $exists: true, $ne: null }
                     }
 
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -528,7 +528,7 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-                    
+
                     return resolve({ error: false, data: listData })
                 }
 
@@ -537,7 +537,7 @@ class Model extends BaseModel {
 
                     let conditionObj = {
                         assignee: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }  
+                        parent: { $exists: true, $ne: null }
                     }
 
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -603,7 +603,7 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, numberUser, numberToday })
                 }
-                
+
                 // Danh sách user chấm công/chưa chấm ngày nay
                 else if(option == 3){
                     let start = new Date()

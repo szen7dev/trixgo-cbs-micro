@@ -134,6 +134,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
 
                 if(!companyID){
                     companyID = company._id
@@ -146,7 +147,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates, option, month, year, assigneeID
+                        parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID
                     });
                 }
 

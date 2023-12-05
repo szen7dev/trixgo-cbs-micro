@@ -366,21 +366,11 @@ class Model extends BaseModel {
                 }
 
                 let listEnvReceiveNoti = objEnv[env];
-                console.log({ listEnvReceiveNoti, env })
+                // console.log({ listEnvReceiveNoti, env })
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - kiểm tra valid từ các input
-                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(users))
                     return resolve({ error: true, message: "users_invalid" });
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: convert type + update name (ví dụ: string -> number)
-                 *  3.2: operation database
-                 */
                 let infoAfterCall = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH}`, {
 					users
 				});
@@ -474,7 +464,7 @@ class Model extends BaseModel {
                                 dataForMobilePushCBS.ios_badgeType = 'SetTo';
                                 dataForMobilePushCBS.ios_badgeCount = objDataForSend.amountNoti;
                             }
-                            console.info('MOBILE PUSH (CBS)')
+                            // console.info('MOBILE PUSH (CBS)')
 
                             if(dataForMobilePushCBS.include_player_ids.length) {
                                 dataForMobilePushCBS.include_player_ids = [...new Set(dataForMobilePushCBS.include_player_ids)];
@@ -497,7 +487,7 @@ class Model extends BaseModel {
                                 dataForMobilePushTeaser.ios_badgeType = 'SetTo';
                                 dataForMobilePushTeaser.ios_badgeCount = objDataForSend.amountNoti;
                             }
-                            console.info('MOBILE PUSH (TEASER)')
+                            // console.info('MOBILE PUSH (TEASER)')
 
                             if(dataForMobilePushTeaser.include_player_ids.length) {
                                 dataForMobilePushTeaser.include_player_ids = [...new Set(dataForMobilePushTeaser.include_player_ids)];
@@ -520,7 +510,7 @@ class Model extends BaseModel {
                                 dataForMobilePushFNB.ios_badgeType = 'SetTo';
                                 dataForMobilePushFNB.ios_badgeCount = objDataForSend.amountNoti;
                             }
-                            console.info('MOBILE PUSH (FNB)', dataForMobilePushFNB.include_player_ids);
+                            // console.info('MOBILE PUSH (FNB)', dataForMobilePushFNB.include_player_ids);
 
                             if(dataForMobilePushFNB.include_player_ids.length) {
                                 dataForMobilePushFNB.include_player_ids = [...new Set(dataForMobilePushFNB.include_player_ids)];
@@ -544,7 +534,7 @@ class Model extends BaseModel {
                                 web_url,
                                 include_player_ids: listDeviceFromWebBrowserWith_CBS.map(item => item.oneSignalID)
                             }
-                            console.info('WEB PUSH = CBS')
+                            // console.info('WEB PUSH = CBS')
                             // console.log({ include_player_ids: dataForWebPushCBS.include_player_ids })
                             sendNotificationviaOneSignal(dataForWebPushCBS)
 
@@ -559,7 +549,7 @@ class Model extends BaseModel {
                                 web_url,
                                 include_player_ids: listDeviceFromWebBrowserWith_TEASER.map(item => item.oneSignalID)
                             }
-                            console.info('WEB PUSH = TEASER')
+                            // console.info('WEB PUSH = TEASER')
                             // console.log({ include_player_ids: dataForWebPushTeaser.include_player_ids })
                             sendNotificationviaOneSignal(dataForWebPushTeaser)
                         }
