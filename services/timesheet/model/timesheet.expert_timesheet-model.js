@@ -50,11 +50,20 @@ class Model extends BaseModel {
                 }
 
                 if(checkObjectIDs(parentID)){
-                    let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID);
+                    let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID)
+                    .populate({
+                        path: 'assignee',
+                        select: '_id department position',
+                    })
 
                     dataInsert.company = infoParent.company;
                     dataInsert.parent = parentID
                     dataInsert.assignee = infoParent.assignee
+
+                    if(infoParent.assignee){
+                        dataInsert.project = infoParent.assignee.department;
+                        dataInsert.position = infoParent.assignee.position;
+                    }
                 }
 
                 if(assigneeID){
