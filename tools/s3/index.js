@@ -12,7 +12,6 @@ const { config }                = require('./config');
 
 AWS.config.update({
     region: config.aws_region,
-    signatureVersion: 'v4',
 })
 const s3Object = new AWS.S3();
 

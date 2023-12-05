@@ -59,10 +59,11 @@ class Model extends BaseModel {
 
         AWS.config.update({
             region: config.aws_region,
-            signatureVersion: 'v4',
         })
 
-        this.s3Object = new AWS.S3();
+        this.s3Object = new AWS.S3({
+          signatureVersion: 'v2',
+        });
 
         this.s3Client = s3.createClient({
             maxAsyncS3: 20,     // this is the default

@@ -72,9 +72,10 @@ const config = {
 
 AWS.config.update({
     region: config.aws_region,
-    signatureVersion: 'v4',
 })
-const s3Object = new AWS.S3();
+const s3Object = new AWS.S3({
+  signatureVersion: 'v2',
+});
 
 const s3Client = s3.createClient({
     maxAsyncS3: 20,     // this is the default
