@@ -58,8 +58,6 @@ class Model extends BaseModel {
         super(PCM_FILE__COLL);
 
         AWS.config.update({
-            accessKeyId : config.aws_access_key_id,
-            secretAccessKey : config.aws_secret_access_key,
             region: config.aws_region,
         })
 
