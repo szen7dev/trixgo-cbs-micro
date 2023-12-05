@@ -55,6 +55,9 @@ class Model extends BaseModel {
                     dataInsert.company = infoParent.company;
                     dataInsert.parent = parentID
                     dataInsert.assignee = infoParent.assignee
+
+                    dataInsert.project = infoParent.department;
+                    dataInsert.position = infoParent.position;
                 }
 
                 if(assigneeID){
