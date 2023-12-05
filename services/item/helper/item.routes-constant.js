@@ -37,7 +37,8 @@ const CF_ROUTINGS_ITEM = {
     CONTRACT_GET_RETAIN_PRODUCE                : `${BASE_ROUTE}${CONTRACT}/get-retain-produce`,
     CONTRACT_GET_INVENTORY                     : `${BASE_ROUTE}${CONTRACT}/get-inventory`,
     CONTRACT_STATISTICAL_STATUS_BY_ONTIME_ON_BUDGET: `${BASE_ROUTE}${CONTRACT}/statistical-status-by-ontime-onbudget`,
-    CONTRACT_EXPORT                             : `${BASE_ROUTE}${CONTRACT}/export`,
+    CONTRACT_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${CONTRACT}/import-from-excel`,
+    CONTRACT_EXPORT                            : `${BASE_ROUTE}${CONTRACT}/export`,
 
     // ================================DOCTYPE==========================================//
     DOCTYPES                                   : `${BASE_ROUTE}${DOCTYPE}`,

@@ -5,20 +5,8 @@ const Schema                = require('mongoose').Schema;
 
 /**
  * DANH BẠ (Nhân viên, Khách hàng, Đối tác)
- * https://insider.tophr.vn/4-loai-bao-cao-nhan-su-quan-trong-hr-can-biet-co-vi-du/
- * 1. Báo cáo về biến động nhân sự
- * Báo cáo biến động theo thâm niên
- * Báo cáo biến động theo thời gian
- * Báo cáo biến động theo vị trí công việc
- * 2. Báo cáo về chấp hành qui định về công, ca
- * 3. Báo cáo hiệu quả sử dụng lao động
- * 4. Báo cáo hiệu quả tuyển dụng
  */
 module.exports  = DATABASE_MIDDLEWARE("contact", {
-    //_________Điện thoại (***)
-    phone : String,
-    //_________Email
-    email : String,
     //_________Công ty   
     company: {
         type: Schema.Types.ObjectId,
@@ -33,27 +21,12 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default: 1 
     },
     /**
-     * KHAI BÁO SỬ DỤNG
-     */
-    //_________Sử dụng CRM (Customer relationship management)
-    inCRM: { type: Number, default: 1 },
-    //_________Sử dụng Nhân sự
-    inHuman: { type: Number, default: 1 },
-    //_________Sử dụng Chấm công
-    inTimesheet: { type: Number, default: 1 },
-    //_________Sử dụng Tài chính
-    inFinancial: { type: Number, default: 1 },
-    //_________Sử dụng Văn bản
-    inDocument: { type: Number, default: 1 },
-    /**
      * THÔNG TIN CHUNG/CĂN BẢN
      */
     //_________Phân loại (1-Nhân viên/2-Khách hàng/3-Nhà cung cấp)
     type: { type: Number, default: 1 },
     //_________Phân loại nhân sự (1-Nhân viên, 2-Cộng tác viên, 3-Chuyên gia)
     subtype: { type: Number, default: 1 },
-    //_________Trạng thái giao dịch (Chưa GD-1, Đang GD-2, Ngừng GD-3)
-    status: { type: Number, default: 1 },
     //_________Thuộc phòng ban bộ phận
     department: {
         type: Schema.Types.ObjectId,
@@ -74,6 +47,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
+    //_________Trạng thái giao dịch (Chưa GD-1, Đang GD-2, Ngừng GD-3)
+    status: { type: Number, default: 1 },
     //_________Tên/họ và tên
     name: String,
     //_________Tên tra cứu
@@ -84,6 +59,10 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     description: String,
     //_________Ghi chú
     note: String,
+    //_________Điện thoại (***)
+    phone : String,
+    //_________Email
+    email : String,
     //_________Giới tính(1-nam/ 0 - nữ)
     gender: { type: Number, default: 1 },
     //_________Ngày sinh
@@ -105,33 +84,31 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Nơi sinh
+    //_________Khu vực Nơi sinh
     area1: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Nguyên quán
+    //_________Khu vực Nguyên quán
     area2: {
         type: Schema.Types.ObjectId,
         ref : "area"
-    },
-    //_________Sale/CSKH
-    sale: {
-        type: Schema.Types.ObjectId,
-        ref: "user"
     },
     //_________Link với nhân viên sale
     linkSale: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    //_________Sale/CSKH
+    sale: {
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },
     //_________Link với tài khoản
     linkUser: {
         type: Schema.Types.ObjectId,
         ref: "user"
     },
-    //_________Quê quán (bỏ không dùng)
-    province: { type: Number, default: 1 },
     //_________Tài khoản ngân hàng (tên ngân hàng, số tài khoản, người hưởng)
     bankAccount: String,
     //_________Thông tin gia đình (Tên, quan hệ, điện thoại, email, địa chỉ)
@@ -143,6 +120,10 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
      */
     //_________Trạng thái thực ảo của nhân sự
     realStatus:{ type: Number, default: 1 },
+    //_________Người ký xác nhận vào (Người ký nhận)
+    signerIn: String,
+    //_________Người ký xác nhận chấm dứt (Người ký xa thải)
+    signerOut: String,
     //_________Ngày bắt đầu làm việc
     workStartDate: { type: Date, default: null },
     //_________Ngày nghỉ việc
@@ -152,7 +133,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     },
-    //_________Loại hợp đồng lao động()
+    //_________Loại hợp đồng lao động
     contractType:{
         type: Schema.Types.ObjectId,
         ref: 'doctype'
@@ -167,6 +148,10 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     contractExpire: { type: Date, default: null },
     //_________Ngày bổ nhiệm/miễn nhiệm
     appointDate: { type: Date, default: null },
+    //_________Hệ số lương
+    sallaryFactor: { type: Number, default: 1 },
+    //_________Phụ cấp
+    sallarySubFactor: { type: Number, default: 0 },
     //_________Ngày thay đổi lương gần nhất
     changeSallaryDate: { type: Date, default: null },
     /**
@@ -180,35 +165,31 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     insuranceSign: String, 
     //_________Ngày nộp sổ (Ngày nộp bảo hiểm)
     insuranceDate: { type: Date, default: null },
-    //_________Hệ số lương
-    sallaryFactor: { type: Number, default: 1 },
-    //_________Phụ cấp
-    sallarySubFactor: { type: Number, default: 0 },
     //_________Lương căn bản (Mức đóng BH)
     sallaryBasic: { type: Number, default: 0 },
     /**
      * HỒ SƠ CHI TIẾT
      */
-    //_________Nơi làm việc hiện tại
-    workplace:[{
-        type: Schema.Types.ObjectId,
-        ref: 'department'
-    }],
-    //_________Trình độ học vấn
-    educationalBackground:[{
-        type: Schema.Types.ObjectId,
-        ref: 'doctype'
-    }],
-    //_________Chuyên ngành đào tạo
-    major:[{
-        type: Schema.Types.ObjectId,
-        ref: 'doctype'
-    }],
-    //_________Chi tiết hồ sơ tài liệu liên đới
-    documents: [{
-        type: Schema.Types.ObjectId,
-        ref: 'contact_document'
-    }],
+    // //_________Nơi làm việc hiện tại
+    // workplace:[{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'department'
+    // }],
+    // //_________Trình độ học vấn
+    // educationalBackground:[{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'doctype'
+    // }],
+    // //_________Chuyên ngành đào tạo
+    // major:[{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'doctype'
+    // }],
+    // //_________Chi tiết hồ sơ tài liệu liên đới
+    // documents: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'contact_document'
+    // }],
     //_________Phân loại thâm niên
     seniority:{
         type: Schema.Types.ObjectId,
@@ -229,13 +210,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: String,
         default: 'contact_default.png'
     },
-    //_________Người ký xác nhận vào (Người ký nhận)
-    signerIn: String,
-    /**
-    * _______Người ký xác nhận chấm dứt (Người ký xa thải)
-    */
-    signerOut: String,
-    
     // Số lượng lịch sử làm việc tai các đơn vị (type = 1)
     amountWorkHistory:{
         type: Number,
@@ -267,7 +241,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default : 0
     },
     /**
-     * FNB
+     * PHỤC VỤ ỨNG DỤNG FNB
      */
     //_________Phân loại chiến dịch
     campaignType: {

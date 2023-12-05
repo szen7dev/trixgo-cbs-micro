@@ -96,6 +96,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTRACT_GET_RETAIN_PRODUCE]			: ITEM__CONTRACT_HANDLER.getRetainProduce,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_INVENTORY]				: ITEM__CONTRACT_HANDLER.getInventory,
 		[CF_ACTIONS_ITEM.CONTRACT_STATISTICAL_STATUS_BY_ONTIME_ON_BUDGET]: ITEM__CONTRACT_HANDLER.statisticalStatusByOntimeOnbudget,
+		[CF_ACTIONS_ITEM.CONTRACT_IMPORT_FROM_EXCEL]			: ITEM__CONTRACT_HANDLER.importFromExcel,
 		[CF_ACTIONS_ITEM.CONTRACT_EXPORT]						: ITEM__CONTRACT_HANDLER.exportContract,
 
 		//==========================================  DOCTYPE  ===================================

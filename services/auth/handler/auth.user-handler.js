@@ -480,9 +480,7 @@ module.exports = {
         async handler(ctx) {
             await this.validateEntity(ctx.params);
             let { key }        = ctx.params;
-            /**
-             * TODO cấu hình 1 function như list (mongoose adapter)
-             */
+
             let listUsers = await AUTH__USER_MODEL.searchWithFullText({ fullnameKey: key })
             return listUsers;
         }
@@ -503,16 +501,22 @@ module.exports = {
             positionID      : { type: "string" },
             companyID       : { type: "string" },
             phone           : { type: "string", optional: true },
+            birthDay           : { type: "string", optional: true },
             storageUse      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { email, fullname, level, departmentID, positionID, companyID, phone, storageUse } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+                const { email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse } = ctx.params;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 const resultAfterCallHandler = await AUTH__USER_MODEL.insert({
-                    email, fullname, level, departmentID, positionID, companyID, phone, storageUse
-                });
+                    userID, email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse
+                })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -724,10 +728,6 @@ module.exports = {
     },
 
     /**
-     * KHU VỰC ĐỆ VIẾT THEO CÁCH MỚI
-     */
-
-    /**
 	 * Dev: Depv 
 	 * Func: getList and getInfo user
 	 */
@@ -774,6 +774,34 @@ module.exports = {
             } catch (error) {
                 console.log({ error })
                 return { error: true, message: error.message };
+            }
+        }
+    },
+
+     /**
+     * Name: Import Excel
+     * Code: HiepNH
+     * Date: 2/12/2023
+     */
+    importFromExcel: {
+        auth: 'required',
+        params: {
+            // taskID    : { type: 'string', optional: true },
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { dataImport } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log(dataImport)
+
+                const resultAfterCallHandler = await AUTH__USER_MODEL.importFromExcel({
+                    companyID: company._id, dataImport, userID
+                })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
