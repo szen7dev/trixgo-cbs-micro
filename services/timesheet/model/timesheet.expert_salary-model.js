@@ -738,7 +738,46 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData1 })
                 }
   
+                // Tổng hợp toàn bộ của 1 nhân sự
+                else if(option == 6){
 
+                    let conditionObj = {
+                        human: ObjectID(assigneeID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
+                    let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                salary: { $sum:"$salary" },
+                                reward: { $sum:"$reward" },
+                                punishment: { $sum:"$punishment" },
+                                advance: { $sum:"$advance" },
+                                remaining: { $sum:"$remaining" },
+                                paid: { $sum:"$paid" },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
+
+                    return resolve({ error: false, data: listData })
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
