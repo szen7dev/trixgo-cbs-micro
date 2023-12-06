@@ -134,12 +134,10 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID }) {
+        // console.log({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID })
         const that = this
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataUpdate = { userUpdate: userID };
 
                 if (!checkObjectIDs(cashBookID))
@@ -256,6 +254,16 @@ class Model extends BaseModel {
                     await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
                 }
 
+                // Cập nhật lại trạng thái các phần tử con
+                if(!infoAfterUpdate.parent){
+                    await FIN__CASH_BOOK_COLL.updateMany(
+                        { 
+                            parent: ObjectID(cashBookID),
+                        },
+                        { $set: { "active" : Number(active)} }
+                    );
+                }
+
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -265,7 +273,7 @@ class Model extends BaseModel {
 
     /**
      * Name  : Cập nhật giá trị khi chi tiết thay đổi 
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date  : 14/4/2022
      */
     updateValue({
@@ -273,34 +281,13 @@ class Model extends BaseModel {
     }){
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * BA
-                 * 1-Cập nhật kế hoạch
-                 * 2-Cập nhật thực tế
-                 */
                 if(!checkObjectIDs(cashBookID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
-
                 let infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
-                // console.log(infoCashBook)
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataUpdate = { userUpdate: userID };
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                 let listData = await FIN__CASH_BOOK_COLL.aggregate([
+                let listData = await FIN__CASH_BOOK_COLL.aggregate([
                     {
                         $match: {
                             parent: ObjectID(cashBookID),
@@ -335,12 +322,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-     * Name: Remove
-     * Author: Hiepnh
-     * Date: 9/4/2022
-     */
 
     /**
      * Name: Get info 
@@ -552,7 +533,7 @@ class Model extends BaseModel {
 
     /*
      * Name: Gom nhóm theo thuộc tính 
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
@@ -766,7 +747,7 @@ class Model extends BaseModel {
 
     /**
      * Name: Download Template Excel
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date: 25/7/2023
      */
     downloadTemplateExcel({ option, companyID, parentID, year, userID }) {
@@ -1391,7 +1372,7 @@ class Model extends BaseModel {
 
     /**
      * Name: Import Excel
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date: 25/7/2023
      */
     importFromExcel({ option, companyID, parentID, dataImport, userID, ctx }) {

@@ -104,6 +104,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DOCTYPE_UPDATE] 						: ITEM__DOCTYPE_HANDLER.update,
 		[CF_ACTIONS_ITEM.DOCTYPE_REMOVE] 						: ITEM__DOCTYPE_HANDLER.remove,
 		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ITEM.DOCTYPE_IMPORT_FROM_EXCEL]				: ITEM__DOCTYPE_HANDLER.importFromExcel,
 
 		//==========================================  CONTACT  ===================================
 		[CF_ACTIONS_ITEM.CONTACT_INSERT] 						: ITEM__CONTACT_HANDLER.insert,
