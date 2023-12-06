@@ -11,8 +11,8 @@ const ITEM__CONTACT_MODEL                       = require('../model/item.contact
 module.exports = {
 
     /**
-     * Dev: Depv
-     * Func: Thêm contact
+     * Code:  Depv
+     * Name Thêm contact
      */
     insert: {
         auth: "required",
@@ -94,8 +94,8 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv
-     * Func: Cập nhật contact
+     * Code:  Depv
+     * Name Cập nhật contact
      */
     update: {
         auth: "required",
@@ -193,8 +193,8 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
-	 * Func: Danh sách contact
+	 * Code:  Depv
+	 * Name Danh sách contact
 	 */
     getInfoAndGetList: {
         // auth: "required",
@@ -371,8 +371,8 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
-	 * Func: Danh sách danh bạ của hệ thống
+	 * Code:  Depv
+	 * Name Danh sách danh bạ của hệ thống
 	 */
     getListOfSystem: {
         auth: "required",
@@ -437,8 +437,8 @@ module.exports = {
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Download Template Excel
+     * Code:  HiepNH
+     * Name Download Template Excel
      * Date: 8/12/2022
      */
     downloadTemplateImportExcel: {
@@ -463,8 +463,8 @@ module.exports = {
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Download Template Excel
+     * Code:  HiepNH
+     * Name Download Template Excel
      * Date: 9/12/2022
      */
     importFromExcel: {
@@ -491,8 +491,8 @@ module.exports = {
     },
 
     /**
-     * Dev: MinhVH
-     * Func: Download Excel Contact
+     * Code:  MinhVH
+     * Name Download Excel Contact
      * Date: 21/06/2022
      */
     exportExcel: {

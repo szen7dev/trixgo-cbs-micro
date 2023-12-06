@@ -151,4 +151,31 @@ module.exports = {
         }
     },
 
+    /**
+     * Code:  HiepNH
+     * Name Download Template Excel
+     * Date: 9/12/2022
+     */
+    importFromExcel: {
+        auth: 'required',
+        params: {
+            type    : { type: 'number' },
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { type, dataImport } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log(dataImport)
+
+                const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.importFromExcel({
+                    companyID: company._id, dataImport, userID, type
+                })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }

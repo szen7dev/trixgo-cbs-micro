@@ -27,43 +27,18 @@ class Model extends BaseModel {
     insert({ type, name, description, sign, companyID, parent, level, userID, salesChannel }) {
         return new Promise(async resolve => {
             try {
-                if(!name)
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
-
-                let dataInsert = { name, type, description, sign, company: companyID, userCreate: userID };
-                if(salesChannel){
-                    dataInsert.salesChannel = salesChannel;
-                }
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!type || !DOCTYPE_TYPE.includes(+type)) {
+                if(!name || !type || !DOCTYPE_TYPE.includes(+type) || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
                     return resolve({
 						error: true,
-						message: "Tham số type không hợp lệ",
+						message: "Tham số name|type|userID|companyID không hợp lệ",
 						keyError: "params_type_invalid",
 						status: 400
 					})
                 }
 
-                if(!checkObjectIDs([userID])) {
-                    return resolve({
-						error: true,
-						message: "Tham số userID không hợp lệ",
-						keyError: "params_userID_invalid",
-						status: 400
-					})
-                }
-
-                if(!checkObjectIDs([companyID])) {
-                    return resolve({
-						error: true,
-						message: "Tham số companyID không hợp lệ",
-						keyError: "params_companyID_invalid",
-						status: 400
-					})
+                let dataInsert = { name, type, description, sign, company: companyID, userCreate: userID };
+                if(salesChannel){
+                    dataInsert.salesChannel = salesChannel;
                 }
 
                 if(parent) {
@@ -266,18 +241,11 @@ class Model extends BaseModel {
 				} else{
 					limit = +limit;
 				}
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let conditionObj = {};
                 let sortBy = {};
                 let keys = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -289,12 +257,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
 
                 // TRẠNG THÁI CÔNG VIỆC
                 //____________Công ty
@@ -383,6 +345,49 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: importFromExcel
+     * Code: HiepNH
+     * Date: 8/12/2022
+     */
+    importFromExcel({ companyID, dataImport, userID, type }) {
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+
+                for (const data of dataImportJSON) {
+                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                    if(index > 0 && index < 200){
+                        let dataInsert = {
+                            type, 
+                            name: data?.__EMPTY, 
+                            description:  data?.__EMPTY_1, 
+                            companyID, 
+                            userID
+                        }
+
+                        let infoAfterInsert = await this.insert(dataInsert);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+
+                    }
+                    index ++;
+                }
+
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "Import failed" });
+
+                return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
