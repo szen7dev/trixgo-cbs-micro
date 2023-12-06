@@ -64,8 +64,6 @@ const OBJECT_KEYS = [
 ];
 
 const config = {
-    aws_access_key_id       : process.env.AWS_ACCESS_KEY || "AKIA5JR5UVVOKKWCDAN3",
-    aws_secret_access_key   : process.env.AWS_SECRET_KEY || "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",
     aws_region              : process.env.AWS_REGION     || "ap-southeast-1",
     bucket                  : process.env.AWS_BUCKET     || "trx-main", // trx-demo-003
     bucketDemo              : process.env.AWS_BUCKET_DEMO || "trx-demo-003",
@@ -73,8 +71,6 @@ const config = {
 }
 
 AWS.config.update({
-    accessKeyId : config.aws_access_key_id,
-    secretAccessKey : config.aws_secret_access_key,
     region: config.aws_region,
 })
 const s3Object = new AWS.S3({
@@ -88,8 +84,6 @@ const s3Client = s3.createClient({
     multipartUploadThreshold: 20971520, // this is the default (20 MB)
     multipartUploadSize: 15728640, // this is the default (15 MB)
     s3Options: {
-        accessKeyId : config.aws_access_key_id,
-        secretAccessKey : config.aws_secret_access_key,
         region: config.aws_region,
       // endpoint: 's3.yourdomain.com',
       // sslEnabled: false
