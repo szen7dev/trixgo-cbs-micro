@@ -20,7 +20,9 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  * COLLECTIONS
  */
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../database/timesheet.expert_salary-coll')
-const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll')
+const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
+const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll');
+// const { forInRight } = require('lodash');
 
 class Model extends BaseModel {
 
@@ -33,7 +35,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userCreate, companyID, projectID, parentID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid }) {
+    insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid }) {
         return new Promise(async resolve => {
             try {
 
@@ -136,9 +138,10 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid  }){
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, companyID  }){
         // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
         return new Promise(async (resolve) => {
+            const that = this
             try {
                 let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
                 // console.log(infoSalaryID)
@@ -256,9 +259,138 @@ class Model extends BaseModel {
                     });
                 }
 
+                // Cập nhật giá trị vào Bảng lương
+                if(infoAfterUpdate.parent){
+                    await that.updateValue( {expertSalaryID: infoAfterUpdate.parent, userID })
+                }else{
+                    // Cập nhật bảng chấm công vào bảng lương
+                    await that.updateValueTimesheet( {expertSalaryID, userID, companyID })
+
+                    // Cập nhật bảng lương
+                    await that.updateValue( {expertSalaryID, userID })
+                }
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    // Cập nhật chi tiết lương vào bảng lương
+    updateValue({ 
+        expertSalaryID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+                let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(expertSalaryID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            salary: { $sum:"$salary" },
+                            reward: { $sum:"$reward" },
+                            punishment: { $sum:"$punishment" },
+                            advance: { $sum:"$advance" },
+                            remaining: { $sum:"$remaining" },
+                            paid: { $sum:"$paid" },
+                        }
+                    },
+                ])
+                
+                if(listData[0]){
+                    dataUpdate.salary = Number(listData[0].salary)
+                    dataUpdate.reward = Number(listData[0].reward)
+                    dataUpdate.punishment = Number(listData[0].punishment)
+                    dataUpdate.advance = Number(listData[0].advance)
+                    dataUpdate.remaining = Number(listData[0].remaining)
+                    dataUpdate.paid = Number(listData[0].paid)
+                }
+                
+                let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_task", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    // Cập nhật bảng chấm công vào bảng lương theo từng tháng
+    updateValueTimesheet({ 
+        expertSalaryID, userID, companyID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
+                if(!infoSalary)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+
+                let month = Number(infoSalary.date.getMonth()) + 1
+                let year = infoSalary.date.getFullYear()
+                // console.log({month,year})
+
+                // Tổng hợp từ Bảng chấm công
+                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null }
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            assignee: 1,
+                            hours: 1,
+                            amount: 1
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee' },
+                            quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData1)
+
+                for(const item of listData1){
+                    // let infoUserInSalary =  await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                    let infoUserInSalary =  await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
+                        company: companyID, 
+                        human: item._id.assignee,
+                        $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+
+                    }, 
+                        {
+                            salary: Number(item.amount)
+                        }, { new: true }
+                    );
+
+                    // console.log(infoUserInSalary)
+                }
+
+                return resolve({ error: false, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -738,7 +870,46 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData1 })
                 }
   
+                // Tổng hợp toàn bộ của 1 nhân sự
+                else if(option == 6){
 
+                    let conditionObj = {
+                        human: ObjectID(assigneeID),
+                        parent: { $exists: true, $ne: null }  
+                    }
+
+                    let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                salary: 1,
+                                reward: 1,
+                                punishment: 1,
+                                advance: 1,
+                                remaining: 1,
+                                paid: 1,
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                salary: { $sum:"$salary" },
+                                reward: { $sum:"$reward" },
+                                punishment: { $sum:"$punishment" },
+                                advance: { $sum:"$advance" },
+                                remaining: { $sum:"$remaining" },
+                                paid: { $sum:"$paid" },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
+
+                    return resolve({ error: false, data: listData })
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

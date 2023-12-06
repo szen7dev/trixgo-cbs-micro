@@ -42,6 +42,7 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================DOCTYPE==========================================//
     DOCTYPES                                   : `${BASE_ROUTE}${DOCTYPE}`,
+    DOCTYPES_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${DOCTYPE}/import-from-excel`,
 
     // ================================CONTACT==========================================//
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,

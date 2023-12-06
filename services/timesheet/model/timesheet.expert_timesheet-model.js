@@ -809,6 +809,40 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData1 })
                 }
 
+                // Góm nhóm theo ngân sách
+                else if(option == 7){
+                    
+                    // Tổng hợp theo Sản lượng
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: {
+                                work: { $exists: true, $ne: null },
+                                company: ObjectID(companyID),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { work: "$work" },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    let  conditionPopulate = {
+                        path: '_id.work',
+                        select: '_id name unit unitPrice',
+                        model: 'budget_work'
+                    }
+
+                    if(listData.length){
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData, conditionPopulate)
+                    }
+
+                    // console.log(listData)
+
+                    return resolve({ error: false, data: listData })
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
