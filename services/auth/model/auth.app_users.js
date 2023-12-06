@@ -222,9 +222,6 @@ class Model extends BaseModel {
         limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let today = new Date();
                 let conditionObj = {
                     endTime: { $gte: today }
@@ -233,11 +230,6 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
                 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(limit > 20){
                     limit = 20
                 }
@@ -258,11 +250,6 @@ class Model extends BaseModel {
                     }
                 }
                
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -323,9 +310,6 @@ class Model extends BaseModel {
         select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let today = new Date();
                 let conditionObj = {
                     app: appID, 
