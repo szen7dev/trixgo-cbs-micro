@@ -74,12 +74,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid } = ctx.params;
+                let { expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid } = ctx.params;
+                // console.log({ expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid
+                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, companyID: company._id
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
