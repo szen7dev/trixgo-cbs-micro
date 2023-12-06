@@ -10,12 +10,12 @@ exports.config = {
     signedUrlExpireSeconds  : 60000
 }
 
-console.log({
-    aws_access_key_id       : "AKIA5JR5UVVOJKHYZZFO",
-    aws_secret_access_key   : "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",
-    aws_region              : process.env.AWS_REGION     || "ap-southeast-1",
-    bucket                  : process.env.AWS_BUCKET     || "trx-main",
-    bucketDemo              : process.env.AWS_BUCKET_DEMO || "trx-demo-003",
-    bucketPath              : process.env.AWS_BUCKET_PATH || 'root',
-    signedUrlExpireSeconds  : 60000
-})
+// console.log({
+//     aws_access_key_id       : "AKIA5JR5UVVOJKHYZZFO",
+//     aws_secret_access_key   : "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",
+//     aws_region              : process.env.AWS_REGION     || "ap-southeast-1",
+//     bucket                  : process.env.AWS_BUCKET     || "trx-main",
+//     bucketDemo              : process.env.AWS_BUCKET_DEMO || "trx-demo-003",
+//     bucketPath              : process.env.AWS_BUCKET_PATH || 'root',
+//     signedUrlExpireSeconds  : 60000
+// })
