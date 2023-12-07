@@ -17,27 +17,27 @@ let s3Object = new S3({
 
 let render_link_upload_file_s3 = async ({ fileName, type, typeUpload, pathS3 }) => {
     try {
-        let key = `/${process.env.AWS_BUCKET_PATH}${pathS3}/${fileName}`;
+        let key = `${process.env.AWS_BUCKET_PATH}${pathS3}/${fileName}`;
 
         if (typeUpload == "user") {
-            key = `/files/db/users/${fileName}`;
+            key = `files/db/users/${fileName}`;
         }
 
         if (typeUpload == "contact") {
-            key = `/files/db/contacts/${fileName}`;
+            key = `files/db/contacts/${fileName}`;
         }
 
         if (typeUpload == "project") {
-            key = `/files/db/projects/${fileName}`;
+            key = `files/db/projects/${fileName}`;
         }
 
         if (typeUpload == "company") {
-            key = `/files/db/companys/${fileName}`;
+            key = `files/db/companys/${fileName}`;
         }
 
         let signedUrl = await getSignedUrl(s3Object, new PutObjectCommand({
             Bucket: config.bucket,
-            Key: fileName,
+            Key: key,
             ACL: "public-read",
             ContentType: type,
         }), {
