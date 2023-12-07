@@ -372,7 +372,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      */
     getList({
-        parentID, userID,
+        sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID }) {
         return new Promise(async (resolve) => {
             // console.log({ parentID, userID, keyword, limit, lastestID, select, populates, option, month, year })
@@ -384,7 +384,13 @@ class Model extends BaseModel {
                 }
 
                 let conditionObj = {};
-                let sortBy   = { date: 1, _id: 1 };
+                let nextCursor	= null;
+                let sortBy      = null;
+                let keys	 = ['createAt__1', '_id__1'];
+
+                if(sortOption == 1){
+                    keys	 = ['date__-1', '_id__-1'];
+                }
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -444,7 +450,7 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let keys = ['createAt__1', '_id__1'];
+					// let keys = ['createAt__1', '_id__1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 
 					if(!dataPagingAndSort || dataPagingAndSort.error)
@@ -452,7 +458,10 @@ class Model extends BaseModel {
 
                     conditionObj = dataPagingAndSort.data.find;
 					sortBy       = dataPagingAndSort.data.sort;
-				}
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
 
                 let infoDataAfterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
                     .select(select)
@@ -464,7 +473,6 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;

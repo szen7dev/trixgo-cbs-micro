@@ -117,6 +117,7 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
+            sortOption        : { type: "string", optional: true },
             expertTimesheetID : { type: "string", optional: true },
             companyID         : { type: "string", optional: true },
             projectID         : { type: "string", optional: true },
@@ -132,7 +133,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID } = ctx.params;
+                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, sortOption } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
 
@@ -147,7 +148,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID
+                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, sortOption
                     });
                 }
 

@@ -446,7 +446,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        parentID, userID,
+        sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -457,7 +457,13 @@ class Model extends BaseModel {
                 }
 
                 let conditionObj = {};
-                let sortBy   = { date: 1, _id: 1 };
+                let nextCursor	= null;
+                let sortBy      = null;
+                let keys	 = ['createAt__1', '_id__1'];
+
+                if(sortOption == 1){
+                    keys	 = ['date__-1', '_id__-1'];
+                }
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -489,14 +495,12 @@ class Model extends BaseModel {
                 }
                 let conditionObjOrg = { ...conditionObj };
 
-
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TIMESHEET__EXPERT_SALARY_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let keys	 = ['createAt__1', '_id__1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 
 					if(!dataPagingAndSort || dataPagingAndSort.error)
@@ -504,9 +508,11 @@ class Model extends BaseModel {
 
                     conditionObj = dataPagingAndSort.data.find;
 					sortBy       = dataPagingAndSort.data.sort;
-				}
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
 
-                // console.log({ limit, sortBy, select })
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
@@ -514,12 +520,9 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                    // console.log(infoDataAfterGet)
-
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
