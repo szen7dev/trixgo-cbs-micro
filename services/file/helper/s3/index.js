@@ -1,43 +1,47 @@
-let { config }                          = require('../../../../tools/s3/config');
-let { checkObjectIDs, getExtension }    = require('../../../../tools/utils/utils');
-let { nonAccentVietnamese }             = require('../../../../tools/utils/string_utils');
-let { APP_KEYS }                        = require('../../../../tools/keys');
-let uuidv4                              = require('uuid').v4;
-let AWS                                 = require('aws-sdk');
-const moment                            = require('moment');
+let { config } = require('../../../../tools/s3/config');
+let { checkObjectIDs, getExtension } = require('../../../../tools/utils/utils');
+let { nonAccentVietnamese } = require('../../../../tools/utils/string_utils');
+let { APP_KEYS } = require('../../../../tools/keys');
+let uuidv4 = require('uuid').v4;
+let AWS = require('aws-sdk');
 
-AWS.config.update({
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const { Upload } = require('@aws-sdk/lib-storage');
+const { PutObjectCommand, S3 } = require('@aws-sdk/client-s3');
+
+const moment = require('moment');
+
+let s3Object = new S3({
     region: config.aws_region,
-    signatureVersion: 'v4',
-})
-let s3Object = new AWS.S3();
+});
 
-let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
+let render_link_upload_file_s3 = async ({ fileName, type, typeUpload, pathS3 }) => {
     try {
-        let bucket = `${config.bucket}/${process.env.AWS_BUCKET_PATH}${pathS3}`;
+        let key = `/${process.env.AWS_BUCKET_PATH}${pathS3}/${fileName}`;
 
-        if(typeUpload == "user"){
-            bucket = `${config.bucket}/files/db/users`;
+        if (typeUpload == "user") {
+            key = `/files/db/users/${fileName}`;
         }
 
-        if(typeUpload == "contact"){
-            bucket = `${config.bucket}/files/db/contacts`;
+        if (typeUpload == "contact") {
+            key = `/files/db/contacts/${fileName}`;
         }
 
-        if(typeUpload == "project"){
-            bucket = `${config.bucket}/files/db/projects`;
+        if (typeUpload == "project") {
+            key = `/files/db/projects/${fileName}`;
         }
 
-        if(typeUpload == "company"){
-            bucket = `${config.bucket}/files/db/companys`;
+        if (typeUpload == "company") {
+            key = `/files/db/companys/${fileName}`;
         }
 
-        let signedUrl = s3Object.getSignedUrl('putObject', {
-            Bucket: bucket,
+        let signedUrl = await getSignedUrl(s3Object, new PutObjectCommand({
+            Bucket: config.bucket,
             Key: fileName,
-            Expires: config.signedUrlExpireSeconds,
             ACL: "public-read",
             ContentType: type,
+        }), {
+            expiresIn: config.signedUrlExpireSeconds,
         });
 
         return signedUrl;
@@ -49,11 +53,11 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
 function render_link_upload_s3(fileName, type, typeUpload, pathS3) {
     return new Promise(async resolve => {
         try {
-            if(!fileName)
+            if (!fileName)
                 return resolve({ error: true, message: "params_invalid" });
 
             let result = await render_link_upload_file_s3({ fileName, type, typeUpload, pathS3 });
-            if(result.error) {
+            if (result.error) {
                 return resolve({ error: true, message: result.message });
             }
 
@@ -65,35 +69,33 @@ function render_link_upload_s3(fileName, type, typeUpload, pathS3) {
 }
 
 const uploadFile = (pathFile, key) => {
-    return new Promise( resolve => {
+    return new Promise(async resolve => {
         try {
             // Read content from the file
             // const fileContent = fs.readFileSync(pathFile);
 
             const parseBase64ToBuffer = Buffer.from(pathFile.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-            const bucket = `${config.bucket}/root`;
+            const bucket = `/root`;
 
             // Setting up S3 upload parameters
             const params = {
                 ContentEncoding: 'base64',
                 ContentType: 'image/jpeg',
-                ACL:'public-read',
+                ACL: 'public-read',
                 Bucket: bucket,
                 Key: key,
                 Body: parseBase64ToBuffer
             };
-
-            // Uploading files to the bucket
-            const result = s3Object.upload(params, function(err) {
-                if (err) throw err;
-            });
-
-            return resolve({ error: false, data: result });
-        } catch (error) {
-            return resolve({ error: true, message: error.message });
+            const data = await new Upload({
+                client: s3Object,
+                params,
+            }).done();
+            return resolve({ error: false, data });
+        } catch (err) {
+            console.error("Error uploading file:", err);
+            return resolve({ error: true, message: err.message });
         }
-    })
-
+    });
 };
 
 const getPathByApp = (params) => {
@@ -111,28 +113,28 @@ const getPathByApp = (params) => {
         APP_KEYS.FNB,
     ];
     const PROJECTS = [APP_KEYS.PCM_PLAN_TASK, APP_KEYS.DOCUMENT];
-    const GROUPS   = [APP_KEYS.PCM_PLAN_TASK];
+    const GROUPS = [APP_KEYS.PCM_PLAN_TASK];
     const PACKAGES = [APP_KEYS.DOCUMENT];
     const CONVERSATIONS = [APP_KEYS.CHATTING];
 
     // Validate tham số theo app
-    if(COMPANIES.includes(appID) && (!companyID || !checkObjectIDs([companyID]))) {
+    if (COMPANIES.includes(appID) && (!companyID || !checkObjectIDs([companyID]))) {
         return { error: true, message: 'Tham số companyID không hợp lệ', keyError: 'params_companyID_invalid', status: 400 };
     }
 
-    if(PROJECTS.includes(appID) && (!projectID || !checkObjectIDs([projectID]))) {
+    if (PROJECTS.includes(appID) && (!projectID || !checkObjectIDs([projectID]))) {
         return { error: true, message: 'Tham số projectID không hợp lệ', keyError: 'params_projectID_invalid', status: 400 };
     }
 
-    if(GROUPS.includes(appID) && (!groupID || !checkObjectIDs([groupID]))) {
+    if (GROUPS.includes(appID) && (!groupID || !checkObjectIDs([groupID]))) {
         return { error: true, message: 'Tham số groupID không hợp lệ', keyError: 'params_groupID_invalid', status: 400 };
     }
 
-    if(PACKAGES.includes(appID) && (!packageID || !checkObjectIDs([packageID]))) {
+    if (PACKAGES.includes(appID) && (!packageID || !checkObjectIDs([packageID]))) {
         return { error: true, message: 'Tham số packageID không hợp lệ', keyError: 'params_packageID_invalid', status: 400 };
     }
 
-    if(CONVERSATIONS.includes(appID) && (!conversationID || !checkObjectIDs([conversationID]))) {
+    if (CONVERSATIONS.includes(appID) && (!conversationID || !checkObjectIDs([conversationID]))) {
         return { error: true, message: 'Tham số conversationID không hợp lệ', keyError: 'params_conversationID_invalid', status: 400 };
     }
 
@@ -183,11 +185,11 @@ const getPathByType = (params) => {
     const PROJECTS = ['in-project'];
 
     // Validate tham số theo app
-    if(COMPANIES.includes(typeUpload) && (!companyID || !checkObjectIDs([companyID]))) {
+    if (COMPANIES.includes(typeUpload) && (!companyID || !checkObjectIDs([companyID]))) {
         return { error: true, message: 'Tham số companyID không hợp lệ', keyError: 'params_companyID_invalid', status: 400 };
     }
 
-    if(PROJECTS.includes(typeUpload) && (!projectID || !checkObjectIDs([projectID]))) {
+    if (PROJECTS.includes(typeUpload) && (!projectID || !checkObjectIDs([projectID]))) {
         return { error: true, message: 'Tham số projectID không hợp lệ', keyError: 'params_projectID_invalid', status: 400 };
     }
 
@@ -231,8 +233,8 @@ const getPathS3 = ({
             break;
     }
 
-    let extension   = getExtension(fileName);
-    let pathS3      = '';
+    let extension = getExtension(fileName);
+    let pathS3 = '';
     let newFileName = '';
 
     // console.log({
@@ -249,11 +251,11 @@ const getPathS3 = ({
     // console.log({currentDate})
     // console.log({infoUser})
 
-    if(['in-project'].includes(typeUpload)) {
+    if (['in-project'].includes(typeUpload)) {
         const result = getPathByType({
             typeUpload, companyID, projectID
         })
-        if(result.error) return result;
+        if (result.error) return result;
 
         pathS3 = result.pathS3;
         newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}.${extension}`;
@@ -261,7 +263,7 @@ const getPathS3 = ({
         // newFileName = newFileName.trim()
         // console.log({newFileName})
     } else {
-        if(!appID || !checkObjectIDs([appID])) {
+        if (!appID || !checkObjectIDs([appID])) {
             return {
                 error: true,
                 message: 'Tham số AppID không hợp lệ',
@@ -273,7 +275,7 @@ const getPathS3 = ({
         const result = getPathByApp({
             appID, companyID, projectID, groupID, packageID, conversationID, otherIDs
         })
-        if(result.error) return result;
+        if (result.error) return result;
 
         pathS3 = result.pathS3;
         newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${result.appName}.${extension}`
@@ -283,12 +285,12 @@ const getPathS3 = ({
     }
 
     let userName = ''
-    if(infoUser.fullname.includes('-')){
+    if (infoUser.fullname.includes('-')) {
         userName = infoUser.fullname.slice(0, infoUser.fullname.indexOf('-'))
-    }else{
+    } else {
         userName = infoUser.fullname
     }
-     
+
     // userName = userName.split(" ").pop()
     // userName = nonAccentVietnamese(userName)
     // let orgFileName = fileName.slice(0, fileName.indexOf('.'))
@@ -310,5 +312,5 @@ const getPathS3 = ({
 }
 
 exports.GENERATE_LINK_S3 = render_link_upload_s3;
-exports.UPLOAD_FILE_S3   = uploadFile;
-exports.GET_PATH_S3      = getPathS3;
+exports.UPLOAD_FILE_S3 = uploadFile;
+exports.GET_PATH_S3 = getPathS3;

@@ -1,5 +1,4 @@
-"use strict";
-
+"use strict";;
 /**
  * External
  */
@@ -7,7 +6,9 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment');
 const uuidv4                            = require('uuid').v4;
 const fs                                = require('fs');
-const AWS                               = require('aws-sdk');
+
+const { S3 } = require('@aws-sdk/client-s3');
+
 const s3                                = require('@auth0/s3');
 const compressing                       = require('compressing');
 const rimraf                            = require('rimraf');
@@ -57,12 +58,9 @@ class Model extends BaseModel {
     constructor() {
         super(PCM_FILE__COLL);
 
-        AWS.config.update({
+        this.s3Object = new S3({
             region: config.aws_region,
-            signatureVersion: 'v4',
-        })
-
-        this.s3Object = new AWS.S3();
+        });
 
         this.s3Client = s3.createClient({
             maxAsyncS3: 20,     // this is the default
@@ -1051,7 +1049,7 @@ class Model extends BaseModel {
                                 key: `${destFolderKey}/${folderChildName}/`
                             });
 
-                            return !error && await PromisePool
+                            return !error && (await PromisePool
                                 .for(data.tasks)
                                 .withConcurrency(10)
                                 .handleError((err) => console.log({ error: true, message: err.message, status: 500 }))
@@ -1064,7 +1062,7 @@ class Model extends BaseModel {
                                         bucket: bucketNameDes,
                                         key: `${destFolderKey}/${folderChildName}/${taskName}/`
                                     });
-                                });
+                                }));
                         });
                 } else {
 
@@ -1105,7 +1103,7 @@ class Model extends BaseModel {
                 console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
-        })
+        });
     }
 
     createFolderTasksByGroup({ groupID, key, bucket }) {

@@ -2,7 +2,10 @@ const fs                        = require('fs');
 const stream                    = require('stream');
 const path                      = require('path');
 const uuidv4                    = require('uuid').v4;
-const AWS                       = require('aws-sdk');
+
+const { Upload } = require('@aws-sdk/lib-storage');
+const { S3 } = require('@aws-sdk/client-s3');
+
 const s3                        = require('@auth0/s3');
 const archiver                  = require('archiver');
 const PromisePool               = require('@supercharge/promise-pool');
@@ -10,11 +13,9 @@ const { config }                = require('./config');
 // const { nonAccentVietnamese }   = require('../utils/string_utils');
 // const { getExtension }          = require('../utils/utils');
 
-AWS.config.update({
+const s3Object = new S3({
     region: config.aws_region,
-    signatureVersion: 'v4',
-})
-const s3Object = new AWS.S3();
+});
 
 const s3Client = s3.createClient({
     maxAsyncS3: 20,     // this is the default
@@ -34,27 +35,21 @@ const s3Client = s3.createClient({
  * Use uploadFileS3V2 instead
  */
 const uploadFileS3 = (pathFile, key) => {
-    return new Promise(async resolve => {
-        const fileContent = fs.readFileSync(pathFile);
-        const bucket = `${process.env.AWS_BUCKET_DEMO}/files/temporary_uploads`;
+    const fileContent = fs.readFileSync(pathFile);
+    const bucket = `${process.env.AWS_BUCKET_DEMO}/files/temporary_uploads`;
 
-        // Setting up S3 upload parameters
-        const params = {
-            Bucket: bucket,
-            ACL: 'public-read',
-            Key: key, // File name you want to save as in S3
-            Body: fileContent,
-            // Expires: config.signedUrlExpireSeconds,
-        };
-
-        // Uploading files to the bucket
-        s3Object.upload(params, function(err, data) {
-            if (err) throw err;
-
-            console.log(`File uploaded successfully. ${data.Location}`);
-            resolve(data);
-        });
-    })
+    // Setting up S3 upload parameters
+    const params = {
+        Bucket: bucket,
+        ACL: 'public-read',
+        Key: key, // File name you want to save as in S3
+        Body: fileContent,
+        // Expires: config.signedUrlExpireSeconds,
+    };
+    return new Upload({
+        client: s3Object,
+        params,
+    }).done();
 }
 
 /**
@@ -90,25 +85,19 @@ const downloadFileS3 = async (pathDownload, fileName, filePath, fileNameLocal) =
 }
 
 const uploadFileS3V2 = (uploadParams) => {
-    return new Promise(resolve => {
-        const bucketName = `${config.bucketDemo}`;
-        const key = `files/temporary_uploads`;
+    const bucketName = `${config.bucketDemo}`;
+    const key = `files/temporary_uploads`;
 
-        const params = {
-            Bucket: bucketName,
-            Key: key,
-            ACL: 'public-read',
-            ...uploadParams,
-        };
-
-        // Uploading files to the bucket
-        s3Object.upload(params, function(err, data) {
-            if (err) return resolve(err);
-
-            console.log(`File uploaded successfully. ${data.Location}`);
-            resolve(data);
-        });
-    })
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+        ACL: 'public-read',
+        ...uploadParams,
+    };
+    return new Upload({
+        client: s3Object,
+        params,
+    }).done();
 }
 
 const downloadFileS3V2 = (params) => {
@@ -142,13 +131,16 @@ const downloadFileS3V2 = (params) => {
                     ACL: 'public-read',
                     ContentType: 'application/zip',
                 };
-
-                s3Object.upload(params, function(err, data) {
-                    if (err) throw err;
-
+                try {
+                    const data = await new Upload({
+                        client: s3Object,
+                        params,
+                    }).done();
                     console.log(`File uploaded successfully. ${data.Location}`);
                     resolve(data.Location);
-                });
+                } catch (err) {
+                    console.error("Error uploading file:", err);
+                }
 
                 // Pipe the archive to the output stream
                 archive.pipe(passThrough);
@@ -162,7 +154,7 @@ const downloadFileS3V2 = (params) => {
                             Bucket: bucketName,
                             Key: object.Key
                         };
-                        const response = await s3Object.getObject(getObjectParams).promise();
+                        const response = await s3Object.getObject(getObjectParams);
                         archive.append(response.Body, { name: object.Key });
                     })
 
@@ -239,13 +231,17 @@ const zipFileToS3 = async (files, key) => {
             ACL: 'public-read',
             ContentType: 'application/zip',
         };
-
-        s3Object.upload(params, function(err, data) {
-            if (err) throw err;
-
+        try {
+            const data = await new Upload({
+                client: s3Object,
+                params,
+            }).done();
             console.log(`File uploaded successfully. ${data.Location}`);
             resolve(data);
-        });
+        } catch (err) {
+            console.error("Error uploading file:", err);
+            reject(err);
+        }
 
         archiveStream.pipe(passThrough);
 
@@ -263,12 +259,12 @@ const zipFileToS3 = async (files, key) => {
                   Key: `${filePath}/${fileName}`,
                 };
 
-                const response = await s3Object.getObject(params).promise();
+                const response = await s3Object.getObject(params);
                 archiveStream.append(response.Body, { name: path.basename(file.path) })
             });
 
         archiveStream.finalize();
-    })
+    });
 }
 
 module.exports = {

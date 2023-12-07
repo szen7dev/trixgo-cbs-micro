@@ -5,7 +5,10 @@ const stream = require('stream');
 // const path = require('node:path');
 const path = require('path');
 const uuidv4  = require('uuid').v4;
-const AWS   = require('aws-sdk');
+
+const { Upload } = require("@aws-sdk/lib-storage");
+const { S3 } = require("@aws-sdk/client-s3");
+
 const s3 = require('@auth0/s3');
 const archiver = require('archiver');
 const PromisePool = require('@supercharge/promise-pool');
@@ -70,11 +73,9 @@ const config = {
     signedUrlExpireSeconds  : 60000
 }
 
-AWS.config.update({
+const s3Object = new S3({
     region: config.aws_region,
-    signatureVersion: 'v4',
-})
-const s3Object = new AWS.S3();
+});
 
 const s3Client = s3.createClient({
     maxAsyncS3: 20,     // this is the default
@@ -134,11 +135,16 @@ const uploadFileS3 = async () => {
       ContentType: 'application/zip',
   };
 
-  s3Object.upload(params, function(err, data) {
-      if (err) throw err;
-
-      console.log(`File uploaded successfully. ${data.Location}`);
-  });
+  try {
+    const data = await new Upload({
+        client: s3Object,
+        params,
+    }).done();
+    console.log(`File uploaded successfully. ${data.Location}`);
+  } catch (err) {
+    console.error("Error uploading file:", err);
+    throw err;
+  }
 
   archiveStream.pipe(passThrough);
 
@@ -155,7 +161,7 @@ const uploadFileS3 = async () => {
         Key: `${filePath}/${fileName}`,
       };
 
-      const response = await s3Object.getObject(params).promise();
+      const response = await s3Object.getObject(params);
       console.log({ response, params, basename: path.basename(file.path) })
 
       archiveStream.append(response.Body, { name: path.basename(file.path) })
