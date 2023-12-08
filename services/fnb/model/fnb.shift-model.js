@@ -14,8 +14,8 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
 
-/**s
- * import inter-coll, exter-coll
+/**
+ * Import inter-coll, exter-coll
  */
 const USER_COLL                                = require('../../auth/database/auth.user-coll');
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
@@ -39,7 +39,7 @@ const {
  } = require('../helper/fnb.keys-constant')
 
 /**
- * import inter-model, exter-model
+ * Import inter-model, exter-model
  */
 const FNB_GENERAL_BOOK_MODEL                  = require('./fnb.general_book-model').MODEL;
 
@@ -437,6 +437,7 @@ class Model extends BaseModel {
 
                 let conditionObj = { company: ObjectID(companyID) }
                 let sortBy;
+                let nextCursor	= null;
                 let keys	 = ['createAt__-1', '_id__-1'];
 
                 // Gom nhóm theo đơn vị cơ sở
@@ -529,7 +530,6 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]?._id;

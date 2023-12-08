@@ -279,6 +279,10 @@ class Model extends BaseModel {
                     // Cập nhật bảng chấm công vào bảng lương
                     await that.updateValueTimesheet( {expertSalaryID, userID, companyID })
 
+                    // Cập nhật ca làm việc vào bảng lương
+
+                    // Cập nhật KPI vào bảng lương
+
                     // Cập nhật bảng lương
                     await that.updateValue( {expertSalaryID, userID })
                 }
@@ -347,6 +351,77 @@ class Model extends BaseModel {
 
     // Cập nhật bảng chấm công vào bảng lương theo từng tháng
     updateValueTimesheet({ 
+        expertSalaryID, userID, companyID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
+                if(!infoSalary)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+
+                let month = Number(infoSalary.date.getMonth()) + 1
+                let year = infoSalary.date.getFullYear()
+                // console.log({month,year})
+
+                // Tổng hợp từ Bảng chấm công
+                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null }
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            assignee: 1,
+                            hours: 1,
+                            amount: 1
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee' },
+                            quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData1)
+
+                for(const item of listData1){
+                    // let infoUserInSalary =  await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                    let infoUserInSalary =  await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
+                        company: companyID, 
+                        human: item._id.assignee,
+                        $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+
+                    }, 
+                        {
+                            salary: Number(item.amount)
+                        }, { new: true }
+                    );
+
+                    // console.log(infoUserInSalary)
+                }
+
+                return resolve({ error: false, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+     // Cập nhật KPI vào bảng lương theo từng tháng
+     updateValueKpi({ 
         expertSalaryID, userID, companyID
     }){ 
         return new Promise(async (resolve) => {
