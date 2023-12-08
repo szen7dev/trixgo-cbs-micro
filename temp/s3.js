@@ -125,12 +125,13 @@ const uploadFileS3 = async () => {
 
   const passThrough = new stream.PassThrough();
 
-  const bucket = `${config.bucketDemo}/files/temp`;
+  const bucket = config.bucketDemo;
+  const key = `files/temp/${uuidv4()}-${Date.now()}__demo.zip`
 
   const params = {
       Bucket: bucket,
       ACL: 'public-read',
-      Key: `${uuidv4()}-${Date.now()}__demo.zip`, // File name you want to save as in S3
+      Key: key, // File name you want to save as in S3
       Body: passThrough,
       ContentType: 'application/zip',
   };

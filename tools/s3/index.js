@@ -34,9 +34,10 @@ const s3Client = s3.createClient({
  * @deprecated
  * Use uploadFileS3V2 instead
  */
-const uploadFileS3 = (pathFile, key) => {
+const uploadFileS3 = (pathFile, fileName) => {
     const fileContent = fs.readFileSync(pathFile);
-    const bucket = `${process.env.AWS_BUCKET_DEMO}/files/temporary_uploads`;
+    const bucket = process.env.AWS_BUCKET_DEMO;
+    const key = `files/temporary_uploads/${fileName}`;
 
     // Setting up S3 upload parameters
     const params = {
