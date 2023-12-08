@@ -122,6 +122,7 @@ module.exports = {
             companyID         : { type: "string", optional: true },
             projectID         : { type: "string", optional: true },
             parentID          : { type: "string", optional: true },
+            workID            : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -133,7 +134,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, sortOption } = ctx.params;
+                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, sortOption, workID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
 
@@ -148,7 +149,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, sortOption
+                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, sortOption, workID
                     });
                 }
 

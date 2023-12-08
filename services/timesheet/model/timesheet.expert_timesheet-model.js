@@ -372,7 +372,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      */
     getList({
-        sortOption, parentID, userID,
+        sortOption, parentID, workID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID }) {
         return new Promise(async (resolve) => {
             // console.log({ parentID, userID, keyword, limit, lastestID, select, populates, option, month, year })
@@ -434,8 +434,12 @@ class Model extends BaseModel {
                             conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                         }
                     }
+
+                    // Chi tiết chấm công theo workID
+                    else if(option == 3){
+                        conditionObj.work = workID;
+                    }
                 }
-                // console.log(conditionObj)
 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -450,7 +454,6 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					// let keys = ['createAt__1', '_id__1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 
 					if(!dataPagingAndSort || dataPagingAndSort.error)
