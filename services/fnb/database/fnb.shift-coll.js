@@ -33,8 +33,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default: 0
     },
-    //_________Lương thử việc/giờ
-    trialStaffSalary: {
+    //_________Lương chính thức/giờ
+    officialStaffSalar: {
         type: Number,
         default: 0
     },
@@ -43,13 +43,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
-    //_________Lương chính thức/giờ
-    officialStaffSalar: {
+    //_________Số giờ làm việc của ca phụ
+    subWorkingHours: {
         type: Number,
         default: 0
     },
-    //_________Số giờ làm việc của ca phụ
-    subWorkingHours: {
+    //_________Lương thử việc/giờ
+    trialStaffSalary: {
         type: Number,
         default: 0
     },
