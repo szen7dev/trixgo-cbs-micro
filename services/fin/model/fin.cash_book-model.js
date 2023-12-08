@@ -1034,14 +1034,10 @@ class Model extends BaseModel {
                         let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID).select('name status date note salary')
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: parentID})
                         .populate({
-                            path: 'human',
-                            select:'fullname',
-                            // populate: {
-                            //     path: 'human',
-                            //     select:'fullname',
-                            // }
+                            path: 'human project position',
+                            select:'fullname name',
                         })
-                        .select('name status date note salary reward punishment advance remaining paid')
+                        .select('name status date note salary revenueBonus reward mealAllowance punishment insurance pitax advance remaining paid')
                         // console.log(listData)
 
                          // Modify the workbook.
@@ -1055,15 +1051,19 @@ class Model extends BaseModel {
                              listData.forEach((item, index) =>{
                                 workbook.sheet("Report4").row(i).cell(1).value(Number(index + 1))
                                 workbook.sheet("Report4").row(i).cell(2).value(item?.human?.fullname)
+                                workbook.sheet("Report4").row(i).cell(3).value(item?.project?.name)
                                  workbook.sheet("Report4").row(i).cell(4).value(Number(item.salary))
-                                 workbook.sheet("Report4").row(i).cell(5).value(Number(item.reward))
-                                 workbook.sheet("Report4").row(i).cell(6).value(Number(item.punishment))
-                                 workbook.sheet("Report4").row(i).cell(7).value(Number(item.salary + item.reward - item.punishment))
-                                 workbook.sheet("Report4").row(i).cell(8).value(Number(item.advance))
-                                 workbook.sheet("Report4").row(i).cell(9).value(Number(item.salary + item.reward - item.punishment - item.advance))
-                                 workbook.sheet("Report4").row(i).cell(10).value(Number(item.remaining))
-                                 workbook.sheet("Report4").row(i).cell(11).value(Number(item.paid))
-                                 workbook.sheet("Report4").row(i).cell(12).value(item?.note)
+                                 workbook.sheet("Report4").row(i).cell(5).value(Number(item.revenueBonus))
+                                 workbook.sheet("Report4").row(i).cell(6).value(Number(item.reward))
+                                 workbook.sheet("Report4").row(i).cell(7).value(Number(item.mealAllowance))
+                                 workbook.sheet("Report4").row(i).cell(8).value(Number(item.punishment))
+                                 workbook.sheet("Report4").row(i).cell(9).value(Number(item.insurance))
+                                 workbook.sheet("Report4").row(i).cell(10).value(Number(item.pitax))
+                                 workbook.sheet("Report4").row(i).cell(11).value(Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance - item.punishment - item.insurance - item.pitax))
+                                 workbook.sheet("Report4").row(i).cell(12).value(Number(item.advance))
+                                 workbook.sheet("Report4").row(i).cell(13).value(Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance - item.punishment - item.insurance - item.pitax - item.advance))
+                                 workbook.sheet("Report4").row(i).cell(15).value(Number(item.paid))
+                                 workbook.sheet("Report4").row(i).cell(16).value(item?.note)
                                  i++
                              })
                        
