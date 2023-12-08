@@ -138,8 +138,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, companyID  }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid })
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, revenueBonus, mealAllowance, insurance, pitax, companyID  }){
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, revenueBonus, mealAllowance, insurance, pitax })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -193,14 +193,27 @@ class Model extends BaseModel {
                 if(!isNaN(reward) && Number(infoSalaryID.reward) != Number(reward)){
                     dataUpdate.reward = reward;
                 }
+                if(!isNaN(revenueBonus) && Number(infoSalaryID.revenueBonus) != Number(revenueBonus)){
+                    dataUpdate.revenueBonus = revenueBonus;
+                }
                 if(!isNaN(punishment) && Number(infoSalaryID.punishment) != Number(punishment)){
                     dataUpdate.punishment = punishment;
                 }
                 if(!isNaN(advance) && Number(infoSalaryID.advance) != Number(advance)){
                     dataUpdate.advance = advance;
                 }
-                if(!isNaN(salary) || !isNaN(reward) || !isNaN(punishment) || !isNaN(advance)){
-                    dataUpdate.remaining = Number(salary) + Number(reward) - Number(punishment) - Number(advance)
+                if(!isNaN(mealAllowance) && Number(infoSalaryID.mealAllowance) != Number(mealAllowance)){
+                    dataUpdate.mealAllowance = mealAllowance;
+                }
+                if(!isNaN(insurance) && Number(infoSalaryID.insurance) != Number(insurance)){
+                    dataUpdate.insurance = insurance;
+                }
+                if(!isNaN(pitax) && Number(infoSalaryID.pitax) != Number(pitax)){
+                    dataUpdate.pitax = pitax;
+                }
+
+                if(!isNaN(salary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance)){
+                    dataUpdate.remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(advance)
                 }
 
                 if(!isNaN(paid) && Number(infoSalaryID.paid) != Number(paid)){
@@ -300,6 +313,10 @@ class Model extends BaseModel {
                             advance: { $sum:"$advance" },
                             remaining: { $sum:"$remaining" },
                             paid: { $sum:"$paid" },
+                            revenueBonus: { $sum:"$revenueBonus" },
+                            mealAllowance: { $sum:"$mealAllowance" },
+                            insurance: { $sum:"$insurance" },
+                            pitax: { $sum:"$pitax" },
                         }
                     },
                 ])
@@ -311,6 +328,10 @@ class Model extends BaseModel {
                     dataUpdate.advance = Number(listData[0].advance)
                     dataUpdate.remaining = Number(listData[0].remaining)
                     dataUpdate.paid = Number(listData[0].paid)
+                    dataUpdate.revenueBonus = Number(listData[0].revenueBonus)
+                    dataUpdate.mealAllowance = Number(listData[0].mealAllowance)
+                    dataUpdate.insurance = Number(listData[0].insurance)
+                    dataUpdate.pitax = Number(listData[0].pitax)
                 }
                 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true });
@@ -585,6 +606,10 @@ class Model extends BaseModel {
                                 advance: 1,
                                 remaining: 1,
                                 paid: 1,
+                                revenueBonus: 1,
+                                mealAllowance: 1,
+                                insurance: 1,
+                                pitax: 1,
                             }
                         },
                         {
@@ -595,7 +620,7 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { month: '$month' },
-                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                salary: { $sum: { $subtract: [ { $add: ["$salary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax"]} ] } },
                                 paid: { $sum: {$add: [ "$paid", "$advance" ]} },
                             }
                         },
@@ -627,6 +652,10 @@ class Model extends BaseModel {
                                 advance: 1,
                                 remaining: 1,
                                 paid: 1,
+                                revenueBonus: 1,
+                                mealAllowance: 1,
+                                insurance: 1,
+                                pitax: 1,
                             }
                         },
                         {
@@ -640,7 +669,8 @@ class Model extends BaseModel {
                                 // examTotal: { $sum:"$examTotal" },
                                 // totalAmount: { $sum: { $multiply: [ "$salary", "$reward" ] } },
                                 // totalAmount2: { $sum: { $add: [ "$salary", "$reward" ] } },
-                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                // salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                salary: { $sum: { $subtract: [ { $add: ["$salary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax"]} ] } },
                                 // advance: { $sum: "$advance" },
                                 // salary: { $sum:"$salary" },
                                 paid: { $sum: {$add: [ "$paid", "$advance" ]} },
@@ -674,6 +704,10 @@ class Model extends BaseModel {
                                 advance: 1,
                                 remaining: 1,
                                 paid: 1,
+                                revenueBonus: 1,
+                                mealAllowance: 1,
+                                insurance: 1,
+                                pitax: 1,
                             }
                         },
                         {
@@ -691,6 +725,10 @@ class Model extends BaseModel {
                                 advance: { $sum:"$advance" },
                                 remaining: { $sum:"$remaining" },
                                 paid: { $sum:"$paid" },
+                                revenueBonus: { $sum:"$revenueBonus" },
+                                mealAllowance: { $sum:"$mealAllowance" },
+                                insurance: { $sum:"$insurance" },
+                                pitax: { $sum:"$pitax" },
                             }
                         },
                     ])
@@ -731,6 +769,10 @@ class Model extends BaseModel {
                                 advance: 1,
                                 remaining: 1,
                                 paid: 1,
+                                revenueBonus: 1,
+                                mealAllowance: 1,
+                                insurance: 1,
+                                pitax: 1,
                             }
                         },
                         {
@@ -742,7 +784,8 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { project: '$project' },
-                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                // salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                salary: { $sum: { $subtract: [ { $add: ["$salary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax"]} ] } },
                                 paid: { $sum: {$add: [ "$paid", "$advance" ]} },
                             }
                         },
@@ -789,6 +832,10 @@ class Model extends BaseModel {
                                 advance: 1,
                                 remaining: 1,
                                 paid: 1,
+                                revenueBonus: 1,
+                                mealAllowance: 1,
+                                insurance: 1,
+                                pitax: 1,
                             }
                         },
                         {
@@ -800,7 +847,8 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { human: '$human' },
-                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                // salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                salary: { $sum: { $subtract: [ { $add: ["$salary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax"]} ] } },
                                 paid: { $sum: {$add: [ "$paid", "$advance" ]} },
                             }
                         },
@@ -846,6 +894,10 @@ class Model extends BaseModel {
                                 advance: 1,
                                 remaining: 1,
                                 paid: 1,
+                                revenueBonus: 1,
+                                mealAllowance: 1,
+                                insurance: 1,
+                                pitax: 1,
                             }
                         },
                         {
@@ -857,7 +909,8 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { human: '$human' },
-                                salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                // salary: { $sum: { $subtract: [ { $add: [ "$salary", "$reward" ] }, "$punishment" ] } },
+                                salary: { $sum: { $subtract: [ { $add: ["$salary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax"]} ] } },
                                 paid: { $sum: {$add: [ "$paid", "$advance" ]} },
                             }
                         },
@@ -895,6 +948,10 @@ class Model extends BaseModel {
                                 advance: 1,
                                 remaining: 1,
                                 paid: 1,
+                                revenueBonus: 1,
+                                mealAllowance: 1,
+                                insurance: 1,
+                                pitax: 1,
                             }
                         },
                         {
@@ -906,6 +963,10 @@ class Model extends BaseModel {
                                 advance: { $sum:"$advance" },
                                 remaining: { $sum:"$remaining" },
                                 paid: { $sum:"$paid" },
+                                revenueBonus: { $sum:"$revenueBonus" },
+                                mealAllowance: { $sum:"$mealAllowance" },
+                                insurance: { $sum:"$insurance" },
+                                pitax: { $sum:"$pitax" },
                             }
                         },
                     ])

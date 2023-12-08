@@ -9,19 +9,16 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    
     //________Dự án/Phòng ban
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
-    
     //_______Chức vụ/vị trí/Bộ phận
     position: {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-
     //________Hạng mục cha
     parent: {
         type: Schema.Types.ObjectId,
@@ -56,13 +53,33 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
-    //________Thưởng
+    //________Thưởng doanh thu/hiệu quả
+    revenueBonus: {
+        type: Number,
+        default: 0 
+    },
+    //________Thưởng thành tích/đóng góp
     reward: {
         type: Number,
         default: 0 
     },
-    //________Phạt
+    //________Phụ cấp tiền ăn
+    mealAllowance: {
+        type: Number,
+        default: 0 
+    },
+    //________Trừ vi phạm
     punishment: {
+        type: Number,
+        default: 0 
+    },
+    //________Trừ bảo hiểm
+    insurance: {
+        type: Number,
+        default: 0 
+    },
+    //________Trừ thuế TNCN (Personal income tax)
+    pitax: {
         type: Number,
         default: 0 
     },
@@ -80,9 +97,6 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     paid:  { type: Number, default: 0},
     //________Ghi chú
     note: String,
-    /**
-     * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
-     */
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
@@ -91,4 +105,4 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     }
-});
+})
