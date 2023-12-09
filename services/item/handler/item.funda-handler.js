@@ -37,15 +37,18 @@ module.exports = {
             otherExpense        : { type: "number", optional: true },
             platform            : { type: "number", optional: true },
             activeCampaign      : { type: "array", optional: true },
+            trainStaffSalar     : { type: "string", optional: true },
+            trialStaffSalary    : { type: "string", optional: true },
+            officialStaffSalar  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const { platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, parentID, materialExpenseRate,
-                     materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate } = ctx.params;
+                     materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -89,10 +92,10 @@ module.exports = {
             humanExpense        : { type: "number", optional: true },
             otherExpense        : { type: "number", optional: true },
             activeCampaign      : { type: "array", optional: true },
-            trainStaffSalar         : { type: "number", optional: true },
-            trialStaffSalary         : { type: "number", optional: true },
-            officialStaffSalar         : { type: "number", optional: true },
-            lunchStaffAllowance         : { type: "number", optional: true },
+            trainStaffSalar     : { type: "string", optional: true },
+            trialStaffSalary    : { type: "string", optional: true },
+            officialStaffSalar  : { type: "string", optional: true },
+            lunchStaffAllowance : { type: "number", optional: true },
             platform            : { type: "number", optional: true },
         },
         async handler(ctx) {
@@ -102,7 +105,7 @@ module.exports = {
                 const { fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
                     adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  } = ctx.params;
 
-                // console.log({ fundaID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID })
+                // console.log({ fundaID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, trainStaffSalar, trialStaffSalary, officialStaffSalar })
 
                 const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members,
                     admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense,

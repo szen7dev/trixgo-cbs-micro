@@ -19,6 +19,16 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
+    //_________Đơn vị cơ sở/Cửa hàng
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : "funda"
+    },
+    //_________Ca làm việc
+    shift: {
+        type: Schema.Types.ObjectId,
+        ref : "fnb_shift"
+    },
     //________Hạng mục cha
     parent: {
         type: Schema.Types.ObjectId,
