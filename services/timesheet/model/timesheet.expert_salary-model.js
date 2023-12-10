@@ -351,6 +351,16 @@ class Model extends BaseModel {
     }){ 
         return new Promise(async (resolve) => {
             try {
+                /**
+                 db.expert_timesheets.find({
+                        "company" : ObjectId("6046bedeb55525368b11c5c3"),
+                        // "parent" : ObjectId("6541f51e1941120012c49376"),
+                        "assignee": ObjectId("63b62cbd226e9c00110aa2e8"),
+                        "parent": { $exists: true, $ne: null },
+                        $where: `return this.date.getMonth() === 10 && this.date.getFullYear() === 2023`
+                    }).select('hours parent assignee date company')
+                    .sort({date:1})
+                 */
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 if(!infoSalary)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
@@ -358,11 +368,16 @@ class Model extends BaseModel {
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
 
+                // console.log({month})
+                // console.log({year})
+
                 // Tổng hợp từ Bảng chấm công
                 let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
                             company: ObjectID(companyID),
+                            // parent: ObjectID("6541f51e1941120012c49376"),
+                            // assignee: ObjectID("63b62cbd226e9c00110aa2e8"),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null }
                         }
@@ -371,9 +386,10 @@ class Model extends BaseModel {
                         $project: {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
+                            date: 1,
                             assignee: 1,
                             hours: 1,
-                            amount: 1
+                            amount: 1,
                         }
                     },
                     {
