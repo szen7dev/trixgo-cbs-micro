@@ -1,8 +1,7 @@
 "use strict";
 
-
 const _isValid                          = require('mongoose').Types.ObjectId;
-
+const moment                            = require('moment');
 const BaseModel                         = require('../../../tools/db/base_model');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils')
@@ -622,9 +621,9 @@ class Model extends BaseModel {
                 departmentsID && departmentsID.length           && (conditionObj.department     = { $in: departmentsID });
                 types && types.length                           && (conditionObj.type           = { $in: types });
 
-                // Ngày làm việc
+                // Thời hạn
                 if(fromDate && toDate){
-                    conditionObj.workStartDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                    conditionObj.toDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                 }
 
                 if(companyID){
@@ -652,13 +651,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    // conditionObj.namecv = regSearch
-                    // conditionObj.phone = regSearch
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { phone: regSearch }
-                    ]
+                    conditionObj.name = regSearch
                 }
 
                 /**
