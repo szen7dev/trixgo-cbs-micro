@@ -59,6 +59,7 @@ class Model extends BaseModel {
                     dataInsert.company = infoParent.company;
                     dataInsert.parent = parentID
                     dataInsert.assignee = infoParent.assignee
+                    dataInsert.type = infoParent.type;
 
                     if(infoParent.assignee){
                         dataInsert.project = infoParent.assignee.department;
@@ -178,9 +179,9 @@ class Model extends BaseModel {
                     dataUpdate.date = date;
                 }
 
-                if(type){
-                    dataUpdate.type = type;
-                }
+                // if(type){
+                //     dataUpdate.type = type;
+                // }
 
                 if(hours){
                     dataUpdate.hours = hours;
@@ -398,6 +399,9 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, workID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID }) {
+        // console.log({
+        //     sortOption, parentID, workID, userID,
+        //     keyword, limit, lastestID, select, populates, option, month, year, assigneeID })
         return new Promise(async (resolve) => {
             // console.log({ parentID, userID, keyword, limit, lastestID, select, populates, option, month, year })
             try {

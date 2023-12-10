@@ -94,21 +94,15 @@ class Model extends BaseModel {
                 if(paid){
                     dataInsert.paid = Number(paid);
                 }
-                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
-                    // console.log(infoAfterInsert)
 
                 /**
-                 * TẠO CHI TIẾT BẢNG LƯƠNG
-                 * - Company
-                 * - Project
-                 * - Parent
+                 * TẠO CHI TIẾT BẢNG LƯƠNG (cho user đang hoạt động)
                  */
-                let listHuman = await AUTH__USER_COLL.find({company: companyID}).select('fullname')
-                // console.log(listHuman)
+                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 }).select('fullname')
                 for(const item of listHuman){
                     let dataInsertDetail = {
                         userCreate,
@@ -174,9 +168,9 @@ class Model extends BaseModel {
                     dataUpdate.date = date;
                 }
 
-                if(type){
-                    dataUpdate.type = type;
-                }
+                // if(type){
+                //     dataUpdate.type = type;
+                // }
 
                 if(status){
                     dataUpdate.status = status;
@@ -345,7 +339,7 @@ class Model extends BaseModel {
         })
     }
 
-    // Cập nhật bảng chấm công vào bảng lương theo từng tháng
+    // Cập nhật Bảng chấm công => Bảng lương
     updateValueTimesheet({ 
         expertSalaryID, userID, companyID
     }){ 
@@ -367,7 +361,6 @@ class Model extends BaseModel {
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
-
                 // console.log({month})
                 // console.log({year})
 
@@ -376,8 +369,6 @@ class Model extends BaseModel {
                     {
                         $match: {
                             company: ObjectID(companyID),
-                            // parent: ObjectID("6541f51e1941120012c49376"),
-                            // assignee: ObjectID("63b62cbd226e9c00110aa2e8"),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null }
                         }
@@ -429,7 +420,7 @@ class Model extends BaseModel {
         })
     }
 
-     // Cập nhật KPI vào bảng lương theo từng tháng
+     // Cập nhật KPI => Bảng lương
      updateValueKpi({ 
         expertSalaryID, userID, companyID
     }){ 
@@ -548,6 +539,7 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
+        // console.log({keyword})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -591,9 +583,14 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    let listUser = await AUTH__USER_COLL.find({fullname: new RegExp(keyword, 'i')})
+                    .select('_id')
+                    .limit(20)
+                    conditionObj.human = {$in: listUser.map(item=>item._id)}
                 }
-                let conditionObjOrg = { ...conditionObj };
+
+                let conditionObjOrg = { ...conditionObj }
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){

@@ -351,7 +351,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật bảng chấm công
+     * Name  : Cập nhật bảng chấm công => Khối gián tiếp
      * Author: HiepNH
      * Code  : 2/4/2023
      */
@@ -372,6 +372,7 @@ class Model extends BaseModel {
 
                 let infoTimesheet =  await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
                     company: companyID, 
+                    type: 2,
                     parent: { $exists: false },
                     $where: 
                     `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
@@ -398,8 +399,7 @@ class Model extends BaseModel {
                                 parentID: infoTimesheet._id, 
                                 name: `${infoShift.name}_eshop`, 
                                 date: infoShift.createAt, 
-                                // type, 
-                                // note, 
+                                type: 2, 
                                 hours: infoShift.workingHours, 
                                 unitprice: infoShift.officialStaffSalar,
                                 fundaID: infoShift.funda,
@@ -447,8 +447,7 @@ class Model extends BaseModel {
                                 parentID: infoTimesheet._id, 
                                 name: `${infoShift.name}_eshop`, 
                                 date: infoShift.createAt, 
-                                // type, 
-                                // note, 
+                                type: 2, 
                                 hours: infoShift.subWorkingHours, 
                                 unitprice: infoShift.trialStaffSalary,
                                 fundaID: infoShift.funda,
