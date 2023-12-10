@@ -231,4 +231,38 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Code:  MinhVH
+     * Name Download Excel Contact
+     * Date: 21/06/2022
+     */
+    exportExcel: {
+        auth: 'required',
+        params: {
+            // companyID: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let { companyID, filterParams } = ctx.params;
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                // console.log('=============>>>>>>>>>>>>>>>')
+                // console.log(ctx.params)
+
+                const resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.exportExcel({
+                    userID, companyID, filterParams
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }

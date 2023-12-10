@@ -5,6 +5,10 @@ const moment                            = require('moment');
 const BaseModel                         = require('../../../tools/db/base_model');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils')
+const XlsxPopulate                      = require('xlsx-populate');
+const fs                                = require('fs');
+const path                              = require('path');
+const { uploadFileS3 }                  = require('../../../tools/s3')
 
 /**
  * DOMAIN AND ACTIONS
@@ -820,6 +824,105 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    exportExcel({ userID, companyID, type, filterParams }) {
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {};
+                let resultGetList = { error: true };
+
+                switch (type) {
+                    case '1':
+                        resultGetList = await this.getListByFilter({
+                            ...filterParams,
+                            type: 1,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
+                    case '2':
+                        resultGetList = await this.getList({
+                            ...filterParams,
+                            type: 1,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
+                    default:
+                        resultGetList = await this.getListByFilter({
+                            ...filterParams,
+                            type: 1,
+                            userID,
+                            companyID,
+                            isExportExcel: true
+                        });
+                        break;
+                }
+
+                if(!resultGetList.error) {
+                    conditionObj = resultGetList.data;
+                }
+                // console.log({conditionObj})
+
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
+                let sortBy            = dataPagingAndSort?.data?.sort;
+                const listData = await HUMAN__CONTACT_DOCUMENT_COLL
+                    .find(conditionObj)
+                    .populate({
+                        path: 'contact',
+                        select: 'name sign',
+                    })
+                    .sort(sortBy)
+                    .limit(500)
+                    .lean();
+
+                if(!listData) {
+                    return resolve({
+                        error: true,
+                        message: 'Không tìm thấy dữ liệu',
+                        keyError: 'data_not_exists',
+                        status: 400
+                    });
+                }
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_document_export.xlsx')))
+                .then(async workbook => {
+
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("HoSoNhanSu").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("HoSoNhanSu").row(i).cell(2).value(item.name);
+                        workbook.sheet("HoSoNhanSu").row(i).cell(3).value(item?.contact?.name);
+                        workbook.sheet("HoSoNhanSu").row(i).cell(4).value(item?.sign);
+                        workbook.sheet("HoSoNhanSu").row(i).cell(5).value(item?.fromDate);
+                        workbook.sheet("HoSoNhanSu").row(i).cell(6).value(item.place);
+                        workbook.sheet("HoSoNhanSu").row(i).cell(7).value(item?.toDate);
+                        workbook.sheet("HoSoNhanSu").row(i).cell(10).value(item.note);
+                        i++
+                    });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `contact_document_export_${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+
+            } catch (error) {
+                console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
