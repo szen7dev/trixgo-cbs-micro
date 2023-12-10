@@ -839,7 +839,6 @@ class Model extends BaseModel {
                     case '1':
                         resultGetList = await this.getListByFilter({
                             ...filterParams,
-                            type: 1,
                             userID,
                             companyID,
                             isExportExcel: true
@@ -848,7 +847,6 @@ class Model extends BaseModel {
                     case '2':
                         resultGetList = await this.getList({
                             ...filterParams,
-                            type: 1,
                             userID,
                             companyID,
                             isExportExcel: true
@@ -857,7 +855,6 @@ class Model extends BaseModel {
                     default:
                         resultGetList = await this.getListByFilter({
                             ...filterParams,
-                            type: 1,
                             userID,
                             companyID,
                             isExportExcel: true
@@ -875,13 +872,16 @@ class Model extends BaseModel {
                 let sortBy            = dataPagingAndSort?.data?.sort;
                 const listData = await HUMAN__CONTACT_DOCUMENT_COLL
                     .find(conditionObj)
+                    .select('name contact sign fromDate toDate place note workplace certificateGrade number')
                     .populate({
                         path: 'contact',
                         select: 'name sign',
                     })
                     .sort(sortBy)
                     .limit(500)
-                    .lean();
+                    .lean()
+
+                // console.log({listData})
 
                 if(!listData) {
                     return resolve({

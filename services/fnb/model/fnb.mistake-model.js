@@ -1,12 +1,10 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, validateParamsObjectID }
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -18,14 +16,9 @@ const { template } = require('lodash');
  * import inter-coll, exter-coll
  */
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
-const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
-const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
-const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
 const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
-const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
 
 /**
  * import inter-model, exter-model
