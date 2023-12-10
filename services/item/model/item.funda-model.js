@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate }){
+	insert({ companyID, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
@@ -100,6 +100,16 @@ class Model extends BaseModel {
 
                 if(platform && !isNaN(platform) && [1, 2].includes(platform)){
                     dataInsert.platform = +platform;
+                }
+
+                if(trainStaffSalar && !isNaN(trainStaffSalar)){
+                    dataInsert.trainStaffSalar = +trainStaffSalar;
+                }
+                if(trialStaffSalary && !isNaN(trialStaffSalary)){
+                    dataInsert.trialStaffSalary = +trialStaffSalary;
+                }
+                if(officialStaffSalar && !isNaN(officialStaffSalar)){
+                    dataInsert.officialStaffSalar = +officialStaffSalar;
                 }
 
                 //_________Bật hoặc tắt chiến dịch truyền thông

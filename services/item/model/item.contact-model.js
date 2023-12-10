@@ -4,7 +4,6 @@ const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
 const moment                            = require('moment');
-const _isValid                          = require('mongoose').Types.ObjectId;
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
@@ -18,7 +17,7 @@ const { checkObjectIDs, IsJsonString, validateParamsObjectID, regexPhoneNumber }
 const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 }                  = require('../../../tools/s3')
-const { INSURANCE_STATUS }              = require('../../../tools/constants')
+// const { INSURANCE_STATUS }              = require('../../../tools/constants')
 const { CONTACT_GENDER }                = require('../helper/item.keys-constant')
 const stringUtils					    = require('../../../tools/utils/string_utils')
 
@@ -1836,7 +1835,7 @@ class Model extends BaseModel {
                         workbook.sheet("NhanSu").row(i).cell(3).value(item?.department?.name);
                         workbook.sheet("NhanSu").row(i).cell(4).value(item?.position?.name);
                         workbook.sheet("NhanSu").row(i).cell(5).value(item.birthday);
-                        workbook.sheet("NhanSu").row(i).cell(6).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
+                        workbook.sheet("NhanSu").row(i).cell(6).value(item.gender > 1 ? `${CONTACT_GENDER[Number(item.gender)-1].text}` : "");
                         workbook.sheet("NhanSu").row(i).cell(7).value(item.phone);
                         workbook.sheet("NhanSu").row(i).cell(8).value(item.email);
                         workbook.sheet("NhanSu").row(i).cell(9).value(item.identity);
