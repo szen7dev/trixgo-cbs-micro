@@ -22,7 +22,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../database/timesheet.expert_salary-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll');
-// const { forInRight } = require('lodash');
+const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll');
 
 class Model extends BaseModel {
 
@@ -144,7 +144,6 @@ class Model extends BaseModel {
             const that = this
             try {
                 let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
-                // console.log(infoSalaryID)
                 if(!infoSalaryID) {
                     return resolve({
                         error: true,
@@ -262,8 +261,6 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true })
-                // console.log(infoAfterUpdate)
-
                 if(!infoAfterUpdate) {
                     return resolve({
                         error: true,
@@ -277,13 +274,12 @@ class Model extends BaseModel {
                     await that.updateValue( {expertSalaryID: infoAfterUpdate.parent, userID })
                 }else{
                     // Cập nhật bảng chấm công vào bảng lương
-                    await that.updateValueTimesheet( {expertSalaryID, userID, companyID })
-
-                    // Cập nhật ca làm việc vào bảng lương
+                    await that.updateValueTimesheet({ expertSalaryID, userID, companyID })
 
                     // Cập nhật KPI vào bảng lương
+                    await that.updateValueKpi( { expertSalaryID, userID, companyID })
 
-                    // Cập nhật bảng lương
+                    // Cập nhật chi tiết lương vào bảng lương
                     await that.updateValue( {expertSalaryID, userID })
                 }
 
@@ -361,7 +357,6 @@ class Model extends BaseModel {
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
-                // console.log({month,year})
 
                 // Tổng hợp từ Bảng chấm công
                 let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -395,12 +390,11 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-                // console.log(listData1)
 
                 for(const item of listData1){
-                    // let infoUserInSalary =  await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                    let infoUserInSalary =  await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
+                    await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
                         company: companyID, 
+                        parent: { $exists: true, $ne: null },
                         human: item._id.assignee,
                         $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
 
@@ -408,9 +402,7 @@ class Model extends BaseModel {
                         {
                             salary: Number(item.amount)
                         }, { new: true }
-                    );
-
-                    // console.log(infoUserInSalary)
+                    )
                 }
 
                 return resolve({ error: false, status: 200 });
@@ -432,24 +424,21 @@ class Model extends BaseModel {
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
-                // console.log({month,year})
 
-                // Tổng hợp từ Bảng chấm công
-                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                let listData1 = await FNB_MISTAKE_COLL.aggregate([
                     {
                         $match: {
                             company: ObjectID(companyID),
-                            parent: { $exists: true, $ne: null },
-                            assignee: { $exists: true, $ne: null }
+                            executor: { $exists: true, $ne: null }
                         }
                     },
                     {
                         $project: {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            assignee: 1,
-                            hours: 1,
-                            amount: 1
+                            year : {$year : "$createAt"},
+                            month : {$month : "$createAt"},
+                            executor: 1,
+                            amount: 1,
+                            bonus: 1
                         }
                     },
                     {
@@ -460,33 +449,31 @@ class Model extends BaseModel {
                     },
                     {
                         $group: {
-                            _id: { assignee: '$assignee' },
-                            quantity: { $sum: "$hours" },
+                            _id: { executor: '$executor' },
+                            bonus: { $sum: "$bonus" },
                             amount: { $sum: "$amount" },
                         }
                     },
                 ])
-                // console.log(listData1)
+                console.log({listData1})
 
                 for(const item of listData1){
-                    // let infoUserInSalary =  await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                    let infoUserInSalary =  await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
+                    await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
                         company: companyID, 
-                        human: item._id.assignee,
+                        parent: { $exists: true, $ne: null },
+                        human: item._id.executor,
                         $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
-
                     }, 
                         {
-                            salary: Number(item.amount)
+                            reward: Number(item.bonus),
+                            punishment: Number(item.amount),
                         }, { new: true }
-                    );
-
-                    // console.log(infoUserInSalary)
+                    )
                 }
 
-                return resolve({ error: false, status: 200 });
+                return resolve({ error: false, status: 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }

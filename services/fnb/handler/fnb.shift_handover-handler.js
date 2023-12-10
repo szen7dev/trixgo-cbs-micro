@@ -34,7 +34,7 @@ module.exports = {
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_SHIFT_HANDOVER_MODEL.insert({
-                    shiftID, goodsID, openingQuantity, usedQuantity, closingQuantity, quotaQuantity, unitPrice, note, userID
+                    shiftID, goodsID, openingQuantity, usedQuantity, closingQuantity, quotaQuantity, unitPrice, note, userID, companyID: company._id
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -66,8 +66,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_SHIFT_HANDOVER_MODEL.update({
-                    shiftGoodsID, userID,
-                    openingQuantity, usedQuantity, closingQuantity, quotaQuantity, unitPrice, note
+                    shiftGoodsID, userID, openingQuantity, usedQuantity, closingQuantity, quotaQuantity, unitPrice, note, companyID: company._id
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
