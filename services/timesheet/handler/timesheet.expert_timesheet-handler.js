@@ -23,15 +23,17 @@ module.exports = {
             note               : { type: "string", optional: true },
             projectID          : { type: "string", optional: true },
             assigneeID         : { type: "string", optional: true },
+            shiftID            : { type: "string", optional: true },
+            fundaID            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, name, date, type, note, projectID, assigneeID } = ctx.params;
+                let { parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({
-                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, projectID, assigneeID
+                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

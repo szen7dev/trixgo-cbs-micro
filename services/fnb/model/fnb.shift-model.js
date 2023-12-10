@@ -21,12 +21,12 @@ const USER_COLL                                = require('../../auth/database/au
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
 const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
-const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
-const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
 const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
-const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
+const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
+const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+
+const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model').MODEL;
 
 const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
@@ -56,17 +56,15 @@ class Model extends BaseModel {
      */
     insert({ fundaID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
         // console.log({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
+        const that = this
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
                     return resolve({ error: true, message: 'fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                // Thông tin cửa hàng
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if (!infoFunda) 
                     return resolve({ error: true, message: 'cannot_get_info_funda' });
-                
-                // console.log(infoFunda)
 
                 let dataInsert = { 
                     company: infoFunda.company, 
@@ -83,9 +81,6 @@ class Model extends BaseModel {
                 let a4 = Number(subWorkingHours) || 0
                 let a5 = Number(staffsID.length) || 0
                 let a6 = Number(subStaffsID.length) || 0
-
-                // console.log(infoFunda.officialStaffSalar)
-                // console.log(infoFunda.trialStaffSalary)
 
                 dataInsert.officialStaffSalar = a1
                 dataInsert.trialStaffSalary = a2
@@ -160,8 +155,10 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
                 // Chi phí nhân viên
-                let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, fundaID, userID })
-                // console.log(infoBook)
+                await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, fundaID, userID })
+
+                // Cập nhật vào bảng chấm công
+                await that.updateTimesheet({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, userID })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -175,20 +172,16 @@ class Model extends BaseModel {
      * Author: 
      * Code:
      */
-    update({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
+    update({ companyID, shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
         // console.log({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
+        const that = this
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
                     return resolve({ error: true, message: 'shiftID__invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                 
                 let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id funda')
-                // let number1 = infoShift.staffs.length
-                // let number2 = infoShift.subStaffs.length
-                // console.log({ number1, number2 })
-
                 let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name manager trialStaffSalary officialStaffSalar')
-                // console.log(infoFunda)
 
                 let dataInUpdate = { 
                     userUpdate: userID, 
@@ -231,16 +224,6 @@ class Model extends BaseModel {
                     dataInUpdate.closingCash = Number(closingCash)
                 }
 
-                // Nếu là Quản lý => Cập nhật nhân viên ca làm việc
-                // console.log('===========>>>>>>>>>>>>>>>>>')
-                // console.log(infoFunda.manager.toString())
-                // console.log(userID.toString())
-                // if(infoFunda.manager && infoFunda.manager.toString() === userID.toString()){
-                //     // console.log()
-                // }else{
-                //     return resolve({ error: true, message: 'Bạn không có quyền', keyError: KEY_ERROR.UPDATE_FAILED })
-                // }
-
                 if(FNB_ACC.man.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
                     // console.log('==========111111111111')
                     if(staffsID && checkObjectIDs(staffsID)){
@@ -263,7 +246,7 @@ class Model extends BaseModel {
                     if(checkObjectIDs(staffsID) || checkObjectIDs(subStaffsID)){
                         dataInUpdate.officialStaffSalar = Number(infoFunda.officialStaffSalar)
                         dataInUpdate.trialStaffSalary = Number(infoFunda.trialStaffSalary)
-                        dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.officialStaffSalar)*Number(subWorkingHours)*Number(subStaffsID.length)
+                        dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.trialStaffSalary)*Number(subWorkingHours)*Number(subStaffsID.length)
                     }
 
                     if(!isNaN(numberOfOpeningSizeM)){
@@ -358,6 +341,9 @@ class Model extends BaseModel {
                 }
                 // console.log(infoAfterUpdate)
 
+                // Cập nhật vào bảng chấm công
+                await that.updateTimesheet({ companyID, shiftID, userID })
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -366,17 +352,133 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật chi phí lương
+     * Name  : Cập nhật bảng chấm công
      * Author: HiepNH
      * Code  : 2/4/2023
      */
-    updateSalary({ companyID, fromDate, toDate, month, year, userID }) {
-        // console.log({ companyID, fromDate, toDate, month, year, userID })
+    updateTimesheet({ companyID, shiftID, userID }) {
+        // console.log({ companyID, shiftID, userID })
         return new Promise(async resolve => {
             try {
-                
+                /**
+                 * 1. Tìm bảng chấm công trong tháng/chưa có thì tạo
+                    2. Tìm user trong bảng chấm công/chưa có thì tạo/có thì update
+                    3. Update chấm công sang (KL, đơn giá, thành tiền,...)
+                 */
+                // Bảng chấm công trong tháng
+                let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
+                // console.log(infoShift)
+                // console.log({___________:infoShift.createAt.getMonth()})
+                // console.log({___________:infoShift.createAt.getFullYear()})
 
-                return resolve({ error: false, data: {} });
+                let infoTimesheet =  await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
+                    company: companyID, 
+                    parent: { $exists: false },
+                    $where: 
+                    `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
+                })
+                // console.log({___________:infoTimesheet})
+
+                if(infoTimesheet){
+                    for(const item of infoShift.staffs){
+                        let checkExist = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
+                            parent: { $exists: true, $ne: null }, 
+                            shift: shiftID, 
+                            assignee: item,
+                            $where: 
+                            `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
+                        })
+                        // console.log({checkExist})
+    
+                        if(!checkExist){
+                            // console.log('111111111111111111111111111')
+                            // Tạo mới
+                            let info = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({ 
+                                userCreate: userID, 
+                                companyID, 
+                                parentID: infoTimesheet._id, 
+                                name: `${infoShift.name}_eshop`, 
+                                // date, 
+                                // type, 
+                                // note, 
+                                hours: infoShift.workingHours, 
+                                unitprice: infoShift.officialStaffSalar,
+                                fundaID: infoShift.funda,
+                                shiftID,
+                                assigneeID: item
+                            })
+                            // console.log({___________:info})
+                        }else{
+                            // console.log('222222222222222222222222222')
+                            // Cập nhật
+                            let info =  await TIMESHEET__EXPERT_TIMESHEET_COLL.findOneAndUpdate({
+                                shift: shiftID, 
+                                assignee: item,
+                                $where: 
+                            `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
+                            }, 
+                                {
+                                    name: `${infoShift.name}_eshop_updated`, 
+                                    hours: infoShift.workingHours, 
+                                    unitprice: infoShift.officialStaffSalar,
+                                    amount: Number(infoShift.workingHours * infoShift.officialStaffSalar),
+                                }, { new: true }
+                            );
+        
+                            // console.log(info)
+                        }
+                    }
+    
+                    for(const item of infoShift.subStaffs){
+                        let checkExist = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
+                            parent: { $exists: true, $ne: null },
+                            shift: shiftID, 
+                            assignee: item,
+                            $where: 
+                            `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
+                        })
+                        // console.log({checkExist})
+    
+                        if(!checkExist){
+                            // console.log('333333333333333333333333333')
+                            // Tạo mới
+                            let info = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({ 
+                                userCreate: userID, 
+                                companyID, 
+                                parentID: infoTimesheet._id, 
+                                name: `${infoShift.name}_eshop`, 
+                                // date, 
+                                // type, 
+                                // note, 
+                                hours: infoShift.subWorkingHours, 
+                                unitprice: infoShift.trialStaffSalary,
+                                fundaID: infoShift.funda,
+                                shiftID,
+                                assigneeID: item
+                            })
+                            // console.log({___________:info})
+                        }else{
+                            // console.log('44444444444444444444444444444')
+                            // Cập nhật
+                            let info =  await TIMESHEET__EXPERT_TIMESHEET_COLL.findOneAndUpdate({
+                                shift: shiftID, 
+                                assignee: item,
+                                $where: 
+                            `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
+                            }, 
+                                {
+                                    name: `${infoShift.name}_eshop_updated`, 
+                                    hours: infoShift.subWorkingHours, 
+                                    unitprice: infoShift.trialStaffSalary,
+                                    amount: Number(infoShift.subWorkingHours * infoShift.trialStaffSalary),
+                                }, { new: true }
+                            );
+                            // console.log(info)
+                        }
+                    }
+                }                
+
+                return resolve({ error: false });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }

@@ -28,7 +28,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, date, type, note, projectID, assigneeID }) {
+    insert({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID }) {
         return new Promise(async resolve => {
             try {
 
@@ -75,8 +75,16 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(projectID){
+                if(checkObjectIDs(projectID)){
                     dataInsert.project = projectID;
+                }
+
+                if(checkObjectIDs(fundaID)){
+                    dataInsert.funda = fundaID;
+                }
+
+                if(checkObjectIDs(shiftID)){
+                    dataInsert.shift = shiftID;
                 }
 
                 if(date){
@@ -90,6 +98,22 @@ class Model extends BaseModel {
                 if(note){
                     dataInsert.note = note;
                 }
+
+                if(hours){
+                    dataInsert.hours = hours;
+                }
+
+                let unitprice2 = 0
+                if(unitprice){
+                    unitprice2 = Number(unitprice)
+                }
+                if(unitprice2 != 0){
+                    let amount  = hours * unitprice2
+
+                    dataInsert.unitprice = unitprice2
+                    dataInsert.amount = amount
+                }
+
                 // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
