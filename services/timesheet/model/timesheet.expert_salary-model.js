@@ -94,21 +94,15 @@ class Model extends BaseModel {
                 if(paid){
                     dataInsert.paid = Number(paid);
                 }
-                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
-                    // console.log(infoAfterInsert)
 
                 /**
-                 * TẠO CHI TIẾT BẢNG LƯƠNG
-                 * - Company
-                 * - Project
-                 * - Parent
+                 * TẠO CHI TIẾT BẢNG LƯƠNG (cho user đang hoạt động)
                  */
-                let listHuman = await AUTH__USER_COLL.find({company: companyID}).select('fullname')
-                // console.log(listHuman)
+                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 }).select('fullname')
                 for(const item of listHuman){
                     let dataInsertDetail = {
                         userCreate,
