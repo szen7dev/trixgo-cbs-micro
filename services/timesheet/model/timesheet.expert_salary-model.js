@@ -390,6 +390,7 @@ class Model extends BaseModel {
                         }
                     },
                 ])
+                // console.log(listData1)
 
                 for(const item of listData1){
                     await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
@@ -455,7 +456,7 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-                console.log({listData1})
+                // console.log({listData1})
 
                 for(const item of listData1){
                     await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
