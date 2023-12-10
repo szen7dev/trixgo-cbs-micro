@@ -4,9 +4,8 @@
 const _isValid                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }
-                                        = require('../../../tools/utils/utils');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID } = require('../../../tools/utils/utils')
 
 /**
  * DOMAIN AND ACTIONS
@@ -395,9 +394,9 @@ class Model extends BaseModel {
         companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
         certificateType, certificateName, certificateGrade, isToDate5Month,
         keyword, limit = 10, lastestID, select, populates= {}, userID }) {
-            console.log({companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
-                certificateType, certificateName, certificateGrade, isToDate5Month,
-                keyword, limit, lastestID, select, populates, userID})
+            // console.log({companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
+            //     certificateType, certificateName, certificateGrade, isToDate5Month,
+            //     keyword, limit, lastestID, select, populates, userID})
         return new Promise(async (resolve) => {
             try {
                 
@@ -555,6 +554,161 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+        /**
+     * Name  : Tìm kiếm nhân sự
+     * Author: HiepNH
+     * Code  : 29/8/2022
+     */
+    getListByFilter({
+        parentID, companyID, receiverID, types, isExportExcel = false,
+        requestResponse, fromDate, toDate, marked, userID, departmentsID,
+        keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
+        //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
+        //     console.log({
+        //         parentID, companyID, receiverID, types, isExportExcel,
+        // requestResponse, fromDate, toDate, marked, userID, departmentsID,
+        // keyword, limit, lastestID, select, populates, isParent, type, genders })
+        return new Promise(async (resolve) => {
+            try {
+                if(limit > 20){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
+
+                let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
+
+                const validation = validateParamsObjectID({
+                    departmentsID           : { value: departmentsID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                } else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                // Chỉ lấy các mẩu tin cha
+                if(isParent){
+                    conditionObj.parent = { $exists: false }
+                }
+
+                if(type){
+                    conditionObj.type = Number(type)
+                }
+
+                // Bộ lọc với nhiều lựa chọn
+                genders && genders.length                       && (conditionObj.gender         = { $in: genders });
+                departmentsID && departmentsID.length           && (conditionObj.department     = { $in: departmentsID });
+                types && types.length                           && (conditionObj.type           = { $in: types });
+
+                // Ngày làm việc
+                if(fromDate && toDate){
+                    conditionObj.workStartDate = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
+
+                if(companyID){
+                    conditionObj.company = companyID
+                }
+
+                if(checkObjectIDs(receiverID)){
+                    conditionObj.receiver = receiverID
+                }
+
+                if(requestResponse){
+                    conditionObj.requestResponse = requestResponse
+                }
+
+                if(checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID
+                }
+
+                if(marked){
+                    conditionObj.usersMarked = { $in: [userID] }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
+
+                    // conditionObj.namecv = regSearch
+                    // conditionObj.phone = regSearch
+
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { phone: regSearch }
+                    ]
+                }
+
+                /**
+                 * Sử dụng trong export excel document (hoặc theo bộ lọc)
+                 * Trả về điều kiện tra cứu
+                 */
+                if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
+                }
+                // console.log(conditionObj)
+
+                let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await HUMAN__CONTACT_DOCUMENT_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await HUMAN__CONTACT_DOCUMENT_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                let totalRecord = await HUMAN__CONTACT_DOCUMENT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
