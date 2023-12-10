@@ -1,7 +1,7 @@
 "use strict";
 
 const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany } = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
 const ObjectID = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');

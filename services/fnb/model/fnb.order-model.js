@@ -27,6 +27,7 @@ const FNB_ORDER_PRODUCT_COLL                    = require('../database/fnb.order
 const FNB_SHIFT_COLL                            = require('../database/fnb.shift-coll');
 const FNB_MISTAKE_COLL                          = require('../database/fnb.mistake-coll');
 const FNB_VOUCHER_COLL                          = require('../database/fnb.voucher-coll');
+const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 
 /**
  * import inter-model, exter-model
@@ -3810,24 +3811,48 @@ class Model extends BaseModel {
                 /**
                  * UPDATE CÁC SỐ ĐIỆN THOẠI TRÙNG
                  */
-                if(option == 6){
-                    let listDataPhone = await ITEM__CONTACT_COLL.aggregate([
-                        {"$match": {company: ObjectID(companyID)} },
-                        {"$group" : { "_id": "$phone", "count": { "$sum": 1 } } },
-                        {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } },
-                        {"$project": {"phone" : "$_id", "_id" : 0} }
-                    ])
-                    return resolve({ error: false, listDataPhone })
+                // if(option == 6){
+                //     let listDataPhone = await ITEM__CONTACT_COLL.aggregate([
+                //         {"$match": {company: ObjectID(companyID)} },
+                //         {"$group" : { "_id": "$phone", "count": { "$sum": 1 } } },
+                //         {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } },
+                //         {"$project": {"phone" : "$_id", "_id" : 0} }
+                //     ])
+                //     return resolve({ error: false, listDataPhone })
+                // }
+
+                // if(option == 7){
+                //     await ITEM__CONTACT_COLL.updateMany(
+                //         { _id: {$in: arrCustomers }},
+                //         { $set: {type: 2} }
+                //      );
+
+                //      return resolve({ error: false, message: 'Reset thành công'})
+                // }
+
+                // Update Người thực hiện bảng chấm công
+                if(option == 8){
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                        assignee: { $exists: false } // Chưa gán người thực hiện
+                    })
+                    // console.log(listData)
+                    
+                    for(const item of listData){
+                        let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(item)
+                        .select('parent')
+                        .populate('parent')
+                        // console.log(info)
+
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(item, {
+                                assignee: info.parent.assignee
+                            }, { new: true });
+                    }
+
+                    return resolve({ error: false })
                 }
 
-                if(option == 7){
-                    await ITEM__CONTACT_COLL.updateMany(
-                        { _id: {$in: arrCustomers }},
-                        { $set: {type: 2} }
-                     );
-
-                     return resolve({ error: false, message: 'Reset thành công'})
-                }
 
                 // return resolve({ error: false, message: 'Reset thành công'})
             } catch (error) {
