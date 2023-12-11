@@ -62,7 +62,7 @@ class Model extends BaseModel {
                     executor: executorID, 
                     number: countMistake | 1, 
                     funda: infoFunda._id, 
-                    company: companyID,
+                    company: infoFunda.company,
                 }
 
                 let infoOrder;
