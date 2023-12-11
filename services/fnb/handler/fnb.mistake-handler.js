@@ -20,6 +20,7 @@ module.exports = {
             mistakeID           : { type: "string" },
             executorID          : { type: "string" },
             fundaID             : { type: "string" },
+            companyID           : { type: "string", optional: true },
             orderID             : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             amount              : { type: "string", optional: true },
@@ -29,12 +30,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files } = ctx.params;
+                let { mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, companyID } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
+                if(!companyID){
+                    companyID = company._id
+                }
+
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.insert({
-                    mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID: company._id
+                    mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
