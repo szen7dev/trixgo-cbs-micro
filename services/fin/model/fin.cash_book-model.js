@@ -134,7 +134,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID }) {
-        // console.log({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID })
+        console.log({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -181,7 +181,7 @@ class Model extends BaseModel {
                     dataUpdate.expense = expense;
                 }
 
-                if (!isNaN(active) && Number(active) > 0) {
+                if (active && !isNaN(active) && Number(active) > 0) {
                     dataUpdate.active = active;
                 }
 
@@ -256,12 +256,14 @@ class Model extends BaseModel {
 
                 // Cập nhật lại trạng thái các phần tử con
                 if(!infoAfterUpdate.parent){
-                    await FIN__CASH_BOOK_COLL.updateMany(
-                        { 
-                            parent: ObjectID(cashBookID),
-                        },
-                        { $set: { "active" : Number(active)} }
-                    );
+                    if (active && !isNaN(active) && Number(active) > 0) {
+                        await FIN__CASH_BOOK_COLL.updateMany(
+                            { 
+                                parent: ObjectID(cashBookID),
+                            },
+                            { $set: { "active" : Number(active)} }
+                        )
+                    }
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
