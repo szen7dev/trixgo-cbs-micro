@@ -523,4 +523,33 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name Download Excel Contact by pagination
+     * Date: 13/12/2023
+     */
+    exportExcelByFilter: {
+        auth: "required",
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let { companyID, filterParams } = ctx.params;
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcelByFilter({
+                    userID, companyID, filterParams
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
 }
