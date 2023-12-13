@@ -117,6 +117,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTACT_DOWNLOAD_TEMPLATE_IMPORT_EXCEL]: ITEM__CONTACT_HANDLER.downloadTemplateImportExcel,
 		[CF_ACTIONS_ITEM.CONTACT_IMPORT_FROM_EXCEL]				: ITEM__CONTACT_HANDLER.importFromExcel,
 		[CF_ACTIONS_ITEM.CONTACT_EXPORT_EXCEL] 					: ITEM__CONTACT_HANDLER.exportExcel,
+		[CF_ACTIONS_ITEM.CONTACT_EXPORT_EXCEL_BY_FILTER] 		: ITEM__CONTACT_HANDLER.exportExcelByFilter,
 
 		//==========================================  WAREHOUSE  =================================
 		[CF_ACTIONS_ITEM.WAREHOUSE_INSERT] 						: ITEM__WAREHOUSE_HANDLER.insert,
