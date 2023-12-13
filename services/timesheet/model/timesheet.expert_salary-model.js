@@ -1,7 +1,7 @@
 "use strict";
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
 const _isValid                          = require('mongoose').Types.ObjectId;
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
@@ -21,8 +21,10 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  */
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../database/timesheet.expert_salary-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
-const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll');
-const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll');
+const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll')
+const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
+
+const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
 class Model extends BaseModel {
 
@@ -102,7 +104,7 @@ class Model extends BaseModel {
                 /**
                  * TẠO CHI TIẾT BẢNG LƯƠNG (cho user đang hoạt động)
                  */
-                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 }).select('fullname')
+                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 }).select('fullname department')
                 for(const item of listHuman){
                     let dataInsertDetail = {
                         userCreate,
@@ -112,7 +114,7 @@ class Model extends BaseModel {
                         human: item._id,
                         parent: infoAfterInsert._id,
                         company: infoAfterInsert.company,
-                        project: infoAfterInsert.project,
+                        project: item.department,
                         date: infoAfterInsert.date,
                         type: infoAfterInsert.type,
                     }
@@ -168,10 +170,6 @@ class Model extends BaseModel {
                     dataUpdate.date = date;
                 }
 
-                // if(type){
-                //     dataUpdate.type = type;
-                // }
-
                 if(status){
                     dataUpdate.status = status;
                 }
@@ -214,8 +212,7 @@ class Model extends BaseModel {
                 }
                 // console.log(dataUpdate)
 
-                const adminsID = [...infoSalaryID.admins?.map(item => item?.toString()), infoSalaryID.userCreate?.toString()];
-
+                const adminsID = [...infoSalaryID.admins?.map(item => item?.toString())]
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
                         if(admins.length && checkObjectIDs(admins)) {
@@ -510,14 +507,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                    _id: expertSalaryID,
-                    $or: [
-                        {userCreate: userID},
-                        {admins: { $in: [userID] }},
-                        {members: { $in: [userID] }}
-                    ]
-                })
+                let infoAterGet = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 .select(select)
                 .populate(populates)
 
@@ -538,8 +528,9 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
-        // console.log({keyword})
+        keyword, limit = 10, lastestID, select, populates= {}, companyID, departmentsID }) {
+        console.log({sortOption, parentID, userID,
+            keyword, limit, lastestID, select, populates, companyID, departmentsID})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -557,6 +548,11 @@ class Model extends BaseModel {
                     keys	 = ['date__-1', '_id__-1'];
                 }
 
+                const validation = validateParamsObjectID({
+                    departmentsID           : { value: departmentsID, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -570,25 +566,43 @@ class Model extends BaseModel {
                 }
 
 				if(checkObjectIDs(parentID)){
-					conditionObj.parent = parentID;
+					conditionObj.parent = parentID
+
+                    departmentsID && departmentsID.length && (conditionObj.project     = { $in: departmentsID })
+
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+
+                        let listUser = await AUTH__USER_COLL.find({fullname: new RegExp(keyword, 'i')})
+                        .select('_id')
+                        .limit(20)
+                        conditionObj.human = {$in: listUser.map(item=>item._id)}
+                    }
 				}else{
-                    conditionObj.$or = [
-                        {userCreate: userID},
-                        {admins: { $in: [userID] }},
-                        {members: { $in: [userID] }}
-                    ]
-					conditionObj.parent = { $exists: false };
-                }
+                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
+                        appID: "61e049cffdebf77b072d1b14", 
+                        userID
+                     })
+                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                        conditionObj.company = companyID
+                        conditionObj.parent = { $exists: false }
+                    }else{
+                        conditionObj.$or = [
+                            {admins: { $in: [userID] }},
+                            {members: { $in: [userID] }}
+                        ]
+                        conditionObj.company = companyID
+                        conditionObj.parent = { $exists: false }
+                    }
 
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-
-                    let listUser = await AUTH__USER_COLL.find({fullname: new RegExp(keyword, 'i')})
-                    .select('_id')
-                    .limit(20)
-                    conditionObj.human = {$in: listUser.map(item=>item._id)}
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        conditionObj.name =  new RegExp(keyword, 'i')
+                    }
                 }
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 

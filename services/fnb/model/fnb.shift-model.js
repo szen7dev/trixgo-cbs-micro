@@ -365,7 +365,10 @@ class Model extends BaseModel {
                     3. Update chấm công sang (KL, đơn giá, thành tiền,...)
                  */
                 // Bảng chấm công trong tháng
-                let infoShift = await FNB_SHIFT_COLL.findById(shiftID)
+                let infoShift = await FNB_SHIFT_COLL.findById(shiftID).populate({
+                    path: 'funda',
+                    select: 'name sign',
+                })
                 // console.log(infoShift)
                 // console.log({___________:infoShift.createAt.getMonth()})
                 // console.log({___________:infoShift.createAt.getFullYear()})
@@ -397,12 +400,12 @@ class Model extends BaseModel {
                                 userCreate: userID, 
                                 companyID, 
                                 parentID: infoTimesheet._id, 
-                                name: `${infoShift.name}_eshop`, 
+                                name: `${infoShift.name}_${infoShift.funda.name}`, 
                                 date: infoShift.createAt, 
                                 type: 2, 
                                 hours: infoShift.workingHours, 
                                 unitprice: infoShift.officialStaffSalar,
-                                fundaID: infoShift.funda,
+                                fundaID: infoShift.funda._id,
                                 shiftID,
                                 assigneeID: item
                             })
@@ -417,7 +420,7 @@ class Model extends BaseModel {
                             `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
                             }, 
                                 {
-                                    name: `${infoShift.name}_eshop_updated`, 
+                                    name: `${infoShift.name}_${infoShift.funda.name}_updated`, 
                                     hours: infoShift.workingHours, 
                                     unitprice: infoShift.officialStaffSalar,
                                     amount: Number(infoShift.workingHours * infoShift.officialStaffSalar),
@@ -445,12 +448,12 @@ class Model extends BaseModel {
                                 userCreate: userID, 
                                 companyID, 
                                 parentID: infoTimesheet._id, 
-                                name: `${infoShift.name}_eshop`, 
+                                name: `${infoShift.name}_ca gãy_${infoShift.funda.name}`, 
                                 date: infoShift.createAt, 
                                 type: 2, 
                                 hours: infoShift.subWorkingHours, 
                                 unitprice: infoShift.trialStaffSalary,
-                                fundaID: infoShift.funda,
+                                fundaID: infoShift.funda._id,
                                 shiftID,
                                 assigneeID: item
                             })
@@ -465,7 +468,7 @@ class Model extends BaseModel {
                             `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
                             }, 
                                 {
-                                    name: `${infoShift.name}_eshop_updated`, 
+                                    name: `${infoShift.name}_ca gãy_${infoShift.funda.name}_updated`, 
                                     hours: infoShift.subWorkingHours, 
                                     unitprice: infoShift.trialStaffSalary,
                                     amount: Number(infoShift.subWorkingHours * infoShift.trialStaffSalary),

@@ -198,12 +198,12 @@ class Model extends BaseModel {
                 let infoBook = await FNB_GENERAL_BOOK_COLL.findOne({ shift: shiftID, parent: { $exists: true, $ne: null }, funda: fundaID, expenseType: 4 })
 
                 if(!infoBook){
-                    console.log('=================TH1')
+                    // console.log('=================TH1')
                     let infoRandomParent = await FNB_GENERAL_BOOK_COLL.findOne({ funda: fundaID, parent: { $exists: false }, expenseType: 4 })
                     // console.log(infoRandomParent)
     
                     if(!infoRandomParent){
-                        console.log('=================TH1.1')
+                        // console.log('=================TH1.1')
                         // Tạo phần tử cha
                         let infoParent = await that.insertData({
                             company: companyID,
@@ -241,7 +241,7 @@ class Model extends BaseModel {
     
                         return resolve({ error: false, data: infoAfterInsert })
                     }else{
-                        console.log('=================TH1.2')
+                        // console.log('=================TH1.2')
                         // Đưa vào trong phần tử cha
                         let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id company funda name expenseType createAt staffSalaryTotal')
         
@@ -268,7 +268,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: infoAfterInsert })
                     }
                 }else{
-                    console.log('=================TH2')
+                    // console.log('=================TH2')
                     let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id company funda name expenseType createAt staffSalaryTotal')
 
                     // Cập nhật thông tin
@@ -466,8 +466,8 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                console.log('=============>>>>>>>>>>>>>>>>>>')
-                console.log(listData)
+                // console.log('=============>>>>>>>>>>>>>>>>>>')
+                // console.log(listData)
 
                 if(listData && listData[0]){
                     amount = Number(listData[0].amount)

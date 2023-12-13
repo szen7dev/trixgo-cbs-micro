@@ -17,6 +17,8 @@ const USER_COLL                         = require('../../auth/database/auth.user
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
 const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
 
+const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
+
 class Model extends BaseModel {
 
     constructor() {
@@ -163,13 +165,11 @@ class Model extends BaseModel {
                     dataUpdate.assignee = assigneeID;
 
                     let infoAssignee = await USER_COLL.findById(assigneeID).select('department position')
-                    // console.log(infoAssignee)
                     if(infoAssignee){
                         dataUpdate.project = infoAssignee.department;
                         dataUpdate.position = infoAssignee.position;
                     }
                 }
-                // console.log(dataUpdate)
 
                 if(name){
                     dataUpdate.name = name;
@@ -179,18 +179,11 @@ class Model extends BaseModel {
                     dataUpdate.date = date;
                 }
 
-                // if(type){
-                //     dataUpdate.type = type;
-                // }
-
                 if(hours){
                     dataUpdate.hours = hours;
                 }
 
-                let unitprice2 = 0
-                if(unitprice){
-                    unitprice2 = Number(unitprice)
-                }
+                let unitprice2 = Number(unitprice)
                 if(checkObjectIDs(workID)){
                     dataUpdate.work = workID;
 
@@ -200,12 +193,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(unitprice2 != 0){
-                    let amount  = hours * unitprice2
-
-                    dataUpdate.unitprice = unitprice2
-                    dataUpdate.amount = amount
-                }
+                let amount  = hours * unitprice2
+                dataUpdate.unitprice = unitprice2
+                dataUpdate.amount = amount
 
                 if(status){
                     dataUpdate.status = status;
@@ -244,7 +234,7 @@ class Model extends BaseModel {
                     dataUpdate.dateOut3 = dateOut3;
                 }
 
-                const adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString()), infoTimeSheetID.userCreate?.toString()];
+                let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
                         if(admins.length && checkObjectIDs(admins)) {
@@ -282,6 +272,7 @@ class Model extends BaseModel {
                         });
                     }
                 }
+                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
                 if(!infoAfterUpdate) {
@@ -304,7 +295,9 @@ class Model extends BaseModel {
         })
     }
 
+    // Cập nhật giá trị cho mẩu tin cha
     updateValue({ parentID, userID }){
+        // console.log({ parentID, userID })
         return new Promise(async (resolve) => {
             try {
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -328,21 +321,22 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                     hours: listData[0].hours,
                     amount: listData[0].amount,
-                    unitprice: Number(listData[0].amount / listData[0].hours),
+                    unitprice: (listData[0].hours != 0 ? Number(listData[0].amount / listData[0].hours) : 0)
                 }
+                // console.log(dataUpdate)
 
-                let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(parentID, dataUpdate, { new: true });
+                let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(parentID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
                     return resolve({
                         error: true,
                         message: "Cannot update",
                         keyError: "cannot_update",
-                    });
+                    })
                 }
 
-                return resolve({ error: false, data: infoAfterUpdate });
+                return resolve({ error: false, data: infoAfterUpdate })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message })
             }
         })
     }
@@ -371,14 +365,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
-                    _id: expertTimesheetID,
-                    $or: [
-                        {userCreate: userID},
-                        {admins: { $in: [userID] }},
-                        {members: { $in: [userID] }}
-                    ]
-                })
+                let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID)
                 .select(select)
                 .populate(populates)
 
@@ -398,10 +385,7 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID }) {
-        // console.log({
-        //     sortOption, parentID, workID, userID,
-        //     keyword, limit, lastestID, select, populates, option, month, year, assigneeID })
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, companyID }) {
         return new Promise(async (resolve) => {
             // console.log({ parentID, userID, keyword, limit, lastestID, select, populates, option, month, year })
             try {
@@ -437,12 +421,22 @@ class Model extends BaseModel {
 				}else{
                     // Danh sách bảng chấm công
                     if(!option){
-                        conditionObj.parent = { $exists: false }
-                        conditionObj.$or = [
-                            {userCreate: userID},
-                            {admins: { $in: [userID] }},
-                            {members: { $in: [userID] }}
-                        ]
+                        let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
+                            appID: "61e049cffdebf77b072d1b14", 
+                            userID
+                         })
+
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                            conditionObj.company = companyID
+                            conditionObj.parent = { $exists: false }
+                        }else{
+                            conditionObj.$or = [
+                                {admins: { $in: [userID] }},
+                                {members: { $in: [userID] }}
+                            ]
+                            conditionObj.company = companyID
+                            conditionObj.parent = { $exists: false }
+                        }
                     }
 
                     // Chi tiết chấm công của userID
