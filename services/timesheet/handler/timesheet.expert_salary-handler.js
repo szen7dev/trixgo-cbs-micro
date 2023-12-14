@@ -33,14 +33,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, name, date, type, note, projectID, humanID, salary, reward, punishment, advance, remaining, paid } = ctx.params;
+                let { parentID, date, type, note, projectID, humanID, salary, reward, punishment, advance, remaining, paid, name } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log(company)
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.insert({
-                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, projectID, humanID, salary, reward, punishment, advance, remaining, paid
-                });
+                    userCreate: userID, 
+                    companyID: company._id, 
+                    parentID, date, type, note, projectID, humanID, salary, reward, punishment, advance, remaining, paid, name
+                })
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
                 return { error: true, message: error.message };
             }

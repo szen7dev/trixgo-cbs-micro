@@ -21,6 +21,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  */
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../database/timesheet.expert_salary-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
+const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll')
 const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
 
@@ -49,13 +50,16 @@ class Model extends BaseModel {
                     });
                 }
 
+                let infoCompany = await AUTH__COMPANY_COLL.findById(companyID)
+
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
-                    userCreate, name, admins: [userCreate], members: [userCreate]
-                }
-
-                if(companyID){
-                    dataInsert.company = companyID;
+                    company: companyID,
+                    convertFactor: infoCompany.convertFactor,
+                    userCreate, 
+                    name, 
+                    admins: [userCreate], 
+                    members: [userCreate]
                 }
 
                 if(humanID){
@@ -114,6 +118,7 @@ class Model extends BaseModel {
                         human: item._id,
                         parent: infoAfterInsert._id,
                         company: infoAfterInsert.company,
+                        convertFactor: infoAfterInsert.convertFactor,
                         project: item.department,
                         date: infoAfterInsert.date,
                         type: infoAfterInsert.type,
@@ -139,14 +144,14 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             const that = this
             try {
-                let infoSalaryID = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID);
-                if(!infoSalaryID) {
+                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
+                if(!infoSalary) {
                     return resolve({
                         error: true,
                         message: 'Timesheet không tồn tại',
                         keyError: "timesheet_not_exists",
                         status: 400
-                    });
+                    })
                 }
 
                 let dataUpdate = {
@@ -178,41 +183,41 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                if(!isNaN(salary) && Number(infoSalaryID.salary) != Number(salary)){
+                if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
                     dataUpdate.salary = salary;
                 }
-                if(!isNaN(reward) && Number(infoSalaryID.reward) != Number(reward)){
+                if(!isNaN(reward) && Number(infoSalary.reward) != Number(reward)){
                     dataUpdate.reward = reward;
                 }
-                if(!isNaN(revenueBonus) && Number(infoSalaryID.revenueBonus) != Number(revenueBonus)){
+                if(!isNaN(revenueBonus) && Number(infoSalary.revenueBonus) != Number(revenueBonus)){
                     dataUpdate.revenueBonus = revenueBonus;
                 }
-                if(!isNaN(punishment) && Number(infoSalaryID.punishment) != Number(punishment)){
+                if(!isNaN(punishment) && Number(infoSalary.punishment) != Number(punishment)){
                     dataUpdate.punishment = punishment;
                 }
-                if(!isNaN(advance) && Number(infoSalaryID.advance) != Number(advance)){
+                if(!isNaN(advance) && Number(infoSalary.advance) != Number(advance)){
                     dataUpdate.advance = advance;
                 }
-                if(!isNaN(mealAllowance) && Number(infoSalaryID.mealAllowance) != Number(mealAllowance)){
+                if(!isNaN(mealAllowance) && Number(infoSalary.mealAllowance) != Number(mealAllowance)){
                     dataUpdate.mealAllowance = mealAllowance;
                 }
-                if(!isNaN(insurance) && Number(infoSalaryID.insurance) != Number(insurance)){
+                if(!isNaN(insurance) && Number(infoSalary.insurance) != Number(insurance)){
                     dataUpdate.insurance = insurance;
                 }
-                if(!isNaN(pitax) && Number(infoSalaryID.pitax) != Number(pitax)){
+                if(!isNaN(pitax) && Number(infoSalary.pitax) != Number(pitax)){
                     dataUpdate.pitax = pitax;
                 }
 
                 if(!isNaN(salary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance)){
-                    dataUpdate.remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(advance)
+                    dataUpdate.remaining = Number(salary) + Number(reward * infoSalary.convertFactor) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment * infoSalary.convertFactor) - Number(insurance) - Number(pitax) - Number(advance)
                 }
 
-                if(!isNaN(paid) && Number(infoSalaryID.paid) != Number(paid)){
+                if(!isNaN(paid) && Number(infoSalary.paid) != Number(paid)){
                     dataUpdate.paid = paid;
                 }
                 // console.log(dataUpdate)
 
-                const adminsID = [...infoSalaryID.admins?.map(item => item?.toString())]
+                const adminsID = [...infoSalary.admins?.map(item => item?.toString())]
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
                         if(admins.length && checkObjectIDs(admins)) {
@@ -262,8 +267,18 @@ class Model extends BaseModel {
 
                 // Cập nhật giá trị vào Bảng lương
                 if(infoAfterUpdate.parent){
+                    /**
+                     * CẬP NHẬT CHI TIẾT LƯƠNG
+                     */
                     await that.updateValue( {expertSalaryID: infoAfterUpdate.parent, userID })
                 }else{
+                    /**
+                     * CẬP NHẬT BẢNG LƯƠNG CHA
+                     */
+                    // Cập nhật hệ số chuyển đổi KPI sang giá trị
+                    let infoCompany = await AUTH__COMPANY_COLL.findById(companyID)
+                    await TIMESHEET__EXPERT_SALARY_COLL.updateMany({ parent: expertSalaryID }, { $set: { convertFactor: infoCompany.convertFactor, }})
+
                     // Cập nhật bảng chấm công vào bảng lương
                     await that.updateValueTimesheet({ expertSalaryID, userID, companyID })
 
@@ -342,24 +357,12 @@ class Model extends BaseModel {
     }){ 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 db.expert_timesheets.find({
-                        "company" : ObjectId("6046bedeb55525368b11c5c3"),
-                        // "parent" : ObjectId("6541f51e1941120012c49376"),
-                        "assignee": ObjectId("63b62cbd226e9c00110aa2e8"),
-                        "parent": { $exists: true, $ne: null },
-                        $where: `return this.date.getMonth() === 10 && this.date.getFullYear() === 2023`
-                    }).select('hours parent assignee date company')
-                    .sort({date:1})
-                 */
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 if(!infoSalary)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
-                // console.log({month})
-                // console.log({year})
 
                 // Tổng hợp từ Bảng chấm công
                 let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -425,7 +428,7 @@ class Model extends BaseModel {
             try {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 if(!infoSalary)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+                    return resolve({ error: true, message: "can't_get_info", status: 403 })
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
@@ -463,17 +466,35 @@ class Model extends BaseModel {
                 // console.log({listData1})
 
                 for(const item of listData1){
-                    await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
+                    // await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
+                    //     company: companyID, 
+                    //     parent: { $exists: true, $ne: null },
+                    //     human: item._id.executor,
+                    //     $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                    // }, 
+                    //     {
+                    //         reward: Number(item.bonus),
+                    //         punishment: Number(item.amount),
+                    //     }, { new: true }
+                    // )
+
+                    let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         company: companyID, 
                         parent: { $exists: true, $ne: null },
                         human: item._id.executor,
                         $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
-                    }, 
-                        {
-                            reward: Number(item.bonus),
-                            punishment: Number(item.amount),
-                        }, { new: true }
-                    )
+                    }) 
+                    // console.log(info) 
+                    
+                    let dataUpdate =  {
+                        reward: Number(item.bonus),
+                        punishment: Number(item.amount),
+                    }
+
+                    dataUpdate.remaining = Number(info.salary) + Number(info.reward * info.convertFactor) + Number(info.revenueBonus) + Number(info.mealAllowance) - Number(info.punishment * info.convertFactor) - Number(info.insurance) - Number(info.pitax) - Number(info.advance)
+
+                    let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    // console.log(infoAfterUpdate) 
                 }
 
                 return resolve({ error: false, status: 200 })
@@ -529,8 +550,8 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, companyID, departmentsID }) {
-        console.log({sortOption, parentID, userID,
-            keyword, limit, lastestID, select, populates, companyID, departmentsID})
+        // console.log({sortOption, parentID, userID,
+        //     keyword, limit, lastestID, select, populates, companyID, departmentsID})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
