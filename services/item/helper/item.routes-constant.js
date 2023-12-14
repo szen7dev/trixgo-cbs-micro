@@ -53,6 +53,7 @@ const CF_ROUTINGS_ITEM = {
     CONTACT_DOWNLOAD_TEMPLATE_IMPORT_EXCEL     : `${BASE_ROUTE}${CONTACT}/download-template-import-excel`,
     CONTACT_IMPORT_FROM_EXCEL                  : `${BASE_ROUTE}${CONTACT}/import-from-excel`,
     CONTACT_EXPORT_EXCEL                       : `${BASE_ROUTE}${CONTACT}/export-excel`,
+    CONTACT_EXPORT_EXCEL_BY_FILTER             : `${BASE_ROUTE}${CONTACT}/export-excel-by-filter`,
 
     // ================================WAREHOUSE=======================================//
     WAREHOUSES                                 : `${BASE_ROUTE}${WAREHOUSE}`,

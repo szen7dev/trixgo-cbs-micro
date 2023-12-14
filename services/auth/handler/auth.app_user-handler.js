@@ -1,18 +1,6 @@
-/*******************************************************
- *    TÊN MODULE : APP USER                      *
- *    NGƯỜI VIÊT : PHAN VĂN ĐỆ                         *
- *    LIỆN HỆ    : lucdeit1997@gmail.com - 0393553224  *
- *    THỜI GIAN  : 27/01/2022                          *
-********************************************************/
-/**
- * TOOLS
- */
 const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code');
 
-/**
- * MODELS
- */
-const AUTH__APP_USER = require('../model/auth.app_users').MODEL;
+const AUTH__APP_USER = require('../model/auth.app_users').MODEL
 
 module.exports = {
 

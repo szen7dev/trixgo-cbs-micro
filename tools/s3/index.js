@@ -13,8 +13,22 @@ const { config }                = require('./config');
 // const { nonAccentVietnamese }   = require('../utils/string_utils');
 // const { getExtension }          = require('../utils/utils');
 
-const s3Object = new S3({
+const isProd = process.env.NODE_ENV == "production"
+
+const s3Options = {
+    accessKeyId: config.aws_access_key_id,
+    secretAccessKey: config.aws_secret_access_key,
     region: config.aws_region,
+}
+
+const s3Object = new S3({
+    region: s3Options.region,
+    ...(!isProd && {
+        credentials: {
+            accessKeyId: s3Options.accessKeyId,
+            secretAccessKey: s3Options.secretAccessKey
+        }
+    })
 });
 
 const s3Client = s3.createClient({
@@ -23,11 +37,7 @@ const s3Client = s3.createClient({
     s3RetryDelay: 1000, // this is the default
     multipartUploadThreshold: 20971520, // this is the default (20 MB)
     multipartUploadSize: 15728640, // this is the default (15 MB)
-    s3Options: {
-        accessKeyId: config.aws_access_key_id,
-        secretAccessKey: config.aws_secret_access_key,
-        region: config.aws_region,
-    },
+    s3Options,
 });
 
 /**
@@ -45,8 +55,8 @@ const uploadFileS3 = (pathFile, fileName) => {
         ACL: 'public-read',
         Key: key, // File name you want to save as in S3
         Body: fileContent,
-        // Expires: config.signedUrlExpireSeconds,
     };
+    
     return new Upload({
         client: s3Object,
         params,
