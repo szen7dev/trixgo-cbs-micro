@@ -70,6 +70,11 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
         type: String,
         defautl: 'company_default.png'
     },
+    //_________Hệ số chuyển đổi KPI (KPI => giá trị)
+    convertFactor: {
+        type: Number,
+        default: 1
+    },
     //_________Cho phép hiển thị thông tin (0/1)
     show: {
         type   : Number,
@@ -113,5 +118,5 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
-    },
-});
+    }
+})
