@@ -15,6 +15,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**
  * import inter-coll, exter-coll
  */
+const ITEM__DEPARTMENT_COLL              = require('../../item/database/item.department-coll')
 const FIN__CASH_BOOK_COLL                = require('../database/fin.cash_book-coll');
 const ACCOUNT_COLL                       = require('../../item/database/item.account-coll')
 const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
@@ -1034,7 +1035,14 @@ class Model extends BaseModel {
                      */
                     if(option == 2){
                         let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID).select('name status date note salary')
-                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: parentID})
+                        
+                        // Danh sách các phòng ban mà user được quyền truy cập
+                        let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
+                        // console.log(listDepartment)
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({
+                            parent: parentID,
+                            project: { $in: listDepartment.map(item=>item.id) }
+                        })
                         .populate({
                             path: 'human project position',
                             select:'fullname name',

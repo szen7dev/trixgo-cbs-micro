@@ -137,8 +137,8 @@ class Model extends BaseModel {
      */
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
         dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
-            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
+            console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+                dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -149,7 +149,7 @@ class Model extends BaseModel {
                         message: 'Timesheet không tồn tại',
                         keyError: "timesheet_not_exists",
                         status: 400
-                    });
+                    })
                 }
 
                 let dataUpdate = {
@@ -178,24 +178,26 @@ class Model extends BaseModel {
                 if(date){
                     dataUpdate.date = date;
                 }
-
-                if(hours){
-                    dataUpdate.hours = hours;
-                }
-
-                let unitprice2 = Number(unitprice)
-                if(checkObjectIDs(workID)){
-                    dataUpdate.work = workID;
-
-                    let infoWork = await BUDGET__WORK_COLL.findById(workID).select('unitPrice')
-                    if(infoWork){
-                        unitprice2 = Number(infoWork.unitPrice)
+                
+                if(infoTimeSheetID.parent){
+                    if(hours){
+                        dataUpdate.hours = hours;
                     }
+    
+                    let unitprice2 = Number(unitprice)
+                    if(checkObjectIDs(workID)){
+                        dataUpdate.work = workID;
+    
+                        let infoWork = await BUDGET__WORK_COLL.findById(workID).select('unitPrice')
+                        if(infoWork){
+                            unitprice2 = Number(infoWork.unitPrice)
+                        }
+                    }
+    
+                    let amount  = hours * unitprice2
+                    dataUpdate.unitprice = unitprice2
+                    dataUpdate.amount = amount
                 }
-
-                let amount  = hours * unitprice2
-                dataUpdate.unitprice = unitprice2
-                dataUpdate.amount = amount
 
                 if(status){
                     dataUpdate.status = status;

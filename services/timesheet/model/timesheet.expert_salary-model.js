@@ -2,7 +2,6 @@
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
-const _isValid                          = require('mongoose').Types.ObjectId;
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 /**
@@ -24,6 +23,7 @@ const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_
 const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll')
 const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
+const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
@@ -571,7 +571,7 @@ class Model extends BaseModel {
 
                 const validation = validateParamsObjectID({
                     departmentsID           : { value: departmentsID, isRequire: false },
-                });
+                })
                 if(validation.error) return resolve(validation);
 
                 if(populates && typeof populates === 'string'){
@@ -587,9 +587,15 @@ class Model extends BaseModel {
                 }
 
 				if(checkObjectIDs(parentID)){
-					conditionObj.parent = parentID
+                    // Danh sách các phòng ban mà user được quyền truy cập
+                    let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
 
-                    departmentsID && departmentsID.length && (conditionObj.project     = { $in: departmentsID })
+					conditionObj.parent = parentID
+					conditionObj.project = { $in: listDepartment.map(item=>item.id) }
+
+                    if(departmentsID && departmentsID.length){
+                        conditionObj.project = { $in: departmentsID }
+                    }
 
                     if(keyword){
                         keyword = keyword.split(" ");
