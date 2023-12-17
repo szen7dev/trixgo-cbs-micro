@@ -1006,11 +1006,6 @@ class Model extends BaseModel {
         parentID, companyID, receiverID, types, isExportExcel = false,
         requestResponse, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
-        //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
-        //     console.log({
-        //         parentID, companyID, receiverID, types, isExportExcel,
-        // requestResponse, fromDate, toDate, marked, userID, departmentsID,
-        // keyword, limit, lastestID, select, populates, isParent, type, genders })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -1144,6 +1139,7 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
+                    lastestID,
                 }, status: 200 });
 
             } catch (error) {
@@ -1824,12 +1820,63 @@ class Model extends BaseModel {
                     });
                 }
 
-                // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
+                
+                const result = await this.downloadExcelFile(listData)
+                return resolve(result);
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    exportExcelByFilter({ userID, companyID, filterParams }) {
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {};
+
+                const populates = JSON.stringify({
+                    path: 'department position field property area area1 area2 linkUser workingStatus contractType',
+                    select: 'name sign',
+                    populate:{
+                        path: 'parent',
+                        select: 'name',
+                        populate:{
+                            path: 'parent',
+                            select: 'name',
+                        }
+                    }
+                })
+
+                const { data, error } = await this.getListByFilter({
+                    ...filterParams,
+                    populates,
+                    type: 1,
+                    userID,
+                    companyID,
+                    isExportExcel: false
+                });
+
+                if(error || !data?.listRecords?.length) {
+                    return resolve({ data, error })
+                }
+
+                const result = await this.downloadExcelFile(data.listRecords)
+                return resolve(result);
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    downloadExcelFile(data) {
+        return new Promise(resolve => {
+            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
                 .then(async workbook => {
 
-                    var i = 3;
-                    listData?.forEach((item, index) => {
+                    let i = 3;
+                    data?.forEach((item, index) => {
                         workbook.sheet("NhanSu").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("NhanSu").row(i).cell(2).value(item.name);
                         workbook.sheet("NhanSu").row(i).cell(3).value(item?.department?.name);
@@ -1869,11 +1916,6 @@ class Model extends BaseModel {
                     fs.unlinkSync(pathWriteFile);
                     return resolve({ error: false, data: result?.Location, status: 200 });
                 });
-
-            } catch (error) {
-                console.log({ error })
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
         })
     }
 
