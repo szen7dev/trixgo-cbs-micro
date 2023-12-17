@@ -4,16 +4,9 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { _isValid }                      = require('../../../tools/utils/utils');
 const { KEY_ERROR }                     = require('../../../tools/keys');
 
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 /**
  * COLLECTION
  */

@@ -68,8 +68,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     date: { type: Date, default: Date.now },
     //_________Có phải là hóa đơn VAT hay không
     vat: { type: Number, default: 0 },  
-    //_________Ngày hóa đơn (phục vụ bảng kê VAT)
-    dateInvoice: { type: Date, default: null },   
+    //_________Ngày chứng từ
+    dateInvoice: { type: Date, default: Date.now }, 
     //_________Số hóa đơn
     signInvoice: String,   
     //_________Khóa phiếu

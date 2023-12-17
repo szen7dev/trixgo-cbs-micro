@@ -42,7 +42,7 @@ class Model extends BaseModel {
 
     /**
      * Name: Insert
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date: 9/4/2022
      */
     insert({ authorID, companyID, fundaID, voucherID,
@@ -178,7 +178,7 @@ class Model extends BaseModel {
 
     /**
      * Name: Update
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date: 9/4/2022
      */
     update({
@@ -376,7 +376,7 @@ class Model extends BaseModel {
 
     /**
      * Name: Info
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date: 9/4/2022
      */
     getInfo({ journalID, select, populates }) {
@@ -411,12 +411,12 @@ class Model extends BaseModel {
 
     /**
      * Name  : Get list
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date: 9/4/2022
      */
     getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, contacts})
+            console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, contacts})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -450,9 +450,6 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
 
-                /**
-                 * BA
-                 */
                 if(fromDate && toDate){
                     conditionObj.date = {
                         $gte: moment(fromDate).toDate(),
@@ -534,7 +531,7 @@ class Model extends BaseModel {
 
                 }else{
                     if(checkObjectIDs(accountID)){
-                        // console.log('=================22222222222222222')
+                        console.log('=================22222222222222222')
                         let arrObjectID = []
                         let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
                         if(!infoAccount)
@@ -578,11 +575,13 @@ class Model extends BaseModel {
                     // console.log(arrObjectID)
 
                     if(contacts){
+                        // console.log('=================1111111111111111_____11111111111')
                         conditionObj.$or = [
                             { debit: { $in: arrObjectID }, customerDebit: {$in: contacts.map(item=>ObjectID(item._id))} },
                             { credit: { $in: arrObjectID }, customerCredit: {$in: contacts.map(item=>ObjectID(item._id))} },
                         ]
                     }else{
+                        // console.log('=================1111111111111111_____22222222222')
                         conditionObj.$or = [
                             { debit: { $in: arrObjectID }, customerDebit: null },
                             { credit: { $in: arrObjectID }, customerCredit: null },
@@ -590,18 +589,34 @@ class Model extends BaseModel {
                     }
                     // console.log(conditionObj)
                 }
+
+                if(option == 2){
+                    // console.log('=================1111111111111111')
+                    let arrObjectID = []
+                    let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                    if(!infoAccount)
+                        return resolve({ error: true, message: 'cannot_get_account_info' })
+
+                    arrObjectID.push(accountID)
+                    arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
+                    // console.log(arrObjectID)
+
+                    conditionObj.$or = [
+                        { debit: { $in: arrObjectID }},
+                        { credit: { $in: arrObjectID }},
+                    ]
+                }
          
-                /**
-                 * THEO KEYWORD
-                 */
                 if (keyword) {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
                 }
+
                 let conditionObjOrg = { ...conditionObj };
-                // console.log(conditionObj)
+
+                console.log(conditionObj)
 
                 // PHÂN TRANG KIỂU MỚI
                 if (lastestID && checkObjectIDs(lastestID)) {
@@ -660,7 +675,7 @@ class Model extends BaseModel {
 
     /**
      * Name  : Tổng hợp ngân sách đã thực hiện
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date  : 10/4/2022
      */
     calImpleBudget({
@@ -767,12 +782,12 @@ class Model extends BaseModel {
 
     /**
      * Name  : getListByProperty
-     * Author: Hiepnh
+     * Code: Hiepnh
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts }) {
-        console.log('==================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
+        // console.log('==================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**

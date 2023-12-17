@@ -5,7 +5,6 @@ const BASE_ROUTE = '/auth';
  */
  const COMPANY           = '/companies',
        USER              = '/users',
-       REGISTER_TRIAL    = '/register_trials',
        APP               = '/apps',
        APP_MENU          = '/app_menus',
        APP_ROLE_MENU     = '/app_role_menus',
@@ -74,17 +73,11 @@ const CF_ROUTINGS_AUTH = {
     APP_USER                                : `${BASE_ROUTE}${APP_USER}`,
     APP_USER_LIST_APP_OFF_USER              : `${BASE_ROUTE}${APP_USER}/list-app-of-user`,
     APP_USER_CHECK_PERMISSIONS_ACCESS_APP   : `${BASE_ROUTE}${APP_USER}/check-permissions-access-app`,
-    /**
-     * ĐĂNG KÝ DÙNG THỬ
-     */
-    REGISTER_TRIAL                    : `${BASE_ROUTE}${REGISTER_TRIAL}`,
-    REGISTER_TRIAL_STATISTICS_BY_TYPE : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-type`,
-    REGISTER_TRIAL_STATISTICS_BY_YEAR : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-year`,
-    REGISTER_TRIAL_STATISTICS_BY_COMPANY : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-company`,
 
     /**
      * VERSION APP
      */
     CHECK_LASTEST_APP : `/check-lastest-app`,
 }
+
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;

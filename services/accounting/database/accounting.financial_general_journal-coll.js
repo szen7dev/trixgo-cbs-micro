@@ -17,7 +17,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'funda'
     }, 
-    //_________Dự án
+    //_________Dự án/Phòng ban
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
@@ -30,12 +30,12 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     /**
      * LINK NGÂN SÁCH
      */
-    //_________Link tới dự án (***)
+    //_________Link tới dự án (***Bỏ)
     budgetProject: {
         type: Schema.Types.ObjectId,
         ref: 'department'
     }, 
-    //_________Link tới hợp đồng (***)
+    //_________Link tới hợp đồng (***Bỏ)
     budgetContract: {
         type: Schema.Types.ObjectId,
         ref: 'contract'
@@ -78,6 +78,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     type: { type: Number, default: 1 },  
     //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher)
     date: { type: Date, default: Date.now },
+    //_________Ngày chứng từ
+    dateInvoice: { type: Date, default: Date.now }, 
     //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
     forward: { type: Number, default: 0 },
     //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)

@@ -1,12 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, objectID }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const moment                            = require("moment");
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
@@ -18,7 +12,6 @@ const AUTH__APP_MENU_COLL                   = require('../database/permission/au
 const AUTH__APP_ROLE_MENU_COLL              = require('../database/permission/auth.app_role_menu-coll');
 
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
-const { template }                          = require('lodash');
 
 /**
  * import inter-model, exter-model
@@ -111,7 +104,6 @@ class Model extends BaseModel {
     getInfo({ appMenuID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -123,19 +115,10 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+
                 if(!checkObjectIDs(appMenuID))
                     return resolve({ error: true, message: "Mã nhóm chức năng không hợp lệ",keyError: 'appMenuID_invalid', status: 400 });
                     
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 let infoAterGet = await AUTH__APP_MENU_COLL.findById(appMenuID)
                     .select(select)
                     .populate(populates)
@@ -165,17 +148,11 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let conditionObj = {};
                 let sortBy;
                 let keys	 = ['order__1', '_id__1'];
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+
                 if(parent){
                     // Danh sách menu của một Menu cha
                     conditionObj.app = app;
@@ -197,11 +174,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
+ 
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI

@@ -1,13 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, objectID }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const moment                            = require("moment");
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { KEY_ERROR }                     = require('../../../tools/keys');
 
 /**
@@ -16,7 +9,6 @@ const { KEY_ERROR }                     = require('../../../tools/keys');
 const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
 const AUTH__APP_USER_COLL                   = require('../database/permission/auth.app_user-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
-const { template }                          = require('lodash');
 
 /**
  * import inter-model, exter-model

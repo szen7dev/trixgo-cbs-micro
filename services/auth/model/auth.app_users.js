@@ -1,11 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, objectID }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const moment                            = require("moment");
-const ObjectID                          = require('mongoose').Types.ObjectId;
+const { checkObjectIDs, IsJsonString}   = require('../../../tools/utils/utils');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 /**
  * import inter-coll, exter-coll
@@ -53,20 +48,19 @@ class Model extends BaseModel {
 
                 // Kiểm tra số lượng user gửi lên mà lớn hơn số lượng user cho phép thì báo lỗi
                 if(amountUserCurrent > amountAppUserAccess)
-                    return resolve({ error: true, message: "Người dùng vượt quá số lượng cho phép", keyError: "User_exceeds_the_allowed_number", status: 200 });
+                    return resolve({ error: true, message: "Người dùng vượt quá số lượng cho phép", keyError: "User_exceeds_the_allowed_number", status: 200 })
 
                 for (const user of users) {
-                    // let checkExist = await AUTH__APP_USER_COLL.findOne({ app, company, user })  
                     let checkExist = await AUTH__APP_USER_COLL.findOne({ app, user })  // mỗi user và app chỉ tồn tại duy nhất 1 mẩu tin
                     if(checkExist)
-                        return resolve({ error: true, message: "Người dùng đã tồn tại trong app user", keyError: "user_existed_in_app_user", status: 200 });
-                    // Bắt đầu thêm
-                    let infoAfterInsert = await this.insertData({ app, company, user, endTime, userCreate: userID, userUpdate: userID });
+                        return resolve({ error: true, message: "Người dùng đã tồn tại trong app user", keyError: "user_existed_in_app_user", status: 200 })
+                    
+                    await this.insertData({ app, company, user, endTime, userCreate: userID, userUpdate: userID })
                 }
 
-                return resolve({ error: false, message: "Thêm thành công", status: 200 });
+                return resolve({ error: false, message: "Thêm thành công", status: 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
@@ -75,25 +69,20 @@ class Model extends BaseModel {
     update({ appID, companyID, memberID, level, userID }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                let checkExist = await AUTH__APP_USER_COLL.findOne({ app: appID, company: companyID, user: memberID });
-
+                let checkExist = await AUTH__APP_USER_COLL.findOne({ app: appID, company: companyID, user: memberID })
                 if(!checkExist)
-                    return resolve({ error: true, message: "App user không tồn tại", keyError: "app_user_not_exist", status: 200 });
+                    return resolve({ error: true, message: "App user không tồn tại", keyError: "app_user_not_exist", status: 200 })
                 
                 let infoAfterUpdate = await AUTH__APP_USER_COLL.findOneAndUpdate({ app: appID, company: companyID, user: memberID}, { 
                     level, userUpdate: userID, modifyAt: new Date() 
-                }, { new: true });
+                }, { new: true })
 
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 200 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 200 })
 
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
