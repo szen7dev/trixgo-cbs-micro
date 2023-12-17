@@ -6,7 +6,6 @@ const { CF_DOMAIN_SERVICES } 		= require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 	        = require('./helper/auth.actions-constant');
 const AUTH__USER_HANDLER			= require('./handler/auth.user-handler');
 const AUTH__COMPANY_HANDLER			= require('./handler/auth.company-handler');
-const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-handler');
 const AUTH__APP_MENU_HANDLER 		= require('./handler/auth.app_menu-handler');
 const AUTH__APP_ROLE_HANDLER 		= require('./handler/auth.app_role-handler');
 const AUTH__APP_ROLE_MENU_HANDLER 	= require('./handler/auth.app_role_menu-handler');
@@ -124,15 +123,6 @@ module.exports = {
 		[CF_ACTIONS_AUTH.APP_COMPANY_REMOVE]						: AUTH__APP_COMPANY_HANDLER.remove,
 		[CF_ACTIONS_AUTH.APP_COMPANY_GET_INFO_AND_GET_LIST]			: AUTH__APP_COMPANY_HANDLER.getInfoAndGetList,
 
-		// Register trial
-		[CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT]						: AUTH__REGISTER_TRIAL_HANDLER.insert,
-		[CF_ACTIONS_AUTH.REGISTER_TRIAL_UPDATE]						: AUTH__REGISTER_TRIAL_HANDLER.update,
-		[CF_ACTIONS_AUTH.REGISTER_TRIAL_REMOVE]						: AUTH__REGISTER_TRIAL_HANDLER.remove,
-		[CF_ACTIONS_AUTH.REGISTER_TRIAL_GET_INFO_AND_GET_LIST]		: AUTH__REGISTER_TRIAL_HANDLER.getInfoAndGetList,
-		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_TYPE]		    : AUTH__REGISTER_TRIAL_HANDLER.statisticsByType,
-		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_YEAR]		    : AUTH__REGISTER_TRIAL_HANDLER.statisticsByYear,
-		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_COMPANY]		: AUTH__REGISTER_TRIAL_HANDLER.statisticsByCompany,
-
 		// Version app
 		[CF_ACTIONS_AUTH.CHECK_VERSION_APP]						    : AUTH__APP_HANDLER.checkVersionApp,
 
@@ -171,4 +161,4 @@ module.exports = {
 	async stopped() {
 
 	}
-};
+}

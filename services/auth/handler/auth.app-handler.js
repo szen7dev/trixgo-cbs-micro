@@ -4,27 +4,28 @@
 const { renderStatusCodeAndResponse }       = require('../../../tools/utils/status_code');
 
 const AUTH__APP_COLL                        = require('../database/permission/auth.app-coll');
+const AUTH__APP_MODEL                       = require('../model/auth.app').MODEL
 
 module.exports = {
     getInfoAndGetList: {
         params: {},
         async handler(ctx) {
             try {
-                const listApps = await AUTH__APP_COLL.find({}).lean();
-                const totalRecord = await AUTH__APP_COLL.countDocuments();
+                await this.validateEntity(ctx.params);
+                let { appID, lock, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { _id: userID } = ctx.meta.infoUser;
                 
-                const resultAfterCallHandler = {
-                    data: {
-                        listRecords: listApps,
-                        totalRecord
-                    },
-                    error: false,
-                    status: 200
+                let resultAfterCallHandler;
+                if(appID){
+                    resultAfterCallHandler = await AUTH__APP_MODEL.getInfo({ appID, select, populates });
+                }else{
+                    resultAfterCallHandler = await AUTH__APP_MODEL.getList({ lock, keyword, limit, lastestID, select, populates });
                 }
+                // console.log({resultAfterCallHandler})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+                return { error:  true, message: error.message };
             }
         }
     },

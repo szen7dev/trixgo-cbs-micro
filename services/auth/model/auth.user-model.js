@@ -8,7 +8,6 @@ const AUTH__COMPANY_COLL                = require('../database/auth.company-coll
 /**
  * import util files
  */
-// const { checkValidPhoneNumber, validEmail, removeUtf8AndJoinSpace, makeid, randomStringFixLengthCode } = require('../../../tools/utils/string_utils');
 const { randomStringFixLengthCode }     = require('../../../tools/utils/string_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
@@ -28,8 +27,6 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant');
-// const { sendNoticeToMember }            = require('../../../tools/mailer/module/notice_pcm_task');
-
 class Model extends BaseModel {
 
     constructor() {

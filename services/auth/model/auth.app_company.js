@@ -1,7 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, objectID }                        
-                                        = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
 /**s
@@ -134,19 +133,9 @@ class Model extends BaseModel {
     getInfo({ appCompanyID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(appCompanyID))
                     return resolve({ error: true, message: 'Request params appCompanyID invalid', status: 200 });
                 
-                 // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 200 });
@@ -158,11 +147,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await AUTH__APP_COMPANY_COLL.findById(appCompanyID)
                                     .select(select)
                                     .populate(populates)

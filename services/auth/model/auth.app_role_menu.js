@@ -1,12 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, objectID }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const moment                            = require("moment");
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 /**
@@ -15,7 +9,6 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const AUTH__APP_ROLE_MENU_COLL              = require('../database/permission/auth.app_role_menu-coll');
 const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
-const { template }                          = require('lodash');
 const { KEY_ERROR }                         = require('../../../tools/keys');
 
 /**
@@ -85,9 +78,7 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let conditionObj = { 
                     app: app,
                     company: company,
@@ -96,13 +87,6 @@ class Model extends BaseModel {
 
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
-                
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-              
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -115,15 +99,8 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-               
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-
                 let conditionObjOrg = { ...conditionObj };
-                // PHÂN TRANG KIỂU MỚI
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__APP_ROLE_MENU_COLL.findById(lastestID);
 					if(!infoData)
@@ -188,7 +165,6 @@ class Model extends BaseModel {
                     members:  { $in: [user] }
                 })
                 .select('_id name')
-                // console.log(listRoles)
                 
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
@@ -209,9 +185,7 @@ class Model extends BaseModel {
                     },
                 ]);
                 if (!listData) 
-                    return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
-
-                // console.log(listData)
+                    return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED })
 
                 return resolve({ error: false, data: listData });
             } catch (error) {
