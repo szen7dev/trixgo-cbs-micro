@@ -110,6 +110,7 @@ module.exports = {
             budgetItemID: { type: "string", optional: true },
             budgetGroupID: { type: "string", optional: true },
             budgetWorkID: { type: "string", optional: true },
+            forward: { type: "string", optional: true },
             
             // Field mặc định
             keyword: { type: "string", optional: true },
@@ -121,8 +122,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
-                
+                let { option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+
+                // console.log('=====Danh sách bút toán===================')
+                // console.log({option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey})
+
                 const { _id: userID, company, contacts } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -136,7 +140,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
-                        option, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, contacts, keyword, limit, lastestID, select, populates, sortKey, ctx
+                        option, forward, cancel, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, contacts, keyword, limit, lastestID, select, populates, sortKey, ctx
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -234,8 +238,8 @@ module.exports = {
             option          : { type: "string", optional: true },
             optionAccount   : { type: "string", optional: true },
             optionTerm      : { type: "string", optional: true },
-            fromDate        : { type: "string" },
-            toDate          : { type: "string" },
+            fromDate        : { type: "string", optional: true },
+            toDate          : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             name            : { type: "string", optional: true },
             arrAccNames     : { type: "array", optional: true },
@@ -249,7 +253,8 @@ module.exports = {
                 let { option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
                 
                 const { _id: userID, company, contacts } = ctx.meta.infoUser;
-                // console.log(ctx.meta.infoUser)
+
+                // console.log({option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs})
 
                 if(!companyID){
                     companyID = company._id
@@ -265,10 +270,12 @@ module.exports = {
                     userID, contacts, option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
                 })
 
+                // console.log(resultAfterCallHandler)
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
             }
         }
-    },
+    }
 }

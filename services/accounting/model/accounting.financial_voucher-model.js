@@ -721,8 +721,8 @@ class Model extends BaseModel {
      */
     getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
         keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
-            // console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
-            //     keyword})
+            console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
+                keyword})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 20) {
@@ -731,19 +731,9 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                // Chỉ hiển thị sổ quỹ mà user là member
                 let sortBy;
                 let conditionObj = { };
                 let keys = ['createAt__-1', '_id__-1'];
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
@@ -764,11 +754,6 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 if(!isNaN(type) && Number(type) > 0){
                     conditionObj.type = Number(type)
                 }
@@ -861,7 +846,6 @@ class Model extends BaseModel {
 
                 let totalRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count(conditionObjOrg);
                 let totalPage = Math.ceil(totalRecord / limit);
-                // console.log(infoDataAfterGet)
 
                 return resolve({
                     error: false, data: {

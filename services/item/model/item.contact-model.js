@@ -28,6 +28,7 @@ const USER_COLL                                     = require('../../auth/databa
 const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll')
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll')
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
+const ITEM__AREA_COLL            				    = require('../database/item.area-coll')
 const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll')
 
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL
@@ -1550,31 +1551,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Báo cáo biến động nhân sự
-     * Author: Depv
-     * Code  :
-     */
-    // dashboardContactchange({}) {
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             // Cần hỏi lại nghiệp vụ chỗ 12 tháng
-    //             // Block 1
-    //             let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
-
-    //             if(!infoDataAfterGet)
-    //                 return resolve({ error: true, message: "Can't get data", status: 403 });
-
-    //             return resolve({ error: false, data: {
-
-    //             }, status: 200 });
-
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
-
-    /**
      * Dev: HiepNH
      * Func: Download Template Excel
      * Date: 8/12/2022
@@ -1582,37 +1558,46 @@ class Model extends BaseModel {
      downloadTemplateImportExcel({ companyID, userID }) {
         return new Promise(async resolve => {
             try {
-                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-                // .populate({
-                //     path: 'funda',
-                //     select:'_id  name'
-                // })
+                let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
+                .limit(500)
+                .populate({
+                    path: 'funda',
+                    select:'_id  name'
+                })
                 // console.log(listData)
 
-                let listFunda = await ITEM__FUNDA_COLL.find({ company: companyID })
+                let listArea = await ITEM__AREA_COLL.find({ level: 3 })
+                .populate({
+                    path: 'parent',
+                    select:'_id  name',
+                    populate:{
+                        path: 'parent',
+                        select:'_id  name',
+                    }
+                })
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
                 .then(async workbook => {
 
-                    // var i = 3;
-                    // listData?.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
-                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
-                    //     workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
-                    //     workbook.sheet("Export").row(i).cell(6).value(item.birthday);
-                    //     workbook.sheet("Export").row(i).cell(7).value(item.note);
-                    //     workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
-                    //     i++
-                    // });
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Export").row(i).cell(2).value(item.name);
+                        // workbook.sheet("Export").row(i).cell(3).value(item.phone);
+                        // workbook.sheet("Export").row(i).cell(4).value(item.address);
+                        // workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
+                        // workbook.sheet("Export").row(i).cell(6).value(item.birthday);
+                        // workbook.sheet("Export").row(i).cell(7).value(item.note);
+                        // workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
+                        i++
+                    });
 
 
                     var i = 2;
-                    listFunda?.forEach((item, index) => {
-                        workbook.sheet("DanhMuc").row(i).cell(3).value(`${item._id}`);
-                        workbook.sheet("DanhMuc").row(i).cell(4).value(item.name);
+                    listArea?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(11).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(12).value(item.name);
                         i++
                     });
 
@@ -1625,7 +1610,6 @@ class Model extends BaseModel {
                     const result = await uploadFileS3(pathWriteFile, fileName);
 
                     fs.unlinkSync(pathWriteFile);
-                    // console.log({ result })
                     return resolve({ error: false, data: result?.Location, status: 200 });
                 });
 

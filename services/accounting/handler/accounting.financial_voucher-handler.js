@@ -246,6 +246,8 @@ module.exports = {
                     companyID = company._id
                 }
 
+                // console.log({ voucherID, companyID, fundaID, projectID, customerID, contractID, fromDate, toDate, type, userCreateID, keyword, limit, lastestID, populates, select, sortKey })
+
                 let resultAfterCallHandler;
                 if (voucherID) {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getInfo({
