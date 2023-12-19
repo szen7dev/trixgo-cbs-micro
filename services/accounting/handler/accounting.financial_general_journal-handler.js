@@ -122,7 +122,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
-                
+
+                // console.log('=====Danh sách bút toán===================')
+                // console.log({option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey})
+
                 const { _id: userID, company, contacts } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -234,8 +237,8 @@ module.exports = {
             option          : { type: "string", optional: true },
             optionAccount   : { type: "string", optional: true },
             optionTerm      : { type: "string", optional: true },
-            fromDate        : { type: "string" },
-            toDate          : { type: "string" },
+            fromDate        : { type: "string", optional: true },
+            toDate          : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             name            : { type: "string", optional: true },
             arrAccNames     : { type: "array", optional: true },
@@ -249,7 +252,8 @@ module.exports = {
                 let { option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
                 
                 const { _id: userID, company, contacts } = ctx.meta.infoUser;
-                // console.log(ctx.meta.infoUser)
+
+                // console.log({option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs})
 
                 if(!companyID){
                     companyID = company._id
@@ -265,10 +269,12 @@ module.exports = {
                     userID, contacts, option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
                 })
 
+                // console.log(resultAfterCallHandler)
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
             }
         }
-    },
+    }
 }

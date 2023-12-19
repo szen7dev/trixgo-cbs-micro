@@ -416,7 +416,7 @@ class Model extends BaseModel {
      */
     getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-            console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, contacts})
+            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, contacts})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -531,7 +531,7 @@ class Model extends BaseModel {
 
                 }else{
                     if(checkObjectIDs(accountID)){
-                        console.log('=================22222222222222222')
+                        // console.log('=================22222222222222222')
                         let arrObjectID = []
                         let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
                         if(!infoAccount)
@@ -616,7 +616,7 @@ class Model extends BaseModel {
 
                 let conditionObjOrg = { ...conditionObj };
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // PHÂN TRANG KIỂU MỚI
                 if (lastestID && checkObjectIDs(lastestID)) {
@@ -786,8 +786,8 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts }) {
-        // console.log('==================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        // console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
+        console.log('==================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1058,8 +1058,10 @@ class Model extends BaseModel {
                             $in: arrObjectID
                         }
 
-                        conditionDebitObj.customerDebit = ObjectID(contactID)
-                        conditionCreditObj.customerCredit = ObjectID(contactID)
+                        if(contactID && checkObjectIDs(contactID)){
+                            conditionDebitObj.customerDebit = ObjectID(contactID)
+                            conditionCreditObj.customerCredit = ObjectID(contactID)
+                        }
         
                         conditionProject = {
                             year : {$year : "$date"},
@@ -1705,7 +1707,7 @@ class Model extends BaseModel {
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
-        });
+        })
     }
 
 
