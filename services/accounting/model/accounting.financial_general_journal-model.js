@@ -416,7 +416,7 @@ class Model extends BaseModel {
      */
     getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, keyword, limit, lastestID, select, populates, contacts})
+            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate,  forward, cancel, userID, keyword, limit, lastestID, select, populates, contacts})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -425,9 +425,10 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                let sortBy;
-                // let conditionObj = { forward: 0, cancel: 0 };
                 let conditionObj = {  };
+                let sortBy;
+                
+                // let conditionObj = { forward, cancel };
                 // let keys = ['createAt__1', '_id__1'];
                 let keys = ['date__1'];
 
@@ -441,6 +442,14 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(forward){
+                    conditionObj.forward = Number(forward)
+                }
+
+                if(cancel){
+                    conditionObj.cancel = Number(cancel)
                 }
 
                 if (sortKey && typeof sortKey === 'string') {
