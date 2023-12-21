@@ -1555,7 +1555,8 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {};
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['status__-1', '_id__-1'];
+                // let keys	 = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
                 // Lấy user theo mảng id
