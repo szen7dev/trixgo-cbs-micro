@@ -757,6 +757,7 @@ class Model extends BaseModel {
         // console.log({ option, companyID, parentID, userID })
         return new Promise(async resolve => {
             try {
+                // let option = 3
                 /**
                  * IMPORT SỔ QUỸ
                  */
@@ -1090,39 +1091,8 @@ class Model extends BaseModel {
                          });
                     }
 
-                    // NHẬT KÝ CHUNG KẾ TOÁN
+                    // BẢNG CÂN ĐỐI TÀI KHOẢN
                     if(option == 3){
-                        // //__________Lấy levelMax của các phần tử
-                        // let levelForRecursive = await _getLevelMaxInRecursiveByCompany(ACCOUNT_COLL, companyID)
-                        // console.log({levelForRecursive})
-
-                        // let arrObjectID = []
-                        // //__________Khai báo mảng chứa phần tử cha và các con
-                        // let getListIDRecursiveForAny = (arr) => {
-                        //     for(const item of arr){
-                        //         arrObjectID.push(item._id)
-                        //         // console.log(arrObjectID)
-
-                        //         if (Array.isArray(item.childs) && item.childs.length) {
-                        //             getListIDRecursiveForAny(item.childs)
-                        //         }
-                        //     }
-                        // }
-
-                        // let accountID = "64c0ca9af8a43a0011a3435d"
-
-                        // //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
-                        // let infoItemOrigin = await ACCOUNT_COLL.findById(accountID)
-                        // .populate(
-                        //     _constructForAny(levelForRecursive, 'childs') 
-                        // )
-                        // console.log(infoItemOrigin)
-
-                        // //__________Gọi hàm đệ quy để lấy mảng nestedArray
-                        // getListIDRecursiveForAny([infoItemOrigin], levelForRecursive)
-
-                        // console.log(arrObjectID)
-
                         /**
                          * NHẬT KÝ CHUNG
                          */
@@ -1140,7 +1110,7 @@ class Model extends BaseModel {
                         let listAccounts = await ACCOUNT_MODEL.getListRecursive({ companyID })
                         let listAppMenuParent = listAccounts.data
 
-                        let option = 4, optionTerm = 1, fromDate = '2023-06-30', toDate = '2023-12-31'
+                        let option = 4, optionTerm = 1, fromDate = '2023-07-20', toDate = '2023-12-31'
                         let listDataCombine = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({ option, optionTerm, companyID, fromDate, toDate, userID })
                         // console.log(listDataCombine)
                         // console.log(listDataCombine.data.debitO)
@@ -1203,8 +1173,10 @@ class Model extends BaseModel {
                         // console.log(arrCreditO)
                         // console.log(arrDebitOF)
                         // console.log(arrCreditOF)
-                        console.log(arrDebitFT)
+                        // console.log(arrDebitFT)
                         // console.log(arrCreditFT)
+
+                        // return resolve({ error: false, data: { arrDebitO, arrCreditO, arrDebitOF, arrCreditOF, arrDebitFT, arrCreditFT } });
 
                         // Modify the workbook.
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_financial_report.xlsm')))
@@ -1237,43 +1209,11 @@ class Model extends BaseModel {
 
                             // BẢNG CÂN ĐỐI TÀI KHOẢN
                             var i = 4
-                            // let recursive = (arr) => {
-                            //     arr.forEach(item => {
-                            //         item.debitO = 10
-                            //         item.creditO = 10
-                            //         item.debitOF= 10
-                            //         item.creditOF = 10
-                            //         item.debitFT = 10
-                            //         item.creditFT = 10
-            
-                            //         if (item.childs && item.childs.length) {
-                            //             recursive(item.childs)
-                            //             item.debitO = item.debitO + 10
-                            //         }
-
-                            //         // console.log(item.debitO)
-                            //     })
-                            // }
-                            // recursive(listAppMenuParent)
-
-                            // let recursive2 = (arr) => {
-                            //     arr.forEach(item => {
-                            //         console.log(item.debitO)
-
-                            //         if (item.childs && item.childs.length) {
-                            //             recursive2(item.childs)
-                            //         }
-                                
-                            //     })
-                            // }
-                            // recursive2(listAppMenuParent)
-
                             let recursive = (arr) => {
                                 arr.forEach(item => {
                                     workbook.sheet("BangCDTaiKhoan").row(i).cell(1).value(`${item.name}`)
                                     workbook.sheet("BangCDTaiKhoan").row(i).cell(2).value(`${item._id}`)
                                     workbook.sheet("BangCDTaiKhoan").row(i).cell(3).value(`${item.description}`)
-
                                     // console.log(item.nestedChilds)
 
                                     // Định dạng bôi đậm nhạt
@@ -1333,33 +1273,6 @@ class Model extends BaseModel {
                                 })
                             }
                             recursive(listAppMenuParent)
-
-                            // let recursive = (arr) => {
-                            //     arr.forEach(item => {
-                            //         item.total1 = 'red';
-                            //         item.total2 = 'big';
-
-                            //         console.log(`${item.name}-${item.description}`)
-                            //         console.log(item.total1)
-                            //         console.log(item.total2)
-                            //         console.log(item)
-                            //         console.log('========================')
-
-                            //         if (item.childs && item.childs.length) {
-                            //             recursive(item.childs)
-                            //         }
-                            //     })
-
-                            //     // for(const item of arr){
-
-
-            
-                            //     //     if (item.childs && item.childs.length) {
-                            //     //         recursive(item.childs)
-                            //     //     }
-                            //     // }
-                            // }
-                            // recursive(listAppMenuParent)
 
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
