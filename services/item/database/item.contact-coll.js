@@ -167,6 +167,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     insuranceDate: { type: Date, default: null },
     //_________Lương căn bản (Mức đóng BH)
     sallaryBasic: { type: Number, default: 0 },
+    //_________Số tiền đóng BH
+    insuranceFee: { type: Number, default: 0 },
     /**
      * HỒ SƠ CHI TIẾT
      */
