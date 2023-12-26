@@ -1566,7 +1566,7 @@ class Model extends BaseModel {
                 })
                 // console.log(listData)
 
-                let listArea = await ITEM__AREA_COLL.find({ level: 3 })
+                let listArea = await ITEM__AREA_COLL.find({ level: 3 }).select('name parent')
                 .populate({
                     path: 'parent',
                     select:'_id  name',
@@ -1576,14 +1576,18 @@ class Model extends BaseModel {
                     }
                 })
 
+                let listUser = await USER_COLL.find({ company: companyID }).select('fullname')
+
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
                 .then(async workbook => {
 
                     var i = 3;
                     listData?.forEach((item, index) => {
-                        workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Export").row(i).cell(2).value(item.name);
+                        workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
+                        workbook.sheet("Export").row(i).cell(2).value(Number(item.type))
+                        workbook.sheet("Export").row(i).cell(3).value(Number(item.subtype))
+                        workbook.sheet("Export").row(i).cell(4).value(item.name)
                         // workbook.sheet("Export").row(i).cell(3).value(item.phone);
                         // workbook.sheet("Export").row(i).cell(4).value(item.address);
                         // workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
@@ -1594,12 +1598,19 @@ class Model extends BaseModel {
                     });
 
 
-                    var i = 2;
+                    var i = 2
                     listArea?.forEach((item, index) => {
-                        workbook.sheet("DanhMuc").row(i).cell(11).value(`${item._id}`);
-                        workbook.sheet("DanhMuc").row(i).cell(12).value(item.name);
+                        workbook.sheet("DanhMuc").row(i).cell(25).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(26).value(`${item.name},${item?.parent.name},${item?.parent?.parent.name}`)
                         i++
-                    });
+                    })
+
+                    var i = 2
+                    listUser?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(27).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(28).value(`${item.fullname}`)
+                        i++
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
