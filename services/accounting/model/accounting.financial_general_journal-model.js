@@ -1249,11 +1249,47 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // console.log(conditionDebitObj)
-                    // console.log(conditionCreditObj)
-                    // console.log(conditionProject)
-                    // console.log(conditionMatchO)
-                    // console.log(conditionMatchIn)
+                    else if(option == 9){
+                        conditionProject = {
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            quantity: 1,
+                            amount: 1,
+                            goods: 1,
+                            warehouse: 1,
+                            debit: 1,
+                            credit: 1
+                        }
+
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+
+                        conditionGroupDebit = {
+                            _id: { goods: "$goods" },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { goods: "$goods" },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+
+                    console.log({arrObjectID})
+                    console.log({conditionGroupDebit})
+                    console.log({conditionGroupCredit})
+                    console.log({conditionDebitObj})
+                    console.log({conditionCreditObj})
+                    // console.log({conditionProject})
+                    // console.log({conditionMatchO})
+                    // console.log({conditionMatchIn})
                 }
 
                 /**
@@ -1294,10 +1330,10 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                // console.log('=========MỐC ĐẦU NĂM=========')
-                // console.log(listDataO)
-                // console.log({_____No: listDataO[0]._debit})
-                // console.log({_____Co: listDataO[0]._credit})
+                console.log('=========MỐC ĐẦU NĂM=========')
+                console.log(listDataO)
+                console.log({_____No: listDataO[0]._debit})
+                console.log({_____Co: listDataO[0]._credit})
 
                 if(!optionTerm){
                     listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
@@ -1340,9 +1376,6 @@ class Model extends BaseModel {
                     // console.log({_____No: listDataIn[0]._debit})
                     // console.log({_____Co: listDataIn[0]._credit})
                 }else{
-                    // console.log(conditionDebitObj)
-                    // console.log(conditionCreditObj)
-                    // console.log(conditionProject)
                     listDataOF = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
                             $facet: {
@@ -1379,9 +1412,9 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    // console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
-                    // console.log({_____No: listDataOF[0]._debit})
-                    // console.log({_____Co: listDataOF[0]._credit})
+                    console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
+                    console.log({_____No: listDataOF[0]._debit})
+                    console.log({_____Co: listDataOF[0]._credit})
 
                     listDataFT = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
@@ -1419,9 +1452,9 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    // console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
-                    // console.log({_____No: listDataFT[0]._debit})
-                    // console.log({_____Co: listDataFT[0]._credit})
+                    console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
+                    console.log({_____No: listDataFT[0]._debit})
+                    console.log({_____Co: listDataFT[0]._credit})
                 }
 
                 if(!option){
@@ -1705,6 +1738,17 @@ class Model extends BaseModel {
                             creditO: listDataO[0]._credit,
                             debitIn: listDataIn[0]._debit,
                             creditIn: listDataIn[0]._credit,
+                        }})
+                    }
+
+                    else if(option == 9){
+                        return resolve({ error: false, data: { 
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitOF: listDataOF[0]._debit,
+                            creditOF: listDataOF[0]._credit,
+                            debitFT: listDataFT[0]._debit,
+                            creditFT: listDataFT[0]._credit,
                         }})
                     }
                 }
