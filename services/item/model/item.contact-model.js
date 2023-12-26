@@ -26,6 +26,9 @@ const stringUtils					    = require('../../../tools/utils/string_utils')
  */
 const USER_COLL                                     = require('../../auth/database/auth.user-coll')
 const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll')
+const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll')
+const ITEM__POSITION_COLL            				= require('../database/item.position-coll')
+const ITEM__DOCTYPE_COLL            				= require('../database/item.doctype-coll')
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll')
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
 const ITEM__AREA_COLL            				    = require('../database/item.area-coll')
@@ -1558,14 +1561,12 @@ class Model extends BaseModel {
      downloadTemplateImportExcel({ companyID, userID }) {
         return new Promise(async resolve => {
             try {
-                let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-                .limit(500)
-                .populate({
-                    path: 'funda',
-                    select:'_id  name'
-                })
-                // console.log(listData)
-
+                let listDepartment = await ITEM__DEPARTMENT_COLL.find({ company: companyID }).select('name').limit(500)
+                let listPosition = await ITEM__POSITION_COLL.find({ company: companyID }).select('name').limit(500)
+                let listDoctype = await ITEM__DOCTYPE_COLL.find({ company: companyID }).select('name').limit(500)
+                let listUser = await USER_COLL.find({ company: companyID }).select('fullname').limit(500)
+                let listContract = await ITEM__CONTRACT_COLL.find({ company: companyID }).select('name sign').limit(500)
+                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID }).limit(500)
                 let listArea = await ITEM__AREA_COLL.find({ level: 3 }).select('name parent')
                 .populate({
                     path: 'parent',
@@ -1576,14 +1577,13 @@ class Model extends BaseModel {
                     }
                 })
 
-                let listUser = await USER_COLL.find({ company: companyID }).select('fullname')
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
                 .then(async workbook => {
 
                     var i = 3;
-                    listData?.forEach((item, index) => {
+                    listContact?.forEach((item, index) => {
                         workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
                         workbook.sheet("Export").row(i).cell(2).value(Number(item.type))
                         workbook.sheet("Export").row(i).cell(3).value(Number(item.subtype))
@@ -1593,10 +1593,30 @@ class Model extends BaseModel {
                         // workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
                         // workbook.sheet("Export").row(i).cell(6).value(item.birthday);
                         // workbook.sheet("Export").row(i).cell(7).value(item.note);
-                        // workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "");
+                        // workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "")
                         i++
                     });
 
+                    var i = 2
+                    listDepartment?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(19).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(20).value(`${item.name}`)
+                        i++
+                    })
+
+                    var i = 2
+                    listPosition?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(21).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(22).value(`${item.name}`)
+                        i++
+                    })
+
+                    var i = 2
+                    listDoctype?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(23).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(24).value(`${item.name}`)
+                        i++
+                    })
 
                     var i = 2
                     listArea?.forEach((item, index) => {
@@ -1609,6 +1629,20 @@ class Model extends BaseModel {
                     listUser?.forEach((item, index) => {
                         workbook.sheet("DanhMuc").row(i).cell(27).value(`${item._id}`);
                         workbook.sheet("DanhMuc").row(i).cell(28).value(`${item.fullname}`)
+                        i++
+                    })
+
+                    var i = 2
+                    listContract?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(29).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(30).value(`${item.name}-${item?.sign}`)
+                        i++
+                    })
+
+                    var i = 2
+                    listContact?.forEach((item, index) => {
+                        workbook.sheet("DanhMuc").row(i).cell(37).value(`${item._id}`);
+                        workbook.sheet("DanhMuc").row(i).cell(38).value(`${item.name}`)
                         i++
                     })
 
@@ -1636,7 +1670,7 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 8/12/2022
      */
-    importFromExcel({ companyID, dataImport, userID, ctx }) {
+    importFromExcel({ option, companyID, dataImport, userID, ctx }) {
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
