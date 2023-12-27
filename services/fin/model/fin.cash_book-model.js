@@ -135,7 +135,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID }) {
-        console.log({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID })
+        // console.log({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -1039,7 +1039,7 @@ class Model extends BaseModel {
                         
                         // Danh sách các phòng ban mà user được quyền truy cập
                         let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
-                        // console.log(listDepartment)
+
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({
                             parent: parentID,
                             project: { $in: listDepartment.map(item=>item.id) }
@@ -1048,39 +1048,43 @@ class Model extends BaseModel {
                             path: 'human project position',
                             select:'fullname name',
                         })
-                        .select('name status date note salary revenueBonus reward mealAllowance punishment insurance pitax advance remaining paid')
+                        .select('name status date note salary revenueBonus reward mealAllowance punishment insurance pitax advance remaining paid convertFactor')
                         // console.log(listData)
 
                          // Modify the workbook.
-                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_report.xlsx')))
+                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx')))
                          .then(async workbook => {
 
-                            workbook.sheet("Report4").row(1).cell(1).value(infoParent.name)
+                            workbook.sheet("Data").row(1).cell(1).value(infoParent.name)
  
                              // NHẬT KÝ CHUNG
                              var i = 4
                              listData.forEach((item, index) =>{
-                                workbook.sheet("Report4").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("Report4").row(i).cell(2).value(item?.human?.fullname)
-                                workbook.sheet("Report4").row(i).cell(3).value(item?.project?.name)
-                                 workbook.sheet("Report4").row(i).cell(4).value(Number(item.salary))
-                                 workbook.sheet("Report4").row(i).cell(5).value(Number(item.revenueBonus))
-                                 workbook.sheet("Report4").row(i).cell(6).value(Number(item.reward))
-                                 workbook.sheet("Report4").row(i).cell(7).value(Number(item.mealAllowance))
-                                 workbook.sheet("Report4").row(i).cell(8).value(Number(item.punishment))
-                                 workbook.sheet("Report4").row(i).cell(9).value(Number(item.insurance))
-                                 workbook.sheet("Report4").row(i).cell(10).value(Number(item.pitax))
-                                 workbook.sheet("Report4").row(i).cell(11).value(Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance - item.punishment - item.insurance - item.pitax))
-                                 workbook.sheet("Report4").row(i).cell(12).value(Number(item.advance))
-                                 workbook.sheet("Report4").row(i).cell(13).value(Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance - item.punishment - item.insurance - item.pitax - item.advance))
-                                 workbook.sheet("Report4").row(i).cell(15).value(Number(item.paid))
-                                 workbook.sheet("Report4").row(i).cell(16).value(item?.note)
-                                 i++
+                                let hs = item.convertFactor
+
+                                workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("Data").row(i).cell(2).value(item?.human?.fullname)
+                                workbook.sheet("Data").row(i).cell(3).value(item?.project?.name)
+                                workbook.sheet("Data").row(i).cell(4).value(Number(item.salary))
+                                workbook.sheet("Data").row(i).cell(5).value(Number(hs))
+                                workbook.sheet("Data").row(i).cell(6).value(Number(item.revenueBonus))
+                                workbook.sheet("Data").row(i).cell(7).value(Number(item.reward))
+                                workbook.sheet("Data").row(i).cell(8).value(Number(item.mealAllowance))
+                                workbook.sheet("Data").row(i).cell(9).value(Number(item.punishment))
+                                workbook.sheet("Data").row(i).cell(10).value(Number(item.insurance))
+                                workbook.sheet("Data").row(i).cell(11).value(Number(item.pitax))
+                                workbook.sheet("Data").row(i).cell(12).value(Number(item.salary + item.revenueBonus + item.reward*hs + item.mealAllowance - item.punishment*hs - item.insurance - item.pitax))
+                                workbook.sheet("Data").row(i).cell(13).value(Number(item.advance))
+                                workbook.sheet("Data").row(i).cell(14).value(Number(item.salary + item.revenueBonus + item.reward*hs + item.mealAllowance - item.punishment*hs - item.insurance - item.pitax - item.advance))
+                                workbook.sheet("Data").row(i).cell(16).value(Number(item.paid))
+                                workbook.sheet("Data").row(i).cell(17).value(item?.note)
+                                
+                                i++
                              })
                        
                              const now = new Date();
                              const filePath = '../../../files/temporary_uploads/';
-                             const fileName = `timesheet_report${now.getTime()}.xlsx`;
+                             const fileName = `salary_report${now.getTime()}.xlsx`;
                              const pathWriteFile = path.resolve(__dirname, filePath, fileName);
  
                              await workbook.toFileAsync(pathWriteFile);

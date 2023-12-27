@@ -106,7 +106,9 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT SỐ LỖI VÀO ĐƠN VỊ CƠ SỞ, CA LÀM VIỆC, ĐƠN HÀNG
                  */
-                await ITEM__FUNDA_COLL.findByIdAndUpdate(infoFunda._id, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })
+                await ITEM__FUNDA_COLL.findByIdAndUpdate(infoFunda._id, { $inc: 
+                    { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0, amountOfBonus: Number(bonus) | 0 }}, 
+                    { new: true })
 
                 if(orderID && checkObjectIDs(orderID)){
                     await FNB_SHIFT_COLL.findByIdAndUpdate(infoOrder.shift, { $inc: { numberOfMistakes: 1, amountOfMistakes: Number(amount) | 0 }}, { new: true })

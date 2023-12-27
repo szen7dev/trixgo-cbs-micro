@@ -38,7 +38,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid }) {
+    insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid }) {
+        // console.log({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid })
         return new Promise(async resolve => {
             try {
 
@@ -94,9 +95,6 @@ class Model extends BaseModel {
                 if(advance){
                     dataInsert.advance = Number(advance);
                 }
-                if(remaining){
-                    dataInsert.remaining = Number(remaining);
-                }
                 if(paid){
                     dataInsert.paid = Number(paid);
                 }
@@ -139,8 +137,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, revenueBonus, mealAllowance, insurance, pitax, companyID  }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, revenueBonus, mealAllowance, insurance, pitax })
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, companyID }){
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, companyID })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -181,6 +179,10 @@ class Model extends BaseModel {
 
                 if(note){
                     dataUpdate.note = note;
+                }
+
+                if(convertFactor){
+                    dataUpdate.convertFactor = convertFactor;
                 }
 
                 if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
@@ -266,18 +268,21 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật giá trị vào Bảng lương
-                if(infoAfterUpdate.parent){
+                if(infoAfterUpdate.parent && checkObjectIDs(infoAfterUpdate.parent)){
+                    console.log('11111111111111111111111111')
                     /**
                      * CẬP NHẬT CHI TIẾT LƯƠNG
                      */
                     await that.updateValue( {expertSalaryID: infoAfterUpdate.parent, userID })
                 }else{
+                    console.log('22222222222222222222222222')
                     /**
                      * CẬP NHẬT BẢNG LƯƠNG CHA
                      */
                     // Cập nhật hệ số chuyển đổi KPI sang giá trị
                     let infoCompany = await AUTH__COMPANY_COLL.findById(companyID)
                     await TIMESHEET__EXPERT_SALARY_COLL.updateMany({ parent: expertSalaryID }, { $set: { convertFactor: infoCompany.convertFactor, }})
+                    // console.log({convertFactor:infoCompany.convertFactor})
 
                     // Cập nhật bảng chấm công vào bảng lương
                     await that.updateValueTimesheet({ expertSalaryID, userID, companyID })
@@ -466,25 +471,17 @@ class Model extends BaseModel {
                 // console.log({listData1})
 
                 for(const item of listData1){
-                    // await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
-                    //     company: companyID, 
-                    //     parent: { $exists: true, $ne: null },
-                    //     human: item._id.executor,
-                    //     $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
-                    // }, 
-                    //     {
-                    //         reward: Number(item.bonus),
-                    //         punishment: Number(item.amount),
-                    //     }, { new: true }
-                    // )
-
+                    // console.log('================>>>>>>>>>>>>>>') 
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         company: companyID, 
-                        parent: { $exists: true, $ne: null },
+                        parent: expertSalaryID,
+                        // parent: { $exists: true, $ne: null },
                         human: item._id.executor,
-                        $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                        // $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                     }) 
-                    // console.log(info) 
+                    // console.log(info.parent) 
+                    // console.log(info.date) 
+                    // console.log(info.createAt) 
                     
                     let dataUpdate =  {
                         reward: Number(item.bonus),
@@ -493,6 +490,12 @@ class Model extends BaseModel {
 
                     dataUpdate.remaining = Number(info.salary) + Number(info.reward * info.convertFactor) + Number(info.revenueBonus) + Number(info.mealAllowance) - Number(info.punishment * info.convertFactor) - Number(info.insurance) - Number(info.pitax) - Number(info.advance)
 
+                    // console.log(dataUpdate) 
+
+                    /**
+                     * Lần update đầu tiên số liệu chưa đúng
+                     * Update lần 2 số liệu sẽ đúng
+                     */
                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
                     // console.log(infoAfterUpdate) 
                 }
@@ -591,8 +594,8 @@ class Model extends BaseModel {
                     let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
 
 					conditionObj.parent = parentID
-					conditionObj.project = { $in: listDepartment.map(item=>item.id) }
 
+					conditionObj.project = { $in: listDepartment.map(item=>item.id) }
                     if(departmentsID && departmentsID.length){
                         conditionObj.project = { $in: departmentsID }
                     }

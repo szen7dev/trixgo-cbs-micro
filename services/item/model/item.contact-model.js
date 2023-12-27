@@ -18,7 +18,19 @@ const { getTimeBetween }                            = require('../../../tools/ut
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 }                  = require('../../../tools/s3')
 // const { INSURANCE_STATUS }              = require('../../../tools/constants')
-const { CONTACT_GENDER }                = require('../helper/item.keys-constant')
+const { 
+    CONTACT_CLASSIFY,
+    HUMAN_CLASSIFY,
+    CONTACT_GENDER,
+    PERSONAL_STATUS,
+    INSURANCE_STATUS,
+    CONTACT_POLICY,
+    CONTACT_NEW,
+    PAYMENT_STATUS,
+    DOCUMENT_CLASSIFY,
+    DOCUMENT_GRADE,
+    DOCUMENT_STATUS,
+ }                = require('../helper/item.keys-constant')
 const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
@@ -1566,7 +1578,7 @@ class Model extends BaseModel {
                 let listDoctype = await ITEM__DOCTYPE_COLL.find({ company: companyID }).select('name').limit(500)
                 let listUser = await USER_COLL.find({ company: companyID }).select('fullname').limit(500)
                 let listContract = await ITEM__CONTRACT_COLL.find({ company: companyID }).select('name sign').limit(500)
-                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID }).limit(500)
+                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID, type: 1 }).limit(500)
                 let listArea = await ITEM__AREA_COLL.find({ level: 3 }).select('name parent')
                 .populate({
                     path: 'parent',
@@ -1585,15 +1597,58 @@ class Model extends BaseModel {
                     var i = 3;
                     listContact?.forEach((item, index) => {
                         workbook.sheet("Export").row(i).cell(1).value(`${item._id}`)
-                        workbook.sheet("Export").row(i).cell(2).value(Number(item.type))
-                        workbook.sheet("Export").row(i).cell(3).value(Number(item.subtype))
+                        workbook.sheet("Export").row(i).cell(2).value(Number(item.type) >= 1 ? CONTACT_CLASSIFY[Number(item.type - 1)].text : '')
+                        workbook.sheet("Export").row(i).cell(3).value(Number(item.subtype) >= 1 ? HUMAN_CLASSIFY[Number(item.type - 1)].text : '')
                         workbook.sheet("Export").row(i).cell(4).value(item.name)
-                        // workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                        // workbook.sheet("Export").row(i).cell(4).value(item.address);
-                        // workbook.sheet("Export").row(i).cell(5).value(`${CONTACT_GENDER[Number(item.gender)-1].text}`);
-                        // workbook.sheet("Export").row(i).cell(6).value(item.birthday);
-                        // workbook.sheet("Export").row(i).cell(7).value(item.note);
-                        // workbook.sheet("Export").row(i).cell(8).value(item.funda ? item.funda.name : "")
+                        workbook.sheet("Export").row(i).cell(5).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(6).value(item?.description)
+                        workbook.sheet("Export").row(i).cell(7).value(item?.note)
+                        workbook.sheet("Export").row(i).cell(8).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(9).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(10).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(11).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(12).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(13).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(14).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(16).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(17).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(18).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(19).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(20).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(21).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(22).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(23).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(24).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(25).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(26).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(27).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(28).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(29).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(30).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(31).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(32).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(33).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(34).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(35).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(36).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(37).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(38).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(39).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(40).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(41).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(42).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(43).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(44).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(45).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(46).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(47).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(48).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(49).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(50).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(51).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(52).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(53).value(item?.sign)
+
                         i++
                     });
 
