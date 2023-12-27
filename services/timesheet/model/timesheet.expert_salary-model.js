@@ -56,7 +56,7 @@ class Model extends BaseModel {
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     company: companyID,
-                    convertFactor: infoCompany.convertFactor,
+                    // convertFactor: infoCompany.convertFactor,
                     userCreate, 
                     name, 
                     admins: [userCreate], 
@@ -77,6 +77,10 @@ class Model extends BaseModel {
 
                 if(type){
                     dataInsert.type = type;
+                }
+
+                if(convertFactor){
+                    dataInsert.convertFactor = Number(convertFactor);
                 }
 
                 if(note){
@@ -406,10 +410,11 @@ class Model extends BaseModel {
 
                 for(const item of listData1){
                     await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
-                        company: companyID, 
-                        parent: { $exists: true, $ne: null },
+                        // company: companyID, 
+                        parent: expertSalaryID,
+                        // parent: { $exists: true, $ne: null },
                         human: item._id.assignee,
-                        $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                        // $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
 
                     }, 
                         {
@@ -473,7 +478,7 @@ class Model extends BaseModel {
                 for(const item of listData1){
                     // console.log('================>>>>>>>>>>>>>>') 
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                        company: companyID, 
+                        // company: companyID, 
                         parent: expertSalaryID,
                         // parent: { $exists: true, $ne: null },
                         human: item._id.executor,
