@@ -120,7 +120,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
     },
     //_________Hạng chứng chỉ (1/2/3/4-Nếu)
     certificateGrade: { type: Number, default: 1 },
-    // Thời gian quy động
+    // Thời gian huy động
     timeMobilize : {
         type: Number,
         default: 0
@@ -146,4 +146,4 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     }
-});
+})

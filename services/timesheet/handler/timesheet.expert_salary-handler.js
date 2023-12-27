@@ -33,14 +33,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, date, type, note, projectID, humanID, salary, reward, punishment, advance, remaining, paid, name } = ctx.params;
+                let { parentID, date, type, note, projectID, humanID, salary, reward, punishment, advance, convertFactor, paid, name } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(company)
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.insert({
                     userCreate: userID, 
                     companyID: company._id, 
-                    parentID, date, type, note, projectID, humanID, salary, reward, punishment, advance, remaining, paid, name
+                    parentID, date, type, note, projectID, humanID, salary, reward, punishment, advance, convertFactor, paid, name
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -77,13 +77,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, revenueBonus, mealAllowance, insurance, pitax } = ctx.params;
-                // console.log({ expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, revenueBonus, mealAllowance, insurance, pitax })
+                let { expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax } = ctx.params;
+                console.log({ expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax })
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, remaining, paid, revenueBonus, mealAllowance, insurance, pitax, companyID: company._id
+                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, companyID: company._id
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -152,6 +152,8 @@ module.exports = {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getInfo({
                         expertSalaryID, userID, select, populates
                     });
+
+                    console.log(resultAfterCallHandler)
                 } else {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
                         parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, sortOption, departmentsID

@@ -147,7 +147,9 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     },
     //_________Số lượng lỗi
     numberOfMistakes: { type: Number, default: 0 },
-    //_________Giá trị bị phạt
+    //_________Giá trị thưởng
+    amountOfBonus: { type: Number, default: 0 },
+    //_________Giá trị phạt
     amountOfMistakes: { type: Number, default: 0 },
     //_________Số lượng khách hàng của quán
     numberOfCustomers: { type: Number, default: 0 },

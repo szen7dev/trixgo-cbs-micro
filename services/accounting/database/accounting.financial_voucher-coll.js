@@ -127,10 +127,5 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
-    },
-    // old field detele if conver DB success
-    journals: [{
-        type: Schema.Types.ObjectId,
-        ref: 'financial_general_journal'
-    }] 
+    }
 })

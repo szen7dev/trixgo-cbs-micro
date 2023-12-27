@@ -34,6 +34,7 @@ const BUDGET_WORK_COLL                                  = require('../../budget/
 /**
  * MODELS
  */
+const ACCOUNT_MODEL                                     = require('../.../../../item/model/item.account-model').MODEL
 
 class Model extends BaseModel {
     constructor() {
@@ -795,8 +796,8 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts }) {
-        console.log('==================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
+        // console.log('==================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
@@ -817,9 +818,10 @@ class Model extends BaseModel {
                 let sortBy = {"amount": -1}
 
                 let arrObjectID = [], listAccounts = []
+                
                 // Truyền theo ID tài khoản
                 if(!optionAccount){
-                    // console.log('============zzzzzzzzzzzz1111111111111111111111')
+                    console.log('============zzzzzzzzzzzz1111111111111111111111')
                     listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
                     // .select('name description nestedChilds')
                     if(listAccounts){
@@ -832,7 +834,7 @@ class Model extends BaseModel {
                     // Theo tên tài khoản
                     if(optionAccount == 1){
                         if(!arrCompanyIDs){
-                            // console.log('============zzzzzzzzzzzz2222222222222222222')
+                            console.log('============zzzzzzzzzzzz2222222222222222222')
                             listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
                             // .select('name description nestedChilds')
                             if(listAccounts){
@@ -842,7 +844,7 @@ class Model extends BaseModel {
                                 }
                             }
                         }else{
-                            // console.log('============zzzzzzzzzzzz333333333333333333')
+                            console.log('============zzzzzzzzzzzz333333333333333333')
                             listAccounts = await ITEM_ACCOUNT_COLL.find({ company: {$in: arrCompanyIDs}, name: {$in: arrAccNames} })
                             // .select('name description nestedChilds')
                             if(listAccounts){
@@ -856,6 +858,7 @@ class Model extends BaseModel {
 
                     // Theo toàn bộ tài khoản của công ty
                     if(optionAccount == 2){
+                        console.log('============zzzzzzzzzzzz4444444444444444444')
                         listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID })
                             // .select('name description nestedChilds')
                         if(listAccounts){
@@ -868,26 +871,26 @@ class Model extends BaseModel {
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
-                    // console.log('============1')
+                    console.log('============1')
                     conditionDebitObj.contract = ObjectID(contractID)
                     conditionCreditObj.contract = ObjectID(contractID)
                 }else{
                     if (projectID && checkObjectIDs(projectID)) {
-                        // console.log('============2')
+                        console.log('============2')
                         conditionDebitObj.project = ObjectID(projectID)
                         conditionCreditObj.project = ObjectID(projectID)
                     }else{
                         if(fundaID && checkObjectIDs(fundaID)){
-                            // console.log('============3')
+                            console.log('============3')
                             conditionDebitObj.funda = ObjectID(fundaID)
                             conditionCreditObj.funda = ObjectID(fundaID)
                         }else{
                             if(arrCompanyIDs && checkObjectIDs(arrCompanyIDs)){
-                                // console.log('============4')
+                                console.log('============4')
                                 conditionDebitObj.company = {$in: arrCompanyIDs.map( item => ObjectID(item))}
                                 conditionCreditObj.company =  {$in: arrCompanyIDs.map( item => ObjectID(item))}
                             }else{
-                                // console.log('============5')
+                                console.log('============5')
                                 conditionDebitObj.company = ObjectID(companyID)
                                 conditionCreditObj.company = ObjectID(companyID)
                             }
@@ -1019,7 +1022,7 @@ class Model extends BaseModel {
                      * BÁO CÁO TÀI KHOẢN - MÃ KHÁCH => ÁP DỤNG MOBILE
                      * 1 tài khoản - Nhiều mã khách
                      */
-                    if(option == 2){
+                    else if(option == 2){
                         conditionProject = {
                             year : {$year : "$date"},
                             forward: '$forward',
@@ -1031,15 +1034,6 @@ class Model extends BaseModel {
                             debit: 1,
                             credit: 1
                         }
-
-                        // conditionGroupDebit = {
-                        //     _id: { contact: "$customerDebit", account: "$debit" },
-                        //     amount: { $sum: "$amount" }
-                        // }
-                        // conditionGroupCredit = {
-                        //     _id: { contact: "$customerCredit", account: "$credit" },
-                        //     amount: { $sum: "$amount" }
-                        // }
 
                         conditionDebitObj.debit = {
                             $in: arrObjectID
@@ -1059,7 +1053,7 @@ class Model extends BaseModel {
                     }
 
                     // Báo cáo theo Tài khoản - Mã khách (quan hệ 1-1)
-                    if(option == 3){
+                    else if(option == 3){
                         conditionDebitObj.debit = {
                             $in: arrObjectID
                         }
@@ -1097,7 +1091,7 @@ class Model extends BaseModel {
 
                     
                     // Báo cáo Bảng cân đối tài khoản
-                    if(option == 4){
+                    else if(option == 4){
                         conditionProject = {
                             year : {$year : "$date"},
                             forward: '$forward',
@@ -1118,8 +1112,8 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Công nợ userID đang truy cập
-                    if(option == 5){
+                    // Công nợ userID đang truy cập - Tổng hợp theo từng công ty
+                    else if(option == 5){
                         conditionDebitObj.debit = {
                             $in: arrObjectID
                         }
@@ -1159,7 +1153,7 @@ class Model extends BaseModel {
                     }
 
                     // Công nợ userID đang truy cập
-                    if(option == 6){
+                    else if(option == 6){
                         conditionDebitObj.debit = {
                             $in: arrObjectID
                         }
@@ -1197,14 +1191,9 @@ class Model extends BaseModel {
                             amount: { $sum: "$amount" }
                         }
                     }
-                    // console.log(conditionDebitObj)
-                    // console.log(conditionCreditObj)
-                    // console.log(conditionProject)
-                    // console.log(conditionMatchO)
-                    // console.log(conditionMatchIn)
 
                     // Tổng hợp Tài khoản-Tháng
-                    if(option == 7){
+                    else if(option == 7){
                         conditionProject = {
                             year : { $year : "$date" },
                             month : { $month : "$date" },
@@ -1232,7 +1221,7 @@ class Model extends BaseModel {
                     }
 
                     // Tổng hợp Khoản mục phí
-                    if(option == 8){
+                    else if(option == 8){
                         conditionProject = {
                             year : { $year : "$date" },
                             month : { $month : "$date" },
@@ -1259,6 +1248,48 @@ class Model extends BaseModel {
                             amount: { $sum: "$amount" }
                         }
                     }
+
+                    else if(option == 9){
+                        conditionProject = {
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            quantity: 1,
+                            amount: 1,
+                            goods: 1,
+                            warehouse: 1,
+                            debit: 1,
+                            credit: 1
+                        }
+
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+
+                        conditionGroupDebit = {
+                            _id: { goods: "$goods" },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { goods: "$goods" },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+
+                    console.log({arrObjectID})
+                    console.log({conditionGroupDebit})
+                    console.log({conditionGroupCredit})
+                    console.log({conditionDebitObj})
+                    console.log({conditionCreditObj})
+                    // console.log({conditionProject})
+                    // console.log({conditionMatchO})
+                    // console.log({conditionMatchIn})
                 }
 
                 /**
@@ -1299,10 +1330,10 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                // console.log('=========MỐC ĐẦU NĂM=========')
-                // console.log(listDataO)
-                // console.log({_____No: listDataO[0]._debit})
-                // console.log({_____Co: listDataO[0]._credit})
+                console.log('=========MỐC ĐẦU NĂM=========')
+                console.log(listDataO)
+                console.log({_____No: listDataO[0]._debit})
+                console.log({_____Co: listDataO[0]._credit})
 
                 if(!optionTerm){
                     listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
@@ -1345,9 +1376,6 @@ class Model extends BaseModel {
                     // console.log({_____No: listDataIn[0]._debit})
                     // console.log({_____Co: listDataIn[0]._credit})
                 }else{
-                    // console.log(conditionDebitObj)
-                    // console.log(conditionCreditObj)
-                    // console.log(conditionProject)
                     listDataOF = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
                             $facet: {
@@ -1384,9 +1412,9 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    // console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
-                    // console.log({_____No: listDataOF[0]._debit})
-                    // console.log({_____Co: listDataOF[0]._credit})
+                    console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
+                    console.log({_____No: listDataOF[0]._debit})
+                    console.log({_____Co: listDataOF[0]._credit})
 
                     listDataFT = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
@@ -1424,9 +1452,9 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    // console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
-                    // console.log({_____No: listDataFT[0]._debit})
-                    // console.log({_____Co: listDataFT[0]._credit})
+                    console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
+                    console.log({_____No: listDataFT[0]._debit})
+                    console.log({_____Co: listDataFT[0]._credit})
                 }
 
                 if(!option){
@@ -1480,7 +1508,7 @@ class Model extends BaseModel {
                     /**
                      * BÁO CÁO TÀI KHOẢN - MÃ KHÁCH => ÁP DỤNG MOBILE
                      */
-                    if(option == 2){
+                    else if(option == 2){
                         let arrCustomers = []
                         if(listDataO[0]._debit.length > 0){
                             arrCustomers = [...arrCustomers,...listDataO[0]._debit.map(item=>item._id.contact)]
@@ -1571,7 +1599,7 @@ class Model extends BaseModel {
                     }
 
                     // Báo cáo theo Tài khoản - Mã khách (quan hệ 1-1)
-                    if(option == 3){
+                    else if(option == 3){
                         return resolve({ error: false, data: { 
                             listAccounts,
                             debitO: listDataO[0]._debit,
@@ -1584,7 +1612,7 @@ class Model extends BaseModel {
                     }
 
                     // Báo cáo Bảng cân đối tài khoản
-                    if(option == 4){
+                    else if(option == 4){
                         return resolve({ error: false, data: { 
                             debitO: listDataO[0]._debit,
                             creditO: listDataO[0]._credit,
@@ -1596,7 +1624,7 @@ class Model extends BaseModel {
                     }
 
                     // Công nợ userID đang truy cập
-                    if(option == 5){
+                    else if(option == 5){
                         let listAccountNew = []
 
                         listAccounts.forEach(item => {
@@ -1679,7 +1707,7 @@ class Model extends BaseModel {
                     }
 
                     // Chi tiết công nợ theo tài khoản-mã khách
-                    if(option == 6){
+                    else if(option == 6){
                         return resolve({ error: false, data: { 
                             listAccounts,
                             debitO: listDataO[0]._debit,
@@ -1692,7 +1720,7 @@ class Model extends BaseModel {
                     }
 
                     // Tổng hợp Tài khoản-Tháng
-                    if(option == 7){
+                    else if(option == 7){
                         return resolve({ error: false, data: { 
                             listAccounts,
                             debitO: listDataO[0]._debit,
@@ -1703,13 +1731,24 @@ class Model extends BaseModel {
                     }
                     
                     // Tổng hợp Khoản mục phí
-                    if(option == 8){
+                    else if(option == 8){
                         return resolve({ error: false, data: { 
                             listAccounts,
                             debitO: listDataO[0]._debit,
                             creditO: listDataO[0]._credit,
                             debitIn: listDataIn[0]._debit,
                             creditIn: listDataIn[0]._credit,
+                        }})
+                    }
+
+                    else if(option == 9){
+                        return resolve({ error: false, data: { 
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitOF: listDataOF[0]._debit,
+                            creditOF: listDataOF[0]._credit,
+                            debitFT: listDataFT[0]._debit,
+                            creditFT: listDataFT[0]._credit,
                         }})
                     }
                 }

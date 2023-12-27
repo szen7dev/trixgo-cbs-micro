@@ -99,7 +99,7 @@ module.exports = {
                 let { 
                     voucherID,
                     customerID,
-                    contractID, 
+                    contract, 
                     storageID, 
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
@@ -111,11 +111,13 @@ module.exports = {
 
                 const { _id: userID } = ctx.meta.infoUser;
 
+                // console.log(ctx.params)
+
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.update({
                     authorID: userID, 
                     voucherID,
                     customerID,
-                    contractID, 
+                    contractID: contract, 
                     storageID, 
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
