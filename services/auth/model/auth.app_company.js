@@ -3,7 +3,7 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
-/**s
+/**
  * import inter-coll, exter-coll
  */
 const AUTH__APP_COMPANY_COLL                = require('../database/permission/auth.app_company-coll');
@@ -19,19 +19,9 @@ class Model extends BaseModel {
         super(AUTH__APP_COMPANY_COLL);
     }
     
-    /**
-     * Name  : Thêm mẩu tin
-     * - A Hiệp: lưu ý 1 company và 1 app chỉ tồn tại 1 mẩu tin duy nhất
-     * - Khi cập nhật thông tin của app_company => cũng phải cập nhật app_user theo trường endTime
-     * Author: Depv
-     * Code  : 
-     */ 
     insert({ app, company, maxCount, maxData, startTime, endTime, userID }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataInsert = { app, company, maxCount, maxData, startTime, endTime, userCreate: userID, userUpdate: userID };
                 
                 let checkExist = await AUTH__APP_COMPANY_COLL.findOne({ app, company });
@@ -62,9 +52,7 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(appCompanyID))
                     return resolve({ error: true, message: "Mã appCompanyID không hợp lệ", keyError: "appCompanyID_invalid", status: 403 });
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let dataUpdate = { userUpdate: userID };
 
                 if(maxCount){
@@ -169,11 +157,12 @@ class Model extends BaseModel {
     getList({
         companyID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
+            // console.log({companyID,keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit
                 }
