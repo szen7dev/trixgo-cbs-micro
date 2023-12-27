@@ -19,15 +19,17 @@ class Model extends BaseModel {
         super(AUTH__APP_COLL)
     }
     
-    getList({ lock, limit = 20, lastestID, select, populates = {} }) { 
+    getList({ lock, limit = 50, lastestID, select, populates = {} }) { 
         // console.log({ lock, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
-                }else{
-                    limit = +limit
-                }
+                // if(limit > 50){
+                //     limit = 50
+                // }else{
+                //     limit = +limit
+                // }
+
+                let limit = 50
 
                 let conditionObj = {};
                 let sortBy;
