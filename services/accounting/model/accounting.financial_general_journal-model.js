@@ -1282,11 +1282,11 @@ class Model extends BaseModel {
                         }
                     }
 
-                    console.log({arrObjectID})
-                    console.log({conditionGroupDebit})
-                    console.log({conditionGroupCredit})
-                    console.log({conditionDebitObj})
-                    console.log({conditionCreditObj})
+                    // console.log({arrObjectID})
+                    // console.log({conditionGroupDebit})
+                    // console.log({conditionGroupCredit})
+                    // console.log({conditionDebitObj})
+                    // console.log({conditionCreditObj})
                     // console.log({conditionProject})
                     // console.log({conditionMatchO})
                     // console.log({conditionMatchIn})
@@ -1330,10 +1330,10 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                console.log('=========MỐC ĐẦU NĂM=========')
-                console.log(listDataO)
-                console.log({_____No: listDataO[0]._debit})
-                console.log({_____Co: listDataO[0]._credit})
+                // console.log('=========MỐC ĐẦU NĂM=========')
+                // console.log(listDataO)
+                // console.log({_____No: listDataO[0]._debit})
+                // console.log({_____Co: listDataO[0]._credit})
 
                 if(!optionTerm){
                     listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
@@ -1412,9 +1412,9 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
-                    console.log({_____No: listDataOF[0]._debit})
-                    console.log({_____Co: listDataOF[0]._credit})
+                    // console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
+                    // console.log({_____No: listDataOF[0]._debit})
+                    // console.log({_____Co: listDataOF[0]._credit})
 
                     listDataFT = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
@@ -1452,9 +1452,9 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
-                    console.log({_____No: listDataFT[0]._debit})
-                    console.log({_____Co: listDataFT[0]._credit})
+                    // console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
+                    // console.log({_____No: listDataFT[0]._debit})
+                    // console.log({_____Co: listDataFT[0]._credit})
                 }
 
                 if(!option){
@@ -1613,6 +1613,135 @@ class Model extends BaseModel {
 
                     // Báo cáo Bảng cân đối tài khoản
                     else if(option == 4){
+                        let arrCombine = []
+
+                        let listAccounts = await ACCOUNT_MODEL.getListRecursive({ companyID })
+                        let listAppMenuParent = listAccounts.data
+
+                        let arrDebitO = [], arrCreditO = [], arrDebitOF = [], arrCreditOF = [], arrDebitFT = [], arrCreditFT = []
+
+                        listDataO[0]._debit.forEach(element=>{
+                            let key = element._id.account;
+                            if (!Array.isArray(arrDebitO[key])) {
+                                arrDebitO[key] = [];
+                            }
+                            arrDebitO[key].push(element)
+                        })
+
+                        listDataO[0]._credit.forEach(element=>{
+                            let key = element._id.account;
+                            if (!Array.isArray(arrCreditO[key])) {
+                                arrCreditO[key] = [];
+                            }
+                            arrCreditO[key].push(element)
+                        })
+
+                        listDataOF[0]._debit.forEach(element=>{
+                            let key = element._id.account;
+                            if (!Array.isArray(arrDebitOF[key])) {
+                                arrDebitOF[key] = [];
+                            }
+                            arrDebitOF[key].push(element)
+                        })
+
+                        listDataOF[0]._credit.forEach(element=>{
+                            let key = element._id.account;
+                            if (!Array.isArray(arrCreditOF[key])) {
+                                arrCreditOF[key] = [];
+                            }
+                            arrCreditOF[key].push(element)
+                        })
+
+                        listDataFT[0]._debit.forEach(element=>{
+                            let key = element._id.account;
+                            if (!Array.isArray(arrDebitFT[key])) {
+                                arrDebitFT[key] = [];
+                            }
+                            arrDebitFT[key].push(element)
+                        })
+
+                        listDataFT[0]._credit.forEach(element=>{
+                            let key = element._id.account;
+                            if (!Array.isArray(arrCreditFT[key])) {
+                                arrCreditFT[key] = [];
+                            }
+                            arrCreditFT[key].push(element)
+                        })
+
+                        let recursive = (arr) => {
+                            arr.forEach(item => {
+                                let kcNoDauKy = 0;
+                                let kcCoDauKy = 0;
+                                let noDauKy = 0;
+                                let coDauKy = 0;
+                                let noTrongKy = 0;
+                                let coTrongKy = 0;
+                                let noCuoiKy = 0;
+                                let coCuoiKy = 0;
+
+
+                                // Bổ sung tính tổng các phần tử con
+                                let debitFT = 0, allSubDebitFT = 0, totalDebitFT = 0
+                                for(const element of item.nestedChilds){
+                                    if(arrDebitFT[`${element}`]){
+                                        allSubDebitFT = allSubDebitFT + Number(arrDebitFT[element][0].amount)
+                                    }
+                                }
+
+                                if(arrDebitO[item._id]){
+                                    kcNoDauKy = arrDebitO[item._id][0].amount
+                                }
+                                if(arrCreditO[item._id]){
+                                    kcCoDauKy = arrCreditO[item._id][0].amount
+                                }
+                                if(arrDebitOF[item._id]){
+                                    noDauKy = arrDebitOF[item._id][0].amount
+                                }
+                                if(arrCreditOF[item._id]){
+                                    coDauKy = arrCreditOF[item._id][0].amount
+                                }
+                                if(arrDebitFT[item._id]){
+                                    noTrongKy = arrDebitFT[item._id][0].amount
+                                }
+                                if(arrCreditFT[item._id]){
+                                    coTrongKy = arrCreditFT[item._id][0].amount
+                                }
+
+                                // if(arrDebitFT[item._id]){
+                                //     workbook.sheet("BangCDTaiKhoan").row(i+1).cell(8).value(Number(arrDebitFT[item._id][0].amount))
+                                //     debitFT = Number(arrDebitFT[item._id][0].amount)
+                                // }
+
+                                // if(arrCreditFT[item._id]){
+                                //     workbook.sheet("BangCDTaiKhoan").row(i+1).cell(9).value(Number(arrCreditFT[item._id][0].amount))
+                                // }
+
+                                // totalDebitFT = debitFT + allSubDebitFT
+
+                                // workbook.sheet("BangCDTaiKhoan").row(i).cell(8).value(Number(totalDebitFT))
+                                // workbook.sheet("BangCDTaiKhoan").row(i+2).cell(8).value(Number(allSubDebitFT))
+
+                                
+                                arrCombine.push({
+                                    _id: item._id,
+                                    name: item.name,
+                                    description: item.description,
+                                    kcNoDauKy: Number(kcNoDauKy),
+                                    kcCoDauKy: Number(kcCoDauKy),
+                                    noDauKy: Number(noDauKy),
+                                    coDauKy: Number(coDauKy),
+                                    noTrongKy: Number(noTrongKy),
+                                    coTrongKy: Number(coTrongKy),
+                                })
+        
+                                if (item.childs && item.childs.length) {
+                                    recursive(item.childs)
+                                }
+                            })
+                        }
+                        recursive(listAppMenuParent)
+                        // console.log(arrCombine)
+
                         return resolve({ error: false, data: { 
                             debitO: listDataO[0]._debit,
                             creditO: listDataO[0]._credit,
@@ -1620,6 +1749,7 @@ class Model extends BaseModel {
                             creditOF: listDataOF[0]._credit,
                             debitFT: listDataFT[0]._debit,
                             creditFT: listDataFT[0]._credit,
+                            arrCombine
                         }})
                     }
 
