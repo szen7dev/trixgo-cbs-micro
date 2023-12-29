@@ -27,6 +27,7 @@
  */
 const ITEM_ACCOUNT_COLL                                 = require('../../item/database/item.account-coll')
 const ITEM__FUNDA_COLL            			            = require('../../item/database/item.funda-coll')
+const ITEM__GOODS_COLL            			            = require('../../item/database/item.goods-coll')
 const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll')
@@ -821,7 +822,7 @@ class Model extends BaseModel {
                 
                 // Truyền theo ID tài khoản
                 if(!optionAccount){
-                    console.log('============zzzzzzzzzzzz1111111111111111111111')
+                    // console.log('============zzzzzzzzzzzz1111111111111111111111')
                     listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
                     // .select('name description nestedChilds')
                     if(listAccounts){
@@ -1249,6 +1250,7 @@ class Model extends BaseModel {
                         }
                     }
 
+                    // Tổng hợp theo Nhập xuất tồn
                     else if(option == 9){
                         conditionProject = {
                             year : {$year : "$date"},
@@ -1331,7 +1333,6 @@ class Model extends BaseModel {
                     }
                 ])
                 // console.log('=========MỐC ĐẦU NĂM=========')
-                // console.log(listDataO)
                 // console.log({_____No: listDataO[0]._debit})
                 // console.log({_____Co: listDataO[0]._credit})
 
@@ -1668,6 +1669,16 @@ class Model extends BaseModel {
                             arrCreditFT[key].push(element)
                         })
 
+                        // console.log(arrDebitO)
+                        // console.log(arrCreditO)
+                        // console.log(arrDebitOF)
+                        // console.log(arrCreditOF)
+                        // console.log(arrDebitFT)
+                        // console.log(arrCreditFT)
+                        
+                        /**
+                         * ĐỆ QUY XỬ LÝ DỮ LIỆU
+                         */
                         let recursive = (arr) => {
                             arr.forEach(item => {
                                 let kcNoDauKy = 0;
@@ -1679,15 +1690,19 @@ class Model extends BaseModel {
                                 let noCuoiKy = 0;
                                 let coCuoiKy = 0;
 
+                                let kcNoDauKySub = 0;
+                                let kcCoDauKySub = 0;
+                                let noDauKySub = 0;
+                                let coDauKySub = 0;
+                                let noTrongKySub = 0;
+                                let coTrongKySub = 0;
+                                let noCuoiKySub = 0;
+                                let coCuoiKySub = 0;
 
-                                // Bổ sung tính tổng các phần tử con
-                                let debitFT = 0, allSubDebitFT = 0, totalDebitFT = 0
-                                for(const element of item.nestedChilds){
-                                    if(arrDebitFT[`${element}`]){
-                                        allSubDebitFT = allSubDebitFT + Number(arrDebitFT[element][0].amount)
-                                    }
-                                }
+                                // console.log(`${item.name}-${item._id}-${item.description}`)
+                                // console.log(item.nestedChilds)
 
+                                // Dữ liệu của Tài khoản
                                 if(arrDebitO[item._id]){
                                     kcNoDauKy = arrDebitO[item._id][0].amount
                                 }
@@ -1707,20 +1722,41 @@ class Model extends BaseModel {
                                     coTrongKy = arrCreditFT[item._id][0].amount
                                 }
 
-                                // if(arrDebitFT[item._id]){
-                                //     workbook.sheet("BangCDTaiKhoan").row(i+1).cell(8).value(Number(arrDebitFT[item._id][0].amount))
-                                //     debitFT = Number(arrDebitFT[item._id][0].amount)
-                                // }
+                                // Dữ liệu các tài khoản con/cháu....
+                                for(const subitem of item.nestedChilds){
+                                    if(arrDebitO[`${subitem}`]){
+                                        kcNoDauKySub = kcNoDauKySub + Number(arrDebitO[subitem][0].amount)
+                                    }
+                                    if(arrCreditO[`${subitem}`]){
+                                        kcCoDauKySub = kcCoDauKySub + Number(arrCreditO[subitem][0].amount)
+                                    }
+                                    if(arrDebitOF[`${subitem}`]){
+                                        noDauKySub = noDauKySub + Number(arrDebitOF[subitem][0].amount)
+                                    }
+                                    if(arrCreditOF[`${subitem}`]){
+                                        coDauKySub = coDauKySub + Number(arrCreditOF[subitem][0].amount)
+                                    }
+                                    if(arrDebitFT[`${subitem}`]){
+                                        noTrongKySub = noTrongKySub + Number(arrDebitFT[subitem][0].amount)
+                                    }
+                                    if(arrCreditFT[`${subitem}`]){
+                                        coTrongKySub = coTrongKySub + Number(arrCreditFT[subitem][0].amount)
+                                    }
+                                }
 
-                                // if(arrCreditFT[item._id]){
-                                //     workbook.sheet("BangCDTaiKhoan").row(i+1).cell(9).value(Number(arrCreditFT[item._id][0].amount))
-                                // }
+                                // console.log({kcNoDauKySub})
+                                // console.log({kcCoDauKySub})
+                                // console.log({noDauKySub})
+                                // console.log({coDauKySub})
+                                // console.log({noTrongKySub})
+                                // console.log({coTrongKySub})
 
-                                // totalDebitFT = debitFT + allSubDebitFT
-
-                                // workbook.sheet("BangCDTaiKhoan").row(i).cell(8).value(Number(totalDebitFT))
-                                // workbook.sheet("BangCDTaiKhoan").row(i+2).cell(8).value(Number(allSubDebitFT))
-
+                                kcNoDauKy = kcNoDauKy + kcNoDauKySub
+                                kcCoDauKy = kcCoDauKy + kcCoDauKySub
+                                noDauKy = noDauKy + noDauKySub
+                                coDauKy = coDauKy + coDauKySub
+                                noTrongKy = noTrongKy + noTrongKySub
+                                coTrongKy = coTrongKy + coTrongKySub
                                 
                                 arrCombine.push({
                                     _id: item._id,
@@ -1872,6 +1908,125 @@ class Model extends BaseModel {
                     }
 
                     else if(option == 9){
+                        let arrGoods = [], arrCombine = []
+
+                        for(const item of listDataO[0]._debit){
+                            arrGoods.push(item._id.goods)
+                        }
+                        for(const item of listDataO[0]._credit){
+                            arrGoods.push(item._id.goods)
+                        }
+                        for(const item of listDataOF[0]._debit){
+                            arrGoods.push(item._id.goods)
+                        }
+                        for(const item of listDataOF[0]._credit){
+                            arrGoods.push(item._id.goods)
+                        }
+                        for(const item of listDataFT[0]._debit){
+                            arrGoods.push(item._id.goods)
+                        }
+                        for(const item of listDataFT[0]._credit){
+                            arrGoods.push(item._id.goods)
+                        }
+                        // console.log(arrGoods)
+
+                        let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arrGoods}}).select('name unit note')
+                        // console.log(listGoods)
+
+                        let arrDebitO = [], arrCreditO = [], arrDebitOF = [], arrCreditOF = [], arrDebitFT = [], arrCreditFT = []
+
+                        listDataO[0]._debit.forEach(element=>{
+                            let key = element._id.goods;
+                            if (!Array.isArray(arrDebitO[key])) {
+                                arrDebitO[key] = [];
+                            }
+                            arrDebitO[key].push(element)
+                        })
+
+                        listDataO[0]._credit.forEach(element=>{
+                            let key = element._id.goods;
+                            if (!Array.isArray(arrCreditO[key])) {
+                                arrCreditO[key] = [];
+                            }
+                            arrCreditO[key].push(element)
+                        })
+
+                        listDataOF[0]._debit.forEach(element=>{
+                            let key = element._id.goods;
+                            if (!Array.isArray(arrDebitOF[key])) {
+                                arrDebitOF[key] = [];
+                            }
+                            arrDebitOF[key].push(element)
+                        })
+
+                        listDataOF[0]._credit.forEach(element=>{
+                            let key = element._id.goods;
+                            if (!Array.isArray(arrCreditOF[key])) {
+                                arrCreditOF[key] = [];
+                            }
+                            arrCreditOF[key].push(element)
+                        })
+
+                        listDataFT[0]._debit.forEach(element=>{
+                            let key = element._id.goods;
+                            if (!Array.isArray(arrDebitFT[key])) {
+                                arrDebitFT[key] = [];
+                            }
+                            arrDebitFT[key].push(element)
+                        })
+
+                        listDataFT[0]._credit.forEach(element=>{
+                            let key = element._id.goods;
+                            if (!Array.isArray(arrCreditFT[key])) {
+                                arrCreditFT[key] = [];
+                            }
+                            arrCreditFT[key].push(element)
+                        })
+
+                        for(const item of listGoods){
+                            let kcNoDauKy = 0;
+                            let kcCoDauKy = 0;
+                            let noDauKy = 0;
+                            let coDauKy = 0;
+                            let noTrongKy = 0;
+                            let coTrongKy = 0;
+                            let noCuoiKy = 0;
+                            let coCuoiKy = 0;
+
+                            if(arrDebitO[item._id]){
+                                kcNoDauKy = arrDebitO[item._id][0].amount
+                            }
+                            if(arrCreditO[item._id]){
+                                kcCoDauKy = arrCreditO[item._id][0].amount
+                            }
+                            if(arrDebitOF[item._id]){
+                                noDauKy = arrDebitOF[item._id][0].amount
+                            }
+                            if(arrCreditOF[item._id]){
+                                coDauKy = arrCreditOF[item._id][0].amount
+                            }
+                            if(arrDebitFT[item._id]){
+                                noTrongKy = arrDebitFT[item._id][0].amount
+                            }
+                            if(arrCreditFT[item._id]){
+                                coTrongKy = arrCreditFT[item._id][0].amount
+                            }
+
+                            arrCombine.push({
+                                _id: item._id,
+                                name: item.name,
+                                unit: item.unit,
+                                kcNoDauKy: Number(kcNoDauKy),
+                                kcCoDauKy: Number(kcCoDauKy),
+                                noDauKy: Number(noDauKy),
+                                coDauKy: Number(coDauKy),
+                                noTrongKy: Number(noTrongKy),
+                                coTrongKy: Number(coTrongKy),
+                            })
+                        }
+
+                        // console.log(arrCombine)
+
                         return resolve({ error: false, data: { 
                             debitO: listDataO[0]._debit,
                             creditO: listDataO[0]._credit,
@@ -1879,6 +2034,7 @@ class Model extends BaseModel {
                             creditOF: listDataOF[0]._credit,
                             debitFT: listDataFT[0]._debit,
                             creditFT: listDataFT[0]._credit,
+                            arrCombine
                         }})
                     }
                 }
