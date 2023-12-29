@@ -1250,7 +1250,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Tổng hợp theo Nhập xuất tồn
+                    // Tổng hợp theo Sản phẩm
                     else if(option == 9){
                         conditionProject = {
                             year : {$year : "$date"},
@@ -1280,6 +1280,38 @@ class Model extends BaseModel {
                         conditionGroupCredit = {
                             _id: { goods: "$goods" },
                             quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+                    
+                    // Tổng hợp theo Mã khách
+                    else if(option == 10){
+                        conditionProject = {
+                            year : {$year : "$date"},
+                            forward: '$forward',
+                            cancel: '$cancel',
+                            date: 1,
+                            quantity: 1,
+                            amount: 1,
+                            customerDebit: 1,
+                            customerCredit: 1,
+                            debit: 1,
+                            credit: 1
+                        }
+
+                        conditionDebitObj.debit = {
+                            $in: arrObjectID
+                        }
+                        conditionCreditObj.credit = {
+                            $in: arrObjectID
+                        }
+
+                        conditionGroupDebit = {
+                            _id: { customer: "$customerDebit" },
+                            amount: { $sum: "$amount" }
+                        }
+                        conditionGroupCredit = {
+                            _id: { customer: "$customerCredit" },
                             amount: { $sum: "$amount" }
                         }
                     }
@@ -1907,6 +1939,7 @@ class Model extends BaseModel {
                         }})
                     }
 
+                    // Tổng hợp theo Sản phẩm
                     else if(option == 9){
                         let arrGoods = [], arrCombine = []
 
@@ -1984,6 +2017,138 @@ class Model extends BaseModel {
                         })
 
                         for(const item of listGoods){
+                            let kcNoDauKy = 0;
+                            let kcCoDauKy = 0;
+                            let noDauKy = 0;
+                            let coDauKy = 0;
+                            let noTrongKy = 0;
+                            let coTrongKy = 0;
+                            let noCuoiKy = 0;
+                            let coCuoiKy = 0;
+
+                            if(arrDebitO[item._id]){
+                                kcNoDauKy = arrDebitO[item._id][0].amount
+                            }
+                            if(arrCreditO[item._id]){
+                                kcCoDauKy = arrCreditO[item._id][0].amount
+                            }
+                            if(arrDebitOF[item._id]){
+                                noDauKy = arrDebitOF[item._id][0].amount
+                            }
+                            if(arrCreditOF[item._id]){
+                                coDauKy = arrCreditOF[item._id][0].amount
+                            }
+                            if(arrDebitFT[item._id]){
+                                noTrongKy = arrDebitFT[item._id][0].amount
+                            }
+                            if(arrCreditFT[item._id]){
+                                coTrongKy = arrCreditFT[item._id][0].amount
+                            }
+
+                            arrCombine.push({
+                                _id: item._id,
+                                name: item.name,
+                                unit: item.unit,
+                                kcNoDauKy: Number(kcNoDauKy),
+                                kcCoDauKy: Number(kcCoDauKy),
+                                noDauKy: Number(noDauKy),
+                                coDauKy: Number(coDauKy),
+                                noTrongKy: Number(noTrongKy),
+                                coTrongKy: Number(coTrongKy),
+                            })
+                        }
+
+                        // console.log(arrCombine)
+
+                        return resolve({ error: false, data: { 
+                            debitO: listDataO[0]._debit,
+                            creditO: listDataO[0]._credit,
+                            debitOF: listDataOF[0]._debit,
+                            creditOF: listDataOF[0]._credit,
+                            debitFT: listDataFT[0]._debit,
+                            creditFT: listDataFT[0]._credit,
+                            arrCombine
+                        }})
+                    }
+
+                    // Tổng hợp theo Mã khách
+                    else if(option == 10){
+                        let arrCustomers = [], arrCombine = []
+
+                        for(const item of listDataO[0]._debit){
+                            arrCustomers.push(item._id.customer)
+                        }
+                        for(const item of listDataO[0]._credit){
+                            arrCustomers.push(item._id.customer)
+                        }
+                        for(const item of listDataOF[0]._debit){
+                            arrCustomers.push(item._id.customer)
+                        }
+                        for(const item of listDataOF[0]._credit){
+                            arrCustomers.push(item._id.customer)
+                        }
+                        for(const item of listDataFT[0]._debit){
+                            arrCustomers.push(item._id.customer)
+                        }
+                        for(const item of listDataFT[0]._credit){
+                            arrCustomers.push(item._id.customer)
+                        }
+                        // console.log(arrCustomers)
+
+                        let listCustomers = await ITEM__CONTACT_COLL.find({_id: {$in: arrCustomers}}).select('name phone taxid')
+                        // console.log(listCustomers)
+
+                        let arrDebitO = [], arrCreditO = [], arrDebitOF = [], arrCreditOF = [], arrDebitFT = [], arrCreditFT = []
+
+                        listDataO[0]._debit.forEach(element=>{
+                            let key = element._id.customer;
+                            if (!Array.isArray(arrDebitO[key])) {
+                                arrDebitO[key] = [];
+                            }
+                            arrDebitO[key].push(element)
+                        })
+
+                        listDataO[0]._credit.forEach(element=>{
+                            let key = element._id.customer;
+                            if (!Array.isArray(arrCreditO[key])) {
+                                arrCreditO[key] = [];
+                            }
+                            arrCreditO[key].push(element)
+                        })
+
+                        listDataOF[0]._debit.forEach(element=>{
+                            let key = element._id.customer;
+                            if (!Array.isArray(arrDebitOF[key])) {
+                                arrDebitOF[key] = [];
+                            }
+                            arrDebitOF[key].push(element)
+                        })
+
+                        listDataOF[0]._credit.forEach(element=>{
+                            let key = element._id.customer;
+                            if (!Array.isArray(arrCreditOF[key])) {
+                                arrCreditOF[key] = [];
+                            }
+                            arrCreditOF[key].push(element)
+                        })
+
+                        listDataFT[0]._debit.forEach(element=>{
+                            let key = element._id.customer;
+                            if (!Array.isArray(arrDebitFT[key])) {
+                                arrDebitFT[key] = [];
+                            }
+                            arrDebitFT[key].push(element)
+                        })
+
+                        listDataFT[0]._credit.forEach(element=>{
+                            let key = element._id.customer;
+                            if (!Array.isArray(arrCreditFT[key])) {
+                                arrCreditFT[key] = [];
+                            }
+                            arrCreditFT[key].push(element)
+                        })
+
+                        for(const item of listCustomers){
                             let kcNoDauKy = 0;
                             let kcCoDauKy = 0;
                             let noDauKy = 0;
