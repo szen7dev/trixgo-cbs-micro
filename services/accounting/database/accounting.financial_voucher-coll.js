@@ -66,7 +66,12 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     type: { type: Number, default: 1 },  
     //_________Ngày hoạch toán
     date: { type: Date, default: Date.now },
-    //_________Có phải là hóa đơn VAT hay không
+    /**
+     * Có phải là hóa đơn VAT hay không
+     * 0-Không phải
+     * 1-Mua vào
+     * 2-Bán ra
+     */
     vat: { type: Number, default: 0 },  
     //_________Ngày chứng từ
     dateInvoice: { type: Date, default: Date.now }, 
@@ -86,6 +91,10 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     note: String,
     //_________Thành tiền (NEW***)
     amount: { type: Number, default: 0 }, 
+    //_________Giá trị trước thuế
+    revenue: { type: Number, default: 0 },
+    //_________Giá trị thuế
+    tax: { type: Number, default: 0 },
     /**
      * USD-NGOẠI TỆ
      */ 

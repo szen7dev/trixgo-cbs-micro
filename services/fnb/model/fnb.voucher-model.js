@@ -7,8 +7,6 @@ const stringUtils					    = require('../../../tools/utils/string_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 const XlsxPopulate                      = require('xlsx-populate');
@@ -19,18 +17,10 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**s
  * import inter-coll, exter-coll
  */
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
-const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
-const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
-// const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
-// const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_product-coll');
-// const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
-// const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-// const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
-// const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
-const FNB_VOUCHER_COLL                          = require('../database/fnb.voucher-coll');
-
-// const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;
+const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll');
+const FNB_PRODUCT_COLL                  = require('../database/fnb.product-coll');
+const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll'); 
+const FNB_VOUCHER_COLL                  = require('../database/fnb.voucher-coll');
 
 /**
  * import inter-model, exter-model
@@ -327,7 +317,6 @@ class Model extends BaseModel {
                                         .select(select)
                                         .populate(populates)
                     if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
-                    // console.log(info)
                     return resolve({ error: false, data: info })
                 }
             } catch (error) {
