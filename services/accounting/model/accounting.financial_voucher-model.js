@@ -11,8 +11,6 @@ const path                              = require('path');
 /**
  * CONSTANTS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant')
 const { VOUCHER_TYPES }                 = require('../config/accounting.financial_config')
 
 /**
@@ -26,8 +24,8 @@ const { KEY_ERROR }                         = require('../../../tools/keys/index
 /**
  * COLLECTIONS
  */
-const FUNDA_COLL                                    = require('../../item/database/item.funda-coll'); // Kiểm tra fix lại, không Import trực tiếp
-const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll'); // Kiểm tra fix lại, không Import trực tiếp
+const FUNDA_COLL                                    = require('../../item/database/item.funda-coll')
+const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
 
@@ -721,8 +719,7 @@ class Model extends BaseModel {
      */
     getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
         keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
-            // console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
-            //     keyword})
+        // console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID, keyword})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 20) {
@@ -808,7 +805,6 @@ class Model extends BaseModel {
 
                 let conditionObjOrg = { ...conditionObj };
 
-                // PHÂN TRANG KIỂU MỚI
                 if (lastestID && checkObjectIDs(lastestID)) {
                     let infoData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(lastestID);
                     if (!infoData)
@@ -832,7 +828,6 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                // GET TOTAL RECORD
                 if (!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -862,11 +857,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-     * TÍNH TOÁN VÀ BÁO CÁO SỐ LIỆU
-     */
-    
 }
 
 exports.MODEL = new Model;
