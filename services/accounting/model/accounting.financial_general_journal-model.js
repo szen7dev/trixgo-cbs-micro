@@ -701,10 +701,6 @@ class Model extends BaseModel {
                  * 3-Tổng hợp ngân sách đã thực hiện của hạng mục-budgetItem
                  * 4-Tổng hợp ngân sách đã thực hiện của ngân sách-budget
                  */
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataBudget = {
                     quantity: 0,
                     amount: 0
@@ -730,17 +726,6 @@ class Model extends BaseModel {
                     conditionObjDown.budget = ObjectID(budgetID)
                 }
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 // Dữ liệu tăng ngân sách thực hiện
                 let listDataUp = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
