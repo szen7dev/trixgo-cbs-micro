@@ -755,9 +755,9 @@ class Model extends BaseModel {
                     conditionObj.type = Number(type)
                 }
 
-                // if(!isNaN(vat) && Number(vat) > 0){
-                //     conditionObj.vat = Number(vat)
-                // }
+                if(!isNaN(vat) && Number(vat) > 0){
+                    conditionObj.vat = Number(vat)
+                }
 
                 if (checkObjectIDs(userCreateID)) {
                     conditionObj.userCreate = userCreateID
