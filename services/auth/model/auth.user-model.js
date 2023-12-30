@@ -1551,9 +1551,7 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let conditionObj = {};
                 let keys	 = ['status__-1', '_id__-1'];
                 // let keys	 = ['createAt__-1', '_id__-1'];
@@ -1584,12 +1582,6 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: infoDataAfterGet, status: 200 });
                 }
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -1602,16 +1594,11 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 if(companyID && checkObjectIDs([companyID])){
                     conditionObj.company = companyID;
                 }
 
-                if(checkObjectIDs(projectID)){
+                if(projectID && checkObjectIDs(projectID)){
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID
                     });
@@ -1622,7 +1609,7 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.bizfullname = new RegExp(keyword, 'i');
+                    conditionObj.fullname = new RegExp(keyword, 'i');
                 }
 
                 let conditionObjOrg = { ...conditionObj };
