@@ -27,19 +27,24 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'contract'
     }, 
+    //_________Kho bãi
+    warehouse: {
+        type: Schema.Types.ObjectId,
+        ref: 'warehouse'
+    },
+    //_________Hàng hóa/Thành phẩm/Nguyên vật liệu/Tài sản
+    goods: {
+        type: Schema.Types.ObjectId,
+        ref: 'goods'
+    }, 
+    //_________Khoản mục phí
+    feeItem: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
     /**
      * LINK NGÂN SÁCH
-     */
-    //_________Link tới dự án (***Bỏ)
-    budgetProject: {
-        type: Schema.Types.ObjectId,
-        ref: 'department'
-    }, 
-    //_________Link tới hợp đồng (***Bỏ)
-    budgetContract: {
-        type: Schema.Types.ObjectId,
-        ref: 'contract'
-    },     
+     */   
     //_________Ngân sách
     budget: {
         type: Schema.Types.ObjectId,
@@ -130,16 +135,6 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'contact'
     },   
-    //_________Kho bãi
-    warehouse: {
-        type: Schema.Types.ObjectId,
-        ref: 'warehouse'
-    },
-    //_________Hàng hóa/Thành phẩm/Nguyên vật liệu/Tài sản
-    goods: {
-        type: Schema.Types.ObjectId,
-        ref: 'goods'
-    }, 
     //_________Diễn giải nội dung
     name: String,
     //_________Ghi chú
@@ -158,11 +153,6 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     cash: { type: Number, default: 1 },  
     //_________Tiền về thực tế (áp dụng theo dõi cho các hoá đơn VAT)
     amountPayment: { type: Number, default: 0 }, 
-    //_________Khoản mục phí
-    feeItem: {
-        type: Schema.Types.ObjectId,
-        ref: 'doctype'
-    },
     /**
      * USD-NGOẠI TỆ
      */ 

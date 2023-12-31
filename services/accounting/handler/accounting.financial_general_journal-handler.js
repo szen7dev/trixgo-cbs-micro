@@ -122,10 +122,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { option, journalID, companyID, fundaID, projectID, contractID, warehouseID, goodsID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
                 // console.log('=====Danh sách bút toán===================')
-                // console.log({option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey})
+                // console.log({option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, warehouseID, goodsID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey})
 
                 const { _id: userID, company, contacts } = ctx.meta.infoUser;
 
@@ -140,7 +140,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
-                        option, forward, cancel, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, contacts, keyword, limit, lastestID, select, populates, sortKey, ctx
+                        option, forward, cancel, companyID, fundaID, projectID, contractID, warehouseID, goodsID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, contacts, keyword, limit, lastestID, select, populates, sortKey, ctx
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -250,11 +250,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
+                let { option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID } = ctx.params;
                 
                 const { _id: userID, company, contacts } = ctx.meta.infoUser;
 
-                // console.log({option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs})
+                // console.log({option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID})
 
                 if(!companyID){
                     companyID = company._id
@@ -267,7 +267,7 @@ module.exports = {
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({
-                    userID, contacts, option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
+                    userID, contacts, option, optionAccount, optionTerm, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID
                 })
 
                 // console.log(resultAfterCallHandler)

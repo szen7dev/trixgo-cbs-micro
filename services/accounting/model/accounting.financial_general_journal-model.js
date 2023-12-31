@@ -10,8 +10,8 @@
  * CONSTANTS
  */
  const { CF_DOMAIN_SERVICES } 	                        = require('../../gateway/helper/domain.constant');
- const { VOUCHER_TYPES }                                = require('../config/accounting.financial_config');
- const { CF_ACTIONS_ITEM }                              = require('../../item/helper/item.actions-constant');
+//  const { VOUCHER_TYPES }                                = require('../config/accounting.financial_config');
+//  const { CF_ACTIONS_ITEM }                              = require('../../item/helper/item.actions-constant');
  const { CF_ACTIONS_BUDGET } 		                    = require('../../budget/helper/budget.actions-constant');
 
 /**
@@ -26,7 +26,7 @@
  * COLLECTIONS
  */
 const ITEM_ACCOUNT_COLL                                 = require('../../item/database/item.account-coll')
-const ITEM__FUNDA_COLL            			            = require('../../item/database/item.funda-coll')
+// const ITEM__FUNDA_COLL            			            = require('../../item/database/item.funda-coll')
 const ITEM__GOODS_COLL            			            = require('../../item/database/item.goods-coll')
 const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
@@ -416,9 +416,10 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
+    getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate,  forward, cancel, userID, keyword, limit, lastestID, select, populates, contacts})
+            // console.log('==========GET LIST JOURNAL============')
+            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate,  forward, cancel, userID, keyword, limit, lastestID, select, populates, contacts})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -496,6 +497,14 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(warehouseID && checkObjectIDs(warehouseID)){
+                    conditionObj.warehouse = ObjectID(warehouseID)
+                }
+
+                if(goodsID && checkObjectIDs(goodsID)){
+                    conditionObj.goods = ObjectID(goodsID)
+                }
+
                 /**
                  * THEO NGÂN SÁCH
                  */
@@ -524,7 +533,7 @@ class Model extends BaseModel {
                  * THEO TÀI KHOẢN
                  */
                 if(checkObjectIDs(accountID) && checkObjectIDs(contactID)){
-                    // console.log('=================1111111111111111')
+                    console.log('=================1111111111111111')
                     let arrObjectID = []
                     let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
                     if(!infoAccount)
@@ -542,7 +551,7 @@ class Model extends BaseModel {
 
                 }else{
                     if(checkObjectIDs(accountID)){
-                        // console.log('=================22222222222222222')
+                        console.log('=================22222222222222222')
                         let arrObjectID = []
                         let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
                         if(!infoAccount)
@@ -564,7 +573,7 @@ class Model extends BaseModel {
                     }
 
                     if(checkObjectIDs(contactID)){
-                        // console.log('=================333333333333333333333')
+                        console.log('=================333333333333333333333')
                         conditionObj.$or = [
                             { customerDebit: contactID },
                             { customerCredit: contactID },
@@ -781,9 +790,9 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date  : 10/4/2022
      */
-    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts }) {
+    getListByProperty({ option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts }) {
         // console.log('==================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        // console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs, name, companyID, fundaID, projectID, contractID, contactID, fromDate, toDate, userID, contacts})
+        // console.log({option, optionAccount, optionTerm, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
@@ -855,6 +864,9 @@ class Model extends BaseModel {
                         }
                     }
                 }
+                // console.log(listAccounts)
+                // console.log(arrObjectID)
+                
 
                 if(contractID && checkObjectIDs(contractID)){
                     console.log('============1')
@@ -883,6 +895,19 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                if(warehouseID && checkObjectIDs(warehouseID)){
+                    console.log('============6')
+                    conditionDebitObj.warehouse = ObjectID(warehouseID)
+                    conditionCreditObj.warehouse = ObjectID(warehouseID)
+                }
+
+                if(goodsID && checkObjectIDs(goodsID)){
+                    console.log('============7')
+                    conditionDebitObj.goods = ObjectID(goodsID)
+                    conditionCreditObj.goods = ObjectID(goodsID)
+                }
+
                 // console.log(conditionDebitObj)
                 // console.log(conditionCreditObj)
 
@@ -1078,6 +1103,15 @@ class Model extends BaseModel {
                     
                     // Báo cáo Bảng cân đối tài khoản
                     else if(option == 4){
+                        if(optionAccount == 1){
+                            conditionDebitObj.debit = {
+                                $in: arrObjectID
+                            }
+                            conditionCreditObj.credit = {
+                                $in: arrObjectID
+                            }
+                        }
+
                         conditionProject = {
                             year : {$year : "$date"},
                             forward: '$forward',
@@ -1289,6 +1323,11 @@ class Model extends BaseModel {
                         }
                         conditionCreditObj.credit = {
                             $in: arrObjectID
+                        }
+
+                        if(contactID && checkObjectIDs(contactID)){
+                            conditionDebitObj.customerDebit = ObjectID(contactID)
+                            conditionCreditObj.customerCredit = ObjectID(contactID)
                         }
 
                         conditionGroupDebit = {
@@ -1631,9 +1670,13 @@ class Model extends BaseModel {
 
                     // Báo cáo Bảng cân đối tài khoản
                     else if(option == 4){
-                        let arrCombine = []
+                        let arrCombine = [], listAccounts = []
 
-                        let listAccounts = await ACCOUNT_MODEL.getListRecursive({ companyID })
+                        if(arrAccNames && Array.isArray(arrAccNames)){
+                            listAccounts = await ACCOUNT_MODEL.getListRecursive({ companyID, arrAccNames })
+                        }else{
+                            listAccounts = await ACCOUNT_MODEL.getListRecursive({ companyID })
+                        }
                         let listAppMenuParent = listAccounts.data
 
                         let arrDebitO = [], arrCreditO = [], arrDebitOF = [], arrCreditOF = [], arrDebitFT = [], arrCreditFT = []
