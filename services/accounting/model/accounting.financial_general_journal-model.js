@@ -791,8 +791,8 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts }) {
-        // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        // console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
+        console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1783,7 +1783,7 @@ class Model extends BaseModel {
                                 }
 
                                 // Dữ liệu các tài khoản con/cháu....
-                                if(optionCal && Number(optionCal) == 1){
+                                if(!optionCal || Number(optionCal) == 1){
                                     //
                                 }else{
                                     for(const subitem of item.nestedChilds){
