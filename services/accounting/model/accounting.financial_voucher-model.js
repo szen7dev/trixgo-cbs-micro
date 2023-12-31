@@ -58,6 +58,19 @@ class Model extends BaseModel {
         selectedJournals,
         ctx
      }) {
+        // console.log({ 
+        //     authorID, 
+        //     companyID, 
+        //     fundaID, 
+        //     customerID,
+        //     contractID, 
+        //     storageID, 
+        //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
+        //     receiver, note,
+        //     forward, forwardIs, returning, advancePayment, cancel, 
+        //     fcuExRate, 
+        //     selectedJournals
+        //  })
         const that = this
         return new Promise(async (resolve) => {
             try {
