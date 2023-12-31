@@ -155,7 +155,6 @@ class Model extends BaseModel {
                  * - Thay đổi cấu trúc cha cũ
                  * - Cập nhật theo cấu trúc cha mới cho tất cả con cháu
                  */
-
                 let infoAfterUpdate = await ITEM__ACCOUNT_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update" });
@@ -332,12 +331,13 @@ class Model extends BaseModel {
 	 * Author : Hiepnh
 	 * Date: 29/7/2023
 	 */
-    getListRecursive({ companyID, status }){
+    getListRecursive({ companyID, arrAccNames, status }){
+        // console.log({ companyID, arrAccNames, status })
         return new Promise(async (resolve) => {
             try {
                 if( !ObjectID.isValid(companyID))
                     return resolve({ error: true, message: 'param_not_valid' })
-
+                
                 let pathOrigin;
                 let constructPopulateConfigObj = (level, path) => {
                     pathOrigin  = `${path}`
@@ -380,6 +380,11 @@ class Model extends BaseModel {
                         { parent: null }
                     ]
                 }
+
+                // Lấy theo mảng Tên các tài khoản
+                if(arrAccNames && Array.isArray(arrAccNames)){
+                    ObjectQuery.name = {$in: arrAccNames}
+                }
                 
                 if(status){
                     ObjectQuery.status  = Number(status)
@@ -387,7 +392,6 @@ class Model extends BaseModel {
 
                 //_____Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
                 let listAppMenuParent = await ITEM__ACCOUNT_COLL.find(ObjectQuery)
-                // .select('status type childs level nestedParents nestedChilds parent name description')
                 .populate(
                     constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
                 )
