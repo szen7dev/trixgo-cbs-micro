@@ -791,8 +791,8 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts }) {
-        console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
+        // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
@@ -1784,8 +1784,7 @@ class Model extends BaseModel {
 
                                 // Dữ liệu các tài khoản con/cháu....
                                 if(!optionCal || Number(optionCal) == 1){
-                                    //
-                                }else{
+                                    // console.log('==============Tổng toàn bộ============')
                                     for(const subitem of item.nestedChilds){
                                         if(arrDebitO[`${subitem}`]){
                                             kcNoDauKySub = kcNoDauKySub + Number(arrDebitO[subitem][0].amount)
@@ -1806,6 +1805,8 @@ class Model extends BaseModel {
                                             coTrongKySub = coTrongKySub + Number(arrCreditFT[subitem][0].amount)
                                         }
                                     }
+                                }else{
+                                    // console.log('==============Tổng bút toán gốc============')
                                 }
 
                                 // console.log({kcNoDauKySub})
