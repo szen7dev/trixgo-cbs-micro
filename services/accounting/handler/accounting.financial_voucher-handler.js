@@ -43,7 +43,7 @@ module.exports = {
 
                 if(!fundaID){
                     let infoFundaCompany = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ })
-                    console.log(infoFundaCompany)
+                    // console.log(infoFundaCompany)
                 
                     if(infoFundaCompany.error){
                         resultAfterCallHandler.message = 'Not found funda comany ';

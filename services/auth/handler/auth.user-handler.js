@@ -757,9 +757,9 @@ module.exports = {
                 } = ctx.params;
                 // console.log(ctx.params)
 
-                if(!companyID){
-                    companyID = company._id
-                }
+                // if(!companyID){
+                //     companyID = company._id
+                // }
 
                 let resultAfterCallHandler;
 
