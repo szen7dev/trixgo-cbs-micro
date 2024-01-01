@@ -2440,7 +2440,11 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(13).value(item?.goods?.name);
                             workbook.sheet("Data").row(i).cell(14).value(item?.warehouse?.name);
                             workbook.sheet("Data").row(i).cell(15).value(item.note);
-                        }else{
+
+                            i++
+                        }
+                        
+                        if(item?.credit && checkObjectIDs(item?.credit )){
                             workbook.sheet("Data").row(i).cell(1).value(item?.voucher?.date);
                             workbook.sheet("Data").row(i).cell(2).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
                             workbook.sheet("Data").row(i).cell(3).value(item?.funda?.name);
@@ -2456,6 +2460,8 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(13).value(item?.goods?.name);
                             workbook.sheet("Data").row(i).cell(14).value(item?.warehouse?.name);
                             workbook.sheet("Data").row(i).cell(15).value(item.note);
+
+                            i++
                         }
 
                         workbook.sheet("Data1").row(i).cell(1).value(item?.voucher?.date);
