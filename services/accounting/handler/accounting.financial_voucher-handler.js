@@ -27,8 +27,9 @@ module.exports = {
                 let { 
                     fundaID, 
                     customerID,
-                    contractID, 
+                    contract, 
                     storageID, 
+                    subtype,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
@@ -36,14 +37,15 @@ module.exports = {
                     selectedJournals, 
                     isImport,
                 } = ctx.params;
+                // console.log(ctx.params)
+                //  return
 
-                const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID } = ctx.meta.infoUser;
 
                 let  resultAfterCallHandler;
 
                 if(!fundaID){
                     let infoFundaCompany = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ })
-                    // console.log(infoFundaCompany)
                 
                     if(infoFundaCompany.error){
                         resultAfterCallHandler.message = 'Not found funda comany ';
@@ -55,11 +57,11 @@ module.exports = {
                 
                 resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.insert({ 
                     authorID : userID, 
-                    companyID: company._id,
                     fundaID,
                     customerID,
-                    contractID, 
+                    contractID: contract, 
                     storageID, 
+                    subtypeID: subtype,
                     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
                     forward: (!isNaN(forward) && [0,1].includes(Number(forward))) ? Number(forward) : 0,
@@ -101,6 +103,7 @@ module.exports = {
                     customerID,
                     contract, 
                     storageID, 
+                    subtype,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
@@ -109,9 +112,10 @@ module.exports = {
                     deletedJournals,
                 } = ctx.params;
 
-                const { _id: userID } = ctx.meta.infoUser;
-
                 // console.log(ctx.params)
+                //  return
+
+                const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.update({
                     authorID: userID, 
@@ -119,6 +123,7 @@ module.exports = {
                     customerID,
                     contractID: contract, 
                     storageID, 
+                    subtypeID: subtype,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 

@@ -51,7 +51,7 @@ class Model extends BaseModel {
         date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
-        goods, warehouse, contract, project, budgetWork,
+        goods, warehouse, contract, project, budgetWork, subtype,
         note,
         ctx
     }) {
@@ -65,7 +65,6 @@ class Model extends BaseModel {
                  * 3-Kiểm tra khác
                  */
                 if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, customerDebit, customerCredit]))
-                // if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, debit, credit, customerDebit, customerCredit]))
                     return { error: true, message: 'params_invalid', status: 400 };
 
                 // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID
@@ -85,7 +84,7 @@ class Model extends BaseModel {
                     date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
-                    goods, warehouse, contract, project, budgetWork,
+                    goods, warehouse, contract, project, budgetWork, subtype,
                     note,
                 }
 
@@ -188,7 +187,7 @@ class Model extends BaseModel {
         date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
-        goods, warehouse, contract, project, budgetWork,
+        goods, warehouse, contract, project, budgetWork, subtype,
         note,
         ctx
      }) {
@@ -224,7 +223,7 @@ class Model extends BaseModel {
                     date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
-                    goods, warehouse, contract, project, budgetWork,
+                    goods, warehouse, contract, project, budgetWork, subtype,
                     note,
                 }
 
@@ -1249,7 +1248,7 @@ class Model extends BaseModel {
                             cancel: '$cancel',
                             date: 1,
                             amount: 1,
-                            feeItem: 1,
+                            subtype: 1,
                         }
     
                         conditionDebitObj.debit = {
@@ -1260,11 +1259,11 @@ class Model extends BaseModel {
                         }
     
                         conditionGroupDebit = {
-                            _id: { feeItem: "$feeItem" },
+                            _id: { subtype: "$subtype" },
                             amount: { $sum: "$amount" }
                         }
                         conditionGroupCredit = {
-                            _id: { feeItem: "$feeItem" },
+                            _id: { subtype: "$subtype" },
                             amount: { $sum: "$amount" }
                         }
                     }
@@ -1827,6 +1826,7 @@ class Model extends BaseModel {
                                     _id: item._id,
                                     name: item.name,
                                     description: item.description,
+                                    amountChilds: item.amountChilds,
                                     kcNoDauKy: Number(kcNoDauKy),
                                     kcCoDauKy: Number(kcCoDauKy),
                                     noDauKy: Number(noDauKy),
