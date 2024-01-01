@@ -56,7 +56,7 @@ const uploadFileS3 = (pathFile, fileName) => {
         Key: key, // File name you want to save as in S3
         Body: fileContent,
     };
-    
+
     return new Upload({
         client: s3Object,
         params,
