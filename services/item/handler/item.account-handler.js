@@ -80,7 +80,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { accountID, companyID, keyword, parentID, isListParentOfListChilds,
+                let { option, accountID, companyID, keyword, parentID, isListParentOfListChilds,
                     limit, lastestID, select, populates,
                     status, type, level, isAccountingService
                 } = ctx.params;
@@ -96,7 +96,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getList({
-                        companyID, lastestID, keyword, select, limit, populates,
+                        option, companyID, lastestID, keyword, select, limit, populates,
                         status, type, level, isAccountingService, parentID, isListParentOfListChilds,
                     });
                 }

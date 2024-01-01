@@ -46,11 +46,11 @@ class Model extends BaseModel {
      */
     insert({ 
         authorID, 
-        companyID, 
         fundaID, 
         customerID,
         contractID, 
         storageID, 
+        subtypeID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
@@ -60,11 +60,11 @@ class Model extends BaseModel {
      }) {
         // console.log({ 
         //     authorID, 
-        //     companyID, 
         //     fundaID, 
         //     customerID,
         //     contractID, 
         //     storageID, 
+        //     subtypeID,
         //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         //     receiver, note,
         //     forward, forwardIs, returning, advancePayment, cancel, 
@@ -83,28 +83,18 @@ class Model extends BaseModel {
                 */
 
                 //_________Kiểm tra dữ liệu đầu vào
-                if(!date || !name || Number.isNaN(Number(type)) ||!checkObjectIDs(authorID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(companyID))
-                    return resolve({ error: true, message: 'date|name|type|authorID|customerID|companyID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID))
+                    return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
 
-                /**
-                 * TỰ ĐỘNG GHI SỐ HIỆU PHIẾU
-                 */
-                //_________Lấy số lượng phiếu hiện tại của công ty/đơn vị cơ sở
-                let number          = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type })
-                let infoFunda       = await FUNDA_COLL.findById(fundaID)
+                //_________Tự động lấy số hiệu phiếu
+                let number = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type })
+                let infoFunda = await FUNDA_COLL.findById(fundaID)
+                if(!infoFunda)
+                    return resolve({ error: true, message: 'fundaID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+
+                let companyID = infoFunda.company
 
                 let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
-                // if(sign && sign != ""){
-                //     // Kiểm tra xem đã tồn tại mã hiệu đó hay chưa
-                //     let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
-                //         funda: fundaID, 
-                //         sign: sign
-                //     }).select('_id')
-
-                //     if(!infoVoucher){
-                //         voucherSign = sign
-                //     }
-                // }
 
                 /**
                  * B1. TẠO PHIẾU
@@ -123,7 +113,7 @@ class Model extends BaseModel {
                     fcuExRate
                 }
 
-                if (checkObjectIDs(contractID)) {
+                if (contractID && checkObjectIDs(contractID)) {
                     let infoContract = await CONTRACT_COLL.findById(contractID)
                     if(infoContract.project && checkObjectIDs(infoContract.project)){
                         dataInsertVoucher.project = infoContract.project;
@@ -131,7 +121,11 @@ class Model extends BaseModel {
                     dataInsertVoucher.contract = contractID;
                 }
 
-                if (checkObjectIDs(storageID)) {
+                if (subtypeID && checkObjectIDs(subtypeID)) {
+                    dataInsertVoucher.subtype = subtypeID;
+                }
+
+                if (storageID && checkObjectIDs(storageID)) {
                     dataInsertVoucher.storage = storageID;
                 }
 
@@ -143,7 +137,8 @@ class Model extends BaseModel {
                  * B2. CẬP NHẬT BÚT TOÁN VÀO PHIẾU
                  */
                 if(selectedJournals && selectedJournals.length >0){
-                    //_________Get ID của phiếu vừa tạo để tiến hành tạo chi tiết chứng từ
+
+                    //_________Get voucherID
                     const voucherID = infoAfterInsert._id;           
 
                     for (const subitem of selectedJournals) {
@@ -229,6 +224,9 @@ class Model extends BaseModel {
                             }
                         }
 
+                        if(subtypeID && _isValid(subtypeID)){
+                            dataInsert.subtype = subtypeID;
+                        }
 
                         /**
                          * Cập nhật ngân sách thực hiện
@@ -249,9 +247,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                return resolve({ error: false, data: infoAfterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
@@ -267,6 +265,7 @@ class Model extends BaseModel {
         customerID,
         contractID, 
         storageID, 
+        subtypeID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
@@ -299,8 +298,8 @@ class Model extends BaseModel {
                 */
 
                 //_________Kiểm tra dữ liệu đầu vào
-                if(!date || !name || Number.isNaN(Number(type)) ||!checkObjectIDs(authorID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
-                    return resolve({ error: true, message: 'date|name|type|authorID|customerID|companyID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
+                    return resolve({ error: true, message: 'date|name|type|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
 
                 let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
                 if (!info) 
@@ -308,24 +307,21 @@ class Model extends BaseModel {
 
                 let companyID = info.company
                 let fundaID = info.funda
-                // console.log(info)
 
-                /**
-                 * KIỂM TRA TRÙNG PHIẾU
-                 */
-                // if(sign != ""){
-                //     let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
-                //         funda: fundaID, 
-                //         sign: sign,
-                //         _id: {
-                //             $ne: voucherID
-                //         }
-                //     }).select('_id')
-                //     // console.log(infoVoucher)
+                //_________Kiểm tra trùng số hiệu
+                if(sign && sign != ""){
+                    let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
+                        funda: fundaID, 
+                        sign: sign,
+                        _id: {
+                            $ne: voucherID
+                        }
+                    }).select('_id')
+                    // console.log(infoVoucher)
     
-                //     if(infoVoucher)
-                //         return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 })
-                // }
+                    if(infoVoucher)
+                        return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 })
+                }
 
                 /**
                  * B1. CẬP NHẬT PHIẾU
@@ -340,7 +336,7 @@ class Model extends BaseModel {
                     fcuExRate
                 }
 
-                if (checkObjectIDs(contractID)) {
+                if (contractID && checkObjectIDs(contractID)) {
                     let infoContract = await CONTRACT_COLL.findById(contractID)
                     if(infoContract.project && checkObjectIDs(infoContract.project)){
                         dataUpdateVoucher.project = infoContract.project;
@@ -348,8 +344,12 @@ class Model extends BaseModel {
                     dataUpdateVoucher.contract = contractID;
                 }
 
-                if (checkObjectIDs(storageID)) {
+                if (storageID && checkObjectIDs(storageID)) {
                     dataUpdateVoucher.storage = storageID;
+                }
+
+                if (subtypeID && checkObjectIDs(subtypeID)) {
+                    dataUpdateVoucher.subtype = subtypeID;
                 }
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
@@ -363,7 +363,7 @@ class Model extends BaseModel {
                     for (const subitem of selectedJournals) {
                         // Tạo mới
                         if(!subitem.journalID){
-                            console.log('===================TẠO BÚT TOÁN===================')
+                            // console.log('===================TẠO BÚT TOÁN===================')
                             const dataInsert = {
                                 authorID, 
                                 companyID, 
@@ -444,6 +444,10 @@ class Model extends BaseModel {
                                     dataInsert.contract = contractID;
                                 }
                             }
+
+                            if (subtypeID && checkObjectIDs(subtypeID)) {
+                                dataInsert.subtype = subtypeID;
+                            }            
     
                             /**
                              * Cập nhật ngân sách thực hiện
@@ -466,7 +470,7 @@ class Model extends BaseModel {
 
                         // Cập nhật
                         else{
-                            console.log('===================CẬP NHẬT BÚT TOÁN===================')
+                            // console.log('===================CẬP NHẬT BÚT TOÁN===================')
                             const dataUpdate = {
                                 authorID, 
                                 journalID: subitem.journalID, 
@@ -545,6 +549,10 @@ class Model extends BaseModel {
                                     dataUpdate.contract = contractID;
                                 }
                             }
+
+                            if (subtypeID && checkObjectIDs(subtypeID)) {
+                                dataUpdate.subtype = subtypeID;
+                            }    
 
                             /**
                              * Cập nhật ngân sách thực hiện

@@ -536,6 +536,8 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let { companyID, filterParams } = ctx.params;
+                // console.log('=============>>>>>>>>>>>>>>>')
+                // console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;

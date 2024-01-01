@@ -277,5 +277,40 @@ module.exports = {
                 return { error: true, message: error.message };
             }
         }
-    }
+    },
+
+    /**
+     * Name: exportExcel
+     * Author: HiepNH
+     * Date: 1/1/2024
+     */
+    exportExcel: {
+        auth: 'required',
+        params: {
+            companyID: { type: "string", optional: true },
+            option: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, email, company } = ctx.meta.infoUser;
+                let { companyID, filterParams } = ctx.params;
+
+                // console.log('=============>>>>>>>>>>>>>>>')
+                // console.log(ctx.params)
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.exportExcelByFilter({
+                    companyID, filterParams
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }

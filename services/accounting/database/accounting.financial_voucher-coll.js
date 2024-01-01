@@ -42,6 +42,11 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
         type: Schema.Types.ObjectId,
         ref : 'storage'
     },
+    //_________Phân loại khác
+    subtype: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
     /**
      * KẾT CHUYỂN CUỐI KỲ (31/12)/PHIẾU HỦY
      */ 

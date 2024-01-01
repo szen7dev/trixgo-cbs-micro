@@ -1,21 +1,21 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, _isValid, checkNumberIsValidWithRange, checkNumberValid, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany } = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const { checkObjectIDs, IsJsonString, _constructForAny, _getLevelMaxInRecursiveByCompany } = require('../../../tools/utils/utils');
+// const stringUtils					    = require('../../../tools/utils/string_utils');
+// const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
 
 /**
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * COLLECTIONS
@@ -207,10 +207,13 @@ class Model extends BaseModel {
      * Code  : 24/7/2023
      */
     getList({
-        companyID, parentID, isListParentOfListChilds,
+        option, companyID, parentID, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {},
-        status, type, level, isAccountingService
+        status, type, level
     }) {
+        // console.log( {option, companyID, parentID, isListParentOfListChilds,
+        //     keyword, limit, lastestID, select, populates,
+        //     status, type, level})
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -247,6 +250,11 @@ class Model extends BaseModel {
                         { name: new RegExp(keyword, 'i') },
                         { description: new RegExp(keyword, 'i') }
                     ]
+                }
+
+                // Chỉ lấy các TK con
+                if(option && option == 1){
+                    conditionObj.amountChilds = 0
                 }
 
                 if(status){
