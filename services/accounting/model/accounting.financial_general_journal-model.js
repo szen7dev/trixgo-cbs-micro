@@ -4,7 +4,11 @@
  * EXTERNAL PACKAGE
  */
  const ObjectID                                         = require('mongoose').Types.ObjectId;
- const moment                                           = require('moment');
+ const XlsxPopulate                                     = require('xlsx-populate');
+const fs                                                = require('fs');
+const path                                              = require('path');
+const moment                                            = require('moment');
+const { uploadFileS3 }                                  = require('../../../tools/s3')
 
 /**
  * CONSTANTS
@@ -21,6 +25,9 @@
  const { checkObjectIDs, _isValid, IsJsonString }       = require('../../../tools/utils/utils')
  const { RANGE_BASE_PAGINATION_V2 }                     = require('../../../tools/cursor_base/playground/index')
  const { KEY_ERROR }                                    = require('../../../tools/keys/index')
+ const { 
+    VOUCHER_TYPES,
+ }                = require('../helper/accounting.keys-constant')
 
 /**
  * COLLECTIONS
@@ -475,9 +482,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * THEO PHIẾU/HỢP ĐỒNG/DỰ ÁN/ĐƠN VỊ/CÔNG TY
-                 */
                 if (checkObjectIDs(voucherID)) {
                     conditionObj.voucher = voucherID
                 } else {
@@ -2242,6 +2246,233 @@ class Model extends BaseModel {
         })
     }
 
+    getListByFilter({
+        option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
+        keyword, limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel }) {
+        // console.log('==========getListByFilter============')
+        // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate,  forward, cancel, userID, keyword, limit, lastestID, select, populates, contacts})
+        return new Promise(async (resolve) => {
+            try {
+                if (limit > 50) {
+                    limit = 50
+                } else {
+                    limit = +limit;
+                }
+
+                let conditionObj = {  };
+                let sortBy;
+                let keys = ['date__1'];
+
+               
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                } else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(forward){
+                    conditionObj.forward = Number(forward)
+                }
+
+                if(cancel){
+                    conditionObj.cancel = Number(cancel)
+                }
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
+                if (checkObjectIDs(voucherID)) {
+                    conditionObj.voucher = voucherID
+                } else {
+                    if (checkObjectIDs(contractID)) {
+                        conditionObj.contract = contractID
+                    }else{
+                        if (checkObjectIDs(projectID)) {
+                            conditionObj.project = projectID
+                        }else{
+                            if (checkObjectIDs(fundaID)) {
+                                conditionObj.funda = fundaID
+                            }else{
+                                conditionObj.company = companyID
+                            }
+                        }
+                    }
+                }
+
+
+                /**
+                 * Sử dụng trong export excel document (hoặc theo bộ lọc)
+                 * Trả về điều kiện tra cứu
+                 */
+                if(isExportExcel) {
+                    return resolve({ data: conditionObj, error: false });
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await FINANCIAL_GENERAL_JOURNAL_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                let totalRecord = await FINANCIAL_GENERAL_JOURNAL_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit)
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                    lastestID,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    exportExcelByFilter({ userID, companyID, filterParams }) {
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {};
+
+                const populates = JSON.stringify({
+                    path: 'voucher debit credit customerCredit customerDebit warehouse goods contract budgetWork funda subtype',
+                    select: 'type name sign description unit date',
+                })
+
+
+                const { data, error } = await this.getListByFilter({
+                    ...filterParams,
+                    populates,
+                    userID,
+                    companyID,
+                    isExportExcel: false
+                });
+
+                if(error || !data?.listRecords?.length) {
+                    return resolve({ data, error })
+                }
+
+                const result = await this.downloadExcelFile(data.listRecords)
+                return resolve(result);
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    downloadExcelFile(data) {
+        // console.log(data)
+        return new Promise(resolve => {
+            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_export_journal.xlsx')))
+                .then(async workbook => {
+
+                    let i = 3;
+                    data?.forEach((item, index) => {
+                        if(item?.debit && checkObjectIDs(item?.debit )){
+                            workbook.sheet("Data").row(i).cell(1).value(item?.voucher?.date);
+                            workbook.sheet("Data").row(i).cell(2).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
+                            workbook.sheet("Data").row(i).cell(3).value(item?.funda?.name);
+                            workbook.sheet("Data").row(i).cell(4).value(item?.voucher?.name);
+                            workbook.sheet("Data").row(i).cell(5).value(item?.voucher?.sign);
+                            workbook.sheet("Data").row(i).cell(6).value(item?.customerDebit?.name);
+                            workbook.sheet("Data").row(i).cell(7).value(`${item?.debit?.name}-${item?.debit?.description}`);
+                            workbook.sheet("Data").row(i).cell(8).value(item?.amount);
+                            workbook.sheet("Data").row(i).cell(9).value();
+                            workbook.sheet("Data").row(i).cell(10).value(Number(item?.subtype?.name));
+                            workbook.sheet("Data").row(i).cell(11).value(Number(item?.contract?.name));
+                            workbook.sheet("Data").row(i).cell(12).value(Number(item?.budgetWork?.name));
+                            workbook.sheet("Data").row(i).cell(13).value(item?.goods?.name);
+                            workbook.sheet("Data").row(i).cell(14).value(item?.warehouse?.name);
+                            workbook.sheet("Data").row(i).cell(15).value(item.note);
+                        }else{
+                            workbook.sheet("Data").row(i).cell(1).value(item?.voucher?.date);
+                            workbook.sheet("Data").row(i).cell(2).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
+                            workbook.sheet("Data").row(i).cell(3).value(item?.funda?.name);
+                            workbook.sheet("Data").row(i).cell(4).value(item?.voucher?.name);
+                            workbook.sheet("Data").row(i).cell(5).value(item?.voucher?.sign);
+                            workbook.sheet("Data").row(i).cell(6).value(item?.customerCredit?.name);
+                            workbook.sheet("Data").row(i).cell(7).value(`${item?.credit?.name}-${item?.credit?.description}`);
+                            workbook.sheet("Data").row(i).cell(8).value();
+                            workbook.sheet("Data").row(i).cell(9).value(item?.amount);
+                            workbook.sheet("Data").row(i).cell(10).value(Number(item?.subtype?.name));
+                            workbook.sheet("Data").row(i).cell(11).value(Number(item?.contract?.name));
+                            workbook.sheet("Data").row(i).cell(12).value(Number(item?.budgetWork?.name));
+                            workbook.sheet("Data").row(i).cell(13).value(item?.goods?.name);
+                            workbook.sheet("Data").row(i).cell(14).value(item?.warehouse?.name);
+                            workbook.sheet("Data").row(i).cell(15).value(item.note);
+                        }
+                        i++
+                    });
+
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `accounting_export_journal${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+        })
+    }
 
 }
 

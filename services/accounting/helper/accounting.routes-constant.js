@@ -18,6 +18,7 @@ const CF_ROUTINGS_ACCOUNTING = {
     JOURNAL_CAL_IMPLE_BUDGET         : `${BASE_ROUTE}${JOURNAL}/cal-imple-budget`,
     JOURNAL_GET_ACCOUNT_BALANCE      : `${BASE_ROUTE}${JOURNAL}/get-account-balance`,
     JOURNAL_GET_LIST_BY_PROPERTY     : `${BASE_ROUTE}${JOURNAL}/get-list-by-property`,
+    JOURNAL_EXPORT_EXCEL             : `${BASE_ROUTE}${JOURNAL}/export-excel`,
 }
 
 exports.CF_ROUTINGS_ACCOUNTING = CF_ROUTINGS_ACCOUNTING;
