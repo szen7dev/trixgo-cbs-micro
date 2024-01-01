@@ -3,7 +3,6 @@ let { checkObjectIDs, getExtension } = require('../../../../tools/utils/utils');
 let { nonAccentVietnamese } = require('../../../../tools/utils/string_utils');
 let { APP_KEYS } = require('../../../../tools/keys');
 let uuidv4 = require('uuid').v4;
-let AWS = require('aws-sdk');
 
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { Upload } = require('@aws-sdk/lib-storage');
