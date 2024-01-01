@@ -2417,83 +2417,79 @@ class Model extends BaseModel {
     }
 
     downloadExcelFile(data) {
-        // console.log(data)
+        // console.log(data)orgData
         return new Promise(resolve => {
-            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_export_journal.xlsx')))
+            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_journal_export.xlsx')))
                 .then(async workbook => {
 
                     let i = 3;
                     data?.forEach((item, index) => {
-                        if(item?.debit && checkObjectIDs(item?.debit )){
-                            workbook.sheet("Data").row(i).cell(1).value(item?.voucher?.date);
-                            workbook.sheet("Data").row(i).cell(2).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
-                            workbook.sheet("Data").row(i).cell(3).value(item?.funda?.name);
-                            workbook.sheet("Data").row(i).cell(4).value(item?.voucher?.name);
-                            workbook.sheet("Data").row(i).cell(5).value(item?.voucher?.sign);
-                            workbook.sheet("Data").row(i).cell(6).value(item?.customerDebit?.name);
-                            workbook.sheet("Data").row(i).cell(7).value(`${item?.debit?.name}-${item?.debit?.description}`);
-                            workbook.sheet("Data").row(i).cell(8).value(Number(item?.amount));
-                            workbook.sheet("Data").row(i).cell(9).value();
-                            workbook.sheet("Data").row(i).cell(10).value(item?.subtype?.name);
-                            workbook.sheet("Data").row(i).cell(11).value(item?.contract?.name);
-                            workbook.sheet("Data").row(i).cell(12).value(item?.budgetWork?.name);
-                            workbook.sheet("Data").row(i).cell(13).value(item?.goods?.name);
-                            workbook.sheet("Data").row(i).cell(14).value(item?.warehouse?.name);
-                            workbook.sheet("Data").row(i).cell(15).value(item.note);
+                        // if(item.debit._id && checkObjectIDs(item.debit._id)){
+                        //     workbook.sheet("Data1").row(i).cell(1).value(item?.voucher?.date);
+                        //     workbook.sheet("Data1").row(i).cell(2).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
+                        //     workbook.sheet("Data1").row(i).cell(3).value(item?.funda?.name);
+                        //     workbook.sheet("Data1").row(i).cell(4).value(item?.voucher?.name);
+                        //     workbook.sheet("Data1").row(i).cell(5).value(item?.voucher?.sign);
+                        //     workbook.sheet("Data1").row(i).cell(6).value(item?.customerDebit?.name);
+                        //     workbook.sheet("Data1").row(i).cell(7).value(`${item?.debit?.name}-${item?.debit?.description}`);
+                        //     workbook.sheet("Data1").row(i).cell(8).value(Number(item?.amount));
+                        //     workbook.sheet("Data1").row(i).cell(9).value();
+                        //     workbook.sheet("Data1").row(i).cell(10).value(item?.subtype?.name);
+                        //     workbook.sheet("Data1").row(i).cell(11).value(item?.contract?.name);
+                        //     workbook.sheet("Data1").row(i).cell(12).value(item?.budgetWork?.name);
+                        //     workbook.sheet("Data1").row(i).cell(13).value(item?.goods?.name);
+                        //     workbook.sheet("Data1").row(i).cell(14).value(item?.warehouse?.name);
+                        //     workbook.sheet("Data1").row(i).cell(15).value(item.note);
 
-                            i++
-                        }
+                        //     i++
+                        // }
                         
-                        if(item?.credit && checkObjectIDs(item?.credit )){
-                            workbook.sheet("Data").row(i).cell(1).value(item?.voucher?.date);
-                            workbook.sheet("Data").row(i).cell(2).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
-                            workbook.sheet("Data").row(i).cell(3).value(item?.funda?.name);
-                            workbook.sheet("Data").row(i).cell(4).value(item?.voucher?.name);
-                            workbook.sheet("Data").row(i).cell(5).value(item?.voucher?.sign);
-                            workbook.sheet("Data").row(i).cell(6).value(item?.customerCredit?.name);
-                            workbook.sheet("Data").row(i).cell(7).value(`${item?.credit?.name}-${item?.credit?.description}`);
-                            workbook.sheet("Data").row(i).cell(8).value();
-                            workbook.sheet("Data").row(i).cell(9).value(Number(item?.amount));
-                            workbook.sheet("Data").row(i).cell(10).value(item?.subtype?.name);
-                            workbook.sheet("Data").row(i).cell(11).value(item?.contract?.name);
-                            workbook.sheet("Data").row(i).cell(12).value(item?.budgetWork?.name);
-                            workbook.sheet("Data").row(i).cell(13).value(item?.goods?.name);
-                            workbook.sheet("Data").row(i).cell(14).value(item?.warehouse?.name);
-                            workbook.sheet("Data").row(i).cell(15).value(item.note);
-                        }
+                        // if(item.credit._id && checkObjectIDs(item.credit._id)){
+                        //     workbook.sheet("Data1").row(i).cell(1).value(item?.voucher?.date);
+                        //     workbook.sheet("Data1").row(i).cell(2).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
+                        //     workbook.sheet("Data1").row(i).cell(3).value(item?.funda?.name);
+                        //     workbook.sheet("Data1").row(i).cell(4).value(item?.voucher?.name);
+                        //     workbook.sheet("Data1").row(i).cell(5).value(item?.voucher?.sign);
+                        //     workbook.sheet("Data1").row(i).cell(6).value(item?.customerCredit?.name);
+                        //     workbook.sheet("Data1").row(i).cell(7).value(`${item?.credit?.name}-${item?.credit?.description}`);
+                        //     workbook.sheet("Data1").row(i).cell(8).value();
+                        //     workbook.sheet("Data1").row(i).cell(9).value(Number(item?.amount));
+                        //     workbook.sheet("Data1").row(i).cell(10).value(item?.subtype?.name);
+                        //     workbook.sheet("Data1").row(i).cell(11).value(item?.contract?.name);
+                        //     workbook.sheet("Data1").row(i).cell(12).value(item?.budgetWork?.name);
+                        //     workbook.sheet("Data1").row(i).cell(13).value(item?.goods?.name);
+                        //     workbook.sheet("Data1").row(i).cell(14).value(item?.warehouse?.name);
+                        //     workbook.sheet("Data1").row(i).cell(15).value(item.note);
 
-                        workbook.sheet("Data1").row(i).cell(1).value(item?.voucher?.date);
-                        workbook.sheet("Data1").row(i).cell(2).value(item?.subtype?.name);
-                        workbook.sheet("Data1").row(i).cell(3).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
-                        workbook.sheet("Data1").row(i).cell(4).value(item?.funda?.name);
-                        workbook.sheet("Data1").row(i).cell(5).value(item?.voucher?.name);
-                        workbook.sheet("Data1").row(i).cell(6).value(item?.voucher?.sign);
+                        //     i++
+                        // }
 
-                        workbook.sheet("Data1").row(i).cell(7).value(item?.customerDebit?.name);
-                        workbook.sheet("Data1").row(i).cell(8).value(item?.customerCredit?.name);
-
-                        workbook.sheet("Data1").row(i).cell(9).value(`${item?.debit?.name}`);
-                        workbook.sheet("Data1").row(i).cell(10).value(`${item?.credit?.name}`);
-
-                        workbook.sheet("Data1").row(i).cell(11).value(Number(item?.quantity));
-                        workbook.sheet("Data1").row(i).cell(12).value(Number(item?.unitprice));
-                        workbook.sheet("Data1").row(i).cell(13).value(Number(item?.amount));
-                        
-                        workbook.sheet("Data1").row(i).cell(14).value(item?.contract?.name);
-                        workbook.sheet("Data1").row(i).cell(15).value(item?.budgetWork?.name);
-                        workbook.sheet("Data1").row(i).cell(16).value(Number(item?.updown));
-
-                        workbook.sheet("Data1").row(i).cell(17).value(item?.goods?.name);
-                        workbook.sheet("Data1").row(i).cell(18).value(item?.warehouse?.name);
-                        
-                        workbook.sheet("Data1").row(i).cell(19).value(item.note);
+                        workbook.sheet("orgData").row(i).cell(1).value(item?.voucher?.date);
+                        workbook.sheet("orgData").row(i).cell(2).value(item?.subtype?.name);
+                        workbook.sheet("orgData").row(i).cell(3).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
+                        workbook.sheet("orgData").row(i).cell(4).value(item?.funda?.name);
+                        workbook.sheet("orgData").row(i).cell(5).value(item?.voucher?.name);
+                        workbook.sheet("orgData").row(i).cell(6).value(item?.voucher?.sign);
+                        workbook.sheet("orgData").row(i).cell(7).value(item?.customerDebit?.name);
+                        workbook.sheet("orgData").row(i).cell(8).value(item?.customerCredit?.name);
+                        workbook.sheet("orgData").row(i).cell(9).value(`${item?.debit?.name}`);
+                        workbook.sheet("orgData").row(i).cell(10).value(`${item?.credit?.name}`);
+                        workbook.sheet("orgData").row(i).cell(11).value(Number(item?.quantity));
+                        workbook.sheet("orgData").row(i).cell(12).value(Number(item?.unitprice));
+                        workbook.sheet("orgData").row(i).cell(13).value(Number(item?.amount));
+                        workbook.sheet("orgData").row(i).cell(14).value(item?.contract?.name);
+                        workbook.sheet("orgData").row(i).cell(15).value(item?.budgetWork?.name);
+                        workbook.sheet("orgData").row(i).cell(16).value(Number(item?.updown));
+                        workbook.sheet("orgData").row(i).cell(17).value(item?.goods?.name);
+                        workbook.sheet("orgData").row(i).cell(18).value(item?.warehouse?.name);
+                        workbook.sheet("orgData").row(i).cell(19).value(item.note);
 
                         i++
-                    });
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `accounting_export_journal${now.getTime()}.xlsx`;
+                    const fileName = `daily_report_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
