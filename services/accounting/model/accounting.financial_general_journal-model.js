@@ -2432,11 +2432,11 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(5).value(item?.voucher?.sign);
                             workbook.sheet("Data").row(i).cell(6).value(item?.customerDebit?.name);
                             workbook.sheet("Data").row(i).cell(7).value(`${item?.debit?.name}-${item?.debit?.description}`);
-                            workbook.sheet("Data").row(i).cell(8).value(item?.amount);
+                            workbook.sheet("Data").row(i).cell(8).value(Number(item?.amount));
                             workbook.sheet("Data").row(i).cell(9).value();
-                            workbook.sheet("Data").row(i).cell(10).value(Number(item?.subtype?.name));
-                            workbook.sheet("Data").row(i).cell(11).value(Number(item?.contract?.name));
-                            workbook.sheet("Data").row(i).cell(12).value(Number(item?.budgetWork?.name));
+                            workbook.sheet("Data").row(i).cell(10).value(item?.subtype?.name);
+                            workbook.sheet("Data").row(i).cell(11).value(item?.contract?.name);
+                            workbook.sheet("Data").row(i).cell(12).value(item?.budgetWork?.name);
                             workbook.sheet("Data").row(i).cell(13).value(item?.goods?.name);
                             workbook.sheet("Data").row(i).cell(14).value(item?.warehouse?.name);
                             workbook.sheet("Data").row(i).cell(15).value(item.note);
@@ -2449,14 +2449,41 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(6).value(item?.customerCredit?.name);
                             workbook.sheet("Data").row(i).cell(7).value(`${item?.credit?.name}-${item?.credit?.description}`);
                             workbook.sheet("Data").row(i).cell(8).value();
-                            workbook.sheet("Data").row(i).cell(9).value(item?.amount);
-                            workbook.sheet("Data").row(i).cell(10).value(Number(item?.subtype?.name));
-                            workbook.sheet("Data").row(i).cell(11).value(Number(item?.contract?.name));
-                            workbook.sheet("Data").row(i).cell(12).value(Number(item?.budgetWork?.name));
+                            workbook.sheet("Data").row(i).cell(9).value(Number(item?.amount));
+                            workbook.sheet("Data").row(i).cell(10).value(item?.subtype?.name);
+                            workbook.sheet("Data").row(i).cell(11).value(item?.contract?.name);
+                            workbook.sheet("Data").row(i).cell(12).value(item?.budgetWork?.name);
                             workbook.sheet("Data").row(i).cell(13).value(item?.goods?.name);
                             workbook.sheet("Data").row(i).cell(14).value(item?.warehouse?.name);
                             workbook.sheet("Data").row(i).cell(15).value(item.note);
                         }
+
+                        workbook.sheet("Data1").row(i).cell(1).value(item?.voucher?.date);
+                        workbook.sheet("Data1").row(i).cell(2).value(item?.subtype?.name);
+                        workbook.sheet("Data1").row(i).cell(3).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
+                        workbook.sheet("Data1").row(i).cell(4).value(item?.funda?.name);
+                        workbook.sheet("Data1").row(i).cell(5).value(item?.voucher?.name);
+                        workbook.sheet("Data1").row(i).cell(6).value(item?.voucher?.sign);
+
+                        workbook.sheet("Data1").row(i).cell(7).value(item?.customerDebit?.name);
+                        workbook.sheet("Data1").row(i).cell(8).value(item?.customerCredit?.name);
+
+                        workbook.sheet("Data1").row(i).cell(9).value(`${item?.debit?.name}`);
+                        workbook.sheet("Data1").row(i).cell(10).value(`${item?.credit?.name}`);
+
+                        workbook.sheet("Data1").row(i).cell(11).value(Number(item?.quantity));
+                        workbook.sheet("Data1").row(i).cell(12).value(Number(item?.unitprice));
+                        workbook.sheet("Data1").row(i).cell(13).value(Number(item?.amount));
+                        
+                        workbook.sheet("Data1").row(i).cell(14).value(item?.contract?.name);
+                        workbook.sheet("Data1").row(i).cell(15).value(item?.budgetWork?.name);
+                        workbook.sheet("Data1").row(i).cell(16).value(Number(item?.updown));
+
+                        workbook.sheet("Data1").row(i).cell(17).value(item?.goods?.name);
+                        workbook.sheet("Data1").row(i).cell(18).value(item?.warehouse?.name);
+                        
+                        workbook.sheet("Data1").row(i).cell(19).value(item.note);
+
                         i++
                     });
 
