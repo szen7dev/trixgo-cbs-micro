@@ -20,6 +20,7 @@ const BaseModel                             = require('../../../tools/db/base_mo
 const { checkObjectIDs, _isValid, IsJsonString }      = require('../../../tools/utils/utils')
 const { RANGE_BASE_PAGINATION_V2 }          = require('../../../tools/cursor_base/playground/index')
 const { KEY_ERROR }                         = require('../../../tools/keys/index')
+const stringUtils					        = require('../../../tools/utils/string_utils')
 
 /**
  * COLLECTIONS
@@ -112,6 +113,24 @@ class Model extends BaseModel {
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate
                 }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(signInvoice && signInvoice != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(signInvoice)
+                }
+                if(receiver && receiver != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(receiver)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsertVoucher.namecv = convertStr
 
                 if (contractID && checkObjectIDs(contractID)) {
                     let infoContract = await CONTRACT_COLL.findById(contractID)
@@ -335,6 +354,24 @@ class Model extends BaseModel {
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate
                 }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(signInvoice && signInvoice != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(signInvoice)
+                }
+                if(receiver && receiver != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(receiver)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdateVoucher.namecv = convertStr
 
                 if (contractID && checkObjectIDs(contractID)) {
                     let infoContract = await CONTRACT_COLL.findById(contractID)

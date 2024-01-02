@@ -86,6 +86,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     lock: { type: Number, default: 0 }, 
     //_________Tên chứng từ
     name: String,  
+    //_________Tên tra cứu
+    namecv: String,  
     //_________Số chứng từ/hóa đơn VAT
     sign: { type: String, default: 'sign' },
     //_________ Người nhận tiền
