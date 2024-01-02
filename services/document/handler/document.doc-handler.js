@@ -704,7 +704,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { filterParams } = ctx.params;
 
-                console.log(filterParams)
+                // console.log(filterParams)
 
                 if(!filterParams.option){
                     const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocumentOfPackage({

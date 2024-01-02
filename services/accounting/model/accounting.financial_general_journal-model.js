@@ -794,8 +794,8 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts }) {
-        // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        // console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
+        console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
@@ -2054,32 +2054,36 @@ class Model extends BaseModel {
                         })
 
                         for(const item of listGoods){
-                            let kcNoDauKy = 0;
-                            let kcCoDauKy = 0;
-                            let noDauKy = 0;
-                            let coDauKy = 0;
-                            let noTrongKy = 0;
-                            let coTrongKy = 0;
-                            let noCuoiKy = 0;
-                            let coCuoiKy = 0;
+                            let kcNoDauKy = 0, klKcNoDauKy = 0
+                            let kcCoDauKy = 0, klKcCoDauKy = 0
+                            let noDauKy = 0, klNoDauKy = 0
+                            let coDauKy = 0, klCoDauKy = 0
+                            let noTrongKy = 0, klNoTrongKy = 0
+                            let coTrongKy = 0, klCoTrongKy = 0
 
                             if(arrDebitO[item._id]){
                                 kcNoDauKy = arrDebitO[item._id][0].amount
+                                klKcNoDauKy = arrDebitO[item._id][0].quantity
                             }
                             if(arrCreditO[item._id]){
                                 kcCoDauKy = arrCreditO[item._id][0].amount
+                                klKcCoDauKy = arrCreditO[item._id][0].quantity
                             }
                             if(arrDebitOF[item._id]){
                                 noDauKy = arrDebitOF[item._id][0].amount
+                                klNoDauKy = arrDebitOF[item._id][0].quantity
                             }
                             if(arrCreditOF[item._id]){
                                 coDauKy = arrCreditOF[item._id][0].amount
+                                klCoDauKy = arrCreditOF[item._id][0].quantity
                             }
                             if(arrDebitFT[item._id]){
                                 noTrongKy = arrDebitFT[item._id][0].amount
+                                klNoTrongKy = arrDebitFT[item._id][0].quantity
                             }
                             if(arrCreditFT[item._id]){
                                 coTrongKy = arrCreditFT[item._id][0].amount
+                                klCoTrongKy = arrCreditFT[item._id][0].quantity
                             }
 
                             arrCombine.push({
@@ -2092,6 +2096,13 @@ class Model extends BaseModel {
                                 coDauKy: Number(coDauKy),
                                 noTrongKy: Number(noTrongKy),
                                 coTrongKy: Number(coTrongKy),
+
+                                klKcNoDauKy: Number(klKcNoDauKy),
+                                klKcCoDauKy: Number(klKcCoDauKy),
+                                klNoDauKy: Number(klNoDauKy),
+                                klCoDauKy: Number(klCoDauKy),
+                                klNoTrongKy: Number(klNoTrongKy),
+                                klCoTrongKy: Number(klCoTrongKy),
                             })
                         }
 
