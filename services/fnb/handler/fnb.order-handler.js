@@ -434,6 +434,34 @@ module.exports = {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
+    },
+
+    convertAllData: {
+        auth: 'required',
+        params: {
+            // password: { type: "string" },
+            option: { type: "string" },
+            companyID: { type: "string", optional: true },
+            page: { type: "string", optional: true },
+            checkNumber: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+				const { _id: userID, email } = ctx.meta.infoUser;
+
+                let { password, option, companyID, page, unit, checkNumber } = ctx.params;
+
+                const resultAfterCallHandler = await FNB_ORDER_MODEL.convertAllData({
+                    password, option, companyID, page, unit, checkNumber
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
     }
     
 }
