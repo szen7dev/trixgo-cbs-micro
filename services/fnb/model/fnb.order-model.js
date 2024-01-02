@@ -2482,15 +2482,20 @@ class Model extends BaseModel {
      * LỖI GÂY CHẬM DO FROMDATE - TODATE KÉO DÀI CẢ NĂM
      * https://docs.google.com/document/d/1hRYD5pLK7G3n37-Cs-N732cifa1Z3-W1dV8sTSRInfY/edit
      */
-    exportExcel({ companyID, year, month, email, userID }) {
-        // console.log({ companyID, year, month, userID })
+    exportExcel({ companyID, year, month, email, userID, queryFnb }) {
+        // console.log({ companyID, year, month, userID, queryFnb })
         return new Promise(async resolve => {
             try {
                 if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
                     let yearFilter
                     let currentYear = new Date().getFullYear()
                     let currentMonth = new Date().getMonth() + 1
-                    // console.log({currentMonth})
+
+                    let obj = JSON.parse(queryFnb);
+                    if(obj.fromDate && obj.toDate){
+                        currentMonth = new Date(obj.toDate).getMonth() + 1
+                        currentYear = new Date(obj.toDate).getFullYear()
+                    }
 
                     if(year && !isNaN(year)){
                         yearFilter = Number(year)
