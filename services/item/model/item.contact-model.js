@@ -974,13 +974,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    // conditionObj.namecv = regSearch
+                    conditionObj.namecv = regSearch
                     // conditionObj.phone = regSearch
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { phone: regSearch }
-                    ]
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
                 // console.log(conditionObj)
 
@@ -1115,13 +1114,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    // conditionObj.namecv = regSearch
+                    conditionObj.namecv = regSearch
                     // conditionObj.phone = regSearch
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { phone: regSearch }
-                    ]
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
 
                 /**
@@ -1218,14 +1216,17 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    
+                    conditionObj.namecv = regSearch
+                    // conditionObj.phone = regSearch
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-                // PHÂN TRANG KIỂU MỚI
+
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
                     if(!infoData)
@@ -1524,10 +1525,13 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    
+                    conditionObj.namecv = regSearch
+                    // conditionObj.phone = regSearch
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
                 // console.log(conditionObj)
 
