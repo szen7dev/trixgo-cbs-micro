@@ -598,8 +598,9 @@ class Model extends BaseModel {
     updateValue({ voucherID }){
         return new Promise(async (resolve, reject) => {
             try {
-                let dataUpdate = { amount: 0, fcuAmount: 0 }
+                let dataUpdate = { amount: 0, fcuAmount: 0, revenue: 0, tax: 0 }
 
+                // Tính tổng các bút toán của Phiếu
                 let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
                         $match: {
@@ -617,9 +618,44 @@ class Model extends BaseModel {
                 // console.log('Tính tổng các bút toán của Phiếu==========>>>>>>>>>>>>')
                 // console.log(listData)
 
+                // // Tính tổng giá trị trước thuế và thuế
+                // let listData331 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                //     {
+                //         $match: {
+                //             voucher: ObjectID(voucherID),
+                //             name: '331',
+                //         }
+                //     }, 
+                //     {
+                //         $group: {
+                //             _id: { },
+                //             amount: { $sum: "$amount" },
+                //         }
+                //     }, 
+                // ])
+                // console.log(listData331)
+
+                // let listData133 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                //     {
+                //         $match: {
+                //             voucher: ObjectID(voucherID),
+                //             name: '133',
+                //         }
+                //     }, 
+                //     {
+                //         $group: {
+                //             _id: { },
+                //             amount: { $sum: "$amount" },
+                //         }
+                //     }, 
+                // ])
+                // console.log(listData133)
+                
                 if(listData && listData.length){
                     dataUpdate.amount = Number(listData[0].amount)
                     dataUpdate.fcuAmount = Number(listData[0].fcuAmount)
+                    // dataUpdate.revenue = Number(listData331[0].amount)
+                    // dataUpdate.tax = Number(listData133[0].amount)
                 }
 
                 const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate)
