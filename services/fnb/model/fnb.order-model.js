@@ -3858,7 +3858,7 @@ class Model extends BaseModel {
      * Code: 3/1/2024
      */
      convertAllData({ password, option, companyID, page, unit, checkNumber }) {
-        // console.log({password, option, companyID, page, unit })
+        // console.log({password, option, companyID, page, unit, checkNumber })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -3877,9 +3877,13 @@ class Model extends BaseModel {
                         .sort({_id: 1})
                         .limit(limit)
                         .lean()
+                        // console.log(listData.length)
     
                         let infoBegin = listData[Number(page - 1)*unit]
-                        let infoEnd = listData[limit - 1]
+                        // console.log({infoBegin})
+                        // let infoEnd = listData[limit - 1]
+                        let infoEnd = listData.slice(-1)
+                        // console.log({infoEnd})
 
                         conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
     
@@ -3910,7 +3914,7 @@ class Model extends BaseModel {
                         .lean()
     
                         let infoBegin = listData[Number(page - 1)*unit]
-                        let infoEnd = listData[limit - 1]
+                        let infoEnd = listData.slice(-1)
 
                         conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
     
@@ -3941,7 +3945,7 @@ class Model extends BaseModel {
                         .lean()
     
                         let infoBegin = listData[Number(page - 1)*unit]
-                        let infoEnd = listData[limit - 1]
+                        let infoEnd = listData.slice(-1)
 
                         conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
     
@@ -3972,7 +3976,7 @@ class Model extends BaseModel {
                         .lean()
     
                         let infoBegin = listData[Number(page - 1)*unit]
-                        let infoEnd = listData[limit - 1]
+                        let infoEnd = listData.slice(-1)
 
                         conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
     
@@ -4003,7 +4007,7 @@ class Model extends BaseModel {
                         .lean()
     
                         let infoBegin = listData[Number(page - 1)*unit]
-                        let infoEnd = listData[limit - 1]
+                        let infoEnd = listData.slice(-1)
 
                         conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
     
@@ -4034,7 +4038,7 @@ class Model extends BaseModel {
                         .lean()
     
                         let infoBegin = listData[Number(page - 1)*unit]
-                        let infoEnd = listData[limit - 1]
+                        let infoEnd = listData.slice(-1)
 
                         conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
     
