@@ -16,6 +16,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant')
 const { CF_ACTIONS_ZALO } 		                = require('../../zalo_oa/helper/zalo.actions')
 const moment                                    = require('moment')
+const stringUtils					            = require('../../../tools/utils/string_utils')
 
 /**s
  * import inter-coll, exter-coll
@@ -1404,64 +1405,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-     * Convert số liệu tích điểm cho khách hàng
-     */
-    // convertDataCustomer({ customerID, userID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!checkObjectIDs(customerID))
-    //                 return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
-
-    //             let infoContact = ITEM__CONTACT_COLL.findById(customerID)
-
-    //             let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
-
-    //             let totalLoyaltyPoints = 0
-    //             let usedLoyaltyPoints = infoContact.usedLoyaltyPoints | 0
-    //             let remainLoyaltyPoints = 0 // Tính theo totalLoyaltyPoints-usedLoyaltyPoints
-
-    //             // Chỉ lấy đơn hàng Off đã hoàn thành để cập nhật tích điểm cho khách hàng
-    //             let listData = await FNB_ORDER_COLL.aggregate([
-    //                 {
-    //                     $match: {
-    //                         customer: ObjectID(customerID),
-    //                         status: 5, // Đơn đã hoàn thành
-    //                         salesChannel: 1, // Kênh offline
-    //                     }
-    //                 },
-    //                 {
-    //                     $group: {
-    //                         _id: { },
-    //                         amount: { $sum: "$amount" },
-    //                         loyaltyPoints: { $sum: "$loyaltyPoints" }
-    //                     }
-    //                 }
-    //             ])
-    //             // console.log(listData)
-
-    //             if(listData && listData.length){
-    //                 // Giá trị thanh toán đơn Off hoàn thành
-    //                 dataUpdate.purchasedOffValue = Number(listData[0].amount)
-
-    //                 totalLoyaltyPoints = Number(listData[0].loyaltyPoints)
-    //                 remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
-
-    //                 dataUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
-    //                 dataUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
-    //             }
-
-    //             let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataUpdate, { new: true })
-    //             if (!infoAfterUpdate)
-    //                 return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
-
-    //             return resolve({ error: false, data: infoAfterUpdate })
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     });
-    // }
 
     /**
      * Name: Get info
@@ -3864,6 +3807,262 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
+    }
+
+    convertContact({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await ITEM__CONTACT_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+                if(info.sign && info.sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.sign)
+                }
+                if(info.description && info.description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.description)
+                }
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+                if(info.phone && info.phone != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.phone)
+                }
+                if(info.email && info.email != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.email)
+                }
+                if(info.identity && info.identity != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.identity)
+                }
+                if(info.taxid && info.taxid != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.taxid)
+                }
+                if(info.bankAccount && info.bankAccount != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.bankAccount)
+                }
+
+                await ITEM__CONTACT_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+     /**
+     * Name: Convert dữ liệu nghiệp vụ
+     * Author: HiepNH
+     * Code: 3/1/2024
+     */
+     convertAllData({ password, option, companyID, page, unit, checkNumber }) {
+        // console.log({password, option, companyID, page, unit })
+        const that = this
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, selectObj = '_id name sign description note phone email identity taxid bankAccount'
+                
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+                }
+
+                // CONVERT DANH BẠ
+                if(option == 1){
+                    if(!checkNumber){
+                        let limit = Number(page * unit)
+                        let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData[limit - 1]
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertContact({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await ITEM__CONTACT_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // CONVERT HỒ SƠ
+                else if(option == 2){
+                    if(!checkNumber){
+                        let limit = Number(page * unit)
+                        let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData[limit - 1]
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertContact({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await ITEM__CONTACT_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // CONVERT HỢP ĐỒNG
+                else if(option == 3){
+                    if(!checkNumber){
+                        let limit = Number(page * unit)
+                        let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData[limit - 1]
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertContact({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await ITEM__CONTACT_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // CONVERT PCM
+                else if(option == 4){
+                    if(!checkNumber){
+                        let limit = Number(page * unit)
+                        let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData[limit - 1]
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertContact({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await ITEM__CONTACT_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // CONVERT PCM COMMENT
+                else if(option == 5){
+                    if(!checkNumber){
+                        let limit = Number(page * unit)
+                        let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData[limit - 1]
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertContact({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await ITEM__CONTACT_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // CONVERT ACCOUNTING VOUCHER
+                else if(option == 6){
+                    if(!checkNumber){
+                        let limit = Number(page * unit)
+                        let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData[limit - 1]
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertContact({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await ITEM__CONTACT_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+                
+                // CONVERT
+                else{
+                    //
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
     }
 }
 

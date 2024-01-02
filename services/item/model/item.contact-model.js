@@ -61,9 +61,9 @@ class Model extends BaseModel {
      */
     insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount
     }) {
-        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID
+        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount
         // })
         return new Promise(async resolve => {
             try {
@@ -156,6 +156,16 @@ class Model extends BaseModel {
                 if(email && email != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(email)
                 }
+                if(taxid && taxid != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(taxid)
+                }
+                if(identity && identity != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(identity)
+                }
+                if(bankAccount && bankAccount != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(bankAccount)
+                }
+
                 dataInsert.namecv = convertStr
 
                 if(saleID && checkObjectIDs(saleID)){
@@ -419,7 +429,7 @@ class Model extends BaseModel {
         contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
-        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, fundaID, getVouchers, usedVouchers, saleID
+        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, nonResident, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, fundaID, getVouchers, usedVouchers, saleID, bankAccount
     }){
         // console.log('================THAM BIẾN CẬP NHẬT DANH BẠ=================')
         // console.log({
@@ -548,6 +558,16 @@ class Model extends BaseModel {
                 if(email && email != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(email)
                 }
+                if(taxid && taxid != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(taxid)
+                }
+                if(identity && identity != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(identity)
+                }
+                if(bankAccount && bankAccount != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(bankAccount)
+                }
+
                 dataUpdate.namecv = convertStr
 
                 if(status){
@@ -954,13 +974,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    // conditionObj.namecv = regSearch
+                    conditionObj.namecv = regSearch
                     // conditionObj.phone = regSearch
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { phone: regSearch }
-                    ]
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
                 // console.log(conditionObj)
 
@@ -1095,13 +1114,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    // conditionObj.namecv = regSearch
+                    conditionObj.namecv = regSearch
                     // conditionObj.phone = regSearch
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { phone: regSearch }
-                    ]
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
 
                 /**
@@ -1198,14 +1216,17 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    
+                    conditionObj.namecv = regSearch
+                    // conditionObj.phone = regSearch
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-                // PHÂN TRANG KIỂU MỚI
+
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
                     if(!infoData)
@@ -1504,10 +1525,13 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    
+                    conditionObj.namecv = regSearch
+                    // conditionObj.phone = regSearch
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { phone: regSearch }
+                    // ]
                 }
                 // console.log(conditionObj)
 

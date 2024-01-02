@@ -32,6 +32,7 @@ const CF_ACTIONS_FNB = {
    ORDER_EXPORT_EXCEL2                             : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL2`,
    ORDER_EXPORT_EXCEL3                             : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL3`,
    ORDER_RESET_ALL_DATA                            : `${BASE_ACTIONS}_${ORDER}_RESET_ALL_DATA`,
+   ORDER_CONVERT_ALL_DATA                          : `${BASE_ACTIONS}_${ORDER}_CONVERT_ALL_DATA`,
 
    /**
    * PRODUCT
