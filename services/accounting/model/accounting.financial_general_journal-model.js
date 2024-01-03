@@ -2261,8 +2261,8 @@ class Model extends BaseModel {
      * Date: 3/1/2024
      */
     getPrimeCost({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate }) {
-        console.log('========ptgv================')
-        console.log({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate })
+        // console.log('========ptgv================')
+        // console.log({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate })
         return new Promise(async resolve => {
             try {
                 /**
@@ -2290,8 +2290,8 @@ class Model extends BaseModel {
                     warehouse: ObjectID(warehouseID),
                     goods: ObjectID(goodsID),
                 }
-                console.log(conditionDebitObj)
-                console.log(conditionCreditObj)
+                // console.log(conditionDebitObj)
+                // console.log(conditionCreditObj)
 
                 let conditionGroupDebit = {
                     _id: { goods: "$goods" },
@@ -2321,8 +2321,8 @@ class Model extends BaseModel {
                 let year = moment(toDate).toDate().getFullYear()
                 let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
 
-                console.log({year})
-                console.log({firstDayOfYear})
+                // console.log({year})
+                // console.log({firstDayOfYear})
 
                 // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
                 let conditionMatchO = {
@@ -2394,10 +2394,10 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                console.log('=========MỐC ĐẦU NĂM=========')
-                console.log({_____: listDataO})
-                console.log({_____No: listDataO[0]._debit})
-                console.log({_____Co: listDataO[0]._credit})
+                // console.log('=========MỐC ĐẦU NĂM=========')
+                // console.log({_____: listDataO})
+                // console.log({_____No: listDataO[0]._debit})
+                // console.log({_____Co: listDataO[0]._credit})
 
                 let listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
@@ -2435,10 +2435,10 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                console.log('=========ĐẦU NĂM-CUỐI KỲ=========')
-                console.log({_____: listDataIn})
-                console.log({_____No: listDataIn[0]._debit})
-                console.log({_____Co: listDataIn[0]._credit})
+                // console.log('=========ĐẦU NĂM-CUỐI KỲ=========')
+                // console.log({_____: listDataIn})
+                // console.log({_____No: listDataIn[0]._debit})
+                // console.log({_____Co: listDataIn[0]._credit})
                 
                 let importNum = 0, importVal = 0, exportNum = 0, exportVal = 0;
 
@@ -2474,11 +2474,6 @@ class Model extends BaseModel {
                 if(Number(importNum-exportNum) > 0){
                     // Không làm tròn ở đây để giá trị nguyên bản => khi nhân ra thành tiền mới đúng, sau đó mới làm tròn
                     primeCost = Number((importVal-exportVal)/(importNum-exportNum))
-                }
-
-                // Test sample data
-                if(ObjectID(goodsID).toString() === '64c1f550c1cf4b00120eff6b'){
-                    console.log({_______primeCost:primeCost})
                 }
 
                 // Lấy hàng hóa bị xuất hàng âm để thông báo
@@ -2635,7 +2630,7 @@ class Model extends BaseModel {
                 }
 
                 let listVouchers = await FINANCIAL_VOUCHER_COLL.find(conditionOb).sort({date: 1}).select('_id date name')
-                console.log(listVouchers)
+                // console.log(listVouchers)
 
 				/**
                  * Khai báo arr hứng các hàng hóa có việc xuất bị sai
@@ -2655,7 +2650,7 @@ class Model extends BaseModel {
                         goods: { $exists: true, $ne: null },
                         warehouse: { $exists: true, $ne: null }
                     })
-                    console.log(listJournal)
+                    // console.log(listJournal)
 
                     for(const item of listJournal){
                         let info = null;
@@ -2667,10 +2662,10 @@ class Model extends BaseModel {
                          * Giá vốn được tính tới thời điểm là ngày của phiếu đang xét
                          */
                         if(!fundaID){
-                            console.log('11111111111111111111111111')
+                            // console.log('11111111111111111111111111')
                             // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
                             info = await that.getPrimeCost({ companyID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
-                            console.log(info)
+                            // console.log(info)
 
                             // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
                             unitprice = info.data.primeCost
@@ -2678,10 +2673,10 @@ class Model extends BaseModel {
                             // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
                             amount = Number(+item.quantity * +unitprice) 
                         }else{
-                            console.log('22222222222222222222222222')
+                            // console.log('22222222222222222222222222')
                             // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
                             info = await that.getPrimeCost({ fundaID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
-                            console.log(info)
+                            // console.log(info)
 
                             // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
                             unitprice = info.data.primeCost
