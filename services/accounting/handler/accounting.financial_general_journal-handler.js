@@ -332,8 +332,8 @@ module.exports = {
 
                 let { companyID, fundaID, accountID, fromDate, toDate } = ctx.params;
 
-                console.log('=============>>>>>>>>>>>>>>>')
-                console.log(ctx.params)
+                // console.log('=============>>>>>>>>>>>>>>>')
+                // console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
@@ -343,7 +343,7 @@ module.exports = {
                     companyID, fundaID, accountID, fromDate, toDate
                 })
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
