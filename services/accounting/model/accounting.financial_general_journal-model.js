@@ -36,6 +36,7 @@ const ITEM_ACCOUNT_COLL                                 = require('../../item/da
 // const ITEM__FUNDA_COLL            			            = require('../../item/database/item.funda-coll')
 const ITEM__GOODS_COLL            			            = require('../../item/database/item.goods-coll')
 const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
+const FINANCIAL_VOUCHER_COLL                            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll')
 
@@ -1102,7 +1103,6 @@ class Model extends BaseModel {
                             amount: { $sum: "$amount" }
                         }
                     }
-
                     
                     // Báo cáo Bảng cân đối tài khoản
                     else if(option == 4){
@@ -2105,7 +2105,6 @@ class Model extends BaseModel {
                                 klCoTrongKy: Number(klCoTrongKy),
                             })
                         }
-
                         // console.log(arrCombine)
 
                         return resolve({ error: false, data: { 
@@ -2237,7 +2236,6 @@ class Model extends BaseModel {
                                 coTrongKy: Number(coTrongKy),
                             })
                         }
-
                         // console.log(arrCombine)
 
                         return resolve({ error: false, data: { 
@@ -2256,6 +2254,465 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Lấy giá vốn của 1 hàng hóa tới 1 thời điểm
+     * Code: Hiepnh
+     * Date: 3/1/2024
+     */
+    getPrimeCost({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate }) {
+        console.log('========ptgv================')
+        console.log({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA: CÁC NGUYÊN NHÂN DẪN ĐẾN SAI SÓT KHI CHẠY GIÁ VỐN
+                 * 1. Giá vốn được tính cho 1 phiếu xuất, tính tới thời điểm của phiếu đó (ví dụ phiếu xuất ngày 30/6/2020)
+                 *  Giá vốn = (Tổng giá trị nhập - Tổng giá trị xuất)/(Tổng KL nhập - Tổng KL xuất)
+                 * 2. Số liệu về nhập hàng tính tới ngày của phiếu (30/6/2020)
+                 * 3. Số liệu xuất hàng tính tới trước thời điểm xuất kho của phiếu (29/6/2020)
+                 * 4. Với các phiếu nhập hàng trả lại thì cần điền đầy đủ cả giá nhập hàng (không được bỏ trống)
+                 * 5. Khi xuất hàng mà trong kho không có (xuất hàng âm) thì sẽ không chạy được giá vốn
+                 * 6. Nhập hàng trả lại thì giá nhập = giá vốn xuất ra của phiếu tương ứng/cùng mã hàng
+                 */
+                
+                let conditionDebitObj = {
+                    debit:  {
+                        $in: arrObjectID
+                    },
+                    warehouse: ObjectID(warehouseID),
+                    goods: ObjectID(goodsID),
+                }
+                let conditionCreditObj = {
+                    credit:  {
+                        $in: arrObjectID
+                    },
+                    warehouse: ObjectID(warehouseID),
+                    goods: ObjectID(goodsID),
+                }
+                console.log(conditionDebitObj)
+                console.log(conditionCreditObj)
+
+                let conditionGroupDebit = {
+                    _id: { goods: "$goods" },
+                    quantity: { $sum: "$quantity" },
+                    amount: { $sum: "$amount" }
+                }
+                let conditionGroupCredit = {
+                    _id: { goods: "$goods" },
+                    quantity: { $sum: "$quantity" },
+                    amount: { $sum: "$amount" }
+                }
+
+                let conditionProject = {
+                    year : {$year : "$date"},
+                    forward: '$forward',
+                    cancel: '$cancel',
+                    date: 1,
+                    quantity: 1,
+                    amount: 1,
+                    goods: 1,
+                    warehouse: 1,
+                    debit: 1,
+                    credit: 1
+                }
+
+                // Lấy năm của ngày đầu kỳ
+                let year = moment(toDate).toDate().getFullYear()
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
+
+                console.log({year})
+                console.log({firstDayOfYear})
+
+                // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
+                let conditionMatchO = {
+                    "forward": 1,
+                    "cancel": 0,
+                    "year": Number(year)
+                }
+
+                // Từ đầu năm tới đầu kỳ***
+                let conditionMatchDebitIn = {
+                    "forward": 0,
+                    "cancel": 0,
+                    "date": {
+                        $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
+                        $lte: moment(toDate).toDate(),
+                    },
+                }
+
+                let conditionMatchCreditIn = {
+                    "forward": 0,
+                    "cancel": 0,
+                    "date": {
+                        $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
+                        $lt: moment(toDate).toDate(), // Không lấy dữ liệu các phiếu xuất cùng ngày (toDate) vì đang chờ để chạy giá vốn
+                    },
+                }
+
+                /**
+                * DATA KẾT CHUYỂN/ĐẦU NĂM
+				* Không lấy dữ liệu các phiếu xuất cùng ngày (toDate) vì đang chờ để chạy giá vốn
+				* Nếu lấy vào thì sẽ bị hiện tượng:
+				* - Số lượng xuất hàng bị cộng vào
+				* - Giá trị xuất hàng thì = 0 (do chưa gán giá vốn)
+				* ===> dẫn đến dữ liệu không chính xác
+				* Yennt: Trong cùng ngày thì giá xuất vẫn tính cả giá nhập của ngày đó
+				*/
+                let listDataO = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchO
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchO
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+                console.log('=========MỐC ĐẦU NĂM=========')
+                console.log({_____: listDataO})
+                console.log({_____No: listDataO[0]._debit})
+                console.log({_____Co: listDataO[0]._credit})
+
+                let listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchDebitIn
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                }
+                            ],
+
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchCreditIn
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+                console.log('=========ĐẦU NĂM-CUỐI KỲ=========')
+                console.log({_____: listDataIn})
+                console.log({_____No: listDataIn[0]._debit})
+                console.log({_____Co: listDataIn[0]._credit})
+                
+                let importNum = 0, importVal = 0, exportNum = 0, exportVal = 0;
+
+                if(listDataO[0]._debit.length > 0){
+                    importNum = Number(importNum + listDataO[0]._debit[0].quantity)
+                    importVal = Number(importVal + listDataO[0]._debit[0].amount)
+                }
+                if(listDataO[0]._credit.length > 0){
+                    exportNum = Number(exportNum + listDataO[0]._credit[0].quantity)
+                    exportVal = Number(exportVal + listDataO[0]._credit[0].amount)
+                }
+
+                if(listDataIn[0]._debit.length > 0){
+                    importNum = Number(importNum + listDataIn[0]._debit[0].quantity)
+                    importVal = Number(importVal + listDataIn[0]._debit[0].amount)
+                }
+
+
+                if(listDataIn[0]._credit.length > 0){
+                    exportNum = Number(exportNum + listDataIn[0]._credit[0].quantity)
+                    exportVal = Number(exportVal + listDataIn[0]._credit[0].amount)
+                }
+
+                let primeCost = 0, errGoods = false;
+
+                /**
+                 * Kiểm tra điều kiện để xuất được hàng:
+                 * - Số lượng hàng tồn > 0
+                 * - Số lượng xuất hàng <= số lượng hàng tồn
+                 */
+
+                // Chỉ tiến hành chạy giá vốn cho trường hợp hợp lệ
+                if(Number(importNum-exportNum) > 0){
+                    // Không làm tròn ở đây để giá trị nguyên bản => khi nhân ra thành tiền mới đúng, sau đó mới làm tròn
+                    primeCost = Number((importVal-exportVal)/(importNum-exportNum))
+                }
+
+                // Test sample data
+                if(ObjectID(goodsID).toString() === '64c1f550c1cf4b00120eff6b'){
+                    console.log({_______primeCost:primeCost})
+                }
+
+                // Lấy hàng hóa bị xuất hàng âm để thông báo
+                if(Number((Number(importNum) - Number(exportNum) - Number(exportQuantity)).toFixed(3)) < 0){
+                    errGoods = true
+                }
+
+                return resolve({ error: false, data: {value: importVal-exportVal, number: importNum-exportNum, primeCost, errGoods } })
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }  
+
+    /**
+     * Name: Cập nhật giá vốn cho hàng hóa cho 01 phiếu xuất
+     * Code: Hiepnh
+     * Date: 3/1/2024
+     */
+	updatePrimeCost({ companyID, fundaID, accountID, voucherID, voucherName, voucherDate }){
+		const that = this;
+		return new Promise(async resolve => {
+			try {
+                // Mảng đệ quy tài khoản
+                let arrObjectID = [ObjectID(accountID)]
+                let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                if(infoAccount){
+                    let nestedChilds = infoAccount.nestedChilds.map(item=>ObjectID(item._id))
+                    arrObjectID = [...arrObjectID,...nestedChilds]
+                }
+                // console.log(arrObjectID)
+
+				/**
+                 * Khai báo arr hứng các hàng hóa có việc xuất bị sai
+                 */
+                let arrGoodsFailed = [];
+
+				/**
+				 * Lấy danh sách hàng hóa thuộc phiếu xuất
+				 * Hàng hoá phải được gắn kèm thuộc kho bãi cụ thể
+				 */
+				let listJournal = await FINANCIAL_GENERAL_JOURNAL_COLL.find({
+					voucher: voucherID,
+					credit: {
+						$in: arrObjectID
+					},
+					goods: { $exists: true, $ne: null },
+					warehouse: { $exists: true, $ne: null }
+				})
+
+				for(const item of listJournal){
+					let info = null;
+					let unitprice = null;
+					let amount = null;
+
+					/**
+					 * Lần lượt cập nhật giá vốn cho từng hàng hóa trong phiếu
+					 * Giá vốn được tính tới thời điểm là ngày của phiếu đang xét
+					 */
+					if(!fundaID){
+						// Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
+						info = await that.getPrimeCost({ companyID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucherDate });
+
+						// Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
+						unitprice = info.data.primeCost
+
+						// amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
+						amount = Number(+item.quantity * +unitprice) 
+					}else{
+						// Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
+						info = await that.getPrimeCost({ fundaID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucherDate });
+
+						// Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
+						unitprice = info.data.primeCost
+						
+                        // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
+						amount = Number(+item.quantity * +unitprice) 
+					}
+
+					await FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(item._id, {
+						unitprice, // Sau này bỏ trường này đi
+						amount
+					}, { new: true });
+
+					// Ghi nhận dữ liệu lỗi
+					if(info.data.errGoods){
+						arrGoodsFailed.push(item.goods);
+					}
+				}
+
+                /**
+                 * B3: Lấy thông tin các hàng hóa xuất lỗi để hiển thị cho người dùng
+                 */
+                let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }});
+
+				return resolve({ error: false, listGoodsFailed, accountID });
+			} catch (error) {
+				return resolve({ error: true, message: error.message });
+			}
+		})
+	}
+
+    /**
+     * Name: Cập nhật giá vốn cho hàng hóa cho các phiếu xuất trong 1 khoảng thời gian
+     * Code: Hiepnh
+     * Date: 3/1/2024
+     */
+	analysePrimeCostOfAllVouchers({ companyID, fundaID, accountID, fromDate, toDate }){
+		const that = this;
+		return new Promise(async resolve => {
+			try {
+                // Mảng đệ quy tài khoản
+                let arrObjectID = [ObjectID(accountID)]
+                let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                if(infoAccount){
+                    let nestedChilds = infoAccount.nestedChilds.map(item=>ObjectID(item._id))
+                    arrObjectID = [...arrObjectID,...nestedChilds]
+                }
+                // console.log(arrObjectID)
+
+                /**
+                 * B1: Lấy danh sách các phiếu Xuất từ đầu kỳ đến cuối kỳ
+                 * - Chỉ chạy giá vốn cho các phiếu Xuất
+                 * - Không cần chạy lại các phiếu của kỳ trước, vì giá xuất đã được chạy chuẩn trước đó rồi
+                 * - Không chạy giá vốn cho các phiếu kết chuyển cuối kỳ
+                 * - Không chạy giá vốn cho các phiếu Huỷ
+                 * - Không chạy giá vốn cho các phiếu xuất bán hàng vay mượn
+                 */
+                let conditionOb;
+                if(!fundaID){
+                    conditionOb = { 
+                        company: companyID,
+                        returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
+                        forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
+                        cancel: 0, // Không chạy cho các Phiếu hủy
+                        type: 5, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate() 
+                        }
+                    }
+                }else{
+                    conditionOb = { 
+                        funda: fundaID,
+                        returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
+                        forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
+                        cancel: 0, // Không chạy cho các Phiếu hủy
+                        type: 5, // 5 Chỉ chạy cho các Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate() 
+                        }
+                    }
+                }
+
+                let listVouchers = await FINANCIAL_VOUCHER_COLL.find(conditionOb).sort({date: 1}).select('_id date name')
+                console.log(listVouchers)
+
+				/**
+                 * Khai báo arr hứng các hàng hóa có việc xuất bị sai
+                 */
+                let arrGoodsFailed = [];
+                
+                for(const voucher of listVouchers){
+                    /**
+                     * Lấy danh sách hàng hóa thuộc phiếu xuất
+                     * Hàng hoá phải được gắn kèm thuộc kho bãi cụ thể
+                     */
+                    let listJournal = await FINANCIAL_GENERAL_JOURNAL_COLL.find({
+                        voucher: voucher._id,
+                        credit: {
+                            $in: arrObjectID
+                        },
+                        goods: { $exists: true, $ne: null },
+                        warehouse: { $exists: true, $ne: null }
+                    })
+                    console.log(listJournal)
+
+                    for(const item of listJournal){
+                        let info = null;
+                        let unitprice = null;
+                        let amount = null;
+
+                        /**
+                         * Lần lượt cập nhật giá vốn cho từng hàng hóa trong phiếu
+                         * Giá vốn được tính tới thời điểm là ngày của phiếu đang xét
+                         */
+                        if(!fundaID){
+                            console.log('11111111111111111111111111')
+                            // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
+                            info = await that.getPrimeCost({ companyID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
+                            console.log(info)
+
+                            // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
+                            unitprice = info.data.primeCost
+
+                            // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
+                            amount = Number(+item.quantity * +unitprice) 
+                        }else{
+                            console.log('22222222222222222222222222')
+                            // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
+                            info = await that.getPrimeCost({ fundaID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
+                            console.log(info)
+
+                            // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
+                            unitprice = info.data.primeCost
+                            
+                            // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
+                            amount = Number(+item.quantity * +unitprice) 
+                        }
+
+                        await FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(item._id, {
+                            unitprice, // Sau này bỏ trường này đi
+                            amount
+                        }, { new: true });
+
+                        // Ghi nhận dữ liệu lỗi
+                        if(info.data.errGoods){
+                            arrGoodsFailed.push(item.goods);
+                        }
+                    }
+                }
+
+                /**
+                 * B3: Lấy thông tin các hàng hóa xuất lỗi để hiển thị cho người dùng
+                 */
+                let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }});
+
+				return resolve({ error: false, listGoodsFailed, accountID });
+			} catch (error) {
+				return resolve({ error: true, message: error.message });
+			}
+		})
+	}
 
     getListByFilter({
         option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,

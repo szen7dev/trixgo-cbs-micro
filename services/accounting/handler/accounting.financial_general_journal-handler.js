@@ -313,4 +313,40 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: Cập nhật giá vốn cho hàng hóa cho các phiếu xuất trong 1 khoảng thời gian
+     * Code: Hiepnh
+     * Date: 3/1/2024
+     */
+    analysePrimeCostOfAllVouchers: {
+        auth: 'required',
+        params: {
+            companyID: { type: "string", optional: true },
+            option: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let { companyID, fundaID, accountID, fromDate, toDate } = ctx.params;
+
+                console.log('=============>>>>>>>>>>>>>>>')
+                console.log(ctx.params)
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.analysePrimeCostOfAllVouchers({
+                    companyID, fundaID, accountID, fromDate, toDate
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }
