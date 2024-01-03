@@ -2582,6 +2582,7 @@ class Model extends BaseModel {
      * Date: 3/1/2024
      */
 	analysePrimeCostOfAllVouchers({ companyID, fundaID, accountID, fromDate, toDate }){
+        // console.log({ companyID, fundaID, accountID, fromDate, toDate })
 		const that = this;
 		return new Promise(async resolve => {
 			try {
