@@ -970,16 +970,12 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
                     conditionObj.namecv = regSearch
-                    // conditionObj.phone = regSearch
-                    // conditionObj.$or = [
-                    //     { name: regSearch },
-                    //     { phone: regSearch }
-                    // ]
                 }
                 // console.log(conditionObj)
 
@@ -1110,16 +1106,12 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
                     conditionObj.namecv = regSearch
-                    // conditionObj.phone = regSearch
-                    // conditionObj.$or = [
-                    //     { name: regSearch },
-                    //     { phone: regSearch }
-                    // ]
                 }
 
                 /**
@@ -1213,16 +1205,12 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
                     
                     conditionObj.namecv = regSearch
-                    // conditionObj.phone = regSearch
-                    // conditionObj.$or = [
-                    //     { name: regSearch },
-                    //     { phone: regSearch }
-                    // ]
                 }
 
                 let conditionObjOrg = { ...conditionObj };
@@ -1522,16 +1510,12 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
                     
                     conditionObj.namecv = regSearch
-                    // conditionObj.phone = regSearch
-                    // conditionObj.$or = [
-                    //     { name: regSearch },
-                    //     { phone: regSearch }
-                    // ]
                 }
                 // console.log(conditionObj)
 
@@ -1602,7 +1586,6 @@ class Model extends BaseModel {
                 let listDoctype = await ITEM__DOCTYPE_COLL.find({ company: companyID }).select('name').limit(500)
                 let listUser = await USER_COLL.find({ company: companyID }).select('fullname').limit(500)
                 let listContract = await ITEM__CONTRACT_COLL.find({ company: companyID }).select('name sign').limit(500)
-                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID, type: 1 }).limit(500)
                 let listArea = await ITEM__AREA_COLL.find({ level: 3 }).select('name parent')
                 .populate({
                     path: 'parent',
@@ -1610,6 +1593,21 @@ class Model extends BaseModel {
                     populate:{
                         path: 'parent',
                         select:'_id  name',
+                    }
+                })
+
+
+                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID, type: 1 }).limit(500)
+                .populate({
+                    path: 'funda department position field property contractType workingStatus area area1 area2 sale linkUser',
+                    select:'_id name fullname parent',
+                    populate:{
+                        path: 'parent',
+                        select:'_id  name',
+                        populate:{
+                            path: 'parent',
+                            select:'_id  name',
+                        }
                     }
                 })
 
@@ -1627,51 +1625,52 @@ class Model extends BaseModel {
                         workbook.sheet("Export").row(i).cell(5).value(item?.sign)
                         workbook.sheet("Export").row(i).cell(6).value(item?.description)
                         workbook.sheet("Export").row(i).cell(7).value(item?.note)
-                        // workbook.sheet("Export").row(i).cell(8).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(9).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(10).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(11).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(12).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(13).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(14).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(16).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(17).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(18).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(19).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(20).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(21).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(22).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(23).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(24).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(25).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(26).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(27).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(28).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(29).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(30).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(31).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(32).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(33).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(34).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(35).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(36).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(37).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(38).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(39).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(40).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(41).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(42).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(43).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(44).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(45).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(46).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(47).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(48).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(49).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(50).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(51).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(52).value(item?.sign)
-                        // workbook.sheet("Export").row(i).cell(53).value(item?.sign)
+                        workbook.sheet("Export").row(i).cell(8).value(item?.birthday)
+                        workbook.sheet("Export").row(i).cell(9).value(Number(item.gender) >= 1 ? CONTACT_GENDER[Number(item.gender - 1)].text : '')
+                        workbook.sheet("Export").row(i).cell(10).value(item?.phone)
+                        workbook.sheet("Export").row(i).cell(11).value(item?.email)
+                        workbook.sheet("Export").row(i).cell(12).value(item?.funda?.name)
+                        workbook.sheet("Export").row(i).cell(13).value(item?.department?.name)
+                        workbook.sheet("Export").row(i).cell(14).value(item?.position?.name)
+                        workbook.sheet("Export").row(i).cell(15).value(item?.field?.name)
+                        workbook.sheet("Export").row(i).cell(16).value(item?.property?.name)
+                        workbook.sheet("Export").row(i).cell(17).value(Number(item.status) >= 1 ? PAYMENT_STATUS[Number(item.status - 1)].text : '')
+                        workbook.sheet("Export").row(i).cell(18).value(item?.identity)
+                        workbook.sheet("Export").row(i).cell(19).value(item?.dateProvice)
+                        workbook.sheet("Export").row(i).cell(20).value(item?.place)
+                        workbook.sheet("Export").row(i).cell(21).value(item?.taxid)
+                        workbook.sheet("Export").row(i).cell(22).value(item?.insuranceNumber)
+                        workbook.sheet("Export").row(i).cell(23).value(item?.insuranceSign)
+                        workbook.sheet("Export").row(i).cell(24).value(item?.insuranceDate)
+                        workbook.sheet("Export").row(i).cell(25).value(item?.sallaryBasic)
+                        workbook.sheet("Export").row(i).cell(26).value(item?.insuranceFee)
+                        workbook.sheet("Export").row(i).cell(27).value(Number(item.insuranceStatus) >= 1 ? INSURANCE_STATUS[Number(item.insuranceStatus - 1)].text : '')
+                        workbook.sheet("Export").row(i).cell(28).value(item?.bankAccount)
+                        workbook.sheet("Export").row(i).cell(29).value(item?.signerIn)
+                        workbook.sheet("Export").row(i).cell(30).value(item?.workStartDate)
+                        workbook.sheet("Export").row(i).cell(31).value(item?.contractDate)
+                        workbook.sheet("Export").row(i).cell(32).value(item?.contractValid)
+                        workbook.sheet("Export").row(i).cell(33).value(item?.contractExpire)
+                        workbook.sheet("Export").row(i).cell(34).value(item?.contractType?.name)
+                        workbook.sheet("Export").row(i).cell(35).value(item?.contractSign)
+                        workbook.sheet("Export").row(i).cell(36).value(item?.workingStatus?.name)
+                        workbook.sheet("Export").row(i).cell(37).value(item?.dayOff)
+                        workbook.sheet("Export").row(i).cell(38).value(item?.signerOut)
+                        workbook.sheet("Export").row(i).cell(39).value(item?.appointDate)
+                        workbook.sheet("Export").row(i).cell(40).value(item?.changeSallaryDate)
+                        workbook.sheet("Export").row(i).cell(41).value()
+                        workbook.sheet("Export").row(i).cell(42).value(item?.graduationYear)
+                        workbook.sheet("Export").row(i).cell(43).value(item?.address)
+                        workbook.sheet("Export").row(i).cell(44).value(item?.area? `${item?.area?.name},${item?.area?.parent?.name},${item?.area?.parent?.parent?.name}` : '')
+                        workbook.sheet("Export").row(i).cell(45).value(item?.area1? `${item?.area1?.name},${item?.area1?.parent?.name},${item?.area1?.parent?.parent?.name}` : '')
+                        workbook.sheet("Export").row(i).cell(46).value(item?.area2?`${item?.area2?.name},${item?.area2?.parent?.name},${item?.area2?.parent?.parent?.name}` : '')
+                        workbook.sheet("Export").row(i).cell(47).value(item?.sale?.fullname)
+                        workbook.sheet("Export").row(i).cell(48).value(item?.linkUser?.fullname)
+                        workbook.sheet("Export").row(i).cell(49).value(item?.family)
+                        workbook.sheet("Export").row(i).cell(50).value(Number(item.familyPolicy) >= 1 ? CONTACT_POLICY[Number(item.familyPolicy - 1)].text : '')
+                        workbook.sheet("Export").row(i).cell(51).value(Number(item.realStatus) >= 1 ? PERSONAL_STATUS[Number(item.realStatus - 1)].text : '')
+                        workbook.sheet("Export").row(i).cell(52).value(Number(item.new) >= 1 ? CONTACT_NEW[Number(item.new - 1)].text : '')
+                        workbook.sheet("Export").row(i).cell(53).value(item?.joinedDate)
 
                         i++
                     });
@@ -1714,7 +1713,7 @@ class Model extends BaseModel {
                     var i = 2
                     listContract?.forEach((item, index) => {
                         workbook.sheet("DanhMuc").row(i).cell(29).value(`${item._id}`);
-                        workbook.sheet("DanhMuc").row(i).cell(30).value(`${item.name}-${item?.sign}`)
+                        workbook.sheet("DanhMuc").row(i).cell(30).value(`${item.name}`)
                         i++
                     })
 

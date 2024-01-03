@@ -27,13 +27,13 @@ const {
 } = require('../../../tools/utils/utils');
 
 const stringUtils					            = require('../../../tools/utils/string_utils');
-const { addDate, calculateExpire, calculateExpireTime }  = require('../../../tools/utils/time_utils');
+const { addDate, calculateExpire }              = require('../../../tools/utils/time_utils');
 const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { sendNoticeToMember }                    = require('../../../tools/mailer/module/notice_pcm_task');
-const { ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_FNB }                    = require('../../notification/helper/notification.keys-constant');
+const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
 const { PCM_STATUS_TASK }			            = require('../../../tools/constants');
-const { uploadFileS3 }                  = require('../../../tools/s3');
+const { uploadFileS3 }                          = require('../../../tools/s3');
 
 /**
  * import inter-coll, exter-coll
@@ -45,16 +45,10 @@ const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_p
 const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll')
 const PCM_COMMENT_COLL                  = require('../database/subject_pcm.pcm_comment-coll')
 const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll')
-
 const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll')
-
-// const { email } = require('../../../tools/mailer/config/cf_mailer');
-// const { sortBy } = require('lodash');
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL
 const ANALYSIS__HISTORY_TRAFFIC_MODEL   = require('../../analysis/model/analysis.history_traffic').MODEL
-
-// const AUTH__APP_ROLE_MENU_COLL              = require('../database/permission/auth.app_role_menu-coll');
 class Model extends BaseModel {
 
     constructor() {
