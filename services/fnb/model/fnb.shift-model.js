@@ -154,10 +154,10 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
                 // Chi phí nhân viên
-                await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, fundaID, userID })
+                // await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, fundaID, userID })
 
                 // Cập nhật vào bảng chấm công
-                await that.updateTimesheet({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, userID })
+                // await that.updateTimesheet({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, userID })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -335,13 +335,13 @@ class Model extends BaseModel {
                     }
 
                     // Chi phí nhân viên
-                    let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID, fundaID: infoShift.funda, userID })
+                    // let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID, fundaID: infoShift.funda, userID })
                     // console.log(infoBook)
                 }
                 // console.log(infoAfterUpdate)
 
                 // Cập nhật vào bảng chấm công
-                await that.updateTimesheet({ companyID, shiftID, userID })
+                // await that.updateTimesheet({ companyID, shiftID, userID })
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
