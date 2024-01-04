@@ -894,13 +894,12 @@ class Model extends BaseModel {
                 }
 
                 if (keyword) {
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    const regSearch = new RegExp(keyword, 'i');
+
+                    conditionObj.namecv = regSearch
                 }
                 // console.log(conditionObj)
 
