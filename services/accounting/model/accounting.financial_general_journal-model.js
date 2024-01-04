@@ -132,6 +132,13 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Thêm bút toán thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 /**
+                 * Cập nhật cho mảng phần tử của phiếu
+                 */
+                await FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, {
+                    $addToSet: { journals: infoAfterInsert._id } 
+                }, { new: true });
+
+                /**
                  * CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH
                  * (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
                  * 1. Cập nhật ngân sách công việc
@@ -140,6 +147,7 @@ class Model extends BaseModel {
                  * 4. Cập nhật ngân sách Tổng
                  */
                 if(budgetWork && _isValid(budgetWork)){
+                    // Cập nhật Công việc ngân sách đã thực hiện
                     let infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
                         option: 2,
                         workID: `${budgetWork}`
@@ -148,6 +156,7 @@ class Model extends BaseModel {
                     // console.log(infoBudgetWork)
 
                     if(infoBudgetWork){
+                        // Cập nhật Nhóm ngân sách đã thực hiện
                         let infoBudgetGroup = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE}`, {
                             option: 2,
                             groupID: `${budgetGroup}`
@@ -157,6 +166,7 @@ class Model extends BaseModel {
                         // console.log(infoBudgetGroup)
 
                         if(infoBudgetGroup){
+                            // Cập nhật Hạng mục ngân sách đã thực hiện
                             let infoBudgetItem = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE}`, {
                                 option: 2,
                                 itemID: `${budgetItem}`
@@ -166,6 +176,7 @@ class Model extends BaseModel {
                             // console.log(infoBudgetItem)
 
                             if(infoBudgetItem){
+                                // Cập nhật Ngân sách đã thực hiện
                                 let infoBudget = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
                                     option: 2,
                                     budgetID: `${budget}`
@@ -377,6 +388,98 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Tổng hợp ngân sách đã thực hiện
+     * Code: Hiepnh
+     * Date  : 10/4/2022
+     */
+    calImpleBudget({
+        workID, groupID, itemID, budgetID
+    }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Tổng hợp ngân sách đã thực hiện của công việc-budgetWork
+                 * 2-Tổng hợp ngân sách đã thực hiện của nhóm-budgetGroup
+                 * 3-Tổng hợp ngân sách đã thực hiện của hạng mục-budgetItem
+                 * 4-Tổng hợp ngân sách đã thực hiện của ngân sách-budget
+                 */
+                let dataBudget = {
+                    quantity: 0,
+                    amount: 0
+                }
+
+                let conditionObjUp = { updown: 1 }
+                let conditionObjDown = { updown: -1 }
+
+                if(workID){
+                    conditionObjUp.budgetWork = ObjectID(workID)
+                    conditionObjDown.budgetWork = ObjectID(workID)
+                }
+                if(groupID){
+                    conditionObjUp.budgetGroup = ObjectID(groupID)
+                    conditionObjDown.budgetGroup = ObjectID(groupID)
+                }
+                if(itemID){
+                    conditionObjUp.budgetItem = ObjectID(itemID)
+                    conditionObjDown.budgetItem = ObjectID(itemID)
+                }
+                if(budgetID){
+                    conditionObjUp.budget = ObjectID(budgetID)
+                    conditionObjDown.budget = ObjectID(budgetID)
+                }
+
+                // Dữ liệu tăng ngân sách thực hiện
+                let listDataUp = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: conditionObjUp
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+
+                // Dữ liệu giảm ngân sách thực hiện
+                let listDataDown = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: conditionObjDown
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(conditionObjUp)
+                // console.log(conditionObjDown)
+                // console.log(listDataUp)
+                // console.log(listDataDown)
+
+                // Tổng hợp giá trị tăng, giảm
+                if(listDataUp && listDataUp.length){
+                    dataBudget.quantity = Number(dataBudget.quantity) + Number(listDataUp[0].quantity)
+                    dataBudget.amount = Number(dataBudget.amount) + Number(listDataUp[0].amount)
+                }
+
+                if(listDataDown && listDataDown.length){
+                    dataBudget.quantity = Number(dataBudget.quantity) - Number(listDataDown[0].quantity)
+                    dataBudget.amount = Number(dataBudget.amount) - Number(listDataDown[0].amount)
+                }
+
+                return resolve({ error: false, data: dataBudget, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -698,105 +801,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Tổng hợp ngân sách đã thực hiện
-     * Code: Hiepnh
-     * Date  : 10/4/2022
-     */
-    calImpleBudget({
-        workID, groupID, itemID, budgetID, userID, ctx
-    }){
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * BA
-                 * 1-Tổng hợp ngân sách đã thực hiện của công việc-budgetWork
-                 * 2-Tổng hợp ngân sách đã thực hiện của nhóm-budgetGroup
-                 * 3-Tổng hợp ngân sách đã thực hiện của hạng mục-budgetItem
-                 * 4-Tổng hợp ngân sách đã thực hiện của ngân sách-budget
-                 */
-                let dataBudget = {
-                    quantity: 0,
-                    amount: 0
-                }
-
-                let conditionObjUp = { updown: 1 }
-                let conditionObjDown = { updown: -1 }
-
-                if(workID){
-                    conditionObjUp.budgetWork = ObjectID(workID)
-                    conditionObjDown.budgetWork = ObjectID(workID)
-                }
-                if(groupID){
-                    conditionObjUp.budgetGroup = ObjectID(groupID)
-                    conditionObjDown.budgetGroup = ObjectID(groupID)
-                }
-                if(itemID){
-                    conditionObjUp.budgetItem = ObjectID(itemID)
-                    conditionObjDown.budgetItem = ObjectID(itemID)
-                }
-                if(budgetID){
-                    conditionObjUp.budget = ObjectID(budgetID)
-                    conditionObjDown.budget = ObjectID(budgetID)
-                }
-
-                // Dữ liệu tăng ngân sách thực hiện
-                let listDataUp = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $match: conditionObjUp
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            quantity: { $sum: "$quantity" },
-                            amount: { $sum: "$amount" },
-                        }
-                    },
-                ])
-
-                // Dữ liệu giảm ngân sách thực hiện
-                let listDataDown = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $match: conditionObjDown
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            quantity: { $sum: "$quantity" },
-                            amount: { $sum: "$amount" },
-                        }
-                    },
-                ])
-                // console.log(conditionObjUp)
-                // console.log(conditionObjDown)
-                // console.log(listDataUp)
-                // console.log(listDataDown)
-
-                // Tổng hợp giá trị tăng, giảm
-                if(listDataUp && listDataUp.length){
-                    dataBudget.quantity = Number(dataBudget.quantity) + Number(listDataUp[0].quantity)
-                    dataBudget.amount = Number(dataBudget.amount) + Number(listDataUp[0].amount)
-                }
-
-                if(listDataDown && listDataDown.length){
-                    dataBudget.quantity = Number(dataBudget.quantity) - Number(listDataDown[0].quantity)
-                    dataBudget.amount = Number(dataBudget.amount) - Number(listDataDown[0].amount)
-                }
-
-                return resolve({ error: false, data: dataBudget, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
      * Name  : getListByProperty
      * Code: Hiepnh
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts }) {
-        console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
+        // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 /**
