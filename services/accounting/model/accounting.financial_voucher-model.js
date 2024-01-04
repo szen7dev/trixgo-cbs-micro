@@ -171,7 +171,7 @@ class Model extends BaseModel {
                             updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
                             quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                             amount: subitem.amount ? Number(subitem.amount) : 0,
-                            unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
+                            unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0,
                             fcuExRate,
                             fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                             note: subitem.note,
@@ -243,6 +243,9 @@ class Model extends BaseModel {
                             }
                         }
 
+                        /**
+                         * Khoản mục phí
+                         */
                         if(subtypeID && _isValid(subtypeID)){
                             dataInsert.subtype = subtypeID;
                         }

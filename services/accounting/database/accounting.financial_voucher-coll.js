@@ -133,6 +133,11 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     shipperName: String, 
     //_________Chi phí thuê giao vận
     shipperCost: { type: Number, default: 0 }, 
+    //_________Danh sách bút toán
+    journals: [{
+        type: Schema.Types.ObjectId,
+        ref: 'financial_general_journal'
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
