@@ -100,6 +100,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { 
                     voucherID,
+                    fundaID,
                     customerID,
                     contract, 
                     storageID, 
@@ -120,6 +121,7 @@ module.exports = {
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.update({
                     authorID: userID, 
                     voucherID,
+                    fundaID,
                     customerID,
                     contractID: contract, 
                     storageID, 

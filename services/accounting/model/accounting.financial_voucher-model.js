@@ -285,6 +285,7 @@ class Model extends BaseModel {
         authorID, 
         voucherID,
         customerID,
+        fundaID,
         contractID, 
         storageID, 
         subtypeID,
@@ -298,6 +299,7 @@ class Model extends BaseModel {
      }) {
         // console.log({authorID, 
         //     voucherID,
+        //     fundaID,
         //     customerID,
         //     contractID, 
         //     storageID, 
@@ -320,15 +322,15 @@ class Model extends BaseModel {
                 */
 
                 //_________Kiểm tra dữ liệu đầu vào
-                if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
-                    return resolve({ error: true, message: 'date|name|type|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
+                    return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
 
                 let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
                 if (!info) 
                     return resolve({ error: true, message: 'cannot_get_info_voucher', status: 400 })
 
                 let companyID = info.company
-                let fundaID = info.funda
+                // let fundaID = info.funda
 
                 //_________Kiểm tra trùng số hiệu
                 if(sign && sign != ""){
@@ -351,6 +353,7 @@ class Model extends BaseModel {
                  const dataUpdateVoucher = {
                     userUpdate: authorID, 
                     modifyAt: Date.now(),
+                    funda: fundaID,
                     customer: customerID,
                     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
@@ -513,6 +516,7 @@ class Model extends BaseModel {
                             // console.log('===================CẬP NHẬT BÚT TOÁN===================')
                             const dataUpdate = {
                                 authorID, 
+                                fundaID, 
                                 journalID: subitem.journalID, 
                                 date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                                 updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
