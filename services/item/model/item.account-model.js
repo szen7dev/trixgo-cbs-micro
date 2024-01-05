@@ -1,21 +1,16 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString, _constructForAny, _getLevelMaxInRecursiveByCompany } = require('../../../tools/utils/utils');
-// const stringUtils					    = require('../../../tools/utils/string_utils');
-// const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 /**
  * DOMAIN AND ACTIONS
  */
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
 
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 
 /**
  * COLLECTIONS
@@ -40,12 +35,14 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "companyID|name|userID không hợp lệ", keyError: "Request params name invalid" });
 
                 // Kiểm tra tên tồn tại trong công ty hay chưa
-                let checkName = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name });
+                let checkName = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: name.trim() });
                 if(checkName)
                     return resolve({ error: true, message: "name_existed" });
 
                 let dataInsert = {
                     userCreate: userID,
+                    userUpdate: userID,
+                    modifyAt: new Date(),
                     company: companyID,
                     name: name.trim(),
                 }
@@ -56,7 +53,7 @@ class Model extends BaseModel {
                 let infoParent
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID
-                    dataInsert.nestedParents = [parentID]
+                    dataInsert.nestedParents = [parentID] // Cha cấp 1
 
                     // Cập nhật Level để phục vụ việc tính toán, đệ quy
                     infoParent = await ITEM__ACCOUNT_COLL.findById(parentID)
@@ -71,9 +68,9 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" });
 
-                // Cập nhật amountChilds cho phần tử cha
                 if(checkObjectIDs(parentID)){
 
+                    // Cập nhật amountChilds cho phần tử cha cấp 1
                     await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID,
                         {
                             $addToSet: { 
@@ -83,32 +80,30 @@ class Model extends BaseModel {
                             $inc: { amountChilds: 1 }
                         },
                         { new: true })
-                }
 
-                /**
-                 * CẬP NHẬT CÁC PHẦN TỬ CHA CẤP TRÊN
-                 * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
-                 */
-                if(checkObjectIDs(parentID)){
+                    /**
+                     * Cập nhật cho phần tử cha cấp 2 trở lên
+                     * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
+                     */
                     for(const item of infoParent?.nestedParents){
-                        // Cập nhật cho các phần tử cha
+
+                        // Thêm phần tử con/cháu
                         await ITEM__ACCOUNT_COLL.findByIdAndUpdate(item,
                             {
                                 $addToSet: { nestedChilds: infoAfterInsert._id },
                             },
                             { new: true })
 
-                        // Cập nhật các cha cho chính phần tử này
+                        // Thêm phần tử cha
                         await ITEM__ACCOUNT_COLL.findByIdAndUpdate(infoAfterInsert._id ,
                             {
-                                $addToSet: { nestedParents: item },
+                                $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
                             },
                             { new: true })
                     }
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
-
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -150,14 +145,15 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
+                let infoAfterUpdate = await ITEM__ACCOUNT_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true })
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" })
+
                 /**
-                 * NẾU DI CHUYỂN PHẦN TỬ CHA
+                 * NẾU DI CHUYỂN PHẦN TỬ CHA => Khá phức tạp và khó kiểm soát. Nếu nhầm thì sửa đi tạo lại
                  * - Thay đổi cấu trúc cha cũ
                  * - Cập nhật theo cấu trúc cha mới cho tất cả con cháu
                  */
-                let infoAfterUpdate = await ITEM__ACCOUNT_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true });
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update" });
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
