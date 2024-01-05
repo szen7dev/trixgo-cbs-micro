@@ -202,7 +202,9 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({
-        authorID, journalID,
+        authorID, 
+        journalID,
+        fundaID,
         date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
@@ -218,8 +220,7 @@ class Model extends BaseModel {
                  * 2-Kiểm tra Danh mục thuộc công ty
                  * 3-Kiểm tra khác
                  */
-                 if(!checkObjectIDs([authorID, journalID, customerDebit, customerCredit]))
-                //  if(!checkObjectIDs([authorID, journalID, debit, credit, customerDebit, customerCredit]))
+                 if(!checkObjectIDs([authorID, journalID, customerDebit, customerCredit, fundaID]))
                     return { error: true, message: 'params_invalid', status: 400 };
 
                 // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID
@@ -239,6 +240,7 @@ class Model extends BaseModel {
                  */
                 const dataUpdate = {
                     userUpdate: authorID,
+                    funda: fundaID,
                     date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
