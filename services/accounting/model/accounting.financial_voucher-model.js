@@ -291,9 +291,9 @@ class Model extends BaseModel {
                 /**
                  * B3. PHIẾU XUẤT NỘI BỘ
                  */
-                // if(type == 5 && linkFundaID && checkObjectIDs(linkFundaID)){
-                //     await this.convertVoucher({companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
-                // }
+                if(type == 5 && linkFundaID && checkObjectIDs(linkFundaID)){
+                    await this.convertVoucher({companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
+                }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 })
             } catch (error) {
