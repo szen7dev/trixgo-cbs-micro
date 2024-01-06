@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -13,14 +13,11 @@ const moment                            = require('moment');
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
 
 /**
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
 /**
@@ -39,7 +36,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, unit, unitprice, description, note, userID }){
+	insert({ companyID, parentID, name, sign, unit, unitprice, description, note, userID, convertID, convertQuantity }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -77,6 +74,14 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
+                if(convertID && checkObjectIDs(convertID)){
+                    dataInsert.convert = convertID;
+                }
+
+                if(!isNaN(convertQuantity)){
+                    dataInsert.convertQuantity = Number(convertQuantity);
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" });
@@ -98,7 +103,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, unitprice, description, note, userID }){
+	update({ goodsID, name, sign, unit, unitprice, description, note, userID, convertID, convertQuantity }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(goodsID))
@@ -131,6 +136,14 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
+                if(convertID && checkObjectIDs(convertID)){
+                    dataUpdate.convert = convertID;
+                }
+
+                if(!isNaN(convertQuantity)){
+                    dataUpdate.convertQuantity = Number(convertQuantity);
+                }
+
                 let infoAfterUpdate = await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true });
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -147,19 +160,9 @@ class Model extends BaseModel {
     getInfo({ goodsID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(goodsID))
                     return resolve({ error: true, message: 'Request params goodsID invalid', status: 400 });
                 
-                 // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -171,14 +174,10 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await ITEM__GOODS_COLL.findById(goodsID)
-                                    .select(select)
-                                    .populate(populates)
+                    .select(select)
+                    .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
  
@@ -197,6 +196,7 @@ class Model extends BaseModel {
     getList({
         companyID, parentID, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
+        // console.log({companyID, parentID, isListParentOfListChilds, keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
                 
@@ -205,9 +205,7 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let sortBy;
                 let conditionObj = { };
                 let keys	 = ['createAt__-1', '_id__-1'];
@@ -329,7 +327,6 @@ class Model extends BaseModel {
                     const result = await uploadFileS3(pathWriteFile, fileName);
 
                     fs.unlinkSync(pathWriteFile);
-                    // console.log({ result })
                     return resolve({ error: false, data: result?.Location, status: 200 });
                 });
 
@@ -390,4 +387,4 @@ class Model extends BaseModel {
     }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model

@@ -27,10 +27,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { name, sign, unit, unitprice, description, note, parentID } = ctx.params;
+                const { name, sign, unit, unitprice, description, note, parentID, convertID, convertQuantity } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, name, sign, unit, unitprice, description, note, userID });
+                // console.log(ctx.params)
+
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, convertID, convertQuantity, name, sign, unit, unitprice, description, note, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -56,9 +58,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { goodsID, name, sign, unit, unitprice, description, note } = ctx.params;
+                const { goodsID, name, sign, unit, unitprice, description, note, convertID, convertQuantity } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, unitprice, description, note, userID });
+                // console.log(ctx.params)
+
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, unitprice, description, note, userID, convertID, convertQuantity });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
