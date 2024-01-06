@@ -47,6 +47,11 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     },
+    //_________Đơn vị cơ sở nội bộ
+    linkFunda: {
+        type: Schema.Types.ObjectId,
+        ref: 'funda'
+    },
     /**
      * KẾT CHUYỂN CUỐI KỲ (31/12)/PHIẾU HỦY
      */ 

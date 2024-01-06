@@ -52,6 +52,7 @@ class Model extends BaseModel {
         contractID, 
         storageID, 
         subtypeID,
+        linkFundaID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
@@ -66,6 +67,7 @@ class Model extends BaseModel {
         //     contractID, 
         //     storageID, 
         //     subtypeID,
+        //     linkFundaID,
         //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         //     receiver, note,
         //     forward, forwardIs, returning, advancePayment, cancel, 
@@ -146,6 +148,10 @@ class Model extends BaseModel {
 
                 if (storageID && checkObjectIDs(storageID)) {
                     dataInsertVoucher.storage = storageID;
+                }
+
+                if (linkFundaID && checkObjectIDs(linkFundaID)) {
+                    dataInsertVoucher.linkFunda = linkFundaID;
                 }
 
                 const infoAfterInsert = await this.insertData(dataInsertVoucher)

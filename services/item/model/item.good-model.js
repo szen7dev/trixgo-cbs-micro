@@ -44,6 +44,8 @@ class Model extends BaseModel {
 
                 let dataInsert = {
                     userCreate: userID,
+                    userUpdate: userID,
+                    modifyAt: new Date(),
                     company: companyID,
                     name, 
                 }    
