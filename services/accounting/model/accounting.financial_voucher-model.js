@@ -54,6 +54,7 @@ class Model extends BaseModel {
         contractID, 
         storageID, 
         subtypeID,
+        warehouseID,
         linkFundaID,
         linkVoucherID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
@@ -70,6 +71,7 @@ class Model extends BaseModel {
         //     contractID, 
         //     storageID, 
         //     subtypeID,
+        //     warehouseID,
         //     linkFundaID,
         //     linkVoucherID,
         //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
@@ -150,6 +152,10 @@ class Model extends BaseModel {
                     dataInsertVoucher.subtype = subtypeID;
                 }
 
+                if (warehouseID && checkObjectIDs(warehouseID)) {
+                    dataInsertVoucher.warehouse = warehouseID;
+                }
+
                 if (storageID && checkObjectIDs(storageID)) {
                     dataInsertVoucher.storage = storageID;
                 }
@@ -161,7 +167,7 @@ class Model extends BaseModel {
                 if (linkVoucherID && checkObjectIDs(linkVoucherID)) {
                     dataInsertVoucher.linkVoucher = linkVoucherID;
                 }
-                console.log(dataInsertVoucher)
+                // console.log(dataInsertVoucher)
 
                 const infoAfterInsert = await this.insertData(dataInsertVoucher)
                 if (!infoAfterInsert)
@@ -231,12 +237,16 @@ class Model extends BaseModel {
                          * Nếu không  có thì lấy theo mã khách trên phiếu
                          * Chỉ insert khi có cả thông tin goods và warehouse
                          */
-                        if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
-                            dataInsert.goods = subitem.goods
-                            dataInsert.warehouse = subitem.warehouse
-                        }else{
-                            dataInsert.goods = null
-                            dataInsert.warehouse = null
+                        if(subitem.goods && _isValid(subitem.goods)){
+                            if(subitem.warehouse && _isValid(subitem.warehouse)){
+                                dataInsert.goods = subitem.goods
+                                dataInsert.warehouse = subitem.warehouse
+                            }else{
+                                if(warehouseID && _isValid(warehouseID)){
+                                    dataInsert.goods = subitem.goods
+                                    dataInsert.warehouse = warehouseID
+                                }
+                            }
                         }
 
                         /**
@@ -315,6 +325,7 @@ class Model extends BaseModel {
         contractID, 
         storageID, 
         subtypeID,
+        warehouseID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
@@ -329,6 +340,8 @@ class Model extends BaseModel {
         //     customerID,
         //     contractID, 
         //     storageID, 
+        //     subtypeID, 
+        //     warehouseID, 
         //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         //     receiver, note,
         //     forward, forwardIs, returning, advancePayment, cancel, 
@@ -421,6 +434,10 @@ class Model extends BaseModel {
                     dataUpdateVoucher.subtype = subtypeID;
                 }
 
+                if (warehouseID && checkObjectIDs(warehouseID)) {
+                    dataUpdateVoucher.warehouse = warehouseID;
+                }
+
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update", status: 400 })
@@ -486,12 +503,23 @@ class Model extends BaseModel {
                              * Nếu không  có thì lấy theo mã khách trên phiếu
                              * Chỉ insert khi có cả thông tin goods và warehouse
                              */
-                            if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
-                                dataInsert.goods = subitem.goods
-                                dataInsert.warehouse = subitem.warehouse
-                            }else{
-                                dataInsert.goods = null
-                                dataInsert.warehouse = null
+                            // if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
+                            //     dataInsert.goods = subitem.goods
+                            //     dataInsert.warehouse = subitem.warehouse
+                            // }else{
+                            //     dataInsert.goods = null
+                            //     dataInsert.warehouse = null
+                            // }
+                            if(subitem.goods && _isValid(subitem.goods)){
+                                if(subitem.warehouse && _isValid(subitem.warehouse)){
+                                    dataInsert.goods = subitem.goods
+                                    dataInsert.warehouse = subitem.warehouse
+                                }else{
+                                    if(warehouseID && _isValid(warehouseID)){
+                                        dataInsert.goods = subitem.goods
+                                        dataInsert.warehouse = warehouseID
+                                    }
+                                }
                             }
     
                             /**
@@ -592,9 +620,27 @@ class Model extends BaseModel {
                              * Nếu không  có thì lấy theo mã khách trên phiếu
                              * Chỉ insert khi có cả thông tin goods và warehouse
                              */
-                            if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
-                                dataUpdate.goods = subitem.goods
-                                dataUpdate.warehouse = subitem.warehouse
+                            // if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
+                            //     dataUpdate.goods = subitem.goods
+                            //     dataUpdate.warehouse = subitem.warehouse
+                            // }else{
+                            //     dataUpdate.goods = null
+                            //     dataUpdate.warehouse = null
+                            // }
+
+                            if(subitem.goods && _isValid(subitem.goods)){
+                                if(subitem.warehouse && _isValid(subitem.warehouse)){
+                                    dataUpdate.goods = subitem.goods
+                                    dataUpdate.warehouse = subitem.warehouse
+                                }else{
+                                    if(warehouseID && _isValid(warehouseID)){
+                                        dataUpdate.goods = subitem.goods
+                                        dataUpdate.warehouse = warehouseID
+                                    }else{
+                                        dataUpdate.goods = null
+                                        dataUpdate.warehouse = null
+                                    }
+                                }
                             }else{
                                 dataUpdate.goods = null
                                 dataUpdate.warehouse = null

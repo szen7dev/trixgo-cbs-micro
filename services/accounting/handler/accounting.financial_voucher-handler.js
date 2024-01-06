@@ -31,6 +31,7 @@ module.exports = {
                     storageID, 
                     subtype,
                     linkFundaID,
+                    warehouseID,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
@@ -64,6 +65,7 @@ module.exports = {
                     storageID, 
                     subtypeID: subtype,
                     linkFundaID,
+                    warehouseID,
                     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
                     forward: (!isNaN(forward) && [0,1].includes(Number(forward))) ? Number(forward) : 0,
@@ -107,6 +109,7 @@ module.exports = {
                     contract, 
                     storageID, 
                     subtype,
+                    warehouseID,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
@@ -128,6 +131,7 @@ module.exports = {
                     contractID: contract, 
                     storageID, 
                     subtypeID: subtype,
+                    warehouseID,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 
@@ -157,8 +161,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { docID } = ctx.params;
-                console.log('===========OK=======================')
-                console.log(ctx.params)
+                // console.log('===========OK=======================')
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
