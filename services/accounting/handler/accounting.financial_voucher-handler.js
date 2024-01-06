@@ -144,6 +144,33 @@ module.exports = {
     },
 
     /**
+     * Name: Convert phiếu xuất nội bộ
+     * Author: Hiepnh
+     * Date: 6/1/2024
+     */
+    convertVoucher: {
+        auth: "required",
+        params: {
+            docID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { docID } = ctx.params;
+                // console.log('===========OK=======================')
+                // console.log(ctx.params)
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.convertVoucher({ companyID: company._id, docID, userID, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Name: Update 
      * Author: Hiepnh
      * Date: 30/4/2022

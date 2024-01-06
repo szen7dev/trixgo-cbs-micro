@@ -25,6 +25,7 @@ const stringUtils					        = require('../../../tools/utils/string_utils')
 /**
  * COLLECTIONS
  */
+const ITEM__ACCOUNT_COLL                            = require('../../item/database/item.account-coll')
 const FUNDA_COLL                                    = require('../../item/database/item.funda-coll')
 const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
@@ -34,6 +35,7 @@ const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accou
  * MODELS
  */
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL   = require('./accounting.financial_general_journal-model').MODEL;
+const ITEM__ACCOUNT_MODEL                           = require('../../item/model/item.account-model').MODEL;
 
 class Model extends BaseModel {
     constructor() {
@@ -274,6 +276,13 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                /**
+                 * B3. PHIẾU XUẤT NỘI BỘ
+                 */
+                // if(type == 5 && linkFundaID && checkObjectIDs(linkFundaID)){
+                //     await this.convertVoucher({companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
+                // }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 })
             } catch (error) {
@@ -713,6 +722,95 @@ class Model extends BaseModel {
                     return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400})
             
                 return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher, status: 200 })
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`)
+                return resolve({ erorr: true, message: 'update_voucher_fail', status: 400})
+            }
+        });
+    }
+
+    /**
+     * Name: Convert phiếu xuất nội bộ
+     * Author: Hiepnh
+     * Date: 6/1/2024
+     */
+    convertVoucher({ companyID, docID, userID, ctx }){
+        const that = this
+        return new Promise(async (resolve, reject) => {
+            try {
+                let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(docID)
+
+                if(infoVoucher.type == 5 && infoVoucher.linkFunda && checkObjectIDs(infoVoucher.linkFunda)){
+                    let infoNewVoucher = await that.insert({
+                        authorID: userID, 
+                        fundaID: infoVoucher.linkFunda, 
+                        customerID: infoVoucher.customer,
+                        contractID: infoVoucher.contract, 
+                        storageID: infoVoucher.storage, 
+                        subtypeID: infoVoucher.subtype,
+                        linkFundaID: infoVoucher.funda,
+                        type: 4, 
+                        date: infoVoucher.date, 
+                        name: 'Convert-Nhập kho từ nội bộ', 
+                        sign: infoVoucher.sign, 
+                        signInvoice: infoVoucher.signInvoice, 
+                        dateInvoice: infoVoucher.dateInvoice, 
+                        vat: infoVoucher.vat, 
+                        source: infoVoucher.source, 
+                        orderNew: infoVoucher.orderNew, 
+                        pricePolicy: infoVoucher.pricePolicy,
+                        receiver: infoVoucher.receiver, 
+                        note: infoVoucher.note,
+                        forward: infoVoucher.forward, 
+                        forwardIs: infoVoucher.forwardIs, 
+                        returning: infoVoucher.returning, 
+                        advancePayment: infoVoucher.advancePayment, 
+                        cancel: infoVoucher.cancel, 
+                        fcuExRate: infoVoucher.fcuExRate, 
+                        // selectedJournals: infoVoucher.selectedJournals, //
+                        ctx
+                    })
+
+                    let listAccount = await ITEM__ACCOUNT_MODEL.getListRecursive({ companyID, arrAccNames: ['152','153','155','156','157'] })
+                    listAccount = listAccount.data.map(item=>item._id.toString())
+                    // console.log(listAccount)
+
+                    let info331 = await ITEM__ACCOUNT_COLL.findOne({name: '331'})                    
+                    // console.log(info331)
+
+                    let listJournals = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({
+                        voucher: docID
+                    })
+                    // console.log(listJournals)
+
+                    let selectedJournals = []
+
+                    for(const item of listJournals){
+                        if(listAccount.includes(item.credit.toString())){
+                            let dataInsert = {
+                                type: 4, 
+                                source: item.source, 
+                                orderNew: item.orderNew, 
+                                pricePolicy: item.pricePolicy,
+                                updown: item.updown,
+                                quantity: item.quantity,
+                                amount: item.amount,
+                                unitprice: item.unitprice,
+                                note: item.note,
+                                debit: item.credit, // TK 
+                                credit: info331._id, // Phải trả nhà cung cấp
+                                customerDebit: item.customerDebit,
+                                customerDebit: item.customerDebit,
+                                ctx
+                            }
+                            selectedJournals.push(dataInsert)
+                        }
+                    }
+
+                    return resolve({ erorr: false, data: listJournals, status: 200 })
+                }else{
+                    return resolve({ erorr: false, data: infoNewVoucher, status: 200 })
+                } 
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`)
                 return resolve({ erorr: true, message: 'update_voucher_fail', status: 400})
