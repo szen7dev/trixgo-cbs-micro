@@ -99,7 +99,7 @@ class Model extends BaseModel {
                 /**
                  * GÁN MÃ NGÂN SÁCH
                  */
-                let budget, budgetProject, budgetContract, budgetItem, budgetGroup
+                let budget, budgetItem, budgetGroup
                 if(budgetWork && _isValid(budgetWork)){
                     let infoWork = await BUDGET_WORK_COLL.findById(budgetWork)
 
@@ -107,14 +107,6 @@ class Model extends BaseModel {
                         if(infoWork.budget){
                             budget = infoWork.budget;
                             dataInsert.budget = infoWork.budget;
-                        }
-                        if(infoWork.project){
-                            budgetProject = infoWork.project;
-                            dataInsert.budgetProject = infoWork.project;
-                        }
-                        if(infoWork.contract){
-                            budgetContract = infoWork.contract;
-                            dataInsert.budgetContract = infoWork.contract;
                         }
                         if(infoWork.item){
                             budgetItem = infoWork.item;
@@ -251,11 +243,9 @@ class Model extends BaseModel {
                 /**
                  * LẤY THÔNG TIN NGÂN SÁCH CŨ
                  */
-                let budgetOld, budgetProjectOld, budgetContractOld, budgetItemOld, budgetGroupOld, budgetWorkOld
+                let budgetOld, budgetItemOld, budgetGroupOld, budgetWorkOld
                 if(infoJournal.budgetWork){
                     budgetOld = infoJournal.budget
-                    budgetProjectOld = infoJournal.budgetProject
-                    budgetContractOld = infoJournal.budgetContract
                     budgetItemOld = infoJournal.budgetItem
                     budgetGroupOld = infoJournal.budgetGroup
                     budgetWorkOld = infoJournal.budgetWork
@@ -264,7 +254,7 @@ class Model extends BaseModel {
                 /**
                  * GÁN MÃ NGÂN SÁCH: MỚI VÀ CŨ
                  */
-                let budget, budgetProject, budgetContract, budgetItem, budgetGroup
+                let budget, budgetItem, budgetGroup
                 if(budgetWork && _isValid(budgetWork)){
                     let infoWork = await BUDGET_WORK_COLL.findById(budgetWork)
 
@@ -272,14 +262,6 @@ class Model extends BaseModel {
                         if(infoWork.budget){
                             budget = infoWork.budget;
                             dataUpdate.budget = infoWork.budget;
-                        }
-                        if(infoWork.project){
-                            budgetProject = infoWork.project;
-                            dataUpdate.budgetProject = infoWork.project;
-                        }
-                        if(infoWork.contract){
-                            budgetContract = infoWork.contract;
-                            dataUpdate.budgetContract = infoWork.contract;
                         }
                         if(infoWork.item){
                             budgetItem = infoWork.item;
@@ -377,13 +359,13 @@ class Model extends BaseModel {
                             // console.log(infoBudgetItemOld)
 
                             if(infoBudgetItemOld){
-                                let infoBudget = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
+                                let infoBudgetOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
                                     option: 2,
                                     budgetID: `${budgetOld}`
                                 })
 
                                 // console.log('4. Update Budget Old==========================>>>>>')
-                                // console.log(infoBudgetItemOld)
+                                // console.log(infoBudgetOld)
                             }
                         }
                     }
