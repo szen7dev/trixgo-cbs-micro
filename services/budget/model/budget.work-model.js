@@ -1,14 +1,10 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
+const { KEY_ERROR }                     = require('../../../tools/keys/index')
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
 const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.actions-constant');
 
 const XlsxPopulate                      = require('xlsx-populate');
@@ -29,8 +25,6 @@ const BUDGET__ITEM_MODEL                = require('./budget.item-model').MODEL;
 const BUDGET__GROUP_MODEL               = require('./budget.group-model').MODEL;
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { template }                      = require('lodash');
-const { ResumeToken }                   = require('mongodb');
 
 /**
  * import inter-model, exter-model
@@ -45,7 +39,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */
-    insert({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) { 
+    insert({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) {
+        console.log({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -56,16 +51,17 @@ class Model extends BaseModel {
                  * +++Cập nhật cho công việc
                  * +++Cập nhật cho Group, Item và Budget
                  * 3. Không cho sửa giá trị của Item, Group và Budget => Tất cả tính theo cập nhật của BudgetWork và Accounting
-                 */                 
+                 */    
                 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+                if(!name || !checkObjectIDs(groupID))
+                    return resolve({ error: true, message: 'date|groupID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+
+                
                 let infoGroup = await BUDGET__GROUP_COLL.findById(groupID);
                 if(!infoGroup)
                     return resolve({ error: true, message: "groupID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { userCreate: userID, company: infoGroup.company, budget: infoGroup.budget, item: infoGroup.item, group: groupID };
+                let dataInsert = { userCreate: userID, company: infoGroup.company, budget: infoGroup.budget, item: infoGroup.item, group: groupID, name };
 
                 if(checkObjectIDs(infoGroup.project)){
                     dataInsert.project = infoGroup.project
@@ -74,43 +70,44 @@ class Model extends BaseModel {
                     dataInsert.contract = infoGroup.contract
                 }
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(checkObjectIDs(reasonID)){
                     dataInsert.reason = reasonID
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 if(plus && [0,1,2].includes(Number(plus))){
                     dataInsert.plus = plus;
                 }
 
-                if(name){
-                    dataInsert.name = name;
-                }
-
-                if(sign){
+                if(sign && sign != ""){
                     dataInsert.sign = sign;
                 }
 
-                if(unit){
+                if(unit && unit != ""){
                     dataInsert.unit = unit;
                 }
 
-                if(description){
+                if(description && description != ""){
                     dataInsert.description = description;
                 }
 
-                if(note){
+                if(note && note != ""){
                     dataInsert.note = note;
                 }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsert.namecv = convertStr
 
                 if(!isNaN(type) && Number(type) >= 0){
                     dataInsert.type     = type;
@@ -178,56 +175,53 @@ class Model extends BaseModel {
                  * +++Cập nhật cho Group, Item và Budget
                  * 3. Không cho sửa giá trị của Item, Group và Budget => Tất cả tính theo cập nhật của BudgetWork và Accounting
                  */  
-
-                if(!checkObjectIDs(workID))
-                    return resolve({ error: true, message: "Mã không đúng", keyError: "workID_invalid" });
+                if(!name || !checkObjectIDs(workID))
+                    return resolve({ error: true, message: "date|workID invalid", keyError: KEY_ERROR.PARAMS_INVALID, status: 400 });
                 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                 let infoWork = await BUDGET__WORK_COLL.findById(workID);
-                 if(!infoWork)
-                     return resolve({ error: true, message: "workID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
+                let infoWork = await BUDGET__WORK_COLL.findById(workID);
+                if(!infoWork)
+                    return resolve({ error: true, message: "workID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
-                
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                 if(checkObjectIDs(reasonID)){
+
+                if(checkObjectIDs(reasonID)){
                     dataUpdate.reason = reasonID
                 }
              
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                 if(plus && [0,1,2].includes(Number(plus))){
+                if(plus && [0,1,2].includes(Number(plus))){
                     dataUpdate.plus = plus;
                 }
 
-                if(name){
-                    dataUpdate.name = name;
-                }
-
-                if(sign){
+                if(sign && sign != ""){
                     dataUpdate.sign = sign;
                 }
 
-                if(unit){
+                if(unit && unit != ""){
                     dataUpdate.unit = unit;
                 }
 
-                if(description){
+                if(description && description != ""){
                     dataUpdate.description = description;
                 }
 
-                if(note){
+                if(note && note != ""){
                     dataUpdate.note = note;
                 }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdate.namecv = convertStr
                 
                 if(!isNaN(type) && Number(type) >= 0){
                     dataUpdate.type     = type;
@@ -274,12 +268,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-     * Name: Remove 
-     * Author: Hiepnh
-     * Date: 10/4/2022
-     */
     
     /**
      * Name: Get info 

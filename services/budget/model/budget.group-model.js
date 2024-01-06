@@ -390,26 +390,11 @@ class Model extends BaseModel {
                  * 2-Cập nhật dự báo ngân sách
                  * 3-Cập nhật thực hiện ngân sách
                  */
-
                 if(!checkObjectIDs(groupID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "groupID_invalid" });
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataUpdate = { userUpdate: userID };
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 // Cập nhật Ngân sách theo kế hoạch và dự báo ngân sách
                 if(option && Number(option) === 1){
                     let listDataWork = await BUDGET__WORK_COLL.aggregate([
