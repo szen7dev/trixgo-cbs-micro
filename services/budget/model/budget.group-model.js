@@ -407,17 +407,13 @@ class Model extends BaseModel {
                             $group: {
                                 _id: { },
                                 amount: { $sum: "$amount" },
-                                vatAmount: { $sum: "$vatAmount" },
                                 forecastAmount: { $sum: "$forecastAmount" },
-                                forecastVatAmount: { $sum: "$forecastVatAmount" },
                             }
                         },
                     ])
                     if(listDataWork && listDataWork.length){
                         dataUpdate.amount = Number(listDataWork[0].amount)
-                        dataUpdate.vatAmount = Number(listDataWork[0].vatAmount)
                         dataUpdate.forecastAmount = Number(listDataWork[0].forecastAmount)
-                        dataUpdate.forecastVatAmount = Number(listDataWork[0].forecastVatAmount)
                     }
                 }
 

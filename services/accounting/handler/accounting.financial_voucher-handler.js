@@ -157,8 +157,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { docID } = ctx.params;
-                // console.log('===========OK=======================')
-                // console.log(ctx.params)
+                console.log('===========OK=======================')
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 

@@ -39,8 +39,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */
-    insert({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) {
-        console.log({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount })
+    insert({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, forecastQuantity, forecastUnitPrice, forecastAmount }) {
+        // console.log({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, forecastQuantity, forecastUnitPrice, forecastAmount })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -133,14 +133,10 @@ class Model extends BaseModel {
                     dataInsert.forecastUnitPrice     = forecastUnitPrice;
                     dataInsert.forecastAmount       = Number(forecastQuantity)*Number(forecastUnitPrice);
                 }
-                if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
-                    dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
-                    dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
-                }
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget_work" });
+                    return resolve({ error: true, message: "can't_insert_budget_work", keyError: "can't_insert_budget_work" });
 
                 /**
                  * CẬP NHẬT GIÁ TRỊ NGÂN SÁCH, DỰ KIẾN NGÂN SÁCH

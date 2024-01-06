@@ -33,19 +33,17 @@
             vatAmount               : { type: "number", optional: true },
             forecastQuantity        : { type: "number", optional: true },
             forecastUnitPrice       : { type: "number", optional: true },
-            forecastVatUnitPrice    : { type: "number", optional: true },
             forecastAmount          : { type: "number", optional: true },
-            forecastVatAmount       : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount } = ctx.params;
+                let { groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, forecastQuantity, forecastUnitPrice, forecastAmount } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET__WORK_MODEL.insert({
-                ctx, userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount
+                    ctx, userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, forecastQuantity, forecastUnitPrice, forecastAmount
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

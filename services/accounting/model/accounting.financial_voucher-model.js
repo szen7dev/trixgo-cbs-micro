@@ -26,7 +26,7 @@ const stringUtils					        = require('../../../tools/utils/string_utils')
  * COLLECTIONS
  */
 const ITEM__ACCOUNT_COLL                            = require('../../item/database/item.account-coll')
-const FUNDA_COLL                                    = require('../../item/database/item.funda-coll')
+const ITEM_FUNDA_COLL                                    = require('../../item/database/item.funda-coll')
 const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
@@ -55,6 +55,7 @@ class Model extends BaseModel {
         storageID, 
         subtypeID,
         linkFundaID,
+        linkVoucherID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
@@ -70,6 +71,7 @@ class Model extends BaseModel {
         //     storageID, 
         //     subtypeID,
         //     linkFundaID,
+        //     linkVoucherID,
         //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         //     receiver, note,
         //     forward, forwardIs, returning, advancePayment, cancel, 
@@ -93,7 +95,7 @@ class Model extends BaseModel {
 
                 //_________Tự động lấy số hiệu phiếu
                 let number = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type })
-                let infoFunda = await FUNDA_COLL.findById(fundaID)
+                let infoFunda = await ITEM_FUNDA_COLL.findById(fundaID)
                 if(!infoFunda)
                     return resolve({ error: true, message: 'fundaID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
 
@@ -122,8 +124,8 @@ class Model extends BaseModel {
                 if(name && name != ""){
                     convertStr = stringUtils.removeAccents(name)
                 }
-                if(sign && sign != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                if(voucherSign && voucherSign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(voucherSign)
                 }
                 if(signInvoice && signInvoice != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(signInvoice)
@@ -156,6 +158,11 @@ class Model extends BaseModel {
                     dataInsertVoucher.linkFunda = linkFundaID;
                 }
 
+                if (linkVoucherID && checkObjectIDs(linkVoucherID)) {
+                    dataInsertVoucher.linkVoucher = linkVoucherID;
+                }
+                console.log(dataInsertVoucher)
+
                 const infoAfterInsert = await this.insertData(dataInsertVoucher)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm phiếu thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
@@ -168,6 +175,7 @@ class Model extends BaseModel {
                     //_________Get voucherID
                     const voucherID = infoAfterInsert._id;           
 
+                    var i = 0
                     for (const subitem of selectedJournals) {
 
                         const dataInsert = {
@@ -266,14 +274,17 @@ class Model extends BaseModel {
                         }
                         
                         //_________Tiến hành tạo chi tiết_________//
-                        let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
+                        let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert)
 
-                        /**
-                         * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
-                         */
-                        if(infoJournal){
-                            await that.updateValue({ voucherID })
-                        }
+                        i++
+                        // console.log({__________i:i})
+                    }
+
+                    //_________Cập nhật giá trị phiếu
+                    if(Number(i) == Number(selectedJournals.length)){
+                        // console.log('=================')
+                        // console.log({__________i:i})
+                        await that.updateValue({ voucherID })
                     }
                 }
 
@@ -735,41 +746,13 @@ class Model extends BaseModel {
      * Date: 6/1/2024
      */
     convertVoucher({ companyID, docID, userID, ctx }){
+        // console.log({ companyID, docID, userID })
         const that = this
         return new Promise(async (resolve, reject) => {
             try {
                 let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(docID)
 
                 if(infoVoucher.type == 5 && infoVoucher.linkFunda && checkObjectIDs(infoVoucher.linkFunda)){
-                    let infoNewVoucher = await that.insert({
-                        authorID: userID, 
-                        fundaID: infoVoucher.linkFunda, 
-                        customerID: infoVoucher.customer,
-                        contractID: infoVoucher.contract, 
-                        storageID: infoVoucher.storage, 
-                        subtypeID: infoVoucher.subtype,
-                        linkFundaID: infoVoucher.funda,
-                        type: 4, 
-                        date: infoVoucher.date, 
-                        name: 'Convert-Nhập kho từ nội bộ', 
-                        sign: infoVoucher.sign, 
-                        signInvoice: infoVoucher.signInvoice, 
-                        dateInvoice: infoVoucher.dateInvoice, 
-                        vat: infoVoucher.vat, 
-                        source: infoVoucher.source, 
-                        orderNew: infoVoucher.orderNew, 
-                        pricePolicy: infoVoucher.pricePolicy,
-                        receiver: infoVoucher.receiver, 
-                        note: infoVoucher.note,
-                        forward: infoVoucher.forward, 
-                        forwardIs: infoVoucher.forwardIs, 
-                        returning: infoVoucher.returning, 
-                        advancePayment: infoVoucher.advancePayment, 
-                        cancel: infoVoucher.cancel, 
-                        fcuExRate: infoVoucher.fcuExRate, 
-                        // selectedJournals: infoVoucher.selectedJournals, //
-                        ctx
-                    })
 
                     let listAccount = await ITEM__ACCOUNT_MODEL.getListRecursive({ companyID, arrAccNames: ['152','153','155','156','157'] })
                     listAccount = listAccount.data.map(item=>item._id.toString())
@@ -783,12 +766,12 @@ class Model extends BaseModel {
                     })
                     // console.log(listJournals)
 
-                    let selectedJournals = []
+                    let infoFunda = await ITEM_FUNDA_COLL.findById(infoVoucher.funda)
 
+                    let selectedJournals = []
                     for(const item of listJournals){
                         if(listAccount.includes(item.credit.toString())){
                             let dataInsert = {
-                                type: 4, 
                                 source: item.source, 
                                 orderNew: item.orderNew, 
                                 pricePolicy: item.pricePolicy,
@@ -797,25 +780,55 @@ class Model extends BaseModel {
                                 amount: item.amount,
                                 unitprice: item.unitprice,
                                 note: item.note,
-                                debit: item.credit, // TK 
-                                credit: info331._id, // Phải trả nhà cung cấp
+                                debit: item.credit,
+                                credit: info331._id,
                                 customerDebit: item.customerDebit,
                                 customerDebit: item.customerDebit,
-                                ctx
+                                goods: item.goods,
+                                warehouse: item.warehouse,
+                                contract: item.contract,
+                                subtype: item.subtype,
                             }
                             selectedJournals.push(dataInsert)
                         }
                     }
 
-                    return resolve({ erorr: false, data: listJournals, status: 200 })
-                }else{
+                    let infoNewVoucher = await that.insert({
+                        linkVoucherID: docID,
+                        authorID: userID, 
+                        fundaID: infoVoucher.linkFunda, 
+                        customerID: infoVoucher.customer,
+                        contractID: infoVoucher.contract, 
+                        storageID: infoVoucher.storage, 
+                        subtypeID: infoVoucher.subtype,
+                        linkFundaID: infoVoucher.funda,
+                        type: 4, 
+                        date: infoVoucher.date, 
+                        name: `Auto-Nhập kho từ ${infoFunda.name}`, 
+                        source: infoVoucher.source, 
+                        orderNew: infoVoucher.orderNew, 
+                        pricePolicy: infoVoucher.pricePolicy,
+                        receiver: infoVoucher.receiver, 
+                        note: infoVoucher.note,
+                        forward: infoVoucher.forward, 
+                        forwardIs: infoVoucher.forwardIs, 
+                        returning: infoVoucher.returning, 
+                        advancePayment: infoVoucher.advancePayment, 
+                        cancel: infoVoucher.cancel, 
+                        fcuExRate: infoVoucher.fcuExRate, 
+                        selectedJournals: selectedJournals,
+                        ctx
+                    })
+
                     return resolve({ erorr: false, data: infoNewVoucher, status: 200 })
+                }else{
+                    return resolve({ erorr: false, data: infoVoucher, status: 200 })
                 } 
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`)
                 return resolve({ erorr: true, message: 'update_voucher_fail', status: 400})
             }
-        });
+        })
     }
 
     /**
