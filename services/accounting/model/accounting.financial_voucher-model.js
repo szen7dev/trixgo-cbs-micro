@@ -847,6 +847,7 @@ class Model extends BaseModel {
                         contractID: infoVoucher.contract, 
                         storageID: infoVoucher.storage, 
                         subtypeID: infoVoucher.subtype,
+                        warehouseID: infoVoucher.warehouse,
                         linkFundaID: infoVoucher.funda,
                         type: 4, 
                         date: infoVoucher.date, 
