@@ -63,6 +63,16 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         default: 0 
     },
     /**
+     * Chuyển đổi đơn vị tính
+     */
+    //_________Link
+    convert: {
+        type: Schema.Types.ObjectId,
+        ref: "goods"
+    },
+    //_________Định mức chuyển đổi
+    convertQuantity: { type: Number, default: 1 },
+    /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
     userCreate: {

@@ -67,6 +67,8 @@ module.exports  = DATABASE_MIDDLEWARE("budget_work", {
     },        
     //_________Tên
     name: String,
+    //_________Tên
+    namecv: String,
     //_________Mã hiệu
     sign: String,
     //_________Đơn vị tính

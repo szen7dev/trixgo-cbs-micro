@@ -63,7 +63,7 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
     /**
      * ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU
      */
-    //_________Toàn bộ các cấp cha bên trên
+    //_________Toàn bộ các cấp cha bên trên => Dùng để tạo được nestedChilds
     nestedParents: [{
         type: Schema.Types.ObjectId,
         ref: "account"

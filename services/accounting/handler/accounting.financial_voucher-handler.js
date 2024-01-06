@@ -30,6 +30,8 @@ module.exports = {
                     contract, 
                     storageID, 
                     subtype,
+                    linkFundaID,
+                    warehouseID,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
@@ -62,6 +64,8 @@ module.exports = {
                     contractID: contract, 
                     storageID, 
                     subtypeID: subtype,
+                    linkFundaID,
+                    warehouseID,
                     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
                     forward: (!isNaN(forward) && [0,1].includes(Number(forward))) ? Number(forward) : 0,
@@ -105,6 +109,7 @@ module.exports = {
                     contract, 
                     storageID, 
                     subtype,
+                    warehouseID,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
@@ -126,6 +131,7 @@ module.exports = {
                     contractID: contract, 
                     storageID, 
                     subtypeID: subtype,
+                    warehouseID,
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 
@@ -134,6 +140,33 @@ module.exports = {
                     deletedJournals,
                     ctx
                 });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: Convert phiếu xuất nội bộ
+     * Author: Hiepnh
+     * Date: 6/1/2024
+     */
+    convertVoucher: {
+        auth: "required",
+        params: {
+            docID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { docID } = ctx.params;
+                // console.log('===========OK=======================')
+                // console.log(ctx.params)
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.convertVoucher({ companyID: company._id, docID, userID, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
