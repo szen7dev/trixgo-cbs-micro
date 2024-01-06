@@ -141,10 +141,6 @@ class Model extends BaseModel {
                 dataInsertVoucher.namecv = convertStr
 
                 if (contractID && checkObjectIDs(contractID)) {
-                    let infoContract = await CONTRACT_COLL.findById(contractID)
-                    if(infoContract.project && checkObjectIDs(infoContract.project)){
-                        dataInsertVoucher.project = infoContract.project;
-                    }
                     dataInsertVoucher.contract = contractID;
                 }
 
@@ -254,17 +250,9 @@ class Model extends BaseModel {
                          * Nếu không  có thì lấy theo hợp đồng trên phiếu
                          */
                         if(subitem.contract && _isValid(subitem.contract)){
-                            let infoContract = await CONTRACT_COLL.findById(subitem.contract)
-                            if(infoContract.project && checkObjectIDs(infoContract.project)){
-                                dataInsert.project = infoContract.project;
-                            }
                             dataInsert.contract = subitem.contract
                         }else{
                             if(contractID && _isValid(contractID)){
-                                let infoContract = await CONTRACT_COLL.findById(contractID)
-                                if(infoContract.project && checkObjectIDs(infoContract.project)){
-                                    dataInsert.project = infoContract.project;
-                                }
                                 dataInsert.contract = contractID;
                             }
                         }
@@ -419,23 +407,27 @@ class Model extends BaseModel {
                 dataUpdateVoucher.namecv = convertStr
 
                 if (contractID && checkObjectIDs(contractID)) {
-                    let infoContract = await CONTRACT_COLL.findById(contractID)
-                    if(infoContract.project && checkObjectIDs(infoContract.project)){
-                        dataUpdateVoucher.project = infoContract.project;
-                    }
                     dataUpdateVoucher.contract = contractID;
+                }else{
+                    dataUpdateVoucher.contract = null
                 }
 
                 if (storageID && checkObjectIDs(storageID)) {
                     dataUpdateVoucher.storage = storageID;
+                }else{
+                    dataUpdateVoucher.storage = null
                 }
 
                 if (subtypeID && checkObjectIDs(subtypeID)) {
                     dataUpdateVoucher.subtype = subtypeID;
+                }else{
+                    dataUpdateVoucher.subtype = null
                 }
 
                 if (warehouseID && checkObjectIDs(warehouseID)) {
                     dataUpdateVoucher.warehouse = warehouseID;
+                }else{
+                    dataUpdateVoucher.warehouse = null
                 }
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
@@ -445,6 +437,7 @@ class Model extends BaseModel {
                 /**
                  * B2. CẬP NHẬT BÚT TOÁN VÀO PHIẾU
                  */
+                var i = 0
                 if(selectedJournals && selectedJournals.length >0){
                     for (const subitem of selectedJournals) {
                         // Tạo mới
@@ -503,13 +496,6 @@ class Model extends BaseModel {
                              * Nếu không  có thì lấy theo mã khách trên phiếu
                              * Chỉ insert khi có cả thông tin goods và warehouse
                              */
-                            // if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
-                            //     dataInsert.goods = subitem.goods
-                            //     dataInsert.warehouse = subitem.warehouse
-                            // }else{
-                            //     dataInsert.goods = null
-                            //     dataInsert.warehouse = null
-                            // }
                             if(subitem.goods && _isValid(subitem.goods)){
                                 if(subitem.warehouse && _isValid(subitem.warehouse)){
                                     dataInsert.goods = subitem.goods
@@ -527,17 +513,9 @@ class Model extends BaseModel {
                              * Nếu không  có thì lấy theo hợp đồng trên phiếu
                              */
                             if(subitem.contract && _isValid(subitem.contract)){
-                                let infoContract = await CONTRACT_COLL.findById(subitem.contract)
-                                if(infoContract.project && checkObjectIDs(infoContract.project)){
-                                    dataInsert.project = infoContract.project;
-                                }
                                 dataInsert.contract = subitem.contract
                             }else{
                                 if(contractID && _isValid(contractID)){
-                                    let infoContract = await CONTRACT_COLL.findById(contractID)
-                                    if(infoContract.project && checkObjectIDs(infoContract.project)){
-                                        dataInsert.project = infoContract.project;
-                                    }
                                     dataInsert.contract = contractID;
                                 }
                             }
@@ -559,10 +537,10 @@ class Model extends BaseModel {
                             /**
                              * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
                              */
-                            if(infoJournal){
-                                let newInfoVoucher = await that.updateValue({ voucherID })
-                                // console.log(newInfoVoucher)
-                            }
+                            // if(infoJournal){
+                            //     let newInfoVoucher = await that.updateValue({ voucherID })
+                            //     // console.log(newInfoVoucher)
+                            // }
                         }
 
                         // Cập nhật
@@ -620,14 +598,6 @@ class Model extends BaseModel {
                              * Nếu không  có thì lấy theo mã khách trên phiếu
                              * Chỉ insert khi có cả thông tin goods và warehouse
                              */
-                            // if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
-                            //     dataUpdate.goods = subitem.goods
-                            //     dataUpdate.warehouse = subitem.warehouse
-                            // }else{
-                            //     dataUpdate.goods = null
-                            //     dataUpdate.warehouse = null
-                            // }
-
                             if(subitem.goods && _isValid(subitem.goods)){
                                 if(subitem.warehouse && _isValid(subitem.warehouse)){
                                     dataUpdate.goods = subitem.goods
@@ -651,23 +621,19 @@ class Model extends BaseModel {
                              * Nếu không  có thì lấy theo hợp đồng trên phiếu
                              */
                             if(subitem.contract && _isValid(subitem.contract)){
-                                let infoContract = await CONTRACT_COLL.findById(subitem.contract)
-                                if(infoContract.project && checkObjectIDs(infoContract.project)){
-                                    dataUpdate.project = infoContract.project;
-                                }
                                 dataUpdate.contract = subitem.contract
                             }else{
                                 if(contractID && _isValid(contractID)){
-                                    let infoContract = await CONTRACT_COLL.findById(contractID)
-                                    if(infoContract.project && checkObjectIDs(infoContract.project)){
-                                        dataUpdate.project = infoContract.project;
-                                    }
                                     dataUpdate.contract = contractID;
+                                }else{
+                                    dataUpdate.contract = null
                                 }
                             }
 
                             if (subtypeID && checkObjectIDs(subtypeID)) {
                                 dataUpdate.subtype = subtypeID;
+                            }else{
+                                dataUpdate.subtype = null
                             }    
 
                             /**
@@ -683,11 +649,13 @@ class Model extends BaseModel {
                             /**
                              * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
                              */
-                            if(infoJournal){
-                                let newInfoVoucher = await that.updateValue({ voucherID })
-                                // console.log(newInfoVoucher)
-                            }
+                            // if(infoJournal){
+                            //     let newInfoVoucher = await that.updateValue({ voucherID })
+                            //     // console.log(newInfoVoucher)
+                            // }
                         }
+
+                        i++
 
                         /**
                          * XÓA BÚT TOÁN
@@ -695,8 +663,13 @@ class Model extends BaseModel {
                          * 2-Update lại giá trị phiếu
                          * 3-Update lại ngân sách đã thực hiện (nếu có)
                          */
-                        
                     }
+                }
+
+                if(Number(i) == Number(selectedJournals.length)){
+                    // console.log('=================')
+                    // console.log({__________i:i})
+                    await that.updateValue({ voucherID })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });

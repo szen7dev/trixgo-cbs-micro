@@ -306,14 +306,14 @@ class Model extends BaseModel {
                  */
                 // Ngân sách mới
                 if(budgetWork && _isValid(budgetWork)){
-                    console.log('===================CẬP NHẬT NGÂN SÁCH MỚI===================')
-                    console.log({ budgetWork, budgetGroup, budgetItem, budget })
+                    // console.log('===================CẬP NHẬT NGÂN SÁCH MỚI===================')
+                    // console.log({ budgetWork, budgetGroup, budgetItem, budget })
 
                     let infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
                         option: 2,
                         workID: `${budgetWork}`
                     })
-                    console.log('1. Update Budget Work==========================>>>>>')
+                    // console.log('1. Update Budget Work==========================>>>>>')
                     // console.log(infoBudgetWork)
 
                     if(infoBudgetWork){
@@ -322,7 +322,7 @@ class Model extends BaseModel {
                             groupID: `${budgetGroup}`
                         })
 
-                        console.log('2. Update Budget Group==========================>>>>>')
+                        // console.log('2. Update Budget Group==========================>>>>>')
                         // console.log(infoBudgetGroup)
 
                         if(infoBudgetGroup){
@@ -331,7 +331,7 @@ class Model extends BaseModel {
                                 itemID: `${budgetItem}`
                             })
 
-                            console.log('3. Update Budget Item==========================>>>>>')
+                            // console.log('3. Update Budget Item==========================>>>>>')
                             // console.log(infoBudgetItem)
 
                             if(infoBudgetItem){
@@ -340,7 +340,7 @@ class Model extends BaseModel {
                                     budgetID: `${budget}`
                                 })
 
-                                console.log('4. Update Budget==========================>>>>>')
+                                // console.log('4. Update Budget==========================>>>>>')
                                 // console.log(infoBudget)
                             }
                         }
@@ -349,13 +349,13 @@ class Model extends BaseModel {
 
                 // Ngân sách cũ
                 if(budgetWorkOld && _isValid(budgetWorkOld)){
-                    console.log('===================CẬP NHẬT NGÂN SÁCH CŨ===================')
-                    console.log({ budgetWorkOld, budgetGroupOld, budgetItemOld, budgetOld })
+                    // console.log('===================CẬP NHẬT NGÂN SÁCH CŨ===================')
+                    // console.log({ budgetWorkOld, budgetGroupOld, budgetItemOld, budgetOld })
                     let infoBudgetWorkOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
                         option: 2,
                         workID: `${budgetWorkOld}`
                     })
-                    console.log('1. Update Budget Work Old==========================>>>>>')
+                    // console.log('1. Update Budget Work Old==========================>>>>>')
                     // console.log(infoBudgetWorkOld)
 
                     if(infoBudgetWorkOld){
@@ -364,7 +364,7 @@ class Model extends BaseModel {
                             groupID: `${budgetGroupOld}`
                         })
 
-                        console.log('2. Update Budget Group Old==========================>>>>>')
+                        // console.log('2. Update Budget Group Old==========================>>>>>')
                         // console.log(infoBudgetGroupOld)
 
                         if(infoBudgetGroupOld){
@@ -373,7 +373,7 @@ class Model extends BaseModel {
                                 itemID: `${budgetItemOld}`
                             })
 
-                            console.log('3. Update Budget Item Old==========================>>>>>')
+                            // console.log('3. Update Budget Item Old==========================>>>>>')
                             // console.log(infoBudgetItemOld)
 
                             if(infoBudgetItemOld){
@@ -382,7 +382,7 @@ class Model extends BaseModel {
                                     budgetID: `${budgetOld}`
                                 })
 
-                                console.log('4. Update Budget Old==========================>>>>>')
+                                // console.log('4. Update Budget Old==========================>>>>>')
                                 // console.log(infoBudgetItemOld)
                             }
                         }
