@@ -82,6 +82,21 @@ class Model extends BaseModel {
                     return resolve({ error: false, message: 'debit/credit is duplicated', status: 400 });
 
                 // Lấy thông tin của hợp đồng => Gán kèm dự án
+                
+                /**
+                 * Lấy đơn giá sản phẩm (sau fix phía FE)
+                 */
+                let unitpriceNew = 0, amountNew = 0 
+                if(goods && Number(unitprice) == 0){
+                    let infoWoods = await ITEM__GOODS_COLL.findById(goods).select('unitprice')
+                    if(infoWoods && infoWoods.unitprice){
+                        unitpriceNew = Number(infoWoods.unitprice)
+                        amountNew = Number(quantity * unitpriceNew)
+                    }
+                }else{
+                    unitpriceNew = unitprice
+                    amountNew = amount
+                }
 
                 // TẠO CHI TIẾT CHỨNG TỪ
                 const dataInsert = {
@@ -91,8 +106,12 @@ class Model extends BaseModel {
                     voucher: voucherID,
                     date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
-                    quantity, unitprice, amount, fcuExRate, fcuAmount,
-                    goods, warehouse, contract, project, budgetWork, subtype,
+                    quantity, 
+                    unitprice: unitpriceNew, 
+                    amount: amountNew, 
+                    fcuExRate, fcuAmount,
+                    goods, warehouse, 
+                    contract, project, budgetWork, subtype,
                     note,
                 }
 
