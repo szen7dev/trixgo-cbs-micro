@@ -4,6 +4,7 @@ const BASE_ROUTE = '/fin';
  */
 const CASH_FLOW_PLAN     = '/cash_flow_plans';
 const CASH_BOOK          = '/cash_books';
+const CASH_PAYMENT       = '/cash_payments';
 
 const CF_ROUTINGS_FIN = {
     ORIGIN_APP: BASE_ROUTE,
@@ -19,6 +20,11 @@ const CF_ROUTINGS_FIN = {
     CASH_BOOK_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${CASH_BOOK}/download-template-excel`,
     CASH_BOOK_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${CASH_BOOK}/import-from-excel`,
     CASH_BOOK_EXPORT_EXCEL                      : `${BASE_ROUTE}${CASH_BOOK}/export-excel`,
+
+    // ================================CASH_PAYMENT=======================================//
+    CASH_PAYMENT                          : `${BASE_ROUTE}${CASH_PAYMENT}`, 
+    CASH_PAYMENT_GET_AMOUNT_BY_PROPERTY   : `${BASE_ROUTE}${CASH_PAYMENT}/get-amount-by-property`,
+    CASH_PAYMENT_EXPORT_EXCEL             : `${BASE_ROUTE}${CASH_PAYMENT}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FIN = CF_ROUTINGS_FIN;
