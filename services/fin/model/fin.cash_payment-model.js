@@ -71,7 +71,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashPaymentID, userID, name, note, amount }) {
+    update({ cashPaymentID, userID, name, note, amount, active }) {
         // console.log({ cashPaymentID, userID, name, note, amount })
         const that = this
         return new Promise(async (resolve) => {
@@ -87,6 +87,10 @@ class Model extends BaseModel {
 
                 if (!isNaN(amount)) {
                     dataUpdate.amount = amount;
+                }
+
+                if (!isNaN(active) && [1,2].includes(Number(active))) {
+                    dataUpdate.active = active;
                 }
 
                 let infoAfterUpdate = await FIN__CASH_PAYMENT_COLL.findByIdAndUpdate(cashPaymentID, dataUpdate, { new: true });

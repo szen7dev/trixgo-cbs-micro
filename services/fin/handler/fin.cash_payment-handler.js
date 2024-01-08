@@ -52,15 +52,16 @@ module.exports = {
             name: { type: "string" },
             note: { type: "string", optional: true },
             amount: { type: "number", optional: true },
+            active: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashPaymentID, name, note, amount } = ctx.params;
+                const { cashPaymentID, name, note, amount, active } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.update({
-                    cashPaymentID, userID, name, note, amount
+                    cashPaymentID, userID, name, note, amount, active
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
