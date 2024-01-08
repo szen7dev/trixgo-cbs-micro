@@ -105,8 +105,9 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashPaymentID      : { type: "string", optional: true },
-            customerID      : { type: "string", optional: true },
+            cashPaymentID     : { type: "string", optional: true },
+            customerID        : { type: "string", optional: true },
+            userCreateID      : { type: "string", optional: true },
 
             // Field mặc định
             keyword         : { type: "string", optional: true },
@@ -119,7 +120,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    cashPaymentID, customerID, active,
+                    cashPaymentID, customerID, userCreateID, active,
                     keyword, limit, lastestID, populates, select, sortKey
                 } = ctx.params;
 
@@ -133,7 +134,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.getList({
-                        companyID: company._id, active, customerID,
+                        companyID: company._id, active, customerID, userCreateID,
                         keyword, limit, lastestID, select, populates, sortKey
                     });
                 }

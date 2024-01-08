@@ -196,7 +196,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ companyID, active, customerID,
+    getList({ companyID, active, customerID, userCreateID,
         keyword, limit = 30, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -222,9 +222,12 @@ class Model extends BaseModel {
                     }
                 }
 
-
                 if (checkObjectIDs(customerID)) {
                     conditionObj.customer = customerID;
+                }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj.userCreate = userCreateID;
                 }
 
                 if(active){
