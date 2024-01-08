@@ -21,16 +21,17 @@ module.exports = {
             name: { type: "string" },
             note: { type: "string", optional: true },
             amount: { type: "number", optional: true },
+            payment: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { customerID, name, note, amount } = ctx.params;
+                const { customerID, name, note, amount, payment } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.insert({
-                    companyID: company._id, userID, customerID, name, note, amount
+                    companyID: company._id, userID, customerID, name, note, amount, payment
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -53,15 +54,16 @@ module.exports = {
             note: { type: "string", optional: true },
             amount: { type: "number", optional: true },
             active: { type: "number", optional: true },
+            payment: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashPaymentID, name, note, amount, active } = ctx.params;
+                const { cashPaymentID, name, note, amount, payment, active } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.update({
-                    cashPaymentID, userID, name, note, amount, active
+                    cashPaymentID, userID, name, note, amount, payment, active
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

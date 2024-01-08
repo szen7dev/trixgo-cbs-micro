@@ -35,7 +35,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, userID, customerID, name, note, amount }) {
+    insert({ companyID, userID, customerID, name, note, amount, payment }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -59,6 +59,10 @@ class Model extends BaseModel {
                     dataInsert.amount = amount;
                 }
 
+                if (!isNaN(payment)) {
+                    dataInsert.payment = payment;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
@@ -77,8 +81,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashPaymentID, userID, name, note, amount, active }) {
-        // console.log({ cashPaymentID, userID, name, note, amount })
+    update({ cashPaymentID, userID, name, note, amount, payment, active }) {
+        // console.log({ cashPaymentID, userID, name, note, amount, payment })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -93,6 +97,10 @@ class Model extends BaseModel {
 
                 if (!isNaN(amount)) {
                     dataUpdate.amount = amount;
+                }
+
+                if (!isNaN(payment)) {
+                    dataUpdate.payment = payment;
                 }
 
                 if (!isNaN(active) && [1,2].includes(Number(active))) {

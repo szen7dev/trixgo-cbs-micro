@@ -22,8 +22,10 @@ module.exports  = DATABASE_MIDDLEWARE("cash_payment", {
     date: { type: Date, default: Date.now },
     //_________Ghi chú
     note: String,
-    //_________Giá trị thanh toán
+    //_________Giá trị ưu đãi
     amount: { type: Number, default: 0 },
+    //_________Giá trị thanh toán
+    payment: { type: Number, default: 0 },
     /**
      * Trạng thái
      * 1-Hoạt động
