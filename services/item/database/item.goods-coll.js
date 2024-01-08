@@ -44,8 +44,10 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     sign: String,    
     //_________Đơn vị
     unit: String,   
-    //_________Đơn giá
+    //_________Đơn giá nhập
     unitprice: { type: Number, default: 0 },
+    //_________Đơn giá xuất bán
+    sellingUnitprice: { type: Number, default: 0 },
     //_________Mô tả
     description: String,
     //_________Ghi chú

@@ -141,7 +141,7 @@ module.exports = {
                 } else {
                     resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
                         option, forward, cancel, companyID, fundaID, projectID, contractID, warehouseID, goodsID, voucherID, accountID, contactID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID, contacts, keyword, limit, lastestID, select, populates, sortKey, ctx
-                    });
+                    })
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

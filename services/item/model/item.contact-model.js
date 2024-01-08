@@ -1037,6 +1037,7 @@ class Model extends BaseModel {
         parentID, companyID, receiverID, types, isExportExcel = false,
         requestResponse, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
+            // console.log({ parentID, companyID, receiverID, types, isExportExcel,requestResponse, fromDate, toDate, marked, userID, departmentsID, keyword, limit, lastestID, select, populates, isParent, type, genders })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
