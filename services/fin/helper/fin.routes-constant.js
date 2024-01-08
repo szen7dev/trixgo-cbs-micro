@@ -24,6 +24,7 @@ const CF_ROUTINGS_FIN = {
     // ================================CASH_PAYMENT=======================================//
     CASH_PAYMENT                          : `${BASE_ROUTE}${CASH_PAYMENT}`, 
     CASH_PAYMENT_GET_AMOUNT_BY_PROPERTY   : `${BASE_ROUTE}${CASH_PAYMENT}/get-amount-by-property`,
+    CASH_PAYMENT_EXPORT_EXCEL             : `${BASE_ROUTE}${CASH_PAYMENT}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FIN = CF_ROUTINGS_FIN;

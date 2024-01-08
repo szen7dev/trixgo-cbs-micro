@@ -242,22 +242,18 @@ module.exports = {
     exportExcel: {
         auth: 'required',
         params: {
-            companyID: { type: "string", optional: true },
-            option: { type: "string", optional: true },
+            // companyID: { type: "string", optional: true },
+            // option: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { companyID, option, month, year, filterParams } = ctx.params;
-                // console.log({ companyID, option, filterParams })
-
-                if(!companyID) {
-                    companyID = company._id;
-                }
+                let { customerID, userCreateID } = ctx.params;
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.exportExcel({
-                    userID, email, companyID, option, month, year, filterParams
+                    customerID, userCreateID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

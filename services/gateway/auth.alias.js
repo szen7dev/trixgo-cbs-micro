@@ -2017,6 +2017,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_FIN.CASH_PAYMENT_GET_AMOUNT_BY_PROPERTY}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_PAYMENT_GET_AMOUNT_BY_PROPERTY}`],
 
+		[`POST ${CF_ROUTINGS_FIN.CASH_PAYMENT_EXPORT_EXCEL}`] :
+		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_PAYMENT_EXPORT_EXCEL}`],
+
 		//---------------------------🏁 END SERVICE FIN 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE BUDGET 🏁-------------------------//
