@@ -777,8 +777,9 @@ class Model extends BaseModel {
                     listAccount = listAccount.data.map(item=>item._id.toString())
                     // console.log(listAccount)
 
-                    let info331 = await ITEM__ACCOUNT_COLL.findOne({name: '331'})                    
-                    // console.log(info331)
+                    // Phải trả nội bộ
+                    let info336 = await ITEM__ACCOUNT_COLL.findOne({name: '336'})                    
+                    // console.log(info336)
 
                     let listJournals = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({
                         voucher: docID
@@ -800,7 +801,7 @@ class Model extends BaseModel {
                                 unitprice: item.unitprice,
                                 note: item.note,
                                 debit: item.credit,
-                                credit: info331._id,
+                                credit: info336._id,
                                 customerDebit: item.customerDebit,
                                 customerDebit: item.customerDebit,
                                 goods: item.goods,
