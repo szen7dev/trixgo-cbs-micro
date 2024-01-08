@@ -543,17 +543,14 @@ class Model extends BaseModel {
 
                 let conditionObj = {  };
                 let sortBy;
-                
-                // let conditionObj = { forward, cancel };
-                // let keys = ['createAt__1', '_id__1'];
-                let keys = ['date__1'];
+                let keys	 = ['date__1', '_id__1']
 
-                if (populates && typeof populates === 'string') {
-                    if (!IsJsonString(populates))
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
                     populates = JSON.parse(populates);
-                } else {
+                } else{
                     populates = {
                         path: "",
                         select: ""
@@ -566,13 +563,6 @@ class Model extends BaseModel {
 
                 if(cancel){
                     conditionObj.cancel = Number(cancel)
-                }
-
-                if (sortKey && typeof sortKey === 'string') {
-                    if (!IsJsonString(sortKey))
-                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
-
-                    keys = JSON.parse(sortKey);
                 }
 
                 if(fromDate && toDate){
@@ -643,7 +633,7 @@ class Model extends BaseModel {
                  * THEO TÀI KHOẢN
                  */
                 if(checkObjectIDs(accountID) && checkObjectIDs(contactID)){
-                    console.log('=================1111111111111111')
+                    // console.log('=================1111111111111111')
                     let arrObjectID = []
                     let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
                     if(!infoAccount)
@@ -661,7 +651,7 @@ class Model extends BaseModel {
 
                 }else{
                     if(checkObjectIDs(accountID)){
-                        console.log('=================22222222222222222')
+                        // console.log('=================22222222222222222')
                         let arrObjectID = []
                         let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
                         if(!infoAccount)
@@ -683,7 +673,7 @@ class Model extends BaseModel {
                     }
 
                     if(checkObjectIDs(contactID)){
-                        console.log('=================333333333333333333333')
+                        // console.log('=================333333333333333333333')
                         conditionObj.$or = [
                             { customerDebit: contactID },
                             { customerCredit: contactID },
@@ -743,59 +733,52 @@ class Model extends BaseModel {
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
                 }
+                // console.log(conditionObj)        
 
-                let conditionObjOrg = { ...conditionObj };
+                let conditionObjOrg = { ...conditionObj }
 
-                // console.log(conditionObj)
-
-                // PHÂN TRANG KIỂU MỚI
-                if (lastestID && checkObjectIDs(lastestID)) {
+                if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await FINANCIAL_GENERAL_JOURNAL_COLL.findById(lastestID);
-                    if (!infoData)
-                        return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-                    if (!dataPagingAndSort || dataPagingAndSort.error)
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
                         return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-                    conditionObj = dataPagingAndSort.data.find;
-                    sortBy = dataPagingAndSort.data.sort;
-                } else {
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-                    sortBy = dataPagingAndSort.data.sort;
+                    sortBy                = dataPagingAndSort.data.sort;
                 }
 
                 let infoDataAfterGet = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
-                    .limit(limit + 1)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
                     .lean();
 
-                // GET TOTAL RECORD
-                if (!infoDataAfterGet)
+                if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor = null;
-                if (infoDataAfterGet && infoDataAfterGet.length) {
-                    if (infoDataAfterGet.length > limit) {
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
-
                 let totalRecord = await FINANCIAL_GENERAL_JOURNAL_COLL.count(conditionObjOrg);
-                let totalPage = Math.ceil(totalRecord / limit);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
-                return resolve({
-                    error: false, data: {
-                        listRecords: infoDataAfterGet,
-                        limit: +limit,
-                        totalRecord,
-                        totalPage,
-                        nextCursor,
-                    }, status: 200
-                });
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
