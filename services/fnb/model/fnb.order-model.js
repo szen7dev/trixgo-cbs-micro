@@ -29,6 +29,7 @@ const FNB_SHIFT_COLL                            = require('../database/fnb.shift
 const FNB_MISTAKE_COLL                          = require('../database/fnb.mistake-coll');
 const FNB_VOUCHER_COLL                          = require('../database/fnb.voucher-coll');
 const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const FIN__CASH_PAYMENT_COLL                    = require('../../fin/database/fin.cash_payment-coll');
 
 /**
  * import inter-model, exter-model
@@ -663,8 +664,12 @@ class Model extends BaseModel {
 
                 /**
                  * CẬP NHẬT VÀO KHÁCH HÀNG
+                 * - Tạm thời chỉ xử lý với đơn Off
                  */
-                await that.updateCustomer({ customerID, userID })
+                if(salesChannel == 1){
+                    await that.updateCustomer({ customerID, userID })
+                }
+                // await that.updateCustomer({ customerID, userID })
 
                 /**
                  * CẬP NHẬT VÀO VOUCHER
@@ -1266,7 +1271,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    updateCustomer({ customerID, option, userID }) {
+    updateCustomer({ customerID, option, userID }) { //
         // console.log({ customerID, option, userID })
         return new Promise(async resolve => {
             try {
@@ -1338,10 +1343,27 @@ class Model extends BaseModel {
                         }
                     }
                 ])
+
+                // Gói trả trước
+                let listData4 = await FIN__CASH_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            customer: ObjectID(customerID),
+                            active: 1, // Hoạt động
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" }
+                        }
+                    }
+                ])
                 // console.log(listData)
                 // console.log(listData1)
                 // console.log(listData2)
                 // console.log(listData3)
+                // console.log(listData4)
 
                 // Đơn hàng đã mua
                 if(listData1 && listData1.length){
@@ -1380,20 +1402,30 @@ class Model extends BaseModel {
                     purchasedOffValue = Number(listData3[0].amount)
                     totalLoyaltyPoints = Number(listData3[0].loyaltyPoints)
                     usedLoyaltyPoints =  Number(listData3[0].credit)
+                    
+                    // Gói ưu đãi
+                    if(listData4 && listData4.length){
+                        totalLoyaltyPoints = Number(totalLoyaltyPoints) + Number(listData4[0].amount)
+                    }
+
+                    // Giá trị còn lại
                     remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
 
+                    // Update dữ liệu
                     dataInUpdate.purchasedOffValue = Number(purchasedOffValue)
                     dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
                     dataInUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints)
                     dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
-                }else{
-                    // Áp dụng cho khách mua xong -> boom hàng dẫn tới Hủy đơn
-                    dataInUpdate.purchasedOffValue = 0
-                    dataInUpdate.totalLoyaltyPoints = 0
-                    dataInUpdate.usedLoyaltyPoints = 0
-                    dataInUpdate.remainLoyaltyPoints = 0
                 }
-                // console.log(dataInUpdate)
+                
+                // else{
+                //     // Áp dụng cho khách mua xong -> boom hàng dẫn tới Hủy đơn
+                //     dataInUpdate.purchasedOffValue = 0
+                //     dataInUpdate.totalLoyaltyPoints = 0
+                //     dataInUpdate.usedLoyaltyPoints = 0
+                //     dataInUpdate.remainLoyaltyPoints = 0
+                // }
+                // // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)

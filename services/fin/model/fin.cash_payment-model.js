@@ -4,8 +4,8 @@ const BaseModel = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
 const ObjectID = require('mongoose').Types.ObjectId;
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 
 const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
@@ -23,6 +23,7 @@ const CONTACT_COLL                       = require('../../item/database/item.con
 /**
  * import inter-model, exter-model
  */
+const FNB_ORDER_MODEL                   = require('../../fnb/model/fnb.order-model').MODEL;
 
 class Model extends BaseModel {
     constructor() {
@@ -38,14 +39,17 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                if(!name || !checkObjectIDs(userID) || !checkObjectIDs(companyID))
+                /**
+                 * BA
+                 * 1. Tạo data Ví payment
+                 * 2. Tính toán: tổng tích điểm, tổng còn lại theo BE
+                 * 3. Cộng thêm Payment vào Tích điểm
+                 * 4. Khi khách sử dụng mua hàng từ Tích điểm thì trừ tiền như bình thường
+                 */
+                if(!name || !checkObjectIDs(userID) || !checkObjectIDs(customerID) || !checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'param_not_valid' })
             
-                let dataInsert = { company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date(), name }
-
-                if (checkObjectIDs(customerID)) {
-                    dataInsert.customer = customerID;
-                }
+                let dataInsert = { company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date(), customer: customerID, name }
 
                 if (note) {
                     dataInsert.note = note;
@@ -58,7 +62,9 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
-
+            
+                await FNB_ORDER_MODEL.updateCustomer({ customerID, userID })
+    
                 return resolve({ error: false, data: infoAfterInsert, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
@@ -93,9 +99,14 @@ class Model extends BaseModel {
                     dataUpdate.active = active;
                 }
 
-                let infoAfterUpdate = await FIN__CASH_PAYMENT_COLL.findByIdAndUpdate(cashPaymentID, dataUpdate, { new: true });
+                let infoAfterUpdate = await FIN__CASH_PAYMENT_COLL.findByIdAndUpdate(cashPaymentID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
+
+                // Cập nhật Tích điểm + Gói trả trước
+                if (!isNaN(active) && [1,2].includes(Number(active))) {
+                    await FNB_ORDER_MODEL.updateCustomer({ customerID: infoAfterUpdate.customer, userID })
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -301,18 +312,11 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date: 17/04/2022
      */
-    getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
-        // console.log({ userID, companyID, parentID, accountID, year, option })
+    getAmountByProperty({ companyID, customerID, option }){
+        // console.log({ companyID, customerID, option })
         return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 * Tham số của option:
-                 * 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
-                 * 2-Tổng hợp của công ty user
-                 * 3-Tổng hợp theo sổ quỹ cụ thể
-                 */
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
+                let conditionObj = {}, conditionGroup = {}
 
                 if (!option || isNaN(option) || ![1,2,3,4].includes(Number(option)))
                     return resolve({ error: true, message: "Tham số option không hợp lệ", keyError: "option_invalid" })
@@ -320,152 +324,12 @@ class Model extends BaseModel {
                 // Cấu hình gom nhóm mặc định
                 conditionGroup = {
                     _id: {},
-                    income: { $sum: "$income" },
-                    expense: { $sum: "$expense" },
-                    date: { $first: "$date" },
+                    amount: { $sum: "$amount" },
                 }
-
-                // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
+                
                 if(Number(option) === 1){
-                    // console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị 556688')
-                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
-                        appID: "5dfe4bc751dc622100bb9d8a",
-                        menuID: "623f2465e998e94feda0cdaa",
-                        type: "1"
-                    })
-
-                    let listActiveParent = await FIN__CASH_PAYMENT_COLL.find({
-                        active: 1,
-                        parent: {$exists: false},
-                        company: {$in: listCompany.data.map(item=>item._id.company._id)}
-                    })
-
-                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-
-                    conditionGroup = {
-                        _id: { account: "$account", company: "$company" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" },
-                        date: { $first: "$date" },
-                    }
-
-                    conditionPopulate = {
-                        path: '_id.account',
-                        select: '_id name description company',
-                        model: 'account'
-                    }
-
-                    sortBy = {
-                        "_id.account": 1,
-                    }
-                }
-
-                // 2-Tổng hợp theo công ty cụ thể
-                if(Number(option) === 2){
-                    // console.log('2-Tổng hợp của công ty user')
-                    let listActiveParent = await FIN__CASH_PAYMENT_COLL.find({
-                        active: 1,
-                        parent: {$exists: false},
-                        company: companyID
-                    })
-                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-
-                    conditionGroup = {
-                        _id: { account: "$account" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" },
-                        date: { $first: "$date" },
-                    }
-
-                    conditionPopulate = {
-                        path: '_id.account',
-                        select: '_id name description',
-                        model: 'account'
-                    }
-
-                    sortBy = {
-                        "_id.account": 1,
-                    }
-                }
-
-                // 3-Tổng hợp theo sổ quỹ cụ thể
-                if(Number(option) === 3){
-                    // console.log('3-Tổng hợp theo sổ quỹ cụ thể')
-                    if(parentID && checkObjectIDs(parentID)){
-                        conditionObj.parent = ObjectID(parentID)
-
-                        // Gom nhóm theo các loại tài khoản
-                        if(accountID && checkObjectIDs(accountID)){
-                            conditionObj.account = ObjectID(accountID)
-                        }
-                    }
-
-                    conditionGroup = {
-                        _id: { account: "$account" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" },
-                        date: { $first: "$date" },
-                    }
-
-                    conditionPopulate = {
-                        path: '_id.account',
-                        select: '_id name description',
-                        model: 'account'
-                    }
-
-                    sortBy = {
-                        "_id.account": 1,
-                    }
-                }
-
-                /**
-                 * TỔNG HỢP THEO CÁC CÔNG TY MÀ USER ĐƯỢC TRUY CẬP
-                 */
-                if(Number(option) === 4){
-                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
-                        appID: "5dfe4bc751dc622100bb9d8a",
-                        menuID: "623f2465e998e94feda0cdaa",
-                        type: "1"
-                    })
-
-                    // Danh sách các sổ quỹ còn hoạt động thuộc các công ty user được truy cập
-                    let listActiveParent = await FIN__CASH_PAYMENT_COLL.find({
-                        active: 1,
-                        parent: {$exists: false},
-                        company: {$in: listCompany.data.map(item=>item._id.company._id)}
-                    })
-
-                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-
-                    conditionGroup = {
-                        _id: { company: "$company" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" }
-                    }
-
-                    conditionPopulate = {
-                        path: '_id.company',
-                        select: '_id name sign image',
-                        model: 'company'
-                    }
-
-                    sortBy = {
-                        "_id.company": 1,
-                    }
-                }
-
-                // Thống kê theo biểu đồ (tháng/năm)
-                if(!isNaN(year) && Number(year) > 0){
-                    conditionObjYear = {
-                        "year": Number(year),
-                    }
-
-                    conditionGroup = {
-                        _id: { month: "$month", year: "$year" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" },
-                        date: { $first: "$date" },
-                    }
+                    conditionObj.active = 1
+                    conditionObj.customer = ObjectID(customerID)
                 }
 
                 let listData = await FIN__CASH_PAYMENT_COLL.aggregate([
@@ -473,34 +337,10 @@ class Model extends BaseModel {
                         $match: conditionObj
                     },
                     {
-                        $project : {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            parent: 1,
-                            company: 1,
-                            account: 1,
-                            income: 1,
-                            expense: 1,
-                            date: 1,
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    },
-                    {
                         $group: conditionGroup
-                    },
-                    {
-                        $sort: sortBy
                     }
                 ])
-                // listData.map(item => console.log({ item }))
                 // console.log(conditionObj)
-
-                // Pop lấy thông tin tài khoản
-                if(!isNaN(option) && Number(option) > 0){
-                    await FIN__CASH_PAYMENT_COLL.populate(listData, conditionPopulate)
-                }
                 // console.log(listData)
 
                 return resolve({ error: false, data: listData });
