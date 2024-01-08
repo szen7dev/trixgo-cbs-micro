@@ -2590,8 +2590,7 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date: 3/1/2024
      */
-	analysePrimeCostOfAllVouchers({ companyID, fundaID, accountID, fromDate, toDate }){
-        // console.log({ companyID, fundaID, accountID, fromDate, toDate })
+	analysePrimeCostOfAllVouchers({ companyID, fundaID, accountID, fromDate, toDate, userID, queue }){
 		const that = this;
 		return new Promise(async resolve => {
 			try {
@@ -2602,7 +2601,6 @@ class Model extends BaseModel {
                     let nestedChilds = infoAccount.nestedChilds.map(item=>ObjectID(item._id))
                     arrObjectID = [...arrObjectID,...nestedChilds]
                 }
-                // console.log(arrObjectID)
 
                 /**
                  * B1: Lấy danh sách các phiếu Xuất từ đầu kỳ đến cuối kỳ
@@ -2612,14 +2610,14 @@ class Model extends BaseModel {
                  * - Không chạy giá vốn cho các phiếu Huỷ
                  * - Không chạy giá vốn cho các phiếu xuất bán hàng vay mượn
                  */
-                let conditionOb;
+                let conditionOb = {};
                 if(!fundaID){
                     conditionOb = { 
-                        company: companyID,
-                        returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
-                        forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
-                        cancel: 0, // Không chạy cho các Phiếu hủy
-                        type: 5, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
+                        // company: companyID,
+                        // returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
+                        // forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
+                        // cancel: 0, // Không chạy cho các Phiếu hủy
+                        // type: 5, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
                         date: { 
                             $gte: moment(fromDate).toDate(),
                             $lte: moment(toDate).toDate() 
@@ -2639,8 +2637,28 @@ class Model extends BaseModel {
                     }
                 }
 
-                let listVouchers = await FINANCIAL_VOUCHER_COLL.find(conditionOb).sort({date: 1}).select('_id date name')
-                // console.log(listVouchers)
+                let listVouchers = await FINANCIAL_VOUCHER_COLL
+                    .find(conditionOb)
+                    .sort({ date: 1 })
+                    .select('_id date name')
+                    .lean();
+
+                if(!listVouchers.length) {
+                    return resolve({ error: false, data: [] })
+                }
+
+                for(const voucher of listVouchers) {
+                    queue.add("price_analyze", {
+                        voucher,
+                        userID,
+                        arrObjectID
+                    }, {
+                        backoff: 3,
+                        attempts: 3
+                    })
+                }
+
+                return resolve({ error: false, data: listVouchers, status: 200 });
 
 				/**
                  * Khai báo arr hứng các hàng hóa có việc xuất bị sai
@@ -2660,7 +2678,6 @@ class Model extends BaseModel {
                         goods: { $exists: true, $ne: null },
                         warehouse: { $exists: true, $ne: null }
                     })
-                    // console.log(listJournal)
 
                     for(const item of listJournal){
                         let info = null;

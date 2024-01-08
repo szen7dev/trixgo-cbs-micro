@@ -31,6 +31,7 @@ const { MEDIA_SOCKET } 						    = require('../media/media.socket');
 const { REACTION_SOCKET }                       = require('../reaction/reaction.socket');
 const { SUBJECT_SOCKET }                        = require('../subject_pcm/subject_pcm.socket');
 const { FNB_SOCKET }                            = require('../fnb/fnb.socket');
+const { ACCOUNTING_SOCKET }                     = require('../accounting/accounting.socket');
 
 let pub = redis.createClient({
     host: REDIS_SEPERATOR.HOST,
@@ -107,6 +108,7 @@ module.exports = {
                         ...MEDIA_SOCKET,
                         ...SUBJECT_SOCKET,
                         ...FNB_SOCKET,
+                        ...ACCOUNTING_SOCKET,
 
                         // 'CLIENT_SEND_CHATTING_TEST': async function(data) {
                         //     let socket                      = this;
@@ -160,7 +162,7 @@ module.exports = {
                 let accessKey = socket.handshake.query.access_key;
 
                 if(accessKey === 'Y2JzX3Byb2plY3RAMjAyMQo'){
-                    this.userID = token;
+                    this.userID = token || accessKey;
                     return Promise.resolve(this.userID);
                 }
 
