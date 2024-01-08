@@ -2613,11 +2613,11 @@ class Model extends BaseModel {
                 let conditionOb = {};
                 if(!fundaID){
                     conditionOb = { 
-                        // company: companyID,
-                        // returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
-                        // forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
-                        // cancel: 0, // Không chạy cho các Phiếu hủy
-                        // type: 5, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
+                        company: companyID,
+                        returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
+                        forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
+                        cancel: 0, // Không chạy cho các Phiếu hủy
+                        type: 5, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
                         date: { 
                             $gte: moment(fromDate).toDate(),
                             $lte: moment(toDate).toDate() 
