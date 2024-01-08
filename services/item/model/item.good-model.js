@@ -36,7 +36,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, unit, unitprice, description, note, userID, convertID, convertQuantity }){
+	insert({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, description, note, userID, convertID, convertQuantity }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -66,6 +66,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(unitprice)){
                     dataInsert.unitprice = Number(unitprice);
+                }
+
+                if(!isNaN(sellingUnitprice)){
+                    dataInsert.sellingUnitprice = Number(sellingUnitprice);
                 }
 
                 if(description){
@@ -105,7 +109,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, unitprice, description, note, userID, convertID, convertQuantity }){
+	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, description, note, userID, convertID, convertQuantity }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(goodsID))
@@ -128,6 +132,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(unitprice)){
                     dataUpdate.unitprice = Number(unitprice);
+                }
+
+                if(!isNaN(sellingUnitprice)){
+                    dataUpdate.sellingUnitprice = Number(sellingUnitprice);
                 }
 
                 if(description){

@@ -88,10 +88,22 @@ class Model extends BaseModel {
                  */
                 let unitpriceNew = 0, amountNew = 0 
                 if(goods && Number(unitprice) == 0){
-                    let infoWoods = await ITEM__GOODS_COLL.findById(goods).select('unitprice')
-                    if(infoWoods && infoWoods.unitprice){
-                        unitpriceNew = Number(infoWoods.unitprice)
-                        amountNew = Number(quantity * unitpriceNew)
+                    let infoWoods = await ITEM__GOODS_COLL.findById(goods).select('unitprice sellingUnitprice')
+
+                    // Phiếu nhập
+                    if(type == 4){
+                        if(infoWoods && infoWoods.unitprice){
+                            unitpriceNew = Number(infoWoods.unitprice)
+                            amountNew = Number(quantity * unitpriceNew)
+                        }
+                    }
+
+                    // Phiếu xuất
+                    if(type == 5){
+                        if(infoWoods && infoWoods.sellingUnitprice){
+                            unitpriceNew = Number(infoWoods.sellingUnitprice)
+                            amountNew = Number(quantity * unitpriceNew)
+                        }
                     }
                 }else{
                     unitpriceNew = unitprice
