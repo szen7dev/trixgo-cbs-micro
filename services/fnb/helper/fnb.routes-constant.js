@@ -10,6 +10,7 @@ const SHIFT                 = '/shifts';
 const MISTAKE               = '/mistakes';
 const VOUCHER               = '/vouchers';
 const ZALOOA                = '/zalooas';
+const CUSTOMER_CARE         = '/customer_cares';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -67,6 +68,14 @@ const CF_ROUTINGS_FNB = {
     ZALOOA_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${ZALOOA}/download-template-excel`,
     ZALOOA_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${ZALOOA}/import-from-excel`,
     ZALOOA_EXPORT_EXCEL                    : `${BASE_ROUTE}${ZALOOA}/export-excel`,
+
+    //================================FNB_CUSTOMER_CARE=======================================//
+    CUSTOMER_CARES                                : `${BASE_ROUTE}${CUSTOMER_CARE}`,
+    CUSTOMER_CARE_UPDATE_KPI                      : `${BASE_ROUTE}${CUSTOMER_CARE}/update-kpi`,
+    CUSTOMER_CARE_GET_LIST_BY_PROPERTY            : `${BASE_ROUTE}${CUSTOMER_CARE}/get-list-by-property`,
+    CUSTOMER_CARE_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${CUSTOMER_CARE}/download-template-excel`,
+    CUSTOMER_CARE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${CUSTOMER_CARE}/import-from-excel`,
+    CUSTOMER_CARE_EXPORT_EXCEL                    : `${BASE_ROUTE}${CUSTOMER_CARE}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;

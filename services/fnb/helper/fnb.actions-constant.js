@@ -10,6 +10,7 @@ const SHIFT                      = 'SHIFT';
 const MISTAKE                    = 'MISTAKE';
 const VOUCHER                    = 'VOUCHER';
 const ZALOOA                     = 'ZALOOA';
+const CUSTOMER_CARE              = 'CUSTOMER_CARE';
 
 const CF_ACTIONS_FNB = {
   
@@ -101,6 +102,19 @@ const CF_ACTIONS_FNB = {
    ZALOOA_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${ZALOOA}_DOWNLOAD_TEMPLATE_EXCEL`,
    ZALOOA_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${ZALOOA}_IMPORT_FROM_EXCEL`,
    ZALOOA_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${ZALOOA}_EXPORT_EXCEL`,
+
+   /**
+   * CUSTOMER_CARE
+   */
+   CUSTOMER_CARE_INSERT                                    : `${BASE_ACTIONS}_${CUSTOMER_CARE}_INSERT`,
+   CUSTOMER_CARE_UPDATE                                    : `${BASE_ACTIONS}_${CUSTOMER_CARE}_UPDATE`,
+   CUSTOMER_CARE_UPDATE_KPI                                : `${BASE_ACTIONS}_${CUSTOMER_CARE}_UPDATE_KPI`,
+   CUSTOMER_CARE_REMOVE                                    : `${BASE_ACTIONS}_${CUSTOMER_CARE}_REMOVE`,
+   CUSTOMER_CARE_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${CUSTOMER_CARE}_GET_INFO_AND_GET_LIST`,
+   CUSTOMER_CARE_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${CUSTOMER_CARE}_GET_LIST_BY_PROPERTY`,
+   CUSTOMER_CARE_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${CUSTOMER_CARE}_DOWNLOAD_TEMPLATE_EXCEL`,
+   CUSTOMER_CARE_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${CUSTOMER_CARE}_IMPORT_FROM_EXCEL`,
+   CUSTOMER_CARE_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${CUSTOMER_CARE}_EXPORT_EXCEL`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;

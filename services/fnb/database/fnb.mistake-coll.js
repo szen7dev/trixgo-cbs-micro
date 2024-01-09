@@ -30,6 +30,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    //_________Người quản lý (lấy từ funda)
+    manager: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
     /**
      * Phân loại lỗi
      * 1-Hệ thống phát hiện
