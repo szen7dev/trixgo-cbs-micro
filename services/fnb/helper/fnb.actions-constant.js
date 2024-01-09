@@ -8,10 +8,6 @@ const PRODUCT                    = 'PRODUCT';
 const ORDER_PRODUCT              = 'ORDER_PRODUCT';
 const SHIFT                      = 'SHIFT';
 const MISTAKE                    = 'MISTAKE';
-const QUOTA                      = 'QUOTA';
-const ORDER_MATERIAL             = 'ORDER_MATERIAL';
-const SHIFT_HANDOVER             = 'SHIFT_HANDOVER';
-const GENERAL_BOOK               = 'GENERAL_BOOK';
 const VOUCHER                    = 'VOUCHER';
 const ZALOOA                     = 'ZALOOA';
 
@@ -83,53 +79,6 @@ const CF_ACTIONS_FNB = {
    MISTAKE_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${MISTAKE}_DOWNLOAD_TEMPLATE_EXCEL`,
    MISTAKE_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${MISTAKE}_IMPORT_FROM_EXCEL`,
    MISTAKE_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${MISTAKE}_EXPORT_EXCEL`,
-
-   /**
-   * QUOTA
-   */
-   QUOTA_INSERT                                    : `${BASE_ACTIONS}_${QUOTA}_INSERT`,
-   QUOTA_UPDATE                                    : `${BASE_ACTIONS}_${QUOTA}_UPDATE`,
-   QUOTA_REMOVE                                    : `${BASE_ACTIONS}_${QUOTA}_REMOVE`,
-   QUOTA_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${QUOTA}_GET_INFO_AND_GET_LIST`,
-   QUOTA_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${QUOTA}_DOWNLOAD_TEMPLATE_EXCEL`,
-   QUOTA_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${QUOTA}_IMPORT_FROM_EXCEL`,
-   QUOTA_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${QUOTA}_EXPORT_EXCEL`,
-
-   /**
-   * ORDER_MATERIAL
-   */
-   ORDER_MATERIAL_INSERT                                : `${BASE_ACTIONS}_${ORDER_MATERIAL}_INSERT`,
-   ORDER_MATERIAL_UPDATE                                : `${BASE_ACTIONS}_${ORDER_MATERIAL}_UPDATE`,
-   ORDER_MATERIAL_REMOVE                                : `${BASE_ACTIONS}_${ORDER_MATERIAL}_REMOVE`,
-   ORDER_MATERIAL_GET_INFO_AND_GET_LIST                 : `${BASE_ACTIONS}_${ORDER_MATERIAL}_GET_INFO_AND_GET_LIST`,
-   ORDER_MATERIAL_DOWNLOAD_TEMPLATE_EXCEL               : `${BASE_ACTIONS}_${ORDER_MATERIAL}_DOWNLOAD_TEMPLATE_EXCEL`,
-   ORDER_MATERIAL_IMPORT_FROM_EXCEL                     : `${BASE_ACTIONS}_${ORDER_MATERIAL}_IMPORT_FROM_EXCEL`,
-   ORDER_MATERIAL_EXPORT_EXCEL                          : `${BASE_ACTIONS}_${ORDER_MATERIAL}_EXPORT_EXCEL`,
-
-   /**
-   * SHIFT_HANDOVER
-   */
-   SHIFT_HANDOVER_INSERT                                    : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_INSERT`,
-   SHIFT_HANDOVER_UPDATE                                    : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_UPDATE`,
-   SHIFT_HANDOVER_REMOVE                                    : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_REMOVE`,
-   SHIFT_HANDOVER_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_GET_INFO_AND_GET_LIST`,
-   SHIFT_HANDOVER_UPDATE_QUOTA                              : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_UPDATE_QUOTA`,
-   SHIFT_HANDOVER_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_DOWNLOAD_TEMPLATE_EXCEL`,
-   SHIFT_HANDOVER_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_IMPORT_FROM_EXCEL`,
-   SHIFT_HANDOVER_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${SHIFT_HANDOVER}_EXPORT_EXCEL`,
-
-   /**
-   * GENERAL_BOOK
-   */
-   GENERAL_BOOK_INSERT                                    : `${BASE_ACTIONS}_${GENERAL_BOOK}_INSERT`,
-   GENERAL_BOOK_UPDATE                                    : `${BASE_ACTIONS}_${GENERAL_BOOK}_UPDATE`,
-   GENERAL_BOOK_REMOVE                                    : `${BASE_ACTIONS}_${GENERAL_BOOK}_REMOVE`,
-   GENERAL_BOOK_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${GENERAL_BOOK}_GET_INFO_AND_GET_LIST`,
-   GENERAL_BOOK_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${GENERAL_BOOK}_GET_LIST_BY_PROPERTY`,
-   GENERAL_BOOK_UPDATE_VALUE                              : `${BASE_ACTIONS}_${GENERAL_BOOK}_UPDATE_VALUE`,
-   GENERAL_BOOK_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${GENERAL_BOOK}_DOWNLOAD_TEMPLATE_EXCEL`,
-   GENERAL_BOOK_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${GENERAL_BOOK}_IMPORT_FROM_EXCEL`,
-   GENERAL_BOOK_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${GENERAL_BOOK}_EXPORT_EXCEL`,
 
    /**
    * VOUCHER

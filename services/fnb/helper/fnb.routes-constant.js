@@ -8,10 +8,6 @@ const PRODUCT               = '/products';
 const ORDER_PRODUCT         = '/order_products';
 const SHIFT                 = '/shifts';
 const MISTAKE               = '/mistakes';
-const QUOTA                 = '/quotas';
-const ORDER_MATERIAL        = '/order_materials';
-const SHIFT_HANDOVER        = '/shift_handovers';
-const GENERAL_BOOK          = '/general_books';
 const VOUCHER               = '/vouchers';
 const ZALOOA                = '/zalooas';
 
@@ -59,32 +55,6 @@ const CF_ROUTINGS_FNB = {
     MISTAKE_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${MISTAKE}/download-template-excel`,
     MISTAKE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${MISTAKE}/import-from-excel`,
     MISTAKE_EXPORT_EXCEL                    : `${BASE_ROUTE}${MISTAKE}/export-excel`,
-
-    //================================FNB_QUOTA=======================================//
-    QUOTAS                                  : `${BASE_ROUTE}${QUOTA}`,
-    QUOTA_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${QUOTA}/download-template-excel`,
-    QUOTA_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${QUOTA}/import-from-excel`,
-    QUOTA_EXPORT_EXCEL                      : `${BASE_ROUTE}${QUOTA}/export-excel`,
-
-    //================================FNB_ORDER_MATERIAL=======================================//
-    ORDER_MATERIALS                         : `${BASE_ROUTE}${ORDER_MATERIAL}`,
-    ORDER_MATERIAL_DOWNLOAD_TEMPLATE_EXCEL  : `${BASE_ROUTE}${ORDER_MATERIAL}/download-template-excel`,
-    ORDER_MATERIAL_IMPORT_FROM_EXCEL        : `${BASE_ROUTE}${ORDER_MATERIAL}/import-from-excel`,
-    ORDER_MATERIAL_EXPORT_EXCEL             : `${BASE_ROUTE}${ORDER_MATERIAL}/export-excel`,
-
-    //================================FNB_SHIFT_HANDOVERL=======================================//
-    SHIFT_HANDOVERS                         : `${BASE_ROUTE}${SHIFT_HANDOVER}`,
-    SHIFT_HANDOVER_UPDATE_QUOTA             : `${BASE_ROUTE}${SHIFT_HANDOVER}/update-quota`,
-    SHIFT_HANDOVER_DOWNLOAD_TEMPLATE_EXCEL  : `${BASE_ROUTE}${SHIFT_HANDOVER}/download-template-excel`,
-    SHIFT_HANDOVER_IMPORT_FROM_EXCEL        : `${BASE_ROUTE}${SHIFT_HANDOVER}/import-from-excel`,
-    SHIFT_HANDOVER_EXPORT_EXCEL             : `${BASE_ROUTE}${SHIFT_HANDOVER}/export-excel`,
-
-    //================================FNB_GENERAL_BOOK=======================================//
-    GENERAL_BOOKS                           : `${BASE_ROUTE}${GENERAL_BOOK}`,
-    GENERAL_BOOK_GET_LIST_BY_PROPERTY       : `${BASE_ROUTE}${GENERAL_BOOK}/get-list-by-property`,
-    GENERAL_BOOK_DOWNLOAD_TEMPLATE_EXCEL    : `${BASE_ROUTE}${GENERAL_BOOK}/download-template-excel`,
-    GENERAL_BOOK_IMPORT_FROM_EXCEL          : `${BASE_ROUTE}${GENERAL_BOOK}/import-from-excel`,
-    GENERAL_BOOK_EXPORT_EXCEL               : `${BASE_ROUTE}${GENERAL_BOOK}/export-excel`,
 
     //================================FNB_VOUCHER=======================================//
     VOUCHERS                                : `${BASE_ROUTE}${VOUCHER}`,
