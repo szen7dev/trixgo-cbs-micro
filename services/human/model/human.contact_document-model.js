@@ -898,35 +898,35 @@ class Model extends BaseModel {
 
                     var i = 3;
                     listData?.forEach((item, index) => {
-                        workbook.sheet("HoSoNhanSu").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("HoSoNhanSu").row(i).cell(2).value(item.name);
-                        workbook.sheet("HoSoNhanSu").row(i).cell(3).value(item?.contact?.name);
-                        workbook.sheet("HoSoNhanSu").row(i).cell(4).value(item?.sign);
-                        workbook.sheet("HoSoNhanSu").row(i).cell(5).value(item?.fromDate);
-                        workbook.sheet("HoSoNhanSu").row(i).cell(6).value(item.place);
-                        workbook.sheet("HoSoNhanSu").row(i).cell(7).value(item?.toDate);
-                        workbook.sheet("HoSoNhanSu").row(i).cell(10).value(item.note);
+                        workbook.sheet("HoSoNhanSu").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("HoSoNhanSu").row(i).cell(2).value(item.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(3).value(item?.contact?.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(4).value(item?.sign)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(5).value(item?.fromDate)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(6).value(item.place)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(7).value(item?.toDate)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(10).value(item.note)
                         i++
-                    });
+                    })
 
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `contact_document_export_${now.getTime()}.xlsx`;
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                    const now = new Date()
+                    const filePath = '../../../files/temporary_uploads/'
+                    const fileName = `contact_document_export_${now.getTime()}.xlsx`
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName)
 
                     await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
+                    const result = await uploadFileS3(pathWriteFile, fileName)
 
                     fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
+                    return resolve({ error: false, data: result?.Location, status: 200 })
                 });
 
             } catch (error) {
                 console.log({ error })
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model
