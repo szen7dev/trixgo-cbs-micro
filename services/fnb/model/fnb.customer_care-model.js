@@ -39,8 +39,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID }) {
-        // console.log({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID })
+    insert({ userID, companyID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files  }) {
+        // console.log({ userID, companyID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files  })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(userID))
@@ -128,7 +128,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderMistakeID, type, amount, bonus, note, userID}) {
+    update({ userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderMistakeID))

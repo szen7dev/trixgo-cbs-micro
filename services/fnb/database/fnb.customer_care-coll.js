@@ -21,6 +21,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Schema.Types.ObjectId,
         ref : "fnb_order"
     },
+    //_________Kênh bán hàng
+    salesChannel: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
     //_________Mã khách (để biết các lỗi mà hay gặp ở khách để sau lưu ý)
     customer: {
         type: Schema.Types.ObjectId,
@@ -28,11 +33,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
     },
     //_________Lỗi mắc phải
     mistake: {
-        type: Schema.Types.ObjectId,
-        ref: "doctype"
-    },
-    //_________Kênh bán hàng
-    salesChannel: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
