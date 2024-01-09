@@ -316,19 +316,19 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID, filterParams, year, month } = ctx.params;
+                let { companyID, fundaID, fromDate, toDate, month, year } = ctx.params;
 
-                // console.log({ companyID, filterParams })
+                // console.log({ companyID, fundaID, fromDate, toDate, month, year  })
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
+                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await FNB_MISTAKE_MODEL.exportExcel({
-                    userID, companyID, filterParams, ctx
+                    userID, companyID, fundaID, fromDate, toDate, month, year
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
