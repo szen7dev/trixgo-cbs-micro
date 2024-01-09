@@ -8,12 +8,9 @@ const PRODUCT               = '/products';
 const ORDER_PRODUCT         = '/order_products';
 const SHIFT                 = '/shifts';
 const MISTAKE               = '/mistakes';
-const QUOTA                 = '/quotas';
-const ORDER_MATERIAL        = '/order_materials';
-const SHIFT_HANDOVER        = '/shift_handovers';
-const GENERAL_BOOK          = '/general_books';
 const VOUCHER               = '/vouchers';
 const ZALOOA                = '/zalooas';
+const CUSTOMER_CARE         = '/customer_cares';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -60,32 +57,6 @@ const CF_ROUTINGS_FNB = {
     MISTAKE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${MISTAKE}/import-from-excel`,
     MISTAKE_EXPORT_EXCEL                    : `${BASE_ROUTE}${MISTAKE}/export-excel`,
 
-    //================================FNB_QUOTA=======================================//
-    QUOTAS                                  : `${BASE_ROUTE}${QUOTA}`,
-    QUOTA_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${QUOTA}/download-template-excel`,
-    QUOTA_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${QUOTA}/import-from-excel`,
-    QUOTA_EXPORT_EXCEL                      : `${BASE_ROUTE}${QUOTA}/export-excel`,
-
-    //================================FNB_ORDER_MATERIAL=======================================//
-    ORDER_MATERIALS                         : `${BASE_ROUTE}${ORDER_MATERIAL}`,
-    ORDER_MATERIAL_DOWNLOAD_TEMPLATE_EXCEL  : `${BASE_ROUTE}${ORDER_MATERIAL}/download-template-excel`,
-    ORDER_MATERIAL_IMPORT_FROM_EXCEL        : `${BASE_ROUTE}${ORDER_MATERIAL}/import-from-excel`,
-    ORDER_MATERIAL_EXPORT_EXCEL             : `${BASE_ROUTE}${ORDER_MATERIAL}/export-excel`,
-
-    //================================FNB_SHIFT_HANDOVERL=======================================//
-    SHIFT_HANDOVERS                         : `${BASE_ROUTE}${SHIFT_HANDOVER}`,
-    SHIFT_HANDOVER_UPDATE_QUOTA             : `${BASE_ROUTE}${SHIFT_HANDOVER}/update-quota`,
-    SHIFT_HANDOVER_DOWNLOAD_TEMPLATE_EXCEL  : `${BASE_ROUTE}${SHIFT_HANDOVER}/download-template-excel`,
-    SHIFT_HANDOVER_IMPORT_FROM_EXCEL        : `${BASE_ROUTE}${SHIFT_HANDOVER}/import-from-excel`,
-    SHIFT_HANDOVER_EXPORT_EXCEL             : `${BASE_ROUTE}${SHIFT_HANDOVER}/export-excel`,
-
-    //================================FNB_GENERAL_BOOK=======================================//
-    GENERAL_BOOKS                           : `${BASE_ROUTE}${GENERAL_BOOK}`,
-    GENERAL_BOOK_GET_LIST_BY_PROPERTY       : `${BASE_ROUTE}${GENERAL_BOOK}/get-list-by-property`,
-    GENERAL_BOOK_DOWNLOAD_TEMPLATE_EXCEL    : `${BASE_ROUTE}${GENERAL_BOOK}/download-template-excel`,
-    GENERAL_BOOK_IMPORT_FROM_EXCEL          : `${BASE_ROUTE}${GENERAL_BOOK}/import-from-excel`,
-    GENERAL_BOOK_EXPORT_EXCEL               : `${BASE_ROUTE}${GENERAL_BOOK}/export-excel`,
-
     //================================FNB_VOUCHER=======================================//
     VOUCHERS                                : `${BASE_ROUTE}${VOUCHER}`,
     VOUCHER_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${VOUCHER}/download-template-excel`,
@@ -97,6 +68,14 @@ const CF_ROUTINGS_FNB = {
     ZALOOA_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${ZALOOA}/download-template-excel`,
     ZALOOA_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${ZALOOA}/import-from-excel`,
     ZALOOA_EXPORT_EXCEL                    : `${BASE_ROUTE}${ZALOOA}/export-excel`,
+
+    //================================FNB_CUSTOMER_CARE=======================================//
+    CUSTOMER_CARES                                : `${BASE_ROUTE}${CUSTOMER_CARE}`,
+    CUSTOMER_CARE_UPDATE_KPI                      : `${BASE_ROUTE}${CUSTOMER_CARE}/update-kpi`,
+    CUSTOMER_CARE_GET_LIST_BY_PROPERTY            : `${BASE_ROUTE}${CUSTOMER_CARE}/get-list-by-property`,
+    CUSTOMER_CARE_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${CUSTOMER_CARE}/download-template-excel`,
+    CUSTOMER_CARE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${CUSTOMER_CARE}/import-from-excel`,
+    CUSTOMER_CARE_EXPORT_EXCEL                    : `${BASE_ROUTE}${CUSTOMER_CARE}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;

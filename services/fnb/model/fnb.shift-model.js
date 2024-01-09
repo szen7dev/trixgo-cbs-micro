@@ -40,7 +40,6 @@ const {
 /**
  * Import inter-model, exter-model
  */
-const FNB_GENERAL_BOOK_MODEL                  = require('./fnb.general_book-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -152,9 +151,6 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
-
-                // Chi phí nhân viên
-                // await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, fundaID, userID })
 
                 // Cập nhật vào bảng chấm công
                 // await that.updateTimesheet({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, userID })
@@ -333,10 +329,6 @@ class Model extends BaseModel {
                         // console.log(dataOrderUpdate)
                         let infoOrder = await FNB_ORDER_COLL.findByIdAndUpdate(item._id, dataOrderUpdate, { new: true })
                     }
-
-                    // Chi phí nhân viên
-                    // let infoBook = await FNB_GENERAL_BOOK_MODEL.updateFromShift({ companyID: infoFunda.company, shiftID, fundaID: infoShift.funda, userID })
-                    // console.log(infoBook)
                 }
                 // console.log(infoAfterUpdate)
 

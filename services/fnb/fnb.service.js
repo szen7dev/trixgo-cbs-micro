@@ -10,22 +10,16 @@ const FNB__PRODUCT_HANDLER  			 	= require('./handler/fnb.product-handler');
 const FNB__ORDER_PRODUCT_HANDLER  			= require('./handler/fnb.order_product-handler');
 const FNB__SHIFT_HANDLER  			 		= require('./handler/fnb.shift-handler');
 const FNB__MISTAKE_HANDLER  			 	= require('./handler/fnb.mistake-handler');
-const FNB__QUOTA_HANDLER  			 		= require('./handler/fnb.quota-handler');
-const FNB__ORDER_MATERIAL_HANDLER  			= require('./handler/fnb.order_material-handler');
-const FNB__SHIFT_HANDOVER_HANDLER  			= require('./handler/fnb.shift_handover-handler');
-const FNB__GENERAL_BOOK_HANDLER  			= require('./handler/fnb.general_book-handler');
 const FNB__VOUCHER_HANDLER  				= require('./handler/fnb.voucher-handler');
+const FNB__CUSTOMER_CARE_HANDLER  			= require('./handler/fnb.customer_care-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
 const FNB__ORDER_PRODUCT_COLL  			 	= require('./database/fnb.order_product-coll');
 const FNB__SHIFT_COLL  			 			= require('./database/fnb.shift-coll');
 const FNB__MISTAKE_COLL  			 		= require('./database/fnb.mistake-coll');
-const FNB__QUOTA_COLL  			 			= require('./database/fnb.quota-coll');
-const FNB__ORDER_MATERIAL_COLL  			= require('./database/fnb.order_material-coll');
-const FNB__SHIFT_HANDOVER_COLL  			= require('./database/fnb.shift_handover-coll');
-const FNB__GENERAL_BOOK_COLL  				= require('./database/fnb.general_book-coll');
-const FNB__VOUCHER_BOOK_COLL  				= require('./database/fnb.voucher-coll');
+const FNB__VOUCHER_COLL  					= require('./database/fnb.voucher-coll');
+const FNB__CUSTOMER_CARE_COLL  				= require('./database/fnb.customer_care-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FNB,
@@ -35,11 +29,8 @@ module.exports = {
 		DbService(FNB__ORDER_PRODUCT_COLL),
 		DbService(FNB__SHIFT_COLL),
 		DbService(FNB__MISTAKE_COLL),
-		DbService(FNB__QUOTA_COLL),
-		DbService(FNB__ORDER_MATERIAL_COLL),
-		DbService(FNB__SHIFT_HANDOVER_COLL),
-		DbService(FNB__GENERAL_BOOK_COLL),
-		DbService(FNB__VOUCHER_BOOK_COLL),
+		DbService(FNB__VOUCHER_COLL),
+		DbService(FNB__CUSTOMER_CARE_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -116,44 +107,6 @@ module.exports = {
 		[CF_ACTIONS_FNB.MISTAKE_IMPORT_FROM_EXCEL]						: FNB__MISTAKE_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.MISTAKE_EXPORT_EXCEL]							: FNB__MISTAKE_HANDLER.exportExcel,
 
-		//========================================== FNB_QUOTA ==============================================//
-		[CF_ACTIONS_FNB.QUOTA_INSERT]									: FNB__QUOTA_HANDLER.insert,
-		[CF_ACTIONS_FNB.QUOTA_UPDATE]									: FNB__QUOTA_HANDLER.update,
-		[CF_ACTIONS_FNB.QUOTA_REMOVE]									: FNB__QUOTA_HANDLER.remove,
-		[CF_ACTIONS_FNB.QUOTA_GET_INFO_AND_GET_LIST]					: FNB__QUOTA_HANDLER.getInfoAndGetList,
-		[CF_ACTIONS_FNB.QUOTA_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__QUOTA_HANDLER.downloadTemplateExcel,
-		[CF_ACTIONS_FNB.QUOTA_IMPORT_FROM_EXCEL]						: FNB__QUOTA_HANDLER.importFromExcel,
-		[CF_ACTIONS_FNB.QUOTA_EXPORT_EXCEL]								: FNB__QUOTA_HANDLER.exportExcel,
-
-		//========================================== FNB_ORDER_MATERIAL ==============================================//
-		[CF_ACTIONS_FNB.ORDER_MATERIAL_INSERT]							: FNB__ORDER_MATERIAL_HANDLER.insert,
-		[CF_ACTIONS_FNB.ORDER_MATERIAL_UPDATE]							: FNB__ORDER_MATERIAL_HANDLER.update,
-		[CF_ACTIONS_FNB.ORDER_MATERIAL_REMOVE]							: FNB__ORDER_MATERIAL_HANDLER.remove,
-		[CF_ACTIONS_FNB.ORDER_MATERIAL_GET_INFO_AND_GET_LIST]			: FNB__ORDER_MATERIAL_HANDLER.getInfoAndGetList,
-		[CF_ACTIONS_FNB.ORDER_MATERIAL_DOWNLOAD_TEMPLATE_EXCEL]			: FNB__ORDER_MATERIAL_HANDLER.downloadTemplateExcel,
-		[CF_ACTIONS_FNB.ORDER_MATERIAL_IMPORT_FROM_EXCEL]				: FNB__ORDER_MATERIAL_HANDLER.importFromExcel,
-		[CF_ACTIONS_FNB.ORDER_MATERIAL_EXPORT_EXCEL]					: FNB__ORDER_MATERIAL_HANDLER.exportExcel,
-
-		//========================================== FNB_SHIFT_HANDOVER ==============================================//
-		[CF_ACTIONS_FNB.SHIFT_HANDOVER_INSERT]							: FNB__SHIFT_HANDOVER_HANDLER.insert,
-		[CF_ACTIONS_FNB.SHIFT_HANDOVER_UPDATE]							: FNB__SHIFT_HANDOVER_HANDLER.update,
-		[CF_ACTIONS_FNB.SHIFT_HANDOVER_REMOVE]							: FNB__SHIFT_HANDOVER_HANDLER.remove,
-		[CF_ACTIONS_FNB.SHIFT_HANDOVER_GET_INFO_AND_GET_LIST]			: FNB__SHIFT_HANDOVER_HANDLER.getInfoAndGetList,
-		[CF_ACTIONS_FNB.SHIFT_HANDOVER_UPDATE_QUOTA]					: FNB__SHIFT_HANDOVER_HANDLER.updateQuota,
-		[CF_ACTIONS_FNB.SHIFT_HANDOVER_DOWNLOAD_TEMPLATE_EXCEL]			: FNB__SHIFT_HANDOVER_HANDLER.downloadTemplateExcel,
-		[CF_ACTIONS_FNB.SHIFT_HANDOVER_IMPORT_FROM_EXCEL]				: FNB__SHIFT_HANDOVER_HANDLER.importFromExcel,
-		[CF_ACTIONS_FNB.SHIFT_HANDOVER_EXPORT_EXCEL]					: FNB__SHIFT_HANDOVER_HANDLER.exportExcel,
-
-		//========================================== FNB_GENERAL_BOOK ==============================================//
-		[CF_ACTIONS_FNB.GENERAL_BOOK_INSERT]							: FNB__GENERAL_BOOK_HANDLER.insert,
-		[CF_ACTIONS_FNB.GENERAL_BOOK_UPDATE]							: FNB__GENERAL_BOOK_HANDLER.update,
-		[CF_ACTIONS_FNB.GENERAL_BOOK_REMOVE]							: FNB__GENERAL_BOOK_HANDLER.remove,
-		[CF_ACTIONS_FNB.GENERAL_BOOK_GET_INFO_AND_GET_LIST]				: FNB__GENERAL_BOOK_HANDLER.getInfoAndGetList,
-		[CF_ACTIONS_FNB.GENERAL_BOOK_GET_LIST_BY_PROPERTY]				: FNB__GENERAL_BOOK_HANDLER.getListByProperty,
-		[CF_ACTIONS_FNB.GENERAL_BOOK_DOWNLOAD_TEMPLATE_EXCEL]			: FNB__GENERAL_BOOK_HANDLER.downloadTemplateExcel,
-		[CF_ACTIONS_FNB.GENERAL_BOOK_IMPORT_FROM_EXCEL]					: FNB__GENERAL_BOOK_HANDLER.importFromExcel,
-		[CF_ACTIONS_FNB.GENERAL_BOOK_EXPORT_EXCEL]						: FNB__GENERAL_BOOK_HANDLER.exportExcel,
-
 		//========================================== FNB_VOUCHER ==============================================//
 		[CF_ACTIONS_FNB.VOUCHER_INSERT]									: FNB__VOUCHER_HANDLER.insert,
 		[CF_ACTIONS_FNB.VOUCHER_UPDATE]									: FNB__VOUCHER_HANDLER.update,
@@ -162,6 +115,17 @@ module.exports = {
 		[CF_ACTIONS_FNB.VOUCHER_DOWNLOAD_TEMPLATE_EXCEL]				: FNB__VOUCHER_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.VOUCHER_IMPORT_FROM_EXCEL]						: FNB__VOUCHER_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.VOUCHER_EXPORT_EXCEL]							: FNB__VOUCHER_HANDLER.exportExcel,
+		
+		//========================================== FNB_CUSTOMER_CARE ==============================================//
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_INSERT]									: FNB__CUSTOMER_CARE_HANDLER.insert,
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_UPDATE]									: FNB__CUSTOMER_CARE_HANDLER.update,
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_UPDATE_KPI]								: FNB__CUSTOMER_CARE_HANDLER.updateKpi,
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_REMOVE]									: FNB__CUSTOMER_CARE_HANDLER.remove,
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_GET_INFO_AND_GET_LIST]					: FNB__CUSTOMER_CARE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_GET_LIST_BY_PROPERTY]						: FNB__CUSTOMER_CARE_HANDLER.getListByProperty,
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__CUSTOMER_CARE_HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_IMPORT_FROM_EXCEL]						: FNB__CUSTOMER_CARE_HANDLER.importFromExcel,
+		[CF_ACTIONS_FNB.CUSTOMER_CARE_EXPORT_EXCEL]								: FNB__CUSTOMER_CARE_HANDLER.exportExcel,
 	},
 
 	/**
