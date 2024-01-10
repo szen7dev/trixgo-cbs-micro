@@ -160,7 +160,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, fromDate, toDate, status, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -174,7 +174,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.getList({
-                        companyID, fundasID, customerID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates
+                        companyID, fundasID, customerID, userCreateID, fromDate, toDate, status, keyword, limit, lastestID, select, populates
                     });
                 }
 

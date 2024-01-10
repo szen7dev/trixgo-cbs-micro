@@ -302,7 +302,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, customerID, userCreateID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates, userID }) {
+    getList({ companyID, fundasID, customerID, userCreateID, fromDate, toDate, status, keyword, limit = 10, lastestID, select, populates, userID }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -332,6 +332,10 @@ class Model extends BaseModel {
 
                 if(userCreateID && checkObjectIDs(userCreateID)){
                     conditionObj.userCreate = ObjectID(userCreateID)
+                }
+
+                if(!isNaN(status)){
+                    conditionObj.status = Number(status);
                 }
 
                 if(fromDate && toDate){
