@@ -66,11 +66,15 @@ class Model extends BaseModel {
                     dataInsert.order = orderID
                     dataInsert.company = infoOrder.company
                     dataInsert.funda = infoOrder.funda
-                    // dataInsert.salesChannel = infoOrder.salesChannel
+                    dataInsert.channel = infoOrder.salesChannel
                     
                     if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
                         dataInsert.manager = infoOrder.funda.manager
                     }
+                }
+
+                if(!isNaN(type)){
+                    dataInsert.type = Number(type);
                 }
 
                 if(!isNaN(amount)){
@@ -147,6 +151,10 @@ class Model extends BaseModel {
                 //         dataInUpdate.manager = infoOrder.funda.manager
                 //     }
                 // }
+
+                if(!isNaN(type)){
+                    dataInUpdate.type = Number(type);
+                }
 
                 if(!isNaN(amount)){
                     dataInUpdate.amount = Number(amount);
@@ -302,7 +310,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, customerID, userCreateID, fromDate, toDate, status, keyword, limit = 10, lastestID, select, populates, userID }) {
+    getList({ companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 10, lastestID, select, populates, userID }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -334,8 +342,24 @@ class Model extends BaseModel {
                     conditionObj.userCreate = ObjectID(userCreateID)
                 }
 
-                if(!isNaN(status)){
+                if(managerID && checkObjectIDs(managerID)){
+                    conditionObj.manager1 = ObjectID(managerID)
+                }
+
+                if(!isNaN(status) && [1,2].includes(Number(status))){
                     conditionObj.status = Number(status);
+                }else{
+                    conditionObj.status = {$in: [1,2]}
+                }
+
+                if(!isNaN(type) && [1,2].includes(Number(type))){
+                    conditionObj.type = Number(type);
+                }else{
+                    conditionObj.type = {$in: [1,2]}
+                }
+
+                if(!isNaN(channel)){
+                    conditionObj.channel = Number(channel);
                 }
 
                 if(fromDate && toDate){
@@ -344,6 +368,7 @@ class Model extends BaseModel {
                         $lte: new Date(toDate),
                     }
                 }
+                // console.log(conditionObj)
 
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
@@ -364,7 +389,8 @@ class Model extends BaseModel {
 
                     conditionObj.$or = [
                         { name: regSearch },
-                        { sign: regSearch },
+                        { description: regSearch },
+                        { note: regSearch },
                     ]
                 }
 

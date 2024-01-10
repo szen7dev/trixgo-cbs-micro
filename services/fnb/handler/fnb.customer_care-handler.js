@@ -27,6 +27,7 @@ module.exports = {
             rating              : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             status              : { type: "number", optional: true },
+            type                : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -65,6 +66,7 @@ module.exports = {
             rating              : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             status              : { type: "number", optional: true },
+            type                : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -146,9 +148,11 @@ module.exports = {
             fundasID            : { type: "array", optional: true },
             customerID          : { type: "string", optional: true },
             userCreateID        : { type: "string", optional: true },
+            managerID           : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
-            salesChannel        : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
+            channel             : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -160,12 +164,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, fromDate, toDate, status, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
+
+                // console.log(ctx.params)
 
                 let resultAfterCallHandler;
                 if(orderMistakeID){
@@ -174,7 +180,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.getList({
-                        companyID, fundasID, customerID, userCreateID, fromDate, toDate, status, keyword, limit, lastestID, select, populates
+                        companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates
                     });
                 }
 
