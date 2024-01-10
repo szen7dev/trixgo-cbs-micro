@@ -62,6 +62,8 @@ module.exports = {
                 const { cashPaymentID, name, note, amount, payment, active } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
+                // console.log(ctx.params)
+
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.update({
                     cashPaymentID, userID, name, note, amount, payment, active
                 });

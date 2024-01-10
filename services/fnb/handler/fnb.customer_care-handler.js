@@ -17,21 +17,22 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            customerID          : { type: "string" },
-            name                : { type: "string" },
+            customerID          : { type: "string", optional: true },
+            name                : { type: "string", optional: true },
             orderID             : { type: "string", optional: true },
             mistakeID           : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            rating              : { type: "string", optional: true },
-            amount              : { type: "string", optional: true },
-            status              : { type: "string", optional: true },
+            rating              : { type: "number", optional: true },
+            amount              : { type: "number", optional: true },
+            status              : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files } = ctx.params;
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -54,22 +55,25 @@ module.exports = {
         auth: "required",
         params: {
             customerCareID      : { type: "string", optional: true },
-            customerID          : { type: "string" },
-            name                : { type: "string" },
+            customerID          : { type: "string", optional: true },
+            name                : { type: "string", optional: true },
             orderID             : { type: "string", optional: true },
             mistakeID           : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            rating              : { type: "string", optional: true },
-            amount              : { type: "string", optional: true },
-            status              : { type: "string", optional: true },
+            rating              : { type: "number", optional: true },
+            amount              : { type: "number", optional: true },
+            status              : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let {  customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+
+                // console.log('11111111111111111111111')
+                // console.log(ctx.params)
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.update({
                     userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files
@@ -140,10 +144,8 @@ module.exports = {
         params: {
             companyID           : { type: "string", optional: true },
             fundasID            : { type: "array", optional: true },
-            executorID          : { type: "string", optional: true },
-            orderID             : { type: "string", optional: true },
-            mistakeID           : { type: "string", optional: true },
-            orderMistakeID      : { type: "string", optional: true },
+            customerID          : { type: "string", optional: true },
+            userCreateID        : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
             salesChannel        : { type: "string", optional: true },
@@ -158,7 +160,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, orderMistakeID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, month, year, option } = ctx.params;
+                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -172,7 +174,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.getList({
-                        companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID, month, year, option
+                        companyID, fundasID, customerID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates
                     });
                 }
 
