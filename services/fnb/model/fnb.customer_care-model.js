@@ -358,8 +358,10 @@ class Model extends BaseModel {
                     conditionObj.type = {$in: [1,2]}
                 }
 
-                if(!isNaN(channel)){
+                if(!isNaN(channel) && [1,2,3,4,5,6,7,8,9,10,11].includes(Number(channel))){
                     conditionObj.channel = Number(channel);
+                }else{
+                    conditionObj.channel = {$in: [1,2,3,4,5,6,7,8,9,10,11]}
                 }
 
                 if(fromDate && toDate){
