@@ -38,6 +38,36 @@ module.exports = {
         }
     },
 
+    exportExcel: {
+        auth: 'required',
+        params: {
+            option: { type: "string" },
+            companyID: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, email, company } = ctx.meta.infoUser;
+                let { option, companyID, page, unit, getNumber } = ctx.params;
+
+                // console.log(ctx.params)
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                const resultAfterCallHandler = await ANALYSIS__DATA_MODEL.exportExcel({
+                    option, email, userID, companyID, page, unit, getNumber
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+
     convertData: {
         auth: 'required',
         params: {

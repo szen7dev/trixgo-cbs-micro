@@ -83,6 +83,63 @@ class Model extends BaseModel {
         })
     }
 
+    exportExcel({ option, email, userID, companyID, page, unit, getNumber }) {
+        // console.log({ option, email, userID, companyID, page, unit, getNumber })
+        const that = this
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, selectObj = '_id name sign description note phone email identity taxid bankAccount'
+                
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+                }
+
+                // CONVERT DANH BẠ
+                if(option == 1){
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+                        // console.log(listData.length)
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        // console.log({infoBegin})
+                        // let infoEnd = listData[limit - 1]
+                        let infoEnd = listData.slice(-1)
+                        // console.log({infoEnd})
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertContact({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await ITEM__CONTACT_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+               
+                // CONVERT
+                else{
+                    //
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
     convertData({ option, email, userID, companyID, page, unit, getNumber }) {
         // console.log({ option, email, userID, companyID, page, unit, getNumber })
         const that = this

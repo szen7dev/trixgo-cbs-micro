@@ -59,6 +59,7 @@ module.exports = {
 
 		//==========================================   DATA   ====================================
 		[CF_ACTIONS_ANALYSIS.DATA_GET_DATA] 			: ANALYSIS__DATA_HANDLER.getData,
+		[CF_ACTIONS_ANALYSIS.DATA_GET_DATA] 			: ANALYSIS__DATA_HANDLER.exportExcel,
 		[CF_ACTIONS_ANALYSIS.DATA_CONVERT_DATA] 		: ANALYSIS__DATA_HANDLER.resetData,
 		[CF_ACTIONS_ANALYSIS.DATA_RESET_DATA] 			: ANALYSIS__DATA_HANDLER.convertData,
 	},

@@ -26,6 +26,7 @@ const CF_ACTIONS_ANALYSIS = {
      * OTHER
      */
     DATA_GET_DATA                      : `${BASE_ACTIONS}_${DATA}_GET_DATA`,
+    DATA_EXPORT_EXCEL                  : `${BASE_ACTIONS}_${DATA}_EXPORT_EXCEL`,
     DATA_CONVERT_DATA                  : `${BASE_ACTIONS}_${DATA}_CONVERT_DATA`,
     DATA_RESET_DATA                    : `${BASE_ACTIONS}_${DATA}_RESET_DATA`,
 }
