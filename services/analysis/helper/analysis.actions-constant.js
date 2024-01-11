@@ -1,10 +1,8 @@
-// liệt kê các actions của hệ thống
 const BASE_ACTIONS = 'ACT_ANALYSIS';
-/**
- * CASE_1, CASE_2 tương ứng trong phần AUTH SERVICE, có 2 coll: user, company
- */
+
 const HISTORY_TRAFFIC      = 'HISTORY_TRAFFIC';
 const HISTORY_LOG          = 'HISTORY_LOG';
+const DATA                 = 'DATA';
 
 const CF_ACTIONS_ANALYSIS = {
     /**
@@ -23,6 +21,13 @@ const CF_ACTIONS_ANALYSIS = {
     */
     HISTORY_LOG_INSERT                  : `${BASE_ACTIONS}_${HISTORY_LOG}_INSERT`,
     HISTORY_LOG_GET_INFO_AND_GET_LIST   : `${BASE_ACTIONS}_${HISTORY_LOG}_GET_INFO_AND_GET_LIST`,
+
+    /**
+     * OTHER
+     */
+    DATA_GET_DATA                      : `${BASE_ACTIONS}_${DATA}_GET_DATA`,
+    DATA_CONVERT_DATA                  : `${BASE_ACTIONS}_${DATA}_CONVERT_DATA`,
+    DATA_RESET_DATA                    : `${BASE_ACTIONS}_${DATA}_RESET_DATA`,
 }
 
 exports.CF_ACTIONS_ANALYSIS = CF_ACTIONS_ANALYSIS;
