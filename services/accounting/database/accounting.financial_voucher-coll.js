@@ -47,6 +47,11 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     },
+    //_________Phân loại khác (parent)
+    parentSubtype: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
     //_________Link với cơ sở nội bộ
     linkFunda: {
         type: Schema.Types.ObjectId,

@@ -59,7 +59,7 @@ class Model extends BaseModel {
         date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
-        goods, warehouse, contract, project, budgetWork, subtype,
+        goods, warehouse, contract, project, budgetWork, subtype, parentSubtype,
         note,
         ctx
     }) {
@@ -123,7 +123,7 @@ class Model extends BaseModel {
                     amount: amountNew, 
                     fcuExRate, fcuAmount,
                     goods, warehouse, 
-                    contract, project, budgetWork, subtype,
+                    contract, project, budgetWork, subtype, parentSubtype,
                     note,
                 }
 
@@ -231,7 +231,7 @@ class Model extends BaseModel {
         date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
-        goods, warehouse, contract, project, budgetWork, subtype,
+        goods, warehouse, contract, project, budgetWork, subtype, parentSubtype,
         note,
         ctx
      }) {
@@ -267,7 +267,7 @@ class Model extends BaseModel {
                     date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
-                    goods, warehouse, contract, project, budgetWork, subtype,
+                    goods, warehouse, contract, project, budgetWork, subtype, parentSubtype,
                     note,
                 }
 

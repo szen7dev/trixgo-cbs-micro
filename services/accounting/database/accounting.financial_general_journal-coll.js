@@ -42,6 +42,11 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     },
+    //_________Phân loại khác (parent)
+    parentSubtype: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
     /**
      * LINK NGÂN SÁCH
      */   

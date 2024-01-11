@@ -4,6 +4,7 @@ const BASE_ROUTE = '/analysis';
  */
 const HISTORY_TRAFFICS          = '/history_traffics';
 const HISTORY_LOGS              = '/history_logs';
+const DATA                      = '/data';
 
 const CF_ROUTINGS_ANALYSIS = {
     ORIGIN_APP: BASE_ROUTE,
@@ -15,8 +16,17 @@ const CF_ROUTINGS_ANALYSIS = {
     HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP: `${BASE_ROUTE}${HISTORY_TRAFFICS}/statistics_access_by_app`,
     HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_COMPANY: `${BASE_ROUTE}${HISTORY_TRAFFICS}/statistics_access_by_company`,
     HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP_AND_DEVICE: `${BASE_ROUTE}${HISTORY_TRAFFICS}/statistics_access_by_app_and_device`,
+
     // HISTORY_TRAFFIC
     HISTORY_LOGS             : `${BASE_ROUTE}${HISTORY_LOGS}`,
+
+    /**
+     * DATA
+     */
+    DATA_GET_DATA                      : `${BASE_ROUTE}${DATA}/get-data`,
+    DATA_EXPORT_EXCEL                  : `${BASE_ROUTE}${DATA}/export-excel`,
+    DATA_CONVERT_DATA                  : `${BASE_ROUTE}${DATA}/convert-data`,
+    DATA_RESET_DATA                    : `${BASE_ROUTE}${DATA}/reset-data`,
 }
 
 exports.CF_ROUTINGS_ANALYSIS = CF_ROUTINGS_ANALYSIS;
