@@ -54,6 +54,15 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert) {
+                    return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+                }
+                
                 if(parentID) {
                     await ITEM__AREA_COLL.findByIdAndUpdate(parentID, {
                         $addToSet: { childs: infoAfterInsert._id } 
