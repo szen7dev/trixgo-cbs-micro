@@ -1480,7 +1480,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, isCampaignType, isPaymentMethod, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID }) {
+    getList({ option, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, isCampaignType, isPaymentMethod, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID }) {
         // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
         return new Promise(async (resolve) => {
             try {
@@ -1549,6 +1549,11 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                if(option && option == 1){
+                    conditionObj = {company: companyID }
+                }
+                // console.log({option})
                 // console.log(conditionObj)
 
                 shiftsID && shiftsID.length                 && (conditionObj.shift = { $in: shiftsID });
@@ -1621,14 +1626,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Làm rõ mục đích để làm gì?
-                if (sortKey && typeof sortKey === 'string') {
-                    if (!IsJsonString(sortKey))
-                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
-
-                    keys = JSON.parse(sortKey);
-                }
-
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -1648,6 +1645,7 @@ class Model extends BaseModel {
 
                     conditionObj.name = regSearch
                 }
+                // console.log(conditionObj)
 
                 if(select && typeof select === 'string'){
                     if(!IsJsonString(select))

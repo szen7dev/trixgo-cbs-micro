@@ -185,19 +185,20 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID } = ctx.params;
-				const { _id: userID, email, fullname, company } = ctx.meta.infoUser;
+                let { option, orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID } = ctx.params;
+				
+                const { _id: userID, email, fullname, company } = ctx.meta.infoUser;
                 // console.log({ email, fullname})
 
                 let resultAfterCallHandler;
                 if(orderID){
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getInfo({
                         orderID, select, populates,
-                    });
+                    })
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID
-                    });
+                        option, companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID
+                    })
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
