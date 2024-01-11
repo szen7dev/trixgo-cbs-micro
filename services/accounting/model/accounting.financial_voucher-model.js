@@ -26,7 +26,8 @@ const stringUtils					        = require('../../../tools/utils/string_utils')
  * COLLECTIONS
  */
 const ITEM__ACCOUNT_COLL                            = require('../../item/database/item.account-coll')
-const ITEM_FUNDA_COLL                                    = require('../../item/database/item.funda-coll')
+const ITEM__DOCTYPE_COLL                            = require('../../item/database/item.doctype-coll')
+const ITEM_FUNDA_COLL                               = require('../../item/database/item.funda-coll')
 const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
@@ -144,8 +145,19 @@ class Model extends BaseModel {
                     dataInsertVoucher.contract = contractID;
                 }
 
+                // Khoản mục phí
+                let parentSubtypeID
                 if (subtypeID && checkObjectIDs(subtypeID)) {
                     dataInsertVoucher.subtype = subtypeID;
+
+                    let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subtypeID).select('parent')
+                    if(infoSubtype.parent && _isValid(infoSubtype.parent)){
+                        parentSubtypeID = infoSubtype.parent
+                    }else{
+                        parentSubtypeID = subtypeID
+                    }
+
+                    dataInsertVoucher.parentSubtype = parentSubtypeID;
                 }
 
                 if (warehouseID && checkObjectIDs(warehouseID)) {
@@ -262,6 +274,7 @@ class Model extends BaseModel {
                          */
                         if(subtypeID && _isValid(subtypeID)){
                             dataInsert.subtype = subtypeID;
+                            dataInsert.parentSubtype = parentSubtypeID;
                         }
 
                         /**
@@ -418,10 +431,22 @@ class Model extends BaseModel {
                     dataUpdateVoucher.storage = null
                 }
 
+                // Khoản mục phí
+                let parentSubtypeID
                 if (subtypeID && checkObjectIDs(subtypeID)) {
                     dataUpdateVoucher.subtype = subtypeID;
+
+                    let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subtypeID).select('parent')
+                    if(infoSubtype.parent && _isValid(infoSubtype.parent)){
+                        parentSubtypeID = infoSubtype.parent
+                    }else{
+                        parentSubtypeID = subtypeID
+                    }
+
+                    dataUpdateVoucher.parentSubtype = parentSubtypeID;  
                 }else{
                     dataUpdateVoucher.subtype = null
+                    dataUpdateVoucher.parentSubtype = null
                 }
 
                 if (warehouseID && checkObjectIDs(warehouseID)) {
@@ -522,6 +547,7 @@ class Model extends BaseModel {
 
                             if (subtypeID && checkObjectIDs(subtypeID)) {
                                 dataInsert.subtype = subtypeID;
+                                dataInsert.parentSubtype = parentSubtypeID;
                             }            
     
                             /**
@@ -632,8 +658,10 @@ class Model extends BaseModel {
 
                             if (subtypeID && checkObjectIDs(subtypeID)) {
                                 dataUpdate.subtype = subtypeID;
+                                dataUpdate.parentSubtype = parentSubtypeID;
                             }else{
                                 dataUpdate.subtype = null
+                                dataUpdate.parentSubtype = null
                             }    
 
                             /**

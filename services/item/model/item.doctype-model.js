@@ -138,43 +138,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Dev: MinhVH
-     * Func: Remove doctype => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
-     * Date: 22/02/2022
-     */
-    remove({ doctypesID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                const validation = validateParamsObjectID({
-                    doctypesID,
-                    userID
-                })
-                if(validation.error) return resolve(validation);
-
-                const result = await ITEM__DOCTYPE_COLL.deleteMany({
-                    _id: {
-                        $in: doctypesID
-                    },
-                    type: 21 // Message NPS
-                });
-
-                if(!result) {
-                    return resolve({
-                        error: true,
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
-                        keyError: 'error_occurred',
-                        status: 422
-                    });
-                }
-
-                return resolve({ error: false, status: 200, data: result })
-            } catch(error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
      * Name: get Hợp đồng
      * Author: Depv
      * Code:
@@ -234,6 +197,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({ companyID, projectID, parentID, type, keyword, limit = 10, lastestID, select, populates, isShowParentAndChild }) {
+        // console.log({ companyID, projectID, parentID, type, keyword, limit, lastestID, select, populates, isShowParentAndChild })
         return new Promise(async (resolve) => {
             try {
                 if(isNaN(limit) || +limit > 20) {
