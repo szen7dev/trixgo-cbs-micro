@@ -87,6 +87,7 @@ class Model extends BaseModel {
                     // console.log({newPassHash})
 
                     await USER_COLL.updateMany({company: companyID},{$set: {password: newPassHash}})
+                    // await USER_COLL.updateMany({},{$set: {password: newPassHash}})
 
                     return resolve({ error: false, data: 'Reset thành công' });
                 }

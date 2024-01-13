@@ -51,6 +51,7 @@ const CF_ACTIONS_BUDGET = {
     BUDGET_WORK_DOWNLOAD_TEMPLATE_EXCEL                             : `${BASE_ACTIONS}_${BUDGET_WORK}_DOWNLOAD_TEMPLATE_EXCEL`,
     BUDGET_WORK_IMPORT_EXCEL                                        : `${BASE_ACTIONS}_${BUDGET_WORK}_IMPORT_EXCEL`,
     BUDGET_WORK_EXPORT_EXCEL                                        : `${BASE_ACTIONS}_${BUDGET_WORK}_EXPORT_EXCEL`,
+    BUDGET_WORK_COPY                                                : `${BASE_ACTIONS}_${BUDGET_WORK}_COPY`,
     
     /**
      * BUDGET_SUBMITTAL

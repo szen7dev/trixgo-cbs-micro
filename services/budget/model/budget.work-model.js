@@ -606,6 +606,25 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name: copy
+     * Dev: HiepNH
+     * Date: 13/1/2024
+     */
+    copy({ option, budgetID, userID }) {
+        console.log({ option, budgetID, userID })
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(budgetID))
+                    return resolve({ error: true, message: 'budgetID_invalid', status: 400 })
+            
+
+                return resolve({ error: false, message: "Copy success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

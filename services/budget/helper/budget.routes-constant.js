@@ -31,6 +31,7 @@ const CF_ROUTINGS_BUDGET = {
     BUDGET_WORK_DOWNLOAD_TEMPLATE_EXCEL                            : `${BASE_ROUTE}${BUDGET_WORK}/download-template-excel`,
     BUDGET_WORK_IMPORT_EXCEL                                       : `${BASE_ROUTE}${BUDGET_WORK}/import-excel`,
     BUDGET_WORK_EXPORT_EXCEL                                       : `${BASE_ROUTE}${BUDGET_WORK}/export-excel`,
+    BUDGET_WORK_COPY                                               : `${BASE_ROUTE}${BUDGET_WORK}/copy`,
     
     // ================================BUDGET_SUBMITTAL============================================//
     BUDGET_SUBMITTAL                                               : `${BASE_ROUTE}${BUDGET_SUBMITTAL}`,    

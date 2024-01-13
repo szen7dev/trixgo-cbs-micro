@@ -289,5 +289,33 @@
             }
         }
     },
+
+    /**
+     * Name: copy
+     * Dev: HiepNH
+     * Date: 13/1/2024
+     */
+    copy: {
+        auth: 'required',
+        params: {
+            budgetID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, email, company } = ctx.meta.infoUser;
+                let { option, budgetID } = ctx.params;
+                console.log({ budgetID })
+
+                const resultAfterCallHandler = await BUDGET__WORK_MODEL.copy({
+                    option, budgetID, userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    }, 
     
  }
