@@ -77,6 +77,7 @@ module.exports = {
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_DOWNLOAD_TEMPLATE_EXCEL]				 		: BUDGET__WORK_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_IMPORT_EXCEL]								: BUDGET__WORK_HANDLER.importExcel,
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_EXPORT_EXCEL]								: BUDGET__WORK_HANDLER.exportExcel,
+		[CF_ACTIONS_BUDGET.BUDGET_WORK_COPY]										: BUDGET__WORK_HANDLER.copy,
 
 		//==========================================   BUDGET_SUBMITTAL   ================================//
 		[CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_INSERT]   			 					: BUDGET__SUBMITTAL_HANDLER.insert,

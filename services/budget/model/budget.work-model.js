@@ -15,10 +15,10 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**
  * import inter-coll, exter-coll
  */
- const BUDGET_COLL                       = require('../database/budget-coll');
- const BUDGET__ITEM_COLL                 = require('../database/budget.item-coll');
- const BUDGET__GROUP_COLL                = require('../database/budget.group-coll');
- const BUDGET__WORK_COLL                 = require('../database/budget.work-coll');
+const BUDGET_COLL                       = require('../database/budget-coll');
+const BUDGET__ITEM_COLL                 = require('../database/budget.item-coll');
+const BUDGET__GROUP_COLL                = require('../database/budget.group-coll');
+const BUDGET__WORK_COLL                 = require('../database/budget.work-coll');
 
 const BUDGET_MODEL                      = require('./budget-model').MODEL;
 const BUDGET__ITEM_MODEL                = require('./budget.item-model').MODEL;
@@ -606,6 +606,104 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name: copy
+     * Dev: HiepNH
+     * Date: 13/1/2024
+     */
+    copy({ option, budgetID, userID }) {
+        // console.log({ option, budgetID, userID })
+        const that = this
+        return new Promise(async resolve => {
+            try {
+                let infoBudget = await BUDGET_COLL.findById(budgetID).select('company name sign type')
+                if(!infoBudget)
+                    return resolve({ error: true, message: 'budgetID_invalid', status: 400 })
+
+                let companyID = infoBudget.company
+
+                let infoBudgetNew = await BUDGET_MODEL.insert({ 
+                    userID, 
+                    companyID, 
+                    type: infoBudget.type, 
+                    name: `${infoBudget.name}_Copy`, 
+                    sign: infoBudget.sign, 
+                })
+                // console.log(infoBudgetNew)
+
+                if(infoBudgetNew){
+                    let listItem = await BUDGET__ITEM_COLL.find({budget: budgetID})
+                    // console.log(listItem)
+
+                    for(const item of listItem){
+                        // console.log(item)
+                        let infoItemNew = await BUDGET__ITEM_MODEL.insert({
+                            userID, 
+                            budgetID: infoBudgetNew.data._id, 
+                            plus: item.plus, 
+                            name: item.name, 
+                            sign: item.sign, 
+                            unit: item.unit, 
+                            description: item.description, 
+                            note: item.note, 
+                            type: item.type, 
+                        })
+
+                        if(infoItemNew){
+                            let listGroup = await BUDGET__GROUP_COLL.find({item: item._id})
+                            // console.log(listGroup)
+
+                            for(const group of listGroup){
+                                // console.log(group)
+                                let infoGroupNew = await BUDGET__GROUP_MODEL.insert({
+                                    userID, 
+                                    itemID: infoItemNew.data._id, 
+                                    plus: group.plus, 
+                                    name: group.name, 
+                                    sign: group.sign, 
+                                    unit: group.unit, 
+                                    description: group.description, 
+                                    note: group.note, 
+                                    type: group.type, 
+                                })
+
+                                if(infoGroupNew){
+                                    let listWork = await BUDGET__WORK_COLL.find({group: group._id})
+                                    // console.log(listWork)
+
+                                    for(const work of listWork){
+                                        // console.log(work)
+
+                                        let infoWorkNew = await that.insert({
+                                            userID, 
+                                            groupID: infoGroupNew.data._id, 
+                                            plus: work.plus, 
+                                            name: work.name, 
+                                            sign: work.sign, 
+                                            unit: work.unit, 
+                                            description: work.description, 
+                                            note: work.note, 
+                                            type: work.type, 
+                                            quantity: work.quantity, 
+                                            unitPrice: work.unitPrice, 
+                                            forecastQuantity: work.forecastQuantity, 
+                                            forecastUnitPrice: work.forecastUnitPrice,
+                                        })
+                                    }
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            
+
+                return resolve({ error: false, message: "Copy success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

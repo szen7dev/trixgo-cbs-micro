@@ -37,6 +37,7 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	insert({ appID, menuID, type, companyOfAuthor, userCreate }){
+        console.log({ appID, menuID, type, companyOfAuthor, userCreate })
         return new Promise(async resolve => { 
             try {
                 let dataInsert = { companyOfAuthor, userCreate}; 

@@ -2,7 +2,7 @@ const BASE_ACTIONS = 'ACT_ANALYSIS';
 
 const HISTORY_TRAFFIC      = 'HISTORY_TRAFFIC';
 const HISTORY_LOG          = 'HISTORY_LOG';
-const DATA                 = 'DATA';
+const HISTORY_DATA          = 'HISTORY_DATA';
 
 const CF_ACTIONS_ANALYSIS = {
     /**
@@ -25,10 +25,10 @@ const CF_ACTIONS_ANALYSIS = {
     /**
      * OTHER
      */
-    DATA_GET_DATA                      : `${BASE_ACTIONS}_${DATA}_GET_DATA`,
-    DATA_EXPORT_EXCEL                  : `${BASE_ACTIONS}_${DATA}_EXPORT_EXCEL`,
-    DATA_CONVERT_DATA                  : `${BASE_ACTIONS}_${DATA}_CONVERT_DATA`,
-    DATA_RESET_DATA                    : `${BASE_ACTIONS}_${DATA}_RESET_DATA`,
+    HISTORY_DATA_GET_DATA                      : `${BASE_ACTIONS}_${HISTORY_DATA}_GET_DATA`,
+    HISTORY_DATA_EXPORT_EXCEL                  : `${BASE_ACTIONS}_${HISTORY_DATA}_EXPORT_EXCEL`,
+    HISTORY_DATA_CONVERT_DATA                  : `${BASE_ACTIONS}_${HISTORY_DATA}_CONVERT_DATA`,
+    HISTORY_DATA_RESET_DATA                    : `${BASE_ACTIONS}_${HISTORY_DATA}_RESET_DATA`,
 }
 
 exports.CF_ACTIONS_ANALYSIS = CF_ACTIONS_ANALYSIS;
