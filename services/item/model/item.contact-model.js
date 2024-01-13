@@ -77,7 +77,7 @@ class Model extends BaseModel {
                 if(!regexPhoneNumber(phone))
                     return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
                 let checkPhone = phone.replace(/\s/g, "").length
-                if(Number(checkPhone) != 10)
+                if(Number(checkPhone) < 10)
                     return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
 
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
@@ -432,7 +432,7 @@ class Model extends BaseModel {
                 if(!regexPhoneNumber(phone))
                     return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
                 let checkPhone = phone.replace(/\s/g, "").length
-                if(Number(checkPhone) != 10)
+                if(Number(checkPhone) < 10)
                     return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
 
                 //___________Kiểm tra việc trùng mã hiệu

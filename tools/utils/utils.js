@@ -540,6 +540,7 @@ exports.validateParamsObjectID = (params) => {
  * VALIDATE SỐ ĐIỆN THOẠI
  */
 exports.regexPhoneNumber = (phone) => {
-    const regexPhoneNumber = /(84|0[2|3|5|6|7|8|9])+([0-9]{8})\b/g;
+    // const regexPhoneNumber = /(84|0[2|3|5|6|7|8|9])+([0-9]{8})\b/g;
+    const regexPhoneNumber = /(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/; // Cho đầu 01
     return phone.match(regexPhoneNumber) ? true : false;
 }
