@@ -10,21 +10,21 @@ const { CF_ACTIONS_ANALYSIS } 	        = require('./helper/analysis.actions-cons
  */
 const ANALYSIS__HISTORY_TRAFFIC_HANDLER  = require('./handler/analysis.history_traffic-hanlder');
 const ANALYSIS__HISTORY_LOG_HANDLER   	 = require('./handler/analysis.history_log-hanlder');
-const ANALYSIS__DATA_HANDLER   	 		 = require('./handler/analysis.data-hanlder');
+const ANALYSIS__HISTORY_DATA_HANDLER   	 = require('./handler/analysis.history_data-hanlder');
 
 /**
  * COLLECTIONS
  */
 const ANALYSIS__HISTORY_TRAFFIC_COLL	= require('./database/analysis.history_traffic-coll');
 const ANALYSIS__HISTORY_LOG_COLL	  	= require('./database/analysis.history_log-coll');
-const ANALYSIS__DATA_COLL	  			= require('./database/analysis.data-coll');
+const ANALYSIS__HISTORY_DATA_COLL	  	= require('./database/analysis.history_data-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ANALYSIS,
 	mixins: [
-		DbService(ANALYSIS__HISTORY_TRAFFIC_COLL),  
-		DbService(ANALYSIS__HISTORY_LOG_COLL),  
-		DbService(ANALYSIS__DATA_COLL),  
+		DbService('history_traffics'),  
+		DbService('history_logs'),  
+		DbService('history_datas'),  
 		CacheCleaner([CF_DOMAIN_SERVICES.ANALYSIS])
     ],
 	
@@ -57,11 +57,11 @@ module.exports = {
 		[CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT] 				: ANALYSIS__HISTORY_LOG_HANDLER.insert,
 		[CF_ACTIONS_ANALYSIS.HISTORY_LOG_GET_INFO_AND_GET_LIST] : ANALYSIS__HISTORY_LOG_HANDLER.getInfoAndGetList,
 
-		//==========================================   DATA   ====================================
-		[CF_ACTIONS_ANALYSIS.DATA_GET_DATA] 			: ANALYSIS__DATA_HANDLER.getData,
-		[CF_ACTIONS_ANALYSIS.DATA_GET_DATA] 			: ANALYSIS__DATA_HANDLER.exportExcel,
-		[CF_ACTIONS_ANALYSIS.DATA_CONVERT_DATA] 		: ANALYSIS__DATA_HANDLER.resetData,
-		[CF_ACTIONS_ANALYSIS.DATA_RESET_DATA] 			: ANALYSIS__DATA_HANDLER.convertData,
+		//==========================================   HISTORY_DATA   ====================================
+		[CF_ACTIONS_ANALYSIS.HISTORY_DATA_GET_DATA] 			: ANALYSIS__HISTORY_DATA_HANDLER.getData,
+		[CF_ACTIONS_ANALYSIS.HISTORY_DATA_EXPORT_EXCEL] 		: ANALYSIS__HISTORY_DATA_HANDLER.exportExcel,
+		[CF_ACTIONS_ANALYSIS.HISTORY_DATA_RESET_DATA] 			: ANALYSIS__HISTORY_DATA_HANDLER.resetData,
+		[CF_ACTIONS_ANALYSIS.HISTORY_DATA_CONVERT_DATA] 		: ANALYSIS__HISTORY_DATA_HANDLER.convertData,
 	},
 	
 	/**
