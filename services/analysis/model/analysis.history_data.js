@@ -82,14 +82,13 @@ class Model extends BaseModel {
                 if(option == 1){
                     return resolve({ error: false, data: 'Reset thành công' });
                 }else if(option == 2){
-
-                    const newPassHash = await hash(newPassword, 8)
-                    // console.log({newPassHash})
-
-                    await USER_COLL.updateMany({company: companyID},{$set: {password: newPassHash}})
-                    // await USER_COLL.updateMany({},{$set: {password: newPassHash}})
-
-                    return resolve({ error: false, data: 'Reset thành công' });
+                    if(companyID && checkObjectIDs(companyID)){
+                        const newPassHash = await hash(newPassword, 8)
+                        await USER_COLL.updateMany({company: companyID},{$set: {password: newPassHash}})
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }else{
+                        return resolve({ error: false, data: 'Reset thất bại' })
+                    }
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
