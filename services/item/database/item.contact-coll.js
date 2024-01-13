@@ -169,29 +169,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     sallaryBasic: { type: Number, default: 0 },
     //_________Số tiền đóng BH
     insuranceFee: { type: Number, default: 0 },
-    /**
-     * HỒ SƠ CHI TIẾT
-     */
-    // //_________Nơi làm việc hiện tại
-    // workplace:[{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'department'
-    // }],
-    // //_________Trình độ học vấn
-    // educationalBackground:[{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'doctype'
-    // }],
-    // //_________Chuyên ngành đào tạo
-    // major:[{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'doctype'
-    // }],
-    // //_________Chi tiết hồ sơ tài liệu liên đới
-    // documents: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'contact_document'
-    // }],
     //_________Phân loại thâm niên
     seniority:{
         type: Schema.Types.ObjectId,
