@@ -39,24 +39,17 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, ctx }) {
+    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor }) {
         return new Promise(async resolve => {
             try {
-                if(!_isValid(contactID))
-                    return resolve({ error: true, message: 'param_not_valid' });
-
-                // call service item contact để lấy thông tin
-                let infoContact = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST}`, {
-                    contactID
-                })
-
-                if(!infoContact || infoContact.error)
-                    return resolve({ error: true, message: 'param_not_valid' });
+                let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('company')
+                if(!infoContact)
+                    return resolve({ error: true, message: 'contactID_not_valid' })
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     userCreate,
-                    company: infoContact.data.company,
+                    company: infoContact.company,
                     contact: contactID,
                     type: !isNaN(type) ? Number(type) : 1,
                     number: !isNaN(number) ? Number(number) : 0,
