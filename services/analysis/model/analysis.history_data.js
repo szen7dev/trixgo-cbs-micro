@@ -25,6 +25,8 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  */
 const USER_COLL                         = require('../../auth/database/auth.user-coll')
 const ANALYSIS__HISTORY_DATA_COLL       = require('../database/analysis.history_data-coll')
+const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const TIMESHEET__EXPERT_SALARY_COLL     = require('../../timesheet/database/timesheet.expert_salary-coll')
 
 class Model extends BaseModel {
 
@@ -75,20 +77,34 @@ class Model extends BaseModel {
         })
     }
 
-    resetData({ option, companyID, page, unit, getNumber, newPassword }){
+    resetData({ option, companyID, page, unit, getNumber, newPassword, pass }){
         // console.log({ option, companyID, page, unit, getNumber, newPassword })
         return new Promise(async resolve => { 
             try {
-                if(option == 1){
-                    return resolve({ error: false, data: 'Reset thành công' });
-                }else if(option == 2){
-                    if(companyID && checkObjectIDs(companyID)){
-                        const newPassHash = await hash(newPassword, 8)
-                        await USER_COLL.updateMany({company: companyID},{$set: {password: newPassHash}})
-                        return resolve({ error: false, data: 'Reset thành công' })
-                    }else{
-                        return resolve({ error: false, data: 'Reset thất bại' })
+                if(pass && pass == 'Hiepnh1985@#'){
+                    if(option == 1){
+                        return resolve({ error: false, data: 'Reset thành công' });
+                    }else if(option == 2){
+                        if(companyID && checkObjectIDs(companyID)){
+                            const newPassHash = await hash(newPassword, 8)
+                            await USER_COLL.updateMany({company: companyID},{$set: {password: newPassHash}})
+                            return resolve({ error: false, data: 'Reset thành công' })
+                        }else{
+                            return resolve({ error: false, data: 'Reset thất bại' })
+                        }
                     }
+                    else if(option == 3){
+                        if(companyID && checkObjectIDs(companyID)){
+    
+                            await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({company: companyID})
+                            await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({company: companyID})
+                            return resolve({ error: false, data: 'Reset thành công' })
+                        }else{
+                            return resolve({ error: false, data: 'Reset thất bại' })
+                        }
+                    }
+                }else{
+                    return resolve({ error: false, data: 'Pass không đúng, Reset thất bại' })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
