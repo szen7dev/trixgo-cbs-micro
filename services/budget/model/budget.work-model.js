@@ -160,6 +160,7 @@ class Model extends BaseModel {
     update({ 
         workID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount, userID
     }){ 
+        // console.log({workID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount, userID})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -178,7 +179,7 @@ class Model extends BaseModel {
                 if(!infoWork)
                     return resolve({ error: true, message: "workID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date(), name };
 
                 if(checkObjectIDs(reasonID)){
                     dataUpdate.reason = reasonID
