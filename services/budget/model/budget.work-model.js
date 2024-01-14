@@ -621,6 +621,10 @@ class Model extends BaseModel {
                 if(!infoBudget)
                     return resolve({ error: true, message: 'budgetID_invalid', status: 400 })
 
+                let year = new Date().getFullYear()
+                let month = new Date().getMonth() + 1
+                let prefix = `Y${year}M${month}`
+
                 let companyID = infoBudget.company
 
                 let infoBudgetNew = await BUDGET_MODEL.insert({ 
@@ -680,8 +684,8 @@ class Model extends BaseModel {
                                             groupID: infoGroupNew.data._id, 
                                             plus: work.plus, 
                                             name: work.name, 
-                                            sign: work.sign, 
-                                            unit: work.unit, 
+                                            sign: `${prefix}${work.sign}`, 
+                                            unit: work.unit ? work.unit : '', 
                                             description: work.description, 
                                             note: work.note, 
                                             type: work.type, 
