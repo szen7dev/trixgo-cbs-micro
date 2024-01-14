@@ -77,7 +77,7 @@ class Model extends BaseModel {
         })
     }
 
-    resetData({ option, companyID, page, unit, getNumber, newPassword, pass }){
+    resetData({ option, companyID, page, unit, getNumber, newPassword, pass, salaryID }){
         // console.log({ option, companyID, page, unit, getNumber, newPassword })
         return new Promise(async resolve => { 
             try {
@@ -94,14 +94,15 @@ class Model extends BaseModel {
                         }
                     }
                     else if(option == 3){
-                        if(companyID && checkObjectIDs(companyID)){
-                            // Cần fix reset theo tháng-năm
-    
-                            // await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({company: companyID})
-                            await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({company: companyID})
+                        if(salaryID && checkObjectIDs(salaryID)){    
+                            await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                            await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
                             return resolve({ error: false, data: 'Reset thành công' })
                         }else{
-                            return resolve({ error: false, data: 'Reset thất bại' })
+                            if(companyID && checkObjectIDs(companyID)){    
+                                await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({company: companyID})
+                                return resolve({ error: false, data: 'Reset thành công' })
+                            }
                         }
                     }
                 }else{

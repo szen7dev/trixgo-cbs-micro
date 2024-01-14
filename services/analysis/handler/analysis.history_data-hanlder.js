@@ -101,7 +101,7 @@ module.exports = {
                 // console.log('===========================')
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { option, companyID, page, unit, getNumber, newPassword, pass } = ctx.params;
+                let { option, companyID, page, unit, getNumber, newPassword, pass, salaryID } = ctx.params;
 
                 // console.log('===========================')
                 // console.log(ctx.params)
@@ -111,7 +111,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ANALYSIS__HISTORY_DATA_MODEL.resetData({
-                    option, email, userID, companyID, page, unit, getNumber, newPassword, pass
+                    option, email, userID, companyID, page, unit, getNumber, newPassword, pass, salaryID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
