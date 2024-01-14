@@ -12,10 +12,8 @@ const { CF_ROUTINGS_GATEWAY } 		= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-constant');
 const { CF_ROUTINGS_DOCUMENT } 		= require('../document/helper/document.routes-constant');
-const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-constant');
 const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-constant');
 const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
-const { CF_ROUTINGS_INSPECTION } 	= require('../inspection/helper/inspection.routes-constant');
 const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constant');
 const { CF_ROUTINGS_ITEM } 	    	= require('../item/helper/item.routes-constant');
 const { CF_ROUTINGS_CONTACT }		= require('../human/helper/human.routes-constant');
@@ -42,10 +40,8 @@ const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
 const { CF_ACTIONS_DOCUMENT } 		= require('../document/helper/document.actions-constant');
-const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
-const { CF_ACTIONS_INSPECTION } 	= require('../inspection/helper/inspection.actions-constant');
 const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM } 	        = require('../item/helper/item.actions-constant');
 const { CF_ACTIONS_CONTACT }		= require('../human/helper/human.actions-constant');
@@ -408,22 +404,6 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_CHATTING.GET_LIST_REACTION_MESSAGE_CONVERSATION}`] :
 		[`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.GET_LIST_REACTION_MESSAGE_CONVERSATION}`],
 
-		//--------------------------aliases's PAYMENT service--------------------------//
-		[`GET ${CF_ROUTINGS_PAYMENT.GET_LIST_TRANSACTION}`] :
-		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.GET_LIST_TRANSACTION}`],
-
-		[`GET ${CF_ROUTINGS_PAYMENT.GET_LIST_TRANSACTION_BY_USER_WITH_STATUS}`] :
-		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.GET_LIST_TRANSACTION_BY_USER_WITH_STATUS}`],
-
-		[`PUT ${CF_ROUTINGS_PAYMENT.UPDATE_STATUS}`] :
-		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.UPDATE_STATUS}`],
-
-		[`POST ${CF_ROUTINGS_PAYMENT.CREATE_URL_PAYMENT}`] :
-		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.CREATE_URL_PAYMENT}`],
-
-		[`GET ${CF_ROUTINGS_PAYMENT.URL_RETURN_PAYMENT}`] :
-		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_RETURN_PAYMENT}`],
-
 		//--------------------------aliases's REMINDER service--------------------------//
 		[`GET ${CF_ROUTINGS_REMINDER.REMINDERS}`] :
 		[`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB}`],
@@ -446,129 +426,6 @@ module.exports = {
 
 		[`POST ${CF_ROUTINGS_FILE.GENERATE_LINK_S3}`] :
 		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GENERATE_LINK_S3}`],
-
-		//--------------------------aliases's S021.INSPECTION service--------------------------//
-
-		//---------------------------🏁 S021 START SERVICE INSPECTION. AREA 🏁----------------------//
-		//A0226
-		[`POST ${CF_ROUTINGS_INSPECTION.AREA}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_INSERT}`],
-
-		//A0227
-		[`PUT ${CF_ROUTINGS_INSPECTION.AREA}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_UPDATE}`],
-
-		//A0228
-		[`DELETE ${CF_ROUTINGS_INSPECTION.AREA}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_REMOVE}`],
-
-		//A0229
-		[`GET ${CF_ROUTINGS_INSPECTION.AREA}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_LIST}`],
-		//------------------------------S021 END SERVICE INSPECTION. AREA------------------------//
-
-		//---------------------------🏁 S021 START SERVICE INSPECTION. GROUP 🏁----------------------//
-		//A0226
-		[`POST ${CF_ROUTINGS_INSPECTION.GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.GROUP_INSERT}`],
-
-		//A0227
-		[`PUT ${CF_ROUTINGS_INSPECTION.GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.GROUP_UPDATE}`],
-
-		//A0228
-		[`DELETE ${CF_ROUTINGS_INSPECTION.GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.GROUP_REMOVE}`],
-
-		//A0229
-		[`GET ${CF_ROUTINGS_INSPECTION.GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.GROUP_LIST}`],
-		//------------------------------S021 END SERVICE INSPECTION. GROUP------------------------//
-
-
-		//---------------------------🏁 S021 START SERVICE INSPECTION. AREA_GROUP 🏁----------------------//
-		//A0226
-		[`POST ${CF_ROUTINGS_INSPECTION.AREA_GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_GROUP_INSERT}`],
-
-		//A0227
-		[`PUT ${CF_ROUTINGS_INSPECTION.AREA_GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_GROUP_UPDATE}`],
-
-		//A0228
-		[`DELETE ${CF_ROUTINGS_INSPECTION.AREA_GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_GROUP_REMOVE}`],
-
-		//A0229
-		[`GET ${CF_ROUTINGS_INSPECTION.AREA_GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_GROUP_LIST}`],
-		//------------------------------S021 END SERVICE INSPECTION. AREA------------------------//
-
-		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC 🏁----------------------//
-		[`GET ${CF_ROUTINGS_INSPECTION.DOCS}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_LIST}`],
-
-		[`POST ${CF_ROUTINGS_INSPECTION.DOCS}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_INSERT}`],
-
-		[`PUT ${CF_ROUTINGS_INSPECTION.DOCS}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_UPDATE}`],
-
-		[`DELETE ${CF_ROUTINGS_INSPECTION.DOCS}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_REMOVE}`],
-
-		[`GET ${CF_ROUTINGS_INSPECTION.DOC_GET_LIST_BY_FILTER}`]:
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_GET_LIST_BY_FILTER}`],
-
-		[`GET ${CF_ROUTINGS_INSPECTION.DOC_GET_LIST_BY_PROPERTY}`]:
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_GET_LIST_BY_PROPERTY}`],
-		//---------------------------- S021 START SERVICE INSPECTION. DOC---------------------------//
-
-		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC CHECKLIST 🏁---------------------------//
-		[`GET ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_LIST}`],
-
-		[`POST ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_INSERT}`],
-
-		[`PUT ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_UPDATE}`],
-
-		[`DELETE ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_REMOVE}`],
-		//------------------------------ S021 END SERVICE INSPECTION. DOC CHECKLIST---------------------------//
-
-		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC COMMENT 🏁---------------------------//
-		//A0234
-		[`POST ${CF_ROUTINGS_INSPECTION.DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_COMMENT_INSERT}`],
-
-		//A0235
-		[`PUT ${CF_ROUTINGS_INSPECTION.DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_COMMENT_UPDATE}`],
-
-		//A0236
-		[`DELETE ${CF_ROUTINGS_INSPECTION.DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_COMMENT_REMOVE}`],
-
-		//A0237
-		[`GET ${CF_ROUTINGS_INSPECTION.DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_COMMENT_LIST}`],
-		//--------------------------S021 END SERVICE INSPECTION. DOC COMMENT---------------------------//
-
-		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC REACTION 🏁---------------------------//
-		//A0238
-		[`POST ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_REACTION_INSERT}`],
-
-		//A0239
-		[`DELETE ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_REACTION_REMOVE}`],
-
-		//A0240
-		[`GET ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_REACTION_LIST}`],
-		//---------------------------S021 END SERVICE INSPECTION. DOC REACTION---------------------------//
 
 
 		//---------------------------🏁 START SERVICE ITEM 🏁---------------------------//
