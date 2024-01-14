@@ -356,11 +356,11 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regExpSearch = RegExp(keyword, 'i');
                    
-                    // conditionObj.name = regExpSearch;
-                    conditionObj.$or = [
-                        { name: regExpSearch },
-                        { sign: regExpSearch }
-                    ]
+                    conditionObj.namecv = regExpSearch;
+                    // conditionObj.$or = [
+                    //     { name: regExpSearch },
+                    //     { sign: regExpSearch }
+                    // ]
                 }
                 let conditionObjOrg = { ...conditionObj };
 
