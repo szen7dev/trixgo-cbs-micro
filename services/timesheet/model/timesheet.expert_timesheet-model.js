@@ -116,7 +116,6 @@ class Model extends BaseModel {
                     dataInsert.unitprice = unitprice2
                     dataInsert.amount = amount
                 }
-
                 // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);

@@ -34,7 +34,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert expert timesheet
+     * Name: Insert
      * Author: HiepNH
      * Code: 22/11/2023
      */
@@ -137,7 +137,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update expert timesheet
+     * Name: Update
      * Author: HiepNH
      * Code: 22/11/2023
      */
@@ -273,29 +273,7 @@ class Model extends BaseModel {
 
                 // Cập nhật giá trị vào Bảng lương
                 if(infoAfterUpdate.parent && checkObjectIDs(infoAfterUpdate.parent)){
-                    console.log('11111111111111111111111111')
-                    /**
-                     * CẬP NHẬT CHI TIẾT LƯƠNG
-                     */
                     await that.updateValue( {expertSalaryID: infoAfterUpdate.parent, userID })
-                }else{
-                    console.log('22222222222222222222222222')
-                    /**
-                     * CẬP NHẬT BẢNG LƯƠNG CHA
-                     */
-                    // Cập nhật hệ số chuyển đổi KPI sang giá trị
-                    let infoCompany = await AUTH__COMPANY_COLL.findById(companyID)
-                    await TIMESHEET__EXPERT_SALARY_COLL.updateMany({ parent: expertSalaryID }, { $set: { convertFactor: infoCompany.convertFactor, }})
-                    // console.log({convertFactor:infoCompany.convertFactor})
-
-                    // Cập nhật bảng chấm công vào bảng lương
-                    await that.updateValueTimesheet({ expertSalaryID, userID, companyID })
-
-                    // Cập nhật KPI vào bảng lương
-                    await that.updateValueKpi( { expertSalaryID, userID, companyID })
-
-                    // Cập nhật chi tiết lương vào bảng lương
-                    await that.updateValue( {expertSalaryID, userID })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
@@ -360,7 +338,11 @@ class Model extends BaseModel {
         })
     }
 
-    // Cập nhật Bảng chấm công => Bảng lương
+    /**
+     * Name: Cập nhật Bảng chấm công => Bảng lương
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
     updateValueTimesheet({ 
         expertSalaryID, userID, companyID
     }){ 
@@ -430,7 +412,11 @@ class Model extends BaseModel {
         })
     }
 
-     // Cập nhật KPI => Bảng lương
+    /**
+     * Name: Cập nhật KPI => Bảng lương
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
      updateValueKpi({ 
         expertSalaryID, userID, companyID
     }){ 
@@ -508,6 +494,79 @@ class Model extends BaseModel {
                 return resolve({ error: false, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+    
+    /**
+     * Name: Đồng bộ data
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
+    syncData({ 
+        option, salaryID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+                // // Cập nhật hệ số chuyển đổi KPI sang giá trị
+                // let infoCompany = await AUTH__COMPANY_COLL.findById(companyID)
+                // await TIMESHEET__EXPERT_SALARY_COLL.updateMany({ parent: expertSalaryID }, { $set: { convertFactor: infoCompany.convertFactor, }})
+                // // console.log({convertFactor:infoCompany.convertFactor})
+
+                // // Cập nhật bảng chấm công vào bảng lương
+                // await that.updateValueTimesheet({ expertSalaryID, userID, companyID })
+
+                // // Cập nhật KPI vào bảng lương
+                // await that.updateValueKpi( { expertSalaryID, userID, companyID })
+
+                // // Cập nhật chi tiết lương vào bảng lương
+                // await that.updateValue( {expertSalaryID, userID })
+
+                let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(salaryID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            salary: { $sum:"$salary" },
+                            reward: { $sum:"$reward" },
+                            punishment: { $sum:"$punishment" },
+                            advance: { $sum:"$advance" },
+                            remaining: { $sum:"$remaining" },
+                            paid: { $sum:"$paid" },
+                            revenueBonus: { $sum:"$revenueBonus" },
+                            mealAllowance: { $sum:"$mealAllowance" },
+                            insurance: { $sum:"$insurance" },
+                            pitax: { $sum:"$pitax" },
+                        }
+                    },
+                ])
+                
+                if(listData[0]){
+                    dataUpdate.salary = Number(listData[0].salary)
+                    dataUpdate.reward = Number(listData[0].reward)
+                    dataUpdate.punishment = Number(listData[0].punishment)
+                    dataUpdate.advance = Number(listData[0].advance)
+                    dataUpdate.remaining = Number(listData[0].remaining)
+                    dataUpdate.paid = Number(listData[0].paid)
+                    dataUpdate.revenueBonus = Number(listData[0].revenueBonus)
+                    dataUpdate.mealAllowance = Number(listData[0].mealAllowance)
+                    dataUpdate.insurance = Number(listData[0].insurance)
+                    dataUpdate.pitax = Number(listData[0].pitax)
+                }
+                
+                let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(salaryID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_task", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -637,11 +696,9 @@ class Model extends BaseModel {
                         conditionObj.name =  new RegExp(keyword, 'i')
                     }
                 }
-                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
-                // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TIMESHEET__EXPERT_SALARY_COLL.findById(lastestID);
 					if(!infoData)
