@@ -95,8 +95,9 @@ class Model extends BaseModel {
                     }
                     else if(option == 3){
                         if(companyID && checkObjectIDs(companyID)){
+                            // Cần fix reset theo tháng-năm
     
-                            await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({company: companyID})
+                            // await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({company: companyID})
                             await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({company: companyID})
                             return resolve({ error: false, data: 'Reset thành công' })
                         }else{
