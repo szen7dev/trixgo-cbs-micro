@@ -11,9 +11,10 @@ const TIMESHEET__EXPERT_SALARY_MODEL            = require('../model/timesheet.ex
 module.exports = {
 
     /**
-	 * Dev: Depv
-	 * Func: Insert expert timesheet
-	 */
+     * Name: Insert
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
     insert: {
         params: {
             name               : { type: "string"},
@@ -51,9 +52,10 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
-	 * Func: Update expert timesheet
-	 */
+     * Name: Update
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
     update: {
         params: {
             expertSalaryID      : { type: "string" },
@@ -67,12 +69,6 @@ module.exports = {
             note                : { type: "string", optional: true },
             projectID           : { type: "string", optional: true },
             humanID             : { type: "string", optional: true },
-            // salary              : { type: "string", optional: true },
-            // reward              : { type: "string", optional: true },
-            // punishment          : { type: "string", optional: true },
-            // advance             : { type: "string", optional: true },
-            // remaining           : { type: "string", optional: true },
-            // paid                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -93,10 +89,34 @@ module.exports = {
         }
     },
 
+    syncData: {
+        params: {
+            salaryID : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, salaryID } = ctx.params;
+                // console.log(ctx.params)
+
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.syncData({
+                    userID, option, salaryID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
     /**
-	 * Dev: Depv
-	 * Func: Remove expert timesheet
-	 */
+     * Name: Remove
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
     remove: {
         params: {
             expertSalaryID : { type: "string"},
@@ -116,9 +136,10 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
-	 * Func: Danh sách expert timesheet
-	 */
+     * Name: Get list
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
     getInfoAndGetList: {
         params: {
             sortOption        : { type: "string", optional: true },
@@ -168,9 +189,9 @@ module.exports = {
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Gom nhóm theo tính chất
-     * Date: 6/8/2023
+     * Name: Get
+     * Author: HiepNH
+     * Code: 22/11/2023
      */
     getListByProperty: {
         auth: "required",
