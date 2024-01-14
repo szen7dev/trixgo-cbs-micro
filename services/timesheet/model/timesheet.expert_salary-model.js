@@ -335,18 +335,48 @@ class Model extends BaseModel {
                         }
                     },
                 ])
+                // console.log('=============data===================')
                 // console.log(listData)
 
                 for(const item of listData){
-                    // Tìm các user có mặt trong bảng chấm công và có dữ liệu chấm công cùng với Tháng và năm của Bảng lương
-                    await TIMESHEET__EXPERT_SALARY_COLL.findOneAndUpdate({
+                    // console.log('=============row===================')
+                    // console.log(item)
+                    let salary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, advance  = 0, remaining = 0
+                    let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
                         human: item._id.assignee,
-                    }, 
-                    {
-                        salary: Number(item.amount)
-                    }, { new: true }
-                    )
+                    })
+                    // console.log(info)
+
+                    if(info){
+                        salary = item.amount // Lấy theo bảng chấm công
+                        reward = info.reward
+                        revenueBonus = info.revenueBonus
+                        mealAllowance = info.mealAllowance
+                        punishment = info.punishment
+                        insurance = info.insurance
+                        pitax = info.pitax
+                        advance = info.advance
+                    }
+
+                    remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number( advance)
+
+                    let dataUpdate =  {
+                        salary,
+                        reward,
+                        revenueBonus,
+                        mealAllowance,
+                        punishment,
+                        insurance,
+                        pitax,
+                        advance,
+                        remaining
+                    }
+
+                    // Cập nhật dữ liệu
+                    if(info){
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    }
                 }
                 return resolve({ error: false, status: 200 });
             } catch (error) {
@@ -424,7 +454,7 @@ class Model extends BaseModel {
                         advance = info.advance
                     }
 
-                    remaining = Number(salary + reward + revenueBonus + mealAllowance) - Number(punishment + insurance + pitax + advance)
+                    remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number( advance)
 
                     let dataUpdate =  {
                         salary,
@@ -579,9 +609,9 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, companyID, departmentsID }) {
+        keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID  }) {
         // console.log({sortOption, parentID, userID,
-        //     keyword, limit, lastestID, select, populates, companyID, departmentsID})
+        //     keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -600,7 +630,8 @@ class Model extends BaseModel {
                 }
 
                 const validation = validateParamsObjectID({
-                    departmentsID           : { value: departmentsID, isRequire: false },
+                    positionsID           : { value: positionsID, isRequire: false },
+                    departmentsID         : { value: departmentsID, isRequire: false },
                 })
                 if(validation.error) return resolve(validation);
 
@@ -625,6 +656,10 @@ class Model extends BaseModel {
 					conditionObj.project = { $in: listDepartment.map(item=>item.id) }
                     if(departmentsID && departmentsID.length){
                         conditionObj.project = { $in: departmentsID }
+                    }
+
+                    if(positionsID && positionsID.length){
+                        conditionObj.position = { $in: positionsID }
                     }
 
                     if(keyword){
