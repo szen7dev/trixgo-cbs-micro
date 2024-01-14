@@ -249,6 +249,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { parentID, option, year } = ctx.params;
 				const { _id: userID, company} = ctx.meta.infoUser;
+                // console.log(ctx.params)
                 
                 // console.log({parentID})
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.downloadTemplateExcel({
@@ -292,28 +293,24 @@ module.exports = {
 
     /**
      * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 9/12/2022
+     * Func: exportExcel
+     * Date: 14/1/2024
      */
     exportExcel: {
         auth: 'required',
         params: {
-            companyID: { type: "string", optional: true },
+            parentID    : { type: 'string', optional: true  },
             option: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { companyID, option, month, year, filterParams } = ctx.params;
-                // console.log({ companyID, option, filterParams })
-
-                if(!companyID) {
-                    companyID = company._id;
-                }
+                let { parentID, option, year, fromDate, toDate } = ctx.params;
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.exportExcel({
-                    userID, email, companyID, option, month, year, filterParams
+                    userID, companyID: company._id, parentID, userID, option, year, fromDate, toDate
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

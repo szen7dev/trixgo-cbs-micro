@@ -676,9 +676,11 @@ class Model extends BaseModel {
                         keyword = keyword.split(" ");
                         keyword = '.*' + keyword.join(".*") + '.*';
 
-                        let listUser = await AUTH__USER_COLL.find({fullname: new RegExp(keyword, 'i')})
-                        .select('_id')
+                        let listUser = await AUTH__USER_COLL.find({company:companyID, fullname: new RegExp(keyword, 'i')})
+                        .select('_id fullname')
                         .limit(20)
+                        // console.log(listUser)
+
                         conditionObj.human = {$in: listUser.map(item=>item._id)}
                     }
 				}else{

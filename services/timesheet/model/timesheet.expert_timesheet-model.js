@@ -427,10 +427,14 @@ class Model extends BaseModel {
                             userID
                          })
 
+                        // Nếu là Admin ứng dụng
                         if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
                             conditionObj.company = companyID
                             conditionObj.parent = { $exists: false }
-                        }else{
+                        }
+                        
+                        // Được phân quyền
+                        else{
                             conditionObj.$or = [
                                 {admins: { $in: [userID] }},
                                 {members: { $in: [userID] }}

@@ -847,6 +847,9 @@ class Model extends BaseModel {
                      * TẢI BẢNG CHẤM CÔNG
                      */
                     if(option == 1){
+                        // Danh sách ngân sách
+
+
                         let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note')
 
                         let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID})
@@ -1373,6 +1376,262 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /*
+    * Name: Download Template Excel
+    * Code: Hiepnh
+    * Date: 25/7/2023
+    */
+   exportExcel({ option, companyID, parentID, year, userID, fromDate, toDate }) {
+    //    console.log({ option, companyID, parentID, year, userID, fromDate, toDate })
+       return new Promise(async resolve => {
+           try {
+            // Tổng hợp theo Sản lượng-Tháng
+            let yearFilter
+            let currentYear = new Date().getFullYear()
+            if(year && !isNaN(year)){
+                yearFilter = Number(year)
+            }else{
+                yearFilter = Number(currentYear)
+            }
+
+            if(fromDate && toDate){
+                yearFilter = new Date(toDate).getFullYear()
+            }
+
+            // Tải bảng chấm công
+            if(option == 1){
+                // Danh sách ngân sách
+                let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note')
+
+                let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID})
+                .populate({
+                    path: 'work assignee',
+                    select:'fullname name unit unitPrice'
+                })
+                .select('name hours unitprice amount status date note')
+                // console.log(listData)
+
+                // Tổng hợp theo Sản lượng
+                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            work: { $exists: true, $ne: null },
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { work: "$work" },
+                            quantity: { $sum: "$hours" },
+                        }
+                    },
+                ])
+                let  conditionPopulate1 = {
+                    path: '_id.work',
+                    select: '_id name sign unit quantity unitPrice',
+                    model: 'budget_work'
+                }
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
+                // console.log(listData1)
+
+                // Tổng hợp theo người thực hiện
+                let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            assignee: { $exists: true, $ne: null },
+                            parent: ObjectID(parentID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: "$assignee" },
+                            quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                let  conditionPopulate2 = {
+                    path: '_id.assignee',
+                    select: '_id fullname',
+                    model: 'user'
+                }
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate2)
+                // console.log(listData2)
+
+                 // Modify the workbook.
+                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_report.xlsx')))
+                 .then(async workbook => {
+
+                    workbook.sheet("Data").row(2).cell(1).value(infoParent.name)
+
+                     var i = 4
+                     listData.forEach((item, index) =>{
+                         workbook.sheet("Data").row(i).cell(1).value(item.date)
+                         workbook.sheet("Data").row(i).cell(2).value(item.name)
+                         workbook.sheet("Data").row(i).cell(3).value(item?.assignee?.fullname)
+
+                         workbook.sheet("Data").row(i).cell(4).value(Number(item.hours))
+                         workbook.sheet("Data").row(i).cell(5).value(Number(item.unitprice))
+                         workbook.sheet("Data").row(i).cell(6).value(Number(item.amount))
+                         workbook.sheet("Data").row(i).cell(7).value(item?.note)
+                         i++
+                     })
+
+                     var i = 4
+                     listData1.forEach((item, index) =>{
+                         workbook.sheet("Report1").row(i).cell(1).value(Number(index+1))
+                         workbook.sheet("Report1").row(i).cell(2).value(`${item._id.work?.sign}-${item._id.work?.name}`)
+                         workbook.sheet("Report1").row(i).cell(3).value(item._id.work?.unit)
+                         workbook.sheet("Report1").row(i).cell(4).value(Number(item.quantity))
+
+                         i++
+                     })
+
+                     var i = 4
+                     listData2.forEach((item, index) =>{
+                         workbook.sheet("Report2").row(i).cell(1).value(Number(index+1))
+                         workbook.sheet("Report2").row(i).cell(2).value(item._id.assignee?.fullname)
+                         workbook.sheet("Report2").row(i).cell(3).value(Number(item.quantity))
+                         workbook.sheet("Report2").row(i).cell(4).value(Number(item.amount))
+
+                         i++
+                     })
+           
+                     const now = new Date();
+                     const filePath = '../../../files/temporary_uploads/';
+                     const fileName = `timesheet_report${now.getTime()}.xlsx`;
+                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                     await workbook.toFileAsync(pathWriteFile);
+                     const result = await uploadFileS3(pathWriteFile, fileName);
+
+                     fs.unlinkSync(pathWriteFile);
+                     return resolve({ error: false, data: result?.Location, status: 200 });
+                 });
+            }
+
+            // Tải tổng hợp ngân sách
+            else if(option == 2){
+                // Tổng hợp theo Sản lượng
+                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            work: { $exists: true, $ne: null },
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { work: "$work" },
+                            // quantity: { $sum: "$hours" },
+                            // amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                let  conditionPopulate1 = {
+                    path: '_id.work',
+                    select: '_id name sign unit quantity unitPrice',
+                    model: 'budget_work'
+                }
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
+                // console.log(listData1)
+
+                let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            work: { $exists: true, $ne: null },
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            work: 1,
+                            hours: 1,
+                            amount: 1,
+                            date: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(yearFilter)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { work: "$work", month: "$month"},
+                            quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData2)
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_report.xlsx')))
+                .then(async workbook => {
+                    workbook.sheet(`Report1`).row(2).cell(1).value(`Báo cáo tổng hợp năm ${yearFilter}`)
+                    workbook.sheet(`Report2`).row(2).cell(1).value(`Báo cáo tổng hợp năm ${yearFilter}`)
+
+                    var i = 4
+                    listData1.forEach((item, index) =>{
+                        workbook.sheet("Report1").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("Report1").row(i).cell(2).value(`${item._id.work?.sign}-${item._id.work?.name}`)
+                        workbook.sheet("Report1").row(i).cell(3).value(`${item._id.work?._id}`)
+                        workbook.sheet("Report1").row(i).cell(4).value(item._id.work?.unit)
+                        workbook.sheet("Report1").row(i).cell(5).value(Number(item._id.work?.quantity))
+                        workbook.sheet("Report1").row(i).cell(6).value(Number(item._id.work?.unitPrice))
+                        workbook.sheet("Report1").row(i).cell(7).value(Number(item._id.work?.quantity * item._id.work?.unitPrice))
+
+                        workbook.sheet("Report2").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("Report2").row(i).cell(2).value(`${item._id.work?.sign}-${item._id.work?.name}`)
+                        workbook.sheet("Report2").row(i).cell(3).value(`${item._id.work?._id}`)
+                        workbook.sheet("Report2").row(i).cell(4).value(item._id.work?.unit)
+                        workbook.sheet("Report2").row(i).cell(5).value(Number(item._id.work?.quantity))
+                        workbook.sheet("Report2").row(i).cell(6).value(Number(item._id.work?.unitPrice))
+                        workbook.sheet("Report2").row(i).cell(7).value(Number(item._id.work?.quantity * item._id.work?.unitPrice))
+
+                        i++
+                    })
+
+                    listData2?.forEach((item, index) => {
+                        for(var m = 1; m<=12; m++){
+                                if(Number(item._id.month) === Number(m)){
+                                    for(let i=4; i<=Number(listData1.length + 3); i++){
+
+                                        let workID = workbook.sheet(`Report1`).row(i).cell(3).value()
+                                        if(item._id.work.toString() === workID.toString()){
+                                            workbook.sheet(`Report1`).row(i).cell(Number(m+7)).value(Number(item.quantity))
+                                        }
+
+                                        let workID2 = workbook.sheet(`Report2`).row(i).cell(3).value()
+                                        if(item._id.work.toString() === workID2.toString()){
+                                            workbook.sheet(`Report2`).row(i).cell(Number(m+7)).value(Number(item.amount))
+                                        }
+                                    }
+                                }
+                            }
+                        })
+        
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `budget_report${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+
+                    await workbook.toFileAsync(pathWriteFile)
+                    const result = await uploadFileS3(pathWriteFile, fileName)
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 })
+                })
+            }
+
+           } catch (error) {
+               return resolve({ error: true, message: error.message, status: 500 });
+           }
+       })
+   }
 }
 
 exports.MODEL = new Model;
