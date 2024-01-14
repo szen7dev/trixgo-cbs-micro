@@ -2771,13 +2771,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(fromDate && toDate){
-                    conditionObj.date = {
-                        $gte: moment(fromDate).toDate(),
-                        $lte: moment(toDate).toDate(),
-                    }
-                }
-
                 if (checkObjectIDs(voucherID)) {
                     conditionObj.voucher = voucherID
                 } else {
