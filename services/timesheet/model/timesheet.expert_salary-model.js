@@ -42,7 +42,6 @@ class Model extends BaseModel {
         // console.log({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid })
         return new Promise(async resolve => {
             try {
-
                 if(!name){
                     return resolve({
                         error: true,
@@ -50,6 +49,17 @@ class Model extends BaseModel {
                         keyError: "name_invalid",
                     });
                 }
+
+                let year = new Date().getFullYear()
+                let month = new Date().getMonth()
+                let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                    company: companyID, 
+                    parent: { $exists: false },
+                    $where: 
+                    `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
+                })
+                if(checkExists)
+                    return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` }) 
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
