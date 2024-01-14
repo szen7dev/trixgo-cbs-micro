@@ -102,7 +102,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.syncData({
-                    userID, option, salaryID
+                    userID, companyID: company._id, option, salaryID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

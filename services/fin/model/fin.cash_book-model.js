@@ -16,6 +16,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
  * import inter-coll, exter-coll
  */
 const ITEM__DEPARTMENT_COLL              = require('../../item/database/item.department-coll')
+const ITEM__POSITION_COLL                = require('../../item/database/item.position-coll')
 const FIN__CASH_BOOK_COLL                = require('../database/fin.cash_book-coll');
 const ACCOUNT_COLL                       = require('../../item/database/item.account-coll')
 const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
@@ -1039,6 +1040,7 @@ class Model extends BaseModel {
                         
                         // Danh sách các phòng ban mà user được quyền truy cập
                         let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
+                        let listPosition = await ITEM__POSITION_COLL.find({company:companyID}).select('_id name')
 
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({
                             parent: parentID,
@@ -1054,44 +1056,62 @@ class Model extends BaseModel {
                          // Modify the workbook.
                          XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx')))
                          .then(async workbook => {
-
-                            workbook.sheet("Data").row(1).cell(1).value(infoParent.name)
- 
-                             // NHẬT KÝ CHUNG
-                             var i = 4
-                             listData.forEach((item, index) =>{
-                                let hs = item.convertFactor
-
-                                workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("Data").row(i).cell(2).value(item?.human?.fullname)
-                                workbook.sheet("Data").row(i).cell(3).value(item?.project?.name)
-                                workbook.sheet("Data").row(i).cell(4).value(Number(item.salary))
-                                workbook.sheet("Data").row(i).cell(5).value(Number(hs))
-                                workbook.sheet("Data").row(i).cell(6).value(Number(item.revenueBonus))
-                                workbook.sheet("Data").row(i).cell(7).value(Number(item.reward))
-                                workbook.sheet("Data").row(i).cell(8).value(Number(item.mealAllowance))
-                                workbook.sheet("Data").row(i).cell(9).value(Number(item.punishment))
-                                workbook.sheet("Data").row(i).cell(10).value(Number(item.insurance))
-                                workbook.sheet("Data").row(i).cell(11).value(Number(item.pitax))
-                                workbook.sheet("Data").row(i).cell(12).value(Number(item.salary + item.revenueBonus + item.reward*hs + item.mealAllowance - item.punishment*hs - item.insurance - item.pitax))
-                                workbook.sheet("Data").row(i).cell(13).value(Number(item.advance))
-                                workbook.sheet("Data").row(i).cell(14).value(Number(item.salary + item.revenueBonus + item.reward*hs + item.mealAllowance - item.punishment*hs - item.insurance - item.pitax - item.advance))
-                                workbook.sheet("Data").row(i).cell(16).value(Number(item.paid))
-                                workbook.sheet("Data").row(i).cell(17).value(item?.note)
+                            var i = 3
+                            listDepartment.forEach((item, index) =>{
+                                workbook.sheet("TongHop1").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("TongHop1").row(i).cell(2).value(item?.name)
+                                workbook.sheet("TongHop1").row(i).cell(3).value()
+                                workbook.sheet("TongHop1").row(i).cell(4).value(item?.note)
                                 
                                 i++
-                             })
-                       
-                             const now = new Date();
-                             const filePath = '../../../files/temporary_uploads/';
-                             const fileName = `salary_report${now.getTime()}.xlsx`;
-                             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                            })
+
+                            var i = 3
+                            listPosition.forEach((item, index) =>{
+                                workbook.sheet("TongHop2").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("TongHop2").row(i).cell(2).value(item?.name)
+                                workbook.sheet("TongHop2").row(i).cell(3).value()
+                                workbook.sheet("TongHop2").row(i).cell(4).value(item?.note)
+                                
+                                i++
+                            })
+
+                            workbook.sheet("BangLuong").row(1).cell(1).value(infoParent.name)
  
-                             await workbook.toFileAsync(pathWriteFile);
-                             const result = await uploadFileS3(pathWriteFile, fileName);
- 
-                             fs.unlinkSync(pathWriteFile);
-                             return resolve({ error: false, data: result?.Location, status: 200 });
+                            // NHẬT KÝ CHUNG
+                            var i = 4
+                            listData.forEach((item, index) =>{
+                                workbook.sheet("BangLuong").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("BangLuong").row(i).cell(2).value(item?.human?.fullname)
+                                workbook.sheet("BangLuong").row(i).cell(3).value(item?.project?.name)
+                                workbook.sheet("BangLuong").row(i).cell(4).value(item?.position?.name)
+                                workbook.sheet("BangLuong").row(i).cell(5).value(Number(item.salary))
+                                workbook.sheet("BangLuong").row(i).cell(6).value(Number(item.convertFactor))
+                                workbook.sheet("BangLuong").row(i).cell(7).value(Number(item.revenueBonus))
+                                workbook.sheet("BangLuong").row(i).cell(8).value(Number(item.reward))
+                                workbook.sheet("BangLuong").row(i).cell(9).value(Number(item.mealAllowance))
+                                workbook.sheet("BangLuong").row(i).cell(10).value(Number(item.punishment))
+                                workbook.sheet("BangLuong").row(i).cell(11).value(Number(item.insurance))
+                                workbook.sheet("BangLuong").row(i).cell(12).value(Number(item.pitax))
+                                workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance - item.punishment - item.insurance - item.pitax))
+                                workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.advance))
+                                workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance - item.punishment - item.insurance - item.pitax - item.advance))
+                                workbook.sheet("BangLuong").row(i).cell(17).value(Number(item.paid))
+                                workbook.sheet("BangLuong").row(i).cell(18).value(item?.note)
+                                
+                                i++
+                            })
+                    
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `salary_report${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
                          });
                     }
 
