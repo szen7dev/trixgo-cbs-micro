@@ -217,7 +217,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({ companyID, projectID, parentID, type, keyword, limit = 10, lastestID, select, populates, isShowParentAndChild }) {
-        // console.log({ companyID, projectID, parentID, type, keyword, limit, lastestID, select, populates, isShowParentAndChild })
+        console.log({ companyID, projectID, parentID, type, keyword, limit, lastestID, select, populates, isShowParentAndChild })
         return new Promise(async (resolve) => {
             try {
                 if(isNaN(limit) || +limit > 20) {
@@ -256,15 +256,22 @@ class Model extends BaseModel {
                 //____________Doctype con
                 if(checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
-                } else{
-                    conditionObj.$or = [{
-                        parent: { $exists: false },
-                    }, { parent: null }]
                 }
+                
+                if(isShowParentAndChild == 2){
+                    conditionObj.parent = { $exists: false }
+                }
+                
+                // else{
+                //     conditionObj.$or = [
+                //         {parent: { $exists: false }}, 
+                //         {parent: null}, 
+                //     ]
+                // }
 
-                if(isShowParentAndChild == 1){
-                    delete conditionObj.$or;
-                }
+                // if(isShowParentAndChild == 1){
+                //     delete conditionObj.$or;
+                // }
 
                 //____________Loại doctype
                 if(type){
@@ -283,6 +290,8 @@ class Model extends BaseModel {
                     //     { sign: regSearch },
                     // ]
                 }
+                // console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj }
 
 				if(lastestID && checkObjectIDs(lastestID)){
