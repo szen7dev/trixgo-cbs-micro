@@ -59,12 +59,21 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     }],
     //_________Tên
     name: String,
+    //_________Tên
+    namecv: String,
     //_________Mã hiệu
     sign: String,
+    //_________Đơn vị tính
+    unit: String,
     //_________Mô tả
     description: String,
+    //_________Giá trị
+    amount: {
+        type: Number,
+        default: 0
+    },
     /**
-     * Phân loại kênh bán hàng
+     * Phân loại kênh bán hàng => Để mapping với data cũ
      * 1-Offline
      * 2-Grab
      * 3-Shopee

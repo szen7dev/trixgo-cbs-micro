@@ -115,8 +115,20 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "cannot_insert" })
 
                 // Tạo chi tiết lương cho các user đang hoạt động
-                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 }).select('fullname department position')
+                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 }).select('fullname department position contacts').populate({
+                    path: 'contacts',
+                    select: 'insuranceFee'
+                })
                 for(const item of listHuman){
+                    let insuranceFee = 0
+                    if(item.contacts && item.contacts.length){
+                        for(const contact of item.contacts){
+                            if(contact.insuranceFee){
+                                insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
+                            }
+                        }
+                    }
+
                     let dataInsertDetail = {
                         userCreate,
                         name: 'Default',
@@ -130,6 +142,7 @@ class Model extends BaseModel {
                         position: item.position,
                         date: infoAfterInsert.date,
                         type: infoAfterInsert.type,
+                        insurance: insuranceFee
                     }
 
                     await this.insertData(dataInsertDetail)
