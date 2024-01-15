@@ -257,7 +257,11 @@ class Model extends BaseModel {
                 if(checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
                 }
-
+                
+                if(isShowParentAndChild == 1){
+                    conditionObj.parent = { $exists: false }
+                }
+            
                 //____________Loại doctype
                 if(type){
                     conditionObj.type = type;
