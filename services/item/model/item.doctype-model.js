@@ -256,14 +256,6 @@ class Model extends BaseModel {
                 //____________Doctype con
                 if(checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
-                } else{
-                    conditionObj.$or = [{
-                        parent: { $exists: false },
-                    }, { parent: null }]
-                }
-
-                if(isShowParentAndChild == 1){
-                    delete conditionObj.$or;
                 }
 
                 //____________Loại doctype
@@ -277,12 +269,9 @@ class Model extends BaseModel {
                     let regSearch = new RegExp(keyword, 'i');
 
                     conditionObj.namecv = regSearch
-
-                    // conditionObj.$or = [
-                    //     { name: regSearch },
-                    //     { sign: regSearch },
-                    // ]
                 }
+                // console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj }
 
 				if(lastestID && checkObjectIDs(lastestID)){
