@@ -4,9 +4,10 @@
  * TOOLS
  */
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { DOCTYPE_TYPE }                  = require('../helper/item.keys-constant');
+const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
  * COLLECTIONS
@@ -24,7 +25,7 @@ class Model extends BaseModel {
      * Func: Insert doctype
      * Date: 22/02/2022
      */
-    insert({ type, name, description, sign, companyID, parent, level, userID, salesChannel }) {
+    insert({ type, name, description, sign, unit, amount, companyID, parent, level, userID, salesChannel }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !type || !DOCTYPE_TYPE.includes(+type) || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
@@ -36,7 +37,24 @@ class Model extends BaseModel {
 					})
                 }
 
-                let dataInsert = { name, type, description, sign, company: companyID, userCreate: userID };
+                let dataInsert = { name, type, description, sign, unit, company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date() }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                dataInsert.namecv = convertStr
+
+                if(amount){
+                    dataInsert.amount = Number(amount);
+                }
+
                 if(salesChannel){
                     dataInsert.salesChannel = salesChannel;
                 }
@@ -57,7 +75,7 @@ class Model extends BaseModel {
 					})
                 }
 
-                if(parent) {
+                if(parent && checkObjectIDs(parent)){
                     await ITEM__DOCTYPE_COLL.findByIdAndUpdate(parent, {
                         $addToSet: {
                             childs: infoAfterInsert._id
@@ -78,7 +96,7 @@ class Model extends BaseModel {
      * Func: Update doctype
      * Date: 22/02/2022
      */
-    update({ doctypeID, name, description, sign, userID, salesChannel }) {
+    update({ doctypeID, name, description, sign, unit, amount, userID, salesChannel }) {
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -86,11 +104,6 @@ class Model extends BaseModel {
 
                 const dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs([doctypeID, userID])) {
                     return resolve({
 						error: true,
@@ -100,12 +113,31 @@ class Model extends BaseModel {
 					})
                 }
 
-                name        && (dataUpdate.name = name);
-                description && (dataUpdate.description = description);
-                sign && (dataUpdate.sign = sign);
-                if(salesChannel){
-                    dataUpdate.salesChannel = salesChannel;
+                name        && (dataUpdate.name = name)
+                description && (dataUpdate.description = description)
+                sign && (dataUpdate.sign = sign)
+                unit && (dataUpdate.unit = unit)
+
+                if(amount){
+                    dataUpdate.amount = Number(amount);
                 }
+
+                if(salesChannel){
+                    dataUpdate.salesChannel = Number(salesChannel);
+                }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+
+                dataUpdate.namecv = convertStr
 
                 let infoAfterUpdate = await ITEM__DOCTYPE_COLL.findByIdAndUpdate(doctypeID, dataUpdate, { new: true });
 
@@ -118,9 +150,9 @@ class Model extends BaseModel {
 					})
                 }
 
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
@@ -244,10 +276,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    conditionObj.namecv = regSearch
+
+                    // conditionObj.$or = [
+                    //     { name: regSearch },
+                    //     { sign: regSearch },
+                    // ]
                 }
                 let conditionObjOrg = { ...conditionObj }
 
@@ -316,11 +350,14 @@ class Model extends BaseModel {
 
                 for (const data of dataImportJSON) {
                     // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                    if(index > 0 && index < 200){
+                    if(index > 0 && index < 500){
                         let dataInsert = {
                             type, 
                             name: data?.__EMPTY, 
-                            description:  data?.__EMPTY_1, 
+                            sign:  data?.__EMPTY_1, 
+                            unit:  data?.__EMPTY_2, 
+                            amount:  Number(data?.__EMPTY_3), 
+                            description:  data?.__EMPTY_4, 
                             companyID, 
                             userID
                         }
@@ -331,6 +368,7 @@ class Model extends BaseModel {
                         }
 
                     }
+                    
                     index ++;
                 }
 

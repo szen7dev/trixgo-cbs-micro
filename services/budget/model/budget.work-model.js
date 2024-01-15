@@ -588,6 +588,7 @@ class Model extends BaseModel {
                             dataInsert.quantity = data.__EMPTY_6;
                             dataInsert.unitPrice = data.__EMPTY_7;
                             dataInsert.amount = data.__EMPTY_8;
+                            dataInsert.note = data.__EMPTY_15;
 
                             let infoWork = await this.insert(dataInsert)
                             // console.log(infoWork)

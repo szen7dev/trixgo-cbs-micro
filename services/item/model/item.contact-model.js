@@ -7,8 +7,6 @@ const moment                            = require('moment');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 
 /**
  * TOOLS
@@ -17,7 +15,7 @@ const { checkObjectIDs, IsJsonString, validateParamsObjectID, regexPhoneNumber }
 const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 }                  = require('../../../tools/s3')
-// const { INSURANCE_STATUS }              = require('../../../tools/constants')
+
 const { 
     CONTACT_CLASSIFY,
     HUMAN_CLASSIFY,
@@ -27,9 +25,6 @@ const {
     CONTACT_POLICY,
     CONTACT_NEW,
     PAYMENT_STATUS,
-    DOCUMENT_CLASSIFY,
-    DOCUMENT_GRADE,
-    DOCUMENT_STATUS,
  }                = require('../helper/item.keys-constant')
 const stringUtils					    = require('../../../tools/utils/string_utils')
 

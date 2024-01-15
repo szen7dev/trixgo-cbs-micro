@@ -30,14 +30,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { type, name, description, sign, companyID, parent, level, salesChannel } = ctx.params;
+                let { type, name, description, sign, unit, amount, companyID, parent, level, salesChannel } = ctx.params;
 
                 if(!companyID){
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.insert({
-                    type, name, description, sign, companyID, parent, level, userID, salesChannel
+                    type, name, description, sign, unit, amount, companyID, parent, level, userID, salesChannel
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -64,10 +64,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { doctypeID, name, description, sign, salesChannel } = ctx.params;
+                const { doctypeID, name, description, sign, unit, amount, salesChannel } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.update({
-                    doctypeID, name, description, sign, userID, salesChannel
+                    doctypeID, name, description, sign, unit, amount, userID, salesChannel
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
