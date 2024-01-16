@@ -356,6 +356,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
+    //______paid tiền khách trả tại quán
+    paid: {
+        type: Number,
+        default : 0
+    },
     //______Tỷ lệ VAT
     vatRate: {
         type: Number,
