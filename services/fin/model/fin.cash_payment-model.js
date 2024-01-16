@@ -13,6 +13,9 @@ const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
+const { 
+    FNB_ACC,
+ } = require('../../fnb/helper/fnb.keys-constant')
 
 /**
  * import inter-coll, exter-coll
@@ -35,41 +38,45 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, userID, customerID, name, note, amount, payment }) {
-        const that = this
+    insert({ companyID, userID, email, customerID, name, note, amount, payment }) {
+        // const that = this
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * BA
-                 * 1. Tạo data Ví payment
-                 * 2. Tính toán: tổng tích điểm, tổng còn lại theo BE
-                 * 3. Cộng thêm Payment vào Tích điểm
-                 * 4. Khi khách sử dụng mua hàng từ Tích điểm thì trừ tiền như bình thường
-                 */
-                if(!name || !checkObjectIDs(userID) || !checkObjectIDs(customerID) || !checkObjectIDs(companyID))
-                    return resolve({ error: true, message: 'param_not_valid' })
-            
-                let dataInsert = { company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date(), customer: customerID, name }
+                if(FNB_ACC.cskh.includes(email.toString())){
+                    /**
+                     * BA
+                     * 1. Tạo data Ví payment
+                     * 2. Tính toán: tổng tích điểm, tổng còn lại theo BE
+                     * 3. Cộng thêm Payment vào Tích điểm
+                     * 4. Khi khách sử dụng mua hàng từ Tích điểm thì trừ tiền như bình thường
+                     */
+                    if(!name || !checkObjectIDs(userID) || !checkObjectIDs(customerID) || !checkObjectIDs(companyID))
+                        return resolve({ error: true, message: 'param_not_valid' })
+                
+                    let dataInsert = { company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date(), customer: customerID, name }
 
-                if (note) {
-                    dataInsert.note = note;
+                    if (note) {
+                        dataInsert.note = note;
+                    }
+
+                    if (!isNaN(amount)) {
+                        dataInsert.amount = amount;
+                    }
+
+                    if (!isNaN(payment)) {
+                        dataInsert.payment = payment;
+                    }
+
+                    let infoAfterInsert = await this.insertData(dataInsert);
+                    if (!infoAfterInsert)
+                        return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                
+                    await FNB_ORDER_MODEL.updateCustomer({ customerID, userID })
+        
+                    return resolve({ error: false, data: infoAfterInsert, status: 200 })
+                }else{
+                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }
-
-                if (!isNaN(amount)) {
-                    dataInsert.amount = amount;
-                }
-
-                if (!isNaN(payment)) {
-                    dataInsert.payment = payment;
-                }
-
-                let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
-            
-                await FNB_ORDER_MODEL.updateCustomer({ customerID, userID })
-    
-                return resolve({ error: false, data: infoAfterInsert, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
@@ -81,42 +88,46 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashPaymentID, userID, name, note, amount, payment, active }) {
-        // console.log({ cashPaymentID, userID, name, note, amount, payment })
+    update({ cashPaymentID, userID, email, name, note, amount, payment, active }) {
+        // console.log({ cashPaymentID, userID, email, name, note, amount, payment })
         const that = this
         return new Promise(async (resolve) => {
             try {
-                if(!name || !checkObjectIDs(userID) || !checkObjectIDs(cashPaymentID))
-                    return resolve({ error: true, message: 'param_not_valid' })
+                if(FNB_ACC.cskh.includes(email.toString())){
+                    if(!name || !checkObjectIDs(userID) || !checkObjectIDs(cashPaymentID))
+                        return resolve({ error: true, message: 'param_not_valid' })
 
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date(), name };
-                
-                if (note) {
-                    dataUpdate.note = note;
+                    let dataUpdate = { userUpdate: userID, modifyAt: new Date(), name };
+                    
+                    if (note) {
+                        dataUpdate.note = note;
+                    }
+
+                    if (!isNaN(amount)) {
+                        dataUpdate.amount = amount;
+                    }
+
+                    if (!isNaN(payment)) {
+                        dataUpdate.payment = payment;
+                    }
+
+                    if (!isNaN(active) && [1,2].includes(Number(active))) {
+                        dataUpdate.active = active;
+                    }
+
+                    let infoAfterUpdate = await FIN__CASH_PAYMENT_COLL.findByIdAndUpdate(cashPaymentID, dataUpdate, { new: true })
+                    if (!infoAfterUpdate)
+                        return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
+
+                    // Cập nhật Tích điểm + Gói trả trước
+                    if (!isNaN(active) && [1,2].includes(Number(active))) {
+                        await FNB_ORDER_MODEL.updateCustomer({ customerID: infoAfterUpdate.customer, userID })
+                    }
+
+                    return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+                }else{
+                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }
-
-                if (!isNaN(amount)) {
-                    dataUpdate.amount = amount;
-                }
-
-                if (!isNaN(payment)) {
-                    dataUpdate.payment = payment;
-                }
-
-                if (!isNaN(active) && [1,2].includes(Number(active))) {
-                    dataUpdate.active = active;
-                }
-
-                let infoAfterUpdate = await FIN__CASH_PAYMENT_COLL.findByIdAndUpdate(cashPaymentID, dataUpdate, { new: true })
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
-
-                // Cập nhật Tích điểm + Gói trả trước
-                if (!isNaN(active) && [1,2].includes(Number(active))) {
-                    await FNB_ORDER_MODEL.updateCustomer({ customerID: infoAfterUpdate.customer, userID })
-                }
-
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
