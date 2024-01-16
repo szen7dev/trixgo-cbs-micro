@@ -352,6 +352,7 @@ class Model extends BaseModel {
                 }                
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regExpSearch = RegExp(keyword, 'i');

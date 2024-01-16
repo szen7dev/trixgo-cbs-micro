@@ -20,8 +20,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref : "funda"
     },
-    //_________Phân loại dịch vụ
-    doctype: {
+    //_________Phân loại dịch vụ/Kênh bán hàng
+    channel: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
@@ -348,6 +348,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * amount = total - discount - salesoff - credit - offer
      */
     amount: {
+        type: Number,
+        default : 0
+    },
+    //______shippingFee
+    shippingFee: {
         type: Number,
         default : 0
     },
