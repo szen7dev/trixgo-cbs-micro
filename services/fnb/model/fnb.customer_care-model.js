@@ -311,6 +311,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 10, lastestID, select, populates, userID }) {
+        console.log({ companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -343,7 +344,7 @@ class Model extends BaseModel {
                 }
 
                 if(managerID && checkObjectIDs(managerID)){
-                    conditionObj.manager1 = ObjectID(managerID)
+                    conditionObj.manager = ObjectID(managerID)
                 }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
@@ -385,6 +386,7 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
@@ -395,6 +397,7 @@ class Model extends BaseModel {
                         { note: regSearch },
                     ]
                 }
+                // console.log(conditionObj)
 
                 if(select && typeof select === 'string'){
                     if(!IsJsonString(select))
