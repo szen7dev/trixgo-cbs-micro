@@ -28,10 +28,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { customerID, name, note, amount, payment } = ctx.params;
 
-                const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID, email, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.insert({
-                    companyID: company._id, userID, customerID, name, note, amount, payment
+                    companyID: company._id, userID, email, customerID, name, note, amount, payment
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -60,12 +60,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { cashPaymentID, name, note, amount, payment, active } = ctx.params;
-                const { _id: userID } = ctx.meta.infoUser;
+                const { _id: userID, email } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.update({
-                    cashPaymentID, userID, name, note, amount, payment, active
+                    cashPaymentID, userID, email, name, note, amount, payment, active
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
