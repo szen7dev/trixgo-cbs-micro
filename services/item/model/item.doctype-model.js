@@ -258,9 +258,10 @@ class Model extends BaseModel {
                     conditionObj.parent = parentID;
                 }
                 
-                if(isShowParentAndChild == 1){
-                    conditionObj.parent = { $exists: false }
-                }
+                // Sau fix trên Mobile OK thì mới mở lại chỗ này (Hiepnh 16/1/2024)
+                // if(isShowParentAndChild == 1){
+                //     conditionObj.parent = { $exists: false }
+                // }
             
                 //____________Loại doctype
                 if(type){
@@ -275,7 +276,7 @@ class Model extends BaseModel {
 
                     conditionObj.namecv = regSearch
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
