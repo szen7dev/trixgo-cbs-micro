@@ -351,7 +351,12 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Number,
         default : 0
     },
-    //______shippingFee
+    //______Tổng phí ship
+    shippingFeeTotal: {
+        type: Number,
+        default : 0
+    },
+    //______Phí ship khách phải
     shippingFee: {
         type: Number,
         default : 0

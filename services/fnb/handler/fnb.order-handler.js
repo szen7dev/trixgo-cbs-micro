@@ -77,12 +77,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID } = ctx.params;
+                let {  orderID, customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID, shippingFeeTotal, shippingFee, paid } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.update({
                     orderID, userID,
-                    customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID
+                    customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID, shippingFeeTotal, shippingFee, paid
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

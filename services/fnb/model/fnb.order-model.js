@@ -866,7 +866,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint }) {
+        customerID, cancelNote, shippingFeeTotal, shippingFee, paid, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint }) {
+            // console.log({ orderID, userID, customerID, cancelNote, shippingFeeTotal, shippingFee, paid, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -931,6 +932,18 @@ class Model extends BaseModel {
 
                     let newComplaint = Number(oldComplaint) + 1
                     dataInUpdate.complaint = Number(newComplaint)
+                }
+
+                if(!isNaN(shippingFeeTotal)){
+                    dataInUpdate.shippingFeeTotal = Number(shippingFeeTotal)
+                }
+
+                if(!isNaN(shippingFee)){
+                    dataInUpdate.shippingFee = Number(shippingFee)
+                }
+
+                if(!isNaN(paid)){
+                    dataInUpdate.paid = Number(paid)
                 }
 
                 /**
@@ -1017,6 +1030,8 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)
