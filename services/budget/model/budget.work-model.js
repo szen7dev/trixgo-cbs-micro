@@ -358,11 +358,8 @@ class Model extends BaseModel {
                     let regExpSearch = RegExp(keyword, 'i');
                    
                     conditionObj.namecv = regExpSearch;
-                    // conditionObj.$or = [
-                    //     { name: regExpSearch },
-                    //     { sign: regExpSearch }
-                    // ]
                 }
+                console.log(conditionObj)
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI

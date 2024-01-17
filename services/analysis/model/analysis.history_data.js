@@ -29,6 +29,7 @@ const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/datab
 const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll')
+const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
 
 class Model extends BaseModel {
 
@@ -69,7 +70,7 @@ class Model extends BaseModel {
     }
 
     convertData({ option, companyID, page, unit, getNumber, newPassword }){
-        // console.log({ option, companyID, page, unit, getNumber, newPassword })
+        console.log({ option, companyID, page, unit, getNumber, newPassword })
         const that = this
         return new Promise(async resolve => { 
             try {
@@ -111,6 +112,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                // convertDoctype
                 else if(option == 2){
                     let selectObj = '_id name sign description'
                 
@@ -143,6 +145,43 @@ class Model extends BaseModel {
                         return resolve({ error: false, message: "Done", data: {page} })
                     }else{
                         let number = await ITEM__DOCTYPE_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // convertBudget
+                else if(option == 3){
+                    let selectObj = '_id name sign description note'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await BUDGET__WORK_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await BUDGET__WORK_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertBudget({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await BUDGET__WORK_COLL.count(conditionObj)
                         return resolve({ error: false, number: number })
                     }
                 }
@@ -214,6 +253,34 @@ class Model extends BaseModel {
                 }
 
                 await ITEM__DOCTYPE_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertBudget({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await BUDGET__WORK_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+                if(info.sign && info.sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.sign)
+                }
+                if(info.description && info.description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.description)
+                }
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+
+                await BUDGET__WORK_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
               
                 return resolve({ error: false})
             } catch (error) {

@@ -270,20 +270,10 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                 let sortBy;
-                 let conditionObj = {};
-                 let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+                let conditionObj = {};
+                let keys	     = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -295,11 +285,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+
                 if(type){
                     conditionObj.type = type
                 }
@@ -325,7 +311,6 @@ class Model extends BaseModel {
                 }
                 let conditionObjOrg = { ...conditionObj };
 
-                // PHÂN TRANG KIỂU MỚI
                 if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await BUDGET_COLL.findById(lastestID);
 					if(!infoData)
