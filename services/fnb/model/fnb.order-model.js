@@ -866,7 +866,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ orderID, userID,
-        customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint }) {
+        customerID, cancelNote, shippingFeeTotal, shippingFee, paid, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint }) {
+            // console.log({ orderID, userID, customerID, cancelNote, shippingFeeTotal, shippingFee, paid, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -931,6 +932,18 @@ class Model extends BaseModel {
 
                     let newComplaint = Number(oldComplaint) + 1
                     dataInUpdate.complaint = Number(newComplaint)
+                }
+
+                if(!isNaN(shippingFeeTotal)){
+                    dataInUpdate.shippingFeeTotal = Number(shippingFeeTotal)
+                }
+
+                if(!isNaN(shippingFee)){
+                    dataInUpdate.shippingFee = Number(shippingFee)
+                }
+
+                if(!isNaN(paid)){
+                    dataInUpdate.paid = Number(paid)
                 }
 
                 /**
@@ -1017,6 +1030,8 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                // console.log(dataInUpdate)
 
                 let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true })
                 if (!infoAfterUpdate)
@@ -2813,31 +2828,29 @@ class Model extends BaseModel {
                                 workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
                                 workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
                                 workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
-                                workbook.sheet("Order").row(i).cell(18).value(Number(item?.shippingFee));
-                                workbook.sheet("Order").row(i).cell(19).value(Number(item.numberOfSizeM));
-                                workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfSizeL));
-                                workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfProducts));
-                                workbook.sheet("Order").row(i).cell(22).value(Number(item.numberOfMistakes));
-                                workbook.sheet("Order").row(i).cell(23).value(item.note);
-                                workbook.sheet("Order").row(i).cell(24).value(Number(item.loyaltyPoints));
-                                workbook.sheet("Order").row(i).cell(25).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
-                                workbook.sheet("Order").row(i).cell(26).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
+                                workbook.sheet("Order").row(i).cell(18).value(Number(item?.shippingFeeTotal));
+                                workbook.sheet("Order").row(i).cell(19).value(Number(item?.shippingFee));
+                                workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfSizeM));
+                                workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfSizeL));
+                                workbook.sheet("Order").row(i).cell(22).value(Number(item.numberOfProducts));
+                                workbook.sheet("Order").row(i).cell(23).value(Number(item.numberOfMistakes));
+                                workbook.sheet("Order").row(i).cell(24).value(item.note);
+                                workbook.sheet("Order").row(i).cell(25).value(Number(item.loyaltyPoints));
+                                workbook.sheet("Order").row(i).cell(26).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
+                                workbook.sheet("Order").row(i).cell(27).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
                                 if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
-                                    workbook.sheet("Order").row(i).cell(27).value('Đơn nhân viên');
+                                    workbook.sheet("Order").row(i).cell(28).value('Đơn nhân viên');
                                 }
                                 if(Number(item.nonResident) === 2){
-                                    workbook.sheet("Order").row(i).cell(28).value('Khách vãng lai');
+                                    workbook.sheet("Order").row(i).cell(29).value('Khách vãng lai');
                                 }
-    
-                                workbook.sheet("Order").row(i).cell(29).value(`${item?.customer?._id}`);
-                                workbook.sheet("Order").row(i).cell(30).value(item?.customer?.phone);
-                                workbook.sheet("Order").row(i).cell(31).value(item?.customer?.name);
-    
-                                workbook.sheet("Order").row(i).cell(32).value(item?.referrer ? `${item?.referrer?._id}` : "");
-                                workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? item?.referrer?.phone : "");
-                                workbook.sheet("Order").row(i).cell(34).value(item?.referrer ? item?.referrer?.name : "");
-    
-                                workbook.sheet("Order").row(i).cell(35).value(item?.campaignType ? item?.campaignType?.name : "");
+                                workbook.sheet("Order").row(i).cell(30).value(`${item?.customer?._id}`);
+                                workbook.sheet("Order").row(i).cell(31).value(item?.customer?.phone);
+                                workbook.sheet("Order").row(i).cell(32).value(item?.customer?.name);
+                                workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? `${item?.referrer?._id}` : "");
+                                workbook.sheet("Order").row(i).cell(34).value(item?.referrer ? item?.referrer?.phone : "");
+                                workbook.sheet("Order").row(i).cell(35).value(item?.referrer ? item?.referrer?.name : "");
+                                workbook.sheet("Order").row(i).cell(36).value(item?.campaignType ? item?.campaignType?.name : "");
 
                                 i++
                             });
