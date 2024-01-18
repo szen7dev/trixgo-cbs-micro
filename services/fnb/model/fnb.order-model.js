@@ -271,9 +271,17 @@ class Model extends BaseModel {
                 }
 
                 // Chiết khấu
-                if(!isNaN(discount)){
-                    dataInsert.discount = Number(discount)
-                    amount = Number(amount) - Number(discount)
+                if(!isNaN(discount) && Number(discount) >= 0){
+                    // dataInsert.discount = Number(discount)
+                    // amount = Number(amount) - Number(discount)
+
+                    if(Number(amount) <= Number(discount)){
+                        dataInsert.discount = Number(amount)
+                        amount = 0 
+                    }else{
+                        dataInsert.discount = Number(discount)
+                        amount = Number(amount) - Number(discount)
+                    }
                 }
 
                 /**
@@ -282,18 +290,34 @@ class Model extends BaseModel {
                  */
                 if(salesChannel == 1){
                     // Nếu có giảm giá
-                    if(!isNaN(salesoff) && Number(salesoff) > 0){
+                    if(!isNaN(salesoff) && Number(salesoff) >= 0){
                         // Nếu đã giảm giá thì không được tích điểm
-                        dataInsert.salesoff = Number(salesoff)
-                        amount = Number(amount) - Number(salesoff)
+
+                        // dataInsert.salesoff = Number(salesoff)
+                        // amount = Number(amount) - Number(salesoff)
+
+                        if(Number(amount) <= Number(salesoff)){
+                            dataInsert.salesoff = Number(amount)
+                            amount = 0 
+                        }else{
+                            dataInsert.salesoff = Number(salesoff)
+                            amount = Number(amount) - Number(salesoff)
+                        }
                     }
 
                     // Nếu có tích điểm
-                    if(!isNaN(credit)){
+                    if(!isNaN(credit) && Number(credit) >= 0){
+
                         let creditRound = 1000*Math.round(credit/ 1000)
 
+                        if(Number(amount) <= Number(creditRound)){
+                            creditRound = amount
+                            amount = 0
+                        }else{
+                            amount = Number(amount) - Number(creditRound)
+                        }
+
                         dataInsert.credit = Number(creditRound)
-                        amount = Number(amount) - Number(creditRound)
                     }
 
                     /**
