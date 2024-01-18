@@ -9,12 +9,15 @@ const {
     validateParamsObjectID
 }
                                                 = require('../../../tools/utils/utils')
-const { compareTwoTime,
+const {
+    compareTwoTime,
     isValidDate,
-    getTimeBetween }                            = require('../../../tools/utils/time_utils')
+    getTimeBetween
+}                                               = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index')
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant')
 const { CF_ACTIONS_ZALO } 		                = require('../../zalo_oa/helper/zalo.actions')
+const { CF_ACTIONS_FACEBOOK } 		            = require('../../facebook/helper/facebook.actions')
 const moment                                    = require('moment')
 const stringUtils					            = require('../../../tools/utils/string_utils')
 
@@ -37,14 +40,12 @@ const FIN__CASH_PAYMENT_COLL                    = require('../../fin/database/fi
 const FNB_ORDER_PRODUCT_MODEL                   = require('./fnb.order_product-model').MODEL;
 const FNB_ORDER_VOUCHER_MODEL                   = require('./fnb.voucher-model').MODEL;
 
-const XlsxPopulate                             = require('xlsx-populate')
-const fs                                       = require('fs')
-const path                                     = require('path')
-const { uploadFileS3 }                         = require('../../../tools/s3')
+const XlsxPopulate                              = require('xlsx-populate')
+const fs                                        = require('fs')
+const path                                      = require('path')
+const { uploadFileS3 }                          = require('../../../tools/s3')
 
-const {
-    FNB_ACC,
- } = require('../helper/fnb.keys-constant')
+const { FNB_ACC }                               = require('../helper/fnb.keys-constant')
 
 const {
     FNB_FACTOR,
@@ -87,7 +88,6 @@ class Model extends BaseModel {
                 let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID)
                 if (!infoCustomer)
                     return resolve({ error: true, message: 'cannot_get_infoCustomer' })
-                // console.log(infoCustomer)
 
                 // Lấy số đơn hàng khách đã mua (thành công)
                 let numberOD = await FNB_ORDER_COLL.count({ customer: customerID, status: 5 })
@@ -97,6 +97,11 @@ class Model extends BaseModel {
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
                  */
                 let numberOfOrder = await FNB_ORDER_COLL.count({ company: infoFunda.company })
+
+                await ctx.call(`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_SEND_MESSAGE}`, {
+                    phone: infoCustomer.phone,
+                    message: `Cảm ơn bạn đã mua hàng tại Winggo, giá trị đơn hàng của bạn là ${total} (amount)`,
+                });
 
                 let dataInsert = {
                     company: infoFunda.company,
@@ -439,7 +444,7 @@ class Model extends BaseModel {
                     }else{
                         dataInsert.avgTotalPerStaff = 1
                     }
-                }else{
+                } else{
                     numberStaff = 1
                     dataInsert.assignee = [userID];
 
@@ -451,7 +456,7 @@ class Model extends BaseModel {
                  * KHỐI LƯỢNG SẢN PHẨM
                  */
                 let totalQuantity = 0;
-                if(products && products.length){
+                if (products && products.length){
                     for (let item of products) {
                         totalQuantity = Number(totalQuantity) + Number(item.quantity);
                     }
@@ -489,7 +494,6 @@ class Model extends BaseModel {
 
                 dataInsert.numberOfSizeM = Number(totalSizeM)
                 dataInsert.numberOfSizeL = Number(totalSizeL)
-                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -720,9 +724,9 @@ class Model extends BaseModel {
                     let infoReferral = await ITEM__CONTACT_COLL.findById(infoCustomer.referrer)
 
                     // Kiểm tra xem Người giới thiệu đã được nhận Voucher khi Bạn của mình mua hàng hay chưa (tránh trường hợp đơn hủy)
-                    if(infoReferral && infoReferral.achievements && infoReferral.achievements.includes(customerID)){
+                    if (infoReferral && infoReferral.achievements && infoReferral.achievements.includes(customerID)){
                         // console.log('Đã được tính Ref=========================')
-                    }else{
+                    } else{
                         // console.log('Chưa được tính Ref=========================')
                         /**
                         * Tạo voucher cho Người giới thiệu theo mã bất kỳ (type=2)
@@ -741,7 +745,6 @@ class Model extends BaseModel {
                         })
                         .sort({expired: 1 })
                         .select("_id name sign")
-                        // console.log(infoOffer1)
 
                         if(infoOffer1){
                             // console.log('===========Tồn tại Voucher và tiến hành Cấp phát M1==================')
@@ -775,8 +778,7 @@ class Model extends BaseModel {
                                 },
                                 templateId: "258296",
                             }
-                            let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
-                            // console.log(infoOA)
+                            await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
 
                             /**
                              * Bắn Zalo OA cho Người mới
@@ -812,8 +814,8 @@ class Model extends BaseModel {
                             }
 
                             await Promise.all([
-                                ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2),
-                                ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA3)
+                                ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2),
+                                ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA3)
                             ])
                         }
 
@@ -832,7 +834,7 @@ class Model extends BaseModel {
                             salesoffAmount: 0,
                             salesoffRate: { $gt: 0 },
                         })
-                        .sort({expired: 1 })
+                        .sort({ expired: 1 })
                         .select("_id name sign")
 
                         if(infoOffer2){
@@ -873,7 +875,7 @@ class Model extends BaseModel {
                 //         },
                 //         templateId: "257162",
                 //     }
-                //     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
+                //     let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
                 //     // console.log(infoOA)
                 // }
 

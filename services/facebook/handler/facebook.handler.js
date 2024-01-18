@@ -44,14 +44,15 @@ module.exports = {
     sendMessage: {
         params: {
             message: { type: "string" },
-            recipientId: { type: "string" },
+            phone: { type: "string", optional: true },
+            recipientId: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                const { message, recipientId } = ctx.params
+                const { message, phone, recipientId } = ctx.params
 
                 const resultAfterCallHandler = await FACEBOOK_MODEL.sendMessage({
-                    message, recipientId,
+                    message, phone, recipientId,
                     cacher: this.broker.cacher
                 })
 

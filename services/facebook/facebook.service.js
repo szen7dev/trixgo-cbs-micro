@@ -20,12 +20,14 @@ const FACEBOOK_HANDLER              = require('./handler/facebook.handler');
  */
 const FACEBOOK_CONVERSATION_COLL    = require("./database/facebook.conversation-coll");
 const FACEBOOK_MESSAGE_COLL         = require("./database/facebook.message-coll");
+const ITEM_CONTACT_COLL             = require("../item/database/item.contact-coll");
 
 module.exports = {
     name: CF_DOMAIN_SERVICES.FACEBOOK,
     mixins: [
 		DbService(FACEBOOK_CONVERSATION_COLL),
 		DbService(FACEBOOK_MESSAGE_COLL),
+		DbService(ITEM_CONTACT_COLL),
         CacheCleaner([CF_DOMAIN_SERVICES.FACEBOOK])
     ],
     actions: {

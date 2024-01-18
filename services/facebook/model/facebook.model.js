@@ -4,6 +4,7 @@ const { convertObjectToQueryParams }    = require('../../../tools/utils/string_u
 const BaseModel                         = require('../../../tools/db/base_model');
 const FACEBOOK_CONVERSATION_COLL        = require("../database/facebook.conversation-coll");
 const FACEBOOK_MESSAGE_COLL             = require("../database/facebook.message-coll");
+const ITEM_CONTACT_COLL                 = require("../../item/database/item.contact-coll");
 
 const {
     FACEBOOK_GRAPH_API,
@@ -101,14 +102,28 @@ class Model extends BaseModel {
         })
     }
 
-    sendMessage({ message, recipientId, messageType = "RESPONSE", cacher }) {
+    sendMessage({ message, phone, recipientId, cacher }) {
         return new Promise(async resolve => {
             try {
                 const cacheKey = this.getCacheKeyPAT(FACEBOOK_PAGE_ID);
                 const accessToken = await cacher.get(cacheKey);
 
-                if(!accessToken) {
+                if (!accessToken) {
                     return resolve({ error: true, message: 'Not found page access token' });
+                }
+
+                if (!recipientId && !phone) {
+                    return resolve({ error: true, message: 'RecipientID or phone is required' });
+                }
+
+                if (phone) {
+                    const fbMessage = await FACEBOOK_MESSAGE_COLL
+                        .findOne({ phones: { $in: [phone] } })
+                        .lean();
+
+                    if (fbMessage) {
+                        recipientId = fbMessage.senderId;
+                    }
                 }
 
                 const response = await httpRequest.post(
@@ -117,7 +132,7 @@ class Model extends BaseModel {
                         "recipient": {
                             "id": recipientId,
                         },
-                        "messaging_type": messageType,
+                        "messaging_type": "RESPONSE",
                         "message":{
                             "text": message
                         }
