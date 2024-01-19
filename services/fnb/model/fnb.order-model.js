@@ -98,11 +98,6 @@ class Model extends BaseModel {
                  */
                 let numberOfOrder = await FNB_ORDER_COLL.count({ company: infoFunda.company })
 
-                await ctx.call(`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_SEND_MESSAGE}`, {
-                    phone: infoCustomer.phone,
-                    message: `Cảm ơn bạn đã mua hàng tại Winggo, giá trị đơn hàng của bạn là ${total} (amount)`,
-                });
-
                 let dataInsert = {
                     company: infoFunda.company,
                     funda: fundaID,
@@ -498,6 +493,13 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+
+                
+                // Demo bắn inbox về Facebook
+                await ctx.call(`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_SEND_MESSAGE}`, {
+                    phone: infoCustomer.phone,
+                    message: `Cảm ơn bạn đã mua hàng tại Winggo, giá trị đơn hàng của bạn là ${total} (amount)`,
+                })
 
                 /**
                  * GÁN SẢN PHẨM VÀO ĐƠN HÀNG-SẢN PHẨM
