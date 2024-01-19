@@ -20,7 +20,6 @@ const CHATTING__MESSAGE_COLL 					= require('./database/chatting.message-coll');
 /**
  * MODELS
  */
-const CHATTING__CONVERSATION_MODEL				= require('./model/chatting.conversation-model').MODEL;
 const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').MODEL;
 const CHATTING__MESSAGE_POLL_MODEL 				= require('./model/chatting.message_poll-model').MODEL;
 const CHATTING__MESSAGE_REMINDER_MODEL 			= require('./model/chatting.message_reminder-model').MODEL;

@@ -1,5 +1,12 @@
 "use strict";
 
+const { Queue } = require("bullmq");
+const IORedis = require("ioredis");
+const { REDIS_SEPERATOR } 			= require("../../tools/cache/cf_redis");
+
+// import { Service, ServiceSchema } from "moleculer";
+const { Service } = require("moleculer")
+
 const DbService                	    					= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    				= require("../../tools/mixins/cache.cleaner.mixin");
 
@@ -83,21 +90,38 @@ module.exports = {
 	/**
 	 * Service created lifecycle event handler
 	*/
-	created() {
-
-	},
+	created() {},
 
 	/**
 	* Service started lifecycle event handler
 	*/
 	async started() {
+		const initQueueEvents = (queue) => {
+			queue.on("error", err => {
+				console.error({ err });
+			})
+		}
 
+		const connection = new IORedis({
+			host: REDIS_SEPERATOR.HOST,
+			port: REDIS_SEPERATOR.PORT,
+			maxRetriesPerRequest: null
+		})
+
+		const queue = new Queue("price_analyze", {
+			connection,
+		})
+
+		this.metadata = {
+			...this.metadata,
+			queue
+		}
+
+		initQueueEvents(queue)
 	},
 
 	/**
 	* Service stopped lifecycle event handler
 	*/
-	async stopped() {
-
-	}
-};
+	async stopped() {}
+}
