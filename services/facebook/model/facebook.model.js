@@ -4,7 +4,6 @@ const { convertObjectToQueryParams }    = require('../../../tools/utils/string_u
 const BaseModel                         = require('../../../tools/db/base_model');
 const FACEBOOK_CONVERSATION_COLL        = require("../database/facebook.conversation-coll");
 const FACEBOOK_MESSAGE_COLL             = require("../database/facebook.message-coll");
-const ITEM_CONTACT_COLL                 = require("../../item/database/item.contact-coll");
 
 const {
     FACEBOOK_GRAPH_API,

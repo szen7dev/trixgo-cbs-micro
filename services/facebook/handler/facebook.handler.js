@@ -4,36 +4,26 @@ const FACEBOOK_MODEL                    = require('../model/facebook.model').MOD
 const { FACEBOOK_WEBHOOK_TOKEN }        = process.env;
 
 module.exports = {
-    subscribe: {
-        async handler(ctx) {
-            try {
-                const params = ctx.params
-                const challengeCode = params['hub.challenge']
-                const verifyToken = params['hub.verify_token']
-                console.log({ FB_SUBSCRIBE_PARAMS: params })
-
-                if(verifyToken !== FACEBOOK_WEBHOOK_TOKEN) {
-                    console.log("Not Matching verify token")
-                }
-
-                ctx.meta.$responseType = "text/plain";
-                ctx.meta.$statusCode    = 200;
-
-                return challengeCode;
-            } catch (error) {
-                console.error({ error })
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
     callback: {
         async handler(ctx) {
             try {
-                const { entry } = ctx.params
                 console.log({ FB_CALLBACK_PARAMS: ctx.params })
+                const params = ctx.params
+                const challengeCode = params['hub.challenge']
+                const verifyToken = params['hub.verify_token']
 
-                const resultAfterCallHandler = await FACEBOOK_MODEL.handleWebhook({ entry });
+                if(challengeCode) {
+                    if(verifyToken !== FACEBOOK_WEBHOOK_TOKEN) {
+                        console.log("Not Matching verify token")
+                    }
+
+                    ctx.meta.$responseType = "text/plain";
+                    ctx.meta.$statusCode    = 200;
+
+                    return challengeCode;
+                }
+
+                const resultAfterCallHandler = await FACEBOOK_MODEL.handleWebhook({ entry: params.entry });
                 return resultAfterCallHandler;
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

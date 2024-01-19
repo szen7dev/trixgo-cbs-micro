@@ -20,18 +20,15 @@ const FACEBOOK_HANDLER              = require('./handler/facebook.handler');
  */
 const FACEBOOK_CONVERSATION_COLL    = require("./database/facebook.conversation-coll");
 const FACEBOOK_MESSAGE_COLL         = require("./database/facebook.message-coll");
-const ITEM_CONTACT_COLL             = require("../item/database/item.contact-coll");
 
 module.exports = {
     name: CF_DOMAIN_SERVICES.FACEBOOK,
     mixins: [
 		DbService(FACEBOOK_CONVERSATION_COLL),
 		DbService(FACEBOOK_MESSAGE_COLL),
-		DbService(ITEM_CONTACT_COLL),
         CacheCleaner([CF_DOMAIN_SERVICES.FACEBOOK])
     ],
     actions: {
-        [CF_ACTIONS_FACEBOOK.FACEBOOK_SUBSCRIBE]            : FACEBOOK_HANDLER.subscribe,
         [CF_ACTIONS_FACEBOOK.FACEBOOK_CALLBACK]             : FACEBOOK_HANDLER.callback,
         [CF_ACTIONS_FACEBOOK.FACEBOOK_SEND_MESSAGE]         : FACEBOOK_HANDLER.sendMessage,
         [CF_ACTIONS_FACEBOOK.FACEBOOK_GET_LONG_LIVED_UAT]   : FACEBOOK_HANDLER.getLongLivedUAT,

@@ -1,7 +1,6 @@
 const BASE_API = "facebook"
 
 const CF_ROUTINGS_FACEBOOK = {
-    FACEBOOK_SUBSCRIBE                   : `/${BASE_API}/subscribe`,
     FACEBOOK_CALLBACK                    : `/${BASE_API}/callback`,
 
     FACEBOOK_GET_LONG_LIVED_UAT          : `/${BASE_API}/long-lived-uat`,
