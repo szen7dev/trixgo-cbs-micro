@@ -1,5 +1,4 @@
 let CF_DOMAIN_SERVICES = {
-    EXTERNAL        : 'external',
     GATEWAY         : 'gateway',
     AUTH            : 'auth',
     CHATTING        : 'chatting',
@@ -29,6 +28,8 @@ let CF_DOMAIN_SERVICES = {
     QRCODE          : 'qrcode',
     MARKET          : 'market',
     FNB             : 'fnb',
+    FACEBOOK        : 'facebook',
+    ZALO            : 'zalo',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

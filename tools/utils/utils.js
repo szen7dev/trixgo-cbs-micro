@@ -5,6 +5,14 @@ const NUMBER_UTILS 						 = require('./number_utils');
 
 exports.objectID = require('mongoose').Types.ObjectId;
 
+exports.getEnv = (name) => {
+    return process.env[name];
+}
+
+exports.isProd = () => {
+    return process.env.NODE_ENV === "production";
+}
+
 exports.isBoolean = val => {
     return val !== undefined && typeof val == "boolean";
 }

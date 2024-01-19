@@ -302,4 +302,8 @@ exports.removeHtmlTag = string => {
     return string.replace(/(<([^>]+)>)/gi, "");
 }
 
-// exports.randomAndCheckExists = randomAndCheckExists;
+exports.convertObjectToQueryParams = (obj) => {
+    return Object.keys(obj)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`)
+        .join('&');
+}

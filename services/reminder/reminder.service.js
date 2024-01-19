@@ -214,7 +214,7 @@ module.exports = {
 					console.log(`========================================`);
 					console.log(`zalo_oa_refresh_token !!!!`);
 
-					await this.broker.call(`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_RENEW_TOKEN}`, {
+					await this.broker.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_RENEW_TOKEN}`, {
 						isCache: true
 					});
 				} catch(error) {
