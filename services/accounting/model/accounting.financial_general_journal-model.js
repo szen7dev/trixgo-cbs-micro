@@ -2647,6 +2647,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: [] })
                 }
 
+console.log({ queue })
                 for(const voucher of listVouchers) {
                     queue.add("price_analyze", {
                         voucher,
