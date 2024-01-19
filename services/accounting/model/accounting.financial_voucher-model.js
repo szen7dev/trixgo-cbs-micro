@@ -303,7 +303,7 @@ class Model extends BaseModel {
                  * B3. PHIẾU XUẤT NỘI BỘ
                  */
                 if(type == 5 && linkFundaID && checkObjectIDs(linkFundaID)){
-                    await this.convertVoucher({companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
+                    await this.convertVoucher({linkFundaID, companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 })
@@ -792,14 +792,20 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 6/1/2024
      */
-    convertVoucher({ companyID, docID, userID, ctx }){
-        // console.log({ companyID, docID, userID })
+    convertVoucher({ linkFundaID, companyID, docID, userID, ctx }){
+        // console.log({ linkFundaID, companyID, docID, userID })
         const that = this
         return new Promise(async (resolve, reject) => {
             try {
-                let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(docID)
+                let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(docID).populate({
+                    path: 'linkFunda',
+                    select: '_id name warehouse'
+                })
+                // console.log(infoVoucher)
 
-                if(infoVoucher.type == 5 && infoVoucher.linkFunda && checkObjectIDs(infoVoucher.linkFunda)){
+                if(infoVoucher.type == 5 && infoVoucher.linkFunda && checkObjectIDs(infoVoucher.linkFunda._id)){
+
+                    // console.log(infoVoucher)
 
                     let listAccount = await ITEM__ACCOUNT_MODEL.getListRecursive({ companyID, arrAccNames: ['152','153','155','156','157'] })
                     listAccount = listAccount.data.map(item=>item._id.toString())
@@ -833,7 +839,8 @@ class Model extends BaseModel {
                                 customerDebit: item.customerDebit,
                                 customerDebit: item.customerDebit,
                                 goods: item.goods,
-                                warehouse: item.warehouse,
+                                // warehouse: item.warehouse, //
+                                warehouse: infoVoucher.linkFunda?.warehouse,
                                 contract: item.contract,
                                 subtype: item.subtype,
                             }
@@ -844,12 +851,13 @@ class Model extends BaseModel {
                     let infoNewVoucher = await that.insert({
                         linkVoucherID: docID,
                         authorID: userID, 
-                        fundaID: infoVoucher.linkFunda, 
+                        fundaID: infoVoucher.linkFunda._id, 
                         customerID: infoVoucher.customer,
                         contractID: infoVoucher.contract, 
                         storageID: infoVoucher.storage, 
                         subtypeID: infoVoucher.subtype,
-                        warehouseID: infoVoucher.warehouse,
+                        // warehouseID: infoVoucher.warehouse, //
+                        warehouseID: infoVoucher.linkFunda?.warehouse, //
                         linkFundaID: infoVoucher.funda,
                         type: 4, 
                         date: infoVoucher.date, 
@@ -868,6 +876,7 @@ class Model extends BaseModel {
                         selectedJournals: selectedJournals,
                         ctx
                     })
+                    // console.log(infoNewVoucher)
 
                     return resolve({ erorr: false, data: infoNewVoucher, status: 200 })
                 }else{
