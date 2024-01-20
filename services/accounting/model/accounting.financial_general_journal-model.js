@@ -2647,19 +2647,21 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: [] })
                 }
 
-console.log({ queue })
-                for(const voucher of listVouchers) {
-                    queue.add("price_analyze", {
-                        voucher,
-                        userID,
-                        arrObjectID
-                    }, {
-                        backoff: 3,
-                        attempts: 3
-                    })
-                }
+                /**
+                 * Xử lý Worker
+                 */
+                // for(const voucher of listVouchers) {
+                //     queue.add("price_analyze", {
+                //         voucher,
+                //         userID,
+                //         arrObjectID
+                //     }, {
+                //         backoff: 3,
+                //         attempts: 3
+                //     })
+                // }
 
-                return resolve({ error: false, data: listVouchers, status: 200 });
+                // return resolve({ error: false, data: listVouchers, status: 200 });
 
 				/**
                  * Khai báo arr hứng các hàng hóa có việc xuất bị sai
