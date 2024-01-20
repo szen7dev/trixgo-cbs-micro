@@ -21,10 +21,10 @@ const ZALO_HANDLER              = require('./handler/zalo.handler');
 const ZALOOA_FOLLOWER_COLL      = require('./database/zalooa.follower-coll');
 
 module.exports = {
-    name: CF_DOMAIN_SERVICES.EXTERNAL,
+    name: CF_DOMAIN_SERVICES.ZALO,
     mixins: [
 		DbService(ZALOOA_FOLLOWER_COLL),
-        CacheCleaner([CF_DOMAIN_SERVICES.EXTERNAL])
+        CacheCleaner([CF_DOMAIN_SERVICES.ZALO])
     ],
     actions: {
         [CF_ACTIONS_ZALO.ZALO_REQUEST_PERMISSION]   : ZALO_HANDLER.requestZaloOAPermission,

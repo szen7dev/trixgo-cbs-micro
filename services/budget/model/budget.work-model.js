@@ -310,12 +310,14 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getList({ groupID, itemID, budgetID, companyID, userID,
-        keyword, limit = 20, lastestID, select, populates= {} }) { 
+        keyword, limit = 100, lastestID, select, populates= {} }) { 
+        // console.log({ groupID, itemID, budgetID, companyID, userID,
+        //     keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 100){
+                    limit = 100
                 }else{
                     limit = +limit;
                 }
@@ -359,7 +361,7 @@ class Model extends BaseModel {
                    
                     conditionObj.namecv = regExpSearch;
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI

@@ -305,7 +305,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.analysePrimeCostOfAllVouchers({
-                    companyID, fundaID, accountID, fromDate, toDate
+                    companyID, fundaID, accountID, fromDate, toDate, queue: this.metadata.queue
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -331,9 +331,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
                 let { companyID, filterParams, type, voucherID } = ctx.params;
-
-                // console.log('=============>>>>>>>>>>>>>>>')
-                // console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;

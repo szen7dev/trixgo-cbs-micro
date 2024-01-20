@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
+const { checkObjectIDs, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -217,12 +217,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove 
-     * Author: Hiepnh
-     * Date: 9/4/2022
-     */
-
-    /**
      * Name: Get info 
      * Author: Hiepnh
      * Date: 10/4/2022
@@ -233,7 +227,6 @@ class Model extends BaseModel {
                 if (!checkObjectIDs(groupID))
                     return resolve({ error: true, message: 'param_invalid' });
 
-                // populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -275,20 +268,10 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                 let sortBy;
-                 let conditionObj = {};
-                 let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+                let conditionObj = {};
+                let keys	     = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -300,11 +283,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
 
                 if(itemID && checkObjectIDs(itemID)){
                     conditionObj.item = itemID;
@@ -321,7 +299,6 @@ class Model extends BaseModel {
                 }
                 let conditionObjOrg = { ...conditionObj };
 
-                // PHÂN TRANG KIỂU MỚI
                 if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await BUDGET__GROUP_COLL.findById(lastestID);
 					if(!infoData)

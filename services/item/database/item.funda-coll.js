@@ -102,6 +102,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
+    //_________Link Warehouse
+    warehouse: {
+        type: Schema.Types.ObjectId,
+        ref : "warehouse"
+    },
      /**
      * LIÊN QUAN TỚI FNB
      */

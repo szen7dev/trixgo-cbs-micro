@@ -29,6 +29,8 @@ const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/datab
 const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll')
+const ITEM__FUNDA_COLL            		        = require('../../item/database/item.funda-coll')
+const ITEM__WAREHOUSE_COLL            		    = require('../../item/database/item.warehouse-coll')
 const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
 
 class Model extends BaseModel {
@@ -69,8 +71,8 @@ class Model extends BaseModel {
         })
     }
 
-    convertData({ option, companyID, page, unit, getNumber, newPassword }){
-        console.log({ option, companyID, page, unit, getNumber, newPassword })
+    convertData({ option, companyID, page, unit, getNumber, newPassword, fundaID, warehouseID }){
+        // console.log({ option, companyID, page, unit, getNumber, newPassword })
         const that = this
         return new Promise(async resolve => { 
             try {
@@ -184,6 +186,14 @@ class Model extends BaseModel {
                         let number = await BUDGET__WORK_COLL.count(conditionObj)
                         return resolve({ error: false, number: number })
                     }
+                }
+
+                // Link fundaID với warehouseID
+                else if(option == 4){
+                  let info1 = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, {warehouse: warehouseID}, { new: true } )
+                  let info2 = await ITEM__WAREHOUSE_COLL.findByIdAndUpdate(warehouseID, {funda: fundaID}, { new: true } )
+                //   console.log(info1)
+                //   console.log(info2)
                 }
 
                 return resolve({ error: false, data: 'Convert thành công' });

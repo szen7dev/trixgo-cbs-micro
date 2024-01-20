@@ -42,10 +42,6 @@ class Model extends BaseModel {
     }) {
         return new Promise(async (resolve) => {
             try {
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let infoBudget = await BUDGET_COLL.findById(budgetID);
                 if(!infoBudget)
                     return resolve({ error: true, message: "Budget không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
@@ -60,20 +56,10 @@ class Model extends BaseModel {
                     dataInsert.contract = infoBudget.contract
                 }
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(checkObjectIDs(reasonID)){
                     dataInsert.reason = reasonID
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 if(plus && [0,1,2].includes(Number(plus))){
                     dataInsert.plus = plus;
                 }
@@ -139,30 +125,16 @@ class Model extends BaseModel {
     }){
         return new Promise(async (resolve) => {
             try {
-
                 if(!checkObjectIDs(itemID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "itemID_invalid" });
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(checkObjectIDs(reasonID)){
                     dataInsert.reason = reasonID
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                 if(plus && [0,1,2].includes(Number(plus))){
+                if(plus && [0,1,2].includes(Number(plus))){
                     dataUpdate.plus = plus;
                 }
 
@@ -219,12 +191,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove 
-     * Author: Hiepnh
-     * Date: 9/4/2022
-     */
-
-    /**
      * Name: Get info 
      * Author: Hiepnh
      * Date: 10/4/2022
@@ -236,7 +202,6 @@ class Model extends BaseModel {
                 if (!checkObjectIDs(budgetItemID))
                     return resolve({ error: true, message: 'param_invalid' });
 
-                // populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -268,30 +233,20 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ budgetID, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 50, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                 let sortBy;
-                 let conditionObj = {};
-                 let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+                let conditionObj = {};
+                let keys	     = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -303,11 +258,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+
                 if(budgetID && checkObjectIDs(budgetID)){
                     conditionObj.budget = budgetID;
                 }
@@ -320,7 +271,6 @@ class Model extends BaseModel {
                 }
                 let conditionObjOrg = { ...conditionObj };
 
-                // PHÂN TRANG KIỂU MỚI
                 if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await BUDGET__ITEM_COLL.findById(lastestID);
 					if(!infoData)

@@ -8,6 +8,7 @@ const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
 const { CF_ROUTINGS_GATEWAY } 	= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH }		= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_ZALO } 		= require('../zalo_oa/helper/zalo.routes');
+const { CF_ROUTINGS_FACEBOOK } 	= require('../facebook/helper/facebook.routes');
 
 /**
  * ------import action's Services--------
@@ -15,6 +16,7 @@ const { CF_ROUTINGS_ZALO } 		= require('../zalo_oa/helper/zalo.routes');
 const { CF_ACTIONS_GATEWAY }	= require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH }		= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ZALO }		= require('../zalo_oa/helper/zalo.actions');
+const { CF_ACTIONS_FACEBOOK }	= require('../facebook/helper/facebook.actions');
 
 
 module.exports = {
@@ -76,13 +78,28 @@ module.exports = {
 		 * Zalo OA
 		 */
 		[`GET ${CF_ROUTINGS_ZALO.ZALO_REQUEST_PERMISSION}`] :
-		[`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_REQUEST_PERMISSION}`],
+		[`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_REQUEST_PERMISSION}`],
 
 		[`GET ${CF_ROUTINGS_ZALO.ZALO_CALLBACK}`] :
-		[`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_CALLBACK}`],
+		[`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_CALLBACK}`],
 
 		[`POST ${CF_ROUTINGS_ZALO.ZALO_WEBHOOK}`] :
-		[`${CF_DOMAIN_SERVICES.EXTERNAL}.${CF_ACTIONS_ZALO.ZALO_WEBHOOK}`],
+		[`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_WEBHOOK}`],
+
+		/**
+		 * Facebook API
+		 */
+		[`GET ${CF_ROUTINGS_FACEBOOK.FACEBOOK_CALLBACK}`] :
+		[`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_CALLBACK}`],
+
+		[`POST ${CF_ROUTINGS_FACEBOOK.FACEBOOK_CALLBACK}`] :
+		[`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_CALLBACK}`],
+
+		[`GET ${CF_ROUTINGS_FACEBOOK.FACEBOOK_GET_LONG_LIVED_UAT}`] :
+		[`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_GET_LONG_LIVED_UAT}`],
+
+		[`GET ${CF_ROUTINGS_FACEBOOK.FACEBOOK_GET_LONG_LIVED_PAT}`] :
+		[`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_GET_LONG_LIVED_PAT}`],
 	},
 	// Disable to call not-mapped actions
 	mappingPolicy: "all", // Available values: "all", "restrict"
@@ -121,7 +138,7 @@ module.exports = {
 	/**
 	 * ROUTE Hooks: cấu hình map từ req -> ctx
 	 */
-	 onBeforeCall(ctx, route, req, res) {
+	onBeforeCall(ctx, route, req, res) {
 		// Set request headers to context meta
 		ctx.meta.userAgent = req.headers["user-agent"];
 		ctx.meta.ipAddr    = req.headers['x-forwarded-for'] 	||

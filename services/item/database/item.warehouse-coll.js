@@ -30,6 +30,11 @@ module.exports  = DATABASE_MIDDLEWARE("warehouse", {
     name: String,
     //_________Mô tả
     description: String,
+    //_________Link Funda
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : "funda"
+    },
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
