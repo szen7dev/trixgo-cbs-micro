@@ -12,8 +12,8 @@ const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("config", {
     /**
-     * Phân loại
-     * 1-Zalo OA
+     * Phân loại kênh/...
+     * 1-ZNS (Zalo)
      * 2-Facebook
      * 3-...
      * 1 type ứng với 1 companyID thì chỉ có 1 mẩu tin duy nhất
@@ -24,8 +24,35 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Tên biến
-    name: String,
+    /**
+     * ID kênh:
+     * ZALO_OA_APP_ID
+     * FACEBOOK_CLIENT_ID
+     * ...
+     */
+    channel: String,
+    /**
+     * ID template sử dụng:
+     * templateId (ZaloOA)
+     * clientId (Facebook)
+     */
+    template: String,
+     /**
+     * secretKey
+     * ...
+     */
+    secretKey: String,
+    /**
+     * tokenKey
+     * ...
+     */
+    tokenKey: String,
+    /**
+     * Tình trạng
+     * 1-Hoạt động (cấu hình chính-1 công ty có thể có nhiều kênh/biến)
+     * 2-Tạm dừng
+     */
+    active: { type: Number, default: 1 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
