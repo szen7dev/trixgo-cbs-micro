@@ -171,42 +171,42 @@ class Model extends BaseModel {
                 // if(checkExist)
                 //     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(checkObjectIDs(parentID)){
-                    dataInUpdate.parent = parentID;
+                    dataUpdate.parent = parentID;
                 }
 
                 if(name){
-                    dataInUpdate.name =name;
+                    dataUpdate.name =name;
                 }
 
                 // if(sign){
-                //     dataInUpdate.sign =sign;
+                //     dataUpdate.sign =sign;
                 // }
 
                 if(unit && unit != ""){
-                    dataInUpdate.unit = unit;
+                    dataUpdate.unit = unit;
                 }
 
                 if(note && note != ""){
-                    dataInUpdate.note = note;
+                    dataUpdate.note = note;
                 }
 
                 if(!isNaN(quantity)){
-                    dataInUpdate.quantity = Number(quantity);
+                    dataUpdate.quantity = Number(quantity);
                 }
 
                 if(!isNaN(unitPrice)){
-                    dataInUpdate.unitPrice = Number(unitPrice);
+                    dataUpdate.unitPrice = Number(unitPrice);
                 }
 
                 if(!isNaN(amount)){
-                    dataInUpdate.amount = Number(amount);
+                    dataUpdate.amount = Number(amount);
                 }
 
-                console.log({ dataInUpdate })
-                let infoAfterUpdate = await FNB_ORDER_PRODUCT_COLL.findByIdAndUpdate(productID, dataInUpdate, { new: true });
+                console.log({ dataUpdate })
+                let infoAfterUpdate = await FNB_ORDER_PRODUCT_COLL.findByIdAndUpdate(productID, dataUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });

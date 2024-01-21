@@ -67,18 +67,19 @@ module.exports = {
             amount              : { type: "number", optional: true },
             status              : { type: "number", optional: true },
             type                : { type: "number", optional: true },
+            imagesID            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files } = ctx.params;
+                let {  customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, imagesID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 // console.log('11111111111111111111111')
                 // console.log(ctx.params)
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.update({
-                    userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files
+                    userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, imagesID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

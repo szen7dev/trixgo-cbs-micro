@@ -134,26 +134,26 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(orderMistakeID))
                     return resolve({ error: true, message: 'orderMistakeID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
              
                 if(!isNaN(type)){
-                    dataInUpdate.type = Number(type);
+                    dataUpdate.type = Number(type);
                 }
 
                 if(!isNaN(amount)){
-                    dataInUpdate.amount = Number(amount);
+                    dataUpdate.amount = Number(amount);
                 }
 
                 if(!isNaN(bonus)){
-                    dataInUpdate.bonus = Number(bonus);
+                    dataUpdate.bonus = Number(bonus);
                 }
 
                 if(note && note != ""){
-                    dataInUpdate.note = note;
+                    dataUpdate.note = note;
                 }
-                // console.log({ dataInUpdate })
+                // console.log({ dataUpdate })
 
-                let infoAfterUpdate = await FNB_MISTAKE_COLL.findByIdAndUpdate(orderMistakeID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_MISTAKE_COLL.findByIdAndUpdate(orderMistakeID, dataUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });

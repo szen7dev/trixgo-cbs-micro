@@ -105,49 +105,49 @@ class Model extends BaseModel {
                 let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ project: infoGroup.project, _id: { $ne: groupID }, sign });
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if(name){
-                    dataInUpdate.name =name;
+                    dataUpdate.name =name;
                 }
 
                 if(sign){
-                    dataInUpdate.sign =sign;
+                    dataUpdate.sign =sign;
                 }
 
                 if(checkObjectIDs(contractID)){
-                    dataInUpdate.contract = contractID;
+                    dataUpdate.contract = contractID;
                 }
 
                 if(checkObjectIDs(members)){
-                    dataInUpdate.$addToSet = { members };
+                    dataUpdate.$addToSet = { members };
                 }
 
                 if(checkObjectIDs(membersRemove)){
-                    dataInUpdate.$pullAll = { members: membersRemove };
+                    dataUpdate.$pullAll = { members: membersRemove };
                 }
 
                 if(checkObjectIDs(admins)){
-                    dataInUpdate.$addToSet = { admins };
+                    dataUpdate.$addToSet = { admins };
                 }
 
                 if(checkObjectIDs(adminsRemove)){
-                    dataInUpdate.$pullAll = { admins: adminsRemove };
+                    dataUpdate.$pullAll = { admins: adminsRemove };
                 }
 
                 if(checkObjectIDs(image)){
-                    dataInUpdate.image = image;
+                    dataUpdate.image = image;
                 }
 
                 /**
                  * Di chuyển thư mục
                  */
                 if(checkObjectIDs(parentID)){
-                    dataInUpdate.parent = parentID;
+                    dataUpdate.parent = parentID;
                 }
 
-                // console.log({ dataInUpdate })
-                let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true })
+                // console.log({ dataUpdate })
+                let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
@@ -182,18 +182,6 @@ class Model extends BaseModel {
             }
         });
     }
-
-    /**
-     * Name: remove group
-     * Author: Depv
-     * Code:
-     */
-
-    /**
-     * Name: remove many
-     * Author: Depv
-     * Code:
-     */
 
     /**
      * Name: get info user_pcm_plan_group
@@ -250,9 +238,6 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(projectID))
                     return resolve({ error: true, message: "projectID_invalid", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = {
                     $or: [
                         { members: { $in: [userID] } },
@@ -262,11 +247,7 @@ class Model extends BaseModel {
 
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });

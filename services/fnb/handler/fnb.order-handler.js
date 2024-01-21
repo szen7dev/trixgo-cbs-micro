@@ -45,7 +45,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid } = ctx.params;
 
-                console.log({ FNB_ORDER_INSERT_PARAMS: ctx.params });
+                // console.log({ FNB_ORDER_INSERT_PARAMS: ctx.params });
 
                 const { _id: userID } = ctx.meta.infoUser;
 

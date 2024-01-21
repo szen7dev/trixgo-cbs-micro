@@ -117,14 +117,14 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status }) {
-        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status })
+    update({ userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, imagesID }) {
+        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, imagesID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))
                     return resolve({ error: true, message: 'customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInUpdate = { 
+                let dataUpdate = { 
                     name,
                     userUpdate: userID, 
                     modifyAt: new Date(),
@@ -142,42 +142,49 @@ class Model extends BaseModel {
                 //     if(!infoOrder)
                 //         return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                //         dataInUpdate.order = orderID
-                //         dataInUpdate.company = infoOrder.company
-                //         dataInUpdate.funda = infoOrder.funda
-                //     // dataInUpdate.salesChannel = infoOrder.salesChannel
+                //         dataUpdate.order = orderID
+                //         dataUpdate.company = infoOrder.company
+                //         dataUpdate.funda = infoOrder.funda
+                //     // dataUpdate.salesChannel = infoOrder.salesChannel
                     
                 //     if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
-                //         dataInUpdate.manager = infoOrder.funda.manager
+                //         dataUpdate.manager = infoOrder.funda.manager
                 //     }
                 // }
 
                 if(!isNaN(type)){
-                    dataInUpdate.type = Number(type);
+                    dataUpdate.type = Number(type);
                 }
 
                 if(!isNaN(amount)){
-                    dataInUpdate.amount = Number(amount);
+                    dataUpdate.amount = Number(amount);
                 }
 
                 if(!isNaN(rating)){
-                    dataInUpdate.rating = Number(rating);
+                    dataUpdate.rating = Number(rating);
                 }
 
                 if(!isNaN(status)){
-                    dataInUpdate.status = Number(status);
+                    dataUpdate.status = Number(status);
                 }
 
                 if(description && description != ""){
-                    dataInUpdate.description = description;
+                    dataUpdate.description = description;
                 }
 
                 if(note && note != ""){
-                    dataInUpdate.note = note;
+                    dataUpdate.note = note;
                 }
-                // console.log(dataInUpdate)
 
-                let infoAfterUpdate = await FNB_CUSTOMER_CARE_COLL.findByIdAndUpdate(customerCareID, dataInUpdate, { new: true });
+                if(imagesID && imagesID.length) {
+                    dataUpdate.$addToSet = {
+                        images: imagesID,
+                    }
+                }
+
+                // console.log(dataUpdate)
+
+                let infoAfterUpdate = await FNB_CUSTOMER_CARE_COLL.findByIdAndUpdate(customerCareID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
