@@ -71,6 +71,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ company, app, role, limit = 20, lastestID, select, populates = {} }) { 
+        // console.log({ company, app, role, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
