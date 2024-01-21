@@ -15,6 +15,7 @@ const GOODS      = '/goods';
 const FUNDA      = '/fundas';
 const SIGNATURE  = '/signatures';
 const DEPARTMENT_DIRECTORIES = "/department_directories";
+const CONFIG     = "/configs";
 
 const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
@@ -85,6 +86,9 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================SIGNATURE===========================================//
     DEPARTMENT_DIRECTORIES                      : `${BASE_ROUTE}${DEPARTMENT_DIRECTORIES}`,
+
+    // ================================CONFIG============================================//
+    CONFIG                                       : `${BASE_ROUTE}${CONFIG}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;

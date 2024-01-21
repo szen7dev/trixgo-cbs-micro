@@ -682,6 +682,18 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ITEM.DEPARTMENT_DIRECTORIES}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_DIRECTORY_GET_INFO_AND_GET_LIST}`],
 
+		/**
+		 * Config
+		*/
+		[`POST ${CF_ROUTINGS_ITEM.CONFIG}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONFIG_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_ITEM.CONFIG}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONFIG_UPDATE}`],
+
+		[`GET ${CF_ROUTINGS_ITEM.CONFIG}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONFIG_GET_INFO_AND_GET_LIST}`],
+
 		//------------------------------END SEARVICE ITEM---------------------------//
 
 		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//

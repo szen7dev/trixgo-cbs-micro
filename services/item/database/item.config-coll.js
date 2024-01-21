@@ -11,6 +11,15 @@ const Schema                = require('mongoose').Schema;
  */
 
 module.exports  = DATABASE_MIDDLEWARE("config", {
+    //_________Công ty của user đang truy cập
+    company: {
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    },
+    /**
+     * Tên/mô tả
+     */
+    name: String,
     /**
      * Phân loại kênh/...
      * 1-ZNS (Zalo)
@@ -19,15 +28,10 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
      * 1 type ứng với 1 companyID thì chỉ có 1 mẩu tin duy nhất
      */
     type: { type: Number, default: 1 },
-    //_________Phân vùng hoạt động: của user đang truy cập
-    company: {
-        type: Schema.Types.ObjectId,
-        ref : "company"
-    },
     /**
      * ID kênh:
      * ZALO_OA_APP_ID
-     * FACEBOOK_CLIENT_ID
+     * FACEBOOK_PAGE_ID
      * ...
      */
     channel: String,
