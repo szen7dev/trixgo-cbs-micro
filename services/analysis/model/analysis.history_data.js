@@ -197,9 +197,14 @@ class Model extends BaseModel {
                 }
 
                 else if(option == 5){
-                    let info1 = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, {contact: contactID}, { new: true } )
-                    // console.log(info1)
-                  }
+                    let info = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, {contact: contactID}, { new: true } )
+                    // console.log(info)
+                }
+
+                else if(option == 6){
+                    let info = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, {isDefault: 2}, { new: true } )
+                    // console.log(info)
+                }
 
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
