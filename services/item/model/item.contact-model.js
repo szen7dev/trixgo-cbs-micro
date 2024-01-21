@@ -1733,7 +1733,7 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 8/12/2022
      */
-    importFromExcel({ option, companyID, dataImport, userID }) {
+    importFromExcel({ option, companyID, dataImport, userID, ctx }) {
         // console.log({ option, companyID, dataImport, userID })
         return new Promise(async resolve => {
             try {
@@ -1858,6 +1858,7 @@ class Model extends BaseModel {
                                 certificateType: data?.__EMPTY_54,
                                 certificateName: data?.__EMPTY_55,
                                 certificateGrade: data?.__EMPTY_44,
+                                ctx
                             }
                             // console.log(dataInsert);
     

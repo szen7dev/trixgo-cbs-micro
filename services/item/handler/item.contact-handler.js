@@ -464,7 +464,7 @@ module.exports = {
                 // console.log(option)
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.importFromExcel({
-                    companyID: company._id, userID, dataImport, option
+                    companyID: company._id, userID, dataImport, option, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
