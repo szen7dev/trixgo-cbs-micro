@@ -40,6 +40,7 @@ const ITEM__CONTRACT_COLL            				= require('../database/item.contract-co
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
 const ITEM__AREA_COLL            				    = require('../database/item.area-coll')
 const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll')
+const HUMAN__CONTACT_DOCUMENT_COLL                  = require('../../human/database/human.contact_document-coll')
 
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL
 const CONTACT_DOCUMENT_MODEL                        = require('../../human/model/human.contact_document-model').MODEL
@@ -418,9 +419,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers}){
+    update({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers}){
         // console.log('================THAM BIẾN CẬP NHẬT DANH BẠ=================')
-        // console.log({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers})
+        // console.log({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers})
         return new Promise(async (resolve) => {
             try {
                 //___________Xác thực số điện thoại
@@ -689,31 +690,6 @@ class Model extends BaseModel {
                 if(contractExpire){
                     dataUpdate.contractExpire = contractExpire;
                 }
-                // Tăng giảm số lượng contact_document khi xoá contact_document
-                let dataINC = {};
-                if(amountWorkHistory){
-                    dataINC.amountWorkHistory = amountWorkHistory
-                }
-
-                if(amountProjectHistory){
-                    dataINC.amountProjectHistory = amountProjectHistory
-                }
-
-                if(amountContractHistory){
-                    dataINC.amountContractHistory = amountContractHistory
-                }
-
-                if(amountEducationHistory){
-                    dataINC.amountEducationHistory = amountEducationHistory
-                }
-
-                if(amountCertificateHistory){
-                    dataINC.amountCertificateHistory = amountCertificateHistory
-                }
-
-                if(dataINC){
-                    dataUpdate.$inc = dataINC
-                }
 
                 if(checkObjectIDs(documents)){
                     dataUpdate.$addToSet = { documents }
@@ -779,10 +755,14 @@ class Model extends BaseModel {
                         usedVouchers
                     }
                 }
+                // console.log(dataUpdate)
 
-                let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
-                if(!infoAfterInsert)
+                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại" })
+
+                // Cập nhật lại số lượng document cho contact
+                await this.updateValue({ contactID, userID: authorID })
 
                 // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
                 if(linkUser && checkObjectIDs(linkUser)){
@@ -795,9 +775,73 @@ class Model extends BaseModel {
                     // console.log(infoUser)
                 }
 
-                return resolve({ error: false, data: infoAfterInsert });
+                return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Tổng hợp các hồ sơ của danh bạ
+     * Author: HiepNH
+     * Code: 21/1/2024
+     */
+    updateValue({ 
+        contactID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+                let amountWorkHistory = 0, amountProjectHistory = 0, amountContractHistory = 0, amountEducationHistory = 0, amountCertificateHistory = 0
+
+                let listData = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            contact: ObjectID(contactID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { type: "$type"},
+                            count: { $sum: 1 },
+                        }
+                    },
+                ])
+                // console.log(listData)
+
+                for(const item of listData){
+                    if(item._id.type == 1){
+                        amountWorkHistory = Number(amountWorkHistory) + Number(item.count)
+                    }
+                    if(item._id.type == 2){
+                        amountProjectHistory = Number(amountProjectHistory) + Number(item.count)
+                    }
+                    if(item._id.type == 3){
+                        amountContractHistory = Number(amountContractHistory) + Number(item.count)
+                    }
+                    if(item._id.type == 4){
+                        amountEducationHistory = Number(amountEducationHistory) + Number(item.count)
+                    }
+                    if(item._id.type == 5){
+                        amountCertificateHistory = Number(amountCertificateHistory) + Number(item.count)
+                    }
+                }
+
+                dataUpdate.amountWorkHistory = Number(amountWorkHistory)
+                dataUpdate.amountProjectHistory = Number(amountProjectHistory)
+                dataUpdate.amountContractHistory = Number(amountContractHistory)
+                dataUpdate.amountEducationHistory = Number(amountEducationHistory)
+                dataUpdate.amountCertificateHistory = Number(amountCertificateHistory)
+                
+                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_task", status: 403 })
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 })
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -1857,8 +1901,7 @@ class Model extends BaseModel {
                                 educationalBackground2: data?.__EMPTY_53, 
                                 certificateType: data?.__EMPTY_54,
                                 certificateName: data?.__EMPTY_55,
-                                certificateGrade: data?.__EMPTY_44,
-                                ctx
+                                certificateGrade: data?.__EMPTY_44
                             }
                             // console.log(dataInsert);
     

@@ -9,6 +9,7 @@ const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3')
+const ObjectID                          = require('mongoose').Types.ObjectId;
 
 /**
  * DOMAIN AND ACTIONS
@@ -39,7 +40,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, ctx }) {
+    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor }) {
         return new Promise(async resolve => {
             try {
                 let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('company')
@@ -97,38 +98,12 @@ class Model extends BaseModel {
                 }
                 // console.log(dataInsert)
 
-                let infoAfterInsert = await this.insertData(dataInsert);
-                // console.log(infoAfterInsert)
+                let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert", keyError: KEY_ERROR.INSERT_FAILED });
+                    return resolve({ error: true, message: "cannot_insert", keyError: KEY_ERROR.INSERT_FAILED })
 
-                // Cập nhật lại số lượng contact_document cho contact
-                let amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory;
-                if(type == 1) {
-                    amountWorkHistory =  "1"
-                }
-
-                if(type == 2) {
-                    amountProjectHistory =  "1"
-                }
-
-                if(type == 3) {
-                    amountContractHistory =  "1"
-                }
-
-                if(type == 4) {
-                    amountEducationHistory =  "1"
-                }
-
-                if(type == 5) {
-                    amountCertificateHistory =  "1"
-                }
-
-                // Cập nhật lại số lượng contact_document cho contact
-                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_UPDATE}`, {
-                    contactID, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory,
-                    documents: `${infoAfterInsert._id}`
-                })
+                // Cập nhật lại số lượng document cho contact
+                await this.updateValue({ contactID, userID: userCreate })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -256,81 +231,80 @@ class Model extends BaseModel {
                 if(fileRemoveID && _isValid(fileRemoveID)){
                     dataUpdate.$pull = { files: fileRemoveID };
                 }
-                let infoAfterUpdate = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndUpdate(documentID, dataUpdate, { new: true });
+                let infoAfterUpdate = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndUpdate(documentID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update", keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: "cannot_update", keyError: KEY_ERROR.UPDATE_FAILED })
 
-                return resolve({ error: false, data: infoAfterUpdate });
+                return resolve({ error: false, data: infoAfterUpdate })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message })
             }
         })
     }
 
     /**
-    * Name: Remove contactDocument
-    * Author: Depv
-    * Code:
-    */
-    remove({ contactDocumentID, ctx }) {
-       return new Promise(async (resolve) => {
-           try {
-                /**
-                * DECALARTION VARIABLE (1)
-                */
+     * Name: Tổng hợp các hồ sơ của danh bạ
+     * Author: HiepNH
+     * Code: 21/1/2024
+     */
+    updateValue({ 
+        contactID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
-                /**
-                * VALIDATION STEP (2)
-                *  - Kiểm tra valid từ các input
-                *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                */
-                if(!checkObjectIDs(contactDocumentID))
-                   return resolve({ error: true, message: 'Request params contactDocumentID invalid', status: 400 });
+                let amountWorkHistory = 0, amountProjectHistory = 0, amountContractHistory = 0, amountEducationHistory = 0, amountCertificateHistory = 0
 
-                /**
-                * LOGIC STEP (3)
-                * 3.1: Convert type + update name (ví dụ: string -> number)
-                * 3.2: Operation database
-                */
-                let infoAterRemove = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndDelete(contactDocumentID)
+                let listData = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            contact: ObjectID(contactID)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { type: "$type"},
+                            count: { $sum: 1 },
+                        }
+                    },
+                ])
+                // console.log(listData)
 
-                if(!infoAterRemove)
-                   return resolve({ error: true, message: "can't_remove", keyError: KEY_ERROR.DELETE_FAILED });
-
-                let { contact, type } = infoAterRemove;
-                let amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory;
-                if(type == 1) {
-                    amountWorkHistory =  "-1"
+                for(const item of listData){
+                    if(item._id.type == 1){
+                        amountWorkHistory = Number(amountWorkHistory) + Number(item.count)
+                    }
+                    if(item._id.type == 2){
+                        amountProjectHistory = Number(amountProjectHistory) + Number(item.count)
+                    }
+                    if(item._id.type == 3){
+                        amountContractHistory = Number(amountContractHistory) + Number(item.count)
+                    }
+                    if(item._id.type == 4){
+                        amountEducationHistory = Number(amountEducationHistory) + Number(item.count)
+                    }
+                    if(item._id.type == 5){
+                        amountCertificateHistory = Number(amountCertificateHistory) + Number(item.count)
+                    }
                 }
 
-                if(type == 2) {
-                    amountProjectHistory =  "-1"
-                }
+                dataUpdate.amountWorkHistory = Number(amountWorkHistory)
+                dataUpdate.amountProjectHistory = Number(amountProjectHistory)
+                dataUpdate.amountContractHistory = Number(amountContractHistory)
+                dataUpdate.amountEducationHistory = Number(amountEducationHistory)
+                dataUpdate.amountCertificateHistory = Number(amountCertificateHistory)
+                
+                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_task", status: 403 })
 
-                if(type == 3) {
-                    amountContractHistory =  "-1"
-                }
-
-                if(type == 4) {
-                    amountEducationHistory =  "-1"
-                }
-
-                if(type == 5) {
-                    amountCertificateHistory =  "-1"
-                }
-
-                // Cập nhật lại số lượng contact_document cho contact
-                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_UPDATE}`, {
-                    contactID: `${contact}`, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory,
-                    documentsRemove: contactDocumentID
-                })
-
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
-       })
-   }
+        })
+    }
 
     /**
      * Name: get info contactDocument
@@ -401,20 +375,11 @@ class Model extends BaseModel {
                 } else{
                     limit = +limit
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let conditionObj = {};
                 let keys	 = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });

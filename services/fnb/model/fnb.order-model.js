@@ -496,11 +496,15 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
                 
-                // Demo bắn inbox về Facebook
-                await ctx.call(`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_SEND_MESSAGE}`, {
-                    phone: infoCustomer.phone,
-                    message: `Cảm ơn bạn đã mua hàng tại Winggo, giá trị đơn hàng của bạn là ${total} (amount)`,
-                })
+                /**
+                 *  Demo bắn inbox về Facebook
+                 */
+                // console.log('===============FBOOOOOOOOOOOOOOOOOOOOOOO')
+                // let infoFB = await ctx.call(`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_SEND_MESSAGE}`, {
+                //     phone: infoCustomer.phone,
+                //     message: `Cảm ơn bạn đã mua hàng tại Winggo, giá trị đơn hàng của bạn là ${total} (amount)`,
+                // })
+                // console.log(infoFB)
 
                 /**
                  * GÁN SẢN PHẨM VÀO ĐƠN HÀNG-SẢN PHẨM
