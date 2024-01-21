@@ -748,19 +748,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-
-                let { company } = ctx.meta.infoUser;
                 
                 let {
                     userID, projectID, companyID, arrayID,
                     keyword, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
                 // console.log(ctx.params)
-
-                // if(!companyID){
-                //     companyID = company._id
-                // }
-
+                
                 let resultAfterCallHandler;
 
                 // console.log('=======DANH SÁCH USER 222222222222==========>>>>>>>>>>>>>>>>>')

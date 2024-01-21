@@ -47,7 +47,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.insert({
-                    userCreate: userID, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, ctx
+                    userCreate: userID, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -64,32 +64,6 @@ module.exports = {
     update: {
         params: {
             contactDocumentID       : { type: "string"},
-            // type                    : { type: "string", optional: true },
-            // number                  : { type: "string", optional: true },
-            // status                  : { type: "string", optional: true },
-            // certificateGrade        : { type: "string", optional: true },
-            // fromDate                : { type: "string", optional: true },
-            // toDate                  : { type: "string", optional: true },
-            // workplace               : { type: "string", optional: true },
-            // reference               : { type: "string", optional: true },
-            // item                    : { type: "string", optional: true },
-            // project                 : { type: "string", optional: true },
-            // client                  : { type: "string", optional: true },
-            // name                    : { type: "string", optional: true },
-            // description             : { type: "string", optional: true },
-            // sign                    : { type: "string", optional: true },
-            // note                    : { type: "string", optional: true },
-            // store                   : { type: "string", optional: true },
-            // field2                  : { type: "string", optional: true },
-            // position2               : { type: "string", optional: true },
-            // certificateType         : { type: "string", optional: true },
-            // certificateName         : { type: "string", optional: true },
-            // educationalBackground2  : { type: "string", optional: true },
-            // contract                : { type: "string", optional: true },
-            // timeMobilize            : { type: "string", optional: true },
-            // factor                  : { type: "string", optional: true },
-            // filesID                 : { type: "array", optional: true  },
-            // fileRemoveID            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
