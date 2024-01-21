@@ -386,9 +386,9 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, companyID }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, companyID, type }) {
         return new Promise(async (resolve) => {
-            // console.log({ parentID, userID, keyword, limit, lastestID, select, populates, option, month, year })
+            // console.log({ sortOption, parentID, userID, keyword, limit, lastestID, select, populates, option, month, year, type })
             try {
                 if(Number(limit) > 50){
                     limit = 50;
@@ -399,10 +399,14 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let nextCursor	= null;
                 let sortBy      = null;
-                let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['date__1', '_id__1'];
 
                 if(sortOption == 1){
                     keys	 = ['date__-1', '_id__-1'];
+                }
+
+                if(sortOption == 2){
+                    keys	 = ['createAt__-1', '_id__-1'];
                 }
 
                 if(populates && typeof populates === 'string'){
@@ -468,11 +472,19 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Chi tiết chấm công của user đang truy cập
+                if(type && type == 2){
+                    conditionObj.parent = { $exists: true, $ne: null }
+                    conditionObj.assignee = userID
+                }
+
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+                // console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
