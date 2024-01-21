@@ -71,7 +71,7 @@ class Model extends BaseModel {
         })
     }
 
-    convertData({ option, companyID, page, unit, getNumber, newPassword, fundaID, warehouseID }){
+    convertData({ option, companyID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID }){
         // console.log({ option, companyID, page, unit, getNumber, newPassword })
         const that = this
         return new Promise(async resolve => { 
@@ -194,6 +194,16 @@ class Model extends BaseModel {
                   let info2 = await ITEM__WAREHOUSE_COLL.findByIdAndUpdate(warehouseID, {funda: fundaID}, { new: true } )
                 //   console.log(info1)
                 //   console.log(info2)
+                }
+
+                else if(option == 5){
+                    let info = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, {contact: contactID}, { new: true } )
+                    // console.log(info)
+                }
+
+                else if(option == 6){
+                    let info = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, {isDefault: 2}, { new: true } )
+                    // console.log(info)
                 }
 
                 return resolve({ error: false, data: 'Convert thành công' });

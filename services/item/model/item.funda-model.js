@@ -23,6 +23,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  */
 const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
 const ITEM__AREA_COLL            				= require('../database/item.area-coll');
+const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 
 class Model extends BaseModel {
 
@@ -40,6 +41,9 @@ class Model extends BaseModel {
             try {
                 if(!name || !checkObjectIDs(area))
                     return resolve({ error: true, message: "Tên|Khu vực không hợp lệ", keyError: "Request params name invalid" })
+
+                // Link danh bạ
+                let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, isDefault: 2})
 
                 let dataInsert = {
                     userCreate: userID,
@@ -65,6 +69,11 @@ class Model extends BaseModel {
                 dataInsert.area3 = area
                 dataInsert.area2 = infoArea.parent._id
                 dataInsert.area1 = infoArea.parent.parent._id
+
+                // Link danh bạ
+                if(infoContact){
+                    dataInsert.contact = infoContact._id;
+                }
 
                 if(checkObjectIDs(activeCampaign)){
                     dataInsert.activeCampaign = activeCampaign;

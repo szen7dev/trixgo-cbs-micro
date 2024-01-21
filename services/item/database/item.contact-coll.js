@@ -7,6 +7,11 @@ const Schema                = require('mongoose').Schema;
  * DANH BẠ (Nhân viên, Khách hàng, Đối tác)
  */
 module.exports  = DATABASE_MIDDLEWARE("contact", {
+    //_________Là danh bạ mặc định của công ty (2)
+    isDefault: {
+        type: Number,
+        default: 1 
+    },
     //_________Công ty   
     company: {
         type: Schema.Types.ObjectId,

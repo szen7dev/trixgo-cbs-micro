@@ -303,7 +303,7 @@ class Model extends BaseModel {
                  * B3. PHIẾU XUẤT NỘI BỘ
                  */
                 if(type == 5 && linkFundaID && checkObjectIDs(linkFundaID)){
-                    await this.convertVoucher({linkFundaID, companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
+                    await this.convertVoucher({companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 })
@@ -792,14 +792,14 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 6/1/2024
      */
-    convertVoucher({ linkFundaID, companyID, docID, userID, ctx }){
-        // console.log({ linkFundaID, companyID, docID, userID })
+    convertVoucher({ companyID, docID, userID, ctx }){
+        // console.log({ companyID, docID, userID })
         const that = this
         return new Promise(async (resolve, reject) => {
             try {
                 let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(docID).populate({
                     path: 'linkFunda',
-                    select: '_id name warehouse'
+                    select: '_id name warehouse contact'
                 })
                 // console.log(infoVoucher)
 
@@ -836,11 +836,10 @@ class Model extends BaseModel {
                                 note: item.note,
                                 debit: item.credit,
                                 credit: info336._id,
-                                customerDebit: item.customerDebit,
-                                customerDebit: item.customerDebit,
+                                customerDebit: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : item.customerDebit,
+                                customerDebit: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : item.customerDebit,
                                 goods: item.goods,
-                                // warehouse: item.warehouse, //
-                                warehouse: infoVoucher.linkFunda?.warehouse,
+                                warehouse: infoVoucher.linkFunda?.warehouse ? infoVoucher.linkFunda?.warehouse : item.warehouse,
                                 contract: item.contract,
                                 subtype: item.subtype,
                             }
@@ -852,12 +851,11 @@ class Model extends BaseModel {
                         linkVoucherID: docID,
                         authorID: userID, 
                         fundaID: infoVoucher.linkFunda._id, 
-                        customerID: infoVoucher.customer,
+                        customerID: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : infoVoucher.customer,
                         contractID: infoVoucher.contract, 
                         storageID: infoVoucher.storage, 
                         subtypeID: infoVoucher.subtype,
-                        // warehouseID: infoVoucher.warehouse, //
-                        warehouseID: infoVoucher.linkFunda?.warehouse, //
+                        warehouseID: infoVoucher.linkFunda?.warehouse ? infoVoucher.linkFunda?.warehouse : infoVoucher.warehouse,
                         linkFundaID: infoVoucher.funda,
                         type: 4, 
                         date: infoVoucher.date, 
