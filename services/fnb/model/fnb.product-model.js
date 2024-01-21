@@ -115,61 +115,61 @@ class Model extends BaseModel {
                     if(!checkObjectIDs(productID))
                         return resolve({ error: true, message: 'productID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                    let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
+                    let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                     if(parentID && checkObjectIDs(parentID)){
-                        dataInUpdate.parent = parentID;
+                        dataUpdate.parent = parentID;
                     }
 
                     if(status && !isNaN(status)){
-                        dataInUpdate.status = Number(status);
+                        dataUpdate.status = Number(status);
                     }
 
                     if(type && !isNaN(type)){
-                        dataInUpdate.type = Number(type);
+                        dataUpdate.type = Number(type);
                     }
 
                     if(name && name != ""){
-                        dataInUpdate.name = name; 
-                        dataInUpdate.namecv = stringUtils.removeAccents(name); 
+                        dataUpdate.name = name; 
+                        dataUpdate.namecv = stringUtils.removeAccents(name); 
                     }
 
                     if(sign && sign != ""){
-                        dataInUpdate.sign =sign;
+                        dataUpdate.sign =sign;
                     }
 
                     if(imagesID && imagesID.length) {
-                        dataInUpdate.$addToSet = {
+                        dataUpdate.$addToSet = {
                             images: imagesID,
                         }
                     }
 
                     if(fundasID) {
-                        dataInUpdate.fundas = fundasID
+                        dataUpdate.fundas = fundasID
                     }
 
                     if(unit && unit != ""){
-                        dataInUpdate.unit = unit;
+                        dataUpdate.unit = unit;
                     }
 
                     if(note && note != ""){
-                        dataInUpdate.note = note;
+                        dataUpdate.note = note;
                     }
 
                     if(quantity && !isNaN(quantity)){
-                        dataInUpdate.quantity = Number(quantity);
+                        dataUpdate.quantity = Number(quantity);
                     }
 
                     if(unitPrice && !isNaN(unitPrice)){
-                        dataInUpdate.unitPrice = Number(unitPrice);
-                        dataInUpdate.unitPrice2 = Number(unitPrice2);
-                        dataInUpdate.unitPrice3 = Number(unitPrice3);
-                        dataInUpdate.unitPrice4 = Number(unitPrice4);
+                        dataUpdate.unitPrice = Number(unitPrice);
+                        dataUpdate.unitPrice2 = Number(unitPrice2);
+                        dataUpdate.unitPrice3 = Number(unitPrice3);
+                        dataUpdate.unitPrice4 = Number(unitPrice4);
 
-                        dataInUpdate.amount = Number(quantity*unitPrice);
+                        dataUpdate.amount = Number(quantity*unitPrice);
                     }
 
-                    let infoAfterUpdate = await FNB_PRODUCT_COLL.findByIdAndUpdate(productID, dataInUpdate, { new: true });
+                    let infoAfterUpdate = await FNB_PRODUCT_COLL.findByIdAndUpdate(productID, dataUpdate, { new: true });
                     if (!infoAfterUpdate)
                         return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 

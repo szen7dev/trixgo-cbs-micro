@@ -178,108 +178,108 @@ class Model extends BaseModel {
                 let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id funda')
                 let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name manager trialStaffSalary officialStaffSalar')
 
-                let dataInUpdate = { 
+                let dataUpdate = { 
                     userUpdate: userID, 
                     modifyAt: new Date(),
                 };
 
                 if(name && name != ""){
-                    dataInUpdate.name =name;
+                    dataUpdate.name =name;
                 }
 
                 if(note && note != ""){
-                    dataInUpdate.note = note
+                    dataUpdate.note = note
                 }
 
                 if(campaign && !isNaN(campaign)){
-                    dataInUpdate.campaign = Number(campaign)
+                    dataUpdate.campaign = Number(campaign)
                 }
 
                 if(seasons && !isNaN(seasons)){
-                    dataInUpdate.seasons = Number(seasons)
+                    dataUpdate.seasons = Number(seasons)
                 }
 
                 if(shiftType && !isNaN(shiftType)){
-                    dataInUpdate.shiftType = Number(shiftType)
+                    dataUpdate.shiftType = Number(shiftType)
                 }
 
                 if(paidStatus && !isNaN(paidStatus)){
-                    dataInUpdate.paidStatus = Number(paidStatus)
+                    dataUpdate.paidStatus = Number(paidStatus)
                 }
 
                 if(openingCash && !isNaN(openingCash)){
-                    dataInUpdate.openingCash = Number(openingCash)
+                    dataUpdate.openingCash = Number(openingCash)
                 }
 
                 if(incurredCash && !isNaN(incurredCash)){
-                    dataInUpdate.incurredCash = Number(incurredCash)
+                    dataUpdate.incurredCash = Number(incurredCash)
                 }
 
                 if(closingCash && !isNaN(closingCash)){
-                    dataInUpdate.closingCash = Number(closingCash)
+                    dataUpdate.closingCash = Number(closingCash)
                 }
 
                 if(FNB_ACC.man.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
                     // console.log('==========111111111111')
                     if(staffsID && checkObjectIDs(staffsID)){
-                        dataInUpdate.staffs = staffsID;
+                        dataUpdate.staffs = staffsID;
                     }
     
                     if(subStaffsID && checkObjectIDs(subStaffsID)){
-                        dataInUpdate.subStaffs = subStaffsID;
+                        dataUpdate.subStaffs = subStaffsID;
                     }
 
                     if(!isNaN(workingHours)){
-                        dataInUpdate.workingHours = Number(workingHours)
+                        dataUpdate.workingHours = Number(workingHours)
                     }
     
                     if(!isNaN(subWorkingHours)){
-                        dataInUpdate.subWorkingHours = Number(subWorkingHours)
+                        dataUpdate.subWorkingHours = Number(subWorkingHours)
                     }
 
                     // Chi phí ca làm việc
                     if(checkObjectIDs(staffsID) || checkObjectIDs(subStaffsID)){
-                        dataInUpdate.officialStaffSalar = Number(infoFunda.officialStaffSalar)
-                        dataInUpdate.trialStaffSalary = Number(infoFunda.trialStaffSalary)
-                        dataInUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.trialStaffSalary)*Number(subWorkingHours)*Number(subStaffsID.length)
+                        dataUpdate.officialStaffSalar = Number(infoFunda.officialStaffSalar)
+                        dataUpdate.trialStaffSalary = Number(infoFunda.trialStaffSalary)
+                        dataUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.trialStaffSalary)*Number(subWorkingHours)*Number(subStaffsID.length)
                     }
 
                     if(!isNaN(numberOfOpeningSizeM)){
-                        dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
+                        dataUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
                     }
     
                     if(!isNaN(numberOfOpeningSizeL)){
-                        dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
+                        dataUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
                     }
     
                     if(!isNaN(numberOfEotSizeM)){
-                        dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
+                        dataUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
                     }
     
                     if(!isNaN(numberOfEotSizeL)){
-                        dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
+                        dataUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
                     }
                 }else{
                     // console.log('==========2222222222222222')
                     if(!isNaN(numberOfOpeningSizeM)){
-                        dataInUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
+                        dataUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
                     }
     
                     if(!isNaN(numberOfOpeningSizeL)){
-                        dataInUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
+                        dataUpdate.numberOfOpeningSizeL = Number(numberOfOpeningSizeL)
                     }
     
                     if(!isNaN(numberOfEotSizeM)){
-                        dataInUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
+                        dataUpdate.numberOfEotSizeM = Number(numberOfEotSizeM)
                     }
     
                     if(!isNaN(numberOfEotSizeL)){
-                        dataInUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
+                        dataUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
                     }
                 }
-                // console.log({ dataInUpdate })
+                // console.log({ dataUpdate })
 
-                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true })
+                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 

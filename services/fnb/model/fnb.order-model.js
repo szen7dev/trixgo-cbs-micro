@@ -930,48 +930,48 @@ class Model extends BaseModel {
                 let oldSalesChannel = infoOrder.salesChannel
                 let oldComplaint = infoOrder.complaint || 0
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 if(cancelNote) {
-                    dataInUpdate.note = cancelNote;
+                    dataUpdate.note = cancelNote;
                 }
 
                 if(checkObjectIDs(filesID)) {
-                    dataInUpdate.$addToSet = { files: filesID };
+                    dataUpdate.$addToSet = { files: filesID };
                 }
 
                 /**
                  * CẬP NHẬT TRẠNG THÁI-HỦY ĐƠN
                  */
                 if(!isNaN(status)){
-                    dataInUpdate.status = Number(status)
+                    dataUpdate.status = Number(status)
                 }
 
                 if(!isNaN(starRating)){
-                    dataInUpdate.starRating = Number(starRating)
+                    dataUpdate.starRating = Number(starRating)
                 }
 
                 if(!isNaN(complaint)){
-                    dataInUpdate.complaint = Number(complaint)
+                    dataUpdate.complaint = Number(complaint)
                 }
 
                 if(checkObjectIDs(complaintID)) {
-                    dataInUpdate.$addToSet = { complaints: complaintID };
+                    dataUpdate.$addToSet = { complaints: complaintID };
 
                     let newComplaint = Number(oldComplaint) + 1
-                    dataInUpdate.complaint = Number(newComplaint)
+                    dataUpdate.complaint = Number(newComplaint)
                 }
 
                 if(!isNaN(shippingFeeTotal)){
-                    dataInUpdate.shippingFeeTotal = Number(shippingFeeTotal)
+                    dataUpdate.shippingFeeTotal = Number(shippingFeeTotal)
                 }
 
                 if(!isNaN(shippingFee)){
-                    dataInUpdate.shippingFee = Number(shippingFee)
+                    dataUpdate.shippingFee = Number(shippingFee)
                 }
 
                 if(!isNaN(paid)){
-                    dataInUpdate.paid = Number(paid)
+                    dataUpdate.paid = Number(paid)
                 }
 
                 /**
@@ -979,10 +979,10 @@ class Model extends BaseModel {
                  */
                 if(!isNaN(paymentMethod)){
                     if(Number(oldSalesChannel) >= 2){
-                        dataInUpdate.paymentMethod = Number(2) // Đơn App
+                        dataUpdate.paymentMethod = Number(2) // Đơn App
                     }else{
                         // Đơn Off
-                        dataInUpdate.paymentMethod = Number(paymentMethod)
+                        dataUpdate.paymentMethod = Number(paymentMethod)
                     }
                 }
 
@@ -991,8 +991,8 @@ class Model extends BaseModel {
                  * Chỉ áp dụng cho chuyển đổi giữa các App
                  */
                 if(!isNaN(salesChannel) && Number(salesChannel) >= 2){
-                    dataInUpdate.salesChannel = Number(salesChannel)
-                    dataInUpdate.paymentMethod = Number(2) // Chuyển khoản
+                    dataUpdate.salesChannel = Number(salesChannel)
+                    dataUpdate.paymentMethod = Number(2) // Chuyển khoản
                 }
 
                 /**
@@ -1008,60 +1008,60 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                     // Tên đơn hàng
-                    dataInUpdate.name = `Đơn hàng ${infoCustomer.name}-${infoCustomer.phone}-${infoOrder.sign}`
+                    dataUpdate.name = `Đơn hàng ${infoCustomer.name}-${infoCustomer.phone}-${infoOrder.sign}`
 
                     // Mã khách
-                    dataInUpdate.customer = customerID
+                    dataUpdate.customer = customerID
 
                     // Phân loại nhân viên
                     if(infoCustomer.type && !isNaN(infoCustomer.type)){
-                        dataInUpdate.customerType = Number(infoCustomer.type);
+                        dataUpdate.customerType = Number(infoCustomer.type);
                     }
 
                     // Giới tính
                     if(infoCustomer.gender && !isNaN(infoCustomer.gender)){
-                        dataInUpdate.gender = Number(infoCustomer.gender);
+                        dataUpdate.gender = Number(infoCustomer.gender);
                     }
 
                     // Độ tuổi
                     if(infoCustomer.birthday){
                         let dateNow = new Date
-                        dataInUpdate.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
+                        dataUpdate.age = Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear())
                         // console.log(Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear()))
                     }
 
                     // Người giới thiệu
                     if(infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)){
-                        dataInUpdate.referrer = infoCustomer.referrer;
+                        dataUpdate.referrer = infoCustomer.referrer;
                     }
 
                     // Phân loại chiến dịch
                     if(infoCustomer.campaignType && checkObjectIDs(infoCustomer.campaignType)){
-                        dataInUpdate.campaignType = infoCustomer.campaignType;
+                        dataUpdate.campaignType = infoCustomer.campaignType;
                     }
 
                     // Doanh số khách cũ, mới
                     let numberOD = await FNB_ORDER_COLL.count({customer: customerID})
                     if((numberOD && numberOD > 0) || (infoCustomer.new && infoCustomer.new == 2)){
-                        dataInUpdate.new = 2 // Đơn hàng khách cũ
+                        dataUpdate.new = 2 // Đơn hàng khách cũ
                     }else{
-                        dataInUpdate.new = 1 // Đơn hàng khách mới
+                        dataUpdate.new = 1 // Đơn hàng khách mới
                     }
 
                     // Khách vãng lai hay không
                     if(infoCustomer.nonResident && !isNaN(infoCustomer.nonResident)){
-                        dataInUpdate.nonResident = Number(infoCustomer.nonResident);
+                        dataUpdate.nonResident = Number(infoCustomer.nonResident);
 
                         // Khách vãng lai
                         if(infoCustomer.nonResident == 2){
-                            dataInUpdate.new = 3 // Khách vãng lai
+                            dataUpdate.new = 3 // Khách vãng lai
                         }
                     }
                 }
 
-                // console.log(dataInUpdate)
+                // console.log(dataUpdate)
 
-                let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataInUpdate, { new: true })
+                let infoAfterUpdate = await FNB_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
@@ -1115,7 +1115,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(shiftID))
                     return resolve({ error: true, message: 'shiftID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
                 let numberOfCancelOrders = 0
@@ -1277,36 +1277,36 @@ class Model extends BaseModel {
                     }
                 }
 
-                dataInUpdate.numberOfOrders = Number(numberOfOrders)
-                dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
-                dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
-                dataInUpdate.numberOfSizeM = Number(numberOfSizeM)
-                dataInUpdate.numberOfSizeL = Number(numberOfSizeL)
-                dataInUpdate.cashAmount = Number(cashAmount)
-                dataInUpdate.transferAmount = Number(transferAmount)
-                dataInUpdate.numberOfOrders1 = Number(numberOfOrders1)
-                dataInUpdate.numberOfOrders2 = Number(numberOfOrders2)
-                dataInUpdate.numberOfOrders3 = Number(numberOfOrders3)
-                dataInUpdate.numberOfOrders4 = Number(numberOfOrders4)
-                dataInUpdate.numberOfOrders5 = Number(numberOfOrders5)
-                dataInUpdate.numberOfOrders6 = Number(numberOfOrders6)
-                dataInUpdate.numberOfOrders7 = Number(numberOfOrders7)
-                dataInUpdate.numberOfOrders8 = Number(numberOfOrders8)
-                dataInUpdate.numberOfOrders9 = Number(numberOfOrders9)
-                dataInUpdate.total = Number(total)
-                dataInUpdate.total1 = Number(total1)
-                dataInUpdate.total2 = Number(total2)
-                dataInUpdate.total3 = Number(total3)
-                dataInUpdate.total4 = Number(total4)
-                dataInUpdate.total5 = Number(total5)
-                dataInUpdate.total6 = Number(total6)
-                dataInUpdate.total7 = Number(total7)
-                dataInUpdate.total8 = Number(total8)
-                dataInUpdate.total9 = Number(total9)
+                dataUpdate.numberOfOrders = Number(numberOfOrders)
+                dataUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
+                dataUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
+                dataUpdate.numberOfSizeM = Number(numberOfSizeM)
+                dataUpdate.numberOfSizeL = Number(numberOfSizeL)
+                dataUpdate.cashAmount = Number(cashAmount)
+                dataUpdate.transferAmount = Number(transferAmount)
+                dataUpdate.numberOfOrders1 = Number(numberOfOrders1)
+                dataUpdate.numberOfOrders2 = Number(numberOfOrders2)
+                dataUpdate.numberOfOrders3 = Number(numberOfOrders3)
+                dataUpdate.numberOfOrders4 = Number(numberOfOrders4)
+                dataUpdate.numberOfOrders5 = Number(numberOfOrders5)
+                dataUpdate.numberOfOrders6 = Number(numberOfOrders6)
+                dataUpdate.numberOfOrders7 = Number(numberOfOrders7)
+                dataUpdate.numberOfOrders8 = Number(numberOfOrders8)
+                dataUpdate.numberOfOrders9 = Number(numberOfOrders9)
+                dataUpdate.total = Number(total)
+                dataUpdate.total1 = Number(total1)
+                dataUpdate.total2 = Number(total2)
+                dataUpdate.total3 = Number(total3)
+                dataUpdate.total4 = Number(total4)
+                dataUpdate.total5 = Number(total5)
+                dataUpdate.total6 = Number(total6)
+                dataUpdate.total7 = Number(total7)
+                dataUpdate.total8 = Number(total8)
+                dataUpdate.total9 = Number(total9)
 
-                // console.log(dataInUpdate)
+                // console.log(dataUpdate)
 
-                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataInUpdate, { new: true });
+                let infoAfterUpdate = await FNB_SHIFT_COLL.findByIdAndUpdate(shiftID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
@@ -1329,7 +1329,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
-                let dataInUpdate = { userUpdate: userID, modifyAt: new Date() }
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
                 let numberOfOrders = 0
                 let total = 0
@@ -1423,19 +1423,19 @@ class Model extends BaseModel {
                     purchasedValue = Number(listData1[0].amount)
 
                     if(numberOfOrders > 1){
-                        dataInUpdate.new = 2
+                        dataUpdate.new = 2
                     }else{
-                        dataInUpdate.new = 1
+                        dataUpdate.new = 1
                     }
 
-                    dataInUpdate.numberOfOrders = Number(numberOfOrders)
-                    dataInUpdate.total = Number(total)
-                    dataInUpdate.purchasedValue = Number(purchasedValue)
+                    dataUpdate.numberOfOrders = Number(numberOfOrders)
+                    dataUpdate.total = Number(total)
+                    dataUpdate.purchasedValue = Number(purchasedValue)
                 }else{
                     // Áp dụng cho khách mua xong -> boom hàng dẫn tới Hủy đơn
-                    dataInUpdate.numberOfOrders = 0
-                    dataInUpdate.total = 0
-                    dataInUpdate.purchasedValue = 0
+                    dataUpdate.numberOfOrders = 0
+                    dataUpdate.total = 0
+                    dataUpdate.purchasedValue = 0
                 }
 
                 // Đơn hàng đã hủy
@@ -1443,8 +1443,8 @@ class Model extends BaseModel {
                     numberOfCancelOrders = Number(listData2[0].quantity)
                     totalOfCancelOrders = Number(listData2[0].total)
 
-                    dataInUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
-                    dataInUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
+                    dataUpdate.numberOfCancelOrders = Number(numberOfCancelOrders)
+                    dataUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
                 }
 
                 // Tích điểm
@@ -1463,22 +1463,22 @@ class Model extends BaseModel {
                     remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
 
                     // Update dữ liệu
-                    dataInUpdate.purchasedOffValue = Number(purchasedOffValue)
-                    dataInUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
-                    dataInUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints)
-                    dataInUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
+                    dataUpdate.purchasedOffValue = Number(purchasedOffValue)
+                    dataUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
+                    dataUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints)
+                    dataUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
                 }
                 
                 // else{
                 //     // Áp dụng cho khách mua xong -> boom hàng dẫn tới Hủy đơn
-                //     dataInUpdate.purchasedOffValue = 0
-                //     dataInUpdate.totalLoyaltyPoints = 0
-                //     dataInUpdate.usedLoyaltyPoints = 0
-                //     dataInUpdate.remainLoyaltyPoints = 0
+                //     dataUpdate.purchasedOffValue = 0
+                //     dataUpdate.totalLoyaltyPoints = 0
+                //     dataUpdate.usedLoyaltyPoints = 0
+                //     dataUpdate.remainLoyaltyPoints = 0
                 // }
-                // // console.log(dataInUpdate)
+                // // console.log(dataUpdate)
 
-                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataInUpdate, { new: true })
+                let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 

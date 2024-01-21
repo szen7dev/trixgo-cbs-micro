@@ -80,8 +80,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Number,
         default: 1
     },
-    //_________File/ảnh đính kèm
-    files: [{
+    //_________Ảnh đính kèm
+    images: [{
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
