@@ -77,9 +77,6 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(appRoleID))
                     return resolve({ error: true, message: "Mã nhóm chức năng không hợp lệ", keyError: "appRoleID_invalid", status: 403 });
                 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataUpdate = { modifyAt: new Date(), userUpdate: userID };
                 if(name){
                     dataUpdate.name = name;
@@ -120,23 +117,9 @@ class Model extends BaseModel {
     remove({ appRoleID }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(appRoleID))
                     return resolve({ error: true, message: 'Mã nhóm chức năng không hợp lệ', keyError: "appRoleID_invalid", status: 400 });
-                    
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterRemove = await AUTH__APP_ROLE_COLL.findByIdAndDelete(appRoleID);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: 'Xóa thất bại', keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
@@ -158,23 +141,9 @@ class Model extends BaseModel {
     removeMany({ appRoleIDs }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(appRoleIDs))
                     return resolve({ error: true, message: 'Mã nhóm chức năng không hợp lệ', keyError: "appRoleIDs_invalid", status: 400 });
                     
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 let infoAterRemove = await AUTH__APP_ROLE_COLL.deleteMany({ _id: { $in: appRoleIDs }});
                 if(!infoAterRemove)
                     return resolve({ error: true, message: 'Xóa thất bại', keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
@@ -194,10 +163,6 @@ class Model extends BaseModel {
     getInfo({ appRoleID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -209,19 +174,10 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+
                 if(!checkObjectIDs(appRoleID))
                     return resolve({ error: true, message: "Mã nhóm chức năng không hợp lệ",keyError: 'appRoleID_invalid', status: 400 });
-                    
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoDataAfterGet = await AUTH__APP_ROLE_COLL.findById(appRoleID)
                                     .select(select)
                                     .populate(populates)
@@ -242,8 +198,7 @@ class Model extends BaseModel {
      */
     getList({ type, company, app, isMember, userID,
         keyword, limit = 10, lastestID, select, populates = {} }) { 
-            // console.log({type, company, app, isMember, userID,
-            //     keyword, limit, lastestID, select, populates})
+            // console.log({type, company, app, isMember, userID, keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -251,18 +206,10 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let conditionObj = { };
                 let sortBy;
-                let keys	     = ['createAt__-1', '_id__-1'];
-              
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                let keys	     = ['createAt__-1', '_id__-1']; 
 
                 if(type){
                     conditionObj.type = type;
@@ -291,12 +238,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-               
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
 
                 if(keyword){
                     keyword = keyword.split(" ");
