@@ -102,6 +102,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
+    //_________Link Contact
+    contact: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
     //_________Link Warehouse
     warehouse: {
         type: Schema.Types.ObjectId,
