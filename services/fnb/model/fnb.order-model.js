@@ -26,6 +26,7 @@ const stringUtils					            = require('../../../tools/utils/string_utils')
  */
 const ITEM__FUNDA_COLL            			    = require('../../item/database/item.funda-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll');
+const ITEM__CONFIG_COLL            		        = require('../../item/database/item.config-coll');
 const FNB_ORDER_COLL                            = require('../database/fnb.order-coll');
 const FNB_ORDER_PRODUCT_COLL                    = require('../database/fnb.order_product-coll');
 const FNB_SHIFT_COLL                            = require('../database/fnb.shift-coll');
@@ -72,7 +73,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
-                    return resolve({ error: true, message: 'companyID|fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                    return resolve({ error: true, message: 'fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 // Thông tin cơ sở
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
@@ -861,24 +862,30 @@ class Model extends BaseModel {
                 if(salesChannel == 1 && Number(total) > 1000000){
                     // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
 
-                    // Xử lý dữ liệu số điện thoại
-                    const str = infoCustomer.phone
-                    const removeFirst1 = `84${str.slice(1)}`;
+                    let infoConfig = await ITEM__CONFIG_COLL.findOne({ company: infoFunda.company, type: 1, active: 1 })
+                    // console.log(infoConfig)
 
-                    let dataOA = {
-                        // phone:  `${removeFirst1}`,
-                        phone: "84985199295",
-                        templateData: {
-                            "customer_name": infoCustomer.name,
-                            "order_code": `C${Number(numberOfOrder+1)}`,
-                            "price": total,
-                            "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                            "note": "Chi tiết xem link Winggo"
-                        },
-                        templateId: "257162",
+                    if(infoConfig){
+                        // Xử lý dữ liệu số điện thoại
+                        const str = infoCustomer.phone
+                        const removeFirst1 = `84${str.slice(1)}`;
+
+                        let dataOA = {
+                            // phone:  `${removeFirst1}`,
+                            phone: "84985199295",
+                            templateData: {
+                                "customer_name": infoCustomer.name,
+                                "order_code": `C${Number(numberOfOrder+1)}`,
+                                "price": total,
+                                "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                                "note": "Chi tiết xem link Winggo"
+                            },
+                            templateId: infoConfig.template,
+                        }
+                        // console.log(dataOA)
+                        let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
+                        // console.log(infoOA)
                     }
-                    let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
-                    // console.log(infoOA)
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
