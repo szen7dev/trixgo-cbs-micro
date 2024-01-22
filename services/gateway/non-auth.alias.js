@@ -64,9 +64,6 @@ module.exports = {
 		/**
 		 * KHÁCH HÀNG ĐĂNG KÝ TRẢI NGHIỆM SẢN PHẨM
 		 */
-		[`POST ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT}`],
-
 
 		/**
 		 * Check version app

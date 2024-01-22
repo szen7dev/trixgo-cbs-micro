@@ -297,15 +297,12 @@ module.exports = {
 
                 let { companyID, fundaID, accountID, fromDate, toDate } = ctx.params;
 
-                // console.log('=============>>>>>>>>>>>>>>>')
-                // console.log(ctx.params)
-
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.analysePrimeCostOfAllVouchers({
-                    companyID, fundaID, accountID, fromDate, toDate, queue: this.metadata.queue
+                    companyID, fundaID, accountID, fromDate, toDate, userID, queue: this.metadata.queue
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })

@@ -2586,7 +2586,7 @@ class Model extends BaseModel {
      * Date: 3/1/2024
      */
 	analysePrimeCostOfAllVouchers({ companyID, fundaID, accountID, fromDate, toDate, userID, queue }){
-		const that = this;
+		// const that = this;
 		return new Promise(async resolve => {
 			try {
                 // Mảng đệ quy tài khoản
@@ -2645,18 +2645,18 @@ class Model extends BaseModel {
                 /**
                  * Xử lý Worker
                  */
-                // for(const voucher of listVouchers) {
-                //     queue.add("price_analyze", {
-                //         voucher,
-                //         userID,
-                //         arrObjectID
-                //     }, {
-                //         backoff: 3,
-                //         attempts: 3
-                //     })
-                // }
+                for(const voucher of listVouchers) {
+                    queue.add("price_analyze", {
+                        voucher,
+                        userID,
+                        arrObjectID
+                    }, {
+                        backoff: 3,
+                        attempts: 3
+                    })
+                }
 
-                // return resolve({ error: false, data: listVouchers, status: 200 });
+                return resolve({ error: false, data: listVouchers, status: 200 });
 
 				/**
                  * Khai báo arr hứng các hàng hóa có việc xuất bị sai

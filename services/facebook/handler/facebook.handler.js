@@ -7,7 +7,6 @@ module.exports = {
     callback: {
         async handler(ctx) {
             try {
-                console.log({ FB_CALLBACK_PARAMS: ctx.params })
                 const params = ctx.params
                 const challengeCode = params['hub.challenge']
                 const verifyToken = params['hub.verify_token']
