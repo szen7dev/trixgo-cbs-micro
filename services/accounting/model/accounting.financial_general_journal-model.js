@@ -2648,6 +2648,8 @@ class Model extends BaseModel {
                 for(const voucher of listVouchers) {
                     queue.add("price_analyze", {
                         voucher,
+                        fundaID,
+                        companyID,
                         userID,
                         arrObjectID
                     }, {
