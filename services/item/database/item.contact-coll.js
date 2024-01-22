@@ -25,9 +25,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 1 
     },
-    /**
-     * THÔNG TIN CHUNG/CĂN BẢN
-     */
     //_________Phân loại (1-Nhân viên/2-Khách hàng/3-Nhà cung cấp)
     type: { type: Number, default: 1 },
     //_________Phân loại nhân sự (1-Nhân viên, 2-Cộng tác viên, 3-Chuyên gia)
