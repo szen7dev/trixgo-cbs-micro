@@ -17,7 +17,6 @@ const {
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index')
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant')
 const { CF_ACTIONS_ZALO } 		                = require('../../zalo_oa/helper/zalo.actions')
-const { CF_ACTIONS_FACEBOOK } 		            = require('../../facebook/helper/facebook.actions')
 const moment                                    = require('moment')
 const stringUtils					            = require('../../../tools/utils/string_utils')
 
@@ -57,7 +56,6 @@ const {
  } = require('../helper/fnb.keys-constant')
 
 class Model extends BaseModel {
-
     constructor() {
         super(FNB_ORDER_COLL);
     }
@@ -68,7 +66,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID, ctx }) {
-        // console.log({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -92,7 +89,6 @@ class Model extends BaseModel {
 
                 // Lấy số đơn hàng khách đã mua (thành công)
                 let numberOD = await FNB_ORDER_COLL.count({ customer: customerID, status: 5 })
-                // console.log(numberOD)
 
                 /**
                  * Tính mã hóa đơn tự động theo hệ thống (từ 1->N)
@@ -254,12 +250,9 @@ class Model extends BaseModel {
 
                     // Kênh offline
                     if(Number(service) === 1){
-                        // console.log('YYYYYYYYYYY>>>>>>>>>>>>>>>>>>>>>>')
                         dataInsert.salesChannel = Number(1)
                     }
                 }
-                // console.log('==============>>>>>>>>>>>>>>>>>>>>>>')
-                // console.log(dataInsert)
 
                 /**
                  * TÍNH TOÁN GIÁ TRỊ ĐƠN HÀNG
@@ -325,15 +318,15 @@ class Model extends BaseModel {
                      * Chính sách tích điểm => Mở chính thức vào 1/3/2023
                      */
                     let factor = 0
-                    if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level2.purchasedOffValue)){
+                    if (Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level2.purchasedOffValue)){
                         factor = Number(FNB_FACTOR.credit.level1.factor)
-                    }else{
-                        if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level3.purchasedOffValue)){
+                    } else {
+                        if (Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level3.purchasedOffValue)){
                             factor = Number(FNB_FACTOR.credit.level2.factor)
-                        }else{
-                            if(Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level4.purchasedOffValue)){
+                        } else {
+                            if (Number(infoCustomer.purchasedOffValue) < Number(FNB_FACTOR.credit.level4.purchasedOffValue)){
                                 factor = Number(FNB_FACTOR.credit.level3.factor)
-                            }else{
+                            } else {
                                 factor = Number(FNB_FACTOR.credit.level4.factor)
                             }
                         }
@@ -867,7 +860,6 @@ class Model extends BaseModel {
                     // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
 
                     let infoConfig = await ITEM__CONFIG_COLL.findOne({ company: infoFunda.company, type: 1, active: 1 })
-                    // console.log(infoConfig)
 
                     if(infoConfig){
                         // Xử lý dữ liệu số điện thoại
@@ -886,9 +878,8 @@ class Model extends BaseModel {
                             },
                             templateId: infoConfig.template,
                         }
-                        // console.log(dataOA)
-                        let infoOA = await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
-                        // console.log(infoOA)
+
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
                     }
                 }
 
