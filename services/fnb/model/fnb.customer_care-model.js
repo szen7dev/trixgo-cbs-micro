@@ -3,21 +3,15 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, IsJsonString, validateParamsObjectID }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { template } = require('lodash');
 
 /**s
  * import inter-coll, exter-coll
  */
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
-const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
 const FNB_CUSTOMER_CARE_COLL                   = require('../database/fnb.customer_care-coll');
 
 /**
@@ -118,7 +112,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, imagesID }) {
-        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, imagesID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))
@@ -128,9 +121,19 @@ class Model extends BaseModel {
                     name,
                     userUpdate: userID, 
                     modifyAt: new Date(),
-                    // customer: customerID,
-                    // mistake: mistakeID,
                     // company: companyID
+                }
+
+                if(checkObjectIDs(customerID)) {
+                    dataUpdate.customer = customerID;
+                }
+
+                if(checkObjectIDs(mistakeID)) {
+                    dataUpdate.mistake = mistakeID;
+                }
+
+                if(checkObjectIDs(orderID)) {
+                    dataUpdate.order = orderID;
                 }
              
                 // let infoOrder
@@ -182,15 +185,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                // console.log(dataUpdate)
-
-                let infoAfterUpdate = await FNB_CUSTOMER_CARE_COLL.findByIdAndUpdate(customerCareID, dataUpdate, { new: true });
+                const infoAfterUpdate = await FNB_CUSTOMER_CARE_COLL.findByIdAndUpdate(customerCareID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                /**
-                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
-                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
