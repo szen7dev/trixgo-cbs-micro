@@ -9,7 +9,6 @@ const Schema                = require('mongoose').Schema;
  * - Biến môi trường cho Facebook
  * ...
  */
-
 module.exports  = DATABASE_MIDDLEWARE("config", {
     //_________Công ty của user đang truy cập
     company: {
