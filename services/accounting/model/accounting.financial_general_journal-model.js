@@ -3,8 +3,8 @@
 /**
  * EXTERNAL PACKAGE
  */
- const ObjectID                                         = require('mongoose').Types.ObjectId;
- const XlsxPopulate                                     = require('xlsx-populate');
+const ObjectID                                          = require('mongoose').Types.ObjectId;
+const XlsxPopulate                                      = require('xlsx-populate');
 const fs                                                = require('fs');
 const path                                              = require('path');
 const moment                                            = require('moment');
@@ -14,8 +14,6 @@ const { uploadFileS3 }                                  = require('../../../tool
  * CONSTANTS
  */
  const { CF_DOMAIN_SERVICES } 	                        = require('../../gateway/helper/domain.constant');
-//  const { VOUCHER_TYPES }                                = require('../config/accounting.financial_config');
-//  const { CF_ACTIONS_ITEM }                              = require('../../item/helper/item.actions-constant');
  const { CF_ACTIONS_BUDGET } 		                    = require('../../budget/helper/budget.actions-constant');
 
 /**
@@ -25,15 +23,12 @@ const { uploadFileS3 }                                  = require('../../../tool
  const { checkObjectIDs, _isValid, IsJsonString }       = require('../../../tools/utils/utils')
  const { RANGE_BASE_PAGINATION_V2 }                     = require('../../../tools/cursor_base/playground/index')
  const { KEY_ERROR }                                    = require('../../../tools/keys/index')
- const { 
-    VOUCHER_TYPES,
- }                = require('../helper/accounting.keys-constant')
+ const { VOUCHER_TYPES }                                = require('../helper/accounting.keys-constant')
 
 /**
  * COLLECTIONS
  */
 const ITEM_ACCOUNT_COLL                                 = require('../../item/database/item.account-coll')
-// const ITEM__FUNDA_COLL            			            = require('../../item/database/item.funda-coll')
 const ITEM__GOODS_COLL            			            = require('../../item/database/item.goods-coll')
 const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
 const FINANCIAL_VOUCHER_COLL                            = require('../database/accounting.financial_voucher-coll')
