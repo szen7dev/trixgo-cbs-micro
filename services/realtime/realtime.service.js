@@ -144,10 +144,10 @@ module.exports = {
                             this.$service.removeUserDisconnectIntoListConnected(socketDisconnectID);
 
                             // Xét user Offline
-                            const userID    = this.client.user;
-                            const _infoUser = await USER_MODEL.getDataById(userID);
+                            const userID = this.client.user;
 
-                            if (_infoUser) {
+                            if (userID) {
+                                const _infoUser = await USER_MODEL.getDataById(userID);
                                 this.$service.setUserOffline({ _infoUser });
                             }
 
