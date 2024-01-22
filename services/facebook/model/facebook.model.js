@@ -125,6 +125,10 @@ class Model extends BaseModel {
                     }
                 }
 
+                if (!recipientId) {
+                    return resolve({ error: true, message: "Can't get recipientID" });
+                }
+
                 const response = await httpRequest.post(
                     `${FACEBOOK_GRAPH_API}/${FACEBOOK_GRAPH_API_VERSION}/${FACEBOOK_PAGE_ID}/messages?access_token=${accessToken}`,
                     {
@@ -170,12 +174,12 @@ class Model extends BaseModel {
                         const { sender, recipient, timestamp } = mess
                         const text = mess.message.text;
 
-                        if(!text) return;
+                        if (!text) return;
 
                         const phoneNumbers = text.match(this.phoneRegex);
 
                         // Check if phone numbers were found
-                        if (phoneNumbers && phoneNumbers.length > 0) {
+                        if (phoneNumbers && phoneNumbers.length) {
                             console.log("Phone number(s) found:");
                             console.log(phoneNumbers);
 

@@ -1,6 +1,7 @@
 "use strict";
 
 const timeUtils = require('../utils/time_utils');
+const { checkObjectIDs } = require('../utils/utils');
 const PROMISE   = require('bluebird');
 const OBJECT_ID = require('mongoose').Types.ObjectId;
 
@@ -65,6 +66,8 @@ class BaseModel {
      */
     updateById(id, updatedata, opts = { new: true }) {
         return new Promise(async resolve => {
+            if(!checkObjectIDs(id)) return resolve(null);
+
             updatedata.modifyAt = timeUtils.getCurrentTime();
 
             const infoAfterUpdate = await this.coll.findByIdAndUpdate(id, updatedata, opts);
@@ -154,6 +157,8 @@ class BaseModel {
     getDataById(id) {
         let coll = this.coll;
         return new PROMISE(function (resolve) {
+            if(!checkObjectIDs(id)) return resolve(null);
+
             coll.find({_id: OBJECT_ID(id)}).lean().exec().then(function (result) {
                 if (result === null) {
                     return resolve(null);
@@ -217,6 +222,8 @@ class BaseModel {
     removeDataById(id) {
         let coll = this.coll;
         return new PROMISE(function (resolve) {
+            if(!checkObjectIDs(id)) return resolve(null);
+
             coll.remove({_id: OBJECT_ID(id)}, function (error) {
                 return resolve();
             })
