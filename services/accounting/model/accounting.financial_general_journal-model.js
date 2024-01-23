@@ -2737,10 +2737,8 @@ class Model extends BaseModel {
 	}
 
     getListByFilter({
-        option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel }) {
-        // console.log('==========getListByFilter============')
-        // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate,  forward, cancel, userID, keyword, limit, lastestID, select, populates, contacts})
+        companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
+        limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel }) {
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {

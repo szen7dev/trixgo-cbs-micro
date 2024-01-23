@@ -190,7 +190,7 @@ module.exports = {
 
         addNewUserIntoListConnected(socketID){
             let listUserConnected 	= this.listUserConnected;
-            let _userID 			= this.userID.toString();
+            let _userID 			= this.userID?.toString();
             socketID 				= socketID.toString();
 
             if(!listUserConnected[_userID]){
@@ -209,9 +209,10 @@ module.exports = {
         },
 
         removeUserDisconnectIntoListConnected(socketDisconnectID){
+            const userID                                       = this.userID?.toString();
             let listUserConnected                              = this.listUserConnected;
             socketDisconnectID                                 = socketDisconnectID && socketDisconnectID.toString();
-            listUserConnected[this.userID.toString()].sockets  = listUserConnected[this.userID.toString()].sockets.filter(_socketID => _socketID != socketDisconnectID);
+            listUserConnected[userID].sockets  = listUserConnected[userID].sockets.filter(_socketID => _socketID != socketDisconnectID);
 
             return listUserConnected;
         },
