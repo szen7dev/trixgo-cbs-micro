@@ -107,7 +107,8 @@ module.exports = {
 				username: REDIS_SEPERATOR.USR,
 				password: REDIS_SEPERATOR.PWD,
 			}),
-			maxRetriesPerRequest: null
+			maxRetriesPerRequest: null,
+			enableOfflineQueue: false,
 		})
 
 		const queue = new Queue("price_analyze", {
