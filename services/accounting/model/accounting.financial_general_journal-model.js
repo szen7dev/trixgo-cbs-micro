@@ -2586,7 +2586,7 @@ class Model extends BaseModel {
      * Date: 3/1/2024
      */
 	analysePrimeCostOfAllVouchers({ companyID, fundaID, accountID, fromDate, toDate, userID, queue }){
-		// const that = this;
+		const that = this;
 		return new Promise(async resolve => {
 			try {
                 // Mảng đệ quy tài khoản
