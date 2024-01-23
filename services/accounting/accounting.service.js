@@ -1,11 +1,9 @@
 "use strict";
 
-const { Queue } = require("bullmq");
-const IORedis = require("ioredis");
-const { REDIS_SEPERATOR } 			= require("../../tools/cache/cf_redis");
-
-// import { Service, ServiceSchema } from "moleculer";
-const { Service } = require("moleculer")
+const { Queue } 										= require("bullmq");
+const IORedis 											= require("ioredis");
+const { REDIS_SEPERATOR } 								= require("../../tools/cache/cf_redis");
+const { isProd } 										= require("../../tools/utils/utils");
 
 const DbService                	    					= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    				= require("../../tools/mixins/cache.cleaner.mixin");
@@ -105,6 +103,10 @@ module.exports = {
 		const connection = new IORedis({
 			host: REDIS_SEPERATOR.HOST,
 			port: REDIS_SEPERATOR.PORT,
+			...(isProd() && {
+				username: REDIS_SEPERATOR.USR,
+				password: REDIS_SEPERATOR.PWD,
+			}),
 			maxRetriesPerRequest: null
 		})
 

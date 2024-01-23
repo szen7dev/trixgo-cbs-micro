@@ -10,10 +10,9 @@ const s3                        = require('@auth0/s3');
 const archiver                  = require('archiver');
 const PromisePool               = require('@supercharge/promise-pool');
 const { config }                = require('./config');
+const { isProd }                = require('../utils/utils');
 // const { nonAccentVietnamese }   = require('../utils/string_utils');
 // const { getExtension }          = require('../utils/utils');
-
-const isProd = process.env.NODE_ENV == "production"
 
 const s3Options = {
     accessKeyId: config.aws_access_key_id,
@@ -23,7 +22,7 @@ const s3Options = {
 
 const s3Object = new S3({
     region: s3Options.region,
-    ...(!isProd && {
+    ...(!isProd() && {
         credentials: {
             accessKeyId: s3Options.accessKeyId,
             secretAccessKey: s3Options.secretAccessKey

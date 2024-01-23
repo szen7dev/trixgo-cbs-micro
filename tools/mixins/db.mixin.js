@@ -4,11 +4,12 @@ const path 		= require("path");
 const mkdir 	= require("mkdirp").sync;
 
 const DbService	= require("moleculer-db");
-const { MONGODB_URL, DATABASE_MODE } = require('../db/utils');
+const { isProd } = require("../utils/utils")
+const { MONGODB_URL } = require('../db/utils');
 
 module.exports = function(collection) {
 	const MongoAdapter = require("moleculer-db-adapter-mongoose");
-	if(DATABASE_MODE) {
+	if(isProd()) {
 		return {
 			mixins: [DbService],
 			adapter: new MongoAdapter(MONGODB_URL, {
