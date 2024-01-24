@@ -212,7 +212,10 @@ module.exports = {
             const userID                                       = this.userID?.toString();
             let listUserConnected                              = this.listUserConnected;
             socketDisconnectID                                 = socketDisconnectID && socketDisconnectID.toString();
-            listUserConnected[userID].sockets  = listUserConnected[userID].sockets.filter(_socketID => _socketID != socketDisconnectID);
+
+            if(userID) {
+                listUserConnected[userID].sockets  = listUserConnected[userID].sockets.filter(_socketID => _socketID != socketDisconnectID);
+            }
 
             return listUserConnected;
         },

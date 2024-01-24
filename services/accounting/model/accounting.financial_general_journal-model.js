@@ -2586,7 +2586,7 @@ class Model extends BaseModel {
      * Date: 3/1/2024
      */
 	analysePrimeCostOfAllVouchers({ companyID, fundaID, accountID, fromDate, toDate, userID, queue }){
-		// const that = this;
+		const that = this;
 		return new Promise(async resolve => {
 			try {
                 // Mảng đệ quy tài khoản
@@ -2646,7 +2646,7 @@ class Model extends BaseModel {
                  * Xử lý Worker
                  */
                 for(const voucher of listVouchers) {
-                    queue.add("price_analyze", {
+                    await queue.add("price_analyze", {
                         voucher,
                         fundaID,
                         companyID,
@@ -2731,6 +2731,7 @@ class Model extends BaseModel {
 
 				return resolve({ error: false, listGoodsFailed, accountID });
 			} catch (error) {
+                console.error({ error })
 				return resolve({ error: true, message: error.message });
 			}
 		})
