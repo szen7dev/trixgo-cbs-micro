@@ -191,6 +191,7 @@ class Model extends BaseModel {
 
                     var i = 0
                     for (const subitem of selectedJournals) {
+                        // console.log(subitem)
 
                         const dataInsert = {
                             authorID, 
@@ -272,9 +273,22 @@ class Model extends BaseModel {
                         /**
                          * Khoản mục phí
                          */
-                        if(subtypeID && _isValid(subtypeID)){
-                            dataInsert.subtype = subtypeID;
+                        if (subitem.subtype && checkObjectIDs(subitem.subtype)) {
+
+                            let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subitem.subtype).select('parent')
+                            if(infoSubtype.parent && _isValid(infoSubtype.parent)){
+                                parentSubtypeID = infoSubtype.parent
+                            }else{
+                                parentSubtypeID = subtypeID
+                            }
+                            
+                            dataInsert.subtype = subitem.subtype;
                             dataInsert.parentSubtype = parentSubtypeID;
+                        }else{
+                            if(subtypeID && _isValid(subtypeID)){
+                                dataInsert.subtype = subtypeID;
+                                dataInsert.parentSubtype = parentSubtypeID;
+                            }
                         }
 
                         /**
@@ -468,6 +482,7 @@ class Model extends BaseModel {
                         // Tạo mới
                         if(!subitem.journalID){
                             // console.log('===================TẠO BÚT TOÁN===================')
+                            // console.log(subitem)
                             const dataInsert = {
                                 authorID, 
                                 companyID, 
@@ -545,10 +560,26 @@ class Model extends BaseModel {
                                 }
                             }
 
-                            if (subtypeID && checkObjectIDs(subtypeID)) {
-                                dataInsert.subtype = subtypeID;
+                            /**
+                             * Khoản mục phí
+                             */
+                            if (subitem.subtype && checkObjectIDs(subitem.subtype)) {
+
+                                let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subitem.subtype).select('parent')
+                                if(infoSubtype.parent && _isValid(infoSubtype.parent)){
+                                    parentSubtypeID = infoSubtype.parent
+                                }else{
+                                    parentSubtypeID = subtypeID
+                                }
+                                
+                                dataInsert.subtype = subitem.subtype;
                                 dataInsert.parentSubtype = parentSubtypeID;
-                            }            
+                            }else{
+                                if(subtypeID && _isValid(subtypeID)){
+                                    dataInsert.subtype = subtypeID;
+                                    dataInsert.parentSubtype = parentSubtypeID;
+                                }
+                            }         
     
                             /**
                              * Cập nhật ngân sách thực hiện
@@ -572,6 +603,7 @@ class Model extends BaseModel {
                         // Cập nhật
                         else{
                             // console.log('===================CẬP NHẬT BÚT TOÁN===================')
+                            // console.log(subitem)
                             const dataUpdate = {
                                 authorID, 
                                 fundaID, 
@@ -656,13 +688,29 @@ class Model extends BaseModel {
                                 }
                             }
 
-                            if (subtypeID && checkObjectIDs(subtypeID)) {
-                                dataUpdate.subtype = subtypeID;
+                            /**
+                             * Khoản mục phí
+                             */
+                            if (subitem.subtype && checkObjectIDs(subitem.subtype)) {
+
+                                let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subitem.subtype).select('parent')
+                                if(infoSubtype.parent && _isValid(infoSubtype.parent)){
+                                    parentSubtypeID = infoSubtype.parent
+                                }else{
+                                    parentSubtypeID = subtypeID
+                                }
+                                
+                                dataUpdate.subtype = subitem.subtype;
                                 dataUpdate.parentSubtype = parentSubtypeID;
                             }else{
-                                dataUpdate.subtype = null
-                                dataUpdate.parentSubtype = null
-                            }    
+                                if (subtypeID && checkObjectIDs(subtypeID)) {
+                                    dataUpdate.subtype = subtypeID;
+                                    dataUpdate.parentSubtype = parentSubtypeID;
+                                }else{
+                                    dataUpdate.subtype = null
+                                    dataUpdate.parentSubtype = null
+                                }  
+                            }     
 
                             /**
                              * Cập nhật ngân sách thực hiện
@@ -694,6 +742,9 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
+                 */
                 if(Number(i) == Number(selectedJournals.length)){
                     // console.log('=================')
                     // console.log({__________i:i})
@@ -732,47 +783,10 @@ class Model extends BaseModel {
                         }
                     }, 
                 ])
-                // console.log('Tính tổng các bút toán của Phiếu==========>>>>>>>>>>>>')
-                // console.log(listData)
-
-                // // Tính tổng giá trị trước thuế và thuế
-                // let listData331 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                //     {
-                //         $match: {
-                //             voucher: ObjectID(voucherID),
-                //             name: '331',
-                //         }
-                //     }, 
-                //     {
-                //         $group: {
-                //             _id: { },
-                //             amount: { $sum: "$amount" },
-                //         }
-                //     }, 
-                // ])
-                // console.log(listData331)
-
-                // let listData133 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                //     {
-                //         $match: {
-                //             voucher: ObjectID(voucherID),
-                //             name: '133',
-                //         }
-                //     }, 
-                //     {
-                //         $group: {
-                //             _id: { },
-                //             amount: { $sum: "$amount" },
-                //         }
-                //     }, 
-                // ])
-                // console.log(listData133)
                 
                 if(listData && listData.length){
                     dataUpdate.amount = Number(listData[0].amount)
                     dataUpdate.fcuAmount = Number(listData[0].fcuAmount)
-                    // dataUpdate.revenue = Number(listData331[0].amount)
-                    // dataUpdate.tax = Number(listData133[0].amount)
                 }
 
                 const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate)
