@@ -2699,11 +2699,10 @@ class Model extends BaseModel {
 
                             // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
                             amount = Number(+item.quantity * +unitprice) 
-                        }else{
+                        } else{
                             // console.log('22222222222222222222222222')
                             // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
                             info = await that.getPrimeCost({ fundaID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
-                            // console.log(info)
 
                             // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
                             unitprice = info.data.primeCost
