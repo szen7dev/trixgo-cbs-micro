@@ -2645,20 +2645,20 @@ class Model extends BaseModel {
                 /**
                  * Xử lý Worker
                  */
-                for(const voucher of listVouchers) {
-                    await queue.add("price_analyze", {
-                        voucher,
-                        fundaID,
-                        companyID,
-                        userID,
-                        arrObjectID
-                    }, {
-                        backoff: 3,
-                        attempts: 3
-                    })
-                }
+                // for(const voucher of listVouchers) {
+                //     await queue.add("price_analyze", {
+                //         voucher,
+                //         fundaID,
+                //         companyID,
+                //         userID,
+                //         arrObjectID
+                //     }, {
+                //         backoff: 3,
+                //         attempts: 3
+                //     })
+                // }
 
-                return resolve({ error: false, data: listVouchers, status: 200 });
+                // return resolve({ error: false, data: listVouchers, status: 200 });
 
 				/**
                  * Khai báo arr hứng các hàng hóa có việc xuất bị sai
