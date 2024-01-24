@@ -12,6 +12,7 @@ const { CF_ROUTINGS_GATEWAY } 		= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-constant');
 const { CF_ROUTINGS_DOCUMENT } 		= require('../document/helper/document.routes-constant');
+const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-constant');
 const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-constant');
 const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
 const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constant');
@@ -40,6 +41,7 @@ const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
 const { CF_ACTIONS_DOCUMENT } 		= require('../document/helper/document.actions-constant');
+const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
 const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-constant');
@@ -403,6 +405,22 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_CHATTING.GET_LIST_REACTION_MESSAGE_CONVERSATION}`] :
 		[`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.GET_LIST_REACTION_MESSAGE_CONVERSATION}`],
+
+		//--------------------------aliases's PAYMENT service--------------------------//
+		[`GET ${CF_ROUTINGS_PAYMENT.GET_LIST_TRANSACTION}`] :
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.GET_LIST_TRANSACTION}`],
+
+		[`GET ${CF_ROUTINGS_PAYMENT.GET_LIST_TRANSACTION_BY_USER_WITH_STATUS}`] :
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.GET_LIST_TRANSACTION_BY_USER_WITH_STATUS}`],
+
+		[`PUT ${CF_ROUTINGS_PAYMENT.UPDATE_STATUS}`] :
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.UPDATE_STATUS}`],
+
+		[`POST ${CF_ROUTINGS_PAYMENT.CREATE_URL_PAYMENT}`] :
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.CREATE_URL_PAYMENT}`],
+
+		[`GET ${CF_ROUTINGS_PAYMENT.URL_RETURN_PAYMENT}`] :
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_RETURN_PAYMENT}`],		
 
 		//--------------------------aliases's REMINDER service--------------------------//
 		[`GET ${CF_ROUTINGS_REMINDER.REMINDERS}`] :
