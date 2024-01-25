@@ -856,7 +856,7 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                if(salesChannel == 1 && Number(total) > 1000000){
+                if(salesChannel == 1 && Number(total) > 0){
                     // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
 
                     let infoConfig = await ITEM__CONFIG_COLL.findOne({ company: infoFunda.company, type: 1, active: 1 })
@@ -866,8 +866,19 @@ class Model extends BaseModel {
                         const str = infoCustomer.phone
                         const removeFirst1 = `84${str.slice(1)}`;
 
-                        let dataOA = {
-                            // phone:  `${removeFirst1}`,
+                        let dataOA1 = {
+                            phone:  `${removeFirst1}`,
+                            templateData: {
+                                "customer_name": infoCustomer.name,
+                                "order_code": `C${Number(numberOfOrder+1)}`,
+                                "price": total,
+                                "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                                "note": "Chi tiết xem link Winggo"
+                            },
+                            templateId: infoConfig.template,
+                        }
+
+                        let dataOA2 = {
                             phone: "84985199295",
                             templateData: {
                                 "customer_name": infoCustomer.name,
@@ -879,7 +890,8 @@ class Model extends BaseModel {
                             templateId: infoConfig.template,
                         }
 
-                        await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA1)
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2)
                     }
                 }
 
