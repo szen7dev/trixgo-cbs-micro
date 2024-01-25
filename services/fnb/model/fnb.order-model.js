@@ -873,7 +873,7 @@ class Model extends BaseModel {
                                 "order_code": `C${Number(numberOfOrder+1)}`,
                                 "price": total,
                                 "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                                "note": "Chi tiết xem linkProfile của bạn"
+                                "note": "Chi tiết xem linkProfile"
                             },
                             templateId: infoConfig.template,
                         }
@@ -888,7 +888,7 @@ class Model extends BaseModel {
                                     "order_code": `C${Number(numberOfOrder+1)}`,
                                     "price": total,
                                     "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                                    "note": "Chi tiết xem linkProfile của bạn"
+                                    "note": "Chi tiết xem linkProfile"
                                 },
                                 templateId: infoConfig.template,
                             }
