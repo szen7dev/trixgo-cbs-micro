@@ -83,6 +83,7 @@ class Model extends BaseModel {
                  */
                 let unitpriceNew = 0, amountNew = 0 
                 if(goods && Number(unitprice) == 0){
+                    // console.log('===========================')
                     let infoWoods = await ITEM__GOODS_COLL.findById(goods).select('unitprice sellingUnitprice')
 
                     // Phiếu nhập
@@ -2592,143 +2593,149 @@ class Model extends BaseModel {
                 // Mảng đệ quy tài khoản
                 let arrObjectID = [ObjectID(accountID)]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
-                if(infoAccount){
-                    let nestedChilds = infoAccount.nestedChilds.map(item=>ObjectID(item._id))
-                    arrObjectID = [...arrObjectID,...nestedChilds]
-                }
+                // console.log(infoAccount)
 
-                /**
-                 * B1: Lấy danh sách các phiếu Xuất từ đầu kỳ đến cuối kỳ
-                 * - Chỉ chạy giá vốn cho các phiếu Xuất
-                 * - Không cần chạy lại các phiếu của kỳ trước, vì giá xuất đã được chạy chuẩn trước đó rồi
-                 * - Không chạy giá vốn cho các phiếu kết chuyển cuối kỳ
-                 * - Không chạy giá vốn cho các phiếu Huỷ
-                 * - Không chạy giá vốn cho các phiếu xuất bán hàng vay mượn
-                 */
-                let conditionOb = {};
-                if(!fundaID){
-                    conditionOb = { 
-                        company: companyID,
-                        returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
-                        forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
-                        cancel: 0, // Không chạy cho các Phiếu hủy
-                        type: 5, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
-                        date: { 
-                            $gte: moment(fromDate).toDate(),
-                            $lte: moment(toDate).toDate() 
+                if(['152','156'].includes(infoAccount.name.toString())){
+                    if(infoAccount){
+                        let nestedChilds = infoAccount.nestedChilds.map(item=>ObjectID(item._id))
+                        arrObjectID = [...arrObjectID,...nestedChilds]
+                    }
+    
+                    /**
+                     * B1: Lấy danh sách các phiếu Xuất từ đầu kỳ đến cuối kỳ
+                     * - Chỉ chạy giá vốn cho các phiếu Xuất
+                     * - Không cần chạy lại các phiếu của kỳ trước, vì giá xuất đã được chạy chuẩn trước đó rồi
+                     * - Không chạy giá vốn cho các phiếu kết chuyển cuối kỳ
+                     * - Không chạy giá vốn cho các phiếu Huỷ
+                     * - Không chạy giá vốn cho các phiếu xuất bán hàng vay mượn
+                     */
+                    let conditionOb = {};
+                    if(!fundaID){
+                        conditionOb = { 
+                            company: companyID,
+                            returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
+                            forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
+                            cancel: 0, // Không chạy cho các Phiếu hủy
+                            type: 5, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
+                            date: { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate() 
+                            }
+                        }
+                    }else{
+                        conditionOb = { 
+                            funda: fundaID,
+                            returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
+                            forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
+                            cancel: 0, // Không chạy cho các Phiếu hủy
+                            type: 5, // 5 Chỉ chạy cho các Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
+                            date: { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate() 
+                            }
                         }
                     }
+    
+                    let listVouchers = await FINANCIAL_VOUCHER_COLL
+                        .find(conditionOb)
+                        .sort({ date: 1 })
+                        .select('_id date name')
+                        .lean();
+    
+                    if(!listVouchers.length) {
+                        return resolve({ error: false, data: [] })
+                    }
+    
+                    /**
+                     * Xử lý Worker
+                     */
+                    for(const voucher of listVouchers) {
+                        await queue.add("price_analyze", {
+                            voucher,
+                            fundaID,
+                            companyID,
+                            userID,
+                            arrObjectID
+                        }, {
+                            backoff: 3,
+                            attempts: 3
+                        })
+                    }
+    
+                    return resolve({ error: false, data: listVouchers, status: 200 });
+
+                    // /**
+                    //  * Khai báo arr hứng các hàng hóa có việc xuất bị sai
+                    //  */
+                    // let arrGoodsFailed = [];
+                    
+                    // for(const voucher of listVouchers){
+                    //     /**
+                    //      * Lấy danh sách hàng hóa thuộc phiếu xuất
+                    //      * Hàng hoá phải được gắn kèm thuộc kho bãi cụ thể
+                    //      */
+                    //     let listJournal = await FINANCIAL_GENERAL_JOURNAL_COLL.find({
+                    //         voucher: voucher._id,
+                    //         credit: {
+                    //             $in: arrObjectID
+                    //         },
+                    //         goods: { $exists: true, $ne: null },
+                    //         warehouse: { $exists: true, $ne: null }
+                    //     })
+
+                    //     for(const item of listJournal){
+                    //         let info = null;
+                    //         let unitprice = null;
+                    //         let amount = null;
+
+                    //         /**
+                    //          * Lần lượt cập nhật giá vốn cho từng hàng hóa trong phiếu
+                    //          * Giá vốn được tính tới thời điểm là ngày của phiếu đang xét
+                    //          */
+                    //         if(!fundaID){
+                    //             // console.log('11111111111111111111111111')
+                    //             // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
+                    //             info = await that.getPrimeCost({ companyID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
+                    //             // console.log(info)
+
+                    //             // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
+                    //             unitprice = info.data.primeCost
+
+                    //             // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
+                    //             amount = Number(+item.quantity * +unitprice) 
+                    //         } else{
+                    //             // console.log('22222222222222222222222222')
+                    //             // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
+                    //             info = await that.getPrimeCost({ fundaID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
+
+                    //             // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
+                    //             unitprice = info.data.primeCost
+                                
+                    //             // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
+                    //             amount = Number(+item.quantity * +unitprice) 
+                    //         }
+
+                    //         await FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(item._id, {
+                    //             unitprice, // Sau này bỏ trường này đi
+                    //             amount
+                    //         }, { new: true });
+
+                    //         // Ghi nhận dữ liệu lỗi
+                    //         if(info.data.errGoods){
+                    //             arrGoodsFailed.push(item.goods);
+                    //         }
+                    //     }
+                    // }
+
+                    // /**
+                    //  * B3: Lấy thông tin các hàng hóa xuất lỗi để hiển thị cho người dùng
+                    //  */
+                    // let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }});
+
+                    // return resolve({ error: false, listGoodsFailed, accountID });
                 }else{
-                    conditionOb = { 
-                        funda: fundaID,
-                        returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
-                        forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
-                        cancel: 0, // Không chạy cho các Phiếu hủy
-                        type: 5, // 5 Chỉ chạy cho các Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
-                        date: { 
-                            $gte: moment(fromDate).toDate(),
-                            $lte: moment(toDate).toDate() 
-                        }
-                    }
+                    return resolve({ error: true, message: 'Tài khoản không hợp lệ: chỉ 152, 156 được phép', status: 400 });
                 }
-
-                let listVouchers = await FINANCIAL_VOUCHER_COLL
-                    .find(conditionOb)
-                    .sort({ date: 1 })
-                    .select('_id date name')
-                    .lean();
-
-                if(!listVouchers.length) {
-                    return resolve({ error: false, data: [] })
-                }
-
-                /**
-                 * Xử lý Worker
-                 */
-                for(const voucher of listVouchers) {
-                    await queue.add("price_analyze", {
-                        voucher,
-                        fundaID,
-                        companyID,
-                        userID,
-                        arrObjectID
-                    }, {
-                        backoff: 3,
-                        attempts: 3
-                    })
-                }
-
-                return resolve({ error: false, data: listVouchers, status: 200 });
-
-				// /**
-                //  * Khai báo arr hứng các hàng hóa có việc xuất bị sai
-                //  */
-                // let arrGoodsFailed = [];
-                
-                // for(const voucher of listVouchers){
-                //     /**
-                //      * Lấy danh sách hàng hóa thuộc phiếu xuất
-                //      * Hàng hoá phải được gắn kèm thuộc kho bãi cụ thể
-                //      */
-                //     let listJournal = await FINANCIAL_GENERAL_JOURNAL_COLL.find({
-                //         voucher: voucher._id,
-                //         credit: {
-                //             $in: arrObjectID
-                //         },
-                //         goods: { $exists: true, $ne: null },
-                //         warehouse: { $exists: true, $ne: null }
-                //     })
-
-                //     for(const item of listJournal){
-                //         let info = null;
-                //         let unitprice = null;
-                //         let amount = null;
-
-                //         /**
-                //          * Lần lượt cập nhật giá vốn cho từng hàng hóa trong phiếu
-                //          * Giá vốn được tính tới thời điểm là ngày của phiếu đang xét
-                //          */
-                //         if(!fundaID){
-                //             // console.log('11111111111111111111111111')
-                //             // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
-                //             info = await that.getPrimeCost({ companyID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
-                //             // console.log(info)
-
-                //             // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
-                //             unitprice = info.data.primeCost
-
-                //             // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
-                //             amount = Number(+item.quantity * +unitprice) 
-                //         } else{
-                //             // console.log('22222222222222222222222222')
-                //             // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
-                //             info = await that.getPrimeCost({ fundaID, arrObjectID, goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
-
-                //             // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
-                //             unitprice = info.data.primeCost
-                            
-                //             // amount = Number(+item.quantity * +unitprice).toFixed(0); // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
-                //             amount = Number(+item.quantity * +unitprice) 
-                //         }
-
-                //         await FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(item._id, {
-                //             unitprice, // Sau này bỏ trường này đi
-                //             amount
-                //         }, { new: true });
-
-                //         // Ghi nhận dữ liệu lỗi
-                //         if(info.data.errGoods){
-                //             arrGoodsFailed.push(item.goods);
-                //         }
-                //     }
-                // }
-
-                // /**
-                //  * B3: Lấy thông tin các hàng hóa xuất lỗi để hiển thị cho người dùng
-                //  */
-                // let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }});
-
-				// return resolve({ error: false, listGoodsFailed, accountID });
 			} catch (error) {
                 console.error({ error })
 				return resolve({ error: true, message: error.message });
