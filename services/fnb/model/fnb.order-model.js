@@ -880,7 +880,7 @@ class Model extends BaseModel {
 
                         await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA1)
 
-                        if(Number(total) >= 500000){
+                        if(Number(total) >= 200000){
                             let dataOA2 = {
                                 phone: "84985199295",
                                 templateData: {
