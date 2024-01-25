@@ -203,11 +203,11 @@ class Model extends BaseModel {
      * Code  : 24/7/2023
      */
     getList({
-        option, companyID, parentID, isListParentOfListChilds,
+        option, companyID, parentID, arrNames, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {},
         status, type, level
     }) {
-        // console.log( {option, companyID, parentID, isListParentOfListChilds,
+        // console.log( {option, companyID, parentID, arrNames, isListParentOfListChilds,
         //     keyword, limit, lastestID, select, populates,
         //     status, type, level})
         return new Promise(async (resolve) => {
@@ -246,6 +246,10 @@ class Model extends BaseModel {
                         { name: new RegExp(keyword, 'i') },
                         { description: new RegExp(keyword, 'i') }
                     ]
+                }
+
+                if(arrNames && arrNames.length){
+                    conditionObj.name = {$in: arrNames};
                 }
 
                 // Chỉ lấy các TK con

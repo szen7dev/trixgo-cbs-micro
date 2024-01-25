@@ -68,6 +68,7 @@ module.exports = {
             accountID       : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
+            arrNames        : { type: "array", optional: true },
             isListParentOfListChilds: { type: "string", optional: true },
 
             // Field mặc định
@@ -80,10 +81,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, accountID, companyID, keyword, parentID, isListParentOfListChilds,
+                let { option, accountID, companyID, keyword, parentID, arrNames, isListParentOfListChilds,
                     limit, lastestID, select, populates,
                     status, type, level, isAccountingService
                 } = ctx.params;
+                // console.log(ctx.params)
+
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -97,7 +100,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getList({
                         option, companyID, lastestID, keyword, select, limit, populates,
-                        status, type, level, isAccountingService, parentID, isListParentOfListChilds,
+                        status, type, level, isAccountingService, parentID, arrNames, isListParentOfListChilds,
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
