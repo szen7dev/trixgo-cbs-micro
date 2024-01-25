@@ -866,8 +866,19 @@ class Model extends BaseModel {
                         const str = infoCustomer.phone
                         const removeFirst1 = `84${str.slice(1)}`;
 
-                        let dataOA = {
-                            // phone:  `${removeFirst1}`,
+                        let dataOA1 = {
+                            phone:  `${removeFirst1}`,
+                            templateData: {
+                                "customer_name": infoCustomer.name,
+                                "order_code": `C${Number(numberOfOrder+1)}`,
+                                "price": total,
+                                "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                                "note": "Chi tiết xem link Winggo"
+                            },
+                            templateId: infoConfig.template,
+                        }
+
+                        let dataOA2 = {
                             phone: "84985199295",
                             templateData: {
                                 "customer_name": infoCustomer.name,
@@ -879,7 +890,8 @@ class Model extends BaseModel {
                             templateId: infoConfig.template,
                         }
 
-                        await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA)
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA1)
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2)
                     }
                 }
 
