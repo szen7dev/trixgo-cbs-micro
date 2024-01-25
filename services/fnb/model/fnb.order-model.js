@@ -856,7 +856,7 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                if(salesChannel == 1 && Number(total) > 1000000){
+                if(salesChannel == 1 && Number(total) > 0){
                     // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
 
                     let infoConfig = await ITEM__CONFIG_COLL.findOne({ company: infoFunda.company, type: 1, active: 1 })
