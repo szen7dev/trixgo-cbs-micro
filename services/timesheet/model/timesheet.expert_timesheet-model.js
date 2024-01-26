@@ -11,6 +11,12 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 /**
+ * DOMAIN AND ACTIONS
+ */
+const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
+
+/**
  * COLLECTIONS
  */
 const USER_COLL                         = require('../../auth/database/auth.user-coll')
@@ -18,6 +24,13 @@ const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_
 const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
+
+let dataTF = {
+    appID: "61e049cffdebf77b072d1b14", // TIMESHEET
+    menuID: "623f1ecae998e94feda0cd70", //
+    type: 1, 
+    action: 1,
+}
 
 class Model extends BaseModel {
 
@@ -30,10 +43,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID }) {
+    insert({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, ctx }) {
         return new Promise(async resolve => {
             try {
-
                 if(!name){
                     return resolve({
                         error: true,
@@ -118,9 +130,9 @@ class Model extends BaseModel {
                 }
                 // console.log(dataInsert)
 
-                let infoAfterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert" });
+                    return resolve({ error: true, message: "cannot_insert" })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -135,7 +147,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID }){
+        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID, ctx }){
             // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
             //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
         return new Promise(async (resolve) => {
@@ -347,7 +359,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertTimesheetID, userID, select, populates }) {
+    getInfo({ expertTimesheetID, userID, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(expertTimesheetID))
@@ -371,9 +383,12 @@ class Model extends BaseModel {
                 .populate(populates)
 
                 if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+                    return resolve({ error: true, message: "can't_get_info", status: 403 })
 
-                return resolve({ error: false, data: infoAterGet, status: 200 });
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
+                return resolve({ error: false, data: infoAterGet, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -386,10 +401,13 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, companyID, type }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, companyID, type, ctx }) {
         return new Promise(async (resolve) => {
             // console.log({ sortOption, parentID, userID, keyword, limit, lastestID, select, populates, option, month, year, type })
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if(Number(limit) > 50){
                     limit = 50;
                 } else{
@@ -543,10 +561,13 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, month, companyID, assigneeID, projectID }){
+    getListByProperty({ userID, option, year, month, companyID, assigneeID, projectID, ctx }){
         // console.log({ userID, option, year, companyID })
         return new Promise(async resolve => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let yearFilter
                 let currentYear = new Date().getFullYear()
                 if(year && !isNaN(year)){
