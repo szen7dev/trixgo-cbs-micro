@@ -1934,6 +1934,7 @@ class Model extends BaseModel {
                     appID: "5dfe4b9051dc622100bb9d89", // PCM
                     menuID: "623efd51e998e94feda0cd1c", //
                     type: 1, 
+                    action: 1, 
                     companyOfAuthor: companyID, 
                     userCreate: userID
                 })
