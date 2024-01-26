@@ -857,7 +857,9 @@ class Model extends BaseModel {
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
                 if(salesChannel == 1){
-                    // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
+                    console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
+                    let hour = Number(moment(new Date()).hours())
+                    console.log({hour})
 
                     let infoConfig = await ITEM__CONFIG_COLL.findOne({ company: infoFunda.company, type: 1, active: 1 })
 
