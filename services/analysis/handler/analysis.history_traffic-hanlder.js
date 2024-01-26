@@ -19,12 +19,12 @@ module.exports = {
             appID             : { type: "string" },
             menuID            : { type: "string" },
             type              : { type: "number", option: "true" },
-            action            : { type: "number", option: "true" },
+            // action            : { type: "number", option: "true" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  appID, menuID, type } = ctx.params;
+                let {  appID, menuID, type, action } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await ANALYSIS__HISTORY_TRAFFIC_MODEL.insert({
