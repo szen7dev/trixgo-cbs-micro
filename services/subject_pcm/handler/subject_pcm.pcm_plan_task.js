@@ -162,7 +162,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
-                    parentID, taskIDs, type, option, userID
+                    parentID, taskIDs, type, option, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -190,7 +190,7 @@ module.exports = {
                 const { parentID, taskID } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.moveTaskToParent({
-                    parentID, taskID, userID
+                    parentID, taskID, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -218,7 +218,7 @@ module.exports = {
                 const { groupID, taskID } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.moveTaskToGroup({
-                    groupID, taskID, userID
+                    groupID, taskID, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -344,7 +344,7 @@ module.exports = {
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
-                        taskID, userID, select, populates, companyID: company._id
+                        taskID, userID, select, populates, companyID: company._id, ctx
                     });
 
                     // console.log(resultAfterCallHandler)
@@ -352,7 +352,7 @@ module.exports = {
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         option, userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
-                        keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming, isMileStone
+                        keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming, isMileStone, ctx
                     });
                 }
 
@@ -410,7 +410,7 @@ module.exports = {
                     option, companyID: company._id,
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, prioritys, keyword,
-                    limit, lastestID, select, populates, userID, reportID, upcoming
+                    limit, lastestID, select, populates, userID, reportID, upcoming, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -447,7 +447,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByProperty({
-                    option, fromDate, toDate, projectID, companyID, userID, year, outin
+                    option, fromDate, toDate, projectID, companyID, userID, year, outin, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -477,7 +477,7 @@ module.exports = {
                     option, upcoming
                 } = ctx.params;
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID, option, upcoming });
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountNotification({ userID, option, upcoming, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -519,7 +519,7 @@ module.exports = {
                     companyID = company._id
                 }
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ companyID, userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year })
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getDynamicReport({ companyID, userID, reportType, option, projectID, status, fromDate, toDate, subtypes, upcoming,  isMilestone, year, ctx })
                 // console.log(resultAfterCallHandler)
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -541,7 +541,7 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTask({ userID });
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTask({ userID, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -561,7 +561,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getBadgeBidding({ userID });
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getBadgeBidding({ userID, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -655,7 +655,7 @@ module.exports = {
                 let { option, projectID, keyword, subtype } = ctx.params;
 
                 if(!option){
-                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID });
+                    let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID, ctx });
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
                 }else{
 
@@ -730,7 +730,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadExcelTask({
-                    option, conditionDownload, userID
+                    option, conditionDownload, userID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -757,7 +757,7 @@ module.exports = {
 
 				const { _id: userID } = ctx.meta.infoUser;
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadTemplateImportExcel({
-                    option, projectID, userID
+                    option, projectID, userID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -814,7 +814,7 @@ module.exports = {
                 let { option, password, page, fromDate, toDate } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.repairData({
-                    ctx, option, email, password, userID, bizfullname, companyID: company._id, page, fromDate, toDate
+                    ctx, option, email, password, userID, bizfullname, companyID: company._id, page, fromDate, toDate, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -823,5 +823,4 @@ module.exports = {
             }
         }
     }
-
 }
