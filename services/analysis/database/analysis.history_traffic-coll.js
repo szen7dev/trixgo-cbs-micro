@@ -14,6 +14,16 @@ module.exports  = DATABASE_MIDDLEWARE("history_traffic", {
         type: Number,
         default: 1
     },
+    /**
+     * HÀNH ĐỘNG
+     * 1-Xem
+     * 2-Thêm
+     * 3-Sửa
+     */
+    action: {
+        type: Number,
+        default: 1
+    },
     //_______Ứng dụng
     app: {
         type: Schema.Types.ObjectId,
