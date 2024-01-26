@@ -48,7 +48,13 @@ const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_p
 const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll')
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL
-const ANALYSIS__HISTORY_TRAFFIC_MODEL   = require('../../analysis/model/analysis.history_traffic').MODEL
+
+let dataTF = {
+    appID: "5dfe4b9051dc622100bb9d89", // PCM
+    menuID: "623efd51e998e94feda0cd1c", //
+    type: 1, 
+    action: 1,
+}
 class Model extends BaseModel {
 
     constructor() {
@@ -1433,7 +1439,7 @@ class Model extends BaseModel {
      * Update: HiepNH
      * Code: 20/8/2022
      */
-    updateStatusMutiple({ taskIDs, parentID, type, option, userID }){
+    updateStatusMutiple({ taskIDs, parentID, type, option, userID, ctx }){
         // console.log({ taskIDs, parentID, type, option, userID })
         return new Promise(async resolve => {
             try {
@@ -1515,7 +1521,7 @@ class Model extends BaseModel {
 	 * Func: Di chuyển công việc đến việc cha
      * Date: 22/04/2022
 	 */
-    moveTaskToParent({ parentID, taskID, userID }) {
+    moveTaskToParent({ parentID, taskID, userID, ctx }) {
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
@@ -1594,7 +1600,7 @@ class Model extends BaseModel {
 	 * Func: Di chuyển công việc đến nhóm dữ liệu khác (trong cùng dự án)
      * Date: 22/04/2022
 	 */
-    moveTaskToGroup({ groupID, taskID, userID }) {
+    moveTaskToGroup({ groupID, taskID, userID, ctx }) {
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({
@@ -1650,7 +1656,7 @@ class Model extends BaseModel {
      * Func: Copy child task
      * Date: 01/09/2022
      */
-    cloneChildTask({ parentId, parentTask, isDraftTask, callback = null }) {
+    cloneChildTask({ parentId, parentTask, isDraftTask, callback = null, ctx }) {
         // console.log('===========copy công việc connnnnnnnnn===========>>>>>>>>>>')
         // console.log({ parentId, parentTask, isDraftTask })
         return new Promise(async resolve => {
@@ -1930,14 +1936,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
-                    appID: "5dfe4b9051dc622100bb9d89", // PCM
-                    menuID: "623efd51e998e94feda0cd1c", //
-                    type: 1, 
-                    action: 1, 
-                    companyOfAuthor: companyID, 
-                    userCreate: userID
-                })
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 // // Ghi dữ liệu Hồ sơ thầu    
                 // if(infoTask.subtype == 14){
@@ -1967,7 +1966,7 @@ class Model extends BaseModel {
         option, projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited, upcoming, isMileStone
+        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited, upcoming, isMileStone, ctx
     }) {
         // console.log('=============DANH SÁCH CHỦ ĐỀ==========>>>>>>>>>>>>>>')
         // console.log({
@@ -1983,6 +1982,9 @@ class Model extends BaseModel {
                 } else{
                     limit = +Number(limit);
                 }
+
+                //__________Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {}, sortBy, keys = ['modifyAt__-1'], totalTaskDone = 0
 
@@ -2377,7 +2379,7 @@ class Model extends BaseModel {
     getListByFilter({
         option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, unlimited,
-        limit = 20, lastestID, select, populates, userID, reportID, upcoming
+        limit = 20, lastestID, select, populates, userID, reportID, upcoming, ctx
     }) {
         // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
         // console.log({
@@ -2387,6 +2389,9 @@ class Model extends BaseModel {
         // })
         return new Promise(async resolve => {
             try {
+                //__________Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 const validation = validateParamsObjectID({
                     companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
                     assigneesID         : { value: assigneesID, isRequire: false },
@@ -2637,10 +2642,13 @@ class Model extends BaseModel {
      * Dev: HiepNH
      * Date: 27/8/2023
      */
-    getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin }){
+    getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin, ctx }){
         // console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin })
         return new Promise(async resolve => {
             try {
+                //__________Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let conditionObj = {}, conditionProject = {}
                 
                 // Tổng hợp từ các Task mà user được quyền truy cập
@@ -2832,7 +2840,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 22/8/2023
      */
-    getAmountNotification({ userID, option }){
+    getAmountNotification({ userID, option, ctx }){
         // console.log('=================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         // console.log({ userID, option })
         return new Promise(async resolve => {
@@ -3022,11 +3030,14 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
+    getDynamicReport({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year, ctx }){
         // console.log('========>>>>>>>>>>>>>>>>>>>')
         // console.log({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year })
         return new Promise(async resolve => {
             try {
+                //__________Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let conditionObj = {}, conditionProject = {}, conditionMatch = {}
                 let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
 
@@ -3580,7 +3591,7 @@ class Model extends BaseModel {
      * Name: Lấy số lượng task của bạn
      * Author: Depv
      */
-    getAmountTask({ userID }){
+    getAmountTask({ userID, ctx }){
         return new Promise(async resolve => {
             try {
                 /**
@@ -3676,7 +3687,7 @@ class Model extends BaseModel {
      * Name: Lấy số lượng task đấu thầu
      * Author: Depv
      */
-    getBadgeBidding({ userID }){
+    getBadgeBidding({ userID, ctx }){
         return new Promise(async resolve => {
             try {
                 /**
@@ -4048,7 +4059,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 27/8/2023
      */
-    getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype }){
+    getAmountTaskOfCompanyOfAssigneeV2({ projectID, keyword, subtype, ctx }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
@@ -4197,7 +4208,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID }){
+    getAmountTaskOfCompanyOfAuthorV2({ projectID, keyword, subtype, userID, ctx }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(projectID))
@@ -4586,7 +4597,7 @@ class Model extends BaseModel {
      * Func: Download excel task
      * Date: 15/09/2022
      */
-    downloadExcelTask({ option = 1, conditionDownload, userID }) {
+    downloadExcelTask({ option = 1, conditionDownload, userID, ctx }) {
         return new Promise(async resolve => {
             try {
 
@@ -4732,7 +4743,7 @@ class Model extends BaseModel {
      * Func: Download template import excel
      * Date: 15/09/2022
      */
-    downloadTemplateImportExcel({ option, projectID, userID }) {
+    downloadTemplateImportExcel({ option, projectID, userID, ctx }) {
         // console.log({ option, projectID, userID })
         return new Promise(async resolve => {
             try {
@@ -4951,7 +4962,7 @@ class Model extends BaseModel {
         })
     }
 
-    repairData({ ctx, option, email, password, userID, bizfullname, companyID, page, fromDate, toDate }) {
+    repairData({ option, email, password, userID, bizfullname, companyID, page, fromDate, toDate, ctx }) {
         // console.log({ option, email, password, userID, bizfullname, companyID, page, fromDate, toDate })
         return new Promise(async (resolve) => {
             try {
