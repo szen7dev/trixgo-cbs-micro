@@ -353,7 +353,7 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcel({ option, companyID, year, page, unit, getNumber, newPassword }){
+    exportExcel({ option, isCheckAll, companyID, year, page, unit, getNumber, newPassword }){
         // console.log({ option, companyID, year, page, unit, getNumber, newPassword })
         return new Promise(async resolve => { 
             try {
@@ -367,8 +367,12 @@ class Model extends BaseModel {
 
                 let conditionObj = {}
 
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.companyOfAuthor = ObjectID(companyID)
+                if(isCheckAll && isCheckAll == 1){
+                    
+                }else{
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.companyOfAuthor = ObjectID(companyID)
+                    }
                 }
     
                 if(option == 1){
