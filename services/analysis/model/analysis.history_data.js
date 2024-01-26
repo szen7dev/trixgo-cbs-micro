@@ -9,18 +9,9 @@ const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
-
-/**
- * DOMAIN AND ACTIONS
- */
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
-
-/**
- * TOOLS
- */
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const {
+    isValidDate,
+}                                       = require('../../../tools/utils/time_utils')
 const { 
     DEVICE_TYPES,
  }                = require('../helper/analysis.keys-constant')
@@ -353,8 +344,8 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcel({ option, isPrivate, companyID, year, page, unit, getNumber, newPassword }){
-        // console.log({ option, companyID, year, page, unit, getNumber, newPassword })
+    exportExcel({ option, isPrivate, companyID, year, fromDate, toDate }){
+        // console.log({ option, isPrivate, companyID, year, fromDate, toDate })
         return new Promise(async resolve => { 
             try {
                 let yearFilter
@@ -365,7 +356,16 @@ class Model extends BaseModel {
                     yearFilter = Number(currentYear)
                 }
 
-                let conditionObj = {}
+                let conditionObj = {}, conditionObjYear = {}
+
+                if(isValidDate(fromDate) && isValidDate(toDate)){
+                    conditionObj.createAt = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+                }else{
+                    conditionObjYear.year = Number(yearFilter)
+                }
 
                 if(isPrivate && isPrivate == 1){
                     if(companyID && checkObjectIDs(companyID)){
@@ -403,9 +403,7 @@ class Model extends BaseModel {
                             }
                         },
                         {
-                            $match: {
-                                year: Number(yearFilter)
-                            }
+                            $match: conditionObjYear
                         },
                         {
                             $group: {
@@ -415,7 +413,6 @@ class Model extends BaseModel {
                         },
                     ])
                     // console.log(listData1)
-
                     let listApp = await APP_COLL.find({_id: {$in: listData1.map(item => item._id.app)}}).sort({_id: 1}).select('name')
 
                     let listData2 = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
@@ -447,8 +444,43 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-
                     let listCompany = await COMPANY_COLL.find({_id: {$in: listData2.map(item => item._id.companyOfAuthor)}}).sort({_id: 1}).select('name')
+
+                    let listData3 = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                companyOfAuthor : 1,
+                                createAt : 1,
+                                userCreate : 1,
+                                type : 1,
+                                app : 1,
+                                menu : 1,
+                                note : 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { userCreate: "$userCreate", month: "$month" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+                    let listUser = await USER_COLL.find({_id: {$in: listData3.map(item => item._id.userCreate)}}).sort({_id: 1}).select('fullname company')
+                    .populate({
+                        path: 'company',
+                        select: 'name',
+                    })
+                    // console.log(listUser)
     
                      // Modify the workbook.
                      XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/analysis_export_traffic.xlsx')))
@@ -505,6 +537,28 @@ class Model extends BaseModel {
 
                                     if(companyID.toString() === item._id.companyOfAuthor.toString() && Number(j - 3) === Number(item._id.month)){
                                         workbook.sheet("DashBoard2").row(i).cell(j).value(Number(item.quantity))
+                                    }
+                                }
+                            }
+                         })
+
+                         var i = 3
+                         listUser.forEach((item, index) =>{
+                             workbook.sheet("DashBoard3").row(i).cell(1).value(Number(index+1))
+                             workbook.sheet("DashBoard3").row(i).cell(2).value(`${item.fullname}`)
+                             workbook.sheet("DashBoard3").row(i).cell(3).value(`${item.company.name}`)
+                             workbook.sheet("DashBoard3").row(i).cell(4).value(`${item._id}`)
+    
+                             i++
+                         })
+
+                         listData3?.forEach((item, index) => {
+                            for (var i = 3; i <= listUser.length + 2; i++) {
+                                for(var j = 5; j <= 16; j ++){
+                                    let userID = workbook.sheet(`DashBoard3`).row(i).cell(4).value()
+
+                                    if(userID.toString() === item._id.userCreate.toString() && Number(j - 4) === Number(item._id.month)){
+                                        workbook.sheet("DashBoard3").row(i).cell(j).value(Number(item.quantity))
                                     }
                                 }
                             }
