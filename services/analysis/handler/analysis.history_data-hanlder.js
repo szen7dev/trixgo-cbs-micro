@@ -131,7 +131,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { option, isCheckAll, companyID, year, page, unit, getNumber } = ctx.params;
+                let { option, isPrivate, companyID, year, page, unit, getNumber } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -140,7 +140,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ANALYSIS__HISTORY_DATA_MODEL.exportExcel({
-                    option, isCheckAll, email, userID, companyID, year, page, unit, getNumber
+                    option, isPrivate, email, userID, companyID, year, page, unit, getNumber
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
