@@ -127,9 +127,6 @@ class Model extends BaseModel {
         // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, company, select, populates })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataInsert = {};
                 let accessUsers = [];
                 let infoGroup = null;
@@ -1855,7 +1852,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ option, taskID, companyID, userID, select, populates }){
+    getInfo({ option, taskID, companyID, userID, select, populates, ctx }){
         // console.log({ taskID, userID, select, populates })
         return new Promise(async resolve => {
             try {
@@ -1873,16 +1870,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * Bắt đầu kiểm tra quyền
-                 */
+                // Bắt đầu kiểm tra quyền
                 let infoTaskForCheck = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
                 if(!infoTaskForCheck) {
                     return resolve({ error: true, message: 'Not found task', status: 404 });
                 }
 
                 let { author, assignee, related, group, viewedUsers, status, subtype } = infoTaskForCheck;
-
                 if([0,1,2,3,4,5,6,7,8,9,10,11,12].includes(subtype)){
                     let isAuthor = false;
                     let isAssignee = false;
@@ -1911,20 +1905,15 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED })
                 }
 
-                /**
-                 * Cập nhật thông tin người truy cập
-                 */
+                // Cập nhật thông tin người truy cập
                 let result = viewedUsers.filter(item => item != null);
-
                 if(!result.map(item=>item.toString()).includes(userID.toString())){
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                         $addToSet: { viewedUsers: userID },
-                    });
+                    })
                 }
 
-                /**
-                 * Cập nhật trạng thái triển khai
-                 */
+                // Cập nhật trạng thái triển khai
                 // if(status == 1 && assignee.toString() == userID.toString()){
                 //     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
                 //         {
@@ -1935,23 +1924,30 @@ class Model extends BaseModel {
                 // }
 
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
-                                .select(select)
-                                .populate(populates).lean();
-
+                    .select(select)
+                    .populate(populates).lean();
 				if (!infoTask)
                     return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
-                
-                if(infoTask.subtype == 14){
-                    let infoTF = await ANALYSIS__HISTORY_TRAFFIC_MODEL.insert({ 
-                        appID: "60390cb12b367a1cdd9f3fb2", //DataHub
-                        menuID: "623f239fe998e94feda0cd9f", // Hồ sơ mời thầu
-                        type: 2, 
-                        companyOfAuthor: companyID, 
-                        userCreate: userID
-                    })
-                    // console.log('==================>>>>>>>>>>>>>>>>>')
-                    // console.log(infoTF)
-                }
+
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
+                    appID: "5dfe4b9051dc622100bb9d89", // PCM
+                    menuID: "623efd51e998e94feda0cd1c", //
+                    type: 1, 
+                    companyOfAuthor: companyID, 
+                    userCreate: userID
+                })
+
+                // // Ghi dữ liệu Hồ sơ thầu    
+                // if(infoTask.subtype == 14){
+                //     let infoTF = await ANALYSIS__HISTORY_TRAFFIC_MODEL.insert({ 
+                //         appID: "60390cb12b367a1cdd9f3fb2", // DataHub
+                //         menuID: "623f239fe998e94feda0cd9f", // Hồ sơ mời thầu
+                //         type: 2, 
+                //         companyOfAuthor: companyID, 
+                //         userCreate: userID
+                //     })
+                // }
 
                 return resolve({ error: false, data: infoTask });
             } catch (error) {

@@ -344,7 +344,7 @@ module.exports = {
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
-                        taskID, userID, select, populates, companyID: company._id
+                        taskID, userID, select, populates, companyID: company._id, ctx
                     });
 
                     // console.log(resultAfterCallHandler)
@@ -352,7 +352,7 @@ module.exports = {
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         option, userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
-                        keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming, isMileStone
+                        keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming, isMileStone, ctx
                     });
                 }
 

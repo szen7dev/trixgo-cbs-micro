@@ -17,7 +17,7 @@ module.exports = {
         auth: "required",
         params: {
             appID             : { type: "string" },
-            menuID            : { type: "string" },
+            menuID            : { type: "string", option: "true" },
             type              : { type: "number", option: "true" },
             // action            : { type: "number", option: "true" },
         },

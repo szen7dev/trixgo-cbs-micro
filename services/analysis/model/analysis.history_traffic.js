@@ -40,16 +40,13 @@ class Model extends BaseModel {
         // console.log({ appID, menuID, type, action, companyOfAuthor, userCreate })
         return new Promise(async resolve => { 
             try {
-                let dataInsert = { companyOfAuthor, userCreate}; 
-                
                 if(!checkObjectIDs(appID))
                     return resolve({ error: true, message: "Request params appID invalid" });
 
-                if(!checkObjectIDs(menuID))
-                    return resolve({ error: true, message: "Request params menuID invalid" });
-
-                dataInsert.app = appID;
-                dataInsert.menu = menuID;
+                let dataInsert = { companyOfAuthor, userCreate, app: appID}
+                if(menuID && checkObjectIDs(menuID)){
+                    dataInsert.menu = menuID;
+                }
 
                 if(type){
                     dataInsert.type = +type;

@@ -354,7 +354,7 @@ class Model extends BaseModel {
     }
 
     exportExcel({ option, companyID, year, page, unit, getNumber, newPassword }){
-        // console.log({ option, companyID, page, unit, getNumber, newPassword })
+        // console.log({ option, companyID, year, page, unit, getNumber, newPassword })
         return new Promise(async resolve => { 
             try {
                 let yearFilter
@@ -368,7 +368,7 @@ class Model extends BaseModel {
                 let conditionObj = {}
 
                 if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = companyID
+                    conditionObj.companyOfAuthor = ObjectID(companyID)
                 }
     
                 if(option == 1){
