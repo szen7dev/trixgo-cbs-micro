@@ -15,6 +15,7 @@ const { uploadFileS3 }                                  = require('../../../tool
  */
  const { CF_DOMAIN_SERVICES } 	                        = require('../../gateway/helper/domain.constant');
  const { CF_ACTIONS_BUDGET } 		                    = require('../../budget/helper/budget.actions-constant');
+ const { CF_ACTIONS_ANALYSIS }                          = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * TOOLS
@@ -39,6 +40,19 @@ const BUDGET_WORK_COLL                                  = require('../../budget/
  * MODELS
  */
 const ACCOUNT_MODEL                                     = require('../.../../../item/model/item.account-model').MODEL
+
+let dataTF = {
+    appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
+    menuID: "623f1f49e998e94feda0cd74", //
+    type: 1, 
+    action: 1, // Xem
+}
+let dataTF2 = {
+    appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
+    menuID: "623f1f49e998e94feda0cd74", //
+    type: 1,
+    action: 2, // Thêm
+}
 
 class Model extends BaseModel {
     constructor() {
@@ -502,7 +516,7 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date: 9/4/2022
      */
-    getInfo({ journalID, select, populates }) {
+    getInfo({ journalID, select, populates, ctx }) {
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(journalID))
@@ -538,11 +552,14 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        keyword, limit = 50, lastestID, select, populates = {}, sortKey, ctx }) {
             // console.log('==========GET LIST JOURNAL============')
             // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate,  forward, cancel, userID, keyword, limit, lastestID, select, populates, contacts})
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if (limit > 50) {
                     limit = 50
                 } else {
@@ -799,11 +816,14 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date  : 10/4/2022
      */
-    getListByProperty({ option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts }) {
+    getListByProperty({ option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts, ctx }) {
         // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         // console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 /**
                  * BA
                  * Kỳ tra cứu: 30/5/2020 (fromDate) - 15/6/2020 (toDate) - Incurred
@@ -2745,9 +2765,12 @@ class Model extends BaseModel {
 
     getListByFilter({
         companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
-        limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel }) {
+        limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if (limit > 50) {
                     limit = 50
                 } else {
@@ -2873,10 +2896,13 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcelByFilter({ userID, companyID, type, filterParams, voucherID }) {
+    exportExcelByFilter({ userID, companyID, type, filterParams, voucherID, ctx }) {
         // console.log({ userID, companyID, type, filterParams, voucherID })
         return new Promise(async resolve => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                
                 let conditionObj = {};
                 let resultGetList = { error: true }
 
@@ -2892,7 +2918,7 @@ class Model extends BaseModel {
                             populates,
                             userID,
                             companyID,
-                            isExportExcel: true
+                            isExportExcel: true, ctx
                         });
                         break;
 
@@ -2902,7 +2928,7 @@ class Model extends BaseModel {
                             populates,
                             userID,
                             companyID,
-                            isExportExcel: true
+                            isExportExcel: true, ctx
                         });
                         break;
                         
@@ -2912,7 +2938,7 @@ class Model extends BaseModel {
                             populates,
                             userID,
                             companyID,
-                            isExportExcel: true
+                            isExportExcel: true, ctx
                         });
                         break;
                 }
@@ -2949,7 +2975,7 @@ class Model extends BaseModel {
         })
     }
 
-    downloadExcelFile({data, type, voucherID}) {
+    downloadExcelFile({ data, type, voucherID }) {
         return new Promise(resolve => {
             let template
             if(type == 1){
@@ -2959,7 +2985,6 @@ class Model extends BaseModel {
             }else if(type == 3){
                 template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
             }
-
 
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
                 .then(async workbook => {

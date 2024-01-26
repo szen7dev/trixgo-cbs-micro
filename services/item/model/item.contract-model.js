@@ -8,9 +8,10 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
 const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-constant');
-const { addDate, calculateExpireTime }          = require('../../../tools/utils/time_utils');
+const { addDate }                       = require('../../../tools/utils/time_utils');
 
 /**
  * TOOLS
@@ -33,8 +34,19 @@ const CMCS__CONTRACT_PRODUCTION_COLL            	= require('../../cmcs/database/
 const CMCS__CONTRACT_IPC_COLL            			= require('../../cmcs/database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL            		= require('../../cmcs/database/cmcs.contract_payment-coll');
 const CMCS__CONTRACT_EXPENSE_COLL            		= require('../../cmcs/database/cmcs.contract_expense-coll');
-const { ObjectId } = require('mongodb');
 
+let dataTF = {
+    appID: "6131d6f83f4b736dc93253b2", // CMCS
+    menuID: "623f22b1e998e94feda0cd8b", //
+    type: 1, 
+    action: 1, // Xem
+}
+let dataTF2 = {
+    appID: "6131d6f83f4b736dc93253b2", // CMCS
+    menuID: "623f22b1e998e94feda0cd8b", //
+    type: 1,
+    action: 2, // Thêm
+}
 class Model extends BaseModel {
 
     constructor() {
@@ -50,7 +62,7 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, vatBudget, forecastBudget, forecastVatBudget, managementFee, subcontractFee, expenses, profit,
-         userID, ctx, remainingProduce, ontime, onbudget, cgValue, expiredCg, alertCg, agValue, alertAg, expiredAg, insuranceValue, expiredInsurance, alertInsurance
+         userID, remainingProduce, ontime, onbudget, cgValue, expiredCg, alertCg, agValue, alertAg, expiredAg, insuranceValue, expiredInsurance, alertInsurance, ctx
          }){
         return new Promise(async resolve => {
             try {
@@ -350,6 +362,10 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
+
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -969,18 +985,9 @@ class Model extends BaseModel {
      * Author: Depv/HiepNH
      * Code: 22/9/2022
      */
-    getInfo({ contractID, userID, select, populates }) {
+    getInfo({ contractID, userID, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
 
@@ -997,9 +1004,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * CẬP NHẬT THÔNG TIN TRUY CẬP
-                 */
                 let infoUser = await AUTH__USER_COLL.findById(userID).select('company')
                 await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, {
                     $inc: {
@@ -1010,17 +1014,15 @@ class Model extends BaseModel {
                         userViews: userID,
                     }
                 }, { new: true });
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let info = await ITEM__CONTRACT_COLL.findById(contractID)
                                     .select(select)
                                     .populate(populates)
                 if(!info)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
-                // console.log(info)
+                
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({ error: false, data: info, status: 200 });
             } catch (error) {
@@ -1037,15 +1039,15 @@ class Model extends BaseModel {
     getList({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel = false,
         startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isExpiredInsurance, isMember,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 10, lastestID, select, populates= {}, ctx }) {
             // console.log({companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel,
             //     startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isMember,
             //     keyword})
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let conditionObj = {};
                 let keys	     = ['date__-1', '_id__-1'];
                 let sortBy;
@@ -1055,12 +1057,6 @@ class Model extends BaseModel {
                 } else{
                     limit = +limit
                 }
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -1076,11 +1072,6 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(companyID) && !checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Bắt buộc phải truyền companyID hoặc projectID', keyError: "params_invalid" });
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 if (checkObjectIDs(projectID)) {
                     conditionObj.project = projectID
                 } else if (checkObjectIDs(companyID)) {
@@ -1640,9 +1631,12 @@ class Model extends BaseModel {
     getListIsMembers({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isMember, isExportExcel = false,
         startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
+        keyword, limit = 10, lastestID, select, populates= {}, ctx }) {
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                
                 let conditionObj = { members: { $in: [userID] } };
                 let keys	     = ['date__-1', '_id__-1'];
                 let sortBy;
@@ -1847,12 +1841,15 @@ class Model extends BaseModel {
      */
     getListByFilter({
         fromDate, toDate, companysID, projectsID, buyerInfosID, sellerInfosID, statuss, ontimes, onbudgets, isExportExcel = false,
-        keyword, limit = 10, lastestID, select, populates= {}, userID }) {
+        keyword, limit = 10, lastestID, select, populates= {}, userID, ctx }) {
         // console.log({
         //     fromDate, toDate, companysID, projectsID, buyerInfosID, sellerInfosID, statuss, ontimes, onbudgets, isExportExcel,
         //     keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let conditionObj = { members: { $in: [userID] } };
                 let keys	     = ['date__-1', '_id__-1'];
                 let sortBy;

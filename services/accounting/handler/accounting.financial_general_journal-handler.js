@@ -136,7 +136,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if (journalID) {
                     resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getInfo({
-                        journalID, userID, select, populates
+                        journalID, userID, select, populates, ctx
                     });
                 } else {
                     resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
@@ -267,7 +267,7 @@ module.exports = {
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({
-                    userID, contacts, option, optionAccount, optionTerm, optionCal, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID
+                    userID, contacts, option, optionAccount, optionTerm, optionCal, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID, ctx
                 })
 
                 // console.log(resultAfterCallHandler)
@@ -334,7 +334,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.exportExcelByFilter({
-                    userID, companyID, filterParams, type, voucherID
+                    userID, companyID, filterParams, type, voucherID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

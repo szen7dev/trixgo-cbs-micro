@@ -52,8 +52,16 @@ let dataTF = {
     appID: "5eabfdc72171391e5f6a0468", // PCM
     menuID: "623ef213e998e94feda0ccd8", //
     type: 1, 
-    action: 1,
+    action: 1, // Xem
 }
+let dataTF2 = {
+    appID: "5eabfdc72171391e5f6a0468", // PCM
+    menuID: "623ef213e998e94feda0ccd8", //
+    type: 1,
+    action: 2, // Thêm
+}
+// FE sử dụng: useHistoryTraffics
+
 class Model extends BaseModel {
 
     constructor() {
@@ -171,7 +179,6 @@ class Model extends BaseModel {
 
                 // Thông tin Nhóm dữ liệu
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
-                // console.log(infoGroup)
 
                 let convertStr = ''
                 if(name && name != ""){
@@ -524,16 +531,6 @@ class Model extends BaseModel {
                                     web_url: webUrl,
                                     env: ENV_DEVICE_WEB_CBS
                                 });
-
-                                // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                                //     users: [receiver],
-                                //     title: titleMSS,
-                                //     description: descriptionMSS,
-                                //     amountNoti,
-                                //     dataSend,
-                                //     web_url: webUrl,
-                                //     env: ENV_DEVICE_APP_FNB
-                                // });
                             }
                         }
                     }
@@ -553,9 +550,12 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+
                 const infoTask = await PCM_PLAN_TASK_COLL
                     .findById(infoAfterInsert._id)
-                    .select(select)
+                    .select(select )
                     .populate(populates)
                     .lean();
 

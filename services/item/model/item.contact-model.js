@@ -5,7 +5,6 @@ const fs                                = require('fs');
 const path                              = require('path');
 const moment                            = require('moment');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-
 const BaseModel                         = require('../../../tools/db/base_model');
 
 /**
@@ -28,6 +27,9 @@ const {
  }                = require('../helper/item.keys-constant')
 const stringUtils					    = require('../../../tools/utils/string_utils')
 
+const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
+
 /**
  * COLLECTIONS
  */
@@ -44,6 +46,20 @@ const HUMAN__CONTACT_DOCUMENT_COLL                  = require('../../human/datab
 
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL
 const CONTACT_DOCUMENT_MODEL                        = require('../../human/model/human.contact_document-model').MODEL
+
+let dataTF = {
+    appID: "61e049c9fdebf77b072d1b13", // HUMAN
+    menuID: "623f1f0de998e94feda0cd72", //
+    type: 1, 
+    action: 1, // Xem
+}
+let dataTF2 = {
+    appID: "61e049c9fdebf77b072d1b13", // HUMAN
+    menuID: "623f1f0de998e94feda0cd72", //
+    type: 1,
+    action: 2, // Thêm
+}
+
 class Model extends BaseModel {
 
     constructor() {
@@ -55,7 +71,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, insuranceFee
+    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, insuranceFee, ctx
     }) {
         // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, insuranceFee })
         return new Promise(async resolve => {
@@ -407,6 +423,9 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+
                 return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -419,7 +438,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers}){
+    update({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, ctx}){
         // console.log('================THAM BIẾN CẬP NHẬT DANH BẠ=================')
         // console.log({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers})
         return new Promise(async (resolve) => {
@@ -851,7 +870,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ contactID, linkUserID, select, populates }) {
+    getInfo({ contactID, linkUserID, select, populates, ctx }) {
         // console.log('===========Thông tin danh bạ========')
         // console.log({ contactID, linkUserID, select, populates })
         return new Promise(async (resolve) => {
@@ -877,6 +896,9 @@ class Model extends BaseModel {
                     if(!infoAterGet)
                         return resolve({ error: true, message: "can't_get_info", status: 403 })
 
+                    // Record Traffic
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                     return resolve({ error: false, data: infoAterGet, status: 200 })
                 }else{
                     if(!checkObjectIDs(linkUserID))
@@ -901,11 +923,15 @@ class Model extends BaseModel {
                         if(!infoAterGet)
                             return resolve({ error: true, message: "can't_get_info", status: 403 })
 
+                        // Record Traffic
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                         return resolve({ error: false, data: infoAterGet, status: 200 })
                     }else{
                         return resolve({ error: true, message: "can't_get_info", status: 403 })
                     }
                 }
+                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -917,7 +943,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID, month }) {
+    getList({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID, month, ctx }) {
         // console.log({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID, month })
         return new Promise(async (resolve) => {
             try {
@@ -1035,6 +1061,9 @@ class Model extends BaseModel {
                 let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: limit,
@@ -1056,7 +1085,7 @@ class Model extends BaseModel {
     getListByFilter({
         parentID, companyID, receiverID, types, isExportExcel = false,
         requestResponse, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
+        keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders, ctx }) {
             // console.log({ parentID, companyID, receiverID, types, isExportExcel,requestResponse, fromDate, toDate, marked, userID, departmentsID, keyword, limit, lastestID, select, populates, isParent, type, genders })
         return new Promise(async (resolve) => {
             try {
@@ -1180,6 +1209,9 @@ class Model extends BaseModel {
                 let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: limit,
@@ -1201,7 +1233,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getListOfSystem({
-        keyword, limit = 5, lastestID, select, populates= {} }) {
+        keyword, limit = 5, lastestID, select, populates= {}, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 let conditionObj = { };
@@ -1273,6 +1305,9 @@ class Model extends BaseModel {
                 let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
@@ -1292,11 +1327,14 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 30/7/2023
      */
-    getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID }) {
+    getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID, ctx }) {
         // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             let duration = getTimeBetween(toDate, fromDate)
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if(Number(duration/86400) > 90){
                      // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
                 }else{
@@ -1486,10 +1524,13 @@ class Model extends BaseModel {
      */
     getListAccessByContract({
         userID, option,
-        keyword, limit = 10, lastestID, select, populates = {} }) {
+        keyword, limit = 10, lastestID, select, populates = {}, ctx }) {
             // console.log({option,keyword,populates})
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if(limit > 20){
                     limit = 20
                 } else{
@@ -1599,9 +1640,12 @@ class Model extends BaseModel {
      * Func: Download Template Excel
      * Date: 8/12/2022
      */
-     downloadTemplateImportExcel({ companyID, userID }) {
+     downloadTemplateImportExcel({ companyID, userID, ctx }) {
         return new Promise(async resolve => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let listDepartment = await ITEM__DEPARTMENT_COLL.find({ company: companyID }).select('name').limit(500)
                 let listPosition = await ITEM__POSITION_COLL.find({ company: companyID }).select('name').limit(500)
                 let listDoctype = await ITEM__DOCTYPE_COLL.find({ company: companyID }).select('name').limit(500)
@@ -1927,9 +1971,12 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcel({ userID, companyID, type, filterParams }) {
+    exportExcel({ userID, companyID, type, filterParams, ctx }) {
         return new Promise(async resolve => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let conditionObj = {};
                 let resultGetList = { error: true };
 
@@ -2008,9 +2055,12 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcelByFilter({ userID, companyID, filterParams }) {
+    exportExcelByFilter({ userID, companyID, filterParams, ctx }) {
         return new Promise(async resolve => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let conditionObj = {};
 
                 const populates = JSON.stringify({
@@ -2032,7 +2082,8 @@ class Model extends BaseModel {
                     type: 1,
                     userID,
                     companyID,
-                    isExportExcel: false
+                    isExportExcel: false,
+                    ctx
                 });
 
                 if(error || !data?.listRecords?.length) {
@@ -2096,7 +2147,6 @@ class Model extends BaseModel {
                 });
         })
     }
-
 }
 
 exports.MODEL = new Model;

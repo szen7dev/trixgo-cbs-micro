@@ -47,7 +47,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.insert({
-                    userCreate: userID, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor
+                    userCreate: userID, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -147,13 +147,13 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(contactDocumentID){
                     resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getInfo({
-                        contactDocumentID, select, populates
+                        contactDocumentID, select, populates, ctx
                     });
                 }else{
                     resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getList({
                         companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit, populates, gender, 
                         keywordContact, educationalBackground2, field2, certificateType, certificateName, certificateGrade, 
-                        isCertificate, isToDate5Month, userID
+                        isCertificate, isToDate5Month, userID, ctx
                     })
                 }
                 
@@ -196,7 +196,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getListByFilter({
-                    userID, parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, isParent, type, genders, populates
+                    userID, parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, isParent, type, genders, populates, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -230,7 +230,7 @@ module.exports = {
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.exportExcel({
-                    userID, companyID, filterParams
+                    userID, companyID, filterParams, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -16,6 +16,7 @@ const {
 }                                               = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index')
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant')
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO } 		                = require('../../zalo_oa/helper/zalo.actions')
 const moment                                    = require('moment')
 const stringUtils					            = require('../../../tools/utils/string_utils')
@@ -54,6 +55,20 @@ const {
     FNB_PAYMENT_METHOD,
     FNB_STATUS
  } = require('../helper/fnb.keys-constant')
+
+
+ let dataTF = {
+    appID: "61e04971fdebf77b072d1b0f", // FNB
+    menuID: "63af81debe33df0012ecaeca", //
+    type: 1, 
+    action: 1, // Xem
+}
+let dataTF2 = {
+    appID: "61e04971fdebf77b072d1b0f", // FNB
+    menuID: "63af81debe33df0012ecaeca", //
+    type: 1,
+    action: 2, // Thêm
+}
 
 class Model extends BaseModel {
     constructor() {
@@ -905,6 +920,9 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -1518,7 +1536,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getInfo({ orderID, select, populates={} }) {
+    getInfo({ orderID, select, populates={}, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderID))
@@ -1543,6 +1561,9 @@ class Model extends BaseModel {
 
                 if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 return resolve({ error: false, data: infoPlanGroup });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -1555,10 +1576,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ option, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, isCampaignType, isPaymentMethod, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID }) {
+    getList({ option, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, isCampaignType, isPaymentMethod, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, ctx }) {
         // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if(Number(limit) > 10){
                     limit = 10;
                 } else{
@@ -1783,10 +1807,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration }) {
+    getListByProperty({ companyID, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration, ctx }) {
         // console.log({ companyID, fundasID, option, optionGroup, optionStatus, optionTime, year, fromDate, toDate, userID, staffID, optionStar })
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let duration = getTimeBetween(toDate, fromDate)
                 // console.log({duration:duration/86400})
                 if(Number(duration/86400) > 90){
