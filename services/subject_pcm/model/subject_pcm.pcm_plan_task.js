@@ -12,12 +12,11 @@ const fs                                = require('fs');
  * Import utils, constants
  */
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_FILE } 				        = require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_AUTH }                       = require('../../auth/helper/auth.actions-constant');
-const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_REMINDER }                   = require('../../reminder/helper/reminder.actions-constant');
-
 const { CF_ACTIONS_SUBJECT_PCM }                = require('./../helper/subject_pcm.actions-constant');
 
 const {
@@ -51,7 +50,7 @@ const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file
 
 let dataTF = {
     appID: "5dfe4b9051dc622100bb9d89", // PCM
-    menuID: "623efd51e998e94feda0cd1c", //
+    menuID: "623ef213e998e94feda0ccd8", //
     type: 1, 
     action: 1,
 }

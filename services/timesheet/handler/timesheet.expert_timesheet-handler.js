@@ -33,7 +33,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({
-                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID
+                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -81,7 +81,7 @@ module.exports = {
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
                     expertTimesheetID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
-                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID
+                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -104,7 +104,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 
                 let { expertTimesheetID } = ctx.params;
-                let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.remove({ expertTimesheetID });
+                let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.remove({ expertTimesheetID, ctx });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -147,11 +147,11 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(expertTimesheetID){
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getInfo({
-                        expertTimesheetID, userID, select, populates
+                        expertTimesheetID, userID, select, populates, ctx
                     });
                 } else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, sortOption, workID, type
+                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, sortOption, workID, type, ctx
                     });
                 }
 
@@ -188,7 +188,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getListByProperty({
-                        option, year, month, companyID, projectID, assigneeID, userID
+                        option, year, month, companyID, projectID, assigneeID, userID, ctx
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

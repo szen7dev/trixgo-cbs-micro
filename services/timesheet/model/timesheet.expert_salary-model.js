@@ -7,8 +7,8 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * DOMAIN AND ACTIONS
  */
-// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ITEM } 		    = require('../../item/helper/item.actions-constant');
+const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * TOOLS
@@ -27,6 +27,12 @@ const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.depa
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
+let dataTF = {
+    appID: "61e049cffdebf77b072d1b14", // TIMESHEET
+    menuID: "623f1ecae998e94feda0cd70", //
+    type: 1, 
+    action: 1,
+}
 class Model extends BaseModel {
 
     constructor() {
@@ -38,7 +44,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid }) {
+    insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, ctx }) {
         // console.log({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid })
         return new Promise(async resolve => {
             try {
@@ -160,7 +166,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax }){
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, ctx }){
         // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax })
         return new Promise(async (resolve) => {
             const that = this
@@ -566,7 +572,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({ 
-        option, salaryID, userID, companyID
+        option, salaryID, userID, companyID, ctx
     }){ 
         const that = this
         return new Promise(async (resolve) => {
@@ -592,7 +598,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertSalaryID, userID, select, populates }) {
+    getInfo({ expertSalaryID, userID, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(expertSalaryID))
@@ -618,6 +624,9 @@ class Model extends BaseModel {
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -632,11 +641,14 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID  }) {
+        keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID, ctx }) {
         // console.log({sortOption, parentID, userID,
         //     keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if(Number(limit) > 50){
                     limit = 50;
                 } else{
@@ -778,10 +790,13 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
+    getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID, ctx }){
         // console.log({ userID, option, year, companyID, assigneeID })
         return new Promise(async resolve => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let yearFilter
                 let currentYear = new Date().getFullYear()
                 if(year && !isNaN(year)){
