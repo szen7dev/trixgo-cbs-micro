@@ -818,10 +818,9 @@ class Model extends BaseModel {
                 // console.log(infoVoucher)
 
                 if(infoVoucher.type == 5 && infoVoucher.linkFunda && checkObjectIDs(infoVoucher.linkFunda._id)){
-
                     // console.log(infoVoucher)
 
-                    let listAccount = await ITEM__ACCOUNT_MODEL.getListRecursive({ companyID, arrAccNames: ['152','153','155','156','157'] })
+                    let listAccount = await ITEM__ACCOUNT_MODEL.getListRecursive({ companyID, arrAccNames: ['152','156'] })
                     listAccount = listAccount.data.map(item=>item._id.toString())
                     // console.log(listAccount)
 
