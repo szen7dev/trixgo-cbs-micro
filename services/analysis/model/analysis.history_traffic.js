@@ -36,8 +36,8 @@ class Model extends BaseModel {
 	 * Func: Tạo history traffic
 	 * Date: 13/12/2021
 	 */
-	insert({ appID, menuID, type, companyOfAuthor, userCreate }){
-        console.log({ appID, menuID, type, companyOfAuthor, userCreate })
+	insert({ appID, menuID, type, action, companyOfAuthor, userCreate }){
+        // console.log({ appID, menuID, type, action, companyOfAuthor, userCreate })
         return new Promise(async resolve => { 
             try {
                 let dataInsert = { companyOfAuthor, userCreate}; 
@@ -52,10 +52,15 @@ class Model extends BaseModel {
                 dataInsert.menu = menuID;
 
                 if(type){
-                    dataInsert.type = type;
+                    dataInsert.type = +type;
                 }
+
+                if(type){
+                    dataInsert.action = +action;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
-                return resolve({ error: false, data: infoAfterInsert });
+                    return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
