@@ -123,8 +123,8 @@ module.exports = {
                     sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance,
                     plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid,
                     amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, vatBudget, forecastBudget, forecastVatBudget,
-                    managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget,
-                    alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance
+                    managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, remainingProduce, ontime, onbudget,
+                    alertAg, alertCg, insuranceValue, expiredInsurance, alertInsurance, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -341,13 +341,13 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(contractID){
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getInfo({
-                        contractID, userID, select, populates
+                        contractID, userID, select, populates, ctx
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
                         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
                         debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isExpiredCg, isExpiredInsurance, isMember,
-                        keyword, limit, lastestID, select, populates
+                        keyword, limit, lastestID, select, populates, ctx
                     });
                 }
 
@@ -404,7 +404,7 @@ module.exports = {
                 let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListIsMembers({
                     companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
                     debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isExpiredCg, isMember,
-                    keyword, limit, lastestID, select, populates
+                    keyword, limit, lastestID, select, populates, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -452,7 +452,7 @@ module.exports = {
                     fromDate, toDate, companysID, projectsID, buyerInfosID,
                     sellerInfosID, statuss, ontimes, onbudgets, 
                     keyword, limit, lastestID, select, populates, 
-                    userID
+                    userID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
