@@ -857,9 +857,15 @@ class Model extends BaseModel {
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
                 if(salesChannel == 1){
-                    console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
-                    let hour = Number(moment(new Date()).hours())
-                    console.log({hour})
+                    /**
+                     * Số điện thoại không hợp lệ
+                     * Nội dung mẫu ZNS không hợp lệ
+                     * Mẫu ZNS này không được phép gửi vào ban đêm (từ 22h-6h)
+                     * Tài khoản Zalo không tồn tại hoặc đã bị vô hiệu hoá
+                     */
+                    // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
+                    // let hour = Number(moment(new Date()).hours())
+                    // console.log({hour})
 
                     let infoConfig = await ITEM__CONFIG_COLL.findOne({ company: infoFunda.company, type: 1, active: 1 })
 
