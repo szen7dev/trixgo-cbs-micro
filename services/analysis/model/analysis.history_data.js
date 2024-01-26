@@ -364,9 +364,15 @@ class Model extends BaseModel {
                 }else{
                     yearFilter = Number(currentYear)
                 }
+
+                let conditionObj = {}
+
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = companyID
+                }
     
                 if(option == 1){
-                    let listData = await ANALYSIS__HISTORY_TRAFFIC_COLL.find({})
+                    let listData = await ANALYSIS__HISTORY_TRAFFIC_COLL.find(conditionObj)
                     .limit(500)
                     .populate({
                         path: 'companyOfAuthor userCreate app menu',
@@ -378,6 +384,9 @@ class Model extends BaseModel {
                     // console.log(listData)
     
                     let listData1 = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
                         {
                             $project : {
                                 year : {$year : "$createAt"},
@@ -408,6 +417,9 @@ class Model extends BaseModel {
                     let listApp = await APP_COLL.find({_id: {$in: listData1.map(item => item._id.app)}}).sort({_id: 1}).select('name')
 
                     let listData2 = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
                         {
                             $project : {
                                 year : {$year : "$createAt"},
@@ -467,7 +479,6 @@ class Model extends BaseModel {
                             for (var i = 3; i <= listApp.length + 2; i++) {
                                 for(var j = 4; j <= 15; j ++){
                                     let appID = workbook.sheet(`DashBoard`).row(i).cell(3).value()
-                                    // console.log(appID)
 
                                     if(appID.toString() === item._id.app.toString() && Number(j - 3) === Number(item._id.month)){
                                         workbook.sheet("DashBoard").row(i).cell(j).value(Number(item.quantity))
@@ -489,7 +500,6 @@ class Model extends BaseModel {
                             for (var i = 3; i <= listCompany.length + 2; i++) {
                                 for(var j = 4; j <= 15; j ++){
                                     let companyID = workbook.sheet(`DashBoard2`).row(i).cell(3).value()
-                                    // console.log(companyID)
 
                                     if(companyID.toString() === item._id.companyOfAuthor.toString() && Number(j - 3) === Number(item._id.month)){
                                         workbook.sheet("DashBoard2").row(i).cell(j).value(Number(item.quantity))
