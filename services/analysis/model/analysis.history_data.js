@@ -375,7 +375,7 @@ class Model extends BaseModel {
     
                 if(option == 1){
                     let listData = await ANALYSIS__HISTORY_TRAFFIC_COLL.find(conditionObj)
-                    .limit(500)
+                    .limit(5000)
                     .populate({
                         path: 'companyOfAuthor userCreate app menu',
                         select:'fullname name sign'
