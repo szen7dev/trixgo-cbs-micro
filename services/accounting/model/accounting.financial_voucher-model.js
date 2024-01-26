@@ -12,6 +12,8 @@ const path                              = require('path');
  * CONSTANTS
  */
 const { VOUCHER_TYPES }                 = require('../config/accounting.financial_config')
+const { CF_DOMAIN_SERVICES } 	        = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * TOOLS
@@ -37,6 +39,19 @@ const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accou
  */
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL   = require('./accounting.financial_general_journal-model').MODEL;
 const ITEM__ACCOUNT_MODEL                           = require('../../item/model/item.account-model').MODEL;
+
+let dataTF = {
+    appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
+    menuID: "623f1f49e998e94feda0cd74", //
+    type: 1, 
+    action: 1, // Xem
+}
+let dataTF2 = {
+    appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
+    menuID: "623f1f49e998e94feda0cd74", //
+    type: 1,
+    action: 2, // Thêm
+}
 
 class Model extends BaseModel {
     constructor() {
@@ -91,7 +106,6 @@ class Model extends BaseModel {
                  * +++budgetWorkID cũ
                  * +++budgetWorkID mới
                 */
-
                 //_________Kiểm tra dữ liệu đầu vào
                 if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
@@ -319,6 +333,9 @@ class Model extends BaseModel {
                 if(type == 5 && linkFundaID && checkObjectIDs(linkFundaID)){
                     await this.convertVoucher({companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
                 }
+
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 })
             } catch (error) {
@@ -969,7 +986,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    getInfo({ voucherID, select, populates }) {
+    getInfo({ voucherID, select, populates, ctx }) {
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(voucherID))
@@ -992,6 +1009,9 @@ class Model extends BaseModel {
 
                 if (!info) return resolve({ error: true, message: 'cannot_get' });
 
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -1005,10 +1025,13 @@ class Model extends BaseModel {
      * Date: 30/4/2022
      */
     getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, vat, userCreateID,
-        keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
+        keyword, limit = 20, lastestID, select, populates = {}, sortKey, ctx }) {
         // console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, vat, userCreateID, keyword})
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if (limit > 20) {
                     limit = 20
                 } else {

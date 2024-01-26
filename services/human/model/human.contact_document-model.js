@@ -14,8 +14,8 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * TOOLS
@@ -29,6 +29,18 @@ const HUMAN__CONTACT_DOCUMENT_COLL      = require('../database/human.contact_doc
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll');
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll');
 
+let dataTF = {
+    appID: "61e049c9fdebf77b072d1b13", // HUMAN
+    menuID: "623f1f0de998e94feda0cd72", //
+    type: 1, 
+    action: 1, // Xem
+}
+let dataTF2 = {
+    appID: "61e049c9fdebf77b072d1b13", // HUMAN
+    menuID: "623f1f0de998e94feda0cd72", //
+    type: 1,
+    action: 2, // Thêm
+}
 class Model extends BaseModel {
 
     constructor() {
@@ -40,7 +52,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor }) {
+    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, ctx }) {
         return new Promise(async resolve => {
             try {
                 let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('company')
@@ -104,6 +116,9 @@ class Model extends BaseModel {
 
                 // Cập nhật lại số lượng document cho contact
                 await this.updateValue({ contactID, userID: userCreate })
+
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -311,18 +326,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ contactDocumentID, select, populates }) {
+    getInfo({ contactDocumentID, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(contactDocumentID))
                     return resolve({ error: true, message: 'Request params contactDocumentID invalid', status: 400 });
 
@@ -338,16 +344,15 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await HUMAN__CONTACT_DOCUMENT_COLL.findById(contactDocumentID)
                                     .select(select)
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", keyError: KEY_ERROR.GET_INFO_FAILED, status: 403 });
+
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
@@ -363,13 +368,15 @@ class Model extends BaseModel {
     getList({
         companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
         certificateType, certificateName, certificateGrade, isToDate5Month,
-        keyword, limit = 10, lastestID, select, populates= {}, userID }) {
+        keyword, limit = 10, lastestID, select, populates= {}, userID, ctx }) {
             // console.log({companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
             //     certificateType, certificateName, certificateGrade, isToDate5Month,
             //     keyword, limit, lastestID, select, populates, userID})
         return new Promise(async (resolve) => {
             try {
-                
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if(limit > 20){
                     limit = 20
                 } else{
@@ -534,7 +541,7 @@ class Model extends BaseModel {
     getListByFilter({
         parentID, companyID, receiverID, types, isExportExcel = false,
         requestResponse, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
+        keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders, ctx }) {
         //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
         //     console.log({
         //         parentID, companyID, receiverID, types, isExportExcel,
@@ -542,6 +549,9 @@ class Model extends BaseModel {
         // keyword, limit, lastestID, select, populates, isParent, type, genders })
         return new Promise(async (resolve) => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 if(limit > 20){
                     limit = 20;
                 } else{
@@ -787,9 +797,12 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcel({ userID, companyID, type, filterParams }) {
+    exportExcel({ userID, companyID, type, filterParams, ctx }) {
         return new Promise(async resolve => {
             try {
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
                 let conditionObj = {};
                 let resultGetList = { error: true };
 
@@ -799,7 +812,7 @@ class Model extends BaseModel {
                             ...filterParams,
                             userID,
                             companyID,
-                            isExportExcel: true
+                            isExportExcel: true, ctx
                         });
                         break;
                     case '2':
@@ -807,7 +820,7 @@ class Model extends BaseModel {
                             ...filterParams,
                             userID,
                             companyID,
-                            isExportExcel: true
+                            isExportExcel: true, ctx
                         });
                         break;
                     default:
@@ -815,7 +828,7 @@ class Model extends BaseModel {
                             ...filterParams,
                             userID,
                             companyID,
-                            isExportExcel: true
+                            isExportExcel: true, ctx
                         });
                         break;
                 }

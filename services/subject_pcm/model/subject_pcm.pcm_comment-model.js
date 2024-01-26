@@ -13,6 +13,7 @@ const { checkObjectIDs, IsJsonString, validateParamsObjectID }          = requir
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
 
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
@@ -24,16 +25,27 @@ const stringUtils					            = require('../../../tools/utils/string_utils')
 /**
  * import inter-coll, exter-coll
  */
-// const AUTH__COMPANY_COLL                        = require('../../auth/database/auth.company-coll');
 const DEPARTMENT_COLL                           = require('../../item/database/item.department-coll');
-// const PCM_PLAN_GROUP_COLL                       = require('../database/subject_pcm.pcm_plan_group-coll');
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
 const PCM_FILE_COLL                             = require('../database/subject_pcm.pcm_file-coll');
-const { ObjectID } = require('mongodb');
 const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
+
+let dataTF = {
+    appID: "5eabfdc72171391e5f6a0468", // PCM
+    menuID: "623ef213e998e94feda0ccd8", //
+    type: 1, 
+    action: 1, // Xem
+}
+
+let dataTF2 = {
+    appID: "5eabfdc72171391e5f6a0468", // PCM
+    menuID: "623ef213e998e94feda0ccd8", //
+    type: 1, 
+    action: 2, // Thêm
+}
 
 class Model extends BaseModel {
 
@@ -194,9 +206,6 @@ class Model extends BaseModel {
         // console.log({ taskID, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
         return new Promise(async resolve => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 const TYPE_COMMENT = [
                     this.COMMENT_PCM,
                     this.RESPONSE_PCM,
@@ -204,6 +213,15 @@ class Model extends BaseModel {
                     this.RESPONSE_SOLUTION,
                     this.RECORD_TASK_FOR_SEARCH
                 ];
+                if(!TYPE_COMMENT.includes(type)) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số type không hợp lệ",
+                        keyError: "params_type_invalid",
+                        status: 400
+                    })
+                }
+
                 const dataInsert = {
                     type,
                     task: taskID,
@@ -217,38 +235,6 @@ class Model extends BaseModel {
                 let titleMSS        = '';
                 let descriptionMSS  = '';
                 let languageKey     = '';
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!TYPE_COMMENT.includes(type)) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số type không hợp lệ",
-                        keyError: "params_type_invalid",
-                        status: 400
-                    })
-                }
-
-                if(!checkObjectIDs([taskID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số taskID không hợp lệ",
-                        keyError: "params_taskID_invalid",
-                        status: 400
-                    })
-                }
-
-                if(!checkObjectIDs([authorID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số authorID không hợp lệ",
-                        keyError: "params_authorID_invalid",
-                        status: 400
-                    })
-                }
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -602,19 +588,8 @@ class Model extends BaseModel {
                             dataSend,
                             web_url: webUrl,
                             env: ENV_DEVICE_WEB_CBS
-                        });
-
-                        // // App FNB
-                        // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        //     users: [receiverId],
-                        //     title: titleMSS,
-                        //     description: descriptionMSS,
-                        //     amountNoti: amountNoti?.data?.amountUnreadTask,
-                        //     dataSend,
-                        //     web_url: webUrl,
-                        //     env: ENV_DEVICE_APP_FNB
-                        // })
-                    });
+                        })
+                    })
                     await Promise.all(sendNotiAsync);
                 }
 
@@ -626,6 +601,9 @@ class Model extends BaseModel {
 
                 // Cung cấp về cho Mobile
                 infoAfterInsert.receiversNoti = arrReceiver;
+
+                // Record Traffic
+                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {

@@ -76,7 +76,7 @@ module.exports = {
                 let { parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({ authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount });
+                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({ authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, ctx });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -166,7 +166,7 @@ module.exports = {
 
                 // console.log(contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers)
 
-                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.update({contactID, company: company._id, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers});
+                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.update({contactID, company: company._id, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, insuranceFee, image, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, ctx});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -244,7 +244,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(contactID || linkUserID){
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getInfo({
-                        contactID, linkUserID, select, populates
+                        contactID, linkUserID, select, populates, ctx
                     });
                 }else{
                     // resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
@@ -255,7 +255,7 @@ module.exports = {
                     // });
 
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, month, keyword, limit, lastestID, select, populates, userID
+                        isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, month, keyword, limit, lastestID, select, populates, userID, ctx
                     })
                 }
 
@@ -300,7 +300,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListByFilter({
-                    userID, parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, populates, isParent, type, genders
+                    userID, parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, populates, isParent, type, genders, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -343,7 +343,7 @@ module.exports = {
                     companyID: company._id,
                     option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey,
-                     userID
+                     userID, ctx
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -372,7 +372,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let {
                     keyword, limit, lastestID, select, populates } = ctx.params;
-                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListOfSystem({ keyword, limit, lastestID, select, populates });
+                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListOfSystem({ keyword, limit, lastestID, select, populates, ctx });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -409,7 +409,7 @@ module.exports = {
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListAccessByContract({
                     option,
                     keyword, limit, lastestID, select, populates,
-                    userID
+                    userID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -435,7 +435,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.downloadTemplateImportExcel({
-                    companyID: company._id, userID
+                    companyID: company._id, userID, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -497,7 +497,7 @@ module.exports = {
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcel({
-                    userID, companyID, filterParams
+                    userID, companyID, filterParams, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -527,7 +527,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcelByFilter({
-                    userID, companyID, filterParams
+                    userID, companyID, filterParams, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

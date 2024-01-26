@@ -195,11 +195,11 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(orderID){
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getInfo({
-                        orderID, select, populates,
+                        orderID, select, populates, ctx
                     })
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        option, companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID
+                        option, companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID, ctx
                     })
                 }
 
@@ -238,7 +238,7 @@ module.exports = {
                 let { option, optionGroup, optionStatus, optionTime, fundasID, customerID, year, month, fromDate, toDate, staffID, optionStar, voucherType } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
-                    companyID: company._id, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar, voucherType
+                    companyID: company._id, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar, voucherType, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

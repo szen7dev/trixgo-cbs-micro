@@ -293,12 +293,12 @@ module.exports = {
                 let resultAfterCallHandler;
                 if (voucherID) {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getInfo({
-                        voucherID, userID, select, populates
+                        voucherID, userID, select, populates, ctx
                     });
                 } else {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getList({
                         userID, companyID, fundaID, projectID, customerID, contractID, fromDate, toDate, type, vat, userCreateID, 
-                        keyword, limit, lastestID, select, populates, sortKey
+                        keyword, limit, lastestID, select, populates, sortKey, ctx
                     })
 
                     // console.log(resultAfterCallHandler)
