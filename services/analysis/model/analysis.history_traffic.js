@@ -55,7 +55,7 @@ class Model extends BaseModel {
                     dataInsert.type = +type;
                 }
 
-                if(type){
+                if(action){
                     dataInsert.action = +action;
                 }
 
