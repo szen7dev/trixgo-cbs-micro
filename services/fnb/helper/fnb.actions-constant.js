@@ -11,6 +11,7 @@ const MISTAKE                    = 'MISTAKE';
 const VOUCHER                    = 'VOUCHER';
 const ZALOOA                     = 'ZALOOA';
 const CUSTOMER_CARE              = 'CUSTOMER_CARE';
+const NETWORK_COM                = 'NETWORK_COM';
 
 const CF_ACTIONS_FNB = {
   
@@ -115,6 +116,18 @@ const CF_ACTIONS_FNB = {
    CUSTOMER_CARE_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${CUSTOMER_CARE}_DOWNLOAD_TEMPLATE_EXCEL`,
    CUSTOMER_CARE_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${CUSTOMER_CARE}_IMPORT_FROM_EXCEL`,
    CUSTOMER_CARE_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${CUSTOMER_CARE}_EXPORT_EXCEL`,
+
+   /**
+   * NETWORK_COM
+   */
+   NETWORK_COM_INSERT                                    : `${BASE_ACTIONS}_${NETWORK_COM}_INSERT`,
+   NETWORK_COM_UPDATE                                    : `${BASE_ACTIONS}_${NETWORK_COM}_UPDATE`,
+   NETWORK_COM_REMOVE                                    : `${BASE_ACTIONS}_${NETWORK_COM}_REMOVE`,
+   NETWORK_COM_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${NETWORK_COM}_GET_INFO_AND_GET_LIST`,
+   NETWORK_COM_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${NETWORK_COM}_GET_LIST_BY_PROPERTY`,
+   NETWORK_COM_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${NETWORK_COM}_DOWNLOAD_TEMPLATE_EXCEL`,
+   NETWORK_COM_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${NETWORK_COM}_IMPORT_FROM_EXCEL`,
+   NETWORK_COM_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${NETWORK_COM}_EXPORT_EXCEL`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;

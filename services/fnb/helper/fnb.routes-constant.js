@@ -11,6 +11,7 @@ const MISTAKE               = '/mistakes';
 const VOUCHER               = '/vouchers';
 const ZALOOA                = '/zalooas';
 const CUSTOMER_CARE         = '/customer_cares';
+const NETWORK_COM           = '/network_coms';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -76,6 +77,13 @@ const CF_ROUTINGS_FNB = {
     CUSTOMER_CARE_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${CUSTOMER_CARE}/download-template-excel`,
     CUSTOMER_CARE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${CUSTOMER_CARE}/import-from-excel`,
     CUSTOMER_CARE_EXPORT_EXCEL                    : `${BASE_ROUTE}${CUSTOMER_CARE}/export-excel`,
+
+    //================================FNB_NETWORK_COM=======================================//
+    NETWORK_COMS                                : `${BASE_ROUTE}${NETWORK_COM}`,
+    NETWORK_COM_GET_LIST_BY_PROPERTY            : `${BASE_ROUTE}${NETWORK_COM}/get-list-by-property`,
+    NETWORK_COM_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${NETWORK_COM}/download-template-excel`,
+    NETWORK_COM_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${NETWORK_COM}/import-from-excel`,
+    NETWORK_COM_EXPORT_EXCEL                    : `${BASE_ROUTE}${NETWORK_COM}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;

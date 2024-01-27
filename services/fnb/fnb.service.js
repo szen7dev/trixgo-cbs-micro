@@ -12,6 +12,7 @@ const FNB__SHIFT_HANDLER  			 		= require('./handler/fnb.shift-handler');
 const FNB__MISTAKE_HANDLER  			 	= require('./handler/fnb.mistake-handler');
 const FNB__VOUCHER_HANDLER  				= require('./handler/fnb.voucher-handler');
 const FNB__CUSTOMER_CARE_HANDLER  			= require('./handler/fnb.customer_care-handler');
+const FNB__NETWORK_COM_HANDLER  			= require('./handler/fnb.network_com-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
@@ -20,6 +21,7 @@ const FNB__SHIFT_COLL  			 			= require('./database/fnb.shift-coll');
 const FNB__MISTAKE_COLL  			 		= require('./database/fnb.mistake-coll');
 const FNB__VOUCHER_COLL  					= require('./database/fnb.voucher-coll');
 const FNB__CUSTOMER_CARE_COLL  				= require('./database/fnb.customer_care-coll');
+const FNB__NETWORK_COM_COLL  				= require('./database/fnb.network_com-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FNB,
@@ -31,6 +33,7 @@ module.exports = {
 		DbService(FNB__MISTAKE_COLL),
 		DbService(FNB__VOUCHER_COLL),
 		DbService(FNB__CUSTOMER_CARE_COLL),
+		DbService(FNB__NETWORK_COM_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -126,6 +129,16 @@ module.exports = {
 		[CF_ACTIONS_FNB.CUSTOMER_CARE_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__CUSTOMER_CARE_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.CUSTOMER_CARE_IMPORT_FROM_EXCEL]						: FNB__CUSTOMER_CARE_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.CUSTOMER_CARE_EXPORT_EXCEL]								: FNB__CUSTOMER_CARE_HANDLER.exportExcel,
+
+		//========================================== FNB_NETWORK_COM ==============================================//
+		[CF_ACTIONS_FNB.NETWORK_COM_INSERT]									: FNB__NETWORK_COM_HANDLER.insert,
+		[CF_ACTIONS_FNB.NETWORK_COM_UPDATE]									: FNB__NETWORK_COM_HANDLER.update,
+		[CF_ACTIONS_FNB.NETWORK_COM_REMOVE]									: FNB__NETWORK_COM_HANDLER.remove,
+		[CF_ACTIONS_FNB.NETWORK_COM_GET_INFO_AND_GET_LIST]					: FNB__NETWORK_COM_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.NETWORK_COM_GET_LIST_BY_PROPERTY]					: FNB__NETWORK_COM_HANDLER.getListByProperty,
+		[CF_ACTIONS_FNB.NETWORK_COM_DOWNLOAD_TEMPLATE_EXCEL]				: FNB__NETWORK_COM_HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_FNB.NETWORK_COM_IMPORT_FROM_EXCEL]						: FNB__NETWORK_COM_HANDLER.importFromExcel,
+		[CF_ACTIONS_FNB.NETWORK_COM_EXPORT_EXCEL]							: FNB__NETWORK_COM_HANDLER.exportExcel,
 	},
 
 	/**
