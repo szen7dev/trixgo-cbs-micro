@@ -57,7 +57,7 @@ const {
  } = require('../helper/fnb.keys-constant')
 
 
- let dataTF = {
+let dataTF = {
     appID: "61e04971fdebf77b072d1b0f", // FNB
     menuID: "63af81debe33df0012ecaeca", //
     type: 1, 
