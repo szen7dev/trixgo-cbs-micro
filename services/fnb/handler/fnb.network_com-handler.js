@@ -2,6 +2,7 @@
  * TOOLS
  */
  const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+ const moment = require('moment');
 
  /**
   * MODELS
@@ -86,16 +87,16 @@
      */
     remove: {
         auth: "required",
-        params: {
-        productID   : { type: "string" }
+            params: {
+            networkID   : { type: "string" }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  productID } = ctx.params;
+                let {  networkID } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_NETWORK_COM_MODEL.remove({
-                productID
+                    networkID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -112,36 +113,35 @@
     getInfoAndGetList: {
         auth: "required",
         params: {
-        productID   : { type: "string", optional: true },
-        fundaID     : { type: "string", optional: true },
-        parentID    : { type: "string", optional: true },
-        type        : { type: "string", optional: true },
-        isParent    : { type: "string", optional: true },
-        convertOption    : { type: "string", optional: true },
-        status      : { type: "string", optional: true },
+            networkID   : { type: "string", optional: true },
+            option      : { type: "string", optional: true },
 
-        //==============================================
-        keyword     : { type: "string", optional: true },
-        limit       : { type: "string", optional: true },
-        lastestID   : { type: "string", optional: true },
-        select      : { type: "string", optional: true },
-        populates   : { type: "string", optional: true },
+            //==============================================
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { productID, parentID, fundaID, type, isParent, convertOption, keyword, limit, lastestID, select, populates, status } = ctx.params;
+                let { option, networkID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
-                const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID, contacts, company } = ctx.meta.infoUser;
+
+                // Convert dữ liệu ngày tháng để theo chuẩn chung
+                fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler;
-                if(productID){
+                if(networkID){
                     resultAfterCallHandler = await FNB_NETWORK_COM_MODEL.getInfo({
-                    productID, select, populates,
+                        networkID, select, populates,
                     });
                 }else{
                     resultAfterCallHandler = await FNB_NETWORK_COM_MODEL.getList({
-                        companyID: company._id, parentID, fundaID, type, isParent, convertOption, keyword, limit, lastestID, select, populates, userID, status
+                        userID, contacts, companyID: company._id, option, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
 
@@ -161,38 +161,26 @@
         auth: "required",
         params: {
             option          : { type: "string", optional: true },
-            optionAccount   : { type: "string", optional: true },
-            optionTerm      : { type: "string", optional: true },
-            fromDate        : { type: "string", optional: true },
-            toDate          : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            name            : { type: "string", optional: true },
-            arrAccNames     : { type: "array", optional: true },
-            arrAccIDs       : { type: "array", optional: true },
-            arrCompanyIDs   : { type: "array", optional: true },
-            arrFundaIDs     : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, optionAccount, optionTerm, optionCal, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID } = ctx.params;
+                let { option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status } = ctx.params;
                 
-                const { _id: userID, company, contacts } = ctx.meta.infoUser;
+                const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
-                // console.log({option, optionAccount, optionTerm, optionCal, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID})
+                // Convert dữ liệu ngày tháng để theo chuẩn chung
+                fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+
+                // console.log({ option, optionGroup })
 
                 if(!companyID){
                     companyID = company._id
                 }
 
-                /**
-                 * Convert dữ liệu ngày tháng để theo chuẩn chung
-                 */
-                fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-                toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-
                 let resultAfterCallHandler = await FNB_NETWORK_COM_MODEL.getListByProperty({
-                    userID, contacts, option, optionAccount, optionTerm, optionCal, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID, ctx
+                    userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

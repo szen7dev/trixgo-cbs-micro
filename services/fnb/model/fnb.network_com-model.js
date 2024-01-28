@@ -12,6 +12,10 @@ const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
+const { isValidDate }                   = require('../../../tools/utils/time_utils')
+
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
+const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 
 
 /**s
@@ -22,6 +26,19 @@ const FNB_NETWORK_COM_COLL                         = require('../database/fnb.ne
 /**
  * import inter-model, exter-model
  */
+
+let dataTF = {
+    appID: "61e04971fdebf77b072d1b0f", // FNB
+    menuID: "63af81debe33df0012ecaeca", //
+    type: 1, 
+    action: 1, // Xem
+}
+let dataTF2 = {
+    appID: "61e04971fdebf77b072d1b0f", // FNB
+    menuID: "63af81debe33df0012ecaeca", //
+    type: 1,
+    action: 2, // Thêm
+}
 class Model extends BaseModel {
 
     constructor() {
@@ -203,46 +220,54 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, parentID, fundaID, type, isParent, convertOption, keyword, limit = 10, lastestID, select, populates, sortKey, userID, status }) {
-        // console.log({ companyID, parentID, fundaID, type, isParent, convertOption, keyword, limit, lastestID, select, populates, sortKey, userID, status })
+    getList({ option, userID, contacts, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit = 10, lastestID, select, populates, sortKey }) {
+        // console.log({ option, userID, contacts, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit, lastestID, select, populates, sortKey })
         return new Promise(async (resolve) => {
             try {
+
                 if(Number(limit) > 50){
                     limit = 50;
                 } else{
                     limit = +Number(limit);
                 }
 
-                let conditionObj = { company : ObjectID(companyID) }
+                let conditionObj = {}
                 let sortBy;
-                // let keys	 = ['createAt__-1'];
-                let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['date__-1', '_id__-1'];
 
-                if(fundaID && checkObjectIDs(fundaID)){
-                    conditionObj.fundas = {$in: [fundaID]}
+                // Theo userID đang truy cập
+                if(!option){
+                    // console.log('========000000000000')
+                    let listContacts = []
+                    if(contacts && contacts.length){
+                        listContacts = contacts.map(item => ObjectID(item._id))
+                    }
+
+                    conditionObj.upline = {$in: listContacts}
                 }
 
-                if(parentID && checkObjectIDs(parentID)){
-                    conditionObj.parent = ObjectID(parentID);
+                // Theo hệ thống cụ thể
+                else if(option && option == 1){
+                    // console.log('========11111111111111')
+                    conditionObj.upline = ObjectID(uplineID)
                 }
 
-                // Chỉ lấy danh mục
-                if(isParent && Number(isParent) == 1){
-                    conditionObj.parent = { $exists: false }
+                // Theo phân vùng
+                else if(option && option == 2){
+                    // console.log('========22222222222222')
+                    conditionObj.company = ObjectID(companyID)
                 }
 
-                // Phân loại (sản phẩm chính/topping)
-                if(type && !isNaN(type)){
-                    conditionObj.type = Number(type)
-                }
-
-                // Theo trạng thái sản phẩm
+                // Theo trạng thái
                 if(status && !isNaN(status)){
                     conditionObj.status = Number(status)
                 }
 
-                if(convertOption){
-                    conditionObj.convertOption = Number(convertOption)
+                if(isValidDate(fromDate) && isValidDate(toDate)){
+                    conditionObj.date = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
                 }
 
                 // Làm rõ mục đích để làm gì?
@@ -252,6 +277,7 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
+
                 // console.log(conditionObj)
 
                 /**
@@ -269,18 +295,18 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(keyword){
-                    let keywordCV =  stringUtils.removeAccents(keyword)
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    const regSearch = new RegExp(keyword, 'i');
+                // if(keyword){
+                //     let keywordCV =  stringUtils.removeAccents(keyword)
+                //     keyword = keyword.split(" ");
+                //     keyword = '.*' + keyword.join(".*") + '.*';
+                //     const regSearch = new RegExp(keyword, 'i');
                     
-                    keywordCV = keywordCV.split(" ");
-                    keywordCV = '.*' + keywordCV.join(".*") + '.*';
-                    const regCVSearch = new RegExp(keywordCV, 'i');
+                //     keywordCV = keywordCV.split(" ");
+                //     keywordCV = '.*' + keywordCV.join(".*") + '.*';
+                //     const regCVSearch = new RegExp(keywordCV, 'i');
 
-                    conditionObj.namecv = regCVSearch
-                }
+                //     conditionObj.namecv = regCVSearch
+                // }
 
                 if(select && typeof select === 'string'){
                     if(!IsJsonString(select))
@@ -343,22 +369,138 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date  : 10/4/2022
      */
-    getListByProperty({ option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts, ctx }) {
+    getListByProperty({ userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, ctx }) {
         // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        // console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
+        // console.log({ userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
                 await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                let conditionObj = {}, conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
-                let conditionGroup = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
-                let conditionMatch = {}, conditionMatchO = {}, conditionMatchOF = {}, conditionMatchFT = {}, conditionMatchIn = {}
-                let listDataO, listDataOF, listDataFT, listDataIn
-                let conditionObjYear = {}
-                let conditionPopulate = {}
+                let conditionObj = {}, conditionProject = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}
                 let sortBy = {"amount": -1}
-                
+
+                // Theo userID đang truy cập
+                if(!option){
+                    // console.log('========000000000000')
+                    let listContacts = []
+                    if(contacts && contacts.length){
+                        listContacts = contacts.map(item => ObjectID(item._id))
+                    }
+
+                    conditionObj.upline = {$in: listContacts}
+                }
+
+                // Theo hệ thống cụ thể
+                else if(option && option == 1){
+                    // console.log('========11111111111111')
+                    conditionObj.upline = ObjectID(uplineID)
+                }
+
+                // Theo phân vùng
+                else if(option && option == 2){
+                    // console.log('========22222222222222')
+                    conditionObj.company = ObjectID(companyID)
+                }
+
+                // Theo trạng thái
+                if(status && !isNaN(status)){
+                    conditionObj.status = Number(status)
+                }
+
+                conditionProject = {
+                    year : {$year : "$date"},
+                    month : {$month : "$date"},
+                    day: { $dayOfMonth: "$date" },
+                    date: 1,
+                    order: 1,
+                    customer: 1,
+                    sale: 1,
+                    amount: 1,
+                    level: 1,
+                    upline: 1,
+                    rate: 1,
+                    commission: 1
+                }
+
+
+                if(!optionGroup){
+                    if(isValidDate(fromDate) && isValidDate(toDate)){
+                        conditionObj.date = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    conditionGroup = {
+                        _id: {  },
+                        quantity: { $sum: 1 },
+                        commission: { $sum: "$commission" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                else if(optionGroup && optionGroup == 1){
+                    conditionGroup = {
+                        _id: { year: "$year" },
+                        quantity: { $sum: 1 },
+                        commission: { $sum: "$commission" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                else if(optionGroup && optionGroup == 2){
+                    if(isValidDate(fromDate) && isValidDate(toDate)){
+                        conditionObj.date = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    conditionGroup = {
+                        _id: { month: "$month" },
+                        quantity: { $sum: 1 },
+                        commission: { $sum: "$commission" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                else if(optionGroup && optionGroup == 3){
+                    if(isValidDate(fromDate) && isValidDate(toDate)){
+                        conditionObj.date = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    conditionGroup = {
+                        _id: { day: "$day" },
+                        quantity: { $sum: 1 },
+                        commission: { $sum: "$commission" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+               
+                console.log('==================')
+                console.log(conditionObj)
+                console.log(conditionGroup)
+
+                let listData = await FNB_NETWORK_COM_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project: conditionProject
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    // {
+                    //     $sort: sortBy
+                    // }
+                ])
+
+                return resolve({ error: false, data: listData })
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
