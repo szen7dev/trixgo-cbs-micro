@@ -356,7 +356,12 @@ class Model extends BaseModel {
                     yearFilter = Number(currentYear)
                 }
 
-                let conditionObj = {}, conditionObjYear = {}
+                let conditionObj = {
+                    userCreate: { $exists: true, $ne: null }, 
+                    companyOfAuthor: { $exists: true, $ne: null },
+                    app: { $exists: true, $ne: null },
+                }, 
+                    conditionObjYear = {}
 
                 if(isValidDate(fromDate) && isValidDate(toDate)){
                     conditionObj.createAt = {
@@ -444,6 +449,7 @@ class Model extends BaseModel {
                             }
                         },
                     ])
+                    // console.log(listData2)
                     let listCompany = await COMPANY_COLL.find({_id: {$in: listData2.map(item => item._id.companyOfAuthor)}}).sort({_id: 1}).select('name')
 
                     let listData3 = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
@@ -475,6 +481,7 @@ class Model extends BaseModel {
                             }
                         },
                     ])
+                    // console.log(listData3)
                     let listUser = await USER_COLL.find({_id: {$in: listData3.map(item => item._id.userCreate)}}).sort({_id: 1}).select('fullname company')
                     .populate({
                         path: 'company',
