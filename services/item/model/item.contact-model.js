@@ -980,16 +980,16 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ option, companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month, ctx }) {
-        // console.log({ option, companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, month })
+    getList({ option, companyID, userID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month, ctx }) {
+        // console.log({ option, companyID, userID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, month })
         return new Promise(async (resolve) => {
             try {
                 /**
                  * BA
                  * https://www.w3resource.com/mongodb/mongodb-where-operators.php#:~:text=The%20MongoDB%20%24where%20operator%20is,referred%20as%20this%20or%20obj.
                  */
-                if(Number(limit) > 5){
-                    limit = 5;
+                if(Number(limit) > 10){
+                    limit = 10;
                 } else{
                     limit = +Number(limit);
                 }
@@ -1002,8 +1002,12 @@ class Model extends BaseModel {
                 if(option && option == 1 && contacts && contacts.length){
                     let listContacts = contacts.map(item => ObjectID(item._id))
 
-                    // conditionObj.nestedParents = {$in: listContacts}
-                    conditionObj.nestedParents = {$in: [listContacts[0]]}
+                    conditionObj.nestedParents = {$in: listContacts}
+                    // conditionObj.nestedParents = {$in: [listContacts[0]]}
+                }
+
+                if(option && option == 2){
+                    conditionObj.nestedParents = {$in: [uplineID]}
                 }
 
                 // Theo phân loại

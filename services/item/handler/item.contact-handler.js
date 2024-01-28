@@ -206,7 +206,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    option, companyID, fundaID, voucherID, contactID, type, isBirthday, parentID, month,
+                    option, companyID, uplineID, fundaID, voucherID, contactID, type, isBirthday, parentID, month,
                     keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID
                 } = ctx.params;
 				const { _id: userID, contacts, company } = ctx.meta.infoUser;
@@ -222,7 +222,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        option, companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, keyword, limit, lastestID, select, populates, ctx
+                        option, companyID, userID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, keyword, limit, lastestID, select, populates, ctx
                     })
                 }
 
