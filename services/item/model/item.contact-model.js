@@ -980,8 +980,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month, ctx }) {
-        // console.log({ companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, month })
+    getList({ option, companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month, ctx }) {
+        // console.log({ option, companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, month })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -999,7 +999,7 @@ class Model extends BaseModel {
                 let keys	 = ['createAt__-1', '_id__-1']
 
                 // Theo user đang truy cập
-                if(contacts && contacts.length){
+                if(option && option == 1 && contacts && contacts.length){
                     let listContacts = contacts.map(item => ObjectID(item._id))
 
                     // conditionObj.nestedParents = {$in: listContacts}
