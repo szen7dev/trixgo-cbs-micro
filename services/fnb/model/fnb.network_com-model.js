@@ -413,6 +413,7 @@ class Model extends BaseModel {
                     month : {$month : "$date"},
                     day: { $dayOfMonth: "$date" },
                     dayOfWeek: { $dayOfWeek: "$date" },
+                    hour : {$hour : "$date"},
                     date: 1,
                     order: 1,
                     customer: 1,
@@ -423,7 +424,6 @@ class Model extends BaseModel {
                     rate: 1,
                     commission: 1
                 }
-
 
                 if(!optionGroup){
                     if(isValidDate(fromDate) && isValidDate(toDate)){
@@ -492,6 +492,22 @@ class Model extends BaseModel {
 
                     conditionGroup = {
                         _id: { dayOfWeek: "$dayOfWeek" },
+                        quantity: { $sum: 1 },
+                        commission: { $sum: "$commission" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                else if(optionGroup && optionGroup == 5){
+                    if(isValidDate(fromDate) && isValidDate(toDate)){
+                        conditionObj.date = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    conditionGroup = {
+                        _id: { hour: "$hour" },
                         quantity: { $sum: 1 },
                         commission: { $sum: "$commission" },
                         amount: { $sum: "$amount" },
