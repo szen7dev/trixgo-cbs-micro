@@ -1007,7 +1007,7 @@ class Model extends BaseModel {
                 }
 
                 if(option && option == 2){
-                    conditionObj.nestedParents = {$in: [uplineID]}
+                    conditionObj.nestedParents = {$in: [ObjectID(uplineID)]}
                 }
 
                 // Theo phân loại
@@ -1019,14 +1019,11 @@ class Model extends BaseModel {
                 if(isBirthday == 1){
                     const day = (new Date()).getDate()
                     const month = (new Date()).getMonth()
-                    // console.log({day})
-                    // console.log({month})
                     conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
                 }
 
                 // Danh sách sinh nhật theo tháng
                 if(month){
-                    // console.log({month})
                     conditionObj.$where = `return this.birthday && this.birthday.getMonth() === ${Number(month - 1)}`
                 }
 
@@ -1380,8 +1377,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 30/7/2023
      */
-    getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID, ctx }) {
-        // console.log({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
+    getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate, userID, contacts, ctx }) {
+        // console.log({ companyID, option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate, userID, contacts })
         return new Promise(async (resolve) => {
             let duration = getTimeBetween(toDate, fromDate)
             try {
@@ -1397,9 +1394,6 @@ class Model extends BaseModel {
                     let conditionGroup = {}, conditionProject = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
 
-                    /**
-                     * VALIDATION (1)
-                     */
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
                     });
@@ -1428,7 +1422,8 @@ class Model extends BaseModel {
                         sector2 : 1,
                         sector3 : 1,
                         new : 1,
-                        joinedDate : 1
+                        joinedDate : 1,
+                        nestedParents : 1,
                     }
 
                     // Phân loại theo thời khoảng
@@ -1517,6 +1512,9 @@ class Model extends BaseModel {
                         }
                     }
 
+                     /**
+                     * Gom nhóm theo Sinh nhật
+                     */
                     if(option && Number(option) == 5){
                         conditionObj.birthday = {$exists: true, $ne: null}
                         conditionGroup = {
@@ -1531,6 +1529,29 @@ class Model extends BaseModel {
                             birthday : 1
                         }
                         sortBy = {"_id.month": 1}
+                    }
+
+                    /**
+                     * Gom nhóm theo Tuyến dưới
+                     */
+                    if(option && Number(option) == 6){
+
+                        // Theo user đang truy cập
+                        if(optionGroup && optionGroup == 1 && contacts && contacts.length){
+                            let listContacts = contacts.map(item => ObjectID(item._id))
+
+                            conditionObj = { nestedParents: {$in: listContacts} }
+                            // conditionObj = { nestedParents: {$in:  [listContacts[0]]} }
+                        }
+
+                        if(optionGroup && optionGroup == 2){
+                            conditionObj = { nestedParents: {$in: [ObjectID(uplineID)]} }
+                        }
+
+                        conditionGroup = {
+                            _id: { },
+                            quantity: { $sum: 1 }
+                        }
                     }
 
                     // console.log(conditionObj)
