@@ -412,6 +412,7 @@ class Model extends BaseModel {
                     year : {$year : "$date"},
                     month : {$month : "$date"},
                     day: { $dayOfMonth: "$date" },
+                    dayOfWeek: { $dayOfWeek: "$date" },
                     date: 1,
                     order: 1,
                     customer: 1,
@@ -480,10 +481,26 @@ class Model extends BaseModel {
                         amount: { $sum: "$amount" },
                     }
                 }
+
+                else if(optionGroup && optionGroup == 4){
+                    if(isValidDate(fromDate) && isValidDate(toDate)){
+                        conditionObj.date = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    conditionGroup = {
+                        _id: { dayOfWeek: "$dayOfWeek" },
+                        quantity: { $sum: 1 },
+                        commission: { $sum: "$commission" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
                
-                console.log('==================')
-                console.log(conditionObj)
-                console.log(conditionGroup)
+                // console.log('==================')
+                // console.log(conditionObj)
+                // console.log(conditionGroup)
 
                 let listData = await FNB_NETWORK_COM_COLL.aggregate([
                     {

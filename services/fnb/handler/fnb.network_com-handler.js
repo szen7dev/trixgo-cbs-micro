@@ -130,7 +130,7 @@
 
                 const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
-                // Convert dữ liệu ngày tháng để theo chuẩn chung
+                // Convert dữ liệu ngày tháng để theo chuẩn chung: startOf của ngày bắt đầu, endOf của ngày kết thúc
                 fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
@@ -169,7 +169,7 @@
                 
                 const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
-                // Convert dữ liệu ngày tháng để theo chuẩn chung
+                // Convert dữ liệu ngày tháng để theo chuẩn chung: startOf của ngày bắt đầu, endOf của ngày kết thúc
                 fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
