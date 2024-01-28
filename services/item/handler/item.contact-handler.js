@@ -302,15 +302,15 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID, company } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
+				const { _id: userID, contacts, company } = ctx.meta.infoUser;
+                let { option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListByProperty({
                     companyID: company._id,
-                    option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
+                    option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey,
-                     userID, ctx
+                     userID, contacts, ctx
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
