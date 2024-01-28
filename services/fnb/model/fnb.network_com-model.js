@@ -65,10 +65,6 @@ class Model extends BaseModel {
 
                 if(orderID && checkObjectIDs(orderID)){
                     dataInsert.order = orderID;
-
-                    // let infoParent = await FNB_NETWORK_COM_COLL.findById(parentID);
-                    // dataInsert.parent = parentID;
-                    // dataInsert.level = infoParent.level + 1;
                 }
 
                 if(customerID && checkObjectIDs(customerID)){

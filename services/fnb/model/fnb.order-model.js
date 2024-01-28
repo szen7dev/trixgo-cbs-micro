@@ -34,12 +34,14 @@ const FNB_MISTAKE_COLL                          = require('../database/fnb.mista
 const FNB_VOUCHER_COLL                          = require('../database/fnb.voucher-coll');
 const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const FIN__CASH_PAYMENT_COLL                    = require('../../fin/database/fin.cash_payment-coll');
+// const FNB_NETWORK_COM_COLL                      = require('../database/fnb.network_com-coll');
 
 /**
  * import inter-model, exter-model
  */
 const FNB_ORDER_PRODUCT_MODEL                   = require('./fnb.order_product-model').MODEL;
 const FNB_ORDER_VOUCHER_MODEL                   = require('./fnb.voucher-model').MODEL;
+const FNB_NETWORK_COM_MODEL                     = require('./fnb.network_com-model').MODEL;
 
 const XlsxPopulate                              = require('xlsx-populate')
 const fs                                        = require('fs')
@@ -53,7 +55,8 @@ const {
     FNB_SHIFT_TYPES,
     FNB_SALES_CHANNEL,
     FNB_PAYMENT_METHOD,
-    FNB_STATUS
+    FNB_STATUS,
+    FNB_AFFILIATE_COM
  } = require('../helper/fnb.keys-constant')
 
 
@@ -215,12 +218,8 @@ class Model extends BaseModel {
                     dataInsert.date = date;
                 }
 
+                // affiliateID
                 if(affiliateID && checkObjectIDs(affiliateID)){
-                    let infoAffiliate = await ITEM__CONTACT_COLL.findById(affiliateID)
-                    if(infoAffiliate && infoAffiliate.sale){
-                        dataInsert.sale = infoAffiliate.sale
-                    }
-                    
                     dataInsert.affiliate = affiliateID
                 }
 
@@ -917,6 +916,49 @@ class Model extends BaseModel {
                             }
                             await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2)
                         }
+                    }
+                }
+
+                 /**
+                 * QUẢN LÝ TIẾP THỊ LIÊN KẾT
+                 * - Kinh doanh theo mạng lưới
+                 * - Trả hoa hồng theo hệ thống
+                 * - Lấy các cấp trên và trả hoa hồng theo cấp trên
+                 */
+                 if(affiliateID && checkObjectIDs(affiliateID)){
+                    let infoAffiliate = await ITEM__CONTACT_COLL.findById(affiliateID)
+                    .select('nestedParents name sale')
+                    .populate({
+                        path: 'nestedParents',
+                        select: 'level name phone'
+                    })
+                    // console.log('===========================================')
+                    // console.log(infoAffiliate)
+
+                    // Xử lý trả hoa hồng cho cấp trên theo FNB_AFFILIATE_COM
+                    let getMaxLevel = 1
+                    for(const item of infoAffiliate.nestedParents){
+                        if(item.level > getMaxLevel){
+                            getMaxLevel = item.level
+                        }
+                    }
+                    // console.log({getMaxLevel})
+
+                    for(const item of infoAffiliate.nestedParents){
+                        let networkLevel = Number(getMaxLevel - item.level + 1)
+                        let infoNetworkCom = await FNB_NETWORK_COM_MODEL.insert({
+                            userID, 
+                            companyID: infoFunda.company, 
+                            orderID: infoAfterInsert._id, 
+                            customerID, 
+                            saleID: affiliateID, 
+                            amount, 
+                            uplineID: item._id, 
+                            level: networkLevel, // Người cha đứng cạnh đầu tiên => cấp 1
+                            rate: FNB_AFFILIATE_COM[Number(networkLevel - 1)].rate, 
+                            commission: Number(FNB_AFFILIATE_COM[Number(networkLevel - 1)].rate) * amount/100, 
+                        })
+                        // console.log({infoNetworkCom})
                     }
                 }
 

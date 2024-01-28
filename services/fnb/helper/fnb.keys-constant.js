@@ -77,3 +77,17 @@ exports.FNB_STATUS = [
     { value: 4, text: 'Đã hủy' },
     { value: 5, text: 'Hoàn thành' },
 ]
+
+// Cơ chế trả hoa hồng Affiliate
+exports.FNB_AFFILIATE_COM = [
+    { amount: 1000000, rate: 16 },
+    { amount: 1000000, rate: 2.75 },
+    { amount: 2000000, rate: 2.25 },
+    { amount: 5000000, rate: 2.20 },
+    { amount: 5000000, rate: 1.75 },
+    { amount: 5000000, rate: 1.50 },
+    { amount: 5000000, rate: 1.25 },
+    { amount: 5000000, rate: 1.00 },
+    { amount: 5000000, rate: 0.75 },
+    { amount: 5000000, rate: 0.50 },
+]
