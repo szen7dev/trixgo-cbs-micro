@@ -364,7 +364,7 @@ class Model extends BaseModel {
         })
     }
 
-        /**
+    /**
      * Name  : getListByProperty
      * Code: Hiepnh
      * Date  : 10/4/2022
