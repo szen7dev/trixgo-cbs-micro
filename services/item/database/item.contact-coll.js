@@ -21,10 +21,27 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    childs: [{
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    }],
     level: {
         type: Number,
         default: 1 
     },
+    /**
+     * ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU
+     */
+    //_________Toàn bộ các cấp cha bên trên => Dùng để tạo được nestedChilds
+    nestedParents: [{
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    }],
+    //_________Toàn bộ các cấp con bên dưới
+    nestedChilds: [{
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    }],
     //_________Phân loại (1-Nhân viên/2-Khách hàng/3-Nhà cung cấp)
     type: { type: Number, default: 1 },
     //_________Phân loại nhân sự (1-Nhân viên, 2-Cộng tác viên, 3-Chuyên gia)
