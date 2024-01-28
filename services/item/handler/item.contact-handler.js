@@ -188,27 +188,10 @@ module.exports = {
             linkUserID          : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             fundaID             : { type: "string", optional: true },
-            departmentID        : { type: "string", optional: true },
-            positionID          : { type: "string", optional: true },
-            contractTypeID      : { type: "string", optional: true },
-            workingStatusID     : { type: "string", optional: true },
             gender              : { type: "string", optional: true },
-            realStatus          : { type: "string", optional: true },
-            familyPolicy        : { type: "string", optional: true },
-            insuranceStatus     : { type: "string", optional: true },
             companyID           : { type: "string", optional: true },
             isBirthday          : { type: "string", optional: true },
-            isLinkUser          : { type: "string", optional: true },
-            isListParentOrListChilds: { type: "string", optional: true },
-            isMember            : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
-            educationalBackground2: { type: "string", optional: true },
-            field2              : { type: "string", optional: true },
-            typeCertificate     : { type: "string", optional: true },
-            certificateName     : { type: "string", optional: true },
-            certificateGrade    : { type: "string", optional: true },
-            isPartner           : { type: "string", optional: true },
-            isContractExpire4month: { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
 
@@ -223,19 +206,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    companyID, fundaID, voucherID, contactID, type, departmentID, positionID, contractTypeID,
-                    workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
-                    isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate,
-                    certificateName, certificateGrade, isPartner, isContractExpire4month, month,
+                    companyID, fundaID, voucherID, contactID, type, isBirthday, parentID, month,
                     keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID
                 } = ctx.params;
-				const { _id: userID, company } = ctx.meta.infoUser;
-
-                // console.log({companyID, fundaID, voucherID, contactID, type, departmentID, positionID, contractTypeID,
-                //     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds,
-                //     isMember, parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate,
-                //     certificateName, certificateGrade, isPartner, isContractExpire4month, month,
-                //     keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID })
+				const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
@@ -247,15 +221,8 @@ module.exports = {
                         contactID, linkUserID, select, populates, ctx
                     });
                 }else{
-                    // resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                    //     companyID, fundaID, voucherID, type, departmentID, positionID, contractTypeID,
-                    //     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
-                    //     parentID, realStatus, familyPolicy, educationalBackground2, field2, typeCertificate, certificateName, certificateGrade, isPartner, isContractExpire4month, month,
-                    //     lastestID, userID, keyword, limit, select, populates, fromDate, toDate
-                    // });
-
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, month, keyword, limit, lastestID, select, populates, userID, ctx
+                        companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, keyword, limit, lastestID, select, populates, ctx
                     })
                 }
 

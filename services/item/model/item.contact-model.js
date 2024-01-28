@@ -14,6 +14,7 @@ const { checkObjectIDs, IsJsonString, validateParamsObjectID, regexPhoneNumber }
 const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 }                  = require('../../../tools/s3')
+const { isValidDate }                   = require('../../../tools/utils/time_utils')
 
 const { 
     CONTACT_CLASSIFY,
@@ -211,10 +212,17 @@ class Model extends BaseModel {
                     dataInsert.property = property;
                 }
 
+                /**
+                 * PHẦN TỬ CHA
+                 */
+                let infoParent
                 if(parent && checkObjectIDs(parent)){
-                    dataInsert.parent = parent;
-                    let infoMenuParent = await ITEM__CONTACT_COLL.findById(parent);
-                    dataInsert.level = infoMenuParent.level + 1;
+                    dataInsert.parent = parent
+                    dataInsert.nestedParents = [parent] // Cha cấp 1
+
+                    // Cập nhật Level để phục vụ việc tính toán, đệ quy
+                    infoParent = await ITEM__CONTACT_COLL.findById(parent)
+                    dataInsert.level = infoParent.level + 1
                 }
 
                 if(workingStatus && checkObjectIDs(workingStatus)){
@@ -341,11 +349,40 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert, authorID)
                 // console.log(infoAfterInsert)
 
-                if(parent) {
-                    await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
-                        $addToSet: { childs: infoAfterInsert._id },
-                        $inc: { amountChilds: 1 }
-                    }, { new: true })
+                /**
+                 * PHẦN TỬ CHA-CON => PHỤC VỤ XỬ LÝ ĐỆ QUY
+                 */
+                if(parent && checkObjectIDs(parent)){
+                    // Cập nhật amountChilds cho phần tử cha cấp 1
+                    await ITEM__CONTACT_COLL.findByIdAndUpdate(parent,
+                        {
+                            $addToSet: { 
+                                childs: infoAfterInsert._id,
+                                nestedChilds: infoAfterInsert._id, // Mảng các phần tử con/cháu...
+                             },
+                            $inc: { amountChilds: 1 }
+                        },
+                        { new: true })
+
+                    /**
+                     * Cập nhật cho phần tử cha cấp 2 trở lên
+                     * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
+                     */
+                    for(const item of infoParent?.nestedParents){
+                        // Thêm phần tử con/cháu
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+                            {
+                                $addToSet: { nestedChilds: infoAfterInsert._id },
+                            },
+                            { new: true })
+
+                        // Thêm phần tử cha
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id ,
+                            {
+                                $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
+                            },
+                            { new: true })
+                    }
                 }
 
                 // Cập nhật linkUser với tài khoản
@@ -943,8 +980,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, userID, month, ctx }) {
-        // console.log({ isBirthday, companyID, fundaID, voucherID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, userID, month })
+    getList({ companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month, ctx }) {
+        // console.log({ companyID, userID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, month })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -960,6 +997,14 @@ class Model extends BaseModel {
                 let sortBy
                 let conditionObj = { company: companyID }
                 let keys	 = ['createAt__-1', '_id__-1']
+
+                // Theo user đang truy cập
+                if(contacts && contacts.length){
+                    let listContacts = contacts.map(item => ObjectID(item._id))
+
+                    // conditionObj.nestedParents = {$in: listContacts}
+                    conditionObj.nestedParents = {$in: [listContacts[0]]}
+                }
 
                 // Theo phân loại
                 if(type){
@@ -995,8 +1040,12 @@ class Model extends BaseModel {
                     conditionObj.funda = fundaID
                 }
 
+                if(parentID && checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID
+                }
+
                 // Phân loại theo thời khoảng
-                if(fromDate && toDate){
+                if(isValidDate(fromDate) && isValidDate(toDate)){
                     conditionObj.joinedDate = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),

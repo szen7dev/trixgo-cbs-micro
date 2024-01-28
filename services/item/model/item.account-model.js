@@ -48,10 +48,10 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * PHẦN TỬ CHA
+                 * PHẦN TỬ CHA-CON => PHỤC VỤ XỬ LÝ ĐỆ QUY
                  */
                 let infoParent
-                if(checkObjectIDs(parentID)){
+                if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID
                     dataInsert.nestedParents = [parentID] // Cha cấp 1
 
@@ -68,8 +68,10 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" });
 
-                if(checkObjectIDs(parentID)){
-
+                /**
+                 * PHẦN TỬ CHA-CON => PHỤC VỤ XỬ LÝ ĐỆ QUY
+                 */
+                if(parentID && checkObjectIDs(parentID)){
                     // Cập nhật amountChilds cho phần tử cha cấp 1
                     await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID,
                         {
@@ -86,7 +88,6 @@ class Model extends BaseModel {
                      * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
                      */
                     for(const item of infoParent?.nestedParents){
-
                         // Thêm phần tử con/cháu
                         await ITEM__ACCOUNT_COLL.findByIdAndUpdate(item,
                             {
