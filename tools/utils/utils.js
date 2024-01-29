@@ -552,3 +552,21 @@ exports.regexPhoneNumber = (phone) => {
     const regexPhoneNumber = /(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/; // Cho đầu 01
     return phone.match(regexPhoneNumber) ? true : false;
 }
+
+exports.parseUserAgent = (userAgent) => {
+    // Use a library like 'ua-parser-js' for more sophisticated parsing
+    userAgent = userAgent.toLowerCase();
+    switch(true) {
+        case userAgent.includes('android'):
+        case userAgent.includes('iphone'):
+            return "Mobile";
+        case userAgent.includes('iPad'):
+            return "Ipad";
+        case userAgent.includes('windows'):
+        case userAgent.includes('mac os'): 
+        case userAgent.includes('linux'): 
+            return "Desktop";
+        default:
+            return "Unknown";
+    }
+}
