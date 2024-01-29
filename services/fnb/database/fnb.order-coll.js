@@ -20,7 +20,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref : "funda"
     },
-    //_________Phân loại dịch vụ/Kênh bán hàng
+    //_________Phân loại dịch vụ/Kênh bán hàng****
     channel: {
         type: Schema.Types.ObjectId,
         ref: "doctype"

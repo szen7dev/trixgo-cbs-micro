@@ -6,6 +6,7 @@ const BASE_ROUTE = '/fnb';
 const ORDER                 = '/orders';
 const PRODUCT               = '/products';
 const ORDER_PRODUCT         = '/order_products';
+const ORDER_GOODS           = '/order_goods';
 const SHIFT                 = '/shifts';
 const MISTAKE               = '/mistakes';
 const VOUCHER               = '/vouchers';
@@ -84,6 +85,13 @@ const CF_ROUTINGS_FNB = {
     NETWORK_COM_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${NETWORK_COM}/download-template-excel`,
     NETWORK_COM_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${NETWORK_COM}/import-from-excel`,
     NETWORK_COM_EXPORT_EXCEL                    : `${BASE_ROUTE}${NETWORK_COM}/export-excel`,
+
+    //================================FNB_ORDER_GOODS=======================================//
+    ORDER_GOODS                           : `${BASE_ROUTE}${ORDER_GOODS}`,
+    ORDER_GOODS_GET_LIST_BY_PROPERTY      : `${BASE_ROUTE}${ORDER_GOODS}/get-list-by-property`,
+    ORDER_GOODS_DOWNLOAD_TEMPLATE_EXCEL   : `${BASE_ROUTE}${ORDER_GOODS}/download-template-excel`,
+    ORDER_GOODS_IMPORT_FROM_EXCEL         : `${BASE_ROUTE}${ORDER_GOODS}/import-from-excel`,
+    ORDER_GOODS_EXPORT_EXCEL              : `${BASE_ROUTE}${ORDER_GOODS}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;
