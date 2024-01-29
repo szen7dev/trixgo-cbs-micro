@@ -2087,7 +2087,6 @@ class Model extends BaseModel {
                 if(!resultGetList.error) {
                     conditionObj = resultGetList.data;
                 }
-                // console.log({conditionObj})
 
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
@@ -2119,7 +2118,6 @@ class Model extends BaseModel {
                     });
                 }
 
-                
                 const result = await this.downloadExcelFile(listData)
                 return resolve(result);
             } catch (error) {
@@ -2134,8 +2132,6 @@ class Model extends BaseModel {
             try {
                 // Record Traffic
                 await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                let conditionObj = {};
 
                 const populates = JSON.stringify({
                     path: 'department position field property area area1 area2 linkUser workingStatus contractType',
