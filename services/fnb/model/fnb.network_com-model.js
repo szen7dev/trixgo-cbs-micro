@@ -217,7 +217,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ option, userID, contacts, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit = 10, lastestID, select, populates, sortKey }) {
-        // console.log({ option, userID, contacts, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit, lastestID, select, populates, sortKey })
+        console.log('==================getList>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        console.log({ option, userID, contacts, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit, lastestID, select, populates, sortKey })
         return new Promise(async (resolve) => {
             try {
 
@@ -274,7 +275,7 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
 
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -366,8 +367,8 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, ctx }) {
-        // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        // console.log({ userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status })
+        console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        console.log({ userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -383,6 +384,7 @@ class Model extends BaseModel {
                     if(contacts && contacts.length){
                         listContacts = contacts.map(item => ObjectID(item._id))
                     }
+                    console.log(listContacts)
 
                     conditionObj.upline = {$in: listContacts}
                 }
@@ -510,9 +512,9 @@ class Model extends BaseModel {
                     }
                 }
                
-                // console.log('==================')
-                // console.log(conditionObj)
-                // console.log(conditionGroup)
+                console.log('==================')
+                console.log(conditionObj)
+                console.log(conditionGroup)
 
                 let listData = await FNB_NETWORK_COM_COLL.aggregate([
                     {
