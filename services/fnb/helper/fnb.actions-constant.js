@@ -6,6 +6,7 @@ const BASE_ACTIONS = 'ACT_FNB';
 const ORDER                      = 'ORDER';
 const PRODUCT                    = 'PRODUCT';
 const ORDER_PRODUCT              = 'ORDER_PRODUCT';
+const ORDER_GOODS                = 'ORDER_GOODS';
 const SHIFT                      = 'SHIFT';
 const MISTAKE                    = 'MISTAKE';
 const VOUCHER                    = 'VOUCHER';
@@ -128,6 +129,18 @@ const CF_ACTIONS_FNB = {
    NETWORK_COM_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${NETWORK_COM}_DOWNLOAD_TEMPLATE_EXCEL`,
    NETWORK_COM_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${NETWORK_COM}_IMPORT_FROM_EXCEL`,
    NETWORK_COM_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${NETWORK_COM}_EXPORT_EXCEL`,
+
+   /**
+   * ORDER_GOODS
+   */
+   ORDER_GOODS_INSERT                            : `${BASE_ACTIONS}_${ORDER_GOODS}_INSERT`,
+   ORDER_GOODS_UPDATE                            : `${BASE_ACTIONS}_${ORDER_GOODS}_UPDATE`,
+   ORDER_GOODS_REMOVE                            : `${BASE_ACTIONS}_${ORDER_GOODS}_REMOVE`,
+   ORDER_GOODS_GET_INFO_AND_GET_LIST             : `${BASE_ACTIONS}_${ORDER_GOODS}_GET_INFO_AND_GET_LIST`,
+   ORDER_GOODS_GET_LIST_BY_PROPERTY              : `${BASE_ACTIONS}_${ORDER_GOODS}_GET_LIST_BY_PROPERTY`,
+   ORDER_GOODS_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ACTIONS}_${ORDER_GOODS}_DOWNLOAD_TEMPLATE_EXCEL`,
+   ORDER_GOODS_IMPORT_FROM_EXCEL                 : `${BASE_ACTIONS}_${ORDER_GOODS}_IMPORT_FROM_EXCEL`,
+   ORDER_GOODS_EXPORT_EXCEL                      : `${BASE_ACTIONS}_${ORDER_GOODS}_EXPORT_EXCEL`,
 }
 
 exports.CF_ACTIONS_FNB = CF_ACTIONS_FNB;

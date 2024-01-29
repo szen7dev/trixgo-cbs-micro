@@ -3,6 +3,7 @@
  */
  const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
  const moment = require('moment');
+ const { isValidDate }                   = require('../../../tools/utils/time_utils')
 
  /**
   * MODELS
@@ -128,11 +129,15 @@
                 await this.validateEntity(ctx.params);
                 let { option, networkID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
+                // console.log(ctx.params)
+
                 const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
-                // Convert dữ liệu ngày tháng để theo chuẩn chung: startOf của ngày bắt đầu, endOf của ngày kết thúc
-                fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-                toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                if(isValidDate(fromDate) && isValidDate(toDate)){
+                    // Convert dữ liệu ngày tháng để theo chuẩn chung: startOf của ngày bắt đầu, endOf của ngày kết thúc
+                    fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                    toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                }
 
                 let resultAfterCallHandler;
                 if(networkID){
@@ -166,14 +171,16 @@
             try {
                 await this.validateEntity(ctx.params);
                 let { option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status } = ctx.params;
+
+                // console.log(ctx.params)
                 
                 const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
-                // Convert dữ liệu ngày tháng để theo chuẩn chung: startOf của ngày bắt đầu, endOf của ngày kết thúc
-                fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-                toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-
-                // console.log({ option, optionGroup })
+                if(isValidDate(fromDate) && isValidDate(toDate)){
+                    // Convert dữ liệu ngày tháng để theo chuẩn chung: startOf của ngày bắt đầu, endOf của ngày kết thúc
+                    fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                    toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                }
 
                 if(!companyID){
                     companyID = company._id
