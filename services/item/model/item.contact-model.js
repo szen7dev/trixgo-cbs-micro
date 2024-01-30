@@ -2045,7 +2045,7 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcel({ userID, companyID, type, filterParams, ctx }) {
+    exportExcel({ userID, companyID, type, filterParams, ctx, queue }) {
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -2087,6 +2087,16 @@ class Model extends BaseModel {
                 if(!resultGetList.error) {
                     conditionObj = resultGetList.data;
                 }
+
+                await queue.add("export_excel", {
+                    filterCondition: conditionObj,
+                    userID,
+                }, {
+                    backoff: 3,
+                    attempts: 3
+                })
+
+                return resolve({ error: false })
 
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
