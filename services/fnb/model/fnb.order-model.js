@@ -944,9 +944,23 @@ class Model extends BaseModel {
                     }
                     // console.log({getMaxLevel})
 
+                    // Trả cho Sale
+                    await FNB_NETWORK_COM_MODEL.insert({
+                        userID, 
+                        companyID: infoFunda.company, 
+                        orderID: infoAfterInsert._id, 
+                        customerID, 
+                        saleID: affiliateID, 
+                        amount, 
+                        uplineID: affiliateID, 
+                        level: networkLevel, // Người cha đứng cạnh đầu tiên => cấp 1
+                        rate: FNB_AFFILIATE_COM[0].rate, 
+                        commission: Number(FNB_AFFILIATE_COM[0].rate) * amount/100, 
+                    })
+
                     for(const item of infoAffiliate.nestedParents){
                         let networkLevel = Number(getMaxLevel - item.level + 1)
-                        let infoNetworkCom = await FNB_NETWORK_COM_MODEL.insert({
+                        await FNB_NETWORK_COM_MODEL.insert({
                             userID, 
                             companyID: infoFunda.company, 
                             orderID: infoAfterInsert._id, 
@@ -955,10 +969,9 @@ class Model extends BaseModel {
                             amount, 
                             uplineID: item._id, 
                             level: networkLevel, // Người cha đứng cạnh đầu tiên => cấp 1
-                            rate: FNB_AFFILIATE_COM[Number(networkLevel - 1)].rate, 
-                            commission: Number(FNB_AFFILIATE_COM[Number(networkLevel - 1)].rate) * amount/100, 
+                            rate: FNB_AFFILIATE_COM[Number(networkLevel)].rate, 
+                            commission: Number(FNB_AFFILIATE_COM[Number(networkLevel)].rate) * amount/100, 
                         })
-                        // console.log({infoNetworkCom})
                     }
                 }
 
