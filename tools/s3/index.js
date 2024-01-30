@@ -3,8 +3,8 @@ const stream                    = require('stream');
 const path                      = require('path');
 const uuidv4                    = require('uuid').v4;
 
-const { Upload } = require('@aws-sdk/lib-storage');
-const { S3 } = require('@aws-sdk/client-s3');
+const { Upload }                = require('@aws-sdk/lib-storage');
+const { S3 }                    = require('@aws-sdk/client-s3');
 
 const s3                        = require('@auth0/s3');
 const archiver                  = require('archiver');
@@ -224,11 +224,6 @@ const zipFileToS3 = async (files, key) => {
     return new Promise(async (resolve, reject) => {
         const archiveStream = archiver('zip');
 
-        archiveStream.on('error', (error) => {
-            console.error('Archival encountered an error:', error)
-            reject(error);
-        })
-
         const passThrough = new stream.PassThrough();
 
         const Bucket = `${config.bucketDemo}/files/temp`;
@@ -272,6 +267,11 @@ const zipFileToS3 = async (files, key) => {
                 const response = await s3Object.getObject(params);
                 archiveStream.append(response.Body, { name: path.basename(file.path) })
             });
+
+        archiveStream.on('error', (error) => {
+            console.error('Archival encountered an error:', error)
+            reject(error);
+        })
 
         archiveStream.finalize();
     });

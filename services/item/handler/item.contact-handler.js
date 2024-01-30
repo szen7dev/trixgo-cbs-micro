@@ -460,11 +460,8 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                // console.log('=============>>>>>>>>>>>>>>>')
-                // console.log(ctx.params)
-
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcel({
-                    userID, companyID, filterParams, ctx
+                    userID, companyID, filterParams, ctx, queue: this.metadata.queue
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -31,6 +31,7 @@ const { REACTION_SOCKET }                       = require('../reaction/reaction.
 const { SUBJECT_SOCKET }                        = require('../subject_pcm/subject_pcm.socket');
 const { FNB_SOCKET }                            = require('../fnb/fnb.socket');
 const { ACCOUNTING_SOCKET }                     = require('../accounting/accounting.socket');
+const { ITEM_SOCKET }                           = require('../item/item.socket');
 
 let pub = redis.createClient({
     host: REDIS_SEPERATOR.HOST,
@@ -112,6 +113,7 @@ module.exports = {
                         ...SUBJECT_SOCKET,
                         ...FNB_SOCKET,
                         ...ACCOUNTING_SOCKET,
+                        ...ITEM_SOCKET,
 
                         // 'CLIENT_SEND_CHATTING_TEST': async function(data) {
                         //     let socket                      = this;
