@@ -1385,8 +1385,8 @@ class Model extends BaseModel {
                 // Record Traffic
                 await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                if(Number(duration/86400) > 90){
-                     // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
+                if(Number(duration/86400) > 370){
+                     return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 370 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
                 }else{
                     let conditionObj = {
                         company: ObjectID(companyID)
