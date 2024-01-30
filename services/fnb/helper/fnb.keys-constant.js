@@ -80,10 +80,10 @@ exports.FNB_STATUS = [
 
 // Cơ chế trả hoa hồng Affiliate
 exports.FNB_AFFILIATE_COM = [
-    { amount: 1000000, rate: 16 },
-    { amount: 1000000, rate: 2.75 },
-    { amount: 2000000, rate: 2.25 },
-    { amount: 5000000, rate: 2.20 },
+    { amount: 1000000, rate: 16 }, // Sale trực tiếp
+    { amount: 1000000, rate: 2.75 }, // Cấp 1
+    { amount: 2000000, rate: 2.25 }, // Cấp 2
+    { amount: 5000000, rate: 2.20 }, // Cấp ...
     { amount: 5000000, rate: 1.75 },
     { amount: 5000000, rate: 1.50 },
     { amount: 5000000, rate: 1.25 },
