@@ -218,14 +218,14 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, month, fromDate, toDate,
+                let { option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, month, fromDate, toDate, status,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.getListByProperty({
                     companyID: company._id,
                     option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, month, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
-                     userID
+                     status, userID 
                     });
              
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

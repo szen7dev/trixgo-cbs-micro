@@ -464,13 +464,20 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, userID }) { 
-        // console.log({ option, mistakeID, executorID, optionGroup, optionTime, fundasID, year, fromDate, toDate, userID })
+    getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
+        // console.log({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID  })
         return new Promise(async (resolve) => {
             try {
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
                 if(!option){
                     // Danh sách
-
                 }else{
                     let conditionObj = {
                         company: ObjectID(companyID),
@@ -499,13 +506,12 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo các loại lỗi
+                     * Gom nhóm theo các loại lỗi: OK
                      */
                     if(option && Number(option) == 1){
                         conditionGroup = {
                             _id: { mistake: "$mistake" },
                             quantity: { $sum: 1 },
-                            amount: { $sum: "$amount" },
                         }
 
                         conditionPopulate = {
@@ -516,7 +522,7 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo thời gian
+                     * Gom nhóm theo thời gian: OK
                      */
                     else if(option && Number(option) == 2){
                         // Theo năm
@@ -529,10 +535,8 @@ class Model extends BaseModel {
                         
                         // Theo tháng trong năm
                         if(optionTime && Number(optionTime) == 2){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
                             }
     
                             conditionGroup = {
@@ -551,7 +555,7 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * Gom nhóm theo đơn vị cơ sở
+                     * Gom nhóm theo đơn vị cơ sở: OK
                      */
                     else if(option && Number(option) == 3){
                         if(mistakeID && checkObjectIDs(mistakeID)){
@@ -582,98 +586,90 @@ class Model extends BaseModel {
                     }
 
                      /**
-                     * Gom nhóm theo Nhân sự + Lỗi mắc phải
+                     * Gom nhóm theo các Nhân sự quản lý: OK
                      */
                      else if(option && Number(option) == 4){
-                        if(mistakeID){
-                            conditionObj.mistake = ObjectID(mistakeID)
-                        }
-
-                        if(executorID){
-                            conditionObj.executor = ObjectID(executorID)
-                        }
+                        conditionObj.manager = {$exists: true, $ne: null}
 
                         conditionGroup = {
-                            _id: { mistake: "$mistake" },
+                            _id: { manager: "$manager" },
                             quantity: { $sum: 1 },
-                            amount: { $sum: "$amount" },
                         }
 
                         conditionPopulate = {
-                            path: '_id.mistake',
-                            select: '_id name sign',
-                            model: 'doctype'
+                            path: '_id.manager',
+                            select: '_id fullname image email phone',
+                            model: 'user'
                         }
                     }
 
-                    /**
-                     * Gom nhóm theo Nhân sự mắc lỗi/Lỗi của tôi
-                     */
-                    else if(option && Number(option) == 5){
-                        conditionObj.executor = ObjectID(userID)
+                    // /**
+                    //  * Gom nhóm theo Nhân sự mắc lỗi/Lỗi của tôi
+                    //  */
+                    // else if(option && Number(option) == 5){
+                    //     conditionObj.executor = ObjectID(userID)
 
-                        conditionGroup = {
-                            _id: { mistake: "$mistake" },
-                            quantity: { $sum: 1 },
-                            amount: { $sum: "$amount" },
-                        }
+                    //     conditionGroup = {
+                    //         _id: { mistake: "$mistake" },
+                    //         quantity: { $sum: 1 },
+                    //     }
 
-                        conditionPopulate = {
-                            path: '_id.mistake',
-                            select: '_id name sign',
-                            model: 'doctype'
-                        }
-                    }
+                    //     conditionPopulate = {
+                    //         path: '_id.mistake',
+                    //         select: '_id name sign',
+                    //         model: 'doctype'
+                    //     }
+                    // }
 
-                    /**
-                     * KPI nhân sự
-                     */
-                    else if(option && Number(option) == 6){
-                        conditionObj = {
-                            company: ObjectID(companyID),
-                            executor: ObjectID(executorID),
-                            year: Number(year),
-                        }
+                    // /**
+                    //  * KPI nhân sự
+                    //  */
+                    // else if(option && Number(option) == 6){
+                    //     conditionObj = {
+                    //         company: ObjectID(companyID),
+                    //         executor: ObjectID(executorID),
+                    //         year: Number(year),
+                    //     }
 
-                        // Theo năm
-                        if(optionTime && Number(optionTime) == 1){
-                            conditionGroup = {
-                                _id: { year: "$year" },
-                                number: { $sum: 1 },
-                                workingHours: { $sum: "$workingHours" },
-                                quantity: { $sum: "$quantity" },
-                                score: { $sum: "$score" }
-                            }
-                        }
+                    //     // Theo năm
+                    //     if(optionTime && Number(optionTime) == 1){
+                    //         conditionGroup = {
+                    //             _id: { year: "$year" },
+                    //             number: { $sum: 1 },
+                    //             workingHours: { $sum: "$workingHours" },
+                    //             quantity: { $sum: "$quantity" },
+                    //             score: { $sum: "$score" }
+                    //         }
+                    //     }
                         
-                        // Theo tháng trong năm
-                        if(optionTime && Number(optionTime) == 2){
-                            if(!isNaN(year) && Number(year) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
-                            }
+                    //     // Theo tháng trong năm
+                    //     if(optionTime && Number(optionTime) == 2){
+                    //         if(!isNaN(year) && Number(year) >= 0){
+                    //             conditionObjYear = {
+                    //                 "year": Number(year),
+                    //             }
+                    //         }
 
-                            if(!isNaN(month) && Number(month) >= 0){
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                    "month": Number(month),
-                                }
-                            }
+                    //         if(!isNaN(month) && Number(month) >= 0){
+                    //             conditionObjYear = {
+                    //                 "year": Number(year),
+                    //                 "month": Number(month),
+                    //             }
+                    //         }
     
-                            conditionGroup = {
-                                _id: { month: "$month", year: "$year" },
-                                number: { $sum: 1 },
-                                workingHours: { $sum: "$workingHours" },
-                                quantity: { $sum: "$quantity" },
-                                score: { $sum: "$score" }
-                            }
-                        }  
+                    //         conditionGroup = {
+                    //             _id: { month: "$month", year: "$year" },
+                    //             number: { $sum: 1 },
+                    //             workingHours: { $sum: "$workingHours" },
+                    //             quantity: { $sum: "$quantity" },
+                    //             score: { $sum: "$score" }
+                    //         }
+                    //     }  
 
-                        sortBy = {"_id.month": 1}
-                    }
+                    //     sortBy = {"_id.month": 1}
+                    // }
 
-                    // Tổng hợp KPI theo user/tháng/năm
+                    // Tổng hợp KPI theo user/tháng/năm: OK
                     else if(option && Number(option) == 7){
                         if(executorID && checkObjectIDs(executorID)){
                             conditionObj.executor = ObjectID(executorID)
@@ -686,8 +682,27 @@ class Model extends BaseModel {
                         conditionGroup = {
                             _id: { month: "$month", year: "$year" },
                             quantity: { $sum: 1 },
-                            amount: { $sum: "$amount" },
-                            bonus: { $sum: "$bonus" },
+                        } 
+                    }
+
+                    // Gom nhóm theo trạng thái: OK
+                    else if(option && Number(option) == 8){
+                        conditionGroup = {
+                            _id: { status: "$status" },
+                            quantity: { $sum: 1 },
+                        } 
+                    }
+                    
+                    // Gom nhóm theo của tôi chưa xử lý: OK
+                    else if(option && Number(option) == 9){
+                        if(status){
+                            conditionObj.status = +status
+                        }
+                        conditionObj.manager = ObjectID("userID")
+
+                        conditionGroup = {
+                            _id: {  },
+                            quantity: { $sum: 1 },
                         } 
                     }
 
@@ -710,6 +725,7 @@ class Model extends BaseModel {
                                     hour : {$hour : "$createAt"},
                                     funda : 1,
                                     mistake : 1,
+                                    manager : 1,
                                     order : 1,
                                     product : 1,
                                     executor : 1,
@@ -750,6 +766,9 @@ class Model extends BaseModel {
                                 $project : {
                                     year: 1,
                                     month: 1,
+                                    mistake : 1,
+                                    manager : 1,
+                                    order : 1,
                                     executor : 1,
                                     workingHours : 1,
                                     quantity : 1,

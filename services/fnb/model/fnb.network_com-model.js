@@ -367,8 +367,8 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, ctx }) {
-        console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log({ userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status })
+        // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log({ userID, contacts, option, optionGroup, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -384,7 +384,7 @@ class Model extends BaseModel {
                     if(contacts && contacts.length){
                         listContacts = contacts.map(item => ObjectID(item._id))
                     }
-                    console.log(listContacts)
+                    // console.log(listContacts)
 
                     conditionObj.upline = {$in: listContacts}
                 }
@@ -512,9 +512,9 @@ class Model extends BaseModel {
                     }
                 }
                
-                console.log('==================')
-                console.log(conditionObj)
-                console.log(conditionGroup)
+                // console.log('==================')
+                // console.log(conditionObj)
+                // console.log(conditionGroup)
 
                 let listData = await FNB_NETWORK_COM_COLL.aggregate([
                     {
