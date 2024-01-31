@@ -159,19 +159,17 @@ module.exports = {
         auth: "required",
         params: {
             option          : { type: "string", optional: true },
-            customerID       : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
+            customerID      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, customerID, option } = ctx.params;
-                // console.log(ctx.params)
+                let { customerID, option, year  } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.getAmountByProperty({
-                    companyID, customerID, option
+                    companyID: company._id, customerID, option, year 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

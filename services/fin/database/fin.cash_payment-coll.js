@@ -26,6 +26,11 @@ module.exports  = DATABASE_MIDDLEWARE("cash_payment", {
     amount: { type: Number, default: 0 },
     //_________Giá trị thanh toán
     payment: { type: Number, default: 0 },
+    //_________Ảnh đính kèm
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     /**
      * Trạng thái
      * 1-Hoạt động
