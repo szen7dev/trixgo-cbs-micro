@@ -120,8 +120,7 @@ class Model extends BaseModel {
                 let dataUpdate = { 
                     name,
                     userUpdate: userID, 
-                    modifyAt: new Date(),
-                    // company: companyID
+                    modifyAt: new Date()
                 }
 
                 if(checkObjectIDs(customerID)) {
@@ -131,29 +130,26 @@ class Model extends BaseModel {
                 if(checkObjectIDs(mistakeID)) {
                     dataUpdate.mistake = mistakeID;
                 }
-
-                if(checkObjectIDs(orderID)) {
-                    dataUpdate.order = orderID;
-                }
              
-                // let infoOrder
-                // if(orderID && checkObjectIDs(orderID)){
-                //     infoOrder = await FNB_ORDER_COLL.findById(orderID).populate({
-                //         path: 'funda',
-                //         select: 'manager'
-                //     })
-                //     if(!infoOrder)
-                //         return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                let infoOrder
+                if(orderID && checkObjectIDs(orderID)){
+                    infoOrder = await FNB_ORDER_COLL.findById(orderID).populate({
+                        path: 'funda',
+                        select: 'manager'
+                    })
+                    if(!infoOrder)
+                        return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                //         dataUpdate.order = orderID
-                //         dataUpdate.company = infoOrder.company
-                //         dataUpdate.funda = infoOrder.funda
-                //     // dataUpdate.salesChannel = infoOrder.salesChannel
+                        dataUpdate.order = orderID
+                        dataUpdate.company = infoOrder.company
+                        dataUpdate.funda = infoOrder.funda
+                        dataUpdate.channel = infoOrder.salesChannel
+                        dataUpdate.customer = infoOrder.customer
                     
-                //     if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
-                //         dataUpdate.manager = infoOrder.funda.manager
-                //     }
-                // }
+                    if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
+                        dataUpdate.manager = infoOrder.funda.manager
+                    }
+                }
 
                 if(!isNaN(type)){
                     dataUpdate.type = Number(type);
