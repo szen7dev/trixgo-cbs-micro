@@ -90,7 +90,7 @@ class Model extends BaseModel {
      */
     update({ cashPaymentID, userID, email, name, note, amount, payment, active }) {
         // console.log({ cashPaymentID, userID, email, name, note, amount, payment })
-        const that = this
+        // const that = this
         return new Promise(async (resolve) => {
             try {
                 if(FNB_ACC.cskh.includes(email.toString())){
@@ -128,58 +128,6 @@ class Model extends BaseModel {
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Name  : Cập nhật giá trị khi chi tiết thay đổi 
-     * Code: Hiepnh
-     * Date  : 14/4/2022
-     */
-    updateValue({
-        cashBookID, userID
-    }){
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(cashBookID))
-                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
-                let infoCashBook = await FIN__CASH_PAYMENT_COLL.findById(cashBookID)
-
-                let dataUpdate = { userUpdate: userID };
-
-                let listData = await FIN__CASH_PAYMENT_COLL.aggregate([
-                    {
-                        $match: {
-                            parent: ObjectID(cashBookID),
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            income: { $sum: "$income" },
-                            expense: { $sum: "$expense" },
-                        }
-                    },
-                ])
-                if(listData && listData.length){
-
-                    let arising = Number(listData[0].income) - Number(listData[0].expense)
-                    let closingBalance = Number(infoCashBook.openingBalance) + Number(arising)
-
-                    dataUpdate.arising = Number(arising)
-                    dataUpdate.closingBalance = Number(closingBalance)
-                    dataUpdate.income = Number(listData[0].income)
-                    dataUpdate.expense = Number(listData[0].expense)
-                }
-
-                let infoAfterUpdate = await FIN__CASH_PAYMENT_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
-
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -242,7 +190,7 @@ class Model extends BaseModel {
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
-                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 })
 
                     populates = JSON.parse(populates);
                 } else {
@@ -331,35 +279,69 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date: 17/04/2022
      */
-    getAmountByProperty({ companyID, customerID, option }){
+    getAmountByProperty({ companyID, customerID, option, year }){
         // console.log({ companyID, customerID, option })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}, conditionGroup = {}
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                let conditionObj = {company: ObjectID(companyID)}, conditionGroup = {}
+                let conditionObjYear = {
+                    "year": Number(yearFilter),
+                }
 
                 if (!option || isNaN(option) || ![1,2,3,4].includes(Number(option)))
                     return resolve({ error: true, message: "Tham số option không hợp lệ", keyError: "option_invalid" })
 
-                // Cấu hình gom nhóm mặc định
-                conditionGroup = {
-                    _id: {},
-                    amount: { $sum: "$amount" },
-                }
-                
                 if(Number(option) === 1){
                     conditionObj.active = 1
-                    conditionObj.customer = ObjectID(customerID)
+
+                    conditionGroup = {
+                        _id: {},
+                        amount: { $sum: "$amount" },
+                    }
                 }
+
+                else if(Number(option) === 2){
+                    conditionObj.active = 1
+
+                    conditionGroup = {
+                        _id: {month: "$month"},
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                // console.log(conditionObj)
+                // console.log(conditionObjYear)
+                // console.log(conditionGroup)
 
                 let listData = await FIN__CASH_PAYMENT_COLL.aggregate([
                     {
                         $match: conditionObj
                     },
                     {
+                        $project : {
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            active : 1,
+                            amount : 1,
+                            payment : 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {
                         $group: conditionGroup
                     }
                 ])
-                // console.log(conditionObj)
+                
                 // console.log(listData)
 
                 return resolve({ error: false, data: listData });
