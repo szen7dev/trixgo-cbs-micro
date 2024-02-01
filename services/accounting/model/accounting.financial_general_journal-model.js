@@ -3015,7 +3015,7 @@ class Model extends BaseModel {
                             workbook.sheet("orgData").row(i).cell(18).value(item?.warehouse?.name);
                             workbook.sheet("orgData").row(i).cell(19).value(item.note);
                             workbook.sheet("orgData").row(i).cell(20).value(item?.subtype?.parent?.name);
-                            workbook.sheet("orgData").row(i).cell(21).value(`M${item?.voucher?.date.getMonth() + 1}_${item?.voucher?.date.getFullYear}`);
+                            workbook.sheet("orgData").row(i).cell(21).value(`M${item?.voucher?.date.getMonth() + 1}_${item?.voucher?.date.getFullYear()}`);
                             workbook.sheet("orgData").row(i).cell(22).value(item?.funda?.sign);
     
                             i++
