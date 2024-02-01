@@ -815,6 +815,8 @@ class Model extends BaseModel {
                     }
                 }
 
+                // console.log(dataUpdate)
+
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại" })
