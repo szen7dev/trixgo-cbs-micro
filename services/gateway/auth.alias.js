@@ -4,6 +4,7 @@
  * MIDDLEWARE
  */
 const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
+const { parseUserAgent } 		= require("../../tools/utils/utils");
 
 /**
  * ------import route's Services---------
@@ -2347,5 +2348,9 @@ module.exports = {
 								req.connection.remoteAddress 	||
 								req.socket.remoteAddress 		||
 								req.connection.socket.remoteAddress;
+
+		const userAgent = ctx.meta.userAgent;
+		const platform = parseUserAgent(userAgent);
+		ctx.meta.platform = platform;
 	},
 };
