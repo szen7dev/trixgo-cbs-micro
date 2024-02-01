@@ -481,11 +481,14 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 //___________Xác thực số điện thoại
-                if(!regexPhoneNumber(phone))
-                    return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
-                let checkPhone = phone.replace(/\s/g, "").length
-                if(Number(checkPhone) < 10)
-                    return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
+                if(phone) {
+                    if(!regexPhoneNumber(phone))
+                        return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
+
+                    let checkPhone = phone.replace(/\s/g, "").length
+                    if(Number(checkPhone) < 10)
+                        return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
+                }
 
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
@@ -811,7 +814,6 @@ class Model extends BaseModel {
                         usedVouchers
                     }
                 }
-                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
@@ -823,12 +825,11 @@ class Model extends BaseModel {
                 // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
                 if(linkUser && checkObjectIDs(linkUser)){
                     // Cập nhật vào user-coll
-                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser,
+                    await USER_COLL.findByIdAndUpdate(linkUser,
                         {
-                            $addToSet: {contacts: contactID }
+                            $addToSet: { contacts: contactID }
                         },
                         { new: true })
-                    // console.log(infoUser)
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
@@ -852,6 +853,7 @@ class Model extends BaseModel {
 
                 let amountWorkHistory = 0, amountProjectHistory = 0, amountContractHistory = 0, amountEducationHistory = 0, amountCertificateHistory = 0
 
+                console.log({ contactID, dataUpdate })
                 let listData = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
                     {
                         $match: {
