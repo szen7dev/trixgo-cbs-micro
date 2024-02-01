@@ -870,7 +870,7 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                if(salesChannel == 1){
+                if([1,2,3,4,5,6,7,8,9,10,11,12].includes(Number(salesChannel))){
                     /**
                      * Số điện thoại không hợp lệ
                      * Nội dung mẫu ZNS không hợp lệ
@@ -902,7 +902,7 @@ class Model extends BaseModel {
 
                         await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA1)
 
-                        if(Number(total) >= 200000){
+                        if(salesChannel == 1 && Number(total) >= 200000){
                             let dataOA2 = {
                                 phone: "84985199295",
                                 templateData: {
