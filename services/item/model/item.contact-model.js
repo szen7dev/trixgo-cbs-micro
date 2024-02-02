@@ -2050,6 +2050,7 @@ class Model extends BaseModel {
     }
 
     exportExcel({ userID, companyID, type, filterParams, ctx, queue }) {
+        // console.log({userID, companyID, type, filterParams})
         return new Promise(async resolve => {
             try {
                 // Record Traffic
