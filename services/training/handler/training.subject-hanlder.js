@@ -10,7 +10,7 @@
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: insert subject
 	 */
     insert: {
@@ -37,7 +37,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: update subject
 	 */
     update: {
@@ -67,7 +67,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: remove subject
 	 */
     remove: {
@@ -93,7 +93,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: getList and getInfo subject
 	 */
     getInfoAndGetList: {

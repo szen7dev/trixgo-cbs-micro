@@ -10,7 +10,7 @@ const DATAHUB_PRODUCT_MODEL                        = require('../model/datahub.d
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm datahub
 	 */
     insert: {
@@ -42,7 +42,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Sửa datahub
 	 */
     update: {
@@ -73,7 +73,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: Xóa datahub
      */
     remove: {
@@ -98,7 +98,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: get info and get list datahub
      */
     getInfoAndGetList: {

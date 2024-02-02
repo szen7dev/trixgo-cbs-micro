@@ -10,7 +10,7 @@ const CMCS__CONTRACT_PRODUCTION_MODEL            = require('../model/cmcs.contra
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm contract production 
 	 */
     insert: {
@@ -44,7 +44,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Sửa contract production
 	 */
     update: {
@@ -78,7 +78,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: Xóa contract production
      */
     remove: {
@@ -104,7 +104,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: get info and get list contract production
      */
     getInfoAndGetList: {

@@ -728,7 +728,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: getList and getInfo user
 	 */
     getInfoAndGetList: {

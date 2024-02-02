@@ -260,7 +260,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Lấy danh sách datahub package
 	 * Date: 26/10/2021
 	 */

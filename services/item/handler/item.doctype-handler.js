@@ -104,7 +104,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Get list and get info doctype
 	 */
     getInfoAndGetList: {

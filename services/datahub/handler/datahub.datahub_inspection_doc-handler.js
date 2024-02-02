@@ -10,7 +10,7 @@ const DATAHUB_INSPECTION_DOC_MODEL                = require('../model/datahub.da
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm datahub inspection doc
 	 */
     insert: {
@@ -38,7 +38,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Sửa datahub inspection doc
 	 */
     update: {
@@ -66,7 +66,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: Xóa datahub inspection doc
      */
     remove: {
@@ -91,7 +91,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: get info and get list datahub
      */
     getInfoAndGetList: {

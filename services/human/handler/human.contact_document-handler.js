@@ -11,7 +11,7 @@ const HUMAN__CONTACT_DOCUMENT_MODEL                    = require('../model/human
 module.exports = {
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Insert contact document
 	 */
     insert: {
@@ -58,7 +58,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Update contact document
 	 */
     update: {
@@ -86,7 +86,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Remove contact document
 	 */
     remove: {
@@ -108,7 +108,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách contact document
 	 */
     getInfoAndGetList: {

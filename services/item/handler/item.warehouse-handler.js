@@ -10,7 +10,7 @@ const ITEM__WAREHOUSE_MODEL                    = require('../model/item.warehous
 
 module.exports = {
      /**
-     * Dev: Depv ✅
+     * Dev: HiepNH ✅
      * Func: Thêm warehouse
      */
     insert:{
@@ -34,7 +34,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: HiepNH ✅
      * Func: Cập nhật warehouse
      */
     update:{  
@@ -58,7 +58,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Danh sách doctype
 	 */
     getInfoAndGetList: {

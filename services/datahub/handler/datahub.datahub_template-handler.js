@@ -10,7 +10,7 @@ const DATAHUB_TEMPLATE_MODEL                      = require('../model/datahub.da
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm datahub project
 	 */
     insert: {
@@ -40,7 +40,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Sửa datahub project
 	 */
     update: {
@@ -80,7 +80,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: Xóa datahub project
      */
     remove: {
@@ -105,7 +105,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: get info and get list datahub project
      */
     getInfoAndGetList: {

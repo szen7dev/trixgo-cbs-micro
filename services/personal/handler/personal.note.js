@@ -11,7 +11,7 @@ const PERSONAL__NOTE_MODEL                    = require('../model/personal.note'
 module.exports = {
 
     /**
-     * Dev: DePV 
+     * Dev: HiepNH 
      * Func: Thêm
      * Date: 9/4/2022
      */
@@ -39,7 +39,7 @@ module.exports = {
     },
 
     /**
-     * Dev: DePV 
+     * Dev: HiepNH 
      * Func: Sửa
      * Date: 9/4/2022
      */
@@ -73,7 +73,7 @@ module.exports = {
     },
 
     /**
-     * Dev: DePV 
+     * Dev: HiepNH 
      * Func: get info and get list
      * Date: 9/4/2022
      */

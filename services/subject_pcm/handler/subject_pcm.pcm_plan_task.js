@@ -10,7 +10,7 @@ const PCM_PLAN_TASK_MODEL             = require('../model/subject_pcm.pcm_plan_t
 
 module.exports = {
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: insert pcm_plan_task
 	 */
     insert: {
@@ -71,7 +71,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: update pcm_plan_task
 	 */
     update: {
@@ -141,7 +141,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: update status mutiple
 	 * type: 1-Việc con/ 2- checklist
 	 */
@@ -278,7 +278,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
@@ -529,7 +529,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Lấy số lượng công việc của bạn để hiển thị ngoài trang chủ
 	 */
     getAmountTask: {
@@ -550,7 +550,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Lấy số lượng công việc đấu thầu
 	 */
     getBadgeBidding: {
@@ -570,7 +570,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Gửi email trong task
      * Updated: MinhVH - 12/05/2022
 	 */
@@ -636,7 +636,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Lấy số lượng công việc của companyOfAuthor trong dự án
 	 */
     getAmountTaskOfCompanyOfAuthor: {
@@ -667,7 +667,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Lấy số lượng công việc của companyOfAssignee trong dự án theo milestone
 	 */
     getAmountTaskOfMilestone: {
@@ -713,7 +713,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv
+     * Dev: HiepNH
      * Func: Download Excel
      * Date: 15/09/2022
      */
@@ -741,7 +741,7 @@ module.exports = {
     },
 
      /**
-     * Dev: Depv
+     * Dev: HiepNH
      * Func: Download Excel
      * Date: 15/09/2022
      */
@@ -768,7 +768,7 @@ module.exports = {
     },
 
      /**
-     * Dev: Depv
+     * Dev: HiepNH
      * Func: Tạo task từ dữ liệu excel
      * Date: 15/09/2022
      */

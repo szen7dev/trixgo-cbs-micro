@@ -10,7 +10,7 @@ const CMCS__CONTRACT_EXPENSE_MODEL              = require('../model/cmcs.contrac
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm contract payment
 	 */
     insert: {
@@ -42,7 +42,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Sửa contract payment
 	 */
     update: {
@@ -72,7 +72,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: Xóa contract payment
      */
     remove: {
@@ -97,7 +97,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: get info and get list contract payment
      */
     getInfoAndGetList: {

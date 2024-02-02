@@ -179,7 +179,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Getlist
 	 * Date: 26/10/2021
 	 */

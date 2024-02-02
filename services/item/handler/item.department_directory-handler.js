@@ -10,7 +10,7 @@ const ITEM__DEPARTMENT_DERECTORY_MODEL           = require('../model/item.depart
 
 module.exports = {
     /**
-     * Dev: Depv ✅
+     * Dev: HiepNH ✅
      * Func: Thêm department directory
      */
     insert:{
@@ -37,7 +37,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: HiepNH ✅
      * Func: Cập nhật department directory
      */
     update:{  
@@ -64,7 +64,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Danh sách department directory
 	 */
     getInfoAndGetList: {

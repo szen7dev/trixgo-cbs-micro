@@ -11,7 +11,7 @@ const ITEM__GOODS_MODEL                    = require('../model/item.good-model')
 module.exports = {
 
      /**
-     * Dev: Depv ✅
+     * Dev: HiepNH ✅
      * Func: Thêm goods
      */
     insert:{
@@ -42,7 +42,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: HiepNH ✅
      * Func: Cập nhật goods
      */
     update:{  
@@ -73,7 +73,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Danh sách goods
 	 */
     getInfoAndGetList: {

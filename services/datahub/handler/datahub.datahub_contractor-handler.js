@@ -10,7 +10,7 @@ const DATAHUB_CONTRACTOR_MODEL                   = require('../model/datahub.dat
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm datahub contractor
 	 */
     insert: {
@@ -40,7 +40,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Sửa datahub contractor
 	 */
     update: {
@@ -71,7 +71,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: Xóa datahub contractor
      */
     remove: {
@@ -96,7 +96,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: get info and get list datahub contractor
      */
     getInfoAndGetList: {

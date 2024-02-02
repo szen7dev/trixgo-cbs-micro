@@ -16,7 +16,7 @@ module.exports = {
 	 */
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách và chi tiết doc file
 	 * Date: 27/10/2021
 	 */
@@ -43,7 +43,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: update
 	 */
     update: {
@@ -69,7 +69,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Xóa doc file
 	 * Date: 27/10/2021
 	 */
@@ -95,7 +95,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách vaf chi tiết doc file
 	 * Date: 27/10/2021
 	 */

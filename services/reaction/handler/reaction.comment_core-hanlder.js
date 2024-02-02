@@ -10,7 +10,7 @@ const REACTION__COMMENT_MODEL           = require('../model/reaction.comment_cor
 
 module.exports = {
     /**
-	 * Dev: DePV 
+	 * Dev: HiepNH 
 	 * Func: Tạo mới comment core
 	 * Date: 17/08/2021
 	 */
@@ -38,7 +38,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: DePV 
+	 * Dev: HiepNH 
 	 * Func: Cập nhật comment core
 	 * Date: 17/08/2021
 	 */
@@ -70,7 +70,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: getList and getInfo comment core
 	 */
     getInfoAndGetList: {

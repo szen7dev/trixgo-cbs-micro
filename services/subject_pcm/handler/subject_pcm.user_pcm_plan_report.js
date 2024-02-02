@@ -11,7 +11,7 @@ const USER_PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.user
 module.exports = {
     
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: insert user_pcm_plan_report
 	 */
     insert: {
@@ -43,7 +43,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: update pcm_plan_report
 	 */
     update: {
@@ -71,7 +71,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: remove pcm_plan_report
 	 */
     remove: {
@@ -99,7 +99,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: getList and getInfo user_pcm_plan_report
 	 */
     getInfoAndGetList: {

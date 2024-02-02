@@ -12,7 +12,7 @@ module.exports = {
 
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thêm dự án/phòng ban
 	 */
     insert: {
@@ -94,7 +94,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Cập nhật dự án/phòng ban
 	 */
     update: {
@@ -273,7 +273,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách dự án (Hàm dùng chung)
 	 */
     getInfoAndGetList: {
@@ -319,7 +319,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv
+     * Dev: HiepNH
      * Func: Danh sách dự án mà user được quyền truy cập
      */
     getListByMembers: {
@@ -360,7 +360,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thống kê theo tiến độ, ngân sách
 	 */
     analysisOntimeOnbudget: {

@@ -63,7 +63,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Danh sách area
 	 */
     getInfoAndGetList: {

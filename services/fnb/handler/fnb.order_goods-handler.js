@@ -46,7 +46,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: update Group
 	 */
     update: {
@@ -88,7 +88,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: remove Group
 	 */
     remove: {
@@ -114,7 +114,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
@@ -207,9 +207,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID 
                 })
@@ -237,13 +234,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { dataImport } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                // console.log(dataImport)
-
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-
-                // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.importFromExcel({
                     taskID, dataImport, userID, ctx

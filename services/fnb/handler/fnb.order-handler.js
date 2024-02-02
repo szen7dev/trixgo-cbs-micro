@@ -43,17 +43,27 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid } = ctx.params;
+                let { type, voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid } = ctx.params;
 
                 // console.log({ FNB_ORDER_INSERT_PARAMS: ctx.params });
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                if(!type){
+                    // console.log('000000000000000000000000')
+                    let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
+                       voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
+                    })
+    
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }else{
+                    // console.log('11111111111111111111')
+                    let resultAfterCallHandler = await FNB_ORDER_MODEL.insert2({
+                        voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
+                    })
+    
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }
             } catch (error) {
                 return { error: true, message: error.message };
             }
@@ -93,7 +103,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: update Group
 	 */
     updateValue: {
@@ -119,7 +129,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: remove Group
 	 */
     remove: {
@@ -145,7 +155,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
