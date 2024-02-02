@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Tạo history log
 	 * Date: 13/12/2021
 	 */

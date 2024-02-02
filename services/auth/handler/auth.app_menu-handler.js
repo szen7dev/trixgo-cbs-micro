@@ -14,7 +14,7 @@ const AUTH__APP_ROLE_MENU = require('../model/auth.app_role_menu').MODEL;
 module.exports = {
     /**
      * Name: Tạo app menu
-     * Dev: Depv
+     * Dev: HiepNH
      */
     insert: {
         auth: "required",
@@ -41,7 +41,7 @@ module.exports = {
 
     /**
      * Name: Cập nhật app menu
-     * Dev: Depv
+     * Dev: HiepNH
      */
     update: {
         auth: "required",
@@ -67,7 +67,7 @@ module.exports = {
 
     /**
      * Name: Xoá app menu
-     * Dev: Depv
+     * Dev: HiepNH
      */
     remove: {
         auth: "required",
@@ -89,7 +89,7 @@ module.exports = {
 
     /**
      * Name: Lấy thông tin hoặc danh sách
-     * Dev: Depv
+     * Dev: HiepNH
      */
     getInfoAndGetList: {
         auth: "required",

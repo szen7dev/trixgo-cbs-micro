@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Tạo history traffic
 	 * Date: 13/12/2021
 	 */
@@ -65,7 +65,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thống kê thiết bị truy cập theo năm
 	 * Date: 13/12/2021
 	 */
@@ -116,7 +116,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thống kê thiết bị truy cập
 	 * Date: 13/12/2021
 	 */
@@ -152,7 +152,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thống kê truy cập theo app
 	 * Date: 13/12/2021
 	 */
@@ -282,7 +282,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thống kê truy cập theo app và thiết bị
 	 * Date: 13/12/2021
 	 */
@@ -461,7 +461,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thống kê truy cập theo công ty
 	 * Date: 13/12/2021
 	 */

@@ -142,7 +142,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách hoặc chi tiết comment
 	 * Date: 17/08/2021
 	 * Update: 22/02/2022

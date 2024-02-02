@@ -54,7 +54,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Tạo hợp đồng
 	 * Date: 13/12/2021
 	 */
@@ -374,7 +374,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Cập nhật hợp đồng
 	 * Date: 13/12/2021
 	 */

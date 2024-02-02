@@ -208,7 +208,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Get list doc file
 	 * Date: 26/10/2021
 	 */

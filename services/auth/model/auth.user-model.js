@@ -1116,7 +1116,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
@@ -1306,7 +1306,7 @@ class Model extends BaseModel {
 	 */
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách user gửi lời mời kết bạn cho mình
 	 * Date: 14/01/2022
 	 */
@@ -1403,7 +1403,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách user mà mình gửi yêu cầu kết bạn
 	 * Date: 14/01/2022
 	 */

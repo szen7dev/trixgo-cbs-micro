@@ -12,7 +12,7 @@
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm apartment
 	 * Date: 19/08/2021
 	 */
@@ -43,7 +43,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Cập nhật apartment
 	 * Date: 19/08/2021
 	 */
@@ -82,7 +82,7 @@ module.exports = {
 
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Xóa apartment
 	 * Date: 19/08/2021
 	 */
@@ -108,7 +108,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Xóa apartment
 	 * Date: 19/08/2021
 	 */

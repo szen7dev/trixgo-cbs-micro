@@ -108,7 +108,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Tạo mới văn bản
 	 * Date: 26/10/2021
 	 */
@@ -311,7 +311,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Cập nhật văn bản
 	 * Date: 28/10/2021
 	 */

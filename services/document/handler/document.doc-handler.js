@@ -516,7 +516,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thống kê theo type
 	 * Date: 13/11/2021
 	 */
@@ -551,7 +551,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Lấy số lượng công việc của tất cả project mà user là members
 	 * Date: 13/11/2021
 	 */

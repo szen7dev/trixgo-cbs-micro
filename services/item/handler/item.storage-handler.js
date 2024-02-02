@@ -10,7 +10,7 @@ const ITEM__STORAGE_MODEL                    = require('../model/item.storage-mo
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: insert storage
 	 */
     insert: {
@@ -38,7 +38,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: update storage
      */
     update: {
@@ -65,12 +65,12 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: remove storage => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      */
     
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Danh sách doctype
 	 */
     getInfoAndGetList: {

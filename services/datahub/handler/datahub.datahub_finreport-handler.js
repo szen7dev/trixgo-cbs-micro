@@ -10,7 +10,7 @@ const DATAHUB_FINREPORT_MODEL                      = require('../model/datahub.d
 
 module.exports = {
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thêm datahub finreport
 	 */
     insert: {
@@ -46,7 +46,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Sửa datahub finreport
 	 */
     update: {
@@ -83,7 +83,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv
+     * Dev: HiepNH
      * Func: Xóa datahub finreport
      */
     remove: {
@@ -108,7 +108,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv
+     * Dev: HiepNH
      * Func: get info and get list datahub finreport
      */
     getInfoAndGetList: {

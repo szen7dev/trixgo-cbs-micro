@@ -10,7 +10,7 @@ const ANALYSIS__HISTORY_TRAFFIC_MODEL             = require('../model/analysis.h
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Insert history traffic
 	 */
     insert: {
@@ -39,7 +39,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thống kê thiết bị truy cập theo năm
 	 */
     statisticsDeviceAccessByYear: {
@@ -63,7 +63,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thống kê thiết bị truy cập
 	 */
     statisticsByDeviceAccess: {
@@ -88,7 +88,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thống kê truy cập theo app
 	 */
     statisticsAccessByApp: {
@@ -115,7 +115,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: Thống kê truy cập theo app và thiết bị
      */
     statisticsAccessByAppAndDevice: {
@@ -140,7 +140,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thống kê truy cập theo công ty
 	 */
     statisticsAccessByCompany: {
@@ -166,7 +166,7 @@ module.exports = {
 
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Danh sách và thông tin history traffic
 	 */
     getInfoAndGetList: {

@@ -45,7 +45,7 @@ const { checkParametersModel, checkPointDotsAndRoundingNumberForPagingChatting }
 };
 
 /**
- * Dev: DePV + MinhHM 
+ * Dev: HiepNH + MinhHM 
  * Func: Tính toán trang hiện tại (pagination)
  */
 exports.getCurrentPage = function ({ totalRecord, totalCurrentPage, limit }){

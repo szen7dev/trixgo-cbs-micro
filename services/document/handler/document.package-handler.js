@@ -62,7 +62,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Cập nhật gói thầu
 	 * Date: 11/02/2022
 	 */
@@ -111,7 +111,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Xoa gói thầu
 	 * Date: 11/02/2022
 	 */
@@ -136,7 +136,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Xoá nhiều gói thầu
 	 * Date: 11/02/2022
 	 */
@@ -161,7 +161,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách gói thầu hoặc chi tiết gói thầu
 	 * Date: 27/10/2021
 	 */

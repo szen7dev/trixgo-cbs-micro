@@ -191,7 +191,7 @@ class Model extends BaseModel {
     }
     
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Lấy danh sách datahub contractor
 	 * Date: 26/10/2021
 	 */

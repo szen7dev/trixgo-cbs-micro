@@ -12,7 +12,7 @@
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm UTILITY
 	 * Date: 19/08/2021
 	 */
@@ -42,7 +42,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Cập nhật UTILITY
 	 * Date: 19/08/2021
 	 */
@@ -72,7 +72,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Xóa UTILITY
 	 * Date: 19/08/2021
 	 */
@@ -98,7 +98,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Xóa UTILITY
 	 * Date: 19/08/2021
 	 */

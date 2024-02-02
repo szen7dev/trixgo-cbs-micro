@@ -10,7 +10,7 @@ const CMCS__CONTRACT_IPC_MODEL                 = require('../model/cmcs.contract
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm contract ipc
 	 */
     insert: {
@@ -50,7 +50,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Sửa contract ipc
 	 */
     update: {
@@ -124,7 +124,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: Xóa contract ipc
      */
     remove: {
@@ -149,7 +149,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: HiepNH 
      * Func: get info and get list contract ipc
      */
     getInfoAndGetList: {
@@ -377,7 +377,7 @@ module.exports = {
     }, 
 
     /**
-     * Dev: Depv
+     * Dev: HiepNH
      * Func: Download Excel
      * Date: 15/09/2022
      */

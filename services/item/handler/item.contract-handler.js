@@ -24,7 +24,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Thêm contract
 	 * Date: 19/08/2021
 	 */
@@ -136,7 +136,7 @@ module.exports = {
 
 
      /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Cập nhật hợp đồng
 	 * Date: 19/08/2021
 	 */
@@ -284,13 +284,13 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: XÓA HỢP ĐỒNG => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
 	 * Date: 19/08/2021
 	 */
 
      /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: LẤY THÔNG TIN HOẶC LẤY DANH SACH HỢP ĐỒNG
 	 * Date: 19/08/2021
 	 */
@@ -359,7 +359,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: LẤY DANH SÁCH HỢP ĐỒNG MÀ USER LÀ MEMBERS
 	 * Date: 19/08/2021
 	 */

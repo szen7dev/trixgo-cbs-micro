@@ -12,7 +12,7 @@
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Thêm SALE BOOKING
 	 * Date: 19/08/2021
 	 */
@@ -46,7 +46,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Cập nhật SALE BOOKING
 	 * Date: 19/08/2021
 	 */
@@ -85,7 +85,7 @@ module.exports = {
 
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Xóa SALE BOOKING
 	 * Date: 19/08/2021
 	 */
@@ -111,7 +111,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Xóa SALE BOOKING
 	 * Date: 19/08/2021
 	 */

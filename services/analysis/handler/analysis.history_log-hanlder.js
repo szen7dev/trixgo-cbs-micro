@@ -10,7 +10,7 @@ const ANALYSIS__HISTORY_LOG_MODEL             = require('../model/analysis.histo
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: Insert history log
 	 */
     insert: {
@@ -40,7 +40,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: HiepNH 
 	 * Func: get info and history log
 	 */
     getInfoAndGetList: {

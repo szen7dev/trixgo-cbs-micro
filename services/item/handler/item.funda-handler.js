@@ -11,7 +11,7 @@ const ITEM__FUNDA_MODEL                   = require('../model/item.funda-model')
 module.exports = {
 
     /**
-     * Dev: Depv ✅
+     * Dev: HiepNH ✅
      * Func: Thêm funda
      */
     insert:{
@@ -57,7 +57,7 @@ module.exports = {
     },
 
         /**
-     * Dev: Depv ✅
+     * Dev: HiepNH ✅
      * Func: Cập nhật funda
      */
     update:{
@@ -118,7 +118,7 @@ module.exports = {
     },
 
    /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: Danh sách funda
 	 */
     getInfoAndGetList: {

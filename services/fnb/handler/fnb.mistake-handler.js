@@ -50,7 +50,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: update Group
 	 */
     update: {
@@ -116,7 +116,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: remove Group
 	 */
     remove: {
@@ -142,7 +142,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv
+	 * Dev: HiepNH
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
