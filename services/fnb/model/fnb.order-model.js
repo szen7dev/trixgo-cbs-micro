@@ -1474,7 +1474,7 @@ class Model extends BaseModel {
                             size: product.size ? Number(product.size) : 1,
                             sugar: product.sugar ? Number(product.sugar) : 1,
                             ice: product.ice ? Number(product.ice) : 1,
-                            subProductsID: product.variantsID,
+                            subGoodsID: product.variantsID,
                             quantity: product.quantity ? Number(product.quantity) : 0,
                             unitPrice: newUnitPrice,
                             note: product.note
