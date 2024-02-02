@@ -122,7 +122,7 @@ exports.sendMailForgetPassword = function (email, fullName, codeReset){
     let emailContent = templateRecoverPass(fullName, codeReset);
     mailer(email, `CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM`, emailContent, function(cb){
         console.log(cb);
-    }, 'TRIXGO PLATFORM <no-reply@trixgo.com>')
+    }, 'TRIXGO <noreply.trixgo@gmail.com>')
 }
 
 exports.sendMailNewAccount = function (email, fullName, pwd){
@@ -138,4 +138,3 @@ exports.sendMailTestWithAttachments = function (email, fullName){
         console.log(cb);
     })
 }
-
