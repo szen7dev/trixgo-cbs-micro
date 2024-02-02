@@ -72,16 +72,16 @@ class Model extends BaseModel {
                 if(!infoOrder)
                     return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let infoProduct = await FNB_PRODUCT_COLL.findById(goodsID)
-                if(!infoProduct)
-                    return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                // let infoProduct = await FNB_ORDER_GOODS_COLL.findById(goodsID)
+                // if(!infoProduct)
+                //     return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
                 let dataInsert = {
                     userCreate: userID,
                     company: infoOrder.company,
                     funda: infoOrder.funda,
                     order: orderID,
-                    product: goodsID,
+                    goods: goodsID,
                     size,
                     sugar,
                     ice,
@@ -117,7 +117,6 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 

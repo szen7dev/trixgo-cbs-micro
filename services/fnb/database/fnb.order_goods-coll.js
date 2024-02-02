@@ -24,7 +24,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_goods", {
     //_________Sản phẩm
     goods: {
         type: Schema.Types.ObjectId,
-        ref : "fnb_goods"
+        ref : "goods"
     },
     /**
      * Trân châu đen hay trắng
@@ -74,7 +74,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_goods", {
      */
     subGoods: [{
         type: Schema.Types.ObjectId,
-        ref : "fnb_goods"
+        ref : "goods"
     }],
     /**
      * THÔNG TIN GIÁ TRỊ
