@@ -856,7 +856,7 @@ class Model extends BaseModel {
 
                 let amountWorkHistory = 0, amountProjectHistory = 0, amountContractHistory = 0, amountEducationHistory = 0, amountCertificateHistory = 0
 
-                console.log({ contactID, dataUpdate })
+                // console.log({ contactID, dataUpdate })
                 let listData = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
                     {
                         $match: {
