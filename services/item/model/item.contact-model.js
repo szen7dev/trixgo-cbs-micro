@@ -123,6 +123,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
 
                 let dataInsert = {
+                    userCreate: authorID,
                     company: infoFunda.company,
                     funda: fundaID,
                     type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 2, // Khách hàng
@@ -855,7 +856,7 @@ class Model extends BaseModel {
 
                 let amountWorkHistory = 0, amountProjectHistory = 0, amountContractHistory = 0, amountEducationHistory = 0, amountCertificateHistory = 0
 
-                console.log({ contactID, dataUpdate })
+                // console.log({ contactID, dataUpdate })
                 let listData = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
                     {
                         $match: {
