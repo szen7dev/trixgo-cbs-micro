@@ -123,6 +123,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
 
                 let dataInsert = {
+                    userCreate: authorID,
                     company: infoFunda.company,
                     funda: fundaID,
                     type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 2, // Khách hàng
