@@ -12,6 +12,11 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Đơn vị cơ sở/Cửa hàng
+    fundas: [{
+        type: Schema.Types.ObjectId,
+        ref : "funda"
+    }],
     //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
@@ -36,22 +41,63 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     },
     //_________Có phải là mẫu hay không
     template: { type: Number, default: 0 },
-    //_________Phân loại
-    type: { type: Number, default: 1 },
+    /**
+     * THÔNG TIN
+     */
+    /**
+     * Phân loại
+     * 1-Thông thường
+     * 2-Topping
+     */
+    type: {
+        type: Number,
+        default : 1
+    },
+    /**
+     * Kích cỡ
+     * 1-Size M
+     * 2-Size L
+     */
+    size: {
+        type: Number,
+        default : 1
+    },
     //_________Tên
     name: String,
+    //_________Nội dung
+    namecv: String,
     //_________Mã hiệu
     sign: String,    
     //_________Đơn vị
     unit: String,   
-    //_________Đơn giá nhập
-    unitprice: { type: Number, default: 0 },
-    //_________Đơn giá xuất bán
-    sellingUnitprice: { type: Number, default: 0 },
     //_________Mô tả
     description: String,
     //_________Ghi chú
     note: String, 
+    //_________Đơn giá nhập
+    unitprice: { type: Number, default: 0 },
+    //_________Đơn giá xuất bán
+    sellingUnitprice: { type: Number, default: 0 },
+    //______Đơn giá: M, Off
+    unitPrice: {
+        type: Number,
+        default : 0
+    },
+    //______Đơn giá 2: M, App
+    unitPrice2: {
+        type: Number,
+        default : 0
+    },
+    //______Đơn giá 3: L, Off
+    unitPrice3: {
+        type: Number,
+        default : 0
+    },
+    //______Đơn giá 4: L, App
+    unitPrice4: {
+        type: Number,
+        default : 0
+    },
     //_________Hình ảnh
     image: { type: String, default: 'goods_default.png' },
     //_________File đính kèm

@@ -40,6 +40,7 @@ const BUDGET_WORK_COLL                                  = require('../../budget/
  * MODELS
  */
 const ACCOUNT_MODEL                                     = require('../.../../../item/model/item.account-model').MODEL
+const AUTH__APP_USER                                    = require('../.../../../auth/model/auth.app_users').MODEL
 
 let dataTF = {
     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
@@ -2916,7 +2917,7 @@ class Model extends BaseModel {
                 })
 
                 switch (type) {
-                    case '1':
+                    case 1:
                         resultGetList = await this.getListByFilter({
                             ...filterParams,
                             populates,
@@ -2926,9 +2927,19 @@ class Model extends BaseModel {
                         });
                         break;
 
-                    case '2':
+                    case 2:
                         resultGetList = await this.getListByFilter({
                              ...filterParams,
+                            populates,
+                            userID,
+                            companyID,
+                            isExportExcel: true, ctx
+                        });
+                        break;
+
+                    case 3:
+                        resultGetList = await this.getListByFilter({
+                                ...filterParams,
                             populates,
                             userID,
                             companyID,
@@ -2946,6 +2957,7 @@ class Model extends BaseModel {
                         });
                         break;
                 }
+                // console.log({resultGetList})
 
                 if(!resultGetList.error) {
                     conditionObj = resultGetList.data;
@@ -2970,7 +2982,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                const result = await this.downloadExcelFile({data: listData, type, voucherID})
+                const result = await this.downloadExcelFile({userID, data: listData, type, voucherID})
                 return resolve(result);
             } catch (error) {
                 console.log({ error })
@@ -2979,7 +2991,7 @@ class Model extends BaseModel {
         })
     }
 
-    downloadExcelFile({ data, type, voucherID }) {
+    downloadExcelFile({ userID, data, type, voucherID }) {
         return new Promise(resolve => {
             let template
             if(type == 1){
@@ -3068,6 +3080,12 @@ class Model extends BaseModel {
                     }
 
                     else if(type == 3){
+                        let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                            appID: "61e049aefdebf77b072d1b12", 
+                            userID
+                        })
+                        // console.log({infoAppUser})
+
                         let infoVoucher = await FINANCIAL_VOUCHER_COLL.findById(voucherID)
                         .populate({
                             path: 'customer funda',
@@ -3084,13 +3102,20 @@ class Model extends BaseModel {
 
                         workbook.sheet("Data").row(12).cell(1).value(`Số sản phẩm: ${data?.length}`);
 
-                        var i = 14
+                        var i = 15
                         data?.forEach((item, index) => {
                             workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
                             workbook.sheet("Data").row(i).cell(2).value(item?.goods?.name);
                             workbook.sheet("Data").row(i).cell(3).value(item?.goods?.unit);
                             workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity));
-                            workbook.sheet("Data").row(i).cell(5).value(item?.note);    
+
+                            // Show giá với Admin ứng dụng
+                            if(infoAppUser && infoAppUser.data.level == 0){
+                                workbook.sheet("Data").row(i).cell(5).value(Number(item?.unitprice));
+                                workbook.sheet("Data").row(i).cell(6).value(Number(item?.amount));
+                            }
+
+                            workbook.sheet("Data").row(i).cell(7).value(item?.note);    
     
                             i++
                         })
@@ -3098,7 +3123,7 @@ class Model extends BaseModel {
                         workbook.sheet("Data").row(i + 2).cell(2).value('NGƯỜI GIAO').style({
                             bold: true,
                         })
-                        workbook.sheet("Data").row(i + 2).cell(4).value('NGƯỜI NHẬN').style({
+                        workbook.sheet("Data").row(i + 2).cell(5).value('NGƯỜI NHẬN').style({
                             bold: true,
                         })
                     }
