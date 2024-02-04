@@ -21,19 +21,23 @@ module.exports = {
             sign            : { type: "string", optional: true },
             unit            : { type: "string", optional: true },
             unitprice       : { type: "number", optional: true },
-            sellingUnitprice       : { type: "number", optional: true },
-            description     : { type: "string", optional: true },
-            note            : { type: "string", optional: true }
+            sellingUnitprice: { type: "number", optional: true },
+            note            : { type: "string", optional: true },
+            type            : { type: "number", optional: true },
+            unitPrice       : { type: "number", optional: true },
+            unitPrice2      : { type: "number", optional: true },
+            unitPrice3      : { type: "number", optional: true },
+            unitPrice4      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { name, sign, unit, unitprice, sellingUnitprice, description, note, parentID, convertID, convertQuantity } = ctx.params;
+                const { name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, usage } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, convertID, convertQuantity, name, sign, unit, unitprice, sellingUnitprice, description, note, userID });
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, convertID, convertQuantity, status, usage, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -51,20 +55,24 @@ module.exports = {
             name            : { type: "string" },
             sign            : { type: "string", optional: true },
             unit            : { type: "string", optional: true },
+            note            : { type: "string", optional: true },
             unitprice       : { type: "number", optional: true },
-            sellingUnitprice       : { type: "number", optional: true },
-            description     : { type: "string", optional: true },
-            note            : { type: "string", optional: true }
+            sellingUnitprice: { type: "number", optional: true },
+            type            : { type: "number", optional: true },
+            unitPrice       : { type: "number", optional: true },
+            unitPrice2      : { type: "number", optional: true },
+            unitPrice3      : { type: "number", optional: true },
+            unitPrice4      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: userID, company } = ctx.meta.infoUser;
-                const { goodsID, name, sign, unit, unitprice, sellingUnitprice, description, note, convertID, convertQuantity } = ctx.params;
+                const { _id: userID } = ctx.meta.infoUser;
+                const { goodsID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, convertID, convertQuantity, status, usage } = ctx.params;
 
                 // console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, description, note, userID, convertID, convertQuantity });
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -82,6 +90,7 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             isListParentOfListChilds: { type: "string", optional: true },
+            
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -92,7 +101,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { goodsID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds } = ctx.params;
+                let { goodsID, companyID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -106,7 +115,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getList({
-                        companyID, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds
+                        companyID, parentID, fundaID, type, isParent, status, usage, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -124,17 +133,13 @@ module.exports = {
     downloadTemplateExcel: {
         auth: 'required',
         params: {
-            // projectID: { type: 'string' }
+
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                // const { projectID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await ITEM__GOODS_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID 
                 })
@@ -154,7 +159,6 @@ module.exports = {
     importFromExcel: {
         auth: 'required',
         params: {
-            // taskID    : { type: 'string', optional: true },
             dataImport: { type: 'string' }
         },
         async handler(ctx) {
@@ -162,13 +166,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { dataImport } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log(dataImport)
-
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-                console.log('====================HERE===================')
-
-                // console.log(dataImport)
 
                 const resultAfterCallHandler = await ITEM__GOODS_MODEL.importFromExcel({
                     companyID: company._id, dataImport, userID, ctx

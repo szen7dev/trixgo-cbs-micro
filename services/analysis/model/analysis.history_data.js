@@ -25,11 +25,12 @@ const COMPANY_COLL                              = require('../../auth/database/a
 const ANALYSIS__HISTORY_DATA_COLL               = require('../database/analysis.history_data-coll')
 const ANALYSIS__HISTORY_TRAFFIC_COLL            = require('../database/analysis.history_traffic-coll')
 const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
+const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll')
 const ITEM__FUNDA_COLL            		        = require('../../item/database/item.funda-coll')
 const ITEM__WAREHOUSE_COLL            		    = require('../../item/database/item.warehouse-coll')
-const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
+const ITEM__GOODS_COLL            		        = require('../../item/database/item.goods-coll')
 
 class Model extends BaseModel {
 
@@ -69,7 +70,7 @@ class Model extends BaseModel {
         })
     }
 
-    convertData({ option, companyID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID }){
+    convertData({ option, companyID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID, fundasID, fromDate, toDate }){
         // console.log({ option, companyID, page, unit, getNumber, newPassword })
         const that = this
         return new Promise(async resolve => { 
@@ -202,6 +203,28 @@ class Model extends BaseModel {
                 else if(option == 6){
                     let info = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, {isDefault: 2}, { new: true } )
                     // console.log(info)
+                }
+
+                // Convert Item Goods
+                else if(option == 7){
+                    let conditionObj = {company : ObjectID(companyID)}
+                    if(fromDate && toDate){
+                        // Convert dữ liệu ngày tháng để theo chuẩn chung
+                        fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                        toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+
+                        conditionObj.createAt = {
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        }
+                    }
+
+                    console.log(conditionObj)
+
+                    await ITEM__GOODS_COLL.updateMany(
+                        conditionObj,
+                        {$set: {fundas: fundasID}}
+                        )
                 }
 
                 return resolve({ error: false, data: 'Convert thành công' });

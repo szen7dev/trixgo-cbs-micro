@@ -36,10 +36,10 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, description, note, userID, convertID, convertQuantity }){
+	insert({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage }){
         return new Promise(async resolve => {
             try {
-                if(!name)
+                if(!name || name == "")
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
 
                 let dataInsert = {
@@ -56,11 +56,11 @@ class Model extends BaseModel {
                     dataInsert.level = infoParent.level + 1;
                 }
 
-                if(sign){
+                if(sign && sign != ""){
                     dataInsert.sign = sign;
                 }
 
-                if(unit){
+                if(unit && unit != ""){
                     dataInsert.unit = unit;
                 }
 
@@ -72,11 +72,35 @@ class Model extends BaseModel {
                     dataInsert.sellingUnitprice = Number(sellingUnitprice);
                 }
 
-                if(description){
-                    dataInsert.description = description;
+                if(!isNaN(type)){
+                    dataInsert.type = Number(type);
                 }
 
-                if(note){
+                if(!isNaN(unitPrice)){
+                    dataInsert.unitPrice = Number(unitPrice);
+                }
+
+                if(!isNaN(unitPrice2)){
+                    dataInsert.unitPrice2 = Number(unitPrice2);
+                }
+
+                if(!isNaN(unitPrice3)){
+                    dataInsert.unitPrice3 = Number(unitPrice3);
+                }
+
+                if(!isNaN(unitPrice4)){
+                    dataInsert.unitPrice4 = Number(unitPrice4);
+                }
+
+                if(!isNaN(status)){
+                    dataInsert.status = Number(status);
+                }
+
+                if(!isNaN(usage)){
+                    dataInsert.usage = Number(usage);
+                }
+
+                if(note && note != ""){
                     dataInsert.note = note;
                 }
 
@@ -87,6 +111,21 @@ class Model extends BaseModel {
                 if(!isNaN(convertQuantity)){
                     dataInsert.convertQuantity = Number(convertQuantity);
                 }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(unit && unit != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(unit)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsert.namecv = convertStr
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
@@ -109,24 +148,24 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, description, note, userID, convertID, convertQuantity }){
+	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(goodsID))
                     return resolve({ error: true, message: "goodsID không hợp lệ", keyError: "Request params goodsID invalid" });
 
-                if(!name)
+                if(!name || name == "")
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
                 
                 let dataUpdate = {
                     name, userUpdate: userID, modifyAt: new Date()
                 }
 
-                if(sign){
+                if(sign && sign != ""){
                     dataUpdate.sign = sign;
                 }
 
-                if(unit){
+                if(unit && unit != ""){
                     dataUpdate.unit = unit;
                 }
 
@@ -138,11 +177,35 @@ class Model extends BaseModel {
                     dataUpdate.sellingUnitprice = Number(sellingUnitprice);
                 }
 
-                if(description){
-                    dataUpdate.description = description;
+                if(!isNaN(type)){
+                    dataUpdate.type = Number(type);
                 }
 
-                if(note){
+                if(!isNaN(unitPrice)){
+                    dataUpdate.unitPrice = Number(unitPrice);
+                }
+
+                if(!isNaN(unitPrice2)){
+                    dataUpdate.unitPrice2 = Number(unitPrice2);
+                }
+
+                if(!isNaN(unitPrice3)){
+                    dataUpdate.unitPrice3 = Number(unitPrice3);
+                }
+
+                if(!isNaN(unitPrice4)){
+                    dataUpdate.unitPrice4 = Number(unitPrice4);
+                }
+
+                if(!isNaN(status)){
+                    dataUpdate.status = Number(status);
+                }
+
+                if(!isNaN(usage)){
+                    dataUpdate.usage = Number(usage);
+                }
+
+                if(note && note != ""){
                     dataUpdate.note = note;
                 }
 
@@ -153,6 +216,21 @@ class Model extends BaseModel {
                 if(!isNaN(convertQuantity)){
                     dataUpdate.convertQuantity = Number(convertQuantity);
                 }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(unit && unit != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(unit)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdate.namecv = convertStr
 
                 let infoAfterUpdate = await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true });
                 return resolve({ error: false, data: infoAfterUpdate });
@@ -204,9 +282,9 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, parentID, isListParentOfListChilds,
+        companyID, parentID, fundaID, type, isParent, status, usage, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
-        // console.log({companyID, parentID, isListParentOfListChilds, keyword, limit, lastestID, select, populates})
+        // console.log({companyID, parentID, fundaID, type, isParent })
         return new Promise(async (resolve) => {
             try {
                 
@@ -219,6 +297,34 @@ class Model extends BaseModel {
                 let sortBy;
                 let conditionObj = { };
                 let keys	 = ['createAt__-1', '_id__-1'];
+
+                if(fundaID && checkObjectIDs(fundaID)){
+                    conditionObj.fundas = {$in: [fundaID]}
+                }
+
+                if(parentID && checkObjectIDs(parentID)){
+                    conditionObj.parent = ObjectID(parentID);
+                }
+
+                // Chỉ lấy danh mục
+                if(isParent && Number(isParent) == 1){
+                    conditionObj.parent = { $exists: false }
+                }
+
+                // Phân loại (sản phẩm chính/topping)
+                if(type && !isNaN(type)){
+                    conditionObj.type = Number(type)
+                }
+
+                // Theo trạng thái
+                if(status && !isNaN(status)){
+                    conditionObj.status = Number(status)
+                }
+
+                // Theo mục đích sử dụng
+                if(usage && !isNaN(usage)){
+                    conditionObj.usage = Number(usage)
+                }
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -314,7 +420,7 @@ class Model extends BaseModel {
                 // console.log(listData)
 
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/item_goods_template_import.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/item_import_goods.xlsx')))
                 .then(async workbook => {
 
                     // var i = 3;
@@ -356,26 +462,28 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
-                // console.log('=============Log data===================');
-                // return console.log({ dataImportJSON });
                 let index = 0;
                 let errorNumber = 0;
-                // let parentID;
                 for (const data of dataImportJSON) {
-                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                     if(index > 0){
                         let dataInsert = {
                             companyID,
                             userID,
                             name: data?.__EMPTY,
                             sign: data?.__EMPTY_1,
-                            unit: data?.__EMPTY_2,
-                            unitprice: data?.__EMPTY_3,
-                            description: data?.__EMPTY_4,
-                            note: data?.__EMPTY_5,
-                            
+                            type: data?.__EMPTY_2,
+                            unit: data?.__EMPTY_3,
+                            unitprice: data?.__EMPTY_4,
+                            sellingUnitprice: data?.__EMPTY_5,
+                            unitPrice: data?.__EMPTY_6,
+                            unitPrice2: data?.__EMPTY_7,
+                            unitPrice3: data?.__EMPTY_8,
+                            unitPrice4: data?.__EMPTY_9,
+                            note: data?.__EMPTY_10,
+                            usage: data?.__EMPTY_11,
+                            status: data?.__EMPTY_12,
+                            parentID: data?.__EMPTY_13,
                         }
-                        // console.log(dataInsert);
                     
                         let infoAfterInsert = await this.insert(dataInsert);
                         if(infoAfterInsert.error){
