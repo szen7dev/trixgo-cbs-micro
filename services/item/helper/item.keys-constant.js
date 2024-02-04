@@ -12,8 +12,8 @@
     8-Nhận sự, Loại HDLD
     9-Nhân sự tình trạng làm việc
     10-Nhân sự Thâm niên
-    11-CRM, Phân loại lao động
-    12-CRM-Hồ sơ chi tiết của giai đoạn
+    11-Hành trình khách hàng (CRM)
+    12-Hồ sơ chi tiết từng hành trình khách hàng (CRM)
     13-Nhân sự, chúc vụ
     14-Nhân sự loại chứng chỉ
     15-Nhân sự, Nội dung chứng chỉ
@@ -24,8 +24,9 @@
     21- Công việc, Đánh giá chất lượng
     22-Theo service (áp dụng cho message nps)
     23-Theo service (áp dụng cho message nps)(Không hài lòng)
+    24-Kênh bán hàng
 */
-exports.DOCTYPE_TYPE = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22, 23];
+exports.DOCTYPE_TYPE = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22, 23,24];
 
 exports.CONTACT_CLASSIFY = [
     { value: 1, text: 'Nhân viên' },
