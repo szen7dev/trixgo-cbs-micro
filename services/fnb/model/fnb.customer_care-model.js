@@ -241,8 +241,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
+    getList({ companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
+        // console.log({ companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -264,6 +264,10 @@ class Model extends BaseModel {
 
                     let arrFun = fundasID.map(item=>ObjectID(item))
                     conditionObj.funda = { $in: arrFun }
+                }
+
+                if(journeyID && checkObjectIDs(journeyID)){
+                    conditionObj.journey = ObjectID(journeyID)
                 }
 
                 if(customerID && checkObjectIDs(customerID)){
@@ -392,7 +396,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
-        // console.log({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID  })
+        console.log({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -529,73 +533,27 @@ class Model extends BaseModel {
                             model: 'user'
                         }
                     }
+                    
+                    /**
+                     * Gom nhóm theo Hành trình khách hàng
+                     */
+                    if(option && Number(option) == 5){
+                        conditionObj.journey = {$exists: true, $ne: null}
 
-                    // /**
-                    //  * Gom nhóm theo Nhân sự mắc lỗi/Lỗi của tôi
-                    //  */
-                    // else if(option && Number(option) == 5){
-                    //     conditionObj.executor = ObjectID(userID)
+                        conditionGroup = {
+                            _id: { journey: "$journey" },
+                            quantity: { $sum: 1 },
+                        }
 
-                    //     conditionGroup = {
-                    //         _id: { mistake: "$mistake" },
-                    //         quantity: { $sum: 1 },
-                    //     }
+                        conditionPopulate = {
+                            path: '_id.journey',
+                            select: '_id name sign',
+                            model: 'doctype'
+                        }
 
-                    //     conditionPopulate = {
-                    //         path: '_id.mistake',
-                    //         select: '_id name sign',
-                    //         model: 'doctype'
-                    //     }
-                    // }
-
-                    // /**
-                    //  * KPI nhân sự
-                    //  */
-                    // else if(option && Number(option) == 6){
-                    //     conditionObj = {
-                    //         company: ObjectID(companyID),
-                    //         executor: ObjectID(executorID),
-                    //         year: Number(year),
-                    //     }
-
-                    //     // Theo năm
-                    //     if(optionTime && Number(optionTime) == 1){
-                    //         conditionGroup = {
-                    //             _id: { year: "$year" },
-                    //             number: { $sum: 1 },
-                    //             workingHours: { $sum: "$workingHours" },
-                    //             quantity: { $sum: "$quantity" },
-                    //             score: { $sum: "$score" }
-                    //         }
-                    //     }
-                        
-                    //     // Theo tháng trong năm
-                    //     if(optionTime && Number(optionTime) == 2){
-                    //         if(!isNaN(year) && Number(year) >= 0){
-                    //             conditionObjYear = {
-                    //                 "year": Number(year),
-                    //             }
-                    //         }
-
-                    //         if(!isNaN(month) && Number(month) >= 0){
-                    //             conditionObjYear = {
-                    //                 "year": Number(year),
-                    //                 "month": Number(month),
-                    //             }
-                    //         }
-    
-                    //         conditionGroup = {
-                    //             _id: { month: "$month", year: "$year" },
-                    //             number: { $sum: 1 },
-                    //             workingHours: { $sum: "$workingHours" },
-                    //             quantity: { $sum: "$quantity" },
-                    //             score: { $sum: "$score" }
-                    //         }
-                    //     }  
-
-                    //     sortBy = {"_id.month": 1}
-                    // }
-
+                        sortBy = {"_id.journey": 1}
+                    }
+                    
                     // Tổng hợp KPI theo user/tháng/năm: OK
                     else if(option && Number(option) == 7){
                         if(executorID && checkObjectIDs(executorID)){
@@ -656,6 +614,7 @@ class Model extends BaseModel {
                                     order : 1,
                                     product : 1,
                                     executor : 1,
+                                    journey : 1,
                                     type : 1,
                                     customer : 1,
                                     internal : 1,
