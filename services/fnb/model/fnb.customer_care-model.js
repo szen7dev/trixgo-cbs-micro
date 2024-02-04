@@ -546,6 +546,8 @@ class Model extends BaseModel {
                             select: '_id name sign',
                             model: 'doctype'
                         }
+
+                        sortBy = {"_id.journey": 1}
                     }
                     
                     // Tổng hợp KPI theo user/tháng/năm: OK
