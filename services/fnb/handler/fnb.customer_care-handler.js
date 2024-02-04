@@ -126,6 +126,7 @@ module.exports = {
         params: {
             companyID           : { type: "string", optional: true },
             fundasID            : { type: "array", optional: true },
+            journeyID           : { type: "string", optional: true },
             customerID          : { type: "string", optional: true },
             userCreateID        : { type: "string", optional: true },
             managerID           : { type: "string", optional: true },
@@ -144,7 +145,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, orderMistakeID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -160,7 +161,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.getList({
-                        companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates
+                        companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates
                     });
                 }
 

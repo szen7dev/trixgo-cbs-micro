@@ -241,8 +241,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ companyID, fundasID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
+    getList({ companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
+        // console.log({ companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -264,6 +264,10 @@ class Model extends BaseModel {
 
                     let arrFun = fundasID.map(item=>ObjectID(item))
                     conditionObj.funda = { $in: arrFun }
+                }
+
+                if(journeyID && checkObjectIDs(journeyID)){
+                    conditionObj.journey = ObjectID(journeyID)
                 }
 
                 if(customerID && checkObjectIDs(customerID)){
