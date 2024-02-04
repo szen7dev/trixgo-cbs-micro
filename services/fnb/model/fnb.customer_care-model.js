@@ -37,13 +37,14 @@ class Model extends BaseModel {
         // console.log({ userID, companyID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files  })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(customerID) || !checkObjectIDs(mistakeID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'customerID|mistakeID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                if(!checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
+                // if(!checkObjectIDs(customerID) || !checkObjectIDs(mistakeID) || !checkObjectIDs(userID)) 
+                    return resolve({ error: true, message: 'customerID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                 let dataInsert = { 
                     userCreate: userID,
                     customer: customerID,
-                    mistake: mistakeID,
+                    // mistake: mistakeID,
                     company: companyID,
                     name
                 }
@@ -93,6 +94,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(journeyID)) {
                     dataInsert.journey = journeyID;
+                }
+
+                if(checkObjectIDs(mistakeID)) {
+                    dataInsert.mistake = mistakeID;
                 }
 
                 if(checkObjectIDs(files)) {
