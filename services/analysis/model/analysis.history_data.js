@@ -232,22 +232,15 @@ class Model extends BaseModel {
                     
                     if(checkObjectIDs(contactID) && checkObjectIDs(parentID)){
                         let infoParent = await ITEM__CONTACT_COLL.findById(parentID)
-                        // console.log(infoParent)
                         
                         let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
-        
-                        // let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
-                        // if(infoContact.parent || infoContact.childs.length)
-                        //     return resolve({ error: true, message: "Cập nhật thất bại" })
-                            // console.log(infoContact)
         
                         // Với contactID
                         dataUpdate.level = infoParent.level + 1
                         dataUpdate.parent = parentID
                         dataUpdate.nestedParents = [parentID] // Cha cấp 1
     
-                         // Cập nhật contactID
-                        //  console.log('===================')
+                        // Cập nhật contactID
                         let info = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID,
                             dataUpdate,
                             { new: true })
@@ -287,13 +280,85 @@ class Model extends BaseModel {
                     }
                 }
 
-
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         })
     }
+
+    // moveContact({ contactID, parentID, userID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
+
+    //             let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
+
+    //             /**
+    //              * CẬP NHẬT PHẦN TỬ CHA CŨ
+    //              */
+    //             if(infoContact && infoContact.parent){
+    //                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact.parent,
+    //                     {
+    //                         $pull: {
+    //                             childs: contactID,
+    //                             nestedChilds: contactID,
+    //                         },
+    //                         $inc: { amountChilds: -1 }
+    //                     },
+    //                     { new: true })
+    //             }
+
+    //              /**
+    //              * CẬP NHẬT PHẦN TỬ CHA MỚI
+    //              */
+    //             let infoParent = await ITEM__CONTACT_COLL.findById(parentID)
+                
+    //             // Với contactID
+    //             dataUpdate.level = infoParent.level + 1
+    //             dataUpdate.parent = parentID
+    //             dataUpdate.nestedParents = [parentID] // Cha cấp 1
+    //             await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID,
+    //                 dataUpdate,
+    //                 { new: true })
+
+    //             // Cập nhật amountChilds cho phần tử cha cấp 1
+    //             await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
+    //                 {
+    //                     $addToSet: { 
+    //                         childs: contactID,
+    //                         nestedChilds: contactID, // Mảng các phần tử con/cháu...
+    //                      },
+    //                     $inc: { amountChilds: 1 }
+    //                 },
+    //                 { new: true })
+
+    //             /**
+    //              * CẬP NHẬT PHẦN TỬ CHA MỚI - CẤP 2 TRỞ LÊN
+    //              * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
+    //              */
+    //             for(const item of infoParent?.nestedParents){
+    //                 // Thêm phần tử con/cháu
+    //                 await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+    //                     {
+    //                         $addToSet: { nestedChilds: contactID },
+    //                     },
+    //                     { new: true })
+
+    //                 // Thêm các phần tử cha vào contactID
+    //                 await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID ,
+    //                     {
+    //                         $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
+    //                     },
+    //                     { new: true })
+    //             }
+              
+    //             return resolve({ error: false})
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     });
+    // }
 
     convertContact({ docID, selectObj }) {
         return new Promise(async resolve => {
