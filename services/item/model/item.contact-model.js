@@ -377,7 +377,7 @@ class Model extends BaseModel {
                             },
                             { new: true })
 
-                        // Thêm phần tử cha
+                        // Thêm các phần tử cha
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id ,
                             {
                                 $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên

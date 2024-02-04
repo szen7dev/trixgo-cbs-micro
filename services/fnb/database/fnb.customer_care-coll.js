@@ -1,6 +1,8 @@
 "use strict";
 /**
  * CHĂM SÓC KHÁCH HÀNG
+ * https://amis.misa.vn/15061/customer-journey/#:~:text=Customer%20Journey%20(h%C3%A0nh%20tr%C3%ACnh%20kh%C3%A1ch,trong%20su%E1%BB%91t%20th%E1%BB%9Di%20gian%20qua.
+ * 
  */
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;

@@ -70,7 +70,7 @@ class Model extends BaseModel {
         })
     }
 
-    convertData({ option, companyID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID, fundasID, fromDate, toDate }){
+    convertData({ option, companyID, userID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, parentID }){
         // console.log({ option, companyID, page, unit, getNumber, newPassword })
         const that = this
         return new Promise(async resolve => { 
@@ -219,13 +219,74 @@ class Model extends BaseModel {
                         }
                     }
 
-                    console.log(conditionObj)
+                    // console.log(conditionObj)
 
                     await ITEM__GOODS_COLL.updateMany(
                         conditionObj,
                         {$set: {fundas: fundasID}}
                         )
                 }
+
+                // Convert Contact Parent
+                else if(option == 8){
+                    
+                    if(checkObjectIDs(contactID) && checkObjectIDs(parentID)){
+                        let infoParent = await ITEM__CONTACT_COLL.findById(parentID)
+                        // console.log(infoParent)
+                        
+                        let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
+        
+                        // let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
+                        // if(infoContact.parent || infoContact.childs.length)
+                        //     return resolve({ error: true, message: "Cập nhật thất bại" })
+                            // console.log(infoContact)
+        
+                        // Với contactID
+                        dataUpdate.level = infoParent.level + 1
+                        dataUpdate.parent = parentID
+                        dataUpdate.nestedParents = [parentID] // Cha cấp 1
+    
+                         // Cập nhật contactID
+                        //  console.log('===================')
+                        let info = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID,
+                            dataUpdate,
+                            { new: true })
+                        // console.log(info)
+        
+                        // Với parentID
+                        // Cập nhật amountChilds cho phần tử cha cấp 1
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
+                            {
+                                $addToSet: { 
+                                    childs: contactID,
+                                    nestedChilds: contactID, // Mảng các phần tử con/cháu...
+                                 },
+                                $inc: { amountChilds: 1 }
+                            },
+                            { new: true })
+        
+                        /**
+                         * Cập nhật cho phần tử cha cấp 2 trở lên (ông, cụ,...)
+                         * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
+                         */
+                        for(const item of infoParent?.nestedParents){
+                            // Thêm phần tử con/cháu
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+                                {
+                                    $addToSet: { nestedChilds: contactID },
+                                },
+                                { new: true })
+        
+                            // Thêm các phần tử cha vào contactID
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID ,
+                                {
+                                    $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
+                                },
+                                { new: true })
+                        }
+                    }
+                }
+
 
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
