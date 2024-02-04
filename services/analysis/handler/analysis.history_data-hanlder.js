@@ -2,6 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const moment = require('moment');
     
 /**
  * MODELS
@@ -71,7 +72,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { option, companyID, page, unit, getNumber, fundaID, warehouseID, contactID } = ctx.params;
+                let { option, companyID, page, unit, getNumber, fundaID, warehouseID, contactID, fundasID, fromDate, toDate } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -80,7 +81,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ANALYSIS__HISTORY_DATA_MODEL.convertData({
-                    option, email, userID, companyID, page, unit, getNumber, fundaID, warehouseID, contactID
+                    option, email, userID, companyID, page, unit, getNumber, fundaID, warehouseID, contactID, fundasID, fromDate, toDate
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

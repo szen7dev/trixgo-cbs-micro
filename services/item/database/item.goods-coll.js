@@ -70,8 +70,6 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     sign: String,    
     //_________Đơn vị
     unit: String,   
-    //_________Mô tả
-    description: String,
     //_________Ghi chú
     note: String, 
     //_________Đơn giá nhập
@@ -120,6 +118,16 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     },
     //_________Định mức chuyển đổi
     convertQuantity: { type: Number, default: 1 },
+    //______Sử dụng cho (1-Chung, 2-Đơn hàng)
+    usage: {
+        type: Number,
+        default : 1
+    },
+    //______Trạng thái (1-ON, 2-OFF)
+    status: {
+        type: Number,
+        default : 1
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
