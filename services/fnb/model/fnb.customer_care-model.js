@@ -180,7 +180,7 @@ class Model extends BaseModel {
                 }
 
                 if(checkObjectIDs(journeyID)) {
-                    dataUpdate.journeyID = journeyID;
+                    dataUpdate.journey = journeyID;
                 }
 
                 if(imagesID && imagesID.length) {
