@@ -9,6 +9,7 @@ exports.ITEM_SOCKET = {
 	 * Date: 08/01/2024
 	 */
     [EVENT_SOCKET_CONSTANT_ITEM.ITEM_CSS_EXPORT_ALL_CONTACTS]: function(data) {
+		console.log({ data })
         let socket                              = this;
         let listUserActive                      = socket.$service.listUserConnected;
         let io                                  = socket.$service.io;
