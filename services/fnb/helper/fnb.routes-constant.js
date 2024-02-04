@@ -73,7 +73,6 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_CUSTOMER_CARE=======================================//
     CUSTOMER_CARES                                : `${BASE_ROUTE}${CUSTOMER_CARE}`,
-    CUSTOMER_CARE_UPDATE_KPI                      : `${BASE_ROUTE}${CUSTOMER_CARE}/update-kpi`,
     CUSTOMER_CARE_GET_LIST_BY_PROPERTY            : `${BASE_ROUTE}${CUSTOMER_CARE}/get-list-by-property`,
     CUSTOMER_CARE_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${CUSTOMER_CARE}/download-template-excel`,
     CUSTOMER_CARE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${CUSTOMER_CARE}/import-from-excel`,

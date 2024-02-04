@@ -91,29 +91,6 @@ module.exports = {
         }
     },
 
-    updateKpi: {
-        auth: "required",
-        params: {
-
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params)
-                let {  month, year, executorID, workingHours, quantity, score } = ctx.params
-				const { _id: userID, company } = ctx.meta.infoUser
-
-                let resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.updateKpi({
-                    userID, companyID: company._id,
-                    month, year, executorID, workingHours, quantity, score
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-            } catch (error) {
-                return { error:  true, message: error.message }
-            }
-        }
-    },
-
     /**
 	 * Dev: HiepNH
 	 * Func: remove Group

@@ -110,7 +110,6 @@ const CF_ACTIONS_FNB = {
    */
    CUSTOMER_CARE_INSERT                                    : `${BASE_ACTIONS}_${CUSTOMER_CARE}_INSERT`,
    CUSTOMER_CARE_UPDATE                                    : `${BASE_ACTIONS}_${CUSTOMER_CARE}_UPDATE`,
-   CUSTOMER_CARE_UPDATE_KPI                                : `${BASE_ACTIONS}_${CUSTOMER_CARE}_UPDATE_KPI`,
    CUSTOMER_CARE_REMOVE                                    : `${BASE_ACTIONS}_${CUSTOMER_CARE}_REMOVE`,
    CUSTOMER_CARE_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${CUSTOMER_CARE}_GET_INFO_AND_GET_LIST`,
    CUSTOMER_CARE_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${CUSTOMER_CARE}_GET_LIST_BY_PROPERTY`,
