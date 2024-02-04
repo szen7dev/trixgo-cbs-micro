@@ -33,7 +33,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files  }) {
+    insert({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  }) {
         // console.log({ userID, companyID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files  })
         return new Promise(async resolve => {
             try {
@@ -91,8 +91,12 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
+                if(checkObjectIDs(journeyID)) {
+                    dataInsert.journey = journeyID;
+                }
+
                 if(checkObjectIDs(files)) {
-                    dataInsert.files = files;
+                    dataInsert.images = files;
                 }
               
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -111,7 +115,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ userID, customerCareID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, imagesID }) {
+    update({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))
@@ -173,6 +177,10 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataUpdate.note = note;
+                }
+
+                if(checkObjectIDs(journeyID)) {
+                    dataUpdate.journey = journeyID;
                 }
 
                 if(imagesID && imagesID.length) {

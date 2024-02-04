@@ -23,6 +23,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Schema.Types.ObjectId,
         ref : "fnb_order"
     },
+    //_________Lĩnh vực kinh doanh (NEW)
+    business: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
     //_________Kênh bán hàng (old)
     channel: {
         type: Number,
@@ -33,12 +38,17 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
+    //_________Hành trình khách hàng
+    journey: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
     //_________Mã khách (để biết các lỗi mà hay gặp ở khách để sau lưu ý)
     customer: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    //_________Lỗi mắc phải
+    //_________Phân loại vấn đề gặp phải
     mistake: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
