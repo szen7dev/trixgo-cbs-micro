@@ -246,8 +246,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
+    getList({ option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
+        // console.log({ option, companyID,, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -269,6 +269,10 @@ class Model extends BaseModel {
 
                     let arrFun = fundasID.map(item=>ObjectID(item))
                     conditionObj.funda = { $in: arrFun }
+                }
+
+                if(option == 1){
+                    conditionObj.journey = {$exists: true, $ne: null}
                 }
 
                 if(journeyID && checkObjectIDs(journeyID)){
@@ -401,7 +405,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
-        console.log({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+        // console.log({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -417,7 +421,6 @@ class Model extends BaseModel {
                 }else{
                     let conditionObj = {
                         company: ObjectID(companyID),
-                        mistake: { $exists: true, $ne: null }
                     }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
@@ -445,6 +448,8 @@ class Model extends BaseModel {
                      * Gom nhóm theo các loại lỗi: OK
                      */
                     if(option && Number(option) == 1){
+                        conditionObj.mistake = {$exists: true, $ne: null}
+
                         conditionGroup = {
                             _id: { mistake: "$mistake" },
                             quantity: { $sum: 1 },
@@ -461,6 +466,8 @@ class Model extends BaseModel {
                      * Gom nhóm theo thời gian: OK
                      */
                     else if(option && Number(option) == 2){
+                        conditionObj.mistake = {$exists: true, $ne: null}
+                        
                         // Theo năm
                         if(optionTime && Number(optionTime) == 1){
                             conditionGroup = {
