@@ -233,9 +233,6 @@ module.exports = {
                 await this.validateEntity(ctx.params)
 				const { _id: userID, company } = ctx.meta.infoUser
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID 
                 })
@@ -262,12 +259,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { dataImport } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                // console.log(dataImport)
-
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.importFromExcel({
                     taskID, dataImport, userID, ctx
@@ -282,8 +273,8 @@ module.exports = {
 
     /**
      * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 9/12/2022
+     * Func: Download Excel
+     * Date: 5/2/2024
      */
     exportExcel: {
         auth: 'required',
@@ -297,15 +288,10 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { companyID, fundaID, fromDate, toDate, month, year } = ctx.params;
 
-                // console.log({ companyID, fundaID, fromDate, toDate, month, year  })
-
                 if(!companyID) {
                     companyID = company._id;
                 }
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.exportExcel({
                     userID, companyID, fundaID, fromDate, toDate, month, year
                 })
