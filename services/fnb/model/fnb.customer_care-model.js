@@ -95,7 +95,11 @@ class Model extends BaseModel {
                 }
 
                 if(checkObjectIDs(journeyID)) {
-                    dataInsert.journey = journeyID;
+                    // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
+                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID})
+                    if(!checkOne){
+                        dataInsert.journey = journeyID;
+                    }
                 }
 
                 if(checkObjectIDs(mistakeID)) {
