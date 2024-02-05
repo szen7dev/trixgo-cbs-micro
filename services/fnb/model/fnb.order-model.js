@@ -2541,7 +2541,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ option, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, isCampaignType, isPaymentMethod, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, ctx }) {
+    getList({ type, option, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, isCampaignType, isPaymentMethod, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, ctx }) {
         // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
         return new Promise(async (resolve) => {
             try {
@@ -2614,8 +2614,13 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Lấy danh sách phục vụ gán Chăm sóc khách hàng
                 if(option && option == 1){
                     conditionObj = {company: companyID }
+                }
+
+                if(type && type == 1){
+                    conditionObj.affiliate = {$exists: true, $ne: null }
                 }
                 // console.log({option})
                 // console.log(conditionObj)

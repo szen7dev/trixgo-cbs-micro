@@ -197,10 +197,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID } = ctx.params;
+                let { type, option, orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID } = ctx.params;
 				
                 const { _id: userID, email, fullname, company } = ctx.meta.infoUser;
-                // console.log({ email, fullname})
+                
+                // console.log(ctx.params)
 
                 let resultAfterCallHandler;
                 if(orderID){
@@ -209,7 +210,7 @@ module.exports = {
                     })
                 }else{
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        option, companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID, ctx
+                        type, option, companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID, ctx
                     })
                 }
 
