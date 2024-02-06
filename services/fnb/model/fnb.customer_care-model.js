@@ -565,7 +565,7 @@ class Model extends BaseModel {
 
                         conditionPopulate = {
                             path: '_id.journey',
-                            select: '_id name sign',
+                            select: '_id name sign description',
                             model: 'doctype'
                         }
 
