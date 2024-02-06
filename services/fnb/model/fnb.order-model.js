@@ -871,7 +871,7 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                if([1,2,3,4,5,6,7,8,9,10,11,12].includes(Number(salesChannel)) && Number(total) >= 200000){
+                if([1].includes(Number(salesChannel)) && Number(total) >= 100000){
                     /**
                      * Số điện thoại không hợp lệ
                      * Nội dung mẫu ZNS không hợp lệ
