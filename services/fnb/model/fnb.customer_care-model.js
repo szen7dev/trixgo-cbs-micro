@@ -601,7 +601,7 @@ class Model extends BaseModel {
                         if(status){
                             conditionObj.status = +status
                         }
-                        conditionObj.manager = ObjectID("userID")
+                        conditionObj.manager = ObjectID(userID)
 
                         conditionGroup = {
                             _id: {  },
