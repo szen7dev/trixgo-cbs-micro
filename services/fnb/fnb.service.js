@@ -14,6 +14,7 @@ const FNB__MISTAKE_HANDLER  			 	= require('./handler/fnb.mistake-handler');
 const FNB__VOUCHER_HANDLER  				= require('./handler/fnb.voucher-handler');
 const FNB__CUSTOMER_CARE_HANDLER  			= require('./handler/fnb.customer_care-handler');
 const FNB__NETWORK_COM_HANDLER  			= require('./handler/fnb.network_com-handler');
+const FNB__CUSTOMER_BOOKING_HANDLER  		= require('./handler/fnb.customer_booking-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
@@ -24,6 +25,7 @@ const FNB__MISTAKE_COLL  			 		= require('./database/fnb.mistake-coll');
 const FNB__VOUCHER_COLL  					= require('./database/fnb.voucher-coll');
 const FNB__CUSTOMER_CARE_COLL  				= require('./database/fnb.customer_care-coll');
 const FNB__NETWORK_COM_COLL  				= require('./database/fnb.network_com-coll');
+const FNB__CUSTOMER_BOOKING_COLL  			= require('./database/fnb.customer_booking-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FNB,
@@ -37,6 +39,7 @@ module.exports = {
 		DbService(FNB__VOUCHER_COLL),
 		DbService(FNB__CUSTOMER_CARE_COLL),
 		DbService(FNB__NETWORK_COM_COLL),
+		DbService(FNB__CUSTOMER_BOOKING_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -151,6 +154,16 @@ module.exports = {
 		[CF_ACTIONS_FNB.ORDER_GOODS_DOWNLOAD_TEMPLATE_EXCEL]		: FNB__ORDER_GOODS_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.ORDER_GOODS_IMPORT_FROM_EXCEL]				: FNB__ORDER_GOODS_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.ORDER_GOODS_EXPORT_EXCEL]					: FNB__ORDER_GOODS_HANDLER.exportExcel,
+
+		//========================================== FNB_CUSTOMER_BOOKING ==============================================//
+		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_INSERT]									: FNB__CUSTOMER_BOOKING_HANDLER.insert,
+		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_UPDATE]									: FNB__CUSTOMER_BOOKING_HANDLER.update,
+		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_REMOVE]									: FNB__CUSTOMER_BOOKING_HANDLER.remove,
+		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_GET_INFO_AND_GET_LIST]						: FNB__CUSTOMER_BOOKING_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_GET_LIST_BY_PROPERTY]						: FNB__CUSTOMER_BOOKING_HANDLER.getListByProperty,
+		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__CUSTOMER_BOOKING_HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_IMPORT_FROM_EXCEL]							: FNB__CUSTOMER_BOOKING_HANDLER.importFromExcel,
+		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_EXPORT_EXCEL]								: FNB__CUSTOMER_BOOKING_HANDLER.exportExcel,
 	},
 
 	/**
