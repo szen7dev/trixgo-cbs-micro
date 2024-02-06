@@ -15,6 +15,7 @@ const FNB__VOUCHER_HANDLER  				= require('./handler/fnb.voucher-handler');
 const FNB__CUSTOMER_CARE_HANDLER  			= require('./handler/fnb.customer_care-handler');
 const FNB__NETWORK_COM_HANDLER  			= require('./handler/fnb.network_com-handler');
 const FNB__CUSTOMER_BOOKING_HANDLER  		= require('./handler/fnb.customer_booking-handler');
+const FNB__AFFILIATE_SIGNUP_HANDLER  		= require('./handler/fnb.affiliate_signup-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
@@ -26,6 +27,7 @@ const FNB__VOUCHER_COLL  					= require('./database/fnb.voucher-coll');
 const FNB__CUSTOMER_CARE_COLL  				= require('./database/fnb.customer_care-coll');
 const FNB__NETWORK_COM_COLL  				= require('./database/fnb.network_com-coll');
 const FNB__CUSTOMER_BOOKING_COLL  			= require('./database/fnb.customer_booking-coll');
+const FNB__AFFILIATE_SIGNUP_COLL  			= require('./database/fnb.affiliate_signup-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FNB,
@@ -40,6 +42,7 @@ module.exports = {
 		DbService(FNB__CUSTOMER_CARE_COLL),
 		DbService(FNB__NETWORK_COM_COLL),
 		DbService(FNB__CUSTOMER_BOOKING_COLL),
+		DbService(FNB__AFFILIATE_SIGNUP_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -164,6 +167,16 @@ module.exports = {
 		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__CUSTOMER_BOOKING_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_IMPORT_FROM_EXCEL]							: FNB__CUSTOMER_BOOKING_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.CUSTOMER_BOOKING_EXPORT_EXCEL]								: FNB__CUSTOMER_BOOKING_HANDLER.exportExcel,
+
+		//========================================== FNB_AFFILIATE_SIGNUP ==============================================//
+		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_INSERT]									: FNB__AFFILIATE_SIGNUP_HANDLER.insert,
+		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_UPDATE]									: FNB__AFFILIATE_SIGNUP_HANDLER.update,
+		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_REMOVE]									: FNB__AFFILIATE_SIGNUP_HANDLER.remove,
+		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_GET_INFO_AND_GET_LIST]						: FNB__AFFILIATE_SIGNUP_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_GET_LIST_BY_PROPERTY]						: FNB__AFFILIATE_SIGNUP_HANDLER.getListByProperty,
+		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__AFFILIATE_SIGNUP_HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_IMPORT_FROM_EXCEL]							: FNB__AFFILIATE_SIGNUP_HANDLER.importFromExcel,
+		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_EXPORT_EXCEL]								: FNB__AFFILIATE_SIGNUP_HANDLER.exportExcel,
 	},
 
 	/**

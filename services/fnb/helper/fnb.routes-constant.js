@@ -14,6 +14,7 @@ const ZALOOA                = '/zalooas';
 const CUSTOMER_CARE         = '/customer_cares';
 const NETWORK_COM           = '/network_coms';
 const CUSTOMER_BOOKING      = '/customer_bookings';
+const AFFILIATE_SIGNUP      = '/affiliate_signups';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -99,6 +100,13 @@ const CF_ROUTINGS_FNB = {
     CUSTOMER_BOOKING_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${CUSTOMER_BOOKING}/download-template-excel`,
     CUSTOMER_BOOKING_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${CUSTOMER_BOOKING}/import-from-excel`,
     CUSTOMER_BOOKING_EXPORT_EXCEL                    : `${BASE_ROUTE}${CUSTOMER_BOOKING}/export-excel`,
+
+    //================================FNB_AFFILIATE_SIGNUP=======================================//
+    AFFILIATE_SIGNUPS                                : `${BASE_ROUTE}${AFFILIATE_SIGNUP}`,
+    AFFILIATE_SIGNUP_GET_LIST_BY_PROPERTY            : `${BASE_ROUTE}${AFFILIATE_SIGNUP}/get-list-by-property`,
+    AFFILIATE_SIGNUP_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${AFFILIATE_SIGNUP}/download-template-excel`,
+    AFFILIATE_SIGNUP_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${AFFILIATE_SIGNUP}/import-from-excel`,
+    AFFILIATE_SIGNUP_EXPORT_EXCEL                    : `${BASE_ROUTE}${AFFILIATE_SIGNUP}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;
