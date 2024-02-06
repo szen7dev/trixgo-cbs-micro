@@ -13,6 +13,7 @@ const VOUCHER               = '/vouchers';
 const ZALOOA                = '/zalooas';
 const CUSTOMER_CARE         = '/customer_cares';
 const NETWORK_COM           = '/network_coms';
+const CUSTOMER_BOOKING      = '/customer_bookings';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -91,6 +92,13 @@ const CF_ROUTINGS_FNB = {
     ORDER_GOODS_DOWNLOAD_TEMPLATE_EXCEL   : `${BASE_ROUTE}${ORDER_GOODS}/download-template-excel`,
     ORDER_GOODS_IMPORT_FROM_EXCEL         : `${BASE_ROUTE}${ORDER_GOODS}/import-from-excel`,
     ORDER_GOODS_EXPORT_EXCEL              : `${BASE_ROUTE}${ORDER_GOODS}/export-excel`,
+
+    //================================FNB_CUSTOMER_BOOKING=======================================//
+    CUSTOMER_BOOKINGS                                : `${BASE_ROUTE}${CUSTOMER_BOOKING}`,
+    CUSTOMER_BOOKING_GET_LIST_BY_PROPERTY            : `${BASE_ROUTE}${CUSTOMER_BOOKING}/get-list-by-property`,
+    CUSTOMER_BOOKING_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${CUSTOMER_BOOKING}/download-template-excel`,
+    CUSTOMER_BOOKING_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${CUSTOMER_BOOKING}/import-from-excel`,
+    CUSTOMER_BOOKING_EXPORT_EXCEL                    : `${BASE_ROUTE}${CUSTOMER_BOOKING}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;
