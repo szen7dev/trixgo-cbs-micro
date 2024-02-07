@@ -24,20 +24,21 @@ module.exports = {
             level       : { type: "number", optional: true },
             companyID   : { type: "string", optional: true },
             parent      : { type: "string", optional: true },
+            linkItemID  : { type: "string", optional: true },
             salesChannel: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { type, name, description, sign, unit, amount, companyID, parent, level, salesChannel } = ctx.params;
+                let { type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, salesChannel } = ctx.params;
 
                 if(!companyID){
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.insert({
-                    type, name, description, sign, unit, amount, companyID, parent, level, userID, salesChannel
+                    type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -59,15 +60,16 @@ module.exports = {
             description : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
             salesChannel: { type: "number", optional: true },
+            linkItemID  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { doctypeID, name, description, sign, unit, amount, salesChannel } = ctx.params;
+                const { doctypeID, name, description, sign, unit, amount, salesChannel, linkItemID } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.update({
-                    doctypeID, name, description, sign, unit, amount, userID, salesChannel
+                    doctypeID, name, description, sign, unit, amount, userID, salesChannel, linkItemID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

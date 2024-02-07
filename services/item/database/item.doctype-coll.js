@@ -93,6 +93,11 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
         type: Number,
         default : 0
     },
+    //_________Link tới Item khác
+    linkItem: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

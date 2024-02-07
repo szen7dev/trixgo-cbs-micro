@@ -25,7 +25,7 @@ class Model extends BaseModel {
      * Func: Insert doctype
      * Date: 22/02/2022
      */
-    insert({ type, name, description, sign, unit, amount, companyID, parent, level, userID, salesChannel }) {
+    insert({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !type || !DOCTYPE_TYPE.includes(+type) || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
@@ -57,6 +57,10 @@ class Model extends BaseModel {
 
                 if(salesChannel){
                     dataInsert.salesChannel = salesChannel;
+                }
+
+                if(linkItemID && checkObjectIDs(linkItemID)){
+                    dataInsert.linkItem = linkItemID
                 }
 
                 if(parent && checkObjectIDs(parent)){
@@ -96,7 +100,7 @@ class Model extends BaseModel {
      * Func: Update doctype
      * Date: 22/02/2022
      */
-    update({ doctypeID, name, description, sign, unit, amount, userID, salesChannel }) {
+    update({ doctypeID, name, description, sign, unit, amount, userID, salesChannel, linkItemID }) {
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -124,6 +128,10 @@ class Model extends BaseModel {
 
                 if(salesChannel){
                     dataUpdate.salesChannel = Number(salesChannel);
+                }
+
+                if(linkItemID && checkObjectIDs(linkItemID)){
+                    dataUpdate.linkItem = linkItemID
                 }
 
                 let convertStr = ''
