@@ -35,8 +35,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  }) {
-        // console.log({ userID, companyID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files  })
+    insert({ userID, companyID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  }) {
+        // console.log({ userID, companyID, customerID, name, orderID, businessID, mistakeID, journeyID, type, description, note, rating, amount, status, files  })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
@@ -94,11 +94,20 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
+                if(checkObjectIDs(businessID)) {
+                    dataInsert.business = businessID;
+                }
+
                 if(checkObjectIDs(journeyID)) {
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
-                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID})
+                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
+
+                    let infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
+                    // console.log(checkOne)
                     if(!checkOne){
                         dataInsert.journey = journeyID;
+                        
+                        dataInsert.business = infoItem.linkItem;
                     }
                 }
 
@@ -126,7 +135,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
+    update({ userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
+        // console.log({ userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))
@@ -188,6 +198,10 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataUpdate.note = note;
+                }
+
+                if(checkObjectIDs(businessID)) {
+                    dataUpdate.business = businessID;
                 }
 
                 if(checkObjectIDs(journeyID)) {
@@ -253,7 +267,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ option, companyID,, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
+        // console.log({ option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -410,8 +424,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
-        // console.log({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+    getListByProperty({ option, companyID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
+        console.log({ option, companyID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -563,9 +577,17 @@ class Model extends BaseModel {
                             quantity: { $sum: 1 },
                         }
 
+                        if(customerID && checkObjectIDs(customerID)){
+                            conditionObj.customer = ObjectID(customerID)
+                            conditionGroup = {
+                                _id: { business: "$business", journey: "$journey" },
+                                quantity: { $sum: 1 },
+                            }
+                        }
+
                         conditionPopulate = {
                             path: '_id.journey',
-                            select: '_id name sign',
+                            select: '_id name sign description',
                             model: 'doctype'
                         }
 
@@ -632,6 +654,7 @@ class Model extends BaseModel {
                                     order : 1,
                                     product : 1,
                                     executor : 1,
+                                    business : 1,
                                     journey : 1,
                                     type : 1,
                                     customer : 1,
