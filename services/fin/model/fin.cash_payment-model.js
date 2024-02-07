@@ -280,7 +280,7 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
     getAmountByProperty({ companyID, customerID, option, year }){
-        // console.log({ companyID, customerID, option })
+        // console.log({ companyID, customerID, option, year })
         return new Promise(async resolve => {
             try {
                 let yearFilter
@@ -291,16 +291,15 @@ class Model extends BaseModel {
                     yearFilter = Number(currentYear)
                 }
 
-                let conditionObj = {company: ObjectID(companyID)}, conditionGroup = {}
-                let conditionObjYear = {
-                    "year": Number(yearFilter),
-                }
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
 
                 if (!option || isNaN(option) || ![1,2,3,4].includes(Number(option)))
                     return resolve({ error: true, message: "Tham số option không hợp lệ", keyError: "option_invalid" })
 
                 if(Number(option) === 1){
+                    // Không truyền companyID do gắn token chết cứng với linkProfile (phân vùng kiểm thử)
                     conditionObj.active = 1
+                    conditionObj.customer = ObjectID(customerID)
 
                     conditionGroup = {
                         _id: {},
@@ -309,13 +308,33 @@ class Model extends BaseModel {
                 }
 
                 else if(Number(option) === 2){
+                    conditionObj.company = ObjectID(companyID)
                     conditionObj.active = 1
+
+                    conditionObjYear = {
+                        "year": Number(yearFilter),
+                    }
 
                     conditionGroup = {
                         _id: {month: "$month"},
                         amount: { $sum: "$amount" },
                     }
                 }
+
+                else if(Number(option) === 3){
+                    conditionObj.company = ObjectID(companyID)
+                    conditionObj.active = 1
+
+                    conditionObjYear = {
+                        "year": Number(yearFilter),
+                    }
+
+                    conditionGroup = {
+                        _id: {},
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
 
                 // console.log(conditionObj)
                 // console.log(conditionObjYear)
@@ -329,6 +348,8 @@ class Model extends BaseModel {
                         $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
+                            date : 1,
+                            customer : 1,
                             active : 1,
                             amount : 1,
                             payment : 1,
@@ -350,6 +371,7 @@ class Model extends BaseModel {
             }
         })
     }
+
 
     /**
      * Name: Download Template Excel
