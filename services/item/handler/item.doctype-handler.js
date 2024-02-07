@@ -37,6 +37,8 @@ module.exports = {
                     companyID = company._id;
                 }
 
+                // console.log(ctx.params)
+
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.insert({
                     type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel
                 });
@@ -67,6 +69,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { doctypeID, name, description, sign, unit, amount, salesChannel, linkItemID } = ctx.params;
+
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.update({
                     doctypeID, name, description, sign, unit, amount, userID, salesChannel, linkItemID

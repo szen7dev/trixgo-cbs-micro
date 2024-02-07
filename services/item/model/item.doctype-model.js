@@ -26,6 +26,7 @@ class Model extends BaseModel {
      * Date: 22/02/2022
      */
     insert({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel }) {
+        console.log({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel })
         return new Promise(async resolve => {
             try {
                 if(!name || !type || !DOCTYPE_TYPE.includes(+type) || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
@@ -101,6 +102,7 @@ class Model extends BaseModel {
      * Date: 22/02/2022
      */
     update({ doctypeID, name, description, sign, unit, amount, userID, salesChannel, linkItemID }) {
+        // console.log({ doctypeID, name, description, sign, unit, amount, userID, salesChannel, linkItemID })
         return new Promise(async resolve => {
             try {
                 if(!name)
