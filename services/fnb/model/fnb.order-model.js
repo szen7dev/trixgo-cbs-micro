@@ -2423,7 +2423,9 @@ class Model extends BaseModel {
                 // console.log(listData3)
                 // console.log(listData4)
 
-                // Đơn hàng đã mua
+                /**
+                 * Đơn hàng đã mua
+                 */
                 if(listData1 && listData1.length){
                     numberOfOrders = Number(listData1[0].quantity)
                     total = Number(listData1[0].total)
@@ -2445,7 +2447,9 @@ class Model extends BaseModel {
                     dataUpdate.purchasedValue = 0
                 }
 
-                // Đơn hàng đã hủy
+                /**
+                 * Đơn hàng đã hủy
+                 */
                 if(listData2 && listData2.length){
                     numberOfCancelOrders = Number(listData2[0].quantity)
                     totalOfCancelOrders = Number(listData2[0].total)
@@ -2454,36 +2458,31 @@ class Model extends BaseModel {
                     dataUpdate.totalOfCancelOrders = Number(totalOfCancelOrders)
                 }
 
-                // Tích điểm
+                /**
+                 * Tích điểm
+                 */
                 if(listData3 && listData3.length){
                     // Giá trị thanh toán đơn Off hoàn thành
                     purchasedOffValue = Number(listData3[0].amount)
-                    totalLoyaltyPoints = Number(listData3[0].loyaltyPoints)
+                    totalLoyaltyPoints = Number(totalLoyaltyPoints) + Number(listData3[0].loyaltyPoints)
                     usedLoyaltyPoints =  Number(listData3[0].credit)
-                    
-                    // Gói ưu đãi
-                    if(listData4 && listData4.length){
-                        totalLoyaltyPoints = Number(totalLoyaltyPoints) + Number(listData4[0].amount)
-                    }
-
-                    // Giá trị còn lại
-                    remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
-
-                    // Update dữ liệu
-                    dataUpdate.purchasedOffValue = Number(purchasedOffValue)
-                    dataUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
-                    dataUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints)
-                    dataUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
                 }
-                
-                // else{
-                //     // Áp dụng cho khách mua xong -> boom hàng dẫn tới Hủy đơn
-                //     dataUpdate.purchasedOffValue = 0
-                //     dataUpdate.totalLoyaltyPoints = 0
-                //     dataUpdate.usedLoyaltyPoints = 0
-                //     dataUpdate.remainLoyaltyPoints = 0
-                // }
-                // // console.log(dataUpdate)
+
+                /**
+                 * Gói mua trả trước
+                 */
+                if(listData4 && listData4.length){
+                    totalLoyaltyPoints = Number(totalLoyaltyPoints) + Number(listData4[0].amount)
+                }
+
+                // Giá trị còn lại
+                remainLoyaltyPoints = Number(totalLoyaltyPoints) - Number(usedLoyaltyPoints)
+
+                // Update dữ liệu
+                dataUpdate.purchasedOffValue = Number(purchasedOffValue)
+                dataUpdate.totalLoyaltyPoints = Number(totalLoyaltyPoints)
+                dataUpdate.usedLoyaltyPoints = Number(usedLoyaltyPoints)
+                dataUpdate.remainLoyaltyPoints = Number(remainLoyaltyPoints)
 
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(customerID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
