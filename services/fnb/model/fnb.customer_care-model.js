@@ -266,8 +266,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
+    getList({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
+        // console.log({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -293,6 +293,10 @@ class Model extends BaseModel {
 
                 if(option == 1){
                     conditionObj.journey = {$exists: true, $ne: null}
+                }
+
+                if(businessID && checkObjectIDs(businessID)){
+                    conditionObj.business = ObjectID(businessID)
                 }
 
                 if(journeyID && checkObjectIDs(journeyID)){
@@ -424,8 +428,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ option, companyID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
-        console.log({ option, companyID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+    getListByProperty({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID , year, month, fromDate, toDate, status, userID }) { 
+        // console.log({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -576,6 +580,10 @@ class Model extends BaseModel {
                             _id: { journey: "$journey" },
                             quantity: { $sum: 1 },
                         }
+
+                        if(businessID && checkObjectIDs(businessID)){
+                            conditionObj.business = ObjectID(businessID)
+                        }        
 
                         if(customerID && checkObjectIDs(customerID)){
                             conditionObj.customer = ObjectID(customerID)

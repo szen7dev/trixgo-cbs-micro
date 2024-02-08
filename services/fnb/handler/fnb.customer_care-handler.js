@@ -147,7 +147,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, companyID, orderMistakeID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { option, companyID, orderMistakeID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -163,7 +163,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.getList({
-                        option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates
+                        option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates
                     });
                 }
 
@@ -203,12 +203,14 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { option, optionGroup, optionTime, fundasID, mistakeID, executorID, customerID, year, month, fromDate, toDate, status,
+                let { option, optionGroup, optionTime, fundasID, businessID, mistakeID, executorID, customerID, year, month, fromDate, toDate, status,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+
+                // console.log(ctx.params)
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.getListByProperty({
                     companyID: company._id,
-                    option, optionGroup, optionTime, fundasID, mistakeID, executorID, customerID, year, month, fromDate, toDate,
+                    option, optionGroup, optionTime, fundasID, businessID, mistakeID, executorID, customerID, year, month, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      status, userID 
                     });
