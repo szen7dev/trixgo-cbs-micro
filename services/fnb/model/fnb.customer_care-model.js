@@ -735,6 +735,52 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: importFromExcel
+     * Code: HiepNH
+     * Date: 8/2/2024
+     */
+    importFromExcel({ option, companyID, dataImport, userID, ctx }) {
+        // console.log({ option, companyID, dataImport, userID })
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+
+                for (const data of dataImportJSON) {
+                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                    if(index > 0 && index < 500){
+                        let prepareData = { 
+                            userID, 
+                            companyID,
+                            customerID: data?.__EMPTY_1,
+                            journeyID: data?.__EMPTY_2, //
+                            name: data?.__EMPTY_3, 
+                            note: data?.__EMPTY_4, 
+                        }
+                        // console.log(prepareData);
+
+                        let infoAfterInsert = await this.insert(prepareData);
+                        if(infoAfterInsert.error){
+                            errorNumber++;
+                        }
+                    }
+
+                    index ++;
+                }
+
+                if(errorNumber != 0)
+                    return resolve({ error: true, message: "Import failed" });
+
+                return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Dev: HiepNH
      * Func: Tải dữ liệu
      * Date: 15/2/2023

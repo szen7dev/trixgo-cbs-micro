@@ -256,21 +256,22 @@ module.exports = {
     importFromExcel: {
         auth: 'required',
         params: {
+            // option    : { type: 'string', optional: true },
             dataImport: { type: 'string' }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                const { dataImport, option } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log(option)
 
                 const resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.importFromExcel({
-                    taskID, dataImport, userID, ctx
+                    companyID: company._id, userID, dataImport, option, ctx
                 })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx })
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
