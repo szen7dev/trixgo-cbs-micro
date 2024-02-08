@@ -21,6 +21,8 @@ module.exports = {
             parentID            : { type: "string", optional: true },
             fundaID             : { type: "string" },
             customerID          : { type: "string" },
+            businessID          : { type: "string", optional: true },
+            channelID           : { type: "string", optional: true },
             affiliateID         : { type: "string", optional: true },
             date                : { type: "string", optional: true },
             shiftID             : { type: "string" },
@@ -43,7 +45,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid } = ctx.params;
+                let { type, voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid } = ctx.params;
 
                 // console.log({ FNB_ORDER_INSERT_PARAMS: ctx.params });
 
@@ -59,7 +61,7 @@ module.exports = {
                 }else{
                     // console.log('11111111111111111111')
                     let resultAfterCallHandler = await FNB_ORDER_MODEL.insert2({
-                        voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
+                        voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
                     })
     
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
