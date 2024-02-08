@@ -95,8 +95,8 @@ class Model extends BaseModel {
                     seasons: infoOrder.seasons,
                     shift: infoOrder.shift,
                     shiftType: infoOrder.shiftType,
-                    businessID: infoOrder.business,
-                    channelID: infoOrder.channel,
+                    business: infoOrder.business,
+                    channel: infoOrder.channel,
                     salesChannel: infoOrder.salesChannel,
                     paymentMethod: infoOrder.paymentMethod,
                     service: infoOrder.service
