@@ -20,6 +20,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref : "funda"
     },
+    //_________Lĩnh vực kinh doanh (NEW)
+    business: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
     //_________Phân loại dịch vụ/Kênh bán hàng****
     channel: {
         type: Schema.Types.ObjectId,

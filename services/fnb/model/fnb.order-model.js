@@ -990,12 +990,12 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 2/2/2024
      */
-    insert2({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID, ctx }) {
+    insert2({ voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID, ctx }) {
         const that = this
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(shiftID) || !name)
-                    return resolve({ error: true, message: 'fundaID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!name || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) | !checkObjectIDs(businessID) || !checkObjectIDs(channelID) || !checkObjectIDs(shiftID))
+                    return resolve({ error: true, message: 'fundaID|customerID|businessID|channelID|shiftID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 // Thông tin cơ sở
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
@@ -1024,6 +1024,8 @@ class Model extends BaseModel {
                     company: infoFunda.company,
                     funda: fundaID,
                     customer: customerID,
+                    business: businessID,
+                    channel: channelID,
                     shift: shiftID,
                     name: `${name}-C${Number(numberOfOrder+1)}`,
                     sign: `C${Number(numberOfOrder+1)}`,
