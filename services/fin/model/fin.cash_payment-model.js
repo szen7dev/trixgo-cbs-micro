@@ -26,6 +26,7 @@ const CONTACT_COLL                       = require('../../item/database/item.con
 /**
  * import inter-model, exter-model
  */
+const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
 const FNB_ORDER_MODEL                   = require('../../fnb/model/fnb.order-model').MODEL;
 
 class Model extends BaseModel {
@@ -52,28 +53,39 @@ class Model extends BaseModel {
                      */
                     if(!name || !checkObjectIDs(userID) || !checkObjectIDs(customerID) || !checkObjectIDs(companyID))
                         return resolve({ error: true, message: 'param_not_valid' })
-                
-                    let dataInsert = { company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date(), customer: customerID, name }
 
-                    if (note) {
-                        dataInsert.note = note;
+                    //___________Quyền truy cập ứng dụng Tài chính
+                    let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "5dfe4bc751dc622100bb9d8a", 
+                        userID
+                    })
+
+                    // Chỉ admin ứng dụng mới có quyền
+                    if(infoAppUser && infoAppUser.data.level == 0){
+                        let dataInsert = { company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date(), customer: customerID, name }
+
+                        if (note) {
+                            dataInsert.note = note;
+                        }
+    
+                        if (!isNaN(amount)) {
+                            dataInsert.amount = amount;
+                        }
+    
+                        if (!isNaN(payment)) {
+                            dataInsert.payment = payment;
+                        }
+    
+                        let infoAfterInsert = await this.insertData(dataInsert);
+                        if (!infoAfterInsert)
+                            return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                    
+                        await FNB_ORDER_MODEL.updateCustomer({ customerID, userID })
+            
+                        return resolve({ error: false, data: infoAfterInsert, status: 200 })
+                    }else{
+                        return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                     }
-
-                    if (!isNaN(amount)) {
-                        dataInsert.amount = amount;
-                    }
-
-                    if (!isNaN(payment)) {
-                        dataInsert.payment = payment;
-                    }
-
-                    let infoAfterInsert = await this.insertData(dataInsert);
-                    if (!infoAfterInsert)
-                        return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
-                
-                    await FNB_ORDER_MODEL.updateCustomer({ customerID, userID })
-        
-                    return resolve({ error: false, data: infoAfterInsert, status: 200 })
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }

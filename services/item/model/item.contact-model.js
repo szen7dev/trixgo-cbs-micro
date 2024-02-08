@@ -45,6 +45,7 @@ const ITEM__AREA_COLL            				    = require('../database/item.area-coll')
 const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll')
 const HUMAN__CONTACT_DOCUMENT_COLL                  = require('../../human/database/human.contact_document-coll')
 
+const AUTH__APP_USER                                = require('../.../../../auth/model/auth.app_users').MODEL
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL
 const CONTACT_DOCUMENT_MODEL                        = require('../../human/model/human.contact_document-model').MODEL
 
@@ -85,6 +86,12 @@ class Model extends BaseModel {
                  */
                 if(!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })
+
+                //___________Quyền truy cập ứng dụng Nhân sự
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049c9fdebf77b072d1b13", 
+                    userID: authorID
+                })
 
                 //___________Xác thực số điện thoại
                 if(!regexPhoneNumber(phone))
@@ -218,12 +225,15 @@ class Model extends BaseModel {
                  */
                 let infoParent
                 if(parent && checkObjectIDs(parent)){
-                    dataInsert.parent = parent
-                    dataInsert.nestedParents = [parent] // Cha cấp 1
-
-                    // Cập nhật Level để phục vụ việc tính toán, đệ quy
-                    infoParent = await ITEM__CONTACT_COLL.findById(parent)
-                    dataInsert.level = infoParent.level + 1
+                    // Chỉ admin ứng dụng mới được thêm phần tử cha con
+                    if(infoAppUser && infoAppUser.data.level == 0){
+                        dataInsert.parent = parent
+                        dataInsert.nestedParents = [parent] // Cha cấp 1
+    
+                        // Cập nhật Level để phục vụ việc tính toán, đệ quy
+                        infoParent = await ITEM__CONTACT_COLL.findById(parent)
+                        dataInsert.level = infoParent.level + 1
+                    }
                 }
 
                 if(workingStatus && checkObjectIDs(workingStatus)){
@@ -354,35 +364,38 @@ class Model extends BaseModel {
                  * PHẦN TỬ CHA-CON => PHỤC VỤ XỬ LÝ ĐỆ QUY
                  */
                 if(parent && checkObjectIDs(parent)){
-                    // Cập nhật amountChilds cho phần tử cha cấp 1
-                    await ITEM__CONTACT_COLL.findByIdAndUpdate(parent,
-                        {
-                            $addToSet: { 
-                                childs: infoAfterInsert._id,
-                                nestedChilds: infoAfterInsert._id, // Mảng các phần tử con/cháu...
-                             },
-                            $inc: { amountChilds: 1 }
-                        },
-                        { new: true })
-
-                    /**
-                     * Cập nhật cho phần tử cha cấp 2 trở lên
-                     * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
-                     */
-                    for(const item of infoParent?.nestedParents){
-                        // Thêm phần tử con/cháu
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+                    // Chỉ admin ứng dụng mới được thêm phần tử cha con
+                    if(infoAppUser && infoAppUser.data.level == 0){
+                        // Cập nhật amountChilds cho phần tử cha cấp 1
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(parent,
                             {
-                                $addToSet: { nestedChilds: infoAfterInsert._id },
+                                $addToSet: { 
+                                    childs: infoAfterInsert._id,
+                                    nestedChilds: infoAfterInsert._id, // Mảng các phần tử con/cháu...
+                                },
+                                $inc: { amountChilds: 1 }
                             },
                             { new: true })
 
-                        // Thêm các phần tử cha
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id ,
-                            {
-                                $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
-                            },
-                            { new: true })
+                        /**
+                         * Cập nhật cho phần tử cha cấp 2 trở lên
+                         * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
+                         */
+                        for(const item of infoParent?.nestedParents){
+                            // Thêm phần tử con/cháu
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+                                {
+                                    $addToSet: { nestedChilds: infoAfterInsert._id },
+                                },
+                                { new: true })
+
+                            // Thêm các phần tử cha
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id ,
+                                {
+                                    $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
+                                },
+                                { new: true })
+                        }
                     }
                 }
 
