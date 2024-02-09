@@ -571,19 +571,24 @@ class Model extends BaseModel {
                     }
                     
                     /**
-                     * Gom nhóm theo Hành trình khách hàng
+                     * Gom nhóm theo Hành trình khách hàng: OK
                      */
                     if(option && Number(option) == 5){
                         conditionObj.journey = {$exists: true, $ne: null}
+                        if(businessID && checkObjectIDs(businessID)){
+                            conditionObj.business = ObjectID(businessID)
+                        }     
 
                         conditionGroup = {
                             _id: { journey: "$journey" },
                             quantity: { $sum: 1 },
                         }
-
-                        if(businessID && checkObjectIDs(businessID)){
-                            conditionObj.business = ObjectID(businessID)
-                        }        
+                        
+                        conditionPopulate = {
+                            path: '_id.journey',
+                            select: '_id name sign description',
+                            model: 'doctype'
+                        }
 
                         if(customerID && checkObjectIDs(customerID)){
                             conditionObj.customer = ObjectID(customerID)
@@ -593,13 +598,22 @@ class Model extends BaseModel {
                             }
                         }
 
-                        conditionPopulate = {
-                            path: '_id.journey',
-                            select: '_id name sign description',
-                            model: 'doctype'
+                        sortBy = {"_id.business": 1}
+                    }
+
+                    /**
+                     * Gom nhóm theo 1 khách hàng cụ thể: OK
+                     */
+                    if(option && Number(option) == 6){
+                        conditionObj.journey = {$exists: true, $ne: null}
+                        conditionObj.customer = ObjectID(customerID)
+
+                        conditionGroup = {
+                            _id: { business: "$business", journey: "$journey" },
+                            quantity: { $sum: 1 },
                         }
 
-                        sortBy = {"_id.journey": 1}
+                        sortBy = {"_id.business": 1, "_id.journey": 1}
                     }
                     
                     // Tổng hợp KPI theo user/tháng/năm: OK
@@ -644,86 +658,67 @@ class Model extends BaseModel {
                     // console.log(conditionObjYear)
                     // console.log(conditionGroup)
 
-                    let listData
-
-                    if(option != 6){
-                        listData = await FNB_CUSTOMER_CARE_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : {
-                                    year : {$year : "$createAt"},
-                                    month : {$month : "$createAt"},
-                                    hour : {$hour : "$createAt"},
-                                    funda : 1,
-                                    mistake : 1,
-                                    manager : 1,
-                                    order : 1,
-                                    product : 1,
-                                    executor : 1,
-                                    business : 1,
-                                    journey : 1,
-                                    type : 1,
-                                    customer : 1,
-                                    internal : 1,
-                                    area1 : 1,
-                                    area2 : 1,
-                                    area3 : 1,
-                                    seasons : 1,
-                                    shift : 1,
-                                    shiftType : 1,
-                                    salesChannel : 1,
-                                    service : 1,
-                                    status : 1,
-                                    amount : 1,
-                                    quantity : 1,
-                                    score : 1,
-                                    bonus : 1,
-                                }
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
-                            },
-                            {
-                                $sort: sortBy
+                    let listData = await FNB_CUSTOMER_CARE_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project : {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                hour : {$hour : "$createAt"},
+                                funda : 1,
+                                mistake : 1,
+                                manager : 1,
+                                order : 1,
+                                product : 1,
+                                executor : 1,
+                                business : 1,
+                                journey : 1,
+                                type : 1,
+                                customer : 1,
+                                internal : 1,
+                                seasons : 1,
+                                shift : 1,
+                                shiftType : 1,
+                                salesChannel : 1,
+                                service : 1,
+                                status : 1,
+                                amount : 1,
+                                quantity : 1,
+                                score : 1,
+                                bonus : 1,
                             }
-                        ])
-                    }else{
-                        listData = await FNB_CUSTOMER_CARE_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : {
-                                    year: 1,
-                                    month: 1,
-                                    mistake : 1,
-                                    manager : 1,
-                                    order : 1,
-                                    executor : 1,
-                                    workingHours : 1,
-                                    quantity : 1,
-                                    score : 1,
-                                }
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
-                    }
-
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: sortBy
+                        }
+                    ])
+                    
                     if(!isNaN(option) && [1,3,4,5].includes(Number(option))){
                         await FNB_CUSTOMER_CARE_COLL.populate(listData, conditionPopulate)
+
+                        return resolve({ error: false, data: listData });
+                    }
+
+                    let listBusiness;
+                    if(!isNaN(option) && [6].includes(Number(option))){
+                        conditionPopulate = {
+                            path: '_id.journey',
+                            select: '_id name sign description',
+                            model: 'doctype'
+                        }
+                        await FNB_CUSTOMER_CARE_COLL.populate(listData, conditionPopulate)
+
+                        listBusiness = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData.map(item=>item._id.business)}}).select('name description')
+
+                        return resolve({ error: false, data: {listData, listBusiness} });
                     }
 
                     return resolve({ error: false, data: listData });
