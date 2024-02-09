@@ -575,15 +575,14 @@ class Model extends BaseModel {
                      */
                     if(option && Number(option) == 5){
                         conditionObj.journey = {$exists: true, $ne: null}
+                        if(businessID && checkObjectIDs(businessID)){
+                            conditionObj.business = ObjectID(businessID)
+                        }     
 
                         conditionGroup = {
                             _id: { journey: "$journey" },
                             quantity: { $sum: 1 },
                         }
-
-                        // if(businessID && checkObjectIDs(businessID)){
-                        //     conditionObj.business = ObjectID(businessID)
-                        // }     
                         
                         conditionPopulate = {
                             path: '_id.journey',
