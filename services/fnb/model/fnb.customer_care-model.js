@@ -574,6 +574,7 @@ class Model extends BaseModel {
                      * Gom nhóm theo Hành trình khách hàng: OK
                      */
                     if(option && Number(option) == 5){
+                        conditionObj.business = {$exists: true, $ne: null}
                         conditionObj.journey = {$exists: true, $ne: null}
                         if(businessID && checkObjectIDs(businessID)){
                             conditionObj.business = ObjectID(businessID)
@@ -605,6 +606,7 @@ class Model extends BaseModel {
                      * Gom nhóm theo 1 khách hàng cụ thể: OK
                      */
                     if(option && Number(option) == 6){
+                        conditionObj.business = {$exists: true, $ne: null}
                         conditionObj.journey = {$exists: true, $ne: null}
                         conditionObj.customer = ObjectID(customerID)
 
