@@ -28,15 +28,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
-    //_________Kênh bán hàng (old)
+    //_________Kênh bán hàng
     channel: {
-        type: Number,
-        default: 1
-    },
-    //_________Kênh bán hàng (NEW)
-    salesChannel: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
+    },
+    //_________Nguồn dữ liệu (REF: Thông tin khách hàng)
+    dataSource: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
     },
     //_________Hành trình khách hàng
     journey: {
@@ -64,6 +64,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
      * 2-Lỗi khách quan
      */
     type: {
+        type: Number,
+        default: 1
+    },
+    //_________Kênh bán hàng (cũ => sẽ bỏ)
+    salesChannel: {
         type: Number,
         default: 1
     },

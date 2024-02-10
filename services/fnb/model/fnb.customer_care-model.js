@@ -35,8 +35,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  }) {
-        // console.log({ userID, companyID, customerID, name, orderID, businessID, mistakeID, journeyID, type, description, note, rating, amount, status, files  })
+    insert({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  }) {
+        // console.log({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
@@ -62,7 +62,8 @@ class Model extends BaseModel {
                     dataInsert.order = orderID
                     dataInsert.company = infoOrder.company
                     dataInsert.funda = infoOrder.funda
-                    dataInsert.channel = infoOrder.salesChannel
+                    dataInsert.channel = infoOrder.channel
+                    dataInsert.salesChannel = infoOrder.salesChannel
                     
                     if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
                         dataInsert.manager = infoOrder.funda.manager
@@ -134,8 +135,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ companyID, userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
-        // console.log({ userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID })
+    update({ companyID, userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
+        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))
@@ -167,9 +168,9 @@ class Model extends BaseModel {
                         dataUpdate.order = orderID
                         dataUpdate.company = infoOrder.company
                         dataUpdate.funda = infoOrder.funda
-                        dataUpdate.channel = infoOrder.salesChannel
                         dataUpdate.customer = infoOrder.customer
-                    
+                        dataUpdate.channel = infoOrder.channel
+                        dataUpdate.salesChannel = infoOrder.salesChannel
                     if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
                         dataUpdate.manager = infoOrder.funda.manager
                     }
@@ -276,8 +277,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
+    getList({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit = 20, lastestID, select, populates, userID }) {
+        // console.log({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -341,10 +342,14 @@ class Model extends BaseModel {
                     conditionObj.type = {$in: [1,2]}
                 }
 
-                if(!isNaN(channel) && [1,2,3,4,5,6,7,8,9,10,11].includes(Number(channel))){
-                    conditionObj.channel = Number(channel);
+                if(channelID && checkObjectIDs(channelID)){
+                    conditionObj.channel = ObjectID(channelID)
+                }
+
+                if(!isNaN(salesChannel) && [1,2,3,4,5,6,7,8,9,10,11].includes(Number(salesChannel))){
+                    conditionObj.salesChannel = Number(salesChannel);
                 }else{
-                    conditionObj.channel = {$in: [1,2,3,4,5,6,7,8,9,10,11]}
+                    conditionObj.salesChannel = {$in: [1,2,3,4,5,6,7,8,9,10,11]}
                 }
 
                 if(fromDate && toDate){
