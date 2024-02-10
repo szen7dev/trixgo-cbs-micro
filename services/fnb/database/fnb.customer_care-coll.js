@@ -67,6 +67,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Number,
         default: 1
     },
+    //_________Kênh bán hàng (cũ => sẽ bỏ)
+    salesChannel: {
+        type: Number,
+        default: 1
+    },
     //_________Nội dung sự việc
     name: String,
     //_________Diễn giải/cách xử lý
