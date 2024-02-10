@@ -40,7 +40,6 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
-                // if(!checkObjectIDs(customerID) || !checkObjectIDs(mistakeID) || !checkObjectIDs(userID)) 
                     return resolve({ error: true, message: 'customerID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                 let dataInsert = { 
@@ -94,19 +93,19 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                if(checkObjectIDs(businessID)) {
-                    dataInsert.business = businessID;
-                }
-
                 if(checkObjectIDs(journeyID)) {
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
                     let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
-
                     let infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
-                    // console.log(checkOne)
+                    if(!infoItem.linkItem)
+                        return resolve({
+                            error: true,
+                            message: "Hành trình trải nghiệm chưa thuộc lĩnh vực kinh doanh cụ thể",
+                            keyError: "params_journey_invalid",
+                            status: 400
+                        })
                     if(!checkOne){
                         dataInsert.journey = journeyID;
-                        
                         dataInsert.business = infoItem.linkItem;
                     }
                 }
@@ -135,7 +134,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
+    update({ companyID, userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
         // console.log({ userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID })
         return new Promise(async resolve => {
             try {
@@ -200,12 +199,23 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                if(checkObjectIDs(businessID)) {
-                    dataUpdate.business = businessID;
-                }
-
                 if(checkObjectIDs(journeyID)) {
                     dataUpdate.journey = journeyID;
+
+                    // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
+                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
+                    let infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
+                    if(!infoItem.linkItem)
+                        return resolve({
+                            error: true,
+                            message: "Hành trình trải nghiệm chưa thuộc lĩnh vực kinh doanh cụ thể",
+                            keyError: "params_journey_invalid",
+                            status: 400
+                        })
+                    if(!checkOne){
+                        dataUpdate.journey = journeyID;
+                        dataUpdate.business = infoItem.linkItem;
+                    }
                 }
 
                 if(imagesID && imagesID.length) {

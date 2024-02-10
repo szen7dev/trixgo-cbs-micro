@@ -78,12 +78,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const {  customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.update({
-                    userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID
+                    companyID: company._id, userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
