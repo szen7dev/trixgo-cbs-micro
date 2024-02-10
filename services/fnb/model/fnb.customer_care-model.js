@@ -301,8 +301,12 @@ class Model extends BaseModel {
                     conditionObj.funda = { $in: arrFun }
                 }
 
-                if(option == 1){
-                    conditionObj.journey = {$exists: true, $ne: null}
+                if(!option){
+                    conditionObj.journey = {$exists: false}
+                }else{
+                    if(option == 1){
+                        conditionObj.journey = {$exists: true, $ne: null}
+                    }
                 }
 
                 if(businessID && checkObjectIDs(businessID)){
