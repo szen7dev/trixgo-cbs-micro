@@ -26,13 +26,23 @@ class Model extends BaseModel {
      * Date: 22/02/2022
      */
     insert({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel }) {
-        console.log({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel })
+        // console.log({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel })
         return new Promise(async resolve => {
             try {
                 if(!name || !type || !DOCTYPE_TYPE.includes(+type) || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
                     return resolve({
 						error: true,
 						message: "Tham số name|type|userID|companyID không hợp lệ",
+						keyError: "params_type_invalid",
+						status: 400
+					})
+                }
+
+                if(type == 11){
+                    if(!linkItemID || !checkObjectIDs([linkItemID]))
+                    return resolve({
+						error: true,
+						message: "Lĩnh vực kinh doanh chưa hợp lệ",
 						keyError: "params_type_invalid",
 						status: 400
 					})
