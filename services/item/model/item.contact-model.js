@@ -208,7 +208,11 @@ class Model extends BaseModel {
                     dataInsert.position = position;
                 }
                 if(linkUser && checkObjectIDs(linkUser)){
-                    dataInsert.linkUser = linkUser;
+                    // Kiểm tra xem đã tồn tại hay chưa, nếu tồn tại rồi thì không cho link nữa
+                    let checkExist = await ITEM__CONTACT_COLL.find({linkUser: linkUser, company: infoFunda.company})
+                    if(!checkExist){
+                        dataInsert.linkUser = linkUser;
+                    }
                 }
                 if(saleID && checkObjectIDs(saleID)){
                     dataInsert.sale = saleID;
@@ -637,7 +641,11 @@ class Model extends BaseModel {
                     dataUpdate.sale = saleID;
                 }
                 if(linkUser && checkObjectIDs(linkUser)){
-                    dataUpdate.linkUser = linkUser;
+                    // Kiểm tra xem đã tồn tại hay chưa, nếu tồn tại rồi thì không cho link nữa
+                    let checkExist = await ITEM__CONTACT_COLL.find({linkUser: linkUser, company: company})
+                    if(!checkExist){
+                        dataUpdate.linkUser = linkUser;
+                    }
                 }
                 if(field && checkObjectIDs(field)){
                     dataUpdate.field = field;
