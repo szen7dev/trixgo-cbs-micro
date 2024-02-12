@@ -195,8 +195,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, userID, fundasID, customerID, userCreateID, channelID, fromDate, toDate, status, keyword, limit = 20, lastestID, select, populates }) {
-        // console.log({ companyID, userID, fundasID, customerID, userCreateID, channelID, fromDate, toDate, status, keyword, limit, lastestID, select, populates })
+    getList({ companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, fromDate, toDate, status, keyword, limit = 20, lastestID, select, populates }) {
+        // console.log({ companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, fromDate, toDate, status, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -238,12 +238,16 @@ class Model extends BaseModel {
                     conditionObj.channel = ObjectID(channelID)
                 }
 
-                // if(fromDate && toDate){
-                //     conditionObj.date = {
-                //         $gte: new Date(fromDate),
-                //         $lte: new Date(toDate),
-                //     }
-                // }
+                if(businessID && checkObjectIDs(businessID)){
+                    conditionObj.business = ObjectID(businessID)
+                }
+
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+                }
                 // console.log(conditionObj)
 
                 if(populates && typeof populates === 'string'){
