@@ -33,14 +33,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files } = ctx.params;
+                let { customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files } = ctx.params;
                 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.insert({
-                    userID, companyID: company._id, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files 
+                    userID, companyID: company._id, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files 
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -75,13 +75,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const {  customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID } = ctx.params;
+                const {  customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.update({
-                    companyID: company._id, userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID
+                    companyID: company._id, userID, customerCareID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
