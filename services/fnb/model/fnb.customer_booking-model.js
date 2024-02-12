@@ -35,75 +35,44 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  }) {
-        // console.log({ userID, companyID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files  })
+    insert({ userID, companyID, customerID, orderID, name, note, date, status, files }) {
+        // console.log({ userID, companyID, customerID, orderID, name, note, date, status, files })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
-                // if(!checkObjectIDs(customerID) || !checkObjectIDs(mistakeID) || !checkObjectIDs(userID)) 
-                    return resolve({ error: true, message: 'customerID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                if(!name || name == "" || !checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
+                    return resolve({ error: true, message: 'name|customerID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                 let dataInsert = { 
                     userCreate: userID,
                     customer: customerID,
-                    // mistake: mistakeID,
                     company: companyID,
                     name
                 }
 
                 let infoOrder
                 if(orderID && checkObjectIDs(orderID)){
-                    infoOrder = await FNB_ORDER_COLL.findById(orderID).populate({
-                        path: 'funda',
-                        select: 'manager'
-                    })
+                    infoOrder = await FNB_ORDER_COLL.findById(orderID)
                     if(!infoOrder)
                         return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
                     dataInsert.order = orderID
                     dataInsert.company = infoOrder.company
                     dataInsert.funda = infoOrder.funda
-                    dataInsert.channel = infoOrder.salesChannel
-                    
-                    if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
-                        dataInsert.manager = infoOrder.funda.manager
-                    }
+                    dataInsert.business = infoOrder.business
+                    dataInsert.channel = infoOrder.channel
+                    dataInsert.customer = infoOrder.customer
                 }
 
-                if(!isNaN(type)){
-                    dataInsert.type = Number(type);
-                }
-
-                if(!isNaN(amount)){
-                    dataInsert.amount = Number(amount);
-                }
-
-                if(!isNaN(rating)){
-                    dataInsert.rating = Number(rating);
+                if(date && date != ""){
+                    dataInsert.date = date;
                 }
 
                 if(!isNaN(status)){
                     dataInsert.status = Number(status);
                 }
 
-                if(description && description != ""){
-                    dataInsert.description = description;
-                }
-
                 if(note && note != ""){
                     dataInsert.note = note;
-                }
-
-                if(checkObjectIDs(journeyID)) {
-                    // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
-                    let checkOne = await FNB_CUSTOMER_BOOKING_COLL.findOne({journey: journeyID, customer: customerID})
-                    if(!checkOne){
-                        dataInsert.journey = journeyID;
-                    }
-                }
-
-                if(checkObjectIDs(mistakeID)) {
-                    dataInsert.mistake = mistakeID;
                 }
 
                 if(checkObjectIDs(files)) {
@@ -126,72 +95,46 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
+    update({ userID, customerCareID, customerID, orderID, name, note, date, status, imagesID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(customerCareID))
-                    return resolve({ error: true, message: 'customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!name || name == "" || !checkObjectIDs(customerCareID))
+                    return resolve({ error: true, message: 'name|customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataUpdate = { 
-                    name,
                     userUpdate: userID, 
-                    modifyAt: new Date()
+                    modifyAt: new Date(),
+                    name
                 }
 
                 if(checkObjectIDs(customerID)) {
                     dataUpdate.customer = customerID;
                 }
-
-                if(checkObjectIDs(mistakeID)) {
-                    dataUpdate.mistake = mistakeID;
-                }
              
                 let infoOrder
                 if(orderID && checkObjectIDs(orderID)){
-                    infoOrder = await FNB_ORDER_COLL.findById(orderID).populate({
-                        path: 'funda',
-                        select: 'manager'
-                    })
+                    infoOrder = await FNB_ORDER_COLL.findById(orderID)
                     if(!infoOrder)
                         return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
                         dataUpdate.order = orderID
                         dataUpdate.company = infoOrder.company
                         dataUpdate.funda = infoOrder.funda
-                        dataUpdate.channel = infoOrder.salesChannel
+                        dataUpdate.business = infoOrder.business
+                        dataUpdate.channel = infoOrder.channel
                         dataUpdate.customer = infoOrder.customer
-                    
-                    if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
-                        dataUpdate.manager = infoOrder.funda.manager
-                    }
                 }
 
-                if(!isNaN(type)){
-                    dataUpdate.type = Number(type);
-                }
-
-                if(!isNaN(amount)){
-                    dataUpdate.amount = Number(amount);
-                }
-
-                if(!isNaN(rating)){
-                    dataUpdate.rating = Number(rating);
+                if(date && date != ""){
+                    dataUpdate.date = date;
                 }
 
                 if(!isNaN(status)){
                     dataUpdate.status = Number(status);
                 }
 
-                if(description && description != ""){
-                    dataUpdate.description = description;
-                }
-
                 if(note && note != ""){
                     dataUpdate.note = note;
-                }
-
-                if(checkObjectIDs(journeyID)) {
-                    dataUpdate.journey = journeyID;
                 }
 
                 if(imagesID && imagesID.length) {

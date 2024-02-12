@@ -28,7 +28,6 @@ module.exports = {
             rating              : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             status              : { type: "number", optional: true },
-            type                : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -69,7 +68,6 @@ module.exports = {
             rating              : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             status              : { type: "number", optional: true },
-            type                : { type: "number", optional: true },
             imagesID            : { type: "array", optional: true },
         },
         async handler(ctx) {

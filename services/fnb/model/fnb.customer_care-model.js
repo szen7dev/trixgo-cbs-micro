@@ -39,13 +39,12 @@ class Model extends BaseModel {
         // console.log({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
-                    return resolve({ error: true, message: 'customerID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                if(!name || name == "" || !checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
+                    return resolve({ error: true, message: 'name|customerID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                 let dataInsert = { 
                     userCreate: userID,
                     customer: customerID,
-                    // mistake: mistakeID,
                     company: companyID,
                     name
                 }
@@ -63,7 +62,9 @@ class Model extends BaseModel {
                     dataInsert.company = infoOrder.company
                     dataInsert.funda = infoOrder.funda
                     dataInsert.channel = infoOrder.channel
-                    dataInsert.salesChannel = infoOrder.salesChannel
+                    dataInsert.salesChannel = infoOrder.salesChannel // Sau sẽ bỏ
+                    dataInsert.business = infoOrder.business
+                    dataInsert.customer = infoOrder.customer
                     
                     if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
                         dataInsert.manager = infoOrder.funda.manager
@@ -139,13 +140,13 @@ class Model extends BaseModel {
         // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(customerCareID))
-                    return resolve({ error: true, message: 'customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!name || name == "" || !checkObjectIDs(customerCareID))
+                    return resolve({ error: true, message: 'name|customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataUpdate = { 
-                    name,
                     userUpdate: userID, 
-                    modifyAt: new Date()
+                    modifyAt: new Date().getDate,
+                    name
                 }
 
                 if(checkObjectIDs(customerID)) {
@@ -169,8 +170,10 @@ class Model extends BaseModel {
                         dataUpdate.company = infoOrder.company
                         dataUpdate.funda = infoOrder.funda
                         dataUpdate.customer = infoOrder.customer
+                        dataUpdate.business = infoOrder.business
                         dataUpdate.channel = infoOrder.channel
                         dataUpdate.salesChannel = infoOrder.salesChannel
+
                     if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
                         dataUpdate.manager = infoOrder.funda.manager
                     }
@@ -213,6 +216,7 @@ class Model extends BaseModel {
                             keyError: "params_journey_invalid",
                             status: 400
                         })
+                        
                     if(!checkOne){
                         dataUpdate.journey = journeyID;
                         dataUpdate.business = infoItem.linkItem;
