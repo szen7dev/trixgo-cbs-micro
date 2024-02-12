@@ -12,7 +12,7 @@ module.exports = {
     /**
      * Name: Insert 
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 12/2/2024
      */
     insert: {
         auth: "required",
@@ -29,7 +29,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { customerID, orderID, name, note, date, status, files } = ctx.params;
                 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -45,9 +45,10 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH
-	 * Func: update Group
-	 */
+     * Name: Update 
+     * Author: HiepNH
+     * Code: 12/2/2024
+     */
     update: {
         auth: "required",
         params: {
@@ -66,7 +67,7 @@ module.exports = {
                 const {  customerCareID, customerID, orderID, name, note, date, status, imagesID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FNB_CUSTOMER_BOOKING_MODEL.update({
                     userID, customerCareID, customerID, orderID, name, note, date, status, imagesID
@@ -81,7 +82,7 @@ module.exports = {
 
     /**
 	 * Dev: HiepNH
-	 * Func: remove Group
+	 * Func: remove
 	 */
     remove: {
         auth: "required",
@@ -106,8 +107,9 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH
-	 * Func: getList and getInfo pcm_plan_report
+	 * Name: getList and getInfo
+     * Author: HiepNH
+     * Code: 12/2/2024
 	 */
     getInfoAndGetList: {
         auth: "required",
