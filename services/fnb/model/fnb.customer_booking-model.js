@@ -98,13 +98,12 @@ class Model extends BaseModel {
     update({ userID, customerCareID, customerID, orderID, name, note, date, status, imagesID }) {
         return new Promise(async resolve => {
             try {
-                if(!name || name == "" || !checkObjectIDs(customerCareID))
-                    return resolve({ error: true, message: 'name|customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(customerCareID))
+                    return resolve({ error: true, message: 'customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataUpdate = { 
                     userUpdate: userID, 
-                    modifyAt: new Date(),
-                    name
+                    modifyAt: new Date()
                 }
 
                 if(checkObjectIDs(customerID)) {
@@ -117,12 +116,16 @@ class Model extends BaseModel {
                     if(!infoOrder)
                         return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                        dataUpdate.order = orderID
-                        dataUpdate.company = infoOrder.company
-                        dataUpdate.funda = infoOrder.funda
-                        dataUpdate.business = infoOrder.business
-                        dataUpdate.channel = infoOrder.channel
-                        dataUpdate.customer = infoOrder.customer
+                    dataUpdate.order = orderID
+                    dataUpdate.company = infoOrder.company
+                    dataUpdate.funda = infoOrder.funda
+                    dataUpdate.business = infoOrder.business
+                    dataUpdate.channel = infoOrder.channel
+                    dataUpdate.customer = infoOrder.customer
+                }
+
+                if(name && name != ""){
+                    dataUpdate.name = name;
                 }
 
                 if(date && date != ""){

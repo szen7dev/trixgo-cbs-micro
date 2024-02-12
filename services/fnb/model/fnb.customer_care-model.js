@@ -35,8 +35,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  }) {
-        // console.log({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  })
+    insert({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files }) {
+        // console.log({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "" || !checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
@@ -116,6 +116,10 @@ class Model extends BaseModel {
                     dataInsert.mistake = mistakeID;
                 }
 
+                if(checkObjectIDs(dataSourceID)) {
+                    dataInsert.dataSource = dataSourceID;
+                }
+
                 if(checkObjectIDs(files)) {
                     dataInsert.images = files;
                 }
@@ -136,17 +140,16 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ companyID, userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
-        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID })
+    update({ companyID, userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID }) {
+        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID })
         return new Promise(async resolve => {
             try {
-                if(!name || name == "" || !checkObjectIDs(customerCareID))
-                    return resolve({ error: true, message: 'name|customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(customerCareID))
+                    return resolve({ error: true, message: 'customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataUpdate = { 
                     userUpdate: userID, 
                     modifyAt: new Date(),
-                    name
                 }
 
                 if(checkObjectIDs(customerID)) {
@@ -156,7 +159,11 @@ class Model extends BaseModel {
                 if(checkObjectIDs(mistakeID)) {
                     dataUpdate.mistake = mistakeID;
                 }
-             
+                
+                if(checkObjectIDs(dataSourceID)) {
+                    dataUpdate.dataSource = dataSourceID;
+                }
+
                 let infoOrder
                 if(orderID && checkObjectIDs(orderID)){
                     infoOrder = await FNB_ORDER_COLL.findById(orderID).populate({
@@ -177,6 +184,10 @@ class Model extends BaseModel {
                     if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
                         dataUpdate.manager = infoOrder.funda.manager
                     }
+                }
+
+                if(name && name != ""){
+                    dataUpdate.name = name;
                 }
 
                 if(!isNaN(type)){
@@ -452,7 +463,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID , year, month, fromDate, toDate, status, userID }) { 
-        console.log({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+        // console.log({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -776,7 +787,9 @@ class Model extends BaseModel {
                             customerID: data?.__EMPTY_1,
                             journeyID: data?.__EMPTY_2, //
                             name: data?.__EMPTY_3, 
-                            note: data?.__EMPTY_4, 
+                            amount: data?.__EMPTY_4, 
+                            note: data?.__EMPTY_5, 
+                            dataSourceID: data?.__EMPTY_6, 
                         }
                         // console.log(prepareData);
 

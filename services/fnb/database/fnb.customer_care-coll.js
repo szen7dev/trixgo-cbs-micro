@@ -83,7 +83,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Number,
         default: 1
     },
-    //_________Giá trị bồi thường cho khách
+    //_________Giá trị/Chi phí
     amount: {
         type: Number,
         default: 0
