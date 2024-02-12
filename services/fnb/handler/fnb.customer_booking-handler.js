@@ -114,10 +114,9 @@ module.exports = {
         params: {
             companyID           : { type: "string", optional: true },
             fundasID            : { type: "array", optional: true },
-            journeyID           : { type: "string", optional: true },
             customerID          : { type: "string", optional: true },
             userCreateID        : { type: "string", optional: true },
-            managerID           : { type: "string", optional: true },
+            channelID           : { type: "string", optional: true },
             fromDate            : { type: "string", optional: true },
             toDate              : { type: "string", optional: true },
             type                : { type: "string", optional: true },
@@ -133,7 +132,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, companyID, orderMistakeID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, channelID, fromDate, toDate, status, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -149,7 +148,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_CUSTOMER_BOOKING_MODEL.getList({
-                        option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates
+                        companyID, userID, fundasID, customerID, userCreateID, channelID, fromDate, toDate, status, keyword, limit, lastestID, select, populates
                     });
                 }
 

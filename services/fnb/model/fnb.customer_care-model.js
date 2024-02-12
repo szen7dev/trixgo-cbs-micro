@@ -145,7 +145,7 @@ class Model extends BaseModel {
 
                 let dataUpdate = { 
                     userUpdate: userID, 
-                    modifyAt: new Date().getDate,
+                    modifyAt: new Date(),
                     name
                 }
 

@@ -49,19 +49,19 @@ class Model extends BaseModel {
                     name
                 }
 
-                let infoOrder
-                if(orderID && checkObjectIDs(orderID)){
-                    infoOrder = await FNB_ORDER_COLL.findById(orderID)
-                    if(!infoOrder)
-                        return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                // let infoOrder
+                // if(orderID && checkObjectIDs(orderID)){
+                //     infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                //     if(!infoOrder)
+                //         return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                    dataInsert.order = orderID
-                    dataInsert.company = infoOrder.company
-                    dataInsert.funda = infoOrder.funda
-                    dataInsert.business = infoOrder.business
-                    dataInsert.channel = infoOrder.channel
-                    dataInsert.customer = infoOrder.customer
-                }
+                //     dataInsert.order = orderID
+                //     dataInsert.company = infoOrder.company
+                //     dataInsert.funda = infoOrder.funda
+                //     dataInsert.business = infoOrder.business
+                //     dataInsert.channel = infoOrder.channel
+                //     dataInsert.customer = infoOrder.customer
+                // }
 
                 if(date && date != ""){
                     dataInsert.date = date;
@@ -195,8 +195,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ option, companyID,, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
+    getList({ companyID, userID, fundasID, customerID, userCreateID, channelID, fromDate, toDate, status, keyword, limit = 20, lastestID, select, populates }) {
+        // console.log({ companyID, userID, fundasID, customerID, userCreateID, channelID, fromDate, toDate, status, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -220,14 +220,6 @@ class Model extends BaseModel {
                     conditionObj.funda = { $in: arrFun }
                 }
 
-                if(option == 1){
-                    conditionObj.journey = {$exists: true, $ne: null}
-                }
-
-                if(journeyID && checkObjectIDs(journeyID)){
-                    conditionObj.journey = ObjectID(journeyID)
-                }
-
                 if(customerID && checkObjectIDs(customerID)){
                     conditionObj.customer = ObjectID(customerID)
                 }
@@ -236,34 +228,22 @@ class Model extends BaseModel {
                     conditionObj.userCreate = ObjectID(userCreateID)
                 }
 
-                if(managerID && checkObjectIDs(managerID)){
-                    conditionObj.manager = ObjectID(managerID)
-                }
-
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     conditionObj.status = Number(status);
                 }else{
                     conditionObj.status = {$in: [1,2]}
                 }
 
-                if(!isNaN(type) && [1,2].includes(Number(type))){
-                    conditionObj.type = Number(type);
-                }else{
-                    conditionObj.type = {$in: [1,2]}
+                if(channelID && checkObjectIDs(channelID)){
+                    conditionObj.channel = ObjectID(channelID)
                 }
 
-                if(!isNaN(channel) && [1,2,3,4,5,6,7,8,9,10,11].includes(Number(channel))){
-                    conditionObj.channel = Number(channel);
-                }else{
-                    conditionObj.channel = {$in: [1,2,3,4,5,6,7,8,9,10,11]}
-                }
-
-                if(fromDate && toDate){
-                    conditionObj.createAt = {
-                        $gte: new Date(fromDate),
-                        $lte: new Date(toDate),
-                    }
-                }
+                // if(fromDate && toDate){
+                //     conditionObj.date = {
+                //         $gte: new Date(fromDate),
+                //         $lte: new Date(toDate),
+                //     }
+                // }
                 // console.log(conditionObj)
 
                 if(populates && typeof populates === 'string'){
@@ -286,7 +266,6 @@ class Model extends BaseModel {
 
                     conditionObj.$or = [
                         { name: regSearch },
-                        { description: regSearch },
                         { note: regSearch },
                     ]
                 }

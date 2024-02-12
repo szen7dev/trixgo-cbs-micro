@@ -35,8 +35,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_affiliate_signup", {
     name: String,
     //_________Ghi chú
     note: String,
-    //_________Thời hạn
-    expired: { type: Date, default: new Date() },
+    //_________Thời gian
+    date: { type: Date, default: new Date() },
     /**
      * Tình trạng xử lý
      * 1-Chưa xử lý

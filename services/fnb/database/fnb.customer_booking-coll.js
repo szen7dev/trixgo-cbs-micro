@@ -41,7 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_booking", {
     //_________Ghi chú
     note: String,
     //_________Thời hạn
-    expired: { type: Date, default: new Date() },
+    date: { type: Date, default: new Date() },
     //_________Thông báo trước thời hạn (h)
     alert: { type: Number, default: 0 },
     /**
