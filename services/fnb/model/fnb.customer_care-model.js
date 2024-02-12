@@ -452,7 +452,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID , year, month, fromDate, toDate, status, userID }) { 
-        // console.log({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+        console.log({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -620,9 +620,9 @@ class Model extends BaseModel {
                                 _id: { business: "$business", journey: "$journey" },
                                 quantity: { $sum: 1 },
                             }
-                        }
-
-                        sortBy = {"_id.business": 1}
+                        }      
+                        
+                        sortBy = {"_id.journey": 1}
                     }
 
                     /**
