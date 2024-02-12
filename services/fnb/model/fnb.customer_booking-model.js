@@ -33,7 +33,7 @@ class Model extends BaseModel {
     /**
      * Name: Insert 
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 12/2/2024
      */
     insert({ userID, companyID, customerID, orderID, name, note, date, status, files }) {
         // console.log({ userID, companyID, customerID, orderID, name, note, date, status, files })
@@ -49,19 +49,19 @@ class Model extends BaseModel {
                     name
                 }
 
-                // let infoOrder
-                // if(orderID && checkObjectIDs(orderID)){
-                //     infoOrder = await FNB_ORDER_COLL.findById(orderID)
-                //     if(!infoOrder)
-                //         return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                let infoOrder
+                if(orderID && checkObjectIDs(orderID)){
+                    infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                    if(!infoOrder)
+                        return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                //     dataInsert.order = orderID
-                //     dataInsert.company = infoOrder.company
-                //     dataInsert.funda = infoOrder.funda
-                //     dataInsert.business = infoOrder.business
-                //     dataInsert.channel = infoOrder.channel
-                //     dataInsert.customer = infoOrder.customer
-                // }
+                    dataInsert.order = orderID
+                    dataInsert.company = infoOrder.company
+                    dataInsert.funda = infoOrder.funda
+                    dataInsert.business = infoOrder.business
+                    dataInsert.channel = infoOrder.channel
+                    dataInsert.customer = infoOrder.customer
+                }
 
                 if(date && date != ""){
                     dataInsert.date = date;
@@ -93,7 +93,7 @@ class Model extends BaseModel {
     /**
      * Name: Update 
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 12/2/2024
      */
     update({ userID, customerCareID, customerID, orderID, name, note, date, status, imagesID }) {
         return new Promise(async resolve => {

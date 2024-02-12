@@ -30,186 +30,129 @@ class Model extends BaseModel {
         super(FNB_AFFILIATE_SIGNUP_COLL);
     }
 
-    /**
+/**
      * Name: Insert 
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 12/2/2024
      */
-    insert({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, files  }) {
-        // console.log({ userID, companyID, customerID, name, orderID, mistakeID, type, description, note, rating, amount, status, files  })
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
-                // if(!checkObjectIDs(customerID) || !checkObjectIDs(mistakeID) || !checkObjectIDs(userID)) 
-                    return resolve({ error: true, message: 'customerID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+insert({ userID, companyID, customerID, orderID, name, note, date, status, files }) {
+    // console.log({ userID, companyID, customerID, orderID, name, note, date, status, files })
+    return new Promise(async resolve => {
+        try {
+            if(!name || name == "" || !checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
+                return resolve({ error: true, message: 'name|customerID|userID invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
-                let dataInsert = { 
-                    userCreate: userID,
-                    customer: customerID,
-                    // mistake: mistakeID,
-                    company: companyID,
-                    name
-                }
-
-                let infoOrder
-                if(orderID && checkObjectIDs(orderID)){
-                    infoOrder = await FNB_ORDER_COLL.findById(orderID).populate({
-                        path: 'funda',
-                        select: 'manager'
-                    })
-                    if(!infoOrder)
-                        return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-
-                    dataInsert.order = orderID
-                    dataInsert.company = infoOrder.company
-                    dataInsert.funda = infoOrder.funda
-                    dataInsert.channel = infoOrder.salesChannel
-                    
-                    if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
-                        dataInsert.manager = infoOrder.funda.manager
-                    }
-                }
-
-                if(!isNaN(type)){
-                    dataInsert.type = Number(type);
-                }
-
-                if(!isNaN(amount)){
-                    dataInsert.amount = Number(amount);
-                }
-
-                if(!isNaN(rating)){
-                    dataInsert.rating = Number(rating);
-                }
-
-                if(!isNaN(status)){
-                    dataInsert.status = Number(status);
-                }
-
-                if(description && description != ""){
-                    dataInsert.description = description;
-                }
-
-                if(note && note != ""){
-                    dataInsert.note = note;
-                }
-
-                if(checkObjectIDs(journeyID)) {
-                    // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
-                    let checkOne = await FNB_AFFILIATE_SIGNUP_COLL.findOne({journey: journeyID, customer: customerID})
-                    if(!checkOne){
-                        dataInsert.journey = journeyID;
-                    }
-                }
-
-                if(checkObjectIDs(mistakeID)) {
-                    dataInsert.mistake = mistakeID;
-                }
-
-                if(checkObjectIDs(files)) {
-                    dataInsert.images = files;
-                }
-              
-                let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
-
-                return resolve({ error: false, data: infoAfterInsert })
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
+            let dataInsert = { 
+                userCreate: userID,
+                customer: customerID,
+                company: companyID,
+                name
             }
-        })
-    }
 
-    /**
-     * Name: Update 
-     * Author: HiepNH
-     * Code: 24/11/2022
-     */
-    update({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, status, imagesID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(customerCareID))
-                    return resolve({ error: true, message: 'customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+            let infoOrder
+            if(orderID && checkObjectIDs(orderID)){
+                infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                if(!infoOrder)
+                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let dataUpdate = { 
-                    name,
-                    userUpdate: userID, 
-                    modifyAt: new Date()
-                }
-
-                if(checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
-                }
-
-                if(checkObjectIDs(mistakeID)) {
-                    dataUpdate.mistake = mistakeID;
-                }
-             
-                let infoOrder
-                if(orderID && checkObjectIDs(orderID)){
-                    infoOrder = await FNB_ORDER_COLL.findById(orderID).populate({
-                        path: 'funda',
-                        select: 'manager'
-                    })
-                    if(!infoOrder)
-                        return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-
-                        dataUpdate.order = orderID
-                        dataUpdate.company = infoOrder.company
-                        dataUpdate.funda = infoOrder.funda
-                        dataUpdate.channel = infoOrder.salesChannel
-                        dataUpdate.customer = infoOrder.customer
-                    
-                    if(infoOrder.funda.manager && checkObjectIDs(infoOrder.funda.manager)){
-                        dataUpdate.manager = infoOrder.funda.manager
-                    }
-                }
-
-                if(!isNaN(type)){
-                    dataUpdate.type = Number(type);
-                }
-
-                if(!isNaN(amount)){
-                    dataUpdate.amount = Number(amount);
-                }
-
-                if(!isNaN(rating)){
-                    dataUpdate.rating = Number(rating);
-                }
-
-                if(!isNaN(status)){
-                    dataUpdate.status = Number(status);
-                }
-
-                if(description && description != ""){
-                    dataUpdate.description = description;
-                }
-
-                if(note && note != ""){
-                    dataUpdate.note = note;
-                }
-
-                if(checkObjectIDs(journeyID)) {
-                    dataUpdate.journey = journeyID;
-                }
-
-                if(imagesID && imagesID.length) {
-                    dataUpdate.$addToSet = {
-                        images: imagesID,
-                    }
-                }
-
-                const infoAfterUpdate = await FNB_AFFILIATE_SIGNUP_COLL.findByIdAndUpdate(customerCareID, dataUpdate, { new: true });
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                return resolve({ error: false, data: infoAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
+                dataInsert.order = orderID
+                dataInsert.company = infoOrder.company
+                dataInsert.funda = infoOrder.funda
+                dataInsert.business = infoOrder.business
+                dataInsert.channel = infoOrder.channel
+                dataInsert.customer = infoOrder.customer
             }
-        });
-    }
+
+            if(date && date != ""){
+                dataInsert.date = date;
+            }
+
+            if(!isNaN(status)){
+                dataInsert.status = Number(status);
+            }
+
+            if(note && note != ""){
+                dataInsert.note = note;
+            }
+
+            if(checkObjectIDs(files)) {
+                dataInsert.images = files;
+            }
+          
+            let infoAfterInsert = await this.insertData(dataInsert);
+            if (!infoAfterInsert)
+                return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
+
+            return resolve({ error: false, data: infoAfterInsert })
+        } catch (error) {
+            return resolve({ error: true, message: error.message })
+        }
+    })
+}
+
+/**
+ * Name: Update 
+ * Author: HiepNH
+ * Code: 12/2/2024
+ */
+update({ userID, customerCareID, customerID, orderID, name, note, date, status, imagesID }) {
+    return new Promise(async resolve => {
+        try {
+            if(!name || name == "" || !checkObjectIDs(customerCareID))
+                return resolve({ error: true, message: 'name|customerCareID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+
+            let dataUpdate = { 
+                userUpdate: userID, 
+                modifyAt: new Date(),
+                name
+            }
+
+            if(checkObjectIDs(customerID)) {
+                dataUpdate.customer = customerID;
+            }
+         
+            let infoOrder
+            if(orderID && checkObjectIDs(orderID)){
+                infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                if(!infoOrder)
+                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+
+                    dataUpdate.order = orderID
+                    dataUpdate.company = infoOrder.company
+                    dataUpdate.funda = infoOrder.funda
+                    dataUpdate.business = infoOrder.business
+                    dataUpdate.channel = infoOrder.channel
+                    dataUpdate.customer = infoOrder.customer
+            }
+
+            if(date && date != ""){
+                dataUpdate.date = date;
+            }
+
+            if(!isNaN(status)){
+                dataUpdate.status = Number(status);
+            }
+
+            if(note && note != ""){
+                dataUpdate.note = note;
+            }
+
+            if(imagesID && imagesID.length) {
+                dataUpdate.$addToSet = {
+                    images: imagesID,
+                }
+            }
+
+            const infoAfterUpdate = await FNB_AFFILIATE_SIGNUP_COLL.findByIdAndUpdate(customerCareID, dataUpdate, { new: true });
+            if (!infoAfterUpdate)
+                return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+            return resolve({ error: false, data: infoAfterUpdate });
+        } catch (error) {
+            return resolve({ error: true, message: error.message })
+        }
+    });
+}
 
     /**
      * Name: Get info 
@@ -252,8 +195,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ option, companyID, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ option, companyID,, fundasID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channel, keyword, limit, lastestID, select, populates, userID })
+    getList({ companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, fromDate, toDate, status, keyword, limit = 20, lastestID, select, populates }) {
+        // console.log({ companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, fromDate, toDate, status, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -277,14 +220,6 @@ class Model extends BaseModel {
                     conditionObj.funda = { $in: arrFun }
                 }
 
-                if(option == 1){
-                    conditionObj.journey = {$exists: true, $ne: null}
-                }
-
-                if(journeyID && checkObjectIDs(journeyID)){
-                    conditionObj.journey = ObjectID(journeyID)
-                }
-
                 if(customerID && checkObjectIDs(customerID)){
                     conditionObj.customer = ObjectID(customerID)
                 }
@@ -293,30 +228,22 @@ class Model extends BaseModel {
                     conditionObj.userCreate = ObjectID(userCreateID)
                 }
 
-                if(managerID && checkObjectIDs(managerID)){
-                    conditionObj.manager = ObjectID(managerID)
-                }
-
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     conditionObj.status = Number(status);
                 }else{
                     conditionObj.status = {$in: [1,2]}
                 }
 
-                if(!isNaN(type) && [1,2].includes(Number(type))){
-                    conditionObj.type = Number(type);
-                }else{
-                    conditionObj.type = {$in: [1,2]}
+                if(channelID && checkObjectIDs(channelID)){
+                    conditionObj.channel = ObjectID(channelID)
                 }
 
-                if(!isNaN(channel) && [1,2,3,4,5,6,7,8,9,10,11].includes(Number(channel))){
-                    conditionObj.channel = Number(channel);
-                }else{
-                    conditionObj.channel = {$in: [1,2,3,4,5,6,7,8,9,10,11]}
+                if(businessID && checkObjectIDs(businessID)){
+                    conditionObj.business = ObjectID(businessID)
                 }
 
                 if(fromDate && toDate){
-                    conditionObj.createAt = {
+                    conditionObj.date = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
                     }
@@ -343,7 +270,6 @@ class Model extends BaseModel {
 
                     conditionObj.$or = [
                         { name: regSearch },
-                        { description: regSearch },
                         { note: regSearch },
                     ]
                 }
