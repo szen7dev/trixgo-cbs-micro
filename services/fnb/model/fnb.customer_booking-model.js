@@ -35,8 +35,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 12/2/2024
      */
-    insert({ userID, companyID, customerID, orderID, name, note, date, status, files }) {
-        // console.log({ userID, companyID, customerID, orderID, name, note, date, status, files })
+    insert({ userID, companyID, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, files }) {
+        // console.log({ userID, companyID, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, files })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "" || !checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
@@ -47,6 +47,16 @@ class Model extends BaseModel {
                     customer: customerID,
                     company: companyID,
                     name
+                }
+
+                if(checkObjectIDs(businessID)) {
+                    dataInsert.business = businessID;
+                }
+
+                if(checkObjectIDs(assigneeID)) {
+                    dataInsert.assignee = assigneeID;
+                }else{
+                    dataInsert.assignee = userID
                 }
 
                 let infoOrder
@@ -65,6 +75,10 @@ class Model extends BaseModel {
 
                 if(date && date != ""){
                     dataInsert.date = date;
+                }
+
+                if(!isNaN(alert)){
+                    dataInsert.alert = Number(alert);
                 }
 
                 if(!isNaN(status)){
@@ -95,7 +109,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 12/2/2024
      */
-    update({ userID, customerCareID, customerID, orderID, name, note, date, status, imagesID }) {
+    update({ userID, customerCareID, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, imagesID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))
@@ -108,6 +122,16 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(customerID)) {
                     dataUpdate.customer = customerID;
+                }
+
+                if(checkObjectIDs(businessID)) {
+                    dataUpdate.business = businessID;
+                }
+
+                if(checkObjectIDs(assigneeID)) {
+                    dataUpdate.assignee = assigneeID;
+                }else{
+                    dataUpdate.assignee = userID
                 }
              
                 let infoOrder
@@ -130,6 +154,10 @@ class Model extends BaseModel {
 
                 if(date && date != ""){
                     dataUpdate.date = date;
+                }
+
+                if(!isNaN(alert)){
+                    dataUpdate.alert = Number(alert);
                 }
 
                 if(!isNaN(status)){
@@ -198,8 +226,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, fromDate, toDate, status, keyword, limit = 20, lastestID, select, populates }) {
-        // console.log({ companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, fromDate, toDate, status, keyword, limit, lastestID, select, populates })
+    getList({ companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, assigneeID, fromDate, toDate, status, keyword, limit = 20, lastestID, select, populates }) {
+        // console.log({ companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, assigneeID, fromDate, toDate, status, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -225,6 +253,10 @@ class Model extends BaseModel {
 
                 if(customerID && checkObjectIDs(customerID)){
                     conditionObj.customer = ObjectID(customerID)
+                }
+
+                if(assigneeID && checkObjectIDs(assigneeID)){
+                    conditionObj.assignee = ObjectID(assigneeID)
                 }
 
                 if(userCreateID && checkObjectIDs(userCreateID)){

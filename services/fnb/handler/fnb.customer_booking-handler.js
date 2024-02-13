@@ -27,14 +27,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { customerID, orderID, name, note, date, status, files } = ctx.params;
+                let { customerID, orderID, businessID, assigneeID, name, note, date, alert, status, files } = ctx.params;
                 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_BOOKING_MODEL.insert({
-                    userID, companyID: company._id, customerID, orderID, name, note, date, status, files  
+                    userID, companyID: company._id, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, files  
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -64,13 +64,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const {  customerCareID, customerID, orderID, name, note, date, status, imagesID } = ctx.params;
+                const {  customerCareID, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, imagesID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FNB_CUSTOMER_BOOKING_MODEL.update({
-                    userID, customerCareID, customerID, orderID, name, note, date, status, imagesID
+                    userID, customerCareID, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, imagesID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -135,7 +135,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, channelID, businessID, fromDate, toDate, status, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, orderMistakeID, fundasID, customerID, userCreateID, assigneeID, channelID, businessID, fromDate, toDate, status, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -151,7 +151,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FNB_CUSTOMER_BOOKING_MODEL.getList({
-                        companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, fromDate, toDate, status, keyword, limit, lastestID, select, populates
+                        companyID, userID, fundasID, customerID, userCreateID, channelID, businessID, assigneeID, fromDate, toDate, status, keyword, limit, lastestID, select, populates
                     });
                 }
 
