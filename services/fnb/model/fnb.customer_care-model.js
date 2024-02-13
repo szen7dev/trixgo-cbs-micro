@@ -13,6 +13,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  */
 const USER_COLL                                = require('../../auth/database/auth.user-coll')
 const ITEM__DOCTYPE_COLL            		   = require('../../item/database/item.doctype-coll')
+const ITEM__COCNTACT_COLL            		   = require('../../item/database/item.contact-coll')
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_CUSTOMER_CARE_COLL                   = require('../database/fnb.customer_care-coll');
 
@@ -47,6 +48,11 @@ class Model extends BaseModel {
                     customer: customerID,
                     company: companyID,
                     name
+                }
+
+                let infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID).select('dataSource')
+                if(infoCustomer && checkObjectIDs(infoCustomer.dataSource)){
+                    dataInsert.dataSource = infoCustomer.dataSource
                 }
 
                 let infoOrder
@@ -150,6 +156,11 @@ class Model extends BaseModel {
                 let dataUpdate = { 
                     userUpdate: userID, 
                     modifyAt: new Date(),
+                }
+
+                let infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID).select('dataSource')
+                if(infoCustomer && checkObjectIDs(infoCustomer.dataSource)){
+                    dataUpdate.dataSource = infoCustomer.dataSource
                 }
 
                 if(checkObjectIDs(customerID)) {

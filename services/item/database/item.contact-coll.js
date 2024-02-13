@@ -113,6 +113,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
+    //_________Nguồn dữ liệu (từ Marketing mang về)
+    dataSource: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
     //_________Link với nhân viên sale
     linkSale: {
         type: Schema.Types.ObjectId,
