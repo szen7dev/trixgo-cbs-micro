@@ -40,6 +40,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_booking", {
     name: String,
     //_________Ghi chú
     note: String,
+    //_________Người thực hiện
+    assignee: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
     //_________Thời hạn
     date: { type: Date, default: new Date() },
     //_________Thông báo trước thời hạn (h)
