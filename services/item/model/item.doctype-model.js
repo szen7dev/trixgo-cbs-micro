@@ -25,7 +25,7 @@ class Model extends BaseModel {
      * Func: Insert doctype
      * Date: 22/02/2022
      */
-    insert({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel }) {
+    insert({ type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel }) {
         // console.log({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel })
         return new Promise(async resolve => {
             try {
@@ -61,6 +61,10 @@ class Model extends BaseModel {
                     convertStr = convertStr + " " + stringUtils.removeAccents(sign)
                 }
                 dataInsert.namecv = convertStr
+
+                if(alert){
+                    dataInsert.alert = Number(alert);
+                }
 
                 if(amount){
                     dataInsert.amount = Number(amount);
@@ -111,7 +115,7 @@ class Model extends BaseModel {
      * Func: Update doctype
      * Date: 22/02/2022
      */
-    update({ doctypeID, name, description, sign, unit, amount, userID, salesChannel, linkItemID }) {
+    update({ doctypeID, name, description, sign, unit, amount, alert, userID, salesChannel, linkItemID }) {
         // console.log({ doctypeID, name, description, sign, unit, amount, userID, salesChannel, linkItemID })
         return new Promise(async resolve => {
             try {
@@ -133,6 +137,10 @@ class Model extends BaseModel {
                 description && (dataUpdate.description = description)
                 sign && (dataUpdate.sign = sign)
                 unit && (dataUpdate.unit = unit)
+
+                if(alert){
+                    dataUpdate.alert = Number(alert);
+                }
 
                 if(amount){
                     dataUpdate.amount = Number(amount);

@@ -27,6 +27,8 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 
 const { CRM_STATUS, CRM_TYPES }         = require('../helper/fnb.keys-constant')
 
+const FNB_CUSTOMER_BOOKING_MODEL        = require('../model/fnb.customer_booking-model').MODEL;
+
 class Model extends BaseModel {
 
     constructor() {
@@ -116,10 +118,12 @@ class Model extends BaseModel {
                 }
                 dataInsert.namecv = convertStr
 
+                let infoItem;
                 if(checkObjectIDs(journeyID)) {
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
                     let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
-                    let infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
+                    
+                    infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
                     if(!infoItem.linkItem)
                         return resolve({
                             error: true,
@@ -149,6 +153,26 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
+                // Tạo lịch nhắc hẹn
+                if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
+                    // console.log({_____________alert:infoItem.alert})
+
+                    let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
+                        userID, 
+                        companyID, 
+                        customerID, 
+                        // orderID, 
+                        businessID: infoItem.linkItem, 
+                        assigneeID: userID, 
+                        name: 'Auto create Booking from Journey', 
+                        note: 'Auto create Booking from Journey', 
+                        // date, 
+                        // alert,
+                    })
+
+                    // console.log(infoBooking)
+                 }
+
                 return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -162,7 +186,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ companyID, userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID }) {
-        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID })
+        console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))
@@ -253,12 +277,14 @@ class Model extends BaseModel {
                 }
                 dataUpdate.namecv = convertStr
 
+                let infoItem;
                 if(checkObjectIDs(journeyID)) {
                     dataUpdate.journey = journeyID;
 
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
                     let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
-                    let infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
+                    
+                    infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
                     if(!infoItem.linkItem)
                         return resolve({
                             error: true,
@@ -282,6 +308,26 @@ class Model extends BaseModel {
                 const infoAfterUpdate = await FNB_CUSTOMER_CARE_COLL.findByIdAndUpdate(customerCareID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                // Tạo lịch nhắc hẹn
+                if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
+                    // console.log({_____________alert:infoItem.alert})
+
+                    let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
+                        userID, 
+                        companyID, 
+                        customerID, 
+                        // orderID, 
+                        businessID: infoItem.linkItem, 
+                        assigneeID: userID, 
+                        name: 'Auto create Booking from Journey', 
+                        note: 'Auto create Booking from Journey', 
+                        // date, 
+                        // alert,
+                    })
+
+                    // console.log(infoBooking)
+                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
