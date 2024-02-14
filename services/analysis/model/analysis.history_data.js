@@ -251,7 +251,8 @@ class Model extends BaseModel {
                                     $pull: {
                                         childs: subitem,
                                         nestedChilds: subitem
-                                    }
+                                    },
+                                    $inc: { amountChilds: -1 }
                                 },
                                 { new: true })
 
@@ -272,7 +273,8 @@ class Model extends BaseModel {
                                     $pull: {
                                         childs: docID,
                                         nestedChilds: docID
-                                    }
+                                    },
+                                    $inc: { amountChilds: -1 }
                                 },
                                 { new: true })
 
@@ -283,7 +285,8 @@ class Model extends BaseModel {
                                         $pull: {
                                             childs: subitem,
                                             nestedChilds: subitem
-                                        }
+                                        },
+                                        $inc: { amountChilds: -1 }
                                     },
                                     { new: true })
 
