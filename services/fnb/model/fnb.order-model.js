@@ -27,6 +27,7 @@ const stringUtils					            = require('../../../tools/utils/string_utils')
 const ITEM__FUNDA_COLL            			    = require('../../item/database/item.funda-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll');
 const ITEM__CONFIG_COLL            		        = require('../../item/database/item.config-coll');
+const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll');
 const FNB_ORDER_COLL                            = require('../database/fnb.order-coll');
 const FNB_ORDER_PRODUCT_COLL                    = require('../database/fnb.order_product-coll');
 const FNB_SHIFT_COLL                            = require('../database/fnb.shift-coll');
@@ -1012,6 +1013,9 @@ class Model extends BaseModel {
                 if (!infoCustomer)
                     return resolve({ error: true, message: 'cannot_get_infoCustomer' })
 
+                // Thông tin kênh
+                let infoChannel = await ITEM__DOCTYPE_COLL.findById(channelID)
+
                 // Lấy số đơn hàng khách đã mua (thành công)
                 let numberOD = await FNB_ORDER_COLL.count({ customer: customerID, status: 5 })
 
@@ -1031,7 +1035,11 @@ class Model extends BaseModel {
                     sign: `C${Number(numberOfOrder+1)}`,
                     amount: 0,
                     userCreate: userID
-                };
+                }
+
+                if(infoChannel.parent){
+                    dataInsert.parentChannel = infoChannel.parent
+                }
 
                 /**
                  * B1. CẬP NHẬT THUỘC TÍNH CỦA CƠ SỞ

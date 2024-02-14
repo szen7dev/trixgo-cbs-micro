@@ -25,7 +25,12 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
-    //_________Phân loại dịch vụ/Kênh bán hàng****
+    //_________Phân loại kênh bán hàng
+    parentChannel: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
+    //_________Kênh bán hàng
     channel: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
