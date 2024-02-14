@@ -114,6 +114,7 @@ class Model extends BaseModel {
                 }
 
                 // convertDoctype
+
                 else if(option == 2){
                     let selectObj = '_id name sign description'
                 
@@ -229,13 +230,81 @@ class Model extends BaseModel {
 
                 // Convert Contact Parent
                 else if(option == 8){
-                    
+                    /**
+                     * BA
+                     * - Update contact & childs: level, parent, nestedParents
+                     * - Update old Parent: remove childs, nestedChilds
+                     * - Update new Parent: childs, nestedChilds
+                     */
                     if(checkObjectIDs(contactID) && checkObjectIDs(parentID)){
+
+                        let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
                         let infoParent = await ITEM__CONTACT_COLL.findById(parentID)
-                        
-                        let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
-        
-                        // Với contactID
+                        // console.log(infoParent.nestedParents)
+
+                        /**
+                         * B1. XỬ LÝ VỚI OLD_PARENT VÀ CÁC CẤP TRÊN CŨ
+                         */
+                        for(const subitem of infoContact?.nestedChilds){
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
+                                {
+                                    $pull: {
+                                        childs: subitem,
+                                        nestedChilds: subitem
+                                    }
+                                },
+                                { new: true })
+
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(subitem,
+                                {
+                                    $pull: {
+                                        nestedParents: parentID,
+                                    }
+                                },
+                                { new: true })
+                        }
+
+                        // CÁC CẤP TRÊN CŨ
+                        for(const item of infoContact?.nestedParents){
+                            // Với contactID
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+                                {
+                                    $pull: {
+                                        childs: contactID,
+                                        nestedChilds: contactID
+                                    }
+                                },
+                                { new: true })
+
+                            // Với các phần tử con của contactID
+                            for(const subitem of infoContact?.nestedChilds){
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+                                    {
+                                        $pull: {
+                                            childs: subitem,
+                                            nestedChilds: subitem
+                                        }
+                                    },
+                                    { new: true })
+
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(subitem,
+                                    {
+                                        $pull: {
+                                            nestedParents: item,
+                                        }
+                                    },
+                                    { new: true })
+                            }
+                        }
+
+                        /**
+                        * B2. XỬ LÝ VỚI CONTACT
+                        */
+                        let dataUpdate = { 
+                            userUpdate: userID, 
+                            modifyAt: new Date() 
+                        }
+
                         dataUpdate.level = infoParent.level + 1
                         dataUpdate.parent = parentID
                         dataUpdate.nestedParents = [parentID] // Cha cấp 1
@@ -245,37 +314,103 @@ class Model extends BaseModel {
                             dataUpdate,
                             { new: true })
                         // console.log(info)
-        
-                        // Với parentID
-                        // Cập nhật amountChilds cho phần tử cha cấp 1
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
+
+                        /**
+                         * B3. XỬ LÝ VỚI NEW_PARENT VÀ CÁC CẤP TRÊN MỚI
+                         */
+                        if(parentID && checkObjectIDs(parentID)){
+                           // Phần tử cha cấp 1
+                           await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
                             {
                                 $addToSet: { 
                                     childs: contactID,
-                                    nestedChilds: contactID, // Mảng các phần tử con/cháu...
-                                 },
+                                    nestedChilds: contactID
+                                },
                                 $inc: { amountChilds: 1 }
                             },
                             { new: true })
-        
-                        /**
-                         * Cập nhật cho phần tử cha cấp 2 trở lên (ông, cụ,...)
-                         * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
-                         */
-                        for(const item of infoParent?.nestedParents){
-                            // Thêm phần tử con/cháu
-                            await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
-                                {
-                                    $addToSet: { nestedChilds: contactID },
-                                },
-                                { new: true })
-        
-                            // Thêm các phần tử cha vào contactID
-                            await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID ,
-                                {
-                                    $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
-                                },
-                                { new: true })
+
+                            for(const subitem of infoContact?.nestedChilds){
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
+                                    {
+                                        $addToSet: {
+                                            nestedChilds: subitem
+                                        }
+                                    },
+                                    { new: true })
+                            }
+
+                            for(const subitem of infoContact?.nestedChilds){
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
+                                    {
+                                        $addToSet: {
+                                            nestedChilds: subitem
+                                        }
+                                    },
+                                    { new: true })
+
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(subitem,
+                                    {
+                                        $addToSet: { nestedParents: parentID },
+                                    },
+                                    { new: true })
+                            }
+
+                            /**
+                             * Cập nhật cho phần tử cha cấp 2 trở lên
+                             * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
+                             */
+                            for(const item of infoParent?.nestedParents){
+                                // Với contactID
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+                                    {
+                                        $addToSet: { nestedChilds: contactID },
+                                    },
+                                    { new: true })
+
+
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID,
+                                    {
+                                        $addToSet: { nestedParents: item },
+                                    },
+                                    { new: true })
+                                
+                                // Với các phần tử con của contactID
+                                for(const subitem of infoContact?.nestedChilds){
+                                    await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
+                                        {
+                                            $addToSet: {
+                                                nestedChilds: subitem
+                                            }
+                                        },
+                                        { new: true })
+
+                                    await ITEM__CONTACT_COLL.findByIdAndUpdate(subitem,
+                                        {
+                                            $addToSet: { nestedParents: item },
+                                        },
+                                        { new: true })
+                                }
+                            }
+
+                            /**
+                             * B4. CẬP NHẬT LEVEL CHO CÁC PHẦN TỬ CON BÊN DƯỚI
+                             */
+                            for(const subitem of infoContact?.nestedChilds){
+                                let infoSubChild = await ITEM__CONTACT_COLL.findById(subitem)
+                                .populate({
+                                    path: 'parent',
+                                    select: 'level'
+                                })
+                                .select('parent')
+                                if(infoSubChild.parent){
+                                    await ITEM__CONTACT_COLL.findByIdAndUpdate(subitem,
+                                        {
+                                            level: Number(infoSubChild.parent.level) + 1,
+                                        },
+                                        { new: true })
+                                }
+                            }
                         }
                     }
                 }
@@ -286,79 +421,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    // moveContact({ contactID, parentID, userID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
-
-    //             let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
-
-    //             /**
-    //              * CẬP NHẬT PHẦN TỬ CHA CŨ
-    //              */
-    //             if(infoContact && infoContact.parent){
-    //                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact.parent,
-    //                     {
-    //                         $pull: {
-    //                             childs: contactID,
-    //                             nestedChilds: contactID,
-    //                         },
-    //                         $inc: { amountChilds: -1 }
-    //                     },
-    //                     { new: true })
-    //             }
-
-    //              /**
-    //              * CẬP NHẬT PHẦN TỬ CHA MỚI
-    //              */
-    //             let infoParent = await ITEM__CONTACT_COLL.findById(parentID)
-                
-    //             // Với contactID
-    //             dataUpdate.level = infoParent.level + 1
-    //             dataUpdate.parent = parentID
-    //             dataUpdate.nestedParents = [parentID] // Cha cấp 1
-    //             await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID,
-    //                 dataUpdate,
-    //                 { new: true })
-
-    //             // Cập nhật amountChilds cho phần tử cha cấp 1
-    //             await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
-    //                 {
-    //                     $addToSet: { 
-    //                         childs: contactID,
-    //                         nestedChilds: contactID, // Mảng các phần tử con/cháu...
-    //                      },
-    //                     $inc: { amountChilds: 1 }
-    //                 },
-    //                 { new: true })
-
-    //             /**
-    //              * CẬP NHẬT PHẦN TỬ CHA MỚI - CẤP 2 TRỞ LÊN
-    //              * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
-    //              */
-    //             for(const item of infoParent?.nestedParents){
-    //                 // Thêm phần tử con/cháu
-    //                 await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
-    //                     {
-    //                         $addToSet: { nestedChilds: contactID },
-    //                     },
-    //                     { new: true })
-
-    //                 // Thêm các phần tử cha vào contactID
-    //                 await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID ,
-    //                     {
-    //                         $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
-    //                     },
-    //                     { new: true })
-    //             }
-              
-    //             return resolve({ error: false})
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     });
-    // }
 
     convertContact({ docID, selectObj }) {
         return new Promise(async resolve => {

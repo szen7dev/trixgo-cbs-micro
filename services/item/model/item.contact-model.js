@@ -379,7 +379,7 @@ class Model extends BaseModel {
                             {
                                 $addToSet: { 
                                     childs: infoAfterInsert._id,
-                                    nestedChilds: infoAfterInsert._id, // Mảng các phần tử con/cháu...
+                                    nestedChilds: infoAfterInsert._id,
                                 },
                                 $inc: { amountChilds: 1 }
                             },
@@ -400,7 +400,7 @@ class Model extends BaseModel {
                             // Thêm các phần tử cha
                             await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id ,
                                 {
-                                    $addToSet: { nestedParents: item }, // Cha cấp 2 trở lên
+                                    $addToSet: { nestedParents: item },
                                 },
                                 { new: true })
                         }
