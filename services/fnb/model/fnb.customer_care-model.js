@@ -25,6 +25,8 @@ const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
+const { CRM_STATUS, CRM_TYPES }         = require('../helper/fnb.keys-constant')
+
 class Model extends BaseModel {
 
     constructor() {
@@ -829,8 +831,8 @@ class Model extends BaseModel {
      * Func: Tải dữ liệu
      * Date: 15/2/2023
      */
-    exportExcel({ companyID, userID, fundaID, fromDate, toDate, month, year }) {
-        // console.log({ companyID, userID, fundaID, fromDate, toDate, month, year })
+    exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year }) {
+        console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
         return new Promise(async resolve => {
             try {
                 let yearFilter
@@ -852,105 +854,205 @@ class Model extends BaseModel {
                     "year": Number(yearFilter)
                 }
 
-                // let conditionPopulate = {
-                //     path: '_id.userCreate',
-                //     select: '_id fullname department',
-                //     populate: {
-                //         path: 'department',
-                //         select: '_id name',
-                //         model: 'department',
-                //     },
-                //     model: 'user'
-                // }
-                
-                let listData = await FNB_CUSTOMER_CARE_COLL.aggregate([
-                    {
-                        $match: {
-                            company: ObjectID(companyID),
-                            journey: {$exists: true, $ne: null},
-                        }
-                    },
-                    {
-                        $project :  {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            createAt: 1,
-                            userCreate: 1,
-                            company : 1,
-                            funda : 1,
-                            journey : 1,
-                            customer: 1,
-                            mistake: 1,
-                            manager: 1
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    },
-                    {
-                        $group: {
-                            _id: { userCreate: "$userCreate", journey: "$journey" },
-                            quantity: { $sum: 1 }
-                        }
-                    },
-                ])
-                // await FNB_CUSTOMER_CARE_COLL.populate(listData, conditionPopulate)
-                // console.log(listData)
+                let template = '../../../files/templates/excels/crm_export_journey.xlsx'
+                if(option && option == 1){
+                    template = '../../../files/templates/excels/crm_export_support.xlsx'
 
-                let listUser = await USER_COLL.find({_id: {$in: listData.map(item => item._id.userCreate)}}).select('fullname')
-                let listJourney = await ITEM__DOCTYPE_COLL.find({company: ObjectID(companyID), type: 11}).select('name')
-               
-                // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/crm_export_journey.xlsx')))
-                .then(async workbook => {
-                    workbook.sheet("Report").row(1).cell(1).value(`BÁO CÁO TỔNG HỢP ${yearFilter}`)
-
-                    var i = 4;
-                    listUser?.forEach((item, index) => {
-                        workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Report").row(i).cell(2).value(item?.fullname);
-                        workbook.sheet("Report").row(i).cell(3).value(`${item._id}`);
-                        i++
+                    let listData = await FNB_CUSTOMER_CARE_COLL.find({company: companyID, journey: {$exists: false}})
+                    .populate({
+                        path: 'customer mistake manager funda order',
+                        select:'name sign phone fullname'
                     })
+                    .limit(10000)
 
-                    var j = 4;
-                    listJourney?.forEach((item, index) => {
-                        
-                        workbook.sheet("Report").row(2).cell(j).value(`${item._id}`);
-                        workbook.sheet("Report").row(3).cell(j).value(item?.name);
+                    let listData2 = await FNB_CUSTOMER_CARE_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                manager: {$exists: true, $ne: null},
+                                journey: {$exists: false},
+                            }
+                        },
+                        {
+                            $project :  {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                createAt: 1,
+                                userCreate: 1,
+                                company : 1,
+                                funda : 1,
+                                journey : 1,
+                                customer: 1,
+                                mistake: 1,
+                                manager: 1
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: {
+                                _id: { manager: "$manager", month: "$month" },
+                                quantity: { $sum: 1 }
+                            }
+                        },
+                    ])
+                    let listUser = await USER_COLL.find({_id: {$in: listData2.map(item => item._id.manager)}}).select('fullname')
 
-                        j++
-                    })
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
+                    .then(async workbook => {
+                        workbook.sheet("Report").row(1).cell(1).value(`BÁO CÁO TỔNG HỢP ${yearFilter}`)
 
-                    var i = 4;
-                    listUser?.forEach((item, index) => {
-                        for(var m=1; m<=listJourney.length; m++){
+                        var i = 4;
+                        listData?.forEach((item, index) => {
+                            workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Data").row(i).cell(2).value(item?.createAt);
+                            workbook.sheet("Data").row(i).cell(3).value(item?.name);
+                            workbook.sheet("Data").row(i).cell(4).value(`${item?.customer?.name}-${item?.customer?.phone}`);
+                            workbook.sheet("Data").row(i).cell(5).value(item?.mistake?.name);
+                            workbook.sheet("Data").row(i).cell(6).value(item?.order?.name);
+                            workbook.sheet("Data").row(i).cell(7).value(item?.description);
+                            workbook.sheet("Data").row(i).cell(8).value(item?.note);
+                            workbook.sheet("Data").row(i).cell(9).value(item?.rating);
+                            workbook.sheet("Data").row(i).cell(10).value(item?.amount);
+                            workbook.sheet("Data").row(i).cell(11).value((item.status && Number(item.status) > 0 && Number(item.status) < 2) ? CRM_STATUS[Number(item?.status) - 1].text : '');
+                            workbook.sheet("Data").row(i).cell(12).value((item.status && Number(item.type) > 0 && Number(item.type) < 2)? CRM_TYPES[Number(item?.type) - 1].text : '');
+                            workbook.sheet("Data").row(i).cell(13).value(item?.funda?.name);
+                            workbook.sheet("Data").row(i).cell(14).value(item?.manager?.fullname);
+                            
+                            i++
+                        })
 
-                            listData?.forEach((subject) => {
-                                let journeyID = workbook.sheet("Report").row(2).cell(m+3).value()
+                        var i = 4;
+                        listUser?.forEach((user, uid) => {
+                            workbook.sheet("Report").row(i).cell(1).value(Number(uid+1));
+                            workbook.sheet("Report").row(i).cell(2).value(user.fullname);
+                            workbook.sheet("Report").row(i).cell(3).value(`${user._id}`);
 
-                                if(subject._id.userCreate.toString() === item._id.toString() && subject._id.journey.toString() === journeyID.toString()){
+                            i++
+                        })
 
-                                    workbook.sheet("Report").row(i).cell(m+3).value(subject?.quantity)
+                        listData2?.forEach((item, index) => {
+                            for(var i=4; i<=listUser.length + 3; i++){
+                                let userID = workbook.sheet("Report").row(i).cell(3).value();
+
+                                for(var j=1; j<=12; j++){
+                                    if(item._id.month == j && userID.toString() === item._id.manager.toString()){
+                                        workbook.sheet("Report").row(i).cell(j + 3).value(item.quantity);
+                                    }
                                 }
-                            })
-                        }
-                        
-                        i++
-                    })
-                   
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `crm_journey_report_${now.getTime()}.xlsx`;
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                            }
+                        })
+                    
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `crm_journey_report_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-                    await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
 
-                    fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
-                });
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+                }else if(option && option == 2){
+                    // let conditionPopulate = {
+                    //     path: '_id.userCreate',
+                    //     select: '_id fullname department',
+                    //     populate: {
+                    //         path: 'department',
+                    //         select: '_id name',
+                    //         model: 'department',
+                    //     },
+                    //     model: 'user'
+                    // }
+                    
+                    let listData = await FNB_CUSTOMER_CARE_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                journey: {$exists: true, $ne: null},
+                            }
+                        },
+                        {
+                            $project :  {
+                                year : {$year : "$createAt"},
+                                month : {$month : "$createAt"},
+                                createAt: 1,
+                                userCreate: 1,
+                                company : 1,
+                                funda : 1,
+                                journey : 1,
+                                customer: 1,
+                                mistake: 1,
+                                manager: 1
+                            }
+                        },
+                        {
+                            $match: conditionObjYear
+                        },
+                        {
+                            $group: {
+                                _id: { userCreate: "$userCreate", journey: "$journey" },
+                                quantity: { $sum: 1 }
+                            }
+                        },
+                    ])
 
+                    let listUser = await USER_COLL.find({_id: {$in: listData.map(item => item._id.userCreate)}}).select('fullname')
+                    let listJourney = await ITEM__DOCTYPE_COLL.find({company: ObjectID(companyID), type: 11}).select('name')
+                
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/crm_export_journey.xlsx')))
+                    .then(async workbook => {
+                        workbook.sheet("Report").row(1).cell(1).value(`BÁO CÁO TỔNG HỢP ${yearFilter}`)
+
+                        var i = 4;
+                        listUser?.forEach((item, index) => {
+                            workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Report").row(i).cell(2).value(item?.fullname);
+                            workbook.sheet("Report").row(i).cell(3).value(`${item._id}`);
+                            i++
+                        })
+
+                        var j = 4;
+                        listJourney?.forEach((item, index) => {
+                            
+                            workbook.sheet("Report").row(2).cell(j).value(`${item._id}`);
+                            workbook.sheet("Report").row(3).cell(j).value(item?.name);
+
+                            j++
+                        })
+
+                        var i = 4;
+                        listUser?.forEach((item, index) => {
+                            for(var m=1; m<=listJourney.length; m++){
+
+                                listData?.forEach((subject) => {
+                                    let journeyID = workbook.sheet("Report").row(2).cell(m+3).value()
+
+                                    if(subject._id.userCreate.toString() === item._id.toString() && subject._id.journey.toString() === journeyID.toString()){
+
+                                        workbook.sheet("Report").row(i).cell(m+3).value(subject?.quantity)
+                                    }
+                                })
+                            }
+                            
+                            i++
+                        })
+                    
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `crm_journey_report_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+                }
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });

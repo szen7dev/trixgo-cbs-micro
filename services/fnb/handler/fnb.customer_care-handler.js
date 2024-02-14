@@ -289,14 +289,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { companyID, fundaID, fromDate, toDate, month, year } = ctx.params;
+                let { option, companyID, fundaID, fromDate, toDate, month, year } = ctx.params;
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.exportExcel({
-                    userID, companyID, fundaID, fromDate, toDate, month, year
+                    option, userID, companyID, fundaID, fromDate, toDate, month, year
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
