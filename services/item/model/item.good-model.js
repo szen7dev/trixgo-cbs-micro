@@ -148,17 +148,25 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage }){
+	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, imagesID }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(goodsID))
                     return resolve({ error: true, message: "goodsID không hợp lệ", keyError: "Request params goodsID invalid" });
-
-                if(!name || name == "")
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
                 
                 let dataUpdate = {
-                    name, userUpdate: userID, modifyAt: new Date()
+                    userUpdate: userID, 
+                    modifyAt: new Date()
+                }
+
+                if(imagesID && imagesID.length) {
+                    dataUpdate.$addToSet = {
+                        images: imagesID,
+                    }
+                }
+
+                if(name && name != ""){
+                    dataUpdate.name = name;
                 }
 
                 if(sign && sign != ""){

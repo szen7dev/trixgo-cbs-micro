@@ -96,13 +96,6 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Number,
         default : 0
     },
-    //_________Hình ảnh
-    image: { type: String, default: 'goods_default.png' },
-    //_________File đính kèm
-    files: [{
-        type: Schema.Types.ObjectId,
-        ref : "file"
-    }],
     //_________Số lượng phần tử con
     amountChilds: {
         type: Number,
@@ -128,6 +121,11 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Number,
         default : 1
     },
+    //_________Ảnh đại diện
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
