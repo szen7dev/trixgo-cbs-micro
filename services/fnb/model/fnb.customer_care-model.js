@@ -832,7 +832,7 @@ class Model extends BaseModel {
      * Date: 15/2/2023
      */
     exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year }) {
-        console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
+        // console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
         return new Promise(async resolve => {
             try {
                 let yearFilter
