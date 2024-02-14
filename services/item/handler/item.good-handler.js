@@ -52,7 +52,7 @@ module.exports = {
     update:{  
         params: {
             goodsID         : { type: "string" }, 
-            name            : { type: "string" },
+            name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
             unit            : { type: "string", optional: true },
             note            : { type: "string", optional: true },
@@ -63,16 +63,17 @@ module.exports = {
             unitPrice2      : { type: "number", optional: true },
             unitPrice3      : { type: "number", optional: true },
             unitPrice4      : { type: "number", optional: true },
+            imagesID        : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-                const { goodsID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, convertID, convertQuantity, status, usage } = ctx.params;
+                const { goodsID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, convertID, convertQuantity, status, usage, imagesID } = ctx.params;
 
                 // console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage });
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, imagesID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

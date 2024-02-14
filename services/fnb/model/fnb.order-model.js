@@ -1779,7 +1779,7 @@ class Model extends BaseModel {
                  * - Đơn hàng Offline
                  * - Khách hàng đã từng bấm quan tâm Zalo OA
                  */
-                if([1,2,3,4,5,6,7,8,9,10,11,12].includes(Number(salesChannel))){
+                if([1].includes(Number(salesChannel)) && Number(total) >= 300000){
                     /**
                      * Số điện thoại không hợp lệ
                      * Nội dung mẫu ZNS không hợp lệ
@@ -1791,7 +1791,6 @@ class Model extends BaseModel {
                     // console.log({hour})
 
                     let infoConfig = await ITEM__CONFIG_COLL.findOne({ company: infoFunda.company, type: 1, active: 1 })
-
                     if(infoConfig){
                         // Xử lý dữ liệu số điện thoại
                         const str = infoCustomer.phone
@@ -1808,23 +1807,20 @@ class Model extends BaseModel {
                             },
                             templateId: infoConfig.template,
                         }
-
                         await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA1)
 
-                        if(salesChannel == 1 && Number(total) >= 200000){
-                            let dataOA2 = {
-                                phone: "84985199295",
-                                templateData: {
-                                    "customer_name": infoCustomer.name,
-                                    "order_code": `C${Number(numberOfOrder+1)}`,
-                                    "price": total,
-                                    "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                                    "note": "Chi tiết xem linkProfile"
-                                },
-                                templateId: infoConfig.template,
-                            }
-                            await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2)
+                        let dataOA2 = {
+                            phone: "84985199295",
+                            templateData: {
+                                "customer_name": infoCustomer.name,
+                                "order_code": `C${Number(numberOfOrder+1)}`,
+                                "price": total,
+                                "date": moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                                "note": "Chi tiết xem linkProfile"
+                            },
+                            templateId: infoConfig.template,
                         }
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`, dataOA2)
                     }
                 }
 
