@@ -937,8 +937,8 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(8).value(item?.note);
                             workbook.sheet("Data").row(i).cell(9).value(item?.rating);
                             workbook.sheet("Data").row(i).cell(10).value(item?.amount);
-                            workbook.sheet("Data").row(i).cell(11).value((item.status && Number(item.status) > 0 && Number(item.status) < 2) ? CRM_STATUS[Number(item?.status) - 1].text : '');
-                            workbook.sheet("Data").row(i).cell(12).value((item.status && Number(item.type) > 0 && Number(item.type) < 2)? CRM_TYPES[Number(item?.type) - 1].text : '');
+                            workbook.sheet("Data").row(i).cell(11).value((item.status && Number(item.status) > 0 && Number(item.status) <= 2) ? CRM_STATUS[Number(item?.status) - 1].text : '');
+                            workbook.sheet("Data").row(i).cell(12).value((item.status && Number(item.type) > 0 && Number(item.type) <= 2)? CRM_TYPES[Number(item?.type) - 1].text : '');
                             workbook.sheet("Data").row(i).cell(13).value(item?.funda?.name);
                             workbook.sheet("Data").row(i).cell(14).value(item?.manager?.fullname);
                             
