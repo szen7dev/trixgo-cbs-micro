@@ -91,3 +91,13 @@ exports.FNB_AFFILIATE_COM = [
     { amount: 5000000, rate: 0.75 },
     { amount: 5000000, rate: 0.50 },
 ]
+
+exports.CRM_STATUS = [
+    { value: 1, text: 'Chưa xử lý' },
+    { value: 2, text: 'Hoàn thành' },
+]
+
+exports.CRM_TYPES = [
+    { value: 1, text: 'Lỗi chủ quan' },
+    { value: 2, text: 'Lỗi khách quan' },
+]

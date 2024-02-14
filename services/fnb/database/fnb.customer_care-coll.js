@@ -60,7 +60,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
     },
     /**
      * Phân loại
-     * 1-Lỗi nhân viên
+     * 1-Lỗi chủ quan
      * 2-Lỗi khách quan
      */
     type: {
