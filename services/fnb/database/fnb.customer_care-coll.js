@@ -72,8 +72,9 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Number,
         default: 1
     },
-    //_________Nội dung sự việc
+    //_________Nội dung
     name: String,
+    namecv: String,
     //_________Diễn giải/cách xử lý
     description: String,
     //_________Ghi chú

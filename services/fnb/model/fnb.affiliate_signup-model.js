@@ -78,6 +78,16 @@ insert({ userID, companyID, customerID, orderID, name, note, date, status, files
             if(checkObjectIDs(files)) {
                 dataInsert.images = files;
             }
+
+            // Namecv
+            let convertStr = ''
+            if(name && name != ""){
+                convertStr = stringUtils.removeAccents(name)
+            }
+            if(note && note != ""){
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            dataInsert.namecv = convertStr
           
             let infoAfterInsert = await this.insertData(dataInsert);
             if (!infoAfterInsert)
@@ -145,6 +155,16 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                     images: imagesID,
                 }
             }
+
+            // Namecv
+            let convertStr = ''
+            if(name && name != ""){
+                convertStr = stringUtils.removeAccents(name)
+            }
+            if(note && note != ""){
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            dataUpdate.namecv = convertStr
 
             const infoAfterUpdate = await FNB_AFFILIATE_SIGNUP_COLL.findByIdAndUpdate(customerCareID, dataUpdate, { new: true });
             if (!infoAfterUpdate)
@@ -271,10 +291,7 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { note: regSearch },
-                    ]
+                    conditionObj.namecv = regSearch
                 }
                 // console.log(conditionObj)
 
