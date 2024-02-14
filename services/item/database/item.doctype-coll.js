@@ -74,6 +74,11 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
         type: Number,
         default: 0
     },
+    //_________Nhắc trước thời hạn (giờ)
+    alert: {
+        type: Number,
+        default: 0
+    },
     /**
      * Phân loại kênh bán hàng => Để mapping với data cũ
      * 1-Offline
