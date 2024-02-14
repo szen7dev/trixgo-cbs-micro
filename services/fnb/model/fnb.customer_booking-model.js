@@ -92,6 +92,16 @@ class Model extends BaseModel {
                 if(checkObjectIDs(files)) {
                     dataInsert.images = files;
                 }
+
+                // Namecv
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsert.namecv = convertStr
               
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -173,6 +183,16 @@ class Model extends BaseModel {
                         images: imagesID,
                     }
                 }
+
+                // Namecv
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdate.namecv = convertStr
 
                 const infoAfterUpdate = await FNB_CUSTOMER_BOOKING_COLL.findByIdAndUpdate(customerCareID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
@@ -303,10 +323,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { note: regSearch },
-                    ]
+                    conditionObj.namecv = regSearch
                 }
                 // console.log(conditionObj)
 

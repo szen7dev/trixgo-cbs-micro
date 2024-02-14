@@ -33,6 +33,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_affiliate_signup", {
     },
     //_________Nội dung sự việc
     name: String,
+    namecv: String,
     //_________Ghi chú
     note: String,
     //_________Thời gian

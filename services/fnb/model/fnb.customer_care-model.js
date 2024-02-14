@@ -103,6 +103,19 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
+                // Namecv
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsert.namecv = convertStr
+
                 if(checkObjectIDs(journeyID)) {
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
                     let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
@@ -226,6 +239,19 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataUpdate.note = note;
                 }
+
+                // Namecv
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdate.namecv = convertStr
 
                 if(checkObjectIDs(journeyID)) {
                     dataUpdate.journey = journeyID;
@@ -406,11 +432,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { description: regSearch },
-                        { note: regSearch },
-                    ]
+                    conditionObj.namecv = regSearch
                 }
                 // console.log(conditionObj)
 

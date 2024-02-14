@@ -36,8 +36,9 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_booking", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    //_________Nội dung sự việc
+    //_________Nội dung
     name: String,
+    namecv: String,
     //_________Ghi chú
     note: String,
     //_________Người thực hiện
