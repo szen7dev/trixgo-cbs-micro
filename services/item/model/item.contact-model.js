@@ -224,10 +224,6 @@ class Model extends BaseModel {
                     dataInsert.property = property;
                 }
 
-                if(dataSource && checkObjectIDs(dataSource)){
-                    dataInsert.dataSource = dataSource;
-                }
-
                 /**
                  * PHẦN TỬ CHA
                  */
@@ -241,7 +237,15 @@ class Model extends BaseModel {
                         // Cập nhật Level để phục vụ việc tính toán, đệ quy
                         infoParent = await ITEM__CONTACT_COLL.findById(parent)
                         dataInsert.level = infoParent.level + 1
+
+                        if(infoParent.dataSource && checkObjectIDs(infoParent.dataSource)){
+                            dataInsert.dataSource = infoParent.dataSource
+                        }
                     }
+                }
+
+                if(dataSource && checkObjectIDs(dataSource)){
+                    dataInsert.dataSource = dataSource;
                 }
 
                 if(workingStatus && checkObjectIDs(workingStatus)){
@@ -2000,7 +2004,7 @@ class Model extends BaseModel {
                                 realStatus: data?.__EMPTY_85, // 
                                 new: data?.__EMPTY_86, //
                                 joinedDate: data?.__EMPTY_100, //
-                                dataSource: data?.__EMPTY_54, 
+                                dataSource: data?.__EMPTY_53, 
                             }
                             // console.log(prepareData);
 
