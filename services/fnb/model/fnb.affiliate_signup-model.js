@@ -5,16 +5,19 @@ const { checkObjectIDs, IsJsonString, validateParamsObjectID }
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require('moment')
+const { addDate, calculateExpire }      = require('../../../tools/utils/time_utils');
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 /**s
  * import inter-coll, exter-coll
  */
-const USER_COLL                                = require('../../auth/database/auth.user-coll')
-const ITEM__DOCTYPE_COLL            		   = require('../../item/database/item.doctype-coll')
-const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
-const FNB_AFFILIATE_SIGNUP_COLL                = require('../database/fnb.affiliate_signup-coll');
+const USER_COLL                         = require('../../auth/database/auth.user-coll')
+const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll')
+const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll')
+const FNB_ORDER_COLL                    = require('../database/fnb.order-coll');
+const FNB_AFFILIATE_SIGNUP_COLL         = require('../database/fnb.affiliate_signup-coll');
 
 /**
  * import inter-model, exter-model
@@ -354,10 +357,10 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
     /**
      * Name: Danh sách theo phân loại
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 15/2/2024
      */
-    getListByProperty({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
-        // console.log({ option, companyID, mistakeID, executorID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+    getListByProperty({ option, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
+        // console.log({ option, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -376,6 +379,7 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                     }
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
+                    let amount1=0, amount2=0, amount3=0
 
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
@@ -396,30 +400,8 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                         }
                     }
 
-                    /**
-                     * Gom nhóm theo các loại lỗi: OK
-                     */
-                    if(option && Number(option) == 1){
-                        conditionObj.mistake = {$exists: true, $ne: null}
-
-                        conditionGroup = {
-                            _id: { mistake: "$mistake" },
-                            quantity: { $sum: 1 },
-                        }
-
-                        conditionPopulate = {
-                            path: '_id.mistake',
-                            select: '_id name sign',
-                            model: 'doctype'
-                        }
-                    }
-
-                    /**
-                     * Gom nhóm theo thời gian: OK
-                     */
-                    else if(option && Number(option) == 2){
-                        conditionObj.mistake = {$exists: true, $ne: null}
-                        
+                    // Gom nhóm theo thời gian
+                    else if(option && Number(option) == 1){                        
                         // Theo năm
                         if(optionTime && Number(optionTime) == 1){
                             conditionGroup = {
@@ -449,112 +431,86 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                         } 
                     }
 
-                    /**
-                     * Gom nhóm theo đơn vị cơ sở: OK
-                     */
-                    else if(option && Number(option) == 3){
-                        if(mistakeID && checkObjectIDs(mistakeID)){
-                            conditionObj.mistake = ObjectID(mistakeID)
-
-                            conditionGroup = {
-                                _id: { funda: "$funda" },
-                                quantity: { $sum: 1 },
-                            }
-    
-                            conditionPopulate = {
-                                path: '_id.funda',
-                                select: '_id name sign image',
-                                model: 'funda'
-                            }
-                        }else{
-                            conditionGroup = {
-                                _id: { funda: "$funda" },
-                                quantity: { $sum: 1 },
-                            }
-    
-                            conditionPopulate = {
-                                path: '_id.funda',
-                                select: '_id name sign image',
-                                model: 'funda'
-                            }
-                        }
-                    }
-
-                     /**
-                     * Gom nhóm theo các Nhân sự quản lý: OK
-                     */
-                     else if(option && Number(option) == 4){
-                        conditionObj.manager = {$exists: true, $ne: null}
-
+                    // Gom nhóm theo Đơn vị cơ sở
+                    else if(option && Number(option) == 2){
+                        conditionObj.funda = {$exists: true, $ne: null}
                         conditionGroup = {
-                            _id: { manager: "$manager" },
+                            _id: { funda: "$funda" },
                             quantity: { $sum: 1 },
                         }
 
                         conditionPopulate = {
-                            path: '_id.manager',
+                            path: '_id.funda',
+                            select: '_id name sign image',
+                            model: 'funda'
+                        }
+                    }
+
+                    // Gom nhóm theo Lĩnh vực kinh doanh
+                    else if(option && Number(option) == 2){
+                        conditionObj.business = {$exists: true, $ne: null}
+                        conditionGroup = {
+                            _id: { business: "$business" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.business',
+                            select: '_id name sign image',
+                            model: 'doctype'
+                        }
+                    }
+
+                    // Gom nhóm theo Kênh bán hàng
+                    else if(option && Number(option) == 3){
+                        conditionObj.channel = {$exists: true, $ne: null}
+                        conditionGroup = {
+                            _id: { channel: "$channel" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.channel',
+                            select: '_id name sign image',
+                            model: 'doctype'
+                        }
+                    }
+
+                    // Gom nhóm theo Khách hàng
+                    else if(option && Number(option) == 4){
+                        conditionObj.customer = {$exists: true, $ne: null}
+                        conditionGroup = {
+                            _id: { customer: "$customer" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.customer',
+                            select: '_id name sign image',
+                            model: 'doctype'
+                        }
+                    }
+
+                    // Gom nhóm theo Người thực hiện
+                    else if(option && Number(option) == 4){
+                        conditionObj.assignee = {$exists: true, $ne: null}
+
+                        conditionGroup = {
+                            _id: { assignee: "$assignee" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.assignee',
                             select: '_id fullname image email phone',
                             model: 'user'
                         }
                     }
                     
-                    /**
-                     * Gom nhóm theo Hành trình khách hàng
-                     */
-                    if(option && Number(option) == 5){
-                        conditionObj.journey = {$exists: true, $ne: null}
-
-                        conditionGroup = {
-                            _id: { journey: "$journey" },
-                            quantity: { $sum: 1 },
-                        }
-
-                        conditionPopulate = {
-                            path: '_id.journey',
-                            select: '_id name sign',
-                            model: 'doctype'
-                        }
-
-                        sortBy = {"_id.journey": 1}
+                    // Phân loại theo cấp độ
+                    else if(option && Number(option) == 5){
+                        
                     }
-                    
-                    // Tổng hợp KPI theo user/tháng/năm: OK
-                    else if(option && Number(option) == 7){
-                        if(executorID && checkObjectIDs(executorID)){
-                            conditionObj.executor = ObjectID(executorID)
-                        }
-
-                        conditionObjYear = {
-                            "year": Number(year),
-                        }
-
-                        conditionGroup = {
-                            _id: { month: "$month", year: "$year" },
-                            quantity: { $sum: 1 },
-                        } 
-                    }
-
-                    // Gom nhóm theo trạng thái: OK
-                    else if(option && Number(option) == 8){
-                        conditionGroup = {
-                            _id: { status: "$status" },
-                            quantity: { $sum: 1 },
-                        } 
-                    }
-                    
-                    // Gom nhóm theo của tôi chưa xử lý: OK
-                    else if(option && Number(option) == 9){
-                        if(status){
-                            conditionObj.status = +status
-                        }
-                        conditionObj.manager = ObjectID(userID)
-
-                        conditionGroup = {
-                            _id: {  },
-                            quantity: { $sum: 1 },
-                        } 
-                    }
-
                     // console.log(conditionObj)
                     // console.log(conditionPopulate)
                     // console.log(conditionObjYear)
@@ -562,39 +518,23 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
 
                     let listData
 
-                    if(option != 6){
+                    if(option != 5){
                         listData = await FNB_AFFILIATE_SIGNUP_COLL.aggregate([
                             {
                                 $match: conditionObj
                             },
                             {
                                 $project : {
-                                    year : {$year : "$createAt"},
-                                    month : {$month : "$createAt"},
-                                    hour : {$hour : "$createAt"},
+                                    year : {$year : "$date"},
+                                    month : {$month : "$date"},
+                                    hour : {$hour : "$date"},
                                     funda : 1,
-                                    mistake : 1,
-                                    manager : 1,
-                                    order : 1,
-                                    product : 1,
-                                    executor : 1,
-                                    journey : 1,
-                                    type : 1,
+                                    business : 1,
+                                    channel : 1,
                                     customer : 1,
-                                    internal : 1,
-                                    area1 : 1,
-                                    area2 : 1,
+                                    assignee : 1,
                                     area3 : 1,
                                     seasons : 1,
-                                    shift : 1,
-                                    shiftType : 1,
-                                    salesChannel : 1,
-                                    service : 1,
-                                    status : 1,
-                                    amount : 1,
-                                    quantity : 1,
-                                    score : 1,
-                                    bonus : 1,
                                 }
                             },
                             {
@@ -607,47 +547,22 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                                 $sort: sortBy
                             }
                         ])
+
+                        if(!isNaN(option) && [2,3,4].includes(Number(option))){
+                            await FNB_AFFILIATE_SIGNUP_COLL.populate(listData, conditionPopulate)
+                        }
+    
+                        return resolve({ error: false, data: listData })
                     }else{
-                        listData = await FNB_AFFILIATE_SIGNUP_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : {
-                                    year: 1,
-                                    month: 1,
-                                    mistake : 1,
-                                    manager : 1,
-                                    order : 1,
-                                    executor : 1,
-                                    workingHours : 1,
-                                    quantity : 1,
-                                    score : 1,
-                                }
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
+                       
                     }
-
-                    if(!isNaN(option) && [1,3,4,5].includes(Number(option))){
-                        await FNB_AFFILIATE_SIGNUP_COLL.populate(listData, conditionPopulate)
-                    }
-
-                    return resolve({ error: false, data: listData });
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
 
     /**
      * Dev: HiepNH

@@ -186,7 +186,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ companyID, userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID }) {
-        console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID })
+        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))

@@ -165,15 +165,12 @@ module.exports = {
     /**
      * Name: Danh sách theo phân loại
      * Author: HiepNH
-     * Code: 14/10/2022
+     * Code: 15/2/2024
      */
     getListByProperty: {
         params: {
             fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
-            mistakeID       : { type: "string", optional: true },
-            executorID      : { type: "string", optional: true },
-            optionGroup     : { type: "string", optional: true },
             optionTime      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
             month           : { type: "string", optional: true },
@@ -191,14 +188,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, month, fromDate, toDate, status,
-                     keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { option, optionTime, fundasID, year, month, fromDate, toDate, status } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_BOOKING_MODEL.getListByProperty({
-                    companyID: company._id,
-                    option, optionGroup, optionTime, fundasID, mistakeID, executorID, year, month, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey, 
-                     status, userID 
+                     option, companyID: company._id, optionTime, fundasID, year, month, fromDate, toDate, status, userID
                     });
              
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

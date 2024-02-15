@@ -1458,6 +1458,7 @@ class Model extends BaseModel {
                         new : 1,
                         joinedDate : 1,
                         nestedParents : 1,
+                        level : 1,
                     }
 
                     // Phân loại theo thời khoảng
@@ -1468,9 +1469,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    /**
-                     * Gom nhóm theo thời gian
-                     */
+                    // Gom nhóm theo thời gian
                     if(option && Number(option) == 1){
                         // Theo năm
                         if(optionTime && Number(optionTime) == 1){
@@ -1503,10 +1502,8 @@ class Model extends BaseModel {
                         }
                     }
 
-                    /**
-                     * Gom nhóm theo đơn vị cơ sở
-                     */
-                    if(option && Number(option) == 2){
+                    // Gom nhóm theo đơn vị cơ sở
+                    else if(option && Number(option) == 2){
                         conditionGroup = {
                             _id: { funda: "$funda" },
                             quantity: { $sum: 1 },
@@ -1519,20 +1516,16 @@ class Model extends BaseModel {
                         }
                     }
 
-                    /**
-                     * Gom nhóm theo khách hàng cũ, mới, vãng lai
-                     */
-                    if(option && Number(option) == 3){
+                    // Gom nhóm theo khách hàng cũ, mới, vãng lai
+                    else if(option && Number(option) == 3){
                         conditionGroup = {
                             _id: { new: "$new" },
                             quantity: { $sum: 1 },
                         }
                     }
 
-                    /**
-                     * Gom nhóm theo Nhân viên
-                     */
-                    if(option && Number(option) == 4){
+                    // Gom nhóm theo Nhân viên
+                    else if(option && Number(option) == 4){
                         conditionObj.funda = { $exists: true, $ne: null }
                         conditionObj.type = 1 // 1-Nhân viên, 2-Khách hàng
                         conditionGroup = {
@@ -1546,10 +1539,8 @@ class Model extends BaseModel {
                         }
                     }
 
-                     /**
-                     * Gom nhóm theo Sinh nhật
-                     */
-                    if(option && Number(option) == 5){
+                    // Gom nhóm theo Sinh nhật
+                    else if(option && Number(option) == 5){
                         conditionObj.birthday = {$exists: true, $ne: null}
                         conditionGroup = {
                             _id: { month: "$month" },
@@ -1565,10 +1556,8 @@ class Model extends BaseModel {
                         sortBy = {"_id.month": 1}
                     }
 
-                    /**
-                     * Gom nhóm theo Tuyến dưới
-                     */
-                    if(option && Number(option) == 6){
+                    // Gom nhóm theo Tuyến dưới
+                    else if(option && Number(option) == 6){
 
                         // Theo user đang truy cập
                         if(optionGroup && optionGroup == 1 && contacts && contacts.length){
@@ -1586,6 +1575,17 @@ class Model extends BaseModel {
                             _id: { },
                             quantity: { $sum: 1 }
                         }
+                    }
+
+                    // Gom nhóm theo Level Affiliate
+                    else if(option && Number(option) == 7){
+                        conditionObj.dataSource = {$exists: true, $ne: null}
+
+                        conditionGroup = {
+                            _id: { level: "$level" },
+                            quantity: { $sum: 1 },
+                        }
+                        delete conditionObj.funda;
                     }
 
                     // console.log(conditionObj)
