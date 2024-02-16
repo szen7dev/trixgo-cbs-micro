@@ -153,25 +153,22 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
-                // Tạo lịch nhắc hẹn
-                if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
-                    // console.log({_____________alert:infoItem.alert})
-
-                    let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
-                        userID, 
-                        companyID, 
-                        customerID, 
-                        // orderID, 
-                        businessID: infoItem.linkItem, 
-                        assigneeID: userID, 
-                        name: 'Auto create Booking from Journey', 
-                        note: 'Auto create Booking from Journey', 
-                        // date, 
-                        // alert,
-                    })
-
-                    // console.log(infoBooking)
-                 }
+                // // Tạo lịch nhắc hẹn
+                // if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
+                //     let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
+                //         userID, 
+                //         companyID, 
+                //         customerID, 
+                //         // orderID, 
+                //         businessID: infoItem.linkItem, 
+                //         assigneeID: userID, 
+                //         name: 'Auto create Booking from Journey', 
+                //         note: 'Auto create Booking from Journey', 
+                //         // date, 
+                //         // alert,
+                //     })
+                //     // console.log(infoBooking)
+                //  }
 
                 return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
@@ -309,25 +306,22 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
-                // Tạo lịch nhắc hẹn
-                if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
-                    // console.log({_____________alert:infoItem.alert})
-
-                    let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
-                        userID, 
-                        companyID, 
-                        customerID, 
-                        // orderID, 
-                        businessID: infoItem.linkItem, 
-                        assigneeID: userID, 
-                        name: 'Auto create Booking from Journey', 
-                        note: 'Auto create Booking from Journey', 
-                        // date, 
-                        // alert,
-                    })
-
-                    // console.log(infoBooking)
-                 }
+                // // Tạo lịch nhắc hẹn
+                // if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
+                //     let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
+                //         userID, 
+                //         companyID, 
+                //         customerID, 
+                //         // orderID, 
+                //         businessID: infoItem.linkItem, 
+                //         assigneeID: userID, 
+                //         name: 'Auto create Booking from Journey', 
+                //         note: 'Auto create Booking from Journey', 
+                //         // date, 
+                //         // alert,
+                //     })
+                //     // console.log(infoBooking)
+                //  }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -900,7 +894,7 @@ class Model extends BaseModel {
      * Date: 15/2/2024
      */
     exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year }) {
-        // console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
+        console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
         return new Promise(async resolve => {
             try {
                 let yearFilter
@@ -1023,18 +1017,7 @@ class Model extends BaseModel {
                         fs.unlinkSync(pathWriteFile);
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     });
-                }else if(option && option == 2){
-                    // let conditionPopulate = {
-                    //     path: '_id.userCreate',
-                    //     select: '_id fullname department',
-                    //     populate: {
-                    //         path: 'department',
-                    //         select: '_id name',
-                    //         model: 'department',
-                    //     },
-                    //     model: 'user'
-                    // }
-                    
+                }else if(option && option == 2){                    
                     let listData = await FNB_CUSTOMER_CARE_COLL.aggregate([
                         {
                             $match: {
@@ -1069,6 +1052,16 @@ class Model extends BaseModel {
 
                     let listUser = await USER_COLL.find({_id: {$in: listData.map(item => item._id.userCreate)}}).select('fullname')
                     let listJourney = await ITEM__DOCTYPE_COLL.find({company: ObjectID(companyID), type: 11}).select('name')
+
+                    let listData2 = await FNB_CUSTOMER_CARE_COLL.find({
+                        company: companyID, 
+                        journey: {$exists: true, $ne: null}
+                    })
+                    .populate({
+                        path: 'customer journey funda order userCreate dataSource',
+                        select:'name sign phone fullname'
+                    })
+                    .limit(10000)
                 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/crm_export_journey.xlsx')))
@@ -1105,6 +1098,22 @@ class Model extends BaseModel {
                                     }
                                 })
                             }
+                            
+                            i++
+                        })
+
+                        var i = 4;
+                        listData2?.forEach((item, index) => {
+                            workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Data").row(i).cell(2).value(item?.createAt);
+                            workbook.sheet("Data").row(i).cell(3).value(item?.customer?.name);
+                            workbook.sheet("Data").row(i).cell(4).value(item?.customer?.phone);
+                            workbook.sheet("Data").row(i).cell(5).value(item?.journey?.name);
+                            workbook.sheet("Data").row(i).cell(6).value(item?.name);
+                            workbook.sheet("Data").row(i).cell(7).value(item?.amount);
+                            workbook.sheet("Data").row(i).cell(8).value(item?.note);
+                            workbook.sheet("Data").row(i).cell(9).value(item?.dataSource?.name);
+                            workbook.sheet("Data").row(i).cell(10).value(item?.userCreate?.fullname);
                             
                             i++
                         })
