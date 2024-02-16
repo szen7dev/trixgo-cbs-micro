@@ -153,25 +153,22 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
-                // Tạo lịch nhắc hẹn
-                if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
-                    // console.log({_____________alert:infoItem.alert})
-
-                    let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
-                        userID, 
-                        companyID, 
-                        customerID, 
-                        // orderID, 
-                        businessID: infoItem.linkItem, 
-                        assigneeID: userID, 
-                        name: 'Auto create Booking from Journey', 
-                        note: 'Auto create Booking from Journey', 
-                        // date, 
-                        // alert,
-                    })
-
-                    // console.log(infoBooking)
-                 }
+                // // Tạo lịch nhắc hẹn
+                // if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
+                //     let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
+                //         userID, 
+                //         companyID, 
+                //         customerID, 
+                //         // orderID, 
+                //         businessID: infoItem.linkItem, 
+                //         assigneeID: userID, 
+                //         name: 'Auto create Booking from Journey', 
+                //         note: 'Auto create Booking from Journey', 
+                //         // date, 
+                //         // alert,
+                //     })
+                //     // console.log(infoBooking)
+                //  }
 
                 return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
@@ -309,25 +306,22 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
-                // Tạo lịch nhắc hẹn
-                if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
-                    // console.log({_____________alert:infoItem.alert})
-
-                    let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
-                        userID, 
-                        companyID, 
-                        customerID, 
-                        // orderID, 
-                        businessID: infoItem.linkItem, 
-                        assigneeID: userID, 
-                        name: 'Auto create Booking from Journey', 
-                        note: 'Auto create Booking from Journey', 
-                        // date, 
-                        // alert,
-                    })
-
-                    // console.log(infoBooking)
-                 }
+                // // Tạo lịch nhắc hẹn
+                // if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
+                //     let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
+                //         userID, 
+                //         companyID, 
+                //         customerID, 
+                //         // orderID, 
+                //         businessID: infoItem.linkItem, 
+                //         assigneeID: userID, 
+                //         name: 'Auto create Booking from Journey', 
+                //         note: 'Auto create Booking from Journey', 
+                //         // date, 
+                //         // alert,
+                //     })
+                //     // console.log(infoBooking)
+                //  }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
