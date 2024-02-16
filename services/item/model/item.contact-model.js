@@ -1597,6 +1597,8 @@ class Model extends BaseModel {
                             quantity: { $sum: 1 },
                         }
                         delete conditionObj.funda;
+
+                        sortBy = {"_id.level": 1}
                     }
 
                     // console.log(conditionObj)
