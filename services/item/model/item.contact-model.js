@@ -2004,7 +2004,7 @@ class Model extends BaseModel {
                     else{
                         for (const data of dataImportJSON) {                           
                             // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                            if(index > 0 && index < 30){
+                            if(index > 0 && index < 51){
                                 let prepareData = { 
                                     authorID: userID, 
                                     contactID: data?.__EMPTY,
