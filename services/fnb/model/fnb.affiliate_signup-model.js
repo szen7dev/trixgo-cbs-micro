@@ -632,7 +632,7 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                 let listData = await ITEM__CONTACT_COLL.find({company: companyID, parent: {$exists: true, $ne: null}})
                 .populate({
                     path: 'dataSource parent',
-                    select:'name sign phone'
+                    select:'level name sign phone'
                 })
                 .limit(10000)
 
@@ -682,12 +682,14 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                     listData?.forEach((item, index) => {
                         workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("Data").row(i).cell(2).value(item?.name);
-                        workbook.sheet("Data").row(i).cell(3).value(item?.phone);
-                        workbook.sheet("Data").row(i).cell(4).value(item?.email);
-                        workbook.sheet("Data").row(i).cell(5).value(item?.taxid);
-                        workbook.sheet("Data").row(i).cell(6).value(item?.joinedDate);
-                        workbook.sheet("Data").row(i).cell(7).value(`${item?.parent?.name}-${item?.parent?.phone}`);
-                        workbook.sheet("Data").row(i).cell(8).value(item?.note);
+                        workbook.sheet("Data").row(i).cell(3).value(item?.level);
+                        workbook.sheet("Data").row(i).cell(4).value(item?.phone);
+                        workbook.sheet("Data").row(i).cell(5).value(item?.email);
+                        workbook.sheet("Data").row(i).cell(6).value(item?.taxid);
+                        workbook.sheet("Data").row(i).cell(7).value(item?.joinedDate);
+                        workbook.sheet("Data").row(i).cell(8).value(`${item?.parent?.name}-${item?.parent?.phone}`);
+                        workbook.sheet("Data").row(i).cell(9).value(item?.parent?.level);
+                        workbook.sheet("Data").row(i).cell(10).value(item?.note);
                         
                         i++
                     })
