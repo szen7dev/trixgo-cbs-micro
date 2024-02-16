@@ -1793,7 +1793,7 @@ class Model extends BaseModel {
                     }
                 })
 
-                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID }).limit(500)
+                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID }).limit(1000)
                 .populate({
                     path: 'funda department position field property contractType workingStatus area area1 area2 sale linkUser',
                     select:'_id name fullname parent',
