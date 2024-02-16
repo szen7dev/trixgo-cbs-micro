@@ -1959,83 +1959,131 @@ class Model extends BaseModel {
                 let index = 0;
                 let errorNumber = 0;
 
+                // console.log({_______________:dataImportJSON.length})
+
                 // IMPORT DANH BẠ
                 if(option == 1){
+                    let arrErr = []
                     for (const data of dataImportJSON) {
-                        // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                        if(index > 0 && index < 500){
-                            let prepareData = { 
-                                authorID: userID, 
-                                contactID: data?.__EMPTY,
-                                type: data?.__EMPTY_83, //
-                                subtype: data?.__EMPTY_84, //
-                                name: data?.__EMPTY_3, 
-                                sign: data?.__EMPTY_4, 
-                                description: data?.__EMPTY_5, 
-                                note: data?.__EMPTY_6,
-                                birthday: data?.__EMPTY_89, // 
-                                gender: data?.__EMPTY_87, // 
-                                phone: data?.__EMPTY_9, 
-                                email: data?.__EMPTY_10, 
-                                fundaID: data?.__EMPTY_101, //
-                                department: data?.__EMPTY_102, 
-                                position: data?.__EMPTY_103, 
-                                field: data?.__EMPTY_104, 
-                                property: data?.__EMPTY_105, 
-                                status: data?.__EMPTY_88, // 
-                                identity: data?.__EMPTY_17, 
-                                dateProvice: data?.__EMPTY_90, //
-                                place: data?.__EMPTY_19, 
-                                taxid: data?.__EMPTY_20, 
-                                insuranceNumber: data?.__EMPTY_21, 
-                                insuranceSign: data?.__EMPTY_22, 
-                                insuranceDate: data?.__EMPTY_91, //
-                                sallaryBasic: data?.__EMPTY_24, 
-                                insuranceFee: data?.__EMPTY_25, 
-                                insuranceStatus: data?.__EMPTY_81, //
-                                bankAccount: data?.__EMPTY_27, 
-                                signerIn: data?.__EMPTY_28, 
-                                workStartDate: data?.__EMPTY_92, //
-                                contractDate: data?.__EMPTY_93, //
-                                contractValid: data?.__EMPTY_94, //
-                                contractExpire: data?.__EMPTY_95, //
-                                contractType: data?.__EMPTY_106, // 
-                                contractSign: data?.__EMPTY_34, 
-                                workingStatus: data?.__EMPTY_107, //
-                                dayOff: data?.__EMPTY_96, //
-                                signerOut: data?.__EMPTY_37, 
-                                appointDate: data?.__EMPTY_97, //
-                                changeSallaryDate: data?.__EMPTY_98, //
-                                // __: data?.__EMPTY_40, 
-                                graduationYear: data?.__EMPTY_99, //
-                                address: data?.__EMPTY_42, 
-                                area: data?.__EMPTY_108, //
-                                area1: data?.__EMPTY_109, //
-                                area2: data?.__EMPTY_110, //
-                                saleID: data?.__EMPTY_111, //
-                                linkUser: data?.__EMPTY_112, //
-                                family: data?.__EMPTY_48, 
-                                familyPolicy: data?.__EMPTY_82, //
-                                realStatus: data?.__EMPTY_85, // 
-                                new: data?.__EMPTY_86, //
-                                joinedDate: data?.__EMPTY_100, //
-                                dataSource: data?.__EMPTY_53, 
-                            }
-                            // console.log(prepareData);
-
-                            if(data?.__EMPTY && checkObjectIDs(data?.__EMPTY)){
-                                let infoAfterInsert = await this.update(prepareData);
-                                if(infoAfterInsert.error){
-                                    errorNumber++;
-                                }
-                            }else{
-                                let infoAfterInsert = await this.insert(prepareData);
-                                if(infoAfterInsert.error){
-                                    errorNumber++;
-                                }
-                            }
+                        // Kiểm tra Data trùng và trả về kết quả
+                        let checkExist = await ITEM__CONTACT_COLL.findOne({company: companyID, phone: data?.__EMPTY_9}).select('name phone')
+                        if(checkExist){
+                            // console.log(checkExist)
+                            arrErr.push(checkExist)
+                            errorNumber++
                         }
-                        index ++;
+                    }
+
+                    // console.log(arrErr)
+
+                    // Tải báo cáo lỗi
+                    if(errorNumber > 0){
+                        return resolve({ error: false, data: arrErr, status: 200 });
+
+                        //  // Modify the workbook.
+                        // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_report_duplicate.xlsx')))
+                        // .then(async workbook => {
+
+                        //     var i = 2;
+                        //     arrErr?.forEach((item, index) => {
+                        //         workbook.sheet("Sheet1").row(i).cell(1).value(`${item._id}`);
+                        //         workbook.sheet("Sheet1").row(i).cell(2).value(item?.name);
+                        //         workbook.sheet("Sheet1").row(i).cell(3).value(item?.phone);
+                        //         i++
+                        //     })
+
+                        //     const now = new Date();
+                        //     const filePath = '../../../files/temporary_uploads/';
+                        //     const fileName = `contact_report_duplicate${now.getTime()}.xlsx`;
+                        //     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        //     await workbook.toFileAsync(pathWriteFile);
+                        //     const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        //     fs.unlinkSync(pathWriteFile);
+                        //     return resolve({ error: false, data: result?.Location, status: 200 });
+                        // });
+
+                        // return resolve({ error: false, message: `Data bị trùng: ${errorNumber}` });
+                    }
+                    
+                    // Import dữ liệu nếu đã OK
+                    else{
+                        for (const data of dataImportJSON) {                           
+                            // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                            if(index > 0 && index < 30){
+                                let prepareData = { 
+                                    authorID: userID, 
+                                    contactID: data?.__EMPTY,
+                                    type: data?.__EMPTY_83, //
+                                    subtype: data?.__EMPTY_84, //
+                                    name: data?.__EMPTY_3, 
+                                    sign: data?.__EMPTY_4, 
+                                    description: data?.__EMPTY_5, 
+                                    note: data?.__EMPTY_6,
+                                    birthday: data?.__EMPTY_89, // 
+                                    gender: data?.__EMPTY_87, // 
+                                    phone: data?.__EMPTY_9, 
+                                    email: data?.__EMPTY_10, 
+                                    fundaID: data?.__EMPTY_101, //
+                                    department: data?.__EMPTY_102, 
+                                    position: data?.__EMPTY_103, 
+                                    field: data?.__EMPTY_104, 
+                                    property: data?.__EMPTY_105, 
+                                    status: data?.__EMPTY_88, // 
+                                    identity: data?.__EMPTY_17, 
+                                    dateProvice: data?.__EMPTY_90, //
+                                    place: data?.__EMPTY_19, 
+                                    taxid: data?.__EMPTY_20, 
+                                    insuranceNumber: data?.__EMPTY_21, 
+                                    insuranceSign: data?.__EMPTY_22, 
+                                    insuranceDate: data?.__EMPTY_91, //
+                                    sallaryBasic: data?.__EMPTY_24, 
+                                    insuranceFee: data?.__EMPTY_25, 
+                                    insuranceStatus: data?.__EMPTY_81, //
+                                    bankAccount: data?.__EMPTY_27, 
+                                    signerIn: data?.__EMPTY_28, 
+                                    workStartDate: data?.__EMPTY_92, //
+                                    contractDate: data?.__EMPTY_93, //
+                                    contractValid: data?.__EMPTY_94, //
+                                    contractExpire: data?.__EMPTY_95, //
+                                    contractType: data?.__EMPTY_106, // 
+                                    contractSign: data?.__EMPTY_34, 
+                                    workingStatus: data?.__EMPTY_107, //
+                                    dayOff: data?.__EMPTY_96, //
+                                    signerOut: data?.__EMPTY_37, 
+                                    appointDate: data?.__EMPTY_97, //
+                                    changeSallaryDate: data?.__EMPTY_98, //
+                                    graduationYear: data?.__EMPTY_99, //
+                                    address: data?.__EMPTY_42, 
+                                    area: data?.__EMPTY_108, //
+                                    area1: data?.__EMPTY_109, //
+                                    area2: data?.__EMPTY_110, //
+                                    saleID: data?.__EMPTY_111, //
+                                    linkUser: data?.__EMPTY_112, //
+                                    family: data?.__EMPTY_48, 
+                                    familyPolicy: data?.__EMPTY_82, //
+                                    realStatus: data?.__EMPTY_85, // 
+                                    new: data?.__EMPTY_86, //
+                                    joinedDate: data?.__EMPTY_100, //
+                                    dataSource: data?.__EMPTY_53, 
+                                }
+                                // console.log(prepareData);
+    
+                                if(data?.__EMPTY && checkObjectIDs(data?.__EMPTY)){
+                                    let infoAfterInsert = await this.update(prepareData);
+                                    if(infoAfterInsert.error){
+                                        errorNumber++;
+                                    }
+                                }else{
+                                    let infoAfterInsert = await this.insert(prepareData);
+                                    if(infoAfterInsert.error){
+                                        errorNumber++;
+                                    }
+                                }
+                            }
+                            index ++;
+                        }
                     }
                 }
                 
