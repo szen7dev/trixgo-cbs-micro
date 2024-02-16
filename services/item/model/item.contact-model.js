@@ -1963,22 +1963,15 @@ class Model extends BaseModel {
 
                 // IMPORT DANH BẠ
                 if(option == 1){
-                    let arrErr = []
+                    let arrPhone = []
                     for (const data of dataImportJSON) {
-                        // Kiểm tra Data trùng và trả về kết quả
-                        let checkExist = await ITEM__CONTACT_COLL.findOne({company: companyID, phone: data?.__EMPTY_9}).select('name phone')
-                        if(checkExist){
-                            // console.log(checkExist)
-                            arrErr.push(checkExist)
-                            errorNumber++
-                        }
+                        arrPhone.push(data?.__EMPTY_9)
                     }
-
-                    // console.log(arrErr)
+                    let listErr =  await ITEM__CONTACT_COLL.find({company: companyID, phone: {$in: arrPhone}}).select('name phone')
 
                     // Tải báo cáo lỗi
-                    if(errorNumber > 0){
-                        return resolve({ error: false, data: arrErr, status: 200 });
+                    if(listErr && listErr.length > 0){
+                        return resolve({ error: false, data: listErr, status: 200 });
 
                         //  // Modify the workbook.
                         // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_report_duplicate.xlsx')))
