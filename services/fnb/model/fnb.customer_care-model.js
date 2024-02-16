@@ -897,7 +897,7 @@ class Model extends BaseModel {
     /**
      * Dev: HiepNH
      * Func: Tải dữ liệu
-     * Date: 15/2/2023
+     * Date: 15/2/2024
      */
     exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year }) {
         // console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
@@ -1014,7 +1014,7 @@ class Model extends BaseModel {
                     
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `crm_journey_report_${now.getTime()}.xlsx`;
+                        const fileName = `crm_support_report_${now.getTime()}.xlsx`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                         await workbook.toFileAsync(pathWriteFile);

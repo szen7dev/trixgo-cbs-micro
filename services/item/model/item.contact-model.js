@@ -11,7 +11,7 @@ const BaseModel                         = require('../../../tools/db/base_model'
  * TOOLS
  */
 const { checkObjectIDs, IsJsonString, validateParamsObjectID, regexPhoneNumber } = require('../../../tools/utils/utils')
-const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
+const { getTimeBetween }                = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 }                  = require('../../../tools/s3')
 const { isValidDate }                   = require('../../../tools/utils/time_utils')
@@ -28,8 +28,8 @@ const {
  }                = require('../helper/item.keys-constant')
 const stringUtils					    = require('../../../tools/utils/string_utils')
 
-const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * COLLECTIONS
@@ -48,6 +48,7 @@ const HUMAN__CONTACT_DOCUMENT_COLL                  = require('../../human/datab
 const AUTH__APP_USER                                = require('../.../../../auth/model/auth.app_users').MODEL
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL
 const CONTACT_DOCUMENT_MODEL                        = require('../../human/model/human.contact_document-model').MODEL
+const ANALYSIS__HISTORY_DATA_MODEL                  = require('../.../../../analysis/model/analysis.history_data').MODEL;
 
 let dataTF = {
     appID: "61e049c9fdebf77b072d1b13", // HUMAN
@@ -238,6 +239,7 @@ class Model extends BaseModel {
                         infoParent = await ITEM__CONTACT_COLL.findById(parent)
                         dataInsert.level = infoParent.level + 1
 
+                        // Lấy nguồn theo phần tử cha
                         if(infoParent.dataSource && checkObjectIDs(infoParent.dataSource)){
                             dataInsert.dataSource = infoParent.dataSource
                         }
@@ -648,9 +650,6 @@ class Model extends BaseModel {
                 if(saleID && checkObjectIDs(saleID)){
                     dataUpdate.sale = saleID;
                 }
-                if(dataSource && checkObjectIDs(dataSource)){
-                    dataUpdate.dataSource = dataSource;
-                }
 
                 if(linkUser && checkObjectIDs(linkUser)){
                     // Kiểm tra xem đã tồn tại hay chưa, nếu tồn tại rồi thì không cho link nữa
@@ -666,10 +665,8 @@ class Model extends BaseModel {
                     dataUpdate.property = property;
                 }
 
-                if(parent && checkObjectIDs(parent)){
-                    dataUpdate.parent = parent;
-                    let infoMenuParent = await ITEM__CONTACT_COLL.findById(parent);
-                    dataUpdate.level = infoMenuParent.level + 1;
+                if(dataSource && checkObjectIDs(dataSource)){
+                    dataUpdate.dataSource = dataSource;
                 }
 
                 if(workingStatus && checkObjectIDs(workingStatus)){
@@ -848,12 +845,22 @@ class Model extends BaseModel {
                         usedVouchers
                     }
                 }
-
                 // console.log(dataUpdate)
 
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại" })
+
+                // Cập nhật phần tử cha
+                if(parent && checkObjectIDs(parent) && contactID.toString() != parent.toString()){
+                    await ANALYSIS__HISTORY_DATA_MODEL.convertData({
+                        option: 8, 
+                        companyID: company, 
+                        userID: authorID, 
+                        docID: contactID, 
+                        parentID: parent
+                    })
+                }
 
                 // Cập nhật lại số lượng document cho contact
                 await this.updateValue({ contactID, userID: authorID })
@@ -1590,6 +1597,8 @@ class Model extends BaseModel {
                             quantity: { $sum: 1 },
                         }
                         delete conditionObj.funda;
+
+                        sortBy = {"_id.level": 1}
                     }
 
                     // console.log(conditionObj)
@@ -1938,14 +1947,11 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
-                // console.log('=============Log data===================');
-                // return console.log({ dataImportJSON });
                 let index = 0;
                 let errorNumber = 0;
 
                 // IMPORT DANH BẠ
                 if(option == 1){
-                    // console.log('111111111111111111111111')
                     for (const data of dataImportJSON) {
                         // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                         if(index > 0 && index < 500){
@@ -2009,13 +2015,11 @@ class Model extends BaseModel {
                             // console.log(prepareData);
 
                             if(data?.__EMPTY && checkObjectIDs(data?.__EMPTY)){
-                                // console.log('3333333333333333333333333')
                                 let infoAfterInsert = await this.update(prepareData);
                                 if(infoAfterInsert.error){
                                     errorNumber++;
                                 }
                             }else{
-                                // console.log('4444444444444444444444')
                                 let infoAfterInsert = await this.insert(prepareData);
                                 if(infoAfterInsert.error){
                                     errorNumber++;
@@ -2028,7 +2032,6 @@ class Model extends BaseModel {
                 
                 // IMPORT HỒ SƠ
                 else if(option == 2){
-                    // console.log('2222222222222222222222222')
                     for (const data of dataImportJSON) {
                         // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                         if(index > 0 && index < 1000){
@@ -2071,7 +2074,6 @@ class Model extends BaseModel {
                         index ++;
                     }
                 }
-
 
                 if(errorNumber != 0)
                     return resolve({ error: true, message: "Import failed" });

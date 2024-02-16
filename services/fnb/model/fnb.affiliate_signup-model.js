@@ -592,96 +592,130 @@ update({ userID, customerCareID, customerID, orderID, name, note, date, status, 
                     "year": Number(yearFilter)
                 }
 
-                // let conditionPopulate = {
-                //     path: '_id.userCreate',
-                //     select: '_id fullname department',
-                //     populate: {
-                //         path: 'department',
-                //         select: '_id name',
-                //         model: 'department',
+                // let listData = await FNB_AFFILIATE_SIGNUP_COLL.aggregate([
+                //     {
+                //         $match: {
+                //             company: ObjectID(companyID),
+                //             journey: {$exists: true, $ne: null},
+                //         }
                 //     },
-                //     model: 'user'
-                // }
-                
-                let listData = await FNB_AFFILIATE_SIGNUP_COLL.aggregate([
+                //     {
+                //         $project :  {
+                //             year : {$year : "$createAt"},
+                //             month : {$month : "$createAt"},
+                //             createAt: 1,
+                //             userCreate: 1,
+                //             company : 1,
+                //             funda : 1,
+                //             journey : 1,
+                //             customer: 1,
+                //             mistake: 1,
+                //             manager: 1
+                //         }
+                //     },
+                //     {
+                //         $match: conditionObjYear
+                //     },
+                //     {
+                //         $group: {
+                //             _id: { userCreate: "$userCreate", journey: "$journey" },
+                //             quantity: { $sum: 1 }
+                //         }
+                //     },
+                // ])
+                // await FNB_AFFILIATE_SIGNUP_COLL.populate(listData, conditionPopulate)
+                // console.log(listData)
+
+                // let listUser = await USER_COLL.find({_id: {$in: listData.map(item => item._id.userCreate)}}).select('fullname')
+                // let listJourney = await ITEM__DOCTYPE_COLL.find({company: ObjectID(companyID), type: 11}).select('name')
+
+                let listData = await ITEM__CONTACT_COLL.find({company: companyID, parent: {$exists: true, $ne: null}})
+                .populate({
+                    path: 'dataSource parent',
+                    select:'name sign phone'
+                })
+                .limit(10000)
+
+                let listData2 = await ITEM__CONTACT_COLL.aggregate([
                     {
                         $match: {
                             company: ObjectID(companyID),
-                            journey: {$exists: true, $ne: null},
+                            dataSource: {$exists: true, $ne: null},
+                            // childs: { $exists: true, $type: 'array', $ne: [] },
                         }
                     },
                     {
                         $project :  {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            createAt: 1,
-                            userCreate: 1,
-                            company : 1,
-                            funda : 1,
-                            journey : 1,
-                            customer: 1,
-                            mistake: 1,
-                            manager: 1
+                            year : {$year : "$joinedDate"},
+                            month : {$month : "$joinedDate"},
+                            joinedDate: 1,
+                            dataSource: 1,
+                            level: 1
                         }
                     },
                     {
                         $match: conditionObjYear
                     },
+                    // {
+                    //     $group: {
+                    //         _id: { dataSource: "$dataSource", level: "$level" },
+                    //         quantity: { $sum: 1 }
+                    //     }
+                    // },
                     {
                         $group: {
-                            _id: { userCreate: "$userCreate", journey: "$journey" },
+                            _id: { dataSource: "$dataSource", month: "$month" },
                             quantity: { $sum: 1 }
                         }
                     },
                 ])
-                // await FNB_AFFILIATE_SIGNUP_COLL.populate(listData, conditionPopulate)
-                // console.log(listData)
-
-                let listUser = await USER_COLL.find({_id: {$in: listData.map(item => item._id.userCreate)}}).select('fullname')
-                let listJourney = await ITEM__DOCTYPE_COLL.find({company: ObjectID(companyID), type: 11}).select('name')
+                // console.log(listData2)
+                let listAff = await ITEM__CONTACT_COLL.find({_id: {$in: listData2.map(item => item._id.dataSource)}}).select('name phone email')
+                // console.log(listAff)
                
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/crm_export_journey.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/crm_export_affiliate.xlsx')))
                 .then(async workbook => {
                     workbook.sheet("Report").row(1).cell(1).value(`BÁO CÁO TỔNG HỢP ${yearFilter}`)
 
                     var i = 4;
-                    listUser?.forEach((item, index) => {
-                        workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("Report").row(i).cell(2).value(item?.fullname);
-                        workbook.sheet("Report").row(i).cell(3).value(`${item._id}`);
-                        i++
-                    })
-
-                    var j = 4;
-                    listJourney?.forEach((item, index) => {
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("Data").row(i).cell(2).value(item?.name);
+                        workbook.sheet("Data").row(i).cell(3).value(item?.phone);
+                        workbook.sheet("Data").row(i).cell(4).value(item?.email);
+                        workbook.sheet("Data").row(i).cell(5).value(item?.taxid);
+                        workbook.sheet("Data").row(i).cell(6).value(item?.joinedDate);
+                        workbook.sheet("Data").row(i).cell(7).value(`${item?.parent?.name}-${item?.parent?.phone}`);
+                        workbook.sheet("Data").row(i).cell(8).value(item?.note);
                         
-                        workbook.sheet("Report").row(2).cell(j).value(`${item._id}`);
-                        workbook.sheet("Report").row(3).cell(j).value(item?.name);
-
-                        j++
+                        i++
                     })
 
                     var i = 4;
-                    listUser?.forEach((item, index) => {
-                        for(var m=1; m<=listJourney.length; m++){
+                    listAff?.forEach((user, uid) => {
+                        workbook.sheet("Report").row(i).cell(1).value(Number(uid+1));
+                        workbook.sheet("Report").row(i).cell(2).value(user.name);
+                        workbook.sheet("Report").row(i).cell(3).value(`${user._id}`);
 
-                            listData?.forEach((subject) => {
-                                let journeyID = workbook.sheet("Report").row(2).cell(m+3).value()
-
-                                if(subject._id.userCreate.toString() === item._id.toString() && subject._id.journey.toString() === journeyID.toString()){
-
-                                    workbook.sheet("Report").row(i).cell(m+3).value(subject?.quantity)
-                                }
-                            })
-                        }
-                        
                         i++
+                    })
+
+                    listData2?.forEach((item, index) => {
+                        for(var i=4; i<=listAff.length + 3; i++){
+                            let userID = workbook.sheet("Report").row(i).cell(3).value();
+
+                            for(var j=1; j<=12; j++){
+                                if(item._id.month == j && userID.toString() === item._id.dataSource.toString()){
+                                    workbook.sheet("Report").row(i).cell(j + 3).value(item.quantity);
+                                }
+                            }
+                        }
                     })
                    
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `crm_journey_report_${now.getTime()}.xlsx`;
+                    const fileName = `crm_affiliate_report_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);

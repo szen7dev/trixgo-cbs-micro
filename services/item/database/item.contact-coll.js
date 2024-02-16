@@ -123,11 +123,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    //_________Sale/CSKH
-    sale: {
-        type: Schema.Types.ObjectId,
-        ref: "user"
-    },
     //_________Link với tài khoản
     linkUser: {
         type: Schema.Types.ObjectId,
