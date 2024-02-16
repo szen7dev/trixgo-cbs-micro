@@ -1062,8 +1062,10 @@ class Model extends BaseModel {
                 }
 
                 // Theo phân loại
-                if(type){
+                if(type && [1,2].includes(Number(type))){
                     conditionObj.type = type
+                }else{
+                    delete conditionObj.type
                 }
 
                 // Lấy những danh bạ có sinh nhật vào hôm nay
@@ -1222,8 +1224,10 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false }
                 }
 
-                if(type){
+                if(type && [1,2].includes(Number(type))){
                     conditionObj.type = Number(type)
+                }else{
+                    delete conditionObj.type
                 }
 
                 // Bộ lọc với nhiều lựa chọn
