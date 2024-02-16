@@ -653,7 +653,8 @@ class Model extends BaseModel {
 
                 if(linkUser && checkObjectIDs(linkUser)){
                     // Kiểm tra xem đã tồn tại hay chưa, nếu tồn tại rồi thì không cho link nữa
-                    let checkExist = await ITEM__CONTACT_COLL.find({linkUser: linkUser, company: company})
+                    let checkExist = await ITEM__CONTACT_COLL.findOne({linkUser: linkUser, company: company})
+                    // console.log(checkExist)
                     if(!checkExist){
                         dataUpdate.linkUser = linkUser;
                     }
