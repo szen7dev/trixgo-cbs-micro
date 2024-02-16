@@ -854,13 +854,22 @@ class Model extends BaseModel {
 
                 // Cập nhật phần tử cha
                 if(parent && checkObjectIDs(parent) && contactID.toString() != parent.toString()){
-                    await ANALYSIS__HISTORY_DATA_MODEL.convertData({
-                        option: 8, 
-                        companyID: company, 
-                        userID: authorID, 
-                        docID: contactID, 
-                        parentID: parent
+                    //___________Quyền truy cập ứng dụng Nhân sự
+                    let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e049c9fdebf77b072d1b13", 
+                        userID: authorID
                     })
+
+                    // Chỉ admin ứng dụng mới được thêm phần tử cha con
+                    if(infoAppUser && infoAppUser.data.level == 0){
+                        await ANALYSIS__HISTORY_DATA_MODEL.convertData({
+                            option: 8, 
+                            companyID: company, 
+                            userID: authorID, 
+                            docID: contactID, 
+                            parentID: parent
+                        })
+                    }                    
                 }
 
                 // Cập nhật lại số lượng document cho contact
