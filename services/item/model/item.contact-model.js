@@ -1793,8 +1793,7 @@ class Model extends BaseModel {
                     }
                 })
 
-
-                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID, type: 1 }).limit(500)
+                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID }).limit(500)
                 .populate({
                     path: 'funda department position field property contractType workingStatus area area1 area2 sale linkUser',
                     select:'_id name fullname parent',
@@ -1807,7 +1806,7 @@ class Model extends BaseModel {
                         }
                     }
                 })
-
+                .sort({'_id': -1})
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_import_template.xlsm')))
