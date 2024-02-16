@@ -231,10 +231,9 @@ class Model extends BaseModel {
                 // Convert Contact Parent
                 else if(option == 8){
                     /**
-                     * BA
-                     * - Update contact & childs: level, parent, nestedParents
-                     * - Update old Parent: remove childs, nestedChilds
-                     * - Update new Parent: childs, nestedChilds
+                     * B1. XỬ LÝ VỚI OLD_PARENT VÀ CÁC CẤP TRÊN CŨ
+                     * B2. XỬ LÝ VỚI NEW_PARENT VÀ CÁC CẤP TRÊN MỚI
+                     * B3. CẬP NHẬT LEVEL CHO CÁC PHẦN TỬ CON BÊN DƯỚI
                      */
                     if(checkObjectIDs(docID) && checkObjectIDs(parentID)){
 
@@ -244,28 +243,9 @@ class Model extends BaseModel {
 
                         /**
                          * B1. XỬ LÝ VỚI OLD_PARENT VÀ CÁC CẤP TRÊN CŨ
+                         * - Xóa docID ra khỏi childs và nestedChilds
+                         * - Xóa subDocID ra khỏi nestedChilds
                          */
-                        for(const subitem of infoContact?.nestedChilds){
-                            await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
-                                {
-                                    $pull: {
-                                        childs: subitem,
-                                        nestedChilds: subitem
-                                    },
-                                    $inc: { amountChilds: -1 }
-                                },
-                                { new: true })
-
-                            await ITEM__CONTACT_COLL.findByIdAndUpdate(subitem,
-                                {
-                                    $pull: {
-                                        nestedParents: parentID,
-                                    }
-                                },
-                                { new: true })
-                        }
-
-                        // CÁC CẤP TRÊN CŨ
                         for(const item of infoContact?.nestedParents){
                             // Với docID
                             await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
@@ -274,7 +254,14 @@ class Model extends BaseModel {
                                         childs: docID,
                                         nestedChilds: docID
                                     },
-                                    $inc: { amountChilds: -1 }
+                                },
+                                { new: true })
+
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(docID,
+                                {
+                                    $pull: {
+                                        nestedParents: item,
+                                    }
                                 },
                                 { new: true })
 
@@ -286,7 +273,6 @@ class Model extends BaseModel {
                                             childs: subitem,
                                             nestedChilds: subitem
                                         },
-                                        $inc: { amountChilds: -1 }
                                     },
                                     { new: true })
 
@@ -301,48 +287,34 @@ class Model extends BaseModel {
                         }
 
                         /**
-                        * B2. XỬ LÝ VỚI CONTACT
-                        */
-                        let dataUpdate = { 
-                            userUpdate: userID, 
-                            modifyAt: new Date() 
-                        }
-
-                        dataUpdate.level = infoParent.level + 1
-                        dataUpdate.parent = parentID
-                        dataUpdate.nestedParents = [parentID] // Cha cấp 1
-    
-                        // Cập nhật docID
-                        let info = await ITEM__CONTACT_COLL.findByIdAndUpdate(docID,
-                            dataUpdate,
-                            { new: true })
-                        // console.log(info)
-
-                        /**
-                         * B3. XỬ LÝ VỚI NEW_PARENT VÀ CÁC CẤP TRÊN MỚI
+                         * B2. XỬ LÝ VỚI NEW_PARENT VÀ CÁC CẤP TRÊN MỚI
                          */
                         if(parentID && checkObjectIDs(parentID)){
-                           // Phần tử cha cấp 1
-                           await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
+
+                            /**
+                            * Phần tử cha cấp 1
+                            */
+                            // Với docID
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
                             {
                                 $addToSet: { 
                                     childs: docID,
                                     nestedChilds: docID
                                 },
-                                $inc: { amountChilds: 1 }
                             },
                             { new: true })
 
-                            for(const subitem of infoContact?.nestedChilds){
-                                await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
-                                    {
-                                        $addToSet: {
-                                            nestedChilds: subitem
-                                        }
-                                    },
-                                    { new: true })
-                            }
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(docID,
+                                { 
+                                    userUpdate: userID, 
+                                    modifyAt: new Date(),
+                                    level: infoParent.level + 1,
+                                    parent: parentID,
+                                    nestedParents: [parentID],
+                                },
+                                { new: true })
 
+                            // Với các phần tử con của docID
                             for(const subitem of infoContact?.nestedChilds){
                                 await ITEM__CONTACT_COLL.findByIdAndUpdate(parentID,
                                     {
@@ -360,10 +332,10 @@ class Model extends BaseModel {
                             }
 
                             /**
-                             * Cập nhật cho phần tử cha cấp 2 trở lên
-                             * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
+                             * Phần tử cha cấp 2 trở lên
                              */
                             for(const item of infoParent?.nestedParents){
+
                                 // Với docID
                                 await ITEM__CONTACT_COLL.findByIdAndUpdate(item,
                                     {
@@ -397,7 +369,7 @@ class Model extends BaseModel {
                             }
 
                             /**
-                             * B4. CẬP NHẬT LEVEL CHO CÁC PHẦN TỬ CON BÊN DƯỚI
+                             * B3. CẬP NHẬT LEVEL CHO CÁC PHẦN TỬ CON BÊN DƯỚI
                              */
                             for(const subitem of infoContact?.nestedChilds){
                                 let infoSubChild = await ITEM__CONTACT_COLL.findById(subitem)

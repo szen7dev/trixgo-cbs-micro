@@ -380,20 +380,21 @@ class Model extends BaseModel {
                 if(parent && checkObjectIDs(parent)){
                     // Chỉ admin ứng dụng mới được thêm phần tử cha con
                     if(infoAppUser && infoAppUser.data.level == 0){
-                        // Cập nhật amountChilds cho phần tử cha cấp 1
+
+                        /**
+                         * Phần tử cha cấp 1
+                         */
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(parent,
                             {
                                 $addToSet: { 
                                     childs: infoAfterInsert._id,
                                     nestedChilds: infoAfterInsert._id,
                                 },
-                                $inc: { amountChilds: 1 }
                             },
                             { new: true })
 
                         /**
-                         * Cập nhật cho phần tử cha cấp 2 trở lên
-                         * Phục vụ tăng hiệu suất khi tính toán số liệu Đệ quy
+                         * Phần tử cha cấp 2 trở lên
                          */
                         for(const item of infoParent?.nestedParents){
                             // Thêm phần tử con/cháu
@@ -415,13 +416,11 @@ class Model extends BaseModel {
 
                 // Cập nhật linkUser với tài khoản
                 if(linkUser && checkObjectIDs(linkUser)){
-                    // Cập nhật vào user-coll
-                    let infoUser = await USER_COLL.findByIdAndUpdate(linkUser,
+                    await USER_COLL.findByIdAndUpdate(linkUser,
                         {
                             $addToSet: {contacts: infoAfterInsert._id }
                         },
                         { new: true })
-                    // console.log(infoUser)
                 }
 
                 // Cập nhật vào đơn vị cơ sở
@@ -451,13 +450,12 @@ class Model extends BaseModel {
                     // console.log({infoVoucher1})
 
                     if(infoVoucher1){
-                        let infoVoucherAfterUpdate1 = await FNB_ORDER_VOUCHER_MODEL.update({
+                        await FNB_ORDER_VOUCHER_MODEL.update({
                             companyID: infoFunda.company,
                             userID: authorID,
                             voucherID: infoVoucher1._id,
                             receivers:[infoAfterInsert._id]
                         })
-                        // console.log(infoVoucherAfterUpdate1)
                     }
 
                      /**
@@ -466,7 +464,7 @@ class Model extends BaseModel {
                      * 2-Còn thời hạn sử dụng
                      * 3-Voucher tặng Phần trăm
                      */
-                     let infoVoucher2 = await FNB_VOUCHER_COLL.findOne({
+                    let infoVoucher2 = await FNB_VOUCHER_COLL.findOne({
                         type: 3,
                         company: infoFunda.company,
                         expired: { $gt: new Date() },
@@ -475,16 +473,14 @@ class Model extends BaseModel {
                      })
                     .sort({expired: 1 })
                     .select("_id name sign")
-                    // console.log({infoVoucher2})
 
                     if(infoVoucher2){
-                        let infoVoucherAfterUpdate2 = await FNB_ORDER_VOUCHER_MODEL.update({
+                       await FNB_ORDER_VOUCHER_MODEL.update({
                             companyID: infoFunda.company,
                             userID: authorID,
                             voucherID: infoVoucher2._id,
                             receivers:[infoAfterInsert._id]
                         })
-                        // console.log(infoVoucherAfterUpdate2)
                     }
                 }
 
