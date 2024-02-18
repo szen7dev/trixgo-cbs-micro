@@ -560,7 +560,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
+                    userID, resetPass, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
                     companyID, departmentID, positionID, level, status, storageUse, 
                 } = ctx.params;
@@ -571,7 +571,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
-                    userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
+                    userID, resetPass, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
                     companyID, departmentID, positionID, level, status, company, storageUse, ctx
                 });
