@@ -372,7 +372,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit, lastestID, select, populates, userID })
+        console.log({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -764,6 +764,21 @@ class Model extends BaseModel {
                         } 
                     }
 
+                    /**
+                     * Gom nhóm theo user: OK
+                     */
+                     else if(option && Number(option) == 10){
+                        if(!optionGroup){
+                            conditionGroup = {
+                                _id: { user: "$userCreate" },
+                            }
+                        }else if(optionGroup == 1){
+                            conditionGroup = {
+                                _id: { user: "$manager" },
+                            }
+                        }
+                    }
+
                     // console.log(conditionObj)
                     // console.log(conditionPopulate)
                     // console.log(conditionObjYear)
@@ -799,6 +814,7 @@ class Model extends BaseModel {
                                 quantity : 1,
                                 score : 1,
                                 bonus : 1,
+                                userCreate: 1
                             }
                         },
                         {
@@ -818,6 +834,11 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: listData });
                     }
 
+                    if(option == 10){
+                        let listUser = await USER_COLL.find({_id: {$in: listData.map(item=>item._id.user)}}).select('fullname')
+                        return resolve({ error: false, data: listUser });
+                    }
+
                     let listBusiness;
                     if(!isNaN(option) && [6].includes(Number(option))){
                         conditionPopulate = {
@@ -831,8 +852,6 @@ class Model extends BaseModel {
 
                         return resolve({ error: false, data: {listData, listBusiness} });
                     }
-
-                    return resolve({ error: false, data: listData });
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
