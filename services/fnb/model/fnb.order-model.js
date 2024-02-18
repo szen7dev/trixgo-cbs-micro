@@ -2547,7 +2547,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ type, option, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isComplaint, isCampaignType, isPaymentMethod, starRating, managerID, keyword, limit = 10, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, ctx }) {
-        // console.log({ companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
+        // console.log({ type, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -2763,6 +2763,8 @@ class Model extends BaseModel {
                 }
                 let totalRecord = await FNB_ORDER_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
+
+                // console.log({totalRecord})
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,

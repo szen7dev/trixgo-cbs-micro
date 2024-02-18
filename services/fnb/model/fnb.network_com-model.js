@@ -217,8 +217,8 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ option, userID, contacts, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit = 10, lastestID, select, populates, sortKey }) {
-        console.log('==================getList>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log({ option, userID, contacts, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit, lastestID, select, populates, sortKey })
+        // console.log('==================getList>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log({ option, userID, contacts, companyID, orderID, customerID, saleID, uplineID, fromDate, toDate, status, keyword, limit, lastestID, select, populates, sortKey })
         return new Promise(async (resolve) => {
             try {
 
@@ -255,6 +255,10 @@ class Model extends BaseModel {
                     conditionObj.company = ObjectID(companyID)
                 }
 
+                if(saleID && checkObjectIDs(saleID)){
+                    conditionObj.sale = ObjectID(saleID)
+                }
+
                 // Theo trạng thái
                 if(status && !isNaN(status)){
                     conditionObj.status = Number(status)
@@ -274,7 +278,6 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-
                 console.log(conditionObj)
 
                 /**
