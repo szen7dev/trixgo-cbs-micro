@@ -90,25 +90,6 @@ class Model extends BaseModel {
                 if (!infoUserAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert_data' });
 
-                /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
-                // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
-                let listUserInCompany = await AUTH__USER_COLL.find({ company: companyID });
-                let arrUserID = listUserInCompany.map(item => item._id);
-
-                // Update bạn bè với các thành viên của công ty
-                await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                    friends: arrUserID,
-                }, { new: true });
-
-                // Update cho các thành viên công ty nhận bạn bè mới
-                for(const item of listUserInCompany){
-                    await AUTH__USER_COLL.findByIdAndUpdate(item._id, {
-                        $addToSet: {
-                            friends: infoUserAfterInsert._id
-                        }
-                    }, { new: true });
-                }
-
                 return resolve({ error: false, data: infoUserAfterInsert, pwd: password, exists: true });
             } catch (error) {
                 resolve({ error: true, message: error.message });
@@ -1120,11 +1101,10 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault,
+    update({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault,
         sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, storageUse, ctx }) {
         // console.log('====================>>>>>>>>>>>>>>>>>>>>')
-        // console.log({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault,
-        //     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, storageUse })
+        // console.log({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, storageUse })
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID)) {
@@ -1144,6 +1124,13 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Mật khẩu cũ không đúng", keyError: "current_password_faild" });
 
                     let hashpass = await hash(newPass, 8);
+                    dataUpdate.password = hashpass;
+                }
+
+                // resetPass
+                if(resetPass && resetPass.toString().length >= 6){
+                    // console.log(resetPass.toString().length)
+                    let hashpass = await hash(resetPass, 8);
                     dataUpdate.password = hashpass;
                 }
 
@@ -1208,75 +1195,6 @@ class Model extends BaseModel {
                 if(storageUse){
                     dataUpdate.storageUse = storageUse;
                 }
-
-                // Gửi yêu cầu kết bạn tới người khác
-                if(checkObjectIDs(sendRequestToFriendID)){
-                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-                        $addToSet: { sendToFriends: sendRequestToFriendID }
-                    }, { new: true })
-
-                    await AUTH__USER_COLL.findByIdAndUpdate(sendRequestToFriendID, {
-                        $addToSet: { receiveFromFriends: userID }
-                    }, { new: true })
-                }
-
-                // Chấp nhận kết bạn
-                if(checkObjectIDs(acceptFriendRequestID)){
-                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-                        $pull: {
-                            receiveFromFriends: acceptFriendRequestID
-                        },
-                        $addToSet: {
-                            friends: acceptFriendRequestID
-                        }
-                    }, { new: true });
-                    // await cachingInfoUser(userID, session);
-
-                    await AUTH__USER_COLL.findByIdAndUpdate(acceptFriendRequestID, {
-                        $pull: {
-                            sendToFriends: userID
-                        },
-                        $addToSet: {
-                            friends: userID
-                        }
-                    }, { new: true });
-
-                }
-
-                //Hủy lời mời kết bạn
-                if(checkObjectIDs(removeFriendRequestID)){
-                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-                        $pull: {
-                            receiveFromFriends: removeFriendRequestID
-                        },
-                    }, { new: true });
-
-                    // await cachingInfoUser(userID, session);
-
-                    await AUTH__USER_COLL.findByIdAndUpdate(removeFriendRequestID, {
-                        $pull: {
-                            sendToFriends: userID
-                        },
-                    }, { new: true });
-                }
-
-                //Hủy kết bạn
-                if(checkObjectIDs(unFriendID)){
-                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-                        $pull: {
-                            friends: unFriendID
-                        },
-                    }, { new: true });
-
-                    // await cachingInfoUser(userID, session);
-
-                    await AUTH__USER_COLL.findByIdAndUpdate(unFriendID, {
-                        $pull: {
-                            friends: userID
-                        },
-                    }, { new: true });
-                }
-                // console.log({dataUpdate})
 
                 let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, dataUpdate, { new: true });
                 if(!infoUserAfterUpdate)

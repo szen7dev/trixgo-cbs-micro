@@ -188,10 +188,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { option, optionTime, fundasID, year, month, fromDate, toDate, status } = ctx.params;
+                let { option, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_BOOKING_MODEL.getListByProperty({
-                     option, companyID: company._id, optionTime, fundasID, year, month, fromDate, toDate, status, userID
+                    option, optionGroup, companyID: company._id, optionTime, fundasID, year, month, fromDate, toDate, status, userID
                     });
              
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

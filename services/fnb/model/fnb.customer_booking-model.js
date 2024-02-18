@@ -390,8 +390,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 15/2/2024
      */
-    getListByProperty({ option, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
-        // console.log({ option, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+    getListByProperty({ option, optionGroup, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
+        // console.log({ option, optionGroup, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -568,6 +568,22 @@ class Model extends BaseModel {
                             }
                         })
                     }
+
+                    /**
+                     * Gom nhóm theo user: OK
+                     */
+                    else if(option && Number(option) == 10){
+                        if(!optionGroup){
+                            conditionGroup = {
+                                _id: { user: "$userCreate" },
+                            }
+                        }else if(optionGroup == 1){
+                            conditionGroup = {
+                                _id: { user: "$manager" },
+                            }
+                        }
+                    }
+                                    
                     // console.log(conditionObj)
                     // console.log(conditionPopulate)
                     // console.log(conditionObjYear)
@@ -592,6 +608,7 @@ class Model extends BaseModel {
                                     assignee : 1,
                                     area3 : 1,
                                     seasons : 1,
+                                    userCreate: 1,
                                 }
                             },
                             {
@@ -607,6 +624,11 @@ class Model extends BaseModel {
 
                         if(!isNaN(option) && [2,3,4].includes(Number(option))){
                             await FNB_CUSTOMER_BOOKING_COLL.populate(listData, conditionPopulate)
+                        }
+
+                        if(option == 10){
+                            let listUser = await USER_COLL.find({_id: {$in: listData.map(item=>item._id.user)}}).select('fullname')
+                            return resolve({ error: false, data: listUser }); 
                         }
     
                         return resolve({ error: false, data: listData });
