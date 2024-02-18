@@ -1189,7 +1189,7 @@ class Model extends BaseModel {
                                     // console.log(journeyID)
 
                                     if(customerID.toString() === item._id.customer.toString() && journeyID.toString() === item._id.journey.toString()){
-                                        workbook.sheet("Report2").row(i).cell(j).value('x');
+                                        workbook.sheet("Report2").row(i).cell(j).value(1);
                                     }
                                 }
                             }
