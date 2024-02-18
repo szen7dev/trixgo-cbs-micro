@@ -27,7 +27,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 
 const { CRM_STATUS, CRM_TYPES }         = require('../helper/fnb.keys-constant')
 
-const FNB_CUSTOMER_BOOKING_MODEL        = require('../model/fnb.customer_booking-model').MODEL;
+// const FNB_CUSTOMER_BOOKING_MODEL        = require('../model/fnb.customer_booking-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -913,7 +913,7 @@ class Model extends BaseModel {
      * Date: 15/2/2024
      */
     exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year }) {
-        console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
+        // console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
         return new Promise(async resolve => {
             try {
                 let yearFilter
@@ -1081,7 +1081,34 @@ class Model extends BaseModel {
                         select:'name sign phone fullname'
                     })
                     .limit(10000)
-                
+
+                    // Danh sách Affiliate
+                    let listData3 = await FNB_CUSTOMER_CARE_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                journey: {$exists: true, $ne: null}
+
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { customer: "$customer", journey: "$journey" },
+                            }
+                        },
+                    ])
+
+                    let listContact = await ITEM__COCNTACT_COLL.find({_id: {$in: listData3.map(item=>item._id.customer)}}).select('name phone note description')
+                    .populate({
+                        path: 'dataSource',
+                        select: 'name',
+                    })
+                    .sort({'dataSource': 1})
+
+                    let listDoctype = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData3.map(item=>item._id.journey)}}).select('name phone note description')
+                    .sort({'_id': 1})               
+
+                    
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/crm_export_journey.xlsx')))
                     .then(async workbook => {
@@ -1100,7 +1127,6 @@ class Model extends BaseModel {
                             
                             workbook.sheet("Report").row(2).cell(j).value(`${item._id}`);
                             workbook.sheet("Report").row(3).cell(j).value(item?.name);
-
                             j++
                         })
 
@@ -1117,7 +1143,6 @@ class Model extends BaseModel {
                                     }
                                 })
                             }
-                            
                             i++
                         })
 
@@ -1133,8 +1158,41 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(8).value(item?.note);
                             workbook.sheet("Data").row(i).cell(9).value(item?.dataSource?.name);
                             workbook.sheet("Data").row(i).cell(10).value(item?.userCreate?.fullname);
-                            
                             i++
+                        })
+
+                        var i = 4;
+                        listContact?.forEach((item, index) => {
+                            workbook.sheet("Report2").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Report2").row(i).cell(2).value(item?.dataSource?.name);
+                            workbook.sheet("Report2").row(i).cell(3).value(item?.note);
+                            workbook.sheet("Report2").row(i).cell(4).value(item?.name);
+                            workbook.sheet("Report2").row(i).cell(5).value(`${item._id}`);
+                            i++
+                        })
+
+                        var i = 6;
+                        listDoctype?.forEach((item, index) => {
+                            workbook.sheet("Report2").row(2).cell(i).value(`${item._id}`);
+                            workbook.sheet("Report2").row(3).cell(i).value(item.name);
+                            i++
+                        })
+
+                        listData3?.forEach((item, index) => {
+                            for(var i=4; i<=listContact.length + 3; i++){
+                                let customerID = workbook.sheet("Report2").row(i).cell(5).value();
+                                // console.log(customerID)
+
+                                for(var j=6; j<=listDoctype.length + 5; j++){
+
+                                    let journeyID = workbook.sheet("Report2").row(2).cell(j).value();
+                                    // console.log(journeyID)
+
+                                    if(customerID.toString() === item._id.customer.toString() && journeyID.toString() === item._id.journey.toString()){
+                                        workbook.sheet("Report2").row(i).cell(j).value('x');
+                                    }
+                                }
+                            }
                         })
                     
                         const now = new Date();
