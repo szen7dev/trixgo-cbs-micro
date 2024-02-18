@@ -1167,11 +1167,12 @@ class Model extends BaseModel {
                             workbook.sheet("Report2").row(i).cell(2).value(item?.dataSource?.name);
                             workbook.sheet("Report2").row(i).cell(3).value(item?.note);
                             workbook.sheet("Report2").row(i).cell(4).value(item?.name);
-                            workbook.sheet("Report2").row(i).cell(5).value(`${item._id}`);
+                            workbook.sheet("Report2").row(i).cell(5).value(`${item.phone}`);
+                            workbook.sheet("Report2").row(i).cell(6).value(`${item._id}`);
                             i++
                         })
 
-                        var i = 6;
+                        var i = 7;
                         listDoctype?.forEach((item, index) => {
                             workbook.sheet("Report2").row(2).cell(i).value(`${item._id}`);
                             workbook.sheet("Report2").row(3).cell(i).value(item.name);
@@ -1180,16 +1181,11 @@ class Model extends BaseModel {
 
                         listData3?.forEach((item, index) => {
                             for(var i=4; i<=listContact.length + 3; i++){
-                                let customerID = workbook.sheet("Report2").row(i).cell(5).value();
-                                // console.log(customerID)
-
-                                for(var j=6; j<=listDoctype.length + 5; j++){
-
+                                let customerID = workbook.sheet("Report2").row(i).cell(6).value();
+                                for(var j=7; j<=listDoctype.length + 6; j++){
                                     let journeyID = workbook.sheet("Report2").row(2).cell(j).value();
-                                    // console.log(journeyID)
-
                                     if(customerID.toString() === item._id.customer.toString() && journeyID.toString() === item._id.journey.toString()){
-                                        workbook.sheet("Report2").row(i).cell(j).value(1);
+                                        workbook.sheet("Report2").row(i).cell(j).value('x');
                                     }
                                 }
                             }
