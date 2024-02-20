@@ -54,7 +54,7 @@ class Model extends BaseModel {
                     name
                 }
 
-                let infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID).select('dataSource')
+                let infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID)
                 if(infoCustomer && checkObjectIDs(infoCustomer.dataSource)){
                     dataInsert.dataSource = infoCustomer.dataSource
                 }
@@ -106,9 +106,9 @@ class Model extends BaseModel {
                 }
 
                 // Namecv
-                let convertStr = ''
+                let convertStr = `${infoCustomer.name} ${infoCustomer.description} ${infoCustomer.sign} ${infoCustomer.note}  ${infoCustomer.phone} ${infoCustomer.taxid} ${infoCustomer.email} ${infoCustomer.identity} ${infoCustomer.bankAccount}`;
                 if(name && name != ""){
-                    convertStr = stringUtils.removeAccents(name)
+                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
                 }
                 if(description && description != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(description)
@@ -194,14 +194,22 @@ class Model extends BaseModel {
                     modifyAt: new Date(),
                 }
 
-                let infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID).select('dataSource')
-                if(infoCustomer && checkObjectIDs(infoCustomer.dataSource)){
-                    dataUpdate.dataSource = infoCustomer.dataSource
+                let infoCustomer;
+                let infoCustomerCare = await FNB_CUSTOMER_CARE_COLL.findById(customerCareID)
+                // console.log(infoCustomerCare)
+                if(customerID && checkObjectIDs(customerID)) {
+                    infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID)
+                    if(infoCustomer && checkObjectIDs(infoCustomer.dataSource)){
+                        dataUpdate.dataSource = infoCustomer.dataSource
+                    }
+                }else{
+                    infoCustomer = await ITEM__COCNTACT_COLL.findById(infoCustomerCare.customer)
+                    if(infoCustomer && checkObjectIDs(infoCustomer.dataSource)){
+                        dataUpdate.dataSource = infoCustomer.dataSource
+                    }
                 }
 
-                if(checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
-                }
+                dataUpdate.customer = infoCustomer._id;
 
                 if(checkObjectIDs(mistakeID)) {
                     dataUpdate.mistake = mistakeID;
@@ -262,9 +270,37 @@ class Model extends BaseModel {
                 }
 
                 // Namecv
-                let convertStr = ''
+                let convertStr = '';
+                if(infoCustomer?.name != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.name)
+                }
+                if(infoCustomer?.description != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.description)
+                }
+                if(infoCustomer?.sign != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.sign)
+                }
+                if(infoCustomer?.note != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.note)
+                }
+                if(infoCustomer?.phone != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.phone)
+                }
+                if(infoCustomer?.taxid != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.taxid)
+                }
+                if(infoCustomer?.email != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.email)
+                }
+                if(infoCustomer?.identity != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.identity)
+                }
+                if(infoCustomer?.bankAccount != ''){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.bankAccount)
+                }
+                 
                 if(name && name != ""){
-                    convertStr = stringUtils.removeAccents(name)
+                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
                 }
                 if(description && description != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(description)
@@ -279,7 +315,7 @@ class Model extends BaseModel {
                     dataUpdate.journey = journeyID;
 
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
-                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
+                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: infoCustomer._id, company: companyID})
                     
                     infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
                     if(!infoItem.linkItem)
@@ -311,7 +347,7 @@ class Model extends BaseModel {
                 //     let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
                 //         userID, 
                 //         companyID, 
-                //         customerID, 
+                //         customerID: infoCustomer._id, 
                 //         // orderID, 
                 //         businessID: infoItem.linkItem, 
                 //         assigneeID: userID, 

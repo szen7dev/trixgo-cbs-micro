@@ -31,6 +31,7 @@ const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.do
 const ITEM__FUNDA_COLL            		        = require('../../item/database/item.funda-coll')
 const ITEM__WAREHOUSE_COLL            		    = require('../../item/database/item.warehouse-coll')
 const ITEM__GOODS_COLL            		        = require('../../item/database/item.goods-coll')
+const FNB_CUSTOMER_CARE_COLL                    = require('../../fnb/database/fnb.customer_care-coll');
 
 class Model extends BaseModel {
 
@@ -390,6 +391,42 @@ class Model extends BaseModel {
                     }
                 }
 
+                else if(option == 9){
+                    let selectObj = '_id namecv'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await FNB_CUSTOMER_CARE_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await FNB_CUSTOMER_CARE_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertCustomerCare({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await FNB_CUSTOMER_CARE_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -432,6 +469,54 @@ class Model extends BaseModel {
                 }
 
                 await ITEM__CONTACT_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertCustomerCare({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await FNB_CUSTOMER_CARE_COLL.findById(docID)
+                .populate({
+                    path: 'customer',
+                    select: 'name sign description note phone email identity taxid bankAccount',
+                })
+                .select(`${selectObj}`)
+
+                let convertStr = info.namecv
+                if(info?.customer?.name && info?.customer?.name != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.name)
+                }
+                if(info?.customer?.sign && info?.customer?.sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.sign)
+                }
+                if(info?.customer?.description && info?.customer?.description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.description)
+                }
+                if(info?.customer?.note && info?.customer?.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.note)
+                }
+                if(info?.customer?.phone && info?.customer?.phone != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.phone)
+                }
+                if(info?.customer?.email && info?.customer?.email != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.email)
+                }
+                if(info?.customer?.identity && info?.customer?.identity != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.identity)
+                }
+                if(info?.customer?.taxid && info?.customer?.taxid != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.taxid)
+                }
+                if(info?.customer?.bankAccount && info?.customer?.bankAccount != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.bankAccount)
+                }
+
+                await FNB_CUSTOMER_CARE_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
               
                 return resolve({ error: false})
             } catch (error) {
