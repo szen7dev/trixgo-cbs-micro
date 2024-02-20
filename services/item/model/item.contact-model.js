@@ -228,7 +228,7 @@ class Model extends BaseModel {
                 let infoParent
                 if(parent && checkObjectIDs(parent)){
                     // Chỉ admin ứng dụng mới được thêm phần tử cha con
-                    if(infoAppUser && infoAppUser.data.level == 0){
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
                         dataInsert.parent = parent
                         dataInsert.nestedParents = [parent] // Cha cấp 1
     
@@ -376,7 +376,7 @@ class Model extends BaseModel {
                  */
                 if(parent && checkObjectIDs(parent)){
                     // Chỉ admin ứng dụng mới được thêm phần tử cha con
-                    if(infoAppUser && infoAppUser.data.level == 0){
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
 
                         /**
                          * Phần tử cha cấp 1
@@ -851,7 +851,7 @@ class Model extends BaseModel {
                     })
 
                     // Chỉ admin ứng dụng mới được thêm phần tử cha con
-                    if(infoAppUser && infoAppUser.data.level == 0){
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
                         await ANALYSIS__HISTORY_DATA_MODEL.convertData({
                             option: 8, 
                             companyID: company, 
