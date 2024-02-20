@@ -153,6 +153,12 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
+                // Cập nhật trạng thái hành trình trước sang hoàn thành
+                await FNB_CUSTOMER_CARE_COLL.findOneAndUpdate({customer: customerID, company: companyID,  _id: { $ne: infoAfterInsert._id }}, { 
+                    status: 2
+                }, { new: true }).sort({'journey':-1})
+                // console.log(infoBefore)
+
                 // // Tạo lịch nhắc hẹn
                 // if(checkObjectIDs(journeyID) && infoItem.alert && infoItem.alert > 0) {
                 //     let infoBooking = await FNB_CUSTOMER_BOOKING_MODEL.insert({ 
