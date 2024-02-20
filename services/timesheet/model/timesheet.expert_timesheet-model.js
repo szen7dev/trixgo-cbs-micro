@@ -402,8 +402,8 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, workID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, companyID, type, ctx }) {
+        // console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, companyID, type})
         return new Promise(async (resolve) => {
-            // console.log({ sortOption, parentID, userID, keyword, limit, lastestID, select, populates, option, month, year, type })
             try {
                 // Record Traffic
                 await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
@@ -441,6 +441,9 @@ class Model extends BaseModel {
 
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
+                    if(assigneeID && checkObjectIDs(assigneeID)){
+                        conditionObj.assignee = assigneeID;
+                    }
 				}else{
                     // Danh sách bảng chấm công
                     if(!option){
