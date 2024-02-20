@@ -169,9 +169,6 @@ class Model extends BaseModel {
                 if(email && email != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(email)
                 }
-                if(taxid && taxid != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(taxid)
-                }
                 if(identity && identity != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(identity)
                 }
@@ -613,9 +610,6 @@ class Model extends BaseModel {
                 }
                 if(email && email != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(email)
-                }
-                if(taxid && taxid != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(taxid)
                 }
                 if(identity && identity != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(identity)
