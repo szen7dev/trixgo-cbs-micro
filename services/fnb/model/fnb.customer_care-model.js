@@ -131,10 +131,13 @@ class Model extends BaseModel {
                             keyError: "params_journey_invalid",
                             status: 400
                         })
-                    if(!checkOne){
-                        dataInsert.journey = journeyID;
-                        dataInsert.business = infoItem.linkItem;
-                    }
+                    // if(!checkOne){
+                    //     dataInsert.journey = journeyID;
+                    //     dataInsert.business = infoItem.linkItem;
+                    // }
+
+                    dataInsert.journey = journeyID;
+                    dataInsert.business = infoItem.linkItem;
                 }
 
                 if(checkObjectIDs(mistakeID)) {
@@ -321,7 +324,7 @@ class Model extends BaseModel {
                     dataUpdate.journey = journeyID;
 
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
-                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: infoCustomer._id, company: companyID})
+                    // let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: infoCustomer._id, company: companyID})
                     
                     infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
                     if(!infoItem.linkItem)
@@ -332,10 +335,13 @@ class Model extends BaseModel {
                             status: 400
                         })
                         
-                    if(!checkOne){
-                        dataUpdate.journey = journeyID;
-                        dataUpdate.business = infoItem.linkItem;
-                    }
+                    // if(!checkOne){
+                    //     dataUpdate.journey = journeyID;
+                    //     dataUpdate.business = infoItem.linkItem;
+                    // }
+
+                    dataUpdate.journey = journeyID;
+                    dataUpdate.business = infoItem.linkItem;
                 }
 
                 if(imagesID && imagesID.length) {
