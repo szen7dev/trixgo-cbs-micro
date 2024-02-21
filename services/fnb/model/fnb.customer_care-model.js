@@ -121,7 +121,7 @@ class Model extends BaseModel {
                 let infoItem;
                 if(checkObjectIDs(journeyID)) {
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
-                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
+                    // let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
                     
                     infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
                     if(!infoItem.linkItem)
