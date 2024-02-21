@@ -277,31 +277,31 @@ class Model extends BaseModel {
 
                 // Namecv
                 let convertStr = '';
-                if(infoCustomer?.name != ''){
+                if(infoCustomer?.name != '' && infoCustomer?.name != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.name)
                 }
-                if(infoCustomer?.description != ''){
+                if(infoCustomer?.description != '' && infoCustomer?.description != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.description)
                 }
-                if(infoCustomer?.sign != ''){
+                if(infoCustomer?.sign != '' && infoCustomer?.sign != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.sign)
                 }
-                if(infoCustomer?.note != ''){
+                if(infoCustomer?.note != '' && infoCustomer?.note != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.note)
                 }
-                if(infoCustomer?.phone != ''){
+                if(infoCustomer?.phone != '' && infoCustomer?.phone != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.phone)
                 }
-                if(infoCustomer?.taxid != ''){
+                if(infoCustomer?.taxid != '' && infoCustomer?.taxid != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.taxid)
                 }
-                if(infoCustomer?.email != ''){
+                if(infoCustomer?.email != '' && infoCustomer?.email != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.email)
                 }
-                if(infoCustomer?.identity != ''){
+                if(infoCustomer?.identity != '' && infoCustomer?.identity != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.identity)
                 }
-                if(infoCustomer?.bankAccount != ''){
+                if(infoCustomer?.bankAccount != '' && infoCustomer?.bankAccount != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoCustomer?.bankAccount)
                 }
                  
