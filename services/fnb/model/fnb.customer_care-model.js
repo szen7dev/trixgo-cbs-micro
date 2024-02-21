@@ -121,7 +121,7 @@ class Model extends BaseModel {
                 let infoItem;
                 if(checkObjectIDs(journeyID)) {
                     // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
-                    let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
+                    // let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
                     
                     infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
                     if(!infoItem.linkItem)
@@ -647,7 +647,13 @@ class Model extends BaseModel {
                      * Gom nhóm theo thời gian: OK
                      */
                     else if(option && Number(option) == 2){
-                        conditionObj.mistake = {$exists: true, $ne: null}
+                        if(!optionGroup){
+                            conditionObj.mistake = {$exists: true, $ne: null}
+                        }else{
+                            if(optionGroup == 1){
+                                conditionObj.journey = {$exists: true, $ne: null}
+                            }
+                        }
                         
                         // Theo năm
                         if(optionTime && Number(optionTime) == 1){
@@ -875,6 +881,7 @@ class Model extends BaseModel {
                             $sort: sortBy
                         }
                     ])
+                    // console.log(listData)
                     
                     if(!isNaN(option) && [1,3,4,5].includes(Number(option))){
                         await FNB_CUSTOMER_CARE_COLL.populate(listData, conditionPopulate)
@@ -887,7 +894,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: listUser });
                     }
 
-                    let listBusiness;
+                   
                     if(!isNaN(option) && [6].includes(Number(option))){
                         conditionPopulate = {
                             path: '_id.journey',
@@ -896,10 +903,12 @@ class Model extends BaseModel {
                         }
                         await FNB_CUSTOMER_CARE_COLL.populate(listData, conditionPopulate)
 
-                        listBusiness = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData.map(item=>item._id.business)}}).select('name description')
+                        let listBusiness = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData.map(item=>item._id.business)}}).select('name description')
 
                         return resolve({ error: false, data: {listData, listBusiness} });
                     }
+
+                    return resolve({ error: false, data: listData });
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
