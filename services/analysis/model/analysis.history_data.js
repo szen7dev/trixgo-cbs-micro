@@ -486,33 +486,37 @@ class Model extends BaseModel {
                     select: 'name sign description note phone email identity taxid bankAccount',
                 })
                 .select(`${selectObj}`)
+                // console.log(info?.customer)
 
-                let convertStr = info.namecv
-                if(info?.customer?.name && info?.customer?.name != ""){
+                let convertStr = stringUtils.removeAccents(info.name) + stringUtils.removeAccents(info.note)
+                // console.log(convertStr)
+
+                if(info?.customer?.name && info?.customer?.name != "" && info?.customer?.name != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.name)
                 }
-                if(info?.customer?.sign && info?.customer?.sign != ""){
+                if(info?.customer?.sign && info?.customer?.sign != "" && info?.customer?.sign != 'undefined'){
+                    // console.log(info?.customer?.sign)
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.sign)
                 }
-                if(info?.customer?.description && info?.customer?.description != ""){
+                if(info?.customer?.description && info?.customer?.description != "" && info?.customer?.description != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.description)
                 }
-                if(info?.customer?.note && info?.customer?.note != ""){
+                if(info?.customer?.note && info?.customer?.note != "" && info?.customer?.note != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.note)
                 }
-                if(info?.customer?.phone && info?.customer?.phone != ""){
+                if(info?.customer?.phone && info?.customer?.phone != "" && info?.customer?.phone != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.phone)
                 }
-                if(info?.customer?.email && info?.customer?.email != ""){
+                if(info?.customer?.email && info?.customer?.email != "" && info?.customer?.email != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.email)
                 }
-                if(info?.customer?.identity && info?.customer?.identity != ""){
+                if(info?.customer?.identity && info?.customer?.identity != "" && info?.customer?.identity != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.identity)
                 }
-                if(info?.customer?.taxid && info?.customer?.taxid != ""){
+                if(info?.customer?.taxid && info?.customer?.taxid != "" && info?.customer?.taxid != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.taxid)
                 }
-                if(info?.customer?.bankAccount && info?.customer?.bankAccount != ""){
+                if(info?.customer?.bankAccount && info?.customer?.bankAccount != "" && info?.customer?.bankAccount != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(info?.customer?.bankAccount)
                 }
 
