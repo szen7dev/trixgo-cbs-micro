@@ -1026,7 +1026,6 @@ class Model extends BaseModel {
      * Code  : 30/7/2023
      */
     getList({ option, companyID, userID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month, ctx }) {
-        // console.log({ option, companyID, userID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit, lastestID, select, populates, month })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1120,9 +1119,16 @@ class Model extends BaseModel {
 
                     conditionObj.namecv = regSearch
                 }
-                // console.log(conditionObj)
 
-                let conditionObjOrg = { ...conditionObj };
+                let conditionObjOrg = {
+                    // _id: {
+                    //     $gte: ObjectID.createFromTime(moment(new Date(fromDate)).startOf('day')._d/1000),
+                    //     $lte: ObjectID.createFromTime(moment(new Date(toDate)).endOf('day')._d/1000) 
+                    // },
+                    ...conditionObj
+                };
+                console.log(conditionObjOrg)
+
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
                     if(!infoData)
