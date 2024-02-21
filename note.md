@@ -1,3 +1,6 @@
+Monitor resource:
+https://copyprogramming.com/howto/how-to-monitor-memory-usage-in-javascript-node
+
 note something
 bổ sung thêm phần validate coll: enum + mongoose-validator
 parameter validation : fastest-validator
