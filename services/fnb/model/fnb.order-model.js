@@ -2793,7 +2793,7 @@ class Model extends BaseModel {
 
                 let duration = getTimeBetween(toDate, fromDate)
                 // console.log({duration:duration/86400})
-                if(Number(duration/86400) > 365){
+                if(Number(duration/86400) > 370){
                     return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
                 }else{
                     let yearFilter

@@ -1440,6 +1440,14 @@ class Model extends BaseModel {
                 // Record Traffic
                 await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
                 if(Number(duration/86400) > 370){
                      return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 370 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
                 }else{
@@ -1609,6 +1617,25 @@ class Model extends BaseModel {
                         delete conditionObj.funda;
 
                         sortBy = {"_id.level": 1}
+                    }
+
+                    // Gom nhóm theo Affiliate theo tháng: đã phát triển thành công
+                    else if(option && Number(option) == 8){
+                        conditionObj.dataSource = {$exists: true, $ne: null}
+                        conditionObj.parent = {$exists: true, $ne: null}
+
+                        conditionObjYear = {
+                            "year": Number(yearFilter),
+                        }
+
+                        conditionGroup = {
+                            _id: { month: "$month" },
+                            quantity: { $sum: 1 },
+                        }
+
+                        delete conditionObj.funda;
+
+                        // sortBy = {"_id.level": 1}
                     }
 
                     // console.log(conditionObj)
