@@ -589,12 +589,20 @@ class Model extends BaseModel {
         // console.log({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
-                let yearFilter
+                let yearFilter, monthFilter
                 let currentYear = new Date().getFullYear()
+                let currentMonth = new Date().getMonth() + 1
+
                 if(year && !isNaN(year)){
                     yearFilter = Number(year)
                 }else{
                     yearFilter = Number(currentYear)
+                }
+
+                if(month && !isNaN(month)){
+                    monthFilter = Number(month)
+                }else{
+                    monthFilter = Number(currentMonth)
                 }
 
                 if(!option){
@@ -675,8 +683,21 @@ class Model extends BaseModel {
                             }
                         }  
 
+                        // Theo ngày trong tháng
+                        if(optionTime && Number(optionTime) == 3){
+                            conditionObjYear = {
+                                "year": Number(yearFilter),
+                                "month": Number(monthFilter),
+                            }
+
+                            conditionGroup = {
+                                _id: { day: "$day" },
+                                quantity: { $sum: 1 },
+                            }
+                        }
+
                         // Theo giờ trong ngày
-                        if(optionTime && Number(optionTime) == 3){    
+                        if(optionTime && Number(optionTime) == 4){    
                             conditionGroup = {
                                 _id: { hour: "$hour" },
                                 quantity: { $sum: 1 },
@@ -846,6 +867,7 @@ class Model extends BaseModel {
                             $project : {
                                 year : {$year : "$createAt"},
                                 month : {$month : "$createAt"},
+                                day: { $dayOfMonth: "$createAt" },
                                 hour : {$hour : "$createAt"},
                                 funda : 1,
                                 mistake : 1,
