@@ -849,8 +849,6 @@ class Model extends BaseModel {
                      */
                     if(option == 1){
                         // Danh sách ngân sách
-
-
                         let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note')
 
                         let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID})
@@ -1054,7 +1052,7 @@ class Model extends BaseModel {
                             path: 'human project position',
                             select:'fullname name',
                         })
-                        .select('name status date note salary revenueBonus reward mealAllowance punishment insurance pitax advance remaining paid convertFactor')
+                        // .select('name status date note salary revenueBonus reward mealAllowance punishment insurance pitax union share other advance remaining paid convertFactor')
                         // console.log(listData)
 
                          // Modify the workbook.
@@ -1081,10 +1079,12 @@ class Model extends BaseModel {
                             })
 
                             workbook.sheet("BangLuong").row(1).cell(1).value(infoParent.name)
- 
-                            // NHẬT KÝ CHUNG
+
                             var i = 4
                             listData.forEach((item, index) =>{
+                                let tongThu = Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance)
+                                let tongGiamTru = Number(item.punishment + item.insurance + item.pitax + item.union + item.share + item.other)
+
                                 workbook.sheet("BangLuong").row(i).cell(1).value(Number(index + 1))
                                 workbook.sheet("BangLuong").row(i).cell(2).value(item?.human?.fullname)
                                 workbook.sheet("BangLuong").row(i).cell(3).value(item?.project?.name)
@@ -1097,11 +1097,15 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuong").row(i).cell(10).value(Number(item.punishment))
                                 workbook.sheet("BangLuong").row(i).cell(11).value(Number(item.insurance))
                                 workbook.sheet("BangLuong").row(i).cell(12).value(Number(item.pitax))
-                                workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance - item.punishment - item.insurance - item.pitax))
-                                workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.advance))
-                                workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance - item.punishment - item.insurance - item.pitax - item.advance))
-                                workbook.sheet("BangLuong").row(i).cell(17).value(Number(item.paid))
-                                workbook.sheet("BangLuong").row(i).cell(18).value(item?.note)
+                                workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.union))
+                                workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.share))
+                                workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.other))
+                                workbook.sheet("BangLuong").row(i).cell(16).value(Number(tongThu))
+                                workbook.sheet("BangLuong").row(i).cell(17).value(Number(tongGiamTru))
+                                workbook.sheet("BangLuong").row(i).cell(18).value(Number(item.advance))
+                                workbook.sheet("BangLuong").row(i).cell(19).value(Number(item.remaining))
+                                workbook.sheet("BangLuong").row(i).cell(21).value(Number(item.paid))
+                                workbook.sheet("BangLuong").row(i).cell(22).value(item?.note)
                                 
                                 i++
                             })
@@ -1384,7 +1388,7 @@ class Model extends BaseModel {
     * Date: 25/7/2023
     */
    exportExcel({ option, companyID, parentID, year, month, userID, fromDate, toDate }) {
-       console.log({ option, companyID, parentID, year, month, userID, fromDate, toDate })
+    //    console.log({ option, companyID, parentID, year, month, userID, fromDate, toDate })
        return new Promise(async resolve => {
            try {
             let yearFilter, monthFilter

@@ -170,8 +170,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share })
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other }){
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -245,13 +245,16 @@ class Model extends BaseModel {
                 if(!isNaN(share) && Number(infoSalary.share) != Number(share)){
                     dataUpdate.share = share;
                 }
+                if(!isNaN(other) && Number(infoSalary.other) != Number(other)){
+                    dataUpdate.other = other;
+                }
                 if(!isNaN(advance) && Number(infoSalary.advance) != Number(advance)){
                     dataUpdate.advance = advance;
                 }
 
                 // Tính toán giá trị còn lại
                 if(!isNaN(salary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance)){
-                    dataUpdate.remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(advance)
+                    dataUpdate.remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance)
                 }
 
                 if(!isNaN(paid) && Number(infoSalary.paid) != Number(paid)){
@@ -374,18 +377,13 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-                // console.log('=============data===================')
-                // console.log(listData)
 
                 for(const item of listData){
-                    // console.log('=============row===================')
-                    // console.log(item)
-                    let salary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, advance  = 0, remaining = 0
+                    let salary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, remaining = 0
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
                         human: item._id.assignee,
                     })
-                    // console.log(info)
 
                     if(info){
                         salary = item.amount // Lấy theo bảng chấm công
@@ -395,10 +393,13 @@ class Model extends BaseModel {
                         punishment = info.punishment
                         insurance = info.insurance
                         pitax = info.pitax
+                        union = info.union
+                        share = info.share
+                        other = info.other
                         advance = info.advance
                     }
 
-                    remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number( advance)
+                    remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number( advance)
 
                     let dataUpdate =  {
                         salary,
@@ -408,6 +409,9 @@ class Model extends BaseModel {
                         punishment,
                         insurance,
                         pitax,
+                        union,
+                        share,
+                        other,
                         advance,
                         remaining
                     }
@@ -550,9 +554,12 @@ class Model extends BaseModel {
                             pitax: { $sum:"$pitax" },
                             union: { $sum:"$union" },
                             share: { $sum:"$share" },
+                            other: { $sum:"$other" },
                         }
                     },
                 ])
+                console.log(listData[0])
+
                 
                 if(listData[0]){
                     dataUpdate.salary = Number(listData[0].salary)
@@ -567,6 +574,7 @@ class Model extends BaseModel {
                     dataUpdate.pitax = Number(listData[0].pitax)
                     dataUpdate.union = Number(listData[0].union)
                     dataUpdate.share = Number(listData[0].share)
+                    dataUpdate.other = Number(listData[0].other)
                 }
                 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true });
@@ -656,7 +664,7 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID, ctx }) {
-        // console.log({sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
+        console.log({sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -702,6 +710,7 @@ class Model extends BaseModel {
 					conditionObj.parent = parentID
 
 					conditionObj.project = { $in: listDepartment.map(item=>item.id) }
+                    
                     if(departmentsID && departmentsID.length){
                         conditionObj.project = { $in: departmentsID }
                     }
@@ -744,6 +753,7 @@ class Model extends BaseModel {
                         conditionObj.name =  new RegExp(keyword, 'i')
                     }
                 }
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
