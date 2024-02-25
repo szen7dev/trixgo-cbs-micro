@@ -1021,7 +1021,11 @@ class Model extends BaseModel {
                     let listData = await FNB_CUSTOMER_CARE_COLL.find({company: companyID, journey: {$exists: false}})
                     .populate({
                         path: 'customer mistake manager funda order',
-                        select:'name sign phone fullname'
+                        select:'name sign phone fullname assignee',
+                        populate:{
+                            path: 'assignee',
+                            select:'fullname',
+                        }
                     })
                     .limit(10000)
 
@@ -1065,6 +1069,8 @@ class Model extends BaseModel {
 
                         var i = 4;
                         listData?.forEach((item, index) => {
+                            // console.log(item?.order?.assignee)
+                            
                             workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
                             workbook.sheet("Data").row(i).cell(2).value(item?.createAt);
                             workbook.sheet("Data").row(i).cell(3).value(item?.name);
@@ -1079,6 +1085,14 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(12).value((item.status && Number(item.type) > 0 && Number(item.type) <= 2)? CRM_TYPES[Number(item?.type) - 1].text : '');
                             workbook.sheet("Data").row(i).cell(13).value(item?.funda?.name);
                             workbook.sheet("Data").row(i).cell(14).value(item?.manager?.fullname);
+
+                            if(item.order){
+                                let str = '';
+                                for(const user of item.order.assignee){
+                                    str = str + ", " + user.fullname
+                                }
+                                workbook.sheet("Data").row(i).cell(15).value(str);
+                            }
                             
                             i++
                         })
