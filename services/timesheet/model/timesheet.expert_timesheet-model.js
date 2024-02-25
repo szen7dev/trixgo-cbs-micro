@@ -441,9 +441,9 @@ class Model extends BaseModel {
 
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
-                    if(assigneeID && checkObjectIDs(assigneeID)){
-                        conditionObj.assignee = assigneeID;
-                    }
+                    // if(assigneeID && checkObjectIDs(assigneeID)){
+                    //     conditionObj.assignee = assigneeID;
+                    // }
 				}else{
                     // Danh sách bảng chấm công
                     if(!option){
