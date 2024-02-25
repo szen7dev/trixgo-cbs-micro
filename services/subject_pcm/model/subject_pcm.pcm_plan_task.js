@@ -4844,7 +4844,7 @@ class Model extends BaseModel {
 
                 // Báo cáo điểm danh
                 else if(option == 3){
-                    let listData = await PCM_COMMENT_COLL.find({ project: projectID, type: 13 })
+                    let listData = await PCM_COMMENT_COLL.find({ project: projectID, subType: 16 })
                     .select('content author createAt')
                     .populate({
                         path: 'author',
