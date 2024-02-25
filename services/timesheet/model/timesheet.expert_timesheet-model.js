@@ -43,7 +43,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, ctx }) {
+    insert({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID }) {
         return new Promise(async resolve => {
             try {
                 if(!name){
@@ -147,9 +147,9 @@ class Model extends BaseModel {
      * Code:
      */
     update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID, ctx }){
+        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID, subtype }){
             // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID })
+            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID, subtype })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -212,6 +212,10 @@ class Model extends BaseModel {
 
                 if(status){
                     dataUpdate.status = status;
+                }
+
+                if(subtype){
+                    dataUpdate.subtype = subtype;
                 }
 
                 if(approver){
@@ -401,8 +405,8 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, companyID, type, ctx }) {
-        // console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, companyID, type})
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, ctx }) {
+        // console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type})
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -441,6 +445,10 @@ class Model extends BaseModel {
 
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
+
+                    if(humanID && checkObjectIDs(humanID)){
+                        conditionObj.assignee = humanID;
+                    }
                     // if(assigneeID && checkObjectIDs(assigneeID)){
                     //     conditionObj.assignee = assigneeID;
                     // }

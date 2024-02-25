@@ -15,6 +15,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**
  * import inter-coll, exter-coll
  */
+const USER_COLL                          = require('../../auth/database/auth.user-coll')
 const ITEM__DEPARTMENT_COLL              = require('../../item/database/item.department-coll')
 const ITEM__POSITION_COLL                = require('../../item/database/item.position-coll')
 const FIN__CASH_BOOK_COLL                = require('../database/fin.cash_book-coll');
@@ -1382,27 +1383,34 @@ class Model extends BaseModel {
     * Code: Hiepnh
     * Date: 25/7/2023
     */
-   exportExcel({ option, companyID, parentID, year, userID, fromDate, toDate }) {
-    //    console.log({ option, companyID, parentID, year, userID, fromDate, toDate })
+   exportExcel({ option, companyID, parentID, year, month, userID, fromDate, toDate }) {
+       console.log({ option, companyID, parentID, year, month, userID, fromDate, toDate })
        return new Promise(async resolve => {
            try {
-            // Tổng hợp theo Sản lượng-Tháng
-            let yearFilter
+            let yearFilter, monthFilter
             let currentYear = new Date().getFullYear()
+            let currentMonth = new Date().getMonth() + 1
+
             if(year && !isNaN(year)){
                 yearFilter = Number(year)
             }else{
                 yearFilter = Number(currentYear)
             }
 
+            if(month && !isNaN(month)){
+                monthFilter = Number(month)
+            }else{
+                monthFilter = Number(currentMonth)
+            }
+
             if(fromDate && toDate){
                 yearFilter = new Date(toDate).getFullYear()
+                monthFilter = new Date(toDate).getMonth() + 1
             }
 
             // Tải bảng chấm công
             if(option == 1){
-                // Danh sách ngân sách
-                let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note')
+                let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note subtype')
 
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID})
                 .populate({
@@ -1412,52 +1420,45 @@ class Model extends BaseModel {
                 .select('name hours unitprice amount status date note')
                 // console.log(listData)
 
-                // Tổng hợp theo Sản lượng
-                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                    {
-                        $match: {
-                            work: { $exists: true, $ne: null },
-                            company: ObjectID(companyID),
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { work: "$work" },
-                            quantity: { $sum: "$hours" },
-                        }
-                    },
-                ])
-                let  conditionPopulate1 = {
-                    path: '_id.work',
-                    select: '_id name sign unit quantity unitPrice',
-                    model: 'budget_work'
-                }
-                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
-                // console.log(listData1)
-
-                // Tổng hợp theo người thực hiện
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
-                            assignee: { $exists: true, $ne: null },
-                            parent: ObjectID(parentID),
+                            company: ObjectID(companyID),
+                            assignee: { $exists: true, $ne: null }
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            day: { $dayOfMonth: "$date" },
+                            hours: 1,
+                            subtype: 1,
+                            assignee: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(yearFilter),
+                            month: Number(monthFilter),
                         }
                     },
                     {
                         $group: {
-                            _id: { assignee: "$assignee" },
+                            _id: { assignee: '$assignee', day: '$day', subtype: '$subtype' },
                             quantity: { $sum: "$hours" },
-                            amount: { $sum: "$amount" },
                         }
                     },
                 ])
-                let  conditionPopulate2 = {
-                    path: '_id.assignee',
-                    select: '_id fullname',
-                    model: 'user'
-                }
-                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate2)
                 // console.log(listData2)
+                
+                let listUser = await USER_COLL.find({_id: {$in: listData2.map(item=>item._id.assignee)}})
+                .select('fullname department position')
+                .populate({
+                    path:'department position',
+                    select:'name',
+                })
+                // console.log(listUser)
 
                  // Modify the workbook.
                  XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_report.xlsx')))
@@ -1479,24 +1480,56 @@ class Model extends BaseModel {
                      })
 
                      var i = 4
-                     listData1.forEach((item, index) =>{
-                         workbook.sheet("Report1").row(i).cell(1).value(Number(index+1))
-                         workbook.sheet("Report1").row(i).cell(2).value(`${item._id.work?.sign}-${item._id.work?.name}`)
-                         workbook.sheet("Report1").row(i).cell(3).value(item._id.work?.unit)
-                         workbook.sheet("Report1").row(i).cell(4).value(Number(item.quantity))
+                     listUser.forEach((item, index) =>{
+                         workbook.sheet("Data2").row(i).cell(1).value(Number(index+1))
+                         workbook.sheet("Data2").row(i).cell(2).value(item.fullname)
+                         workbook.sheet("Data2").row(i).cell(3).value(`${item.department.name}`)
+                         workbook.sheet("Data2").row(i).cell(4).value(`${item.position.name}`)
+                         workbook.sheet("Data2").row(i).cell(5).value(`${item._id}`)
+
+                         workbook.sheet("Data3").row(i).cell(1).value(Number(index+1))
+                         workbook.sheet("Data3").row(i).cell(2).value(item.fullname)
+                         workbook.sheet("Data3").row(i).cell(3).value(`${item.department.name}`)
+                         workbook.sheet("Data3").row(i).cell(4).value(`${item.position.name}`)
+                         workbook.sheet("Data3").row(i).cell(5).value(`${item._id}`)
+
+                         workbook.sheet("Data4").row(i).cell(1).value(Number(index+1))
+                         workbook.sheet("Data4").row(i).cell(2).value(item.fullname)
+                         workbook.sheet("Data4").row(i).cell(3).value(`${item.department.name}`)
+                         workbook.sheet("Data4").row(i).cell(4).value(`${item.position.name}`)
+                         workbook.sheet("Data4").row(i).cell(5).value(`${item._id}`)
 
                          i++
                      })
 
-                     var i = 4
-                     listData2.forEach((item, index) =>{
-                         workbook.sheet("Report2").row(i).cell(1).value(Number(index+1))
-                         workbook.sheet("Report2").row(i).cell(2).value(item._id.assignee?.fullname)
-                         workbook.sheet("Report2").row(i).cell(3).value(Number(item.quantity))
-                         workbook.sheet("Report2").row(i).cell(4).value(Number(item.amount))
+                     listData2?.forEach((item, index) => {
+                        for(var i=4; i<=listUser.length + 3; i++){
+                            let userID = workbook.sheet("Data2").row(i).cell(5).value();
 
-                         i++
-                     })
+                            for(var j=1; j<=31; j++){
+                                if(item._id.day == j && userID.toString() === item._id.assignee.toString()){
+                                    workbook.sheet("Data2").row(i).cell(j + 5).value(item.quantity);
+                                    workbook.sheet("Data3").row(i).cell(j + 5).value(1);
+
+                                    if(item._id.subtype == 1){
+                                        workbook.sheet("Data4").row(i).cell(j + 5).value('x');
+                                    }
+
+                                    else if(item._id.subtype == 2){
+                                        workbook.sheet("Data4").row(i).cell(j + 5).value('p');
+                                    }
+
+                                    else if(item._id.subtype == 3){
+                                        workbook.sheet("Data4").row(i).cell(j + 5).value('l');
+                                    }
+
+                                    else{
+                                        workbook.sheet("Data4").row(i).cell(j + 5).value('ct');
+                                    }
+                                }
+                            }
+                        }
+                    })
            
                      const now = new Date();
                      const filePath = '../../../files/temporary_uploads/';
