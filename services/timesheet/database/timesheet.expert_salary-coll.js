@@ -98,6 +98,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
+    //________Trừ khác
+    other: {
+        type: Number,
+        default: 0 
+    },
     //________Đã tạm ứng
     advance: {
         type: Number,
