@@ -4882,13 +4882,13 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(6).value(time2)
                             workbook.sheet("Data").row(i).cell(7).value(time3)
                             if(Number(d.getHours()) > 18){
-                                workbook.sheet("Data").row(i).cell(8).value(Number((a - b3) / (1000*60))) 
+                                workbook.sheet("Data").row(i).cell(10).value(Number((a - b3) / (1000*60))) 
                             }else{
                                 if(Number(d.getHours()) > 13){
                                     workbook.sheet("Data").row(i).cell(9).value(Number((a - b2) / (1000*60)))
                                 }else{
                                     if(Number(d.getHours()) > 8){
-                                        workbook.sheet("Data").row(i).cell(10).value(Number((a - b1) / (1000*60)))
+                                        workbook.sheet("Data").row(i).cell(8).value(Number((a - b1) / (1000*60)))
                                     }
                                 }
                             }
