@@ -188,6 +188,10 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     sallaryBasic: { type: Number, default: 0 },
     //_________Số tiền đóng BH
     insuranceFee: { type: Number, default: 0 },
+    //_________Trừ công đoàn
+    union: { type: Number, default: 0 },
+    //_________Trừ quỹ tương thân tương ái
+    share: { type: Number, default: 0 },
     //_________Phân loại thâm niên
     seniority:{
         type: Schema.Types.ObjectId,
