@@ -88,6 +88,16 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
+    //________Trừ công đoàn
+    union: {
+        type: Number,
+        default: 0 
+    },
+    //________Chia sẻ, cho đi
+    share: {
+        type: Number,
+        default: 0 
+    },
     //________Đã tạm ứng
     advance: {
         type: Number,

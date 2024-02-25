@@ -166,8 +166,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, ctx }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax })
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share }){
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -226,9 +226,6 @@ class Model extends BaseModel {
                 if(!isNaN(punishment) && Number(infoSalary.punishment) != Number(punishment)){
                     dataUpdate.punishment = punishment;
                 }
-                if(!isNaN(advance) && Number(infoSalary.advance) != Number(advance)){
-                    dataUpdate.advance = advance;
-                }
                 if(!isNaN(mealAllowance) && Number(infoSalary.mealAllowance) != Number(mealAllowance)){
                     dataUpdate.mealAllowance = mealAllowance;
                 }
@@ -238,10 +235,19 @@ class Model extends BaseModel {
                 if(!isNaN(pitax) && Number(infoSalary.pitax) != Number(pitax)){
                     dataUpdate.pitax = pitax;
                 }
+                if(!isNaN(union) && Number(infoSalary.union) != Number(union)){
+                    dataUpdate.union = union;
+                }
+                if(!isNaN(share) && Number(infoSalary.share) != Number(share)){
+                    dataUpdate.share = share;
+                }
+                if(!isNaN(advance) && Number(infoSalary.advance) != Number(advance)){
+                    dataUpdate.advance = advance;
+                }
 
                 // Tính toán giá trị còn lại
                 if(!isNaN(salary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance)){
-                    dataUpdate.remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(advance)
+                    dataUpdate.remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(advance)
                 }
 
                 if(!isNaN(paid) && Number(infoSalary.paid) != Number(paid)){
