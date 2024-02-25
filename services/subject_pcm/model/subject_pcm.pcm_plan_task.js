@@ -4863,27 +4863,16 @@ class Model extends BaseModel {
                             let month = new Date(item.createAt).getMonth() + 1
                             let day = new Date(item.createAt).getDate()
 
-                            // console.log(`${year}-${month}-${day}`)
-
                             let time1 = new Date(`${year}-${month}-${day} 08:00:00`);
                             let time2 = new Date(`${year}-${month}-${day} 13:00:00`);
                             let time3 = new Date(`${year}-${month}-${day} 18:00:00`);
 
-                            // console.log({time1})
-                            // console.log(time1.getHours())
-                            // console.log(time1.getMinutes())
-
-                            let d = new Date(item.createAt);
-                            // console.log(d.getHours())
-                            // console.log(d.getMinutes())
-                            // console.log('===========')
-
                             let a = (new Date(item?.createAt)).getTime()
                             let b1 = (new Date(time1)).getTime()
                             let b2 = (new Date(time2)).getTime()
-                            let b3 = (new Date(time2)).getTime()
-                            // let c = (a - b1) / (1000)
-                            // console.log({___________c: c})
+                            let b3 = (new Date(time3)).getTime()
+                            
+                            let d = new Date(item.createAt);
 
                             workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
                             workbook.sheet("Data").row(i).cell(2).value(item?.author?.fullname)
