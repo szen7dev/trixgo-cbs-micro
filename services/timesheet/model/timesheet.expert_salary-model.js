@@ -123,14 +123,16 @@ class Model extends BaseModel {
                 // Tạo chi tiết lương cho các user đang hoạt động
                 let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 }).select('fullname department position contacts').populate({
                     path: 'contacts',
-                    select: 'insuranceFee'
+                    select: 'insuranceFee union share'
                 })
                 for(const item of listHuman){
-                    let insuranceFee = 0
+                    let insuranceFee = 0, union = 0, share = 0
                     if(item.contacts && item.contacts.length){
                         for(const contact of item.contacts){
                             if(contact.insuranceFee){
                                 insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
+                                union = Number(union) + Number(contact.union)
+                                share = Number(share) + Number(contact.share)
                             }
                         }
                     }
@@ -148,7 +150,9 @@ class Model extends BaseModel {
                         position: item.position,
                         date: infoAfterInsert.date,
                         type: infoAfterInsert.type,
-                        insurance: insuranceFee
+                        insurance: insuranceFee,
+                        union: union,
+                        share: share,
                     }
 
                     await this.insertData(dataInsertDetail)
@@ -544,6 +548,8 @@ class Model extends BaseModel {
                             mealAllowance: { $sum:"$mealAllowance" },
                             insurance: { $sum:"$insurance" },
                             pitax: { $sum:"$pitax" },
+                            union: { $sum:"$union" },
+                            share: { $sum:"$share" },
                         }
                     },
                 ])
@@ -559,6 +565,8 @@ class Model extends BaseModel {
                     dataUpdate.mealAllowance = Number(listData[0].mealAllowance)
                     dataUpdate.insurance = Number(listData[0].insurance)
                     dataUpdate.pitax = Number(listData[0].pitax)
+                    dataUpdate.union = Number(listData[0].union)
+                    dataUpdate.share = Number(listData[0].share)
                 }
                 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true });
