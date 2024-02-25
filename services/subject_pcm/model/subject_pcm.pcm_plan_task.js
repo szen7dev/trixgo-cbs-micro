@@ -4742,8 +4742,8 @@ class Model extends BaseModel {
      * Func: Download template import excel
      * Date: 15/09/2022
      */
-    downloadTemplateImportExcel({ option, projectID, userID, ctx }) {
-        // console.log({ option, projectID, userID })
+    downloadTemplateImportExcel({ option, projectID, taskID,  userID }) {
+        // console.log({ option, projectID, taskID, userID })
         return new Promise(async resolve => {
             try {
                 // Mẫu Import excel
@@ -4794,7 +4794,7 @@ class Model extends BaseModel {
                 }
 
                 // Báo cáo hóa đơn
-                if(option == 2){
+                else if(option == 2){
                     let listData = await PCM_PLAN_TASK_COLL.find({ project: projectID, subtype: 12 })
                     .select('actualFinishTime name sign taxid amount vatAmount description status contact author parent createAt')
                     .populate({
@@ -4832,6 +4832,85 @@ class Model extends BaseModel {
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
                         const fileName = `invoice_report${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 })
+                    })
+                }
+
+                // Báo cáo điểm danh
+                else if(option == 3){
+                    let listData = await PCM_COMMENT_COLL.find({ project: projectID, type: 13 })
+                    .select('content author createAt')
+                    .populate({
+                        path: 'author',
+                        select: 'fullname',
+                    })
+                    .sort({createAt: 1})
+                    // console.log(listData)
+
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_attendance_report.xlsx')))
+                    .then(async workbook => {
+                        var i = 3;
+                        
+                        listData?.forEach((item, index) => {
+                            let year = new Date(item.createAt).getFullYear()
+                            let month = new Date(item.createAt).getMonth() + 1
+                            let day = new Date(item.createAt).getDate()
+
+                            // console.log(`${year}-${month}-${day}`)
+
+                            let time1 = new Date(`${year}-${month}-${day} 08:00:00`);
+                            let time2 = new Date(`${year}-${month}-${day} 13:00:00`);
+                            let time3 = new Date(`${year}-${month}-${day} 18:00:00`);
+
+                            // console.log({time1})
+                            // console.log(time1.getHours())
+                            // console.log(time1.getMinutes())
+
+                            let d = new Date(item.createAt);
+                            // console.log(d.getHours())
+                            // console.log(d.getMinutes())
+                            // console.log('===========')
+
+                            let a = (new Date(item?.createAt)).getTime()
+                            let b1 = (new Date(time1)).getTime()
+                            let b2 = (new Date(time2)).getTime()
+                            let b3 = (new Date(time2)).getTime()
+                            // let c = (a - b1) / (1000)
+                            // console.log({___________c: c})
+
+                            workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
+                            workbook.sheet("Data").row(i).cell(2).value(item?.author?.fullname)
+                            workbook.sheet("Data").row(i).cell(3).value(item?.content)
+                            workbook.sheet("Data").row(i).cell(4).value(item?.createAt)
+                            workbook.sheet("Data").row(i).cell(5).value(time1)
+                            workbook.sheet("Data").row(i).cell(6).value(time2)
+                            workbook.sheet("Data").row(i).cell(7).value(time3)
+                            if(Number(d.getHours()) > 18){
+                                workbook.sheet("Data").row(i).cell(8).value(Number((a - b3) / (1000*60))) 
+                            }else{
+                                if(Number(d.getHours()) > 13){
+                                    workbook.sheet("Data").row(i).cell(9).value(Number((a - b2) / (1000*60)))
+                                }else{
+                                    if(Number(d.getHours()) > 8){
+                                        workbook.sheet("Data").row(i).cell(10).value(Number((a - b1) / (1000*60)))
+                                    }
+                                }
+                            }
+                            // workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com//pcm/detail/${taskID}`)
+
+                            i++
+                        })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `pcm_attendance_report${now.getTime()}.xlsx`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                         await workbook.toFileAsync(pathWriteFile);

@@ -276,6 +276,8 @@ class Model extends BaseModel {
                     })
                 }
 
+                dataInsert.subType = infoTask.subtype;
+
                 if(infoTask.project) {
                     dataInsert.project = infoTask.project?._id;
                 }
