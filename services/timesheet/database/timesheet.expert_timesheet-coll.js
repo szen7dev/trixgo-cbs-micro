@@ -47,8 +47,20 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     //________Nội dung công việc (*)
     name: String,
 
-    //________Loại chyên gia
+    //________Phân loại: 1 quản lý, 2 sản xuất
     type: {
+        type: Number,
+        default: 1
+    },
+
+    /**
+     * Phân loại lễ tết
+     * 1-Ngày bình thường
+     * 2-Ngày nghỉ phép
+     * 3-Ngày lễ, tết
+     * 4-Ngày công tác
+     */
+    subtype: {
         type: Number,
         default: 1
     },
