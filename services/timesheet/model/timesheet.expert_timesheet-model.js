@@ -505,6 +505,8 @@ class Model extends BaseModel {
                 if(type && type == 2){
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = userID
+
+                    delete conditionObj.$or 
                 }
 
 				if(keyword){
