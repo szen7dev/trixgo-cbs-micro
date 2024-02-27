@@ -2767,6 +2767,7 @@ class Model extends BaseModel {
     getListByFilter({
         companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
+            console.log({ companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts, limit, lastestID, select, populates, sortKey, isExportExcel })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -2795,11 +2796,11 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(forward){
+                if(!isNaN(forward)){
                     conditionObj.forward = Number(forward)
                 }
 
-                if(cancel){
+                if(!isNaN(cancel)){
                     conditionObj.cancel = Number(cancel)
                 }
 
@@ -2840,6 +2841,7 @@ class Model extends BaseModel {
                  * Trả về điều kiện tra cứu
                  */
                 if(isExportExcel) {
+                    // console.log(conditionObj)
                     return resolve({ data: conditionObj, error: false });
                 }
                 // console.log(conditionObj)
@@ -2923,7 +2925,8 @@ class Model extends BaseModel {
                             populates,
                             userID,
                             companyID,
-                            isExportExcel: true, ctx
+                            isExportExcel: true, 
+                            ctx
                         });
                         break;
 
