@@ -992,6 +992,7 @@ class Model extends BaseModel {
      * Code: 2/2/2024
      */
     insert2({ voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID, ctx }) {
+        console.log({ voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -2784,8 +2785,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getListByProperty({ companyID, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration, ctx }) {
-        // console.log({ companyID, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration })
+    getListByProperty({ companyID, fundasID, fundas, customerID, optionFixFunda, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration, ctx }) {
+        // console.log({ companyID, fundasID, fundas, customerID, optionFixFunda, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -2808,9 +2809,6 @@ class Model extends BaseModel {
                     let conditionGroup = {}
                     let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"total": -1}
 
-                    /**
-                     * VALIDATION (1)
-                     */
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
                     });
@@ -2834,12 +2832,43 @@ class Model extends BaseModel {
                         conditionObj.customer = ObjectID(customerID)
                     }
 
+                    // Xử lý lỗi fundas[] trên Mobile
+                    if(optionFixFunda && Number(optionFixFunda) === 1){
+                        // console.log(fundas.length)
+                        // let arr = fundas.split('"') 
+                        // console.log(arr)
+
+                        // let arr = JSON.parse(fundas.split(" "))
+                        // let arrFun = arr.filter((item) => (item.toString() !== ""))
+                        // conditionObj.funda = { $in: arrFun }
+                        // arrFun = arrFun[1].split(' ') 
+                            
+                        // console.log(arr[1].split(" "))
+                        // let arr2 = JSON.parse(arr.split(",")) 
+                        // console.log(arr2)
+
+                        // let arrFun2 = arr[1].split(" ").map(item=>ObjectID(item))
+                        // console.log(arrFun2)
+                        if(fundas && Number(fundas.length) > 2){
+                            let arr = fundas.split('"') 
+                            let arrFun2 = arr[1].split(" ").map(item=>ObjectID(item))
+                            conditionObj.funda = { $in: arrFun2 }
+                        }else{
+                            let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}})
+                            let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                            if(fundasIDIsMember.length) {
+                                conditionObj.funda = { $in: fundasIDIsMember };
+                            } else{
+                                conditionObj.funda = { $in: [] }
+                            }
+                        }  
+                    }
+
                     /**
                      * Phân loại theo trạng thái đơn hàng
                      * - Xử lý tình huống tạm thời
                      */
                     if(!optionStatus){
-                        // conditionObj.status = { $in: [1,2,3,5] };
                         conditionObj.status = Number(5)
                     }else{
                         // Đơn hủy
