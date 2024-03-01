@@ -248,10 +248,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { option, optionGroup, optionStatus, optionTime, fundasID, customerID, year, month, fromDate, toDate, staffID, optionStar, voucherType } = ctx.params;
+                let { optionFixFunda, option, optionGroup, optionStatus, optionTime, fundasID, fundas, customerID, year, month, fromDate, toDate, staffID, optionStar, voucherType } = ctx.params;
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
-                    companyID: company._id, fundasID, customerID, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar, voucherType, ctx
+                    companyID: company._id, fundasID, fundas, customerID, optionFixFunda, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar, voucherType, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
