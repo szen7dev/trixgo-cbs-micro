@@ -127,6 +127,8 @@ module.exports = {
                 // console.log('=====Danh sách bút toán===================')
                 // console.log({option, journalID, companyID, fundaID, projectID, contractID, voucherID, accountID, contactID, warehouseID, goodsID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, keyword, limit, lastestID, populates, select, sortKey})
 
+                // console.log(ctx.params)
+
                 const { _id: userID, company, contacts } = ctx.meta.infoUser;
 
                 if(!companyID){
