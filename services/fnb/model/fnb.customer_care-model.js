@@ -106,7 +106,7 @@ class Model extends BaseModel {
                 }
 
                 // Namecv
-                let convertStr = `${infoCustomer.name} ${infoCustomer.description} ${infoCustomer.sign} ${infoCustomer.note}  ${infoCustomer.phone} ${infoCustomer.taxid} ${infoCustomer.email} ${infoCustomer.identity} ${infoCustomer.bankAccount}`;
+                let convertStr = `${infoCustomer.name} ${infoCustomer.phone}`;
                 if(name && name != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(name)
                 }
