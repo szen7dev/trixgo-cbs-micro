@@ -37,6 +37,7 @@ const { uploadFileS3 }                          = require('../../../tools/s3');
 /**
  * import inter-coll, exter-coll
  */
+const COMPANY_COLL                      = require('../../auth/database/auth.company-coll')
 const USER_COLL                         = require('../../auth/database/auth.user-coll')
 const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll')
 const CONTRACT_COLL                     = require('../../item/database/item.contract-coll')
@@ -2641,8 +2642,8 @@ class Model extends BaseModel {
      * Dev: HiepNH
      * Date: 27/8/2023
      */
-    getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin, ctx }){
-        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin })
+    getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword, ctx }){
+        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword })
         return new Promise(async resolve => {
             try {
                 //__________Record Traffic
@@ -2826,6 +2827,158 @@ class Model extends BaseModel {
     
                         return resolve({ error: false, data: listData })
                     }
+                }
+
+                // Danh sách Công ty thực hiện
+                if(option == 6){
+                    conditionObj = {accessUsers: {$in: [ObjectID(userID)]}, companyOfAssignee: {$exists: true, $ne: null}}
+
+                    if(keyword){
+                        // keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let listCompany = await COMPANY_COLL.find({name: new RegExp(keyword, 'i')}).select('name')
+                        conditionObj.companyOfAssignee = {$in: listCompany.map(item=>ObjectID(item._id))}
+                    }
+
+
+                    let listData = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { companyOfAssignee: '$companyOfAssignee' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulateCompany = {
+                        path: '_id.companyOfAssignee',
+                        select: '_id name sign image',
+                        model: 'company'
+                    }
+
+                    if(listData.length){
+                        await PCM_PLAN_TASK_COLL.populate(listData, conditionPopulateCompany)
+                    }
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Danh sách User thực hiện
+                if(option == 7){
+                    conditionObj = {accessUsers: {$in: [ObjectID(userID)]}, assignee: {$exists: true, $ne: null}}
+
+                    if(keyword){
+                        // keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let listUser = await USER_COLL.find({fullname: new RegExp(keyword, 'i')}).select('name')
+                        conditionObj.assignee = {$in: listUser.map(item=>ObjectID(item._id))}
+                    }
+
+
+                    let listData = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { assignee: '$assignee' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulateUser = {
+                        path: '_id.assignee',
+                        select: '_id fullname image email',
+                        model: 'user'
+                    }
+
+                    if(listData.length){
+                        await PCM_PLAN_TASK_COLL.populate(listData, conditionPopulateUser)
+                    }
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Danh sách Công ty tạo phản hồi
+                if(option == 8){
+                    conditionObj = {accessUsers: {$in: [ObjectID(userID)]}, companyOfAuthor: {$exists: true, $ne: null}}
+
+                    if(keyword){
+                        // keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let listCompany = await COMPANY_COLL.find({name: new RegExp(keyword, 'i')}).select('name')
+                        conditionObj.companyOfAuthor = {$in: listCompany.map(item=>ObjectID(item._id))}
+                    }
+
+
+                    let listData = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { companyOfAuthor: '$companyOfAuthor' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulateCompany = {
+                        path: '_id.companyOfAuthor',
+                        select: '_id name sign image',
+                        model: 'company'
+                    }
+
+                    if(listData.length){
+                        await PCM_COMMENT_COLL.populate(listData, conditionPopulateCompany)
+                    }
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Danh sách User phản hồi
+                if(option == 9){
+                    conditionObj = {accessUsers: {$in: [ObjectID(userID)]}, author: {$exists: true, $ne: null}}
+
+                    if(keyword){
+                        // keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let listUser = await USER_COLL.find({fullname: new RegExp(keyword, 'i')}).select('name')
+                        conditionObj.author = {$in: listUser.map(item=>ObjectID(item._id))}
+                    }
+
+
+                    let listData = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { author: '$author' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulateUser = {
+                        path: '_id.author',
+                        select: '_id fullname image email',
+                        model: 'user'
+                    }
+
+                    if(listData.length){
+                        await PCM_COMMENT_COLL.populate(listData, conditionPopulateUser)
+                    }
+
+                    return resolve({ error: false, data: listData })
                 }
 
             } catch (error) {
