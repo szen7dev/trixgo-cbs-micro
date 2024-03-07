@@ -287,7 +287,7 @@ class Model extends BaseModel {
 
                 // Tìm kiếm file
                 if(isSearchFile) {
-                    console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')
+                    // console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')
 
                     /**
                      * Danh sách các Group mà user là members hoặc amdins
@@ -513,8 +513,7 @@ class Model extends BaseModel {
                         { description  :  new RegExp(keyword, 'i') },
                     ]
                 }
-
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 

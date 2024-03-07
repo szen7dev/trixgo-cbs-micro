@@ -439,7 +439,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, fromDate, toDate, projectID, companyID, year, outin } = ctx.params;
+                let { option, fromDate, toDate, projectID, companyID, year, outin, keyword } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -447,7 +447,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByProperty({
-                    option, fromDate, toDate, projectID, companyID, userID, year, outin, ctx
+                    option, fromDate, toDate, projectID, companyID, userID, year, outin, keyword, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

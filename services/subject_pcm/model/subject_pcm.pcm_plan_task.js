@@ -37,6 +37,7 @@ const { uploadFileS3 }                          = require('../../../tools/s3');
 /**
  * import inter-coll, exter-coll
  */
+const COMPANY_COLL                      = require('../../auth/database/auth.company-coll')
 const USER_COLL                         = require('../../auth/database/auth.user-coll')
 const DEPARTMENT_COLL                   = require('../../item/database/item.department-coll')
 const CONTRACT_COLL                     = require('../../item/database/item.contract-coll')
@@ -2641,8 +2642,8 @@ class Model extends BaseModel {
      * Dev: HiepNH
      * Date: 27/8/2023
      */
-    getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin, ctx }){
-        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin })
+    getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword, ctx }){
+        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword })
         return new Promise(async resolve => {
             try {
                 //__________Record Traffic
@@ -2828,6 +2829,158 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Danh sách Công ty thực hiện
+                if(option == 6){
+                    conditionObj = {accessUsers: {$in: [ObjectID(userID)]}, companyOfAssignee: {$exists: true, $ne: null}}
+
+                    if(keyword){
+                        // keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let listCompany = await COMPANY_COLL.find({name: new RegExp(keyword, 'i')}).select('name')
+                        conditionObj.companyOfAssignee = {$in: listCompany.map(item=>ObjectID(item._id))}
+                    }
+
+
+                    let listData = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { companyOfAssignee: '$companyOfAssignee' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulateCompany = {
+                        path: '_id.companyOfAssignee',
+                        select: '_id name sign image',
+                        model: 'company'
+                    }
+
+                    if(listData.length){
+                        await PCM_PLAN_TASK_COLL.populate(listData, conditionPopulateCompany)
+                    }
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Danh sách User thực hiện
+                if(option == 7){
+                    conditionObj = {accessUsers: {$in: [ObjectID(userID)]}, assignee: {$exists: true, $ne: null}}
+
+                    if(keyword){
+                        // keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let listUser = await USER_COLL.find({fullname: new RegExp(keyword, 'i')}).select('name')
+                        conditionObj.assignee = {$in: listUser.map(item=>ObjectID(item._id))}
+                    }
+
+
+                    let listData = await PCM_PLAN_TASK_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { assignee: '$assignee' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulateUser = {
+                        path: '_id.assignee',
+                        select: '_id fullname image email',
+                        model: 'user'
+                    }
+
+                    if(listData.length){
+                        await PCM_PLAN_TASK_COLL.populate(listData, conditionPopulateUser)
+                    }
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Danh sách Công ty tạo phản hồi
+                if(option == 8){
+                    conditionObj = {accessUsers: {$in: [ObjectID(userID)]}, companyOfAuthor: {$exists: true, $ne: null}}
+
+                    if(keyword){
+                        // keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let listCompany = await COMPANY_COLL.find({name: new RegExp(keyword, 'i')}).select('name')
+                        conditionObj.companyOfAuthor = {$in: listCompany.map(item=>ObjectID(item._id))}
+                    }
+
+
+                    let listData = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { companyOfAuthor: '$companyOfAuthor' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulateCompany = {
+                        path: '_id.companyOfAuthor',
+                        select: '_id name sign image',
+                        model: 'company'
+                    }
+
+                    if(listData.length){
+                        await PCM_COMMENT_COLL.populate(listData, conditionPopulateCompany)
+                    }
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Danh sách User phản hồi
+                if(option == 9){
+                    conditionObj = {accessUsers: {$in: [ObjectID(userID)]}, author: {$exists: true, $ne: null}}
+
+                    if(keyword){
+                        // keyword = stringUtils.removeAccents(keyword)
+                        keyword = keyword.split(" ")
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        let listUser = await USER_COLL.find({fullname: new RegExp(keyword, 'i')}).select('name')
+                        conditionObj.author = {$in: listUser.map(item=>ObjectID(item._id))}
+                    }
+
+
+                    let listData = await PCM_COMMENT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { author: '$author' },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let conditionPopulateUser = {
+                        path: '_id.author',
+                        select: '_id fullname image email',
+                        model: 'user'
+                    }
+
+                    if(listData.length){
+                        await PCM_COMMENT_COLL.populate(listData, conditionPopulateUser)
+                    }
+
+                    return resolve({ error: false, data: listData })
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -2840,7 +2993,7 @@ class Model extends BaseModel {
      * Date: 22/8/2023
      */
     getAmountNotification({ userID, option, ctx }){
-        // console.log('=================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log('=================THÔNG BÁO SỐ VIỆC TẠI TRANG CHỦ================>>>>>>>>>>>>>>')
         // console.log({ userID, option })
         return new Promise(async resolve => {
             try {
@@ -2852,7 +3005,7 @@ class Model extends BaseModel {
                 end.setHours(23,59,59,999)
 
                 let amountUnreadTaskSync=0, amountMyTaskTodaySync=0, amountMyTaskComingSync = 0, amountMyApprovalSync = 0
-                let amountMyTask1Sync=0, amountMyTask2Sync=0, amountMyTask3Sync=0, amountMyTask4Sync=0
+                let amountMyTask1Sync=0, amountMyTask2Sync=0, amountMyTask3Sync=0, amountMyTask4Sync=0, amountMyTask5Sync=0
 
                 if(!option){
                     // Số công việc chưa xem
@@ -2913,6 +3066,15 @@ class Model extends BaseModel {
                         usersDelete: { $nin: [userID] }
                     })
 
+                    // Số công việc của tôi - Nháp
+                    amountMyTask5Sync = PCM_PLAN_TASK_COLL.count({
+                        author: userID,
+                        status: { $ne: 3 },
+                        upcoming: 1,
+                        draft: 1,
+                        usersDelete: { $nin: [userID] }
+                    })
+
                     // Số công việc cần duyệt của tôi
                     amountMyApprovalSync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
@@ -2930,7 +3092,7 @@ class Model extends BaseModel {
                         upcoming: 2
                     })
 
-                    let [ amountUnreadTask, amountMyTaskToday, amountMyTaskComing, amountMyApproval, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4 ] = await Promise.all([amountUnreadTaskSync, amountMyTaskTodaySync, amountMyTaskComingSync, amountMyApprovalSync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync])
+                    let [ amountUnreadTask, amountMyTaskToday, amountMyTaskComing, amountMyApproval, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4, amountMyTask5 ] = await Promise.all([amountUnreadTaskSync, amountMyTaskTodaySync, amountMyTaskComingSync, amountMyApprovalSync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync, amountMyTask5Sync])
 
                     // console.log({amountMyTask1})
                     // console.log({amountMyTask2})
@@ -2944,7 +3106,8 @@ class Model extends BaseModel {
                         amountMyTask1,
                         amountMyTask2, 
                         amountMyTask3, 
-                        amountMyTask4
+                        amountMyTask4,
+                        amountMyTask5
                     }})
                 }else{
                     // Phê duyệt của tôi
