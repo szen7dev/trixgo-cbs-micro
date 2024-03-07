@@ -2993,7 +2993,7 @@ class Model extends BaseModel {
      * Date: 22/8/2023
      */
     getAmountNotification({ userID, option, ctx }){
-        // console.log('=================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        // console.log('=================THÔNG BÁO SỐ VIỆC TẠI TRANG CHỦ================>>>>>>>>>>>>>>')
         // console.log({ userID, option })
         return new Promise(async resolve => {
             try {
@@ -3005,7 +3005,7 @@ class Model extends BaseModel {
                 end.setHours(23,59,59,999)
 
                 let amountUnreadTaskSync=0, amountMyTaskTodaySync=0, amountMyTaskComingSync = 0, amountMyApprovalSync = 0
-                let amountMyTask1Sync=0, amountMyTask2Sync=0, amountMyTask3Sync=0, amountMyTask4Sync=0
+                let amountMyTask1Sync=0, amountMyTask2Sync=0, amountMyTask3Sync=0, amountMyTask4Sync=0, amountMyTask5Sync=0
 
                 if(!option){
                     // Số công việc chưa xem
@@ -3066,6 +3066,15 @@ class Model extends BaseModel {
                         usersDelete: { $nin: [userID] }
                     })
 
+                    // Số công việc của tôi - Nháp
+                    amountMyTask5Sync = PCM_PLAN_TASK_COLL.count({
+                        author: userID,
+                        status: { $ne: 3 },
+                        upcoming: 1,
+                        draft: 1,
+                        usersDelete: { $nin: [userID] }
+                    })
+
                     // Số công việc cần duyệt của tôi
                     amountMyApprovalSync = PCM_PLAN_TASK_COLL.count({
                         assignee: userID,
@@ -3083,7 +3092,7 @@ class Model extends BaseModel {
                         upcoming: 2
                     })
 
-                    let [ amountUnreadTask, amountMyTaskToday, amountMyTaskComing, amountMyApproval, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4 ] = await Promise.all([amountUnreadTaskSync, amountMyTaskTodaySync, amountMyTaskComingSync, amountMyApprovalSync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync])
+                    let [ amountUnreadTask, amountMyTaskToday, amountMyTaskComing, amountMyApproval, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4, amountMyTask5 ] = await Promise.all([amountUnreadTaskSync, amountMyTaskTodaySync, amountMyTaskComingSync, amountMyApprovalSync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync, amountMyTask5Sync])
 
                     // console.log({amountMyTask1})
                     // console.log({amountMyTask2})
@@ -3097,7 +3106,8 @@ class Model extends BaseModel {
                         amountMyTask1,
                         amountMyTask2, 
                         amountMyTask3, 
-                        amountMyTask4
+                        amountMyTask4,
+                        amountMyTask5
                     }})
                 }else{
                     // Phê duyệt của tôi
