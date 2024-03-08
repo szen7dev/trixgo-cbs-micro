@@ -11,10 +11,10 @@ let { infoTaskContent } = require('./template/content_info_task');
 exports.sendNoticeToMember = function (stringify){
     return new Promise(resolve => {
         try {
-            let { email, title, content } = stringify;  // convert for worker_threads
+            let { email, title, content, files } = stringify;  // convert for worker_threads
 
             // Nội dung email
-            let emailContent = infoTaskContent({ content });
+            let emailContent = infoTaskContent({ content, files });
 
             /**
              * Gửi email
