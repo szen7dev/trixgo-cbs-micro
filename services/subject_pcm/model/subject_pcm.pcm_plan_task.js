@@ -44,6 +44,7 @@ const CONTRACT_COLL                     = require('../../item/database/item.cont
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll')
 const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll')
 const PCM_COMMENT_COLL                  = require('../database/subject_pcm.pcm_comment-coll')
+const PCM_FILE_COLL                     = require('../database/subject_pcm.pcm_file-coll')
 const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll')
 const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll')
 
@@ -3949,6 +3950,11 @@ class Model extends BaseModel {
                  */
                 let mailsUser = [];
 
+                let listFile = await PCM_FILE_COLL.find({task: taskID})
+                .sort({_id: -1})
+                .limit(100)
+                // console.log(listFile)
+
                 if(receivers && receivers.length) {
                     const { data: users } = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
                         { arrayID: JSON.stringify([...receivers, userID]), select: "_id email", isLoadAll: true }
@@ -3995,11 +4001,13 @@ class Model extends BaseModel {
                     title: "Thông báo email",
                     content: `đã thông báo email tới ${mailsUser}`,
                 })
+                // console.log({ mailsUser, notice, infoTask })
 
                 const result = await sendNoticeToMember({
                     email: mailsUser,
                     title,
-                    content: { sender, notice, infoTask }
+                    content: { sender, notice, infoTask },
+                    files: listFile
                 });
 
                 return resolve(result);

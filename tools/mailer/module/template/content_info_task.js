@@ -3,7 +3,7 @@
 const { nl2p }   = require('../../../utils/string_utils');
 
 // Thông báo công việc
-exports.infoTaskContent = ({ content }) => {
+exports.infoTaskContent = ({ content, files }) => {
     let taskName = content.infoTask.name;
     let taskAuthorName = content.infoTask.author.fullname;
     let taskAuthorImage = content.infoTask.author.image;
@@ -14,6 +14,7 @@ exports.infoTaskContent = ({ content }) => {
     let subtypeTask = content.infoTask.subtype
     let txtAuthorTask = ``;
     let txtAssigneeTask = ``;
+    let txtFiles = ``;
 
     if([0,1,6,7,8,10,11].includes(Number(subtypeTask))){
         txtAuthorTask = `Author/Người tạo việc`;
@@ -30,6 +31,10 @@ exports.infoTaskContent = ({ content }) => {
 
     const linkServerS3 = process.env.AWS_BUCKET_URL || "https://dntdurzwr12tp.cloudfront.net";
 
+    for(const item of files){
+        txtFiles = txtFiles + `<p><a href="${linkServerS3}${item.path}" target="_blank">${item.nameOrg}</a></p>`
+    }
+
     if(content.infoTask.actualFinishTime){
         taskExpired = `${new Date(content.infoTask.actualFinishTime).getDate()}/${ new Date(content.infoTask.actualFinishTime).getMonth()+1}/${ new Date(content.infoTask.actualFinishTime).getFullYear()}`;
     }
@@ -43,6 +48,7 @@ exports.infoTaskContent = ({ content }) => {
         <p>Expired/Thời hạn: <b>${taskExpired}</b></p>
         <p>${txtAssigneeTask}: <img src="${linkServerS3}/files/db/users/${taskAssigneeImage}" style="width: 32px !important;height: 32px !important;border-radius: 50%;"> <b style="color: #385898;">${taskAssigneeName}</b></p>
         <p>Project/Department/Dự án/phòng ban: <span style="color: #385898;font-weight: bold;">${taskProjectImage}</span></p>
+        <p>Files/Tệp đính kèm:${txtFiles}</p>
         <p>==============================================</p>
         <p>${txtAuthorTask}: <img src="${linkServerS3}/files/db/users/${taskAuthorImage}" style="width: 32px !important;height: 32px !important;border-radius: 50%;"> <b style="color: #385898;">${taskAuthorName}</b></p>
         <p>Application/Ứng dụng: <b>PCM/Quản lý dự án/công việc</b></p>
