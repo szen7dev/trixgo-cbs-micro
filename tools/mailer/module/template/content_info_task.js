@@ -1,6 +1,7 @@
 "use strict";
 
 const { nl2p }   = require('../../../utils/string_utils');
+const moment     = require('moment')
 
 // Thông báo công việc
 exports.infoTaskContent = ({ content, files }) => {
@@ -32,7 +33,7 @@ exports.infoTaskContent = ({ content, files }) => {
     const linkServerS3 = process.env.AWS_BUCKET_URL || "https://dntdurzwr12tp.cloudfront.net";
 
     for(const item of files){
-        txtFiles = txtFiles + `<p><a href="${linkServerS3}${item.path}" target="_blank">${item.nameOrg}</a></p>`
+        txtFiles = txtFiles + `<p><a href="${linkServerS3}${item.path}" target="_blank">${item.nameOrg} | ${moment(item.createAt).format('DD/MM/YYYY HH:mm')} ${moment(item.createAt).fromNow()}</a></p>`
     }
 
     if(content.infoTask.actualFinishTime){
