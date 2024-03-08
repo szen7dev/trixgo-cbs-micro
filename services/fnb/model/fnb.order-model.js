@@ -2834,21 +2834,6 @@ class Model extends BaseModel {
 
                     // Xử lý lỗi fundas[] trên Mobile
                     if(optionFixFunda && Number(optionFixFunda) === 1){
-                        // console.log(fundas.length)
-                        // let arr = fundas.split('"') 
-                        // console.log(arr)
-
-                        // let arr = JSON.parse(fundas.split(" "))
-                        // let arrFun = arr.filter((item) => (item.toString() !== ""))
-                        // conditionObj.funda = { $in: arrFun }
-                        // arrFun = arrFun[1].split(' ') 
-                            
-                        // console.log(arr[1].split(" "))
-                        // let arr2 = JSON.parse(arr.split(",")) 
-                        // console.log(arr2)
-
-                        // let arrFun2 = arr[1].split(" ").map(item=>ObjectID(item))
-                        // console.log(arrFun2)
                         if(fundas && Number(fundas.length) > 2){
                             let arr = fundas.split('"') 
                             let arrFun2 = arr[1].split(" ").map(item=>ObjectID(item))
