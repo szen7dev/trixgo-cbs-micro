@@ -1082,7 +1082,7 @@ class Model extends BaseModel {
 
                             var i = 4
                             listData.forEach((item, index) =>{
-                                let tongThu = Number(item.salary + item.revenueBonus + item.reward + item.mealAllowance)
+                                let tongThu = Number(item.salary + item.onLeaveSalary + item.revenueBonus + item.reward + item.mealAllowance)
                                 let tongGiamTru = Number(item.punishment + item.insurance + item.pitax + item.union + item.share + item.other)
 
                                 workbook.sheet("BangLuong").row(i).cell(1).value(Number(index + 1))
@@ -1091,21 +1091,26 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuong").row(i).cell(4).value(item?.position?.name)
                                 workbook.sheet("BangLuong").row(i).cell(5).value(Number(item.salary))
                                 workbook.sheet("BangLuong").row(i).cell(6).value(Number(item.convertFactor))
-                                workbook.sheet("BangLuong").row(i).cell(7).value(Number(item.revenueBonus))
-                                workbook.sheet("BangLuong").row(i).cell(8).value(Number(item.reward))
-                                workbook.sheet("BangLuong").row(i).cell(9).value(Number(item.mealAllowance))
-                                workbook.sheet("BangLuong").row(i).cell(10).value(Number(item.punishment))
-                                workbook.sheet("BangLuong").row(i).cell(11).value(Number(item.insurance))
-                                workbook.sheet("BangLuong").row(i).cell(12).value(Number(item.pitax))
-                                workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.union))
-                                workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.share))
-                                workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.other))
-                                workbook.sheet("BangLuong").row(i).cell(16).value(Number(tongThu))
-                                workbook.sheet("BangLuong").row(i).cell(17).value(Number(tongGiamTru))
-                                workbook.sheet("BangLuong").row(i).cell(18).value(Number(item.advance))
-                                workbook.sheet("BangLuong").row(i).cell(19).value(Number(item.remaining))
-                                workbook.sheet("BangLuong").row(i).cell(21).value(Number(item.paid))
-                                workbook.sheet("BangLuong").row(i).cell(22).value(item?.note)
+                                workbook.sheet("BangLuong").row(i).cell(7).value(Number(item.onLeaveSalary))
+
+                                workbook.sheet("BangLuong").row(i).cell(8).value(Number(item.revenueBonus))
+                                workbook.sheet("BangLuong").row(i).cell(9).value(Number(item.reward))
+                                workbook.sheet("BangLuong").row(i).cell(10).value(Number(item.mealAllowance))
+                                workbook.sheet("BangLuong").row(i).cell(11).value(Number(item.punishment))
+                                workbook.sheet("BangLuong").row(i).cell(12).value(Number(item.insurance))
+                                workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.pitax))
+                                workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.union))
+                                workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.share))
+                                workbook.sheet("BangLuong").row(i).cell(16).value(Number(item.other))
+
+                                workbook.sheet("BangLuong").row(i).cell(17).value(Number(tongThu))
+                                workbook.sheet("BangLuong").row(i).cell(18).value(Number(tongGiamTru))
+
+                                workbook.sheet("BangLuong").row(i).cell(19).value(Number(item.advance))
+                                workbook.sheet("BangLuong").row(i).cell(20).value(Number(item.remaining))
+
+                                workbook.sheet("BangLuong").row(i).cell(22).value(Number(item.paid))
+                                workbook.sheet("BangLuong").row(i).cell(23).value(item?.note)
                                 
                                 i++
                             })
