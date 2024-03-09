@@ -44,8 +44,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, ctx }) {
-        // console.log({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid })
+    insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid }) {
+        // console.log({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid })
         return new Promise(async resolve => {
             try {
                 if(!name){
@@ -58,14 +58,14 @@ class Model extends BaseModel {
 
                 let year = new Date().getFullYear()
                 let month = new Date().getMonth()
-                let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                    company: companyID, 
-                    parent: { $exists: false },
-                    $where: 
-                    `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
-                })
-                if(checkExists)
-                    return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` }) 
+                // let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                //     company: companyID, 
+                //     parent: { $exists: false },
+                //     $where: 
+                //     `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
+                // })
+                // if(checkExists)
+                //     return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` }) 
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
@@ -102,6 +102,9 @@ class Model extends BaseModel {
 
                 if(salary){
                     dataInsert.salary = Number(salary);
+                }
+                if(onLeaveSalary){
+                    dataInsert.onLeaveSalary = Number(onLeaveSalary);
                 }
                 if(reward){
                     dataInsert.reward = Number(reward);
@@ -170,8 +173,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other }){
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -221,6 +224,9 @@ class Model extends BaseModel {
                 if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
                     dataUpdate.salary = salary;
                 }
+                if(!isNaN(onLeaveSalary) && Number(infoSalary.onLeaveSalary) != Number(onLeaveSalary)){
+                    dataUpdate.onLeaveSalary = onLeaveSalary;
+                }
                 if(!isNaN(reward) && Number(infoSalary.reward) != Number(reward)){
                     dataUpdate.reward = reward;
                 }
@@ -253,8 +259,8 @@ class Model extends BaseModel {
                 }
 
                 // Tính toán giá trị còn lại
-                if(!isNaN(salary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance)){
-                    dataUpdate.remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance)
+                if(!isNaN(salary) || !isNaN(onLeaveSalary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance)){
+                    dataUpdate.remaining = Number(salary) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance)
                 }
 
                 if(!isNaN(paid) && Number(infoSalary.paid) != Number(paid)){
@@ -379,6 +385,40 @@ class Model extends BaseModel {
                     },
                 ])
 
+                let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null },
+                            subtype: 2,
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            date: 1,
+                            assignee: 1,
+                            hours: 1,
+                            amount: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee' },
+                            quantity: { $sum: 1 },
+                        }
+                    },
+                ])
+                // console.log(listData2)
+
                 for(const item of listData){
                     let salary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, remaining = 0
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
@@ -417,11 +457,66 @@ class Model extends BaseModel {
                         remaining
                     }
 
-                    // Cập nhật dữ liệu
-                    if(info){
-                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
-                    }
+                    await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
                 }
+
+                for(const item of listData2){
+                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, remaining = 0
+
+                    let infoUser = await AUTH__USER_COLL.findById({ _id: item._id.assignee }).select('contacts').populate({
+                        path: 'contacts',
+                        select: 'sallaryBasic insuranceFee union share'
+                    })
+
+                    if(infoUser.contacts && infoUser.contacts.length){
+                        for(const contact of infoUser.contacts){
+                            if(contact.sallaryBasic){
+                                // Tính toán cho 1 năm 365 ngày - 52 ngày nghỉ (tuần nghỉ 1 ngày). Tổng lương cơ bản * 12 tháng
+                                onLeaveSalary = Number(onLeaveSalary) + Number(contact.sallaryBasic*12/(365-52) * item.quantity)
+                            }
+                        }
+                    }
+                   
+                    let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                        parent: expertSalaryID,
+                        human: item._id.assignee,
+                    })
+
+                    if(info){
+                        salary = info.salary
+                        reward = info.reward
+                        revenueBonus = info.revenueBonus
+                        mealAllowance = info.mealAllowance
+                        punishment = info.punishment
+                        insurance = info.insurance
+                        pitax = info.pitax
+                        union = info.union
+                        share = info.share
+                        other = info.other
+                        advance = info.advance
+                    }
+
+                    remaining = Number(Number(salary) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number( advance)).toFixed(0)
+
+                    let dataUpdate =  {
+                        salary,
+                        onLeaveSalary: Number(onLeaveSalary).toFixed(0),
+                        reward,
+                        revenueBonus,
+                        mealAllowance,
+                        punishment,
+                        insurance,
+                        pitax,
+                        union,
+                        share,
+                        other,
+                        advance,
+                        remaining
+                    }
+
+                    await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                }
+
                 return resolve({ error: false, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -544,6 +639,7 @@ class Model extends BaseModel {
                         $group: {
                             _id: { },
                             salary: { $sum:"$salary" },
+                            onLeaveSalary: { $sum:"$onLeaveSalary" },
                             reward: { $sum:"$reward" },
                             punishment: { $sum:"$punishment" },
                             advance: { $sum:"$advance" },
@@ -559,11 +655,11 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-                console.log(listData[0])
-
+                // console.log(listData[0])
                 
                 if(listData[0]){
                     dataUpdate.salary = Number(listData[0].salary)
+                    dataUpdate.onLeaveSalary = Number(listData[0].onLeaveSalary)
                     dataUpdate.reward = Number(listData[0].reward)
                     dataUpdate.punishment = Number(listData[0].punishment)
                     dataUpdate.advance = Number(listData[0].advance)
@@ -595,7 +691,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({ 
-        option, salaryID, userID, companyID, ctx
+        option, salaryID, userID, companyID
     }){ 
         const that = this
         return new Promise(async (resolve) => {
