@@ -696,16 +696,33 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                // Cập nhật chấm công vào các Chi tiết của Bảng lương
-                await that.updateValueTimesheet({ expertSalaryID: salaryID, userID, companyID })
+                if(option == 1){
+                    // Cập nhật chấm công vào các Chi tiết của Bảng lương
+                    await that.updateValueTimesheet({ expertSalaryID: salaryID, userID, companyID })
 
-                // Cập nhật KPI vào các chi tiết của Bảng lương
-                await that.updateValueKpi( { expertSalaryID: salaryID, userID, companyID })
+                    // Cập nhật KPI vào các chi tiết của Bảng lương
+                    await that.updateValueKpi( { expertSalaryID: salaryID, userID, companyID })
 
-                // Tổng hợp các chi tiết lương vào Bảng lương
-                await that.updateValue( {expertSalaryID: salaryID, userID })
+                    // Tổng hợp các chi tiết lương vào Bảng lương
+                    await that.updateValue( {expertSalaryID: salaryID, userID })
 
-                return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
+                    return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
+                }else if(option == 2){
+                    //___________Quyền truy cập ứng dụng Nhân sự
+                    let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e049cffdebf77b072d1b14", 
+                        userID
+                    })
+
+                    // Chỉ admin ứng dụng mới được thêm phần tử cha con
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
+                        await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }else{
+                        return resolve({ error: false, data: 'Bạn không có quyền Reset' })
+                    }
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }

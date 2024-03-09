@@ -38,6 +38,8 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(company)
 
+                // console.log(ctx.params)
+
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.insert({
                     userCreate: userID, 
                     companyID: company._id, 
