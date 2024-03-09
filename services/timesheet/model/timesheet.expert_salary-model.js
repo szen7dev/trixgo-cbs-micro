@@ -58,14 +58,14 @@ class Model extends BaseModel {
 
                 let year = new Date().getFullYear()
                 let month = new Date().getMonth()
-                // let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                //     company: companyID, 
-                //     parent: { $exists: false },
-                //     $where: 
-                //     `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
-                // })
-                // if(checkExists)
-                //     return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` }) 
+                let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                    company: companyID, 
+                    parent: { $exists: false },
+                    $where: 
+                    `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
+                })
+                if(checkExists)
+                    return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` }) 
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
@@ -384,6 +384,7 @@ class Model extends BaseModel {
                         }
                     },
                 ])
+                // console.log(listData)
 
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
@@ -420,7 +421,9 @@ class Model extends BaseModel {
                 // console.log(listData2)
 
                 for(const item of listData){
-                    let salary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, remaining = 0
+                    // console.log(item._id.assignee.toString())
+                    
+                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, remaining = 0
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
                         human: item._id.assignee,
@@ -428,6 +431,7 @@ class Model extends BaseModel {
 
                     if(info){
                         salary = item.amount // Lấy theo bảng chấm công
+                        onLeaveSalary = info.onLeaveSalary
                         reward = info.reward
                         revenueBonus = info.revenueBonus
                         mealAllowance = info.mealAllowance
@@ -440,10 +444,11 @@ class Model extends BaseModel {
                         advance = info.advance
                     }
 
-                    remaining = Number(salary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number( advance)
+                    remaining = Number(salary) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number( advance)
 
                     let dataUpdate =  {
                         salary,
+                        onLeaveSalary,
                         reward,
                         revenueBonus,
                         mealAllowance,
@@ -457,7 +462,9 @@ class Model extends BaseModel {
                         remaining
                     }
 
-                    await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    if(info){
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    }
                 }
 
                 for(const item of listData2){
@@ -514,7 +521,9 @@ class Model extends BaseModel {
                         remaining
                     }
 
-                    await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    if(info){
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    }
                 }
 
                 return resolve({ error: false, status: 200 });
@@ -696,16 +705,33 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                // Cập nhật chấm công vào các Chi tiết của Bảng lương
-                await that.updateValueTimesheet({ expertSalaryID: salaryID, userID, companyID })
+                if(option == 1){
+                    // Cập nhật chấm công vào các Chi tiết của Bảng lương
+                    await that.updateValueTimesheet({ expertSalaryID: salaryID, userID, companyID })
 
-                // Cập nhật KPI vào các chi tiết của Bảng lương
-                await that.updateValueKpi( { expertSalaryID: salaryID, userID, companyID })
+                    // Cập nhật KPI vào các chi tiết của Bảng lương
+                    await that.updateValueKpi( { expertSalaryID: salaryID, userID, companyID })
 
-                // Tổng hợp các chi tiết lương vào Bảng lương
-                await that.updateValue( {expertSalaryID: salaryID, userID })
+                    // Tổng hợp các chi tiết lương vào Bảng lương
+                    await that.updateValue( {expertSalaryID: salaryID, userID })
 
-                return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
+                    return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
+                }else if(option == 2){
+                    //___________Quyền truy cập ứng dụng Nhân sự
+                    let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e049cffdebf77b072d1b14", 
+                        userID
+                    })
+
+                    // Chỉ admin ứng dụng mới được thêm phần tử cha con
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
+                        await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }else{
+                        return resolve({ error: false, data: 'Bạn không có quyền Reset' })
+                    }
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
