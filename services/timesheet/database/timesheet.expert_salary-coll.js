@@ -53,6 +53,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
+    //________Lương phép
+    onLeaveSalary: {
+        type: Number,
+        default: 0 
+    },
     //________Thưởng doanh thu/hiệu quả
     revenueBonus: {
         type: Number,
