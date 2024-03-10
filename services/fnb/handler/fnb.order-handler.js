@@ -306,13 +306,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { dataImport } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                // console.log(dataImport)
-
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-
-                // console.log(dataImport)
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.importFromExcel({
                     taskID, dataImport, userID, ctx
@@ -372,15 +365,16 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { companyID, option, month, year, filterParams } = ctx.params;
-                // console.log({ companyID, option, filterParams })
+                let { companyID, option, month, year, fromDate, toDate, filterParams } = ctx.params;
+               
+                // console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel2({
-                    userID, email, companyID, option, month, year, filterParams
+                    userID, email, companyID, option, month, year, fromDate, toDate, filterParams
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
