@@ -3562,7 +3562,7 @@ class Model extends BaseModel {
         // console.log({ companyID, year, month, userID, queryFnb })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
+                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
                     let yearFilter
                     let currentYear = new Date().getFullYear()
                     let currentMonth = new Date().getMonth() + 1
@@ -3754,11 +3754,11 @@ class Model extends BaseModel {
      * Func: Tải Đơn hàng và Doanh số
      * Date: 4/2/2023
      */
-    exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
-        // console.log({ companyID, option, year, month, filterParams, userID })
+    exportExcel2({ companyID, option, month, year, fromDate, toDate, filterParams, email, userID }) {
+        // console.log({ companyID, option, month, year, fromDate, toDate, filterParams, email, userID })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
+                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
                     // DANH SÁCH ĐƠN HÀNG
                     if(!option || option == undefined){
 
@@ -3949,9 +3949,15 @@ class Model extends BaseModel {
                     }else{
                         // QUẢN LÝ DOANH SỐ
                         if(option == 1){
+                            let conditionObj = {
+                                company: ObjectID(companyID),
+                                status: 5
+                            }
+
                             let yearFilter
                             let currentYear = new Date().getFullYear()
-                            let currentMonth = new Date().getMonth() + 1
+                            // let currentMonth = new Date().getMonth() + 1
+                            let currentMonth = new Date(toDate).getMonth() + 1
 
                             if(year && !isNaN(year)){
                                 yearFilter = Number(year)
@@ -3960,12 +3966,7 @@ class Model extends BaseModel {
                             }
                             let conditionObjYear = {
                                 "year": Number(yearFilter),
-                                "month": {$in: [currentMonth - 1, currentMonth]}
-                            }
-
-                            let conditionObj = {
-                                company: ObjectID(companyID),
-                                status: 5
+                                "month": {$in: [currentMonth - 2, currentMonth - 1, currentMonth]}
                             }
 
                             // Địa điểm cơ sở được quyền truy cập
@@ -4056,6 +4057,7 @@ class Model extends BaseModel {
                                 }
                             ])
                             // console.log(listData2)
+                            // console.log(conditionObjYear)
 
                             // Modify the workbook.
                             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_revenue_all.xlsx')))
