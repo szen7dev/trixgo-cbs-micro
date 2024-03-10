@@ -145,6 +145,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 13-Đăng bài quảng bá sản phẩm được hệ thống duyệt
      * 14-Thông báo mời thầu
      * 15-Thông báo từ hệ thống
+     * 16-Ghi danh
      */
     subtype: { type: Number, default: 0 },
     /**

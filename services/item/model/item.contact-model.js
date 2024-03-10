@@ -1135,7 +1135,7 @@ class Model extends BaseModel {
                     // },
                     ...conditionObj
                 };
-                console.log(conditionObjOrg)
+                // console.log(conditionObjOrg)
 
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
@@ -2039,7 +2039,7 @@ class Model extends BaseModel {
                     else{
                         for (const data of dataImportJSON) {                           
                             // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                            if(index > 0 && index < 51){
+                            if(index > 0 && index <= 50){
                                 let prepareData = { 
                                     authorID: userID, 
                                     contactID: data?.__EMPTY,
@@ -2119,7 +2119,7 @@ class Model extends BaseModel {
                 else if(option == 2){
                     for (const data of dataImportJSON) {
                         // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                        if(index > 0 && index < 1000){
+                        if(index > 0 && index <= 100){
                             let dataInsert = {
                                 userCreate: userID, 
                                 contactID: data?.__EMPTY_56, 

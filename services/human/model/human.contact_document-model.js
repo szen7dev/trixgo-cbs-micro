@@ -10,6 +10,7 @@ const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3')
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
  * DOMAIN AND ACTIONS
@@ -108,6 +109,24 @@ class Model extends BaseModel {
                 if(contract && _isValid(contract)){
                     dataInsert.contract = contract;
                 }
+
+                let convertStr = '';
+                if(name && name != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(infoContact?.name != '' && infoContact?.name != 'undefined'){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
+                }
+                dataInsert.namecv = convertStr
                 // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert)
@@ -133,10 +152,22 @@ class Model extends BaseModel {
      * Code:
      */
     update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID }){
+        console.log({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID })
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(authorID) || !_isValid(documentID))
                     return resolve({ error: true, message: 'param_not_valid' });
+
+                let infoDoc = await HUMAN__CONTACT_DOCUMENT_COLL.findById(documentID)
+                .populate({
+                    path: 'contact',
+                    select: 'name'
+                })
+                .select('contact')
+                console.log(infoDoc)
+                if(!infoDoc)
+                    return resolve({ error: true, message: 'documentID_not_valid' })
+                // console.log(infoDoc)
 
                 let dataUpdate = {
                     userUpdate: authorID,
@@ -246,6 +277,26 @@ class Model extends BaseModel {
                 if(fileRemoveID && _isValid(fileRemoveID)){
                     dataUpdate.$pull = { files: fileRemoveID };
                 }
+
+                let convertStr = '';
+                if(name && name != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
+                }
+                if(description && description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                }
+                if(sign && sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(infoDoc?.contact?.name != '' && infoDoc?.contact?.name != 'undefined'){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(infoDoc?.contact?.name)
+                }
+                dataUpdate.namecv = convertStr
+                // console.log(dataUpdate)
+
                 let infoAfterUpdate = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndUpdate(documentID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update", keyError: KEY_ERROR.UPDATE_FAILED })
@@ -439,9 +490,11 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+                    conditionObj.namecv = regSearch
                 }
 
                 // Phục vụ cho màn hình tra cứu chứng chỉ /human/certificate
@@ -619,11 +672,11 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
-
-                    conditionObj.name = regSearch
+                    conditionObj.namecv = regSearch
                 }
 
                 /**

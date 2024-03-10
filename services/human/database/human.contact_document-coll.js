@@ -81,6 +81,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
      */
     //_________Nội dung
     name: String,
+    //_________Tên tra cứu
+    namecv: String,
     //_________Ký hiệu
     sign: String,
     //_________Nơi cấp
