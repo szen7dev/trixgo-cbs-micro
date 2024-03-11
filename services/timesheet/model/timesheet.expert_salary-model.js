@@ -124,15 +124,17 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "cannot_insert" })
 
                 // Tạo chi tiết lương cho các user đang hoạt động
-                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 }).select('fullname department position contacts').populate({
+                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 })
+                .select('fullname department position contacts')
+                .populate({
                     path: 'contacts',
-                    select: 'insuranceFee union share'
+                    select: 'company sallaryBasic insuranceFee union share'
                 })
                 for(const item of listHuman){
                     let insuranceFee = 0, union = 0, share = 0
                     if(item.contacts && item.contacts.length){
                         for(const contact of item.contacts){
-                            if(contact.insuranceFee){
+                            if(contact.company.toString() === companyID.toString() && contact.insuranceFee){
                                 insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
                                 union = Number(union) + Number(contact.union)
                                 share = Number(share) + Number(contact.share)
@@ -351,13 +353,14 @@ class Model extends BaseModel {
                 let year = infoSalary.date.getFullYear()
                 // console.log({month})
 
-                // Tổng hợp từ Bảng chấm công
+                // Lương cứng (subtype = 1)
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
                             company: ObjectID(companyID),
                             parent: { $exists: true, $ne: null },
-                            assignee: { $exists: true, $ne: null }
+                            assignee: { $exists: true, $ne: null },
+                            subtype: 1,
                         }
                     },
                     {
@@ -386,6 +389,7 @@ class Model extends BaseModel {
                 ])
                 // console.log(listData)
 
+                // Lương phép (subtype = 2)
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
@@ -414,7 +418,9 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { assignee: '$assignee' },
-                            quantity: { $sum: 1 },
+                            quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                            // quantity: { $sum: 1 },
                         }
                     },
                 ])
@@ -470,19 +476,19 @@ class Model extends BaseModel {
                 for(const item of listData2){
                     let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, remaining = 0
 
-                    let infoUser = await AUTH__USER_COLL.findById({ _id: item._id.assignee }).select('contacts').populate({
-                        path: 'contacts',
-                        select: 'sallaryBasic insuranceFee union share'
-                    })
+                    // let infoUser = await AUTH__USER_COLL.findById({ _id: item._id.assignee }).select('contacts').populate({
+                    //     path: 'contacts',
+                    //     select: 'company sallaryBasic insuranceFee union share'
+                    // })
 
-                    if(infoUser.contacts && infoUser.contacts.length){
-                        for(const contact of infoUser.contacts){
-                            if(contact.sallaryBasic){
-                                // Tính toán cho 1 năm 365 ngày - 52 ngày nghỉ (tuần nghỉ 1 ngày). Tổng lương cơ bản * 12 tháng
-                                onLeaveSalary = Number(onLeaveSalary) + Number(contact.sallaryBasic*12/(365-52) * item.quantity)
-                            }
-                        }
-                    }
+                    // if(infoUser.contacts && infoUser.contacts.length){
+                    //     for(const contact of infoUser.contacts){
+                    //         if(contact.company.toString() === companyID.toString() && contact.sallaryBasic){
+                    //             // Tính toán cho 1 năm 365 ngày - 52 ngày nghỉ (tuần nghỉ 1 ngày). Tổng lương cơ bản * 12 tháng
+                    //             onLeaveSalary = Number(onLeaveSalary) + Number(contact.sallaryBasic*12/(365-52) * item.quantity)
+                    //         }
+                    //     }
+                    // }
                    
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
@@ -491,6 +497,7 @@ class Model extends BaseModel {
 
                     if(info){
                         salary = info.salary
+                        onLeaveSalary = item.amount
                         reward = info.reward
                         revenueBonus = info.revenueBonus
                         mealAllowance = info.mealAllowance
@@ -507,7 +514,8 @@ class Model extends BaseModel {
 
                     let dataUpdate =  {
                         salary,
-                        onLeaveSalary: Number(onLeaveSalary).toFixed(0),
+                        // onLeaveSalary: Number(onLeaveSalary).toFixed(0),
+                        onLeaveSalary,
                         reward,
                         revenueBonus,
                         mealAllowance,
