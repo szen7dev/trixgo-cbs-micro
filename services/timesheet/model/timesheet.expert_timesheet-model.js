@@ -146,10 +146,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID, subtype }){
-            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
-            //     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID, workID, subtype })
+    update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype }){
+            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -216,6 +214,39 @@ class Model extends BaseModel {
 
                 if(subtype){
                     dataUpdate.subtype = subtype;
+
+                    if(Number(subtype) === 2){
+                        let newAssigneeID
+                        if(assigneeID){
+                            newAssigneeID = assigneeID
+                        }else{
+                            newAssigneeID = infoTimeSheetID.assignee
+                        }
+                        // console.log(newAssigneeID)
+
+                        let infoUser = await USER_COLL.findById(newAssigneeID)
+                        .select('contacts')
+                        .populate({
+                            path: 'contacts',
+                            select: 'company sallaryBasic insuranceFee union share'
+                        })
+
+                        let unitprice2New = 0
+                        if(infoUser.contacts && infoUser.contacts.length){
+                            for(const contact of infoUser.contacts){
+                                if(contact.company.toString() === infoTimeSheetID.company.toString() && contact.sallaryBasic){
+                                    // Tính toán cho 1 năm 365 ngày - 52 ngày nghỉ (tuần nghỉ 1 ngày)*8h. Tổng lương cơ bản * 12 tháng
+                                    unitprice2New = Number(unitprice2New) + Number(contact.sallaryBasic*12/(8*(365-52)))
+                                }
+                            }
+                        }
+                        // console.log(unitprice2New)
+                        // console.log(infoUser)
+
+                        let amount  = hours * Number(unitprice2New).toFixed(0)
+                        dataUpdate.unitprice = Number(unitprice2New).toFixed(0)
+                        dataUpdate.amount = amount
+                    }
                 }
 
                 if(approver){
@@ -225,30 +256,6 @@ class Model extends BaseModel {
 
                 if(note){
                     dataUpdate.note = note;
-                }
-
-                if(dateIn1){
-                    dataUpdate.dateIn1 = dateIn1;
-                }
-
-                if(dateOut1){
-                    dataUpdate.dateOut1 = dateOut1;
-                }
-
-                if(dateIn2){
-                    dataUpdate.dateIn2 = dateIn2;
-                }
-
-                if(dateOut2){
-                    dataUpdate.dateOut2 = dateOut2;
-                }
-
-                if(dateIn3){
-                    dataUpdate.dateIn3 = dateIn3;
-                }
-
-                if(dateOut3){
-                    dataUpdate.dateOut3 = dateOut3;
                 }
 
                 let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]

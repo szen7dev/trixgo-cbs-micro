@@ -121,24 +121,6 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
 
     //________Ghi chú
     note: String,
-
-    //_______Giờ vào 1
-    dateIn1: Date,
-    
-    //_______Giờ ra 1
-    dateOut1: Date,
-
-    //_______Giờ vào 2
-    dateIn2: Date,
-
-    //_______Giờ ra 2
-    dateOut2: Date,
-
-    //_______Giờ vào 3
-    dateIn3: Date,
-    
-    //_______Giờ ra 3
-    dateOut3: Date,
     
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
