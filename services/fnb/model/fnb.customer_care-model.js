@@ -1121,6 +1121,8 @@ class Model extends BaseModel {
                                 }
                                 workbook.sheet("Data").row(i).cell(15).value(str);
                             }
+
+                            workbook.sheet("Data").row(i).cell(16).value(`Y${item?.createAt.getFullYear()}M${Number(item?.createAt.getMonth() + 1)}`);
                             
                             i++
                         })
