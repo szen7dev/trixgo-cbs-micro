@@ -413,7 +413,7 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, ctx }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype, ctx }) {
         // console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type})
         return new Promise(async (resolve) => {
             try {
@@ -515,6 +515,10 @@ class Model extends BaseModel {
                     conditionObj.assignee = userID
 
                     delete conditionObj.$or 
+                }
+
+                if(subtype ){
+                    conditionObj.subtype = Number(subtype)
                 }
 
 				if(keyword){
