@@ -212,10 +212,11 @@ class Model extends BaseModel {
                     dataUpdate.status = status;
                 }
 
-                if(subtype){
+                if(subtype && Number(subtype)  != Number(infoTimeSheetID.subtype)){
                     dataUpdate.subtype = subtype;
 
-                    if(Number(subtype) === 2){
+                    // Ngày nghỉ phép, lễ/tết
+                    if([2,3,4].includes(Number(subtype))){
                         let newAssigneeID
                         if(assigneeID){
                             newAssigneeID = assigneeID

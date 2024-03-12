@@ -351,7 +351,7 @@ class Model extends BaseModel {
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
-                // console.log({month})
+                console.log({month})
 
                 // Lương cứng (subtype = 1)
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -389,14 +389,15 @@ class Model extends BaseModel {
                 ])
                 // console.log(listData)
 
-                // Lương phép (subtype = 2)
+                // Lương phép, lễ/tết
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
                             company: ObjectID(companyID),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null },
-                            subtype: 2,
+                            // subtype: 2,
+                            subtype: {$in: [2,3,4]},
                         }
                     },
                     {
