@@ -231,6 +231,7 @@ class Model extends BaseModel {
                             path: 'contacts',
                             select: 'company sallaryBasic insuranceFee union share'
                         })
+                        // console.log(infoUser)
 
                         let unitprice2New = 0
                         if(infoUser.contacts && infoUser.contacts.length){
@@ -242,7 +243,6 @@ class Model extends BaseModel {
                             }
                         }
                         // console.log(unitprice2New)
-                        // console.log(infoUser)
 
                         let amount  = hours * Number(unitprice2New).toFixed(0)
                         dataUpdate.unitprice = Number(unitprice2New).toFixed(0)
