@@ -32,6 +32,7 @@ const ITEM__FUNDA_COLL            		        = require('../../item/database/item.
 const ITEM__WAREHOUSE_COLL            		    = require('../../item/database/item.warehouse-coll')
 const ITEM__GOODS_COLL            		        = require('../../item/database/item.goods-coll')
 const FNB_CUSTOMER_CARE_COLL                    = require('../../fnb/database/fnb.customer_care-coll');
+const FNB_MISTAKE_COLL                          = require('../../fnb/database/fnb.mistake-coll');
 
 class Model extends BaseModel {
 
@@ -598,17 +599,26 @@ class Model extends BaseModel {
                             return resolve({ error: false, data: 'Reset thất bại' })
                         }
                     }
-                    else if(option == 3){
-                        if(salaryID && checkObjectIDs(salaryID)){    
-                            await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
-                            await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
-                            return resolve({ error: false, data: 'Reset thành công' })
-                        }else{
-                            if(companyID && checkObjectIDs(companyID)){    
-                                await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({company: companyID})
-                                return resolve({ error: false, data: 'Reset thành công' })
-                            }
-                        }
+                    // else if(option == 3){
+                    //     if(salaryID && checkObjectIDs(salaryID)){    
+                    //         await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                    //         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                    //         return resolve({ error: false, data: 'Reset thành công' })
+                    //     }else{
+                    //         if(companyID && checkObjectIDs(companyID)){    
+                    //             await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({company: companyID})
+                    //             return resolve({ error: false, data: 'Reset thành công' })
+                    //         }
+                    //     }
+                    // }
+                    else if(option == 4){
+                        await FNB_MISTAKE_COLL.deleteMany({company: companyID})
+                        await ITEM__FUNDA_COLL.updateMany({company: companyID},{$set: {
+                            numberOfMistakes: 0,
+                            amountOfBonus: 0,
+                            amountOfMistakes: 0,
+                        }})
+                        return resolve({ error: false, data: 'Reset thành công' })
                     }
                 }else{
                     return resolve({ error: false, data: 'Pass không đúng, Reset thất bại' })
