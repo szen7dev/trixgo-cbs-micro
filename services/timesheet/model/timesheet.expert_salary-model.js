@@ -155,9 +155,21 @@ class Model extends BaseModel {
                         position: item.position,
                         date: infoAfterInsert.date,
                         type: infoAfterInsert.type,
-                        insurance: insuranceFee,
-                        union: union,
-                        share: share,
+                        // insurance: insuranceFee,
+                        // union: union,
+                        // share: share,
+                    }
+
+                    if(Number(insuranceFee) > 0){
+                        dataInsertDetail.insurance = Number(insuranceFee)
+                    }
+
+                    if(Number(union) > 0){
+                        dataInsertDetail.union = Number(union)
+                    }
+
+                    if(Number(share) > 0){
+                        dataInsertDetail.share = Number(share)
                     }
 
                     await this.insertData(dataInsertDetail)
@@ -351,7 +363,7 @@ class Model extends BaseModel {
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
-                console.log({month})
+                // console.log({month})
 
                 // Lương cứng (subtype = 1)
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
