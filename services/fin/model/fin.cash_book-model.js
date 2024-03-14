@@ -35,6 +35,7 @@ const { KEY_ERROR } = require('../../../tools/keys/index');
 const FINANCIAL_GENERAL_JOURNAL_MODEL   = require('../.../../../accounting/model/accounting.financial_general_journal-model').MODEL
 const ACCOUNT_MODEL                     = require('../.../../../item/model/item.account-model').MODEL
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
+const TIMESHEET__EXPERT_SALARY_MODEL    = require('../.../../../timesheet/model/timesheet.expert_salary-model').MODEL;
 
 class Model extends BaseModel {
     constructor() {
@@ -142,7 +143,7 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if (!checkObjectIDs(cashBookID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
@@ -1122,6 +1123,17 @@ class Model extends BaseModel {
 
                                 workbook.sheet("BangLuong").row(i).cell(22).value(Number(item.paid))
                                 workbook.sheet("BangLuong").row(i).cell(23).value(item?.note)
+
+                                // Mẫu Import để giảm data
+                                workbook.sheet("Import").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("Import").row(i).cell(2).value(`${item?._id}`)
+                                workbook.sheet("Import").row(i).cell(3).value(item?.human?.fullname)
+                                workbook.sheet("Import").row(i).cell(4).value(item?.project?.name)
+                                workbook.sheet("Import").row(i).cell(5).value(Number(item.salary))
+                                workbook.sheet("Import").row(i).cell(6).value(Number(item.revenueBonus))
+                                workbook.sheet("Import").row(i).cell(7).value(Number(item.mealAllowance))
+                                workbook.sheet("Import").row(i).cell(8).value(Number(item.pitax))
+                                workbook.sheet("Import").row(i).cell(9).value(Number(item.other))                                
                                 
                                 i++
                             })
@@ -1346,7 +1358,7 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date: 25/7/2023
      */
-    importFromExcel({ option, companyID, parentID, dataImport, userID, ctx }) {
+    importFromExcel({ option, companyID, parentID, dataImport, userID }) {
         // console.log({option, companyID, parentID, userID})
         return new Promise(async resolve => {
             try {
@@ -1356,42 +1368,114 @@ class Model extends BaseModel {
                 const dataImportJSON = JSON.parse(dataImport);
                 let index = 0;
                 let errorNumber = 0;
-                
-                for (const data of dataImportJSON) {
-                    if(index > 0){
-                        // console.log('===================')
-                        // console.log(data)
-                        let dataInsert = {
-                            companyID, 
-                            userID, 
-                            parentID, 
-                            accountID: data?.__EMPTY_14,
-                            customerID: data?.__EMPTY_15, 
-                            contractID: data?.__EMPTY_16, 
-                            name: data?.__EMPTY_1,
-                            note: data?.__EMPTY_7, 
-                            date: data?.__EMPTY_13, 
-                            income: data?.__EMPTY_5, 
-                            expense: data?.__EMPTY_6
-                        }
-                        // console.log(dataInsert)
 
-                        let infoAfterInsert = await this.insert(dataInsert);
-                        // console.log(infoAfterInsert)
-                        if(infoAfterInsert.error){
-                            errorNumber++;
+                if(!option){
+                    for (const data of dataImportJSON) {
+                        if(index > 0 && index <= 250){
+                            let dataInsert = {
+                                companyID, 
+                                userID, 
+                                parentID, 
+                                accountID: data?.__EMPTY_14,
+                                customerID: data?.__EMPTY_15, 
+                                contractID: data?.__EMPTY_16, 
+                                name: data?.__EMPTY_1,
+                                note: data?.__EMPTY_7, 
+                                date: data?.__EMPTY_13, 
+                                income: data?.__EMPTY_5, 
+                                expense: data?.__EMPTY_6
+                            }
+    
+                            let infoAfterInsert = await this.insert(dataInsert);
+                            if(infoAfterInsert.error){
+                                errorNumber++;
+                            }
+                        }
+                        index ++;
+                    }
+    
+                    if(errorNumber != 0)
+                        return resolve({ error: true, message: "import field" });
+    
+                    return resolve({ error: false, message: "import success" });
+                }else{
+                    if(Number(option) === 1){
+                        //___________Quyền truy cập ứng dụng Nhân sự
+                        let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                            appID: "61e049cffdebf77b072d1b14", 
+                            userID
+                        })
+
+                        if(!infoAppUser.error && infoAppUser.data.level == 0){
+                            for (const data of dataImportJSON) {
+                                // console.log(data)
+                                if(index > 0 && index <= 300){
+                                    // let dataUpdate = {
+                                    //     userUpdate: userID, 
+                                    //     modifyAt: new Date()
+                                    // }
+    
+                                    // if(data?.__EMPTY_4 && Number(data?.__EMPTY_4) != 0){
+                                    //     dataUpdate.revenueBonus = Number(data?.__EMPTY_4)
+                                    // }
+                                    // if(data?.__EMPTY_5 && Number(data?.__EMPTY_5) != 0){
+                                    //     dataUpdate.mealAllowance = Number(data?.__EMPTY_5)
+                                    // }
+                                    // if(data?.__EMPTY_6 && Number(data?.__EMPTY_6) != 0){
+                                    //     dataUpdate.pitax = Number(data?.__EMPTY_6)
+                                    // }
+                                    // if(data?.__EMPTY_7 && Number(data?.__EMPTY_7) != 0){
+                                    //     dataUpdate.other = Number(data?.__EMPTY_7)
+                                    // }
+    
+                                    // console.log(dataUpdate)
+    
+                                    // let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(data?.__EMPTY,dataUpdate)
+                                    let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
+                                        expertSalaryID: data?.__EMPTY, 
+                                        admins: [userID], 
+                                        members: [userID], 
+                                        userID, 
+                                        // note, 
+                                        // salary, 
+                                        // onLeaveSalary, 
+                                        // reward, 
+                                        // punishment, 
+                                        // advance, 
+                                        // convertFactor, 
+                                        // paid, 
+                                        revenueBonus:  Number(data?.__EMPTY_4), 
+                                        mealAllowance:  Number(data?.__EMPTY_5), 
+                                        // insurance, 
+                                        pitax: Number(data?.__EMPTY_6), 
+                                        // union, 
+                                        // share, 
+                                        other: Number(data?.__EMPTY_7)
+                                    })
+                                    // console.log(infoAfterUpdate)
+    
+                                    // if(infoAfterUpdate.error){
+                                    //     errorNumber++;
+                                    // }
+            
+                                    // let infoAfterInsert = await this.insert(dataInsert);
+                                    // if(infoAfterInsert.error){
+                                    //     errorNumber++;
+                                    // }
+                                }
+    
+                                index ++;
+                            }
+            
+                            if(errorNumber != 0)
+                                return resolve({ error: true, message: "import field" });
+            
+                            return resolve({ error: false, message: "import success" });
+                        }else{
+                            return resolve({ error: true, message: "import field" });
                         }
                     }
-                    index ++;
                 }
-
-                if(errorNumber != 0)
-                    return resolve({ error: true, message: "import field" });
-
-                // Update timeImportExcel trick reload việc con
-                // await FIN__CASH_BOOK_COLL.findByIdAndUpdate(parentID, { $set: { timeImportExcel: new Date() }}, { new: true });
-
-                return resolve({ error: false, message: "import success" });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
