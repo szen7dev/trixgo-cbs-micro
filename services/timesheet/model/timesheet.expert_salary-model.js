@@ -808,11 +808,16 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID, ctx }) {
-        console.log({sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
+        // console.log({sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
                 await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
+                let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
+                    appID: "61e049cffdebf77b072d1b14", 
+                    userID
+                })
 
                 if(Number(limit) > 50){
                     limit = 50;
@@ -848,13 +853,16 @@ class Model extends BaseModel {
                 }
 
 				if(checkObjectIDs(parentID)){
-                    // Danh sách các phòng ban mà user được quyền truy cập
-                    let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
-
 					conditionObj.parent = parentID
 
-					conditionObj.project = { $in: listDepartment.map(item=>item.id) }
-                    
+                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                       // Admin ứng dụng
+                    }else{
+                        let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
+                        conditionObj.project = { $in: listDepartment.map(item=>item.id) }
+                    }
+
+                    // Lọc dữ liệu
                     if(departmentsID && departmentsID.length){
                         conditionObj.project = { $in: departmentsID }
                     }
@@ -875,10 +883,6 @@ class Model extends BaseModel {
                         conditionObj.human = {$in: listUser.map(item=>item._id)}
                     }
 				}else{
-                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
-                        appID: "61e049cffdebf77b072d1b14", 
-                        userID
-                     })
                     if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
                         conditionObj.company = companyID
                         conditionObj.parent = { $exists: false }
