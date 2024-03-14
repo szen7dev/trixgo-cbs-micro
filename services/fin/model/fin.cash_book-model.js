@@ -1124,16 +1124,18 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuong").row(i).cell(22).value(Number(item.paid))
                                 workbook.sheet("BangLuong").row(i).cell(23).value(item?.note)
 
+                                workbook.sheet("BangLuong").row(i).cell(24).value(`${item?._id}`)
+
                                 // Mẫu Import để giảm data
-                                workbook.sheet("Import").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("Import").row(i).cell(2).value(`${item?._id}`)
-                                workbook.sheet("Import").row(i).cell(3).value(item?.human?.fullname)
-                                workbook.sheet("Import").row(i).cell(4).value(item?.project?.name)
-                                workbook.sheet("Import").row(i).cell(5).value(Number(item.salary))
-                                workbook.sheet("Import").row(i).cell(6).value(Number(item.revenueBonus))
-                                workbook.sheet("Import").row(i).cell(7).value(Number(item.mealAllowance))
-                                workbook.sheet("Import").row(i).cell(8).value(Number(item.pitax))
-                                workbook.sheet("Import").row(i).cell(9).value(Number(item.other))                                
+                                // workbook.sheet("Import").row(i).cell(1).value(Number(index + 1))
+                                // workbook.sheet("Import").row(i).cell(2).value(`${item?._id}`)
+                                // workbook.sheet("Import").row(i).cell(3).value(item?.human?.fullname)
+                                // workbook.sheet("Import").row(i).cell(4).value(item?.project?.name)
+                                // workbook.sheet("Import").row(i).cell(5).value(Number(item.salary))
+                                // workbook.sheet("Import").row(i).cell(6).value(Number(item.revenueBonus))
+                                // workbook.sheet("Import").row(i).cell(7).value(Number(item.mealAllowance))
+                                // workbook.sheet("Import").row(i).cell(8).value(Number(item.pitax))
+                                // workbook.sheet("Import").row(i).cell(9).value(Number(item.other))                                
                                 
                                 i++
                             })
@@ -1399,6 +1401,7 @@ class Model extends BaseModel {
     
                     return resolve({ error: false, message: "import success" });
                 }else{
+                    // IMPORT CẬP NHẬT BẢNG LƯƠNG
                     if(Number(option) === 1){
                         //___________Quyền truy cập ứng dụng Nhân sự
                         let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -1408,67 +1411,38 @@ class Model extends BaseModel {
 
                         if(!infoAppUser.error && infoAppUser.data.level == 0){
                             for (const data of dataImportJSON) {
-                                // console.log(data)
-                                if(index > 0 && index <= 300){
-                                    // let dataUpdate = {
-                                    //     userUpdate: userID, 
-                                    //     modifyAt: new Date()
-                                    // }
-    
-                                    // if(data?.__EMPTY_4 && Number(data?.__EMPTY_4) != 0){
-                                    //     dataUpdate.revenueBonus = Number(data?.__EMPTY_4)
-                                    // }
-                                    // if(data?.__EMPTY_5 && Number(data?.__EMPTY_5) != 0){
-                                    //     dataUpdate.mealAllowance = Number(data?.__EMPTY_5)
-                                    // }
-                                    // if(data?.__EMPTY_6 && Number(data?.__EMPTY_6) != 0){
-                                    //     dataUpdate.pitax = Number(data?.__EMPTY_6)
-                                    // }
-                                    // if(data?.__EMPTY_7 && Number(data?.__EMPTY_7) != 0){
-                                    //     dataUpdate.other = Number(data?.__EMPTY_7)
-                                    // }
-    
-                                    // console.log(dataUpdate)
-    
-                                    // let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(data?.__EMPTY,dataUpdate)
+                                if(index > 0 && index <= 100){    
                                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                                        expertSalaryID: data?.__EMPTY, 
+                                        expertSalaryID: data?.__EMPTY_22, 
                                         admins: [userID], 
                                         members: [userID], 
                                         userID, 
-                                        // note, 
-                                        // salary, 
-                                        // onLeaveSalary, 
-                                        // reward, 
-                                        // punishment, 
-                                        // advance, 
-                                        // convertFactor, 
-                                        // paid, 
-                                        revenueBonus:  Number(data?.__EMPTY_4), 
-                                        mealAllowance:  Number(data?.__EMPTY_5), 
-                                        // insurance, 
-                                        pitax: Number(data?.__EMPTY_6), 
-                                        // union, 
-                                        // share, 
-                                        other: Number(data?.__EMPTY_7)
+                                        note: data?.__EMPTY_21, 
+                                        salary:  Number(data?.__EMPTY_3), 
+                                        onLeaveSalary:  Number(data?.__EMPTY_5), 
+                                        revenueBonus:  Number(data?.__EMPTY_6), 
+                                        reward:  Number(data?.__EMPTY_7), 
+
+                                        mealAllowance:  Number(data?.__EMPTY_8), 
+                                        punishment:  Number(data?.__EMPTY_9), 
+                                        insurance:  Number(data?.__EMPTY_10), 
+                                        pitax: Number(data?.__EMPTY_11), 
+                                        union:  Number(data?.__EMPTY_12), 
+                                        share:  Number(data?.__EMPTY_13), 
+                                        other: Number(data?.__EMPTY_14),
+
+                                        advance:  Number(data?.__EMPTY_17), 
+                                        paid:  Number(data?.__EMPTY_20), 
                                     })
-                                    // console.log(infoAfterUpdate)
     
-                                    // if(infoAfterUpdate.error){
-                                    //     errorNumber++;
-                                    // }
-            
-                                    // let infoAfterInsert = await this.insert(dataInsert);
-                                    // if(infoAfterInsert.error){
-                                    //     errorNumber++;
-                                    // }
+                                    if(infoAfterUpdate.error){
+                                        
+                                        errorNumber++;
+                                    }
                                 }
-    
+
                                 index ++;
                             }
-            
-                            if(errorNumber != 0)
-                                return resolve({ error: true, message: "import field" });
             
                             return resolve({ error: false, message: "import success" });
                         }else{
