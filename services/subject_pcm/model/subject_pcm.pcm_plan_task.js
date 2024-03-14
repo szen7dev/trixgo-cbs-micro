@@ -3950,10 +3950,14 @@ class Model extends BaseModel {
                  */
                 let mailsUser = [];
 
-                let listFile = await PCM_FILE_COLL.find({task: taskID})
-                .sort({_id: -1})
-                .limit(100)
-                // console.log(listFile)
+                let listComment = await PCM_COMMENT_COLL.find({task: taskID})
+                .select('content author createAt files images receivers')
+                .populate({
+                    path: 'author files images receivers',
+                    select: 'fullname image nameOrg path createAt'
+                })
+                .sort({createAt:-1})
+                // console.log(listComment)
 
                 if(receivers && receivers.length) {
                     const { data: users } = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
@@ -4007,7 +4011,7 @@ class Model extends BaseModel {
                     email: mailsUser,
                     title,
                     content: { sender, notice, infoTask },
-                    files: listFile
+                    comments: listComment
                 });
 
                 return resolve(result);
