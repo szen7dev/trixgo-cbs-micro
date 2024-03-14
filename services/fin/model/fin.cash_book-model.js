@@ -34,6 +34,7 @@ const { KEY_ERROR } = require('../../../tools/keys/index');
  */
 const FINANCIAL_GENERAL_JOURNAL_MODEL   = require('../.../../../accounting/model/accounting.financial_general_journal-model').MODEL
 const ACCOUNT_MODEL                     = require('../.../../../item/model/item.account-model').MODEL
+const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 
 class Model extends BaseModel {
     constructor() {
@@ -1038,22 +1039,32 @@ class Model extends BaseModel {
                      * TẢI BẢNG TÍNH LƯƠNG
                      */
                     if(option == 2){
+                        let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
+                            appID: "61e049cffdebf77b072d1b14", 
+                            userID
+                        })
+
+                        let conditionObj = {};
+                        conditionObj.parent = parentID
+        
                         let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID).select('name status date note salary')
                         
                         // Danh sách các phòng ban mà user được quyền truy cập
                         let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
                         let listPosition = await ITEM__POSITION_COLL.find({company:companyID}).select('_id name')
 
-                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({
-                            parent: parentID,
-                            project: { $in: listDepartment.map(item=>item.id) }
-                        })
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                            // Admin ứng dụng
+                         }else{
+                             let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
+                             conditionObj.project = { $in: listDepartment.map(item=>item.id) }
+                         }
+
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                         .populate({
                             path: 'human project position',
                             select:'fullname name',
                         })
-                        // .select('name status date note salary revenueBonus reward mealAllowance punishment insurance pitax union share other advance remaining paid convertFactor')
-                        // console.log(listData)
 
                          // Modify the workbook.
                          XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx')))
