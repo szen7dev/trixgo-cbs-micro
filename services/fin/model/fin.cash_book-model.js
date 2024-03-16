@@ -1110,8 +1110,8 @@ class Model extends BaseModel {
 
                                 workbook.sheet("BangLuong").row(i).cell(12).value(Number(item.punishment))
                                 workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.insurance))
-                                workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.pitax))
-                                workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.union))
+                                // workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.pitax))
+                                // workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.union))
                                 workbook.sheet("BangLuong").row(i).cell(16).value(Number(item.share))
                                 workbook.sheet("BangLuong").row(i).cell(17).value(Number(item.other))
 
