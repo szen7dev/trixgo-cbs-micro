@@ -27,6 +27,9 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant');
+
+const TIMESHEET__EXPERT_TIMESHEET_COLL   = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const TIMESHEET__EXPERT_SALARY_COLL      = require('../../timesheet/database/timesheet.expert_salary-coll')
 class Model extends BaseModel {
 
     constructor() {
@@ -1101,10 +1104,9 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault,
-        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, storageUse, ctx }) {
-        // console.log('====================>>>>>>>>>>>>>>>>>>>>')
-        // console.log({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, storageUse })
+    update({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, ctx }) {
+        console.log('====================>>>>>>>>>>>>>>>>>>>>')
+        console.log({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse })
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID)) {
@@ -1204,12 +1206,31 @@ class Model extends BaseModel {
                     await ctx.call(`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.UPDATE_MEMBER_NAME}`, {
                         userID,
                         bizfullname: dataUpdate.bizfullname
-                    });
+                    })
                 }
 
                 delete infoUserAfterUpdate.password;
+
+                // Cập nhật thông tin trong chấm công và bảng lương
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({company: infoUserAfterUpdate.company},{
+                    $set: {
+                        project:  infoUserAfterUpdate.department,
+                        position:  infoUserAfterUpdate.position,
+                    }
+                })
+                // console.log('111111111111111111111111111')
+
+                await TIMESHEET__EXPERT_SALARY_COLL.updateMany({company: infoUserAfterUpdate.company},{
+                    $set: {
+                        project:  infoUserAfterUpdate.department,
+                        position:  infoUserAfterUpdate.position,
+                    }
+                })
+                // console.log('222222222222222222222222222')
+
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
                 return resolve({ error: false, data: infoUserAfterUpdate });
+
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
