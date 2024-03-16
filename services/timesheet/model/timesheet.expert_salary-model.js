@@ -801,12 +801,12 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID, ctx }) {
+        keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID }) {
         // console.log({sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
                     appID: "61e049cffdebf77b072d1b14", 
@@ -847,6 +847,8 @@ class Model extends BaseModel {
                 }
 
 				if(checkObjectIDs(parentID)){
+                    keys	 = ['project__1'];
+
 					conditionObj.parent = parentID
 
                     if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
@@ -915,6 +917,8 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
+                // sortBy      = { project: 1 };
+                // console.log({sortBy})
 
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
