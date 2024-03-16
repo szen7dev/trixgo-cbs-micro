@@ -1104,25 +1104,50 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuong").row(i).cell(5).value(Number(item.salary))
                                 workbook.sheet("BangLuong").row(i).cell(6).value(Number(item.convertFactor))
                                 workbook.sheet("BangLuong").row(i).cell(7).value(Number(item.onLeaveSalary))
-
                                 workbook.sheet("BangLuong").row(i).cell(8).value(Number(item.revenueBonus))
                                 workbook.sheet("BangLuong").row(i).cell(9).value(Number(item.reward))
                                 workbook.sheet("BangLuong").row(i).cell(10).value(Number(item.mealAllowance))
-                                workbook.sheet("BangLuong").row(i).cell(11).value(Number(item.punishment))
-                                workbook.sheet("BangLuong").row(i).cell(12).value(Number(item.insurance))
-                                workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.pitax))
-                                workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.union))
-                                workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.share))
-                                workbook.sheet("BangLuong").row(i).cell(16).value(Number(item.other))
 
-                                workbook.sheet("BangLuong").row(i).cell(17).value(Number(tongThu))
-                                workbook.sheet("BangLuong").row(i).cell(18).value(Number(tongGiamTru))
+                                workbook.sheet("BangLuong").row(i).cell(12).value(Number(item.punishment))
+                                workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.insurance))
+                                // workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.pitax))
+                                // workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.union))
+                                workbook.sheet("BangLuong").row(i).cell(16).value(Number(item.share))
+                                workbook.sheet("BangLuong").row(i).cell(17).value(Number(item.other))
 
-                                workbook.sheet("BangLuong").row(i).cell(19).value(Number(item.advance))
-                                workbook.sheet("BangLuong").row(i).cell(20).value(Number(item.paid))
-                                workbook.sheet("BangLuong").row(i).cell(21).value(Number(item.remaining))
-                                workbook.sheet("BangLuong").row(i).cell(22).value(item?.note)
-                                workbook.sheet("BangLuong").row(i).cell(23).value(`${item?._id}`)                       
+                                workbook.sheet("BangLuong").row(i).cell(20).value(Number(item.advance))
+                                workbook.sheet("BangLuong").row(i).cell(21).value(Number(item.paid))
+
+                                workbook.sheet("BangLuong").row(i).cell(23).value(item?.note)
+                                workbook.sheet("BangLuong").row(i).cell(24).value(`${item?._id}`)          
+                                
+                                // Bảng lương 2
+                                workbook.sheet("BangLuong2").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("BangLuong2").row(i).cell(2).value(item?.human?.fullname)
+                                workbook.sheet("BangLuong2").row(i).cell(3).value(item?.project?.name)
+                                workbook.sheet("BangLuong2").row(i).cell(4).value(item?.position?.name)
+                                workbook.sheet("BangLuong2").row(i).cell(5).value(Number(item.salary))
+                                workbook.sheet("BangLuong2").row(i).cell(6).value(Number(item.convertFactor))
+                                workbook.sheet("BangLuong2").row(i).cell(7).value(Number(item.onLeaveSalary))
+
+                                workbook.sheet("BangLuong2").row(i).cell(8).value(Number(item.revenueBonus))
+                                workbook.sheet("BangLuong2").row(i).cell(9).value(Number(item.reward))
+                                workbook.sheet("BangLuong2").row(i).cell(10).value(Number(item.mealAllowance))
+                                workbook.sheet("BangLuong2").row(i).cell(11).value(Number(item.punishment))
+                                workbook.sheet("BangLuong2").row(i).cell(12).value(Number(item.insurance))
+                                workbook.sheet("BangLuong2").row(i).cell(13).value(Number(item.pitax))
+                                workbook.sheet("BangLuong2").row(i).cell(14).value(Number(item.union))
+                                workbook.sheet("BangLuong2").row(i).cell(15).value(Number(item.share))
+                                workbook.sheet("BangLuong2").row(i).cell(16).value(Number(item.other))
+
+                                workbook.sheet("BangLuong2").row(i).cell(17).value(Number(tongThu))
+                                workbook.sheet("BangLuong2").row(i).cell(18).value(Number(tongGiamTru))
+
+                                workbook.sheet("BangLuong2").row(i).cell(19).value(Number(item.advance))
+                                workbook.sheet("BangLuong2").row(i).cell(20).value(Number(item.paid))
+                                workbook.sheet("BangLuong2").row(i).cell(21).value(Number(item.remaining))
+                                workbook.sheet("BangLuong2").row(i).cell(22).value(item?.note)
+                                workbook.sheet("BangLuong2").row(i).cell(23).value(`${item?._id}`)   
                                 
                                 i++
                             })
@@ -1398,7 +1423,8 @@ class Model extends BaseModel {
 
                         if(!infoAppUser.error && infoAppUser.data.level == 0){
                             for (const data of dataImportJSON) {
-                                if(index > 0 && index <= 100){    
+                                if(index > 1 && index <= 101){    
+                                    // console.log(data)
                                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
                                         expertSalaryID: data?.__EMPTY_22, 
                                         admins: [userID], 
@@ -1409,17 +1435,17 @@ class Model extends BaseModel {
                                         onLeaveSalary:  Number(data?.__EMPTY_5), 
                                         revenueBonus:  Number(data?.__EMPTY_6), 
                                         reward:  Number(data?.__EMPTY_7), 
-
                                         mealAllowance:  Number(data?.__EMPTY_8), 
-                                        punishment:  Number(data?.__EMPTY_9), 
-                                        insurance:  Number(data?.__EMPTY_10), 
-                                        pitax: Number(data?.__EMPTY_11), 
-                                        union:  Number(data?.__EMPTY_12), 
-                                        share:  Number(data?.__EMPTY_13), 
-                                        other: Number(data?.__EMPTY_14),
 
-                                        advance:  Number(data?.__EMPTY_17), 
-                                        paid:  Number(data?.__EMPTY_20), 
+                                        punishment:  Number(data?.__EMPTY_10), 
+                                        insurance:  Number(data?.__EMPTY_11), 
+                                        pitax: Number(data?.__EMPTY_12), 
+                                        union:  Number(data?.__EMPTY_13), 
+                                        share:  Number(data?.__EMPTY_14), 
+                                        other: Number(data?.__EMPTY_15),
+
+                                        advance:  Number(data?.__EMPTY_18), 
+                                        paid:  Number(data?.__EMPTY_19), 
                                     })
     
                                     if(infoAfterUpdate.error){
