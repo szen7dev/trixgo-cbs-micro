@@ -1119,23 +1119,10 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuong").row(i).cell(18).value(Number(tongGiamTru))
 
                                 workbook.sheet("BangLuong").row(i).cell(19).value(Number(item.advance))
-                                workbook.sheet("BangLuong").row(i).cell(20).value(Number(item.remaining))
-
-                                workbook.sheet("BangLuong").row(i).cell(22).value(Number(item.paid))
-                                workbook.sheet("BangLuong").row(i).cell(23).value(item?.note)
-
-                                workbook.sheet("BangLuong").row(i).cell(24).value(`${item?._id}`)
-
-                                // Mẫu Import để giảm data
-                                // workbook.sheet("Import").row(i).cell(1).value(Number(index + 1))
-                                // workbook.sheet("Import").row(i).cell(2).value(`${item?._id}`)
-                                // workbook.sheet("Import").row(i).cell(3).value(item?.human?.fullname)
-                                // workbook.sheet("Import").row(i).cell(4).value(item?.project?.name)
-                                // workbook.sheet("Import").row(i).cell(5).value(Number(item.salary))
-                                // workbook.sheet("Import").row(i).cell(6).value(Number(item.revenueBonus))
-                                // workbook.sheet("Import").row(i).cell(7).value(Number(item.mealAllowance))
-                                // workbook.sheet("Import").row(i).cell(8).value(Number(item.pitax))
-                                // workbook.sheet("Import").row(i).cell(9).value(Number(item.other))                                
+                                workbook.sheet("BangLuong").row(i).cell(20).value(Number(item.paid))
+                                workbook.sheet("BangLuong").row(i).cell(21).value(Number(item.remaining))
+                                workbook.sheet("BangLuong").row(i).cell(22).value(item?.note)
+                                workbook.sheet("BangLuong").row(i).cell(23).value(`${item?._id}`)                       
                                 
                                 i++
                             })
