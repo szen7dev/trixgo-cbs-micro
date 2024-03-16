@@ -297,25 +297,26 @@ class Model extends BaseModel {
                             dataUpdate.members = [];
                         }
                     }
-                } else{
-                    if(checkObjectIDs(admins)) {
-                        return resolve({
-                            error: true,
-                            message: 'Bạn không có quyền chia sẻ',
-                            keyError: "permission_denined",
-                            status: 403
-                        });
-                    }
+                } 
+                // else{
+                //     if(checkObjectIDs(admins)) {
+                //         return resolve({
+                //             error: true,
+                //             message: 'Bạn không có quyền chia sẻ',
+                //             keyError: "permission_denined",
+                //             status: 403
+                //         });
+                //     }
 
-                    if(checkObjectIDs(members)) {
-                        return resolve({
-                            error: true,
-                            message: 'Bạn không có quyền chia sẻ',
-                            keyError: "permission_denined",
-                            status: 403
-                        });
-                    }
-                }
+                //     if(checkObjectIDs(members)) {
+                //         return resolve({
+                //             error: true,
+                //             message: 'Bạn không có quyền chia sẻ',
+                //             keyError: "permission_denined",
+                //             status: 403
+                //         });
+                //     }
+                // }
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
