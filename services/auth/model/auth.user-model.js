@@ -1212,7 +1212,7 @@ class Model extends BaseModel {
                 delete infoUserAfterUpdate.password;
 
                 // Cập nhật thông tin trong chấm công và bảng lương
-                await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({company: infoUserAfterUpdate.company},{
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({assignee: infoUserAfterUpdate._id,},{
                     $set: {
                         project:  infoUserAfterUpdate.department,
                         position:  infoUserAfterUpdate.position,
@@ -1220,7 +1220,7 @@ class Model extends BaseModel {
                 })
                 // console.log('111111111111111111111111111')
 
-                await TIMESHEET__EXPERT_SALARY_COLL.updateMany({company: infoUserAfterUpdate.company},{
+                await TIMESHEET__EXPERT_SALARY_COLL.updateMany({human: infoUserAfterUpdate._id,},{
                     $set: {
                         project:  infoUserAfterUpdate.department,
                         position:  infoUserAfterUpdate.position,
