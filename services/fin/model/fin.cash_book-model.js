@@ -1048,7 +1048,8 @@ class Model extends BaseModel {
                         let conditionObj = {};
                         conditionObj.parent = parentID
         
-                        let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID).select('name status date note salary')
+                        let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID)
+                        .select('name status date note salary')
                         
                         // Danh sách các phòng ban mà user được quyền truy cập
                         let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
@@ -1066,6 +1067,7 @@ class Model extends BaseModel {
                             path: 'human project position',
                             select:'fullname name',
                         })
+                        .sort({project: 1})
 
                          // Modify the workbook.
                          XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx')))
