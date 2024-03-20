@@ -44,6 +44,7 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID }) {
+        // console.log({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID })
         return new Promise(async resolve => {
             try {
                 if(!name){
