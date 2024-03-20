@@ -224,7 +224,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { parentID, dataImport } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log({parentID})
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.importFromExcel({
                     companyID: company._id, parentID, dataImport, userID, ctx
