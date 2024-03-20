@@ -445,7 +445,7 @@ class Model extends BaseModel {
                     })
 
                     if(info){
-                        salary = item.amount // Lấy theo bảng chấm công
+                        salary = Number(item.amount).toFixed(0) // Lấy theo bảng chấm công
                         onLeaveSalary = info.onLeaveSalary
                         reward = info.reward
                         revenueBonus = info.revenueBonus
@@ -494,7 +494,7 @@ class Model extends BaseModel {
 
                     if(info){
                         salary = info.salary
-                        onLeaveSalary = item.amount
+                        onLeaveSalary = Number(item.amount).toFixed(0)
                         reward = info.reward
                         revenueBonus = info.revenueBonus
                         mealAllowance = info.mealAllowance
