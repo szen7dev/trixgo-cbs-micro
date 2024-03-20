@@ -407,7 +407,7 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     importFromExcel({ option, companyID, parentID, dataImport, userID, ctx }) {
-        // console.log({option, companyID, parentID, userID})
+        // console.log({option, companyID, parentID, dataImport, userID})
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(parentID))
@@ -459,7 +459,7 @@ class Model extends BaseModel {
     }
 
     exportExcel({ customerID, userCreateID }) {
-        console.log({ customerID, userCreateID })
+        // console.log({ customerID, userCreateID })
         return new Promise(async resolve => {
             try {
                 

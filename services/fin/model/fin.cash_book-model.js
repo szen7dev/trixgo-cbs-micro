@@ -35,6 +35,7 @@ const { KEY_ERROR } = require('../../../tools/keys/index');
 const FINANCIAL_GENERAL_JOURNAL_MODEL   = require('../.../../../accounting/model/accounting.financial_general_journal-model').MODEL
 const ACCOUNT_MODEL                     = require('../.../../../item/model/item.account-model').MODEL
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
+const TIMESHEET__EXPERT_TIMESHEET_MODEL = require('../.../../../timesheet/model/timesheet.expert_timesheet-model').MODEL;
 const TIMESHEET__EXPERT_SALARY_MODEL    = require('../.../../../timesheet/model/timesheet.expert_salary-model').MODEL;
 
 class Model extends BaseModel {
@@ -1452,6 +1453,44 @@ class Model extends BaseModel {
     
                                     if(infoAfterUpdate.error){
                                         
+                                        errorNumber++;
+                                    }
+                                }
+
+                                index ++;
+                            }
+            
+                            return resolve({ error: false, message: "import success" });
+                        }else{
+                            return resolve({ error: true, message: "import field" });
+                        }
+                    }
+
+                    // IMPORT CẬP NHẬT BẢNG CÔNG
+                    if(Number(option) === 2){
+                        //___________Quyền truy cập ứng dụng Nhân sự
+                        let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                            appID: "61e049cffdebf77b072d1b14", 
+                            userID
+                        })
+
+                        if(!infoAppUser.error && infoAppUser.data.level == 0){
+                            for (const data of dataImportJSON) {
+                                if(index > 0 && index <= 101){    
+                                    // console.log(data)
+                                    let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({
+                                        userCreate: userID, 
+                                        companyID: companyID, 
+                                        parentID, 
+                                        name: data?.__EMPTY, 
+                                        date: data?.__EMPTY_9, 
+                                        note: data?.__EMPTY_5, 
+                                        hours: data?.__EMPTY_2, 
+                                        unitprice: data?.__EMPTY_3, 
+                                        assigneeID: data?.__EMPTY_7, 
+                                    })
+    
+                                    if(infoAfterUpdate.error){
                                         errorNumber++;
                                     }
                                 }
