@@ -276,9 +276,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID 
                 })
@@ -293,22 +290,23 @@ module.exports = {
     /**
      * Dev: HiepNH
      * Func: Download Template Excel
-     * Date: 9/12/2022
+     * Date: 21/3/2024
      */
     importFromExcel: {
         auth: 'required',
         params: {
-            // taskID    : { type: 'string', optional: true },
             dataImport: { type: 'string' }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                const { option, dataImport } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                // console.log( ctx.params)
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.importFromExcel({
-                    taskID, dataImport, userID, ctx
+                    option, companyID: company._id, dataImport, userID
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
