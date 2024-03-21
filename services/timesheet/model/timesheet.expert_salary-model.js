@@ -334,7 +334,8 @@ class Model extends BaseModel {
                     }
 
                     // Thêm các nhân sự còn thiếu vào bảng lương
-                    let listHuman = await AUTH__USER_COLL.find({ company: infoSalary.company, status: 1 })
+                    let companyID = infoSalary.company, userCreate = userID
+                    let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 })
                     .select('fullname department position contacts')
                     .populate({
                         path: 'contacts',
@@ -361,13 +362,13 @@ class Model extends BaseModel {
                                 admins: [userCreate],
                                 members: [userCreate],
                                 human: item._id,
-                                parent: infoAfterInsert._id,
-                                company: infoAfterInsert.company,
-                                convertFactor: infoAfterInsert.convertFactor,
+                                parent: expertSalaryID,
+                                company: companyID,
+                                convertFactor: infoSalary.convertFactor,
                                 project: item.department,
                                 position: item.position,
-                                date: infoAfterInsert.date,
-                                type: infoAfterInsert.type,
+                                date: infoSalary.date,
+                                type: infoSalary.type,
                             }
 
                             if(Number(insuranceFee) > 0){
