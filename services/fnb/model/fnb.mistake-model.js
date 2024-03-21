@@ -39,8 +39,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID }) {
-        // console.log({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID })
+    insert({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID, date }) {
+        // console.log({ mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, date })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(mistakeID) || !checkObjectIDs(executorID) || !checkObjectIDs(userID))
@@ -93,6 +93,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(bonus)){
                     dataInsert.bonus = Number(bonus);
+                }
+
+                if(date && date != ""){
+                    dataInsert.date = date;
                 }
 
                 if(note && note != ""){
@@ -751,6 +755,58 @@ class Model extends BaseModel {
                     }
 
                     return resolve({ error: false, data: listData });
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Import Excel
+     * Code: Hiepnh
+     * Date: 21/3/2024
+     */
+    importFromExcel({ option, companyID, dataImport, userID }) {
+        // console.log({option, companyID, dataImport, userID})
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+
+                if(!option){
+                    for (const data of dataImportJSON) {
+                        if(index > 0 && index <= 100){
+                            // console.log(data)
+                            let dataInsert = {
+                                userID, 
+                                companyID,
+                                type: data?.__EMPTY_2, 
+                                fundaID: data?.__EMPTY_6, 
+                                executorID: data?.__EMPTY_7, 
+                                mistakeID: data?.__EMPTY_8, 
+                                date: data?.__EMPTY_9, 
+                                amount: data?.__EMPTY_3, 
+                                bonus: data?.__EMPTY_4, 
+                                note: data?.__EMPTY_5, 
+                            }
+                            // console.log(dataInsert)
+    
+                            let infoAfterInsert = await this.insert(dataInsert);
+                            if(infoAfterInsert.error){
+                                errorNumber++;
+                            }
+                        }
+                        index ++;
+                    }
+    
+                    if(errorNumber != 0)
+                        return resolve({ error: true, message: "import field" });
+    
+                    return resolve({ error: false, message: "import success" });
+                }else{
+                    
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

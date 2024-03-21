@@ -30,7 +30,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, companyID } = ctx.params;
+                let { mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, companyID, date } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -39,7 +39,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.insert({
-                    mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID
+                    mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID, date
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -271,7 +271,7 @@ module.exports = {
     /**
      * Dev: HiepNH
      * Func: Download Template Excel
-     * Date: 9/12/2022
+     * Date: 21/3/2024
      */
     importFromExcel: {
         auth: 'required',
@@ -281,22 +281,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
-                // console.log(dataImport)
+                const { option, dataImport } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log('====================HERE===================')
-                // console.log(dataImport)
+                // console.log( ctx.params)
 
                 const resultAfterCallHandler = await FNB_MISTAKE_MODEL.importFromExcel({
-                    taskID, dataImport, userID, ctx
+                    option, companyID: company._id, dataImport, userID
                 })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx })
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },

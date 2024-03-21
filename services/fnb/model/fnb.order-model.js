@@ -3552,6 +3552,57 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Import Excel
+     * Code: Hiepnh
+     * Date: 21/3/2024
+     */
+    importFromExcel({ option, companyID, dataImport, userID }) {
+        // console.log({option, companyID, dataImport, userID})
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+
+                // if(!option){
+                //     for (const data of dataImportJSON) {
+                //         if(index > 0 && index <= 250){
+                //             let dataInsert = {
+                //                 companyID, 
+                //                 userID, 
+                //                 parentID, 
+                //                 accountID: data?.__EMPTY_14,
+                //                 customerID: data?.__EMPTY_15, 
+                //                 contractID: data?.__EMPTY_16, 
+                //                 name: data?.__EMPTY_1,
+                //                 note: data?.__EMPTY_7, 
+                //                 date: data?.__EMPTY_13, 
+                //                 income: data?.__EMPTY_5, 
+                //                 expense: data?.__EMPTY_6
+                //             }
+    
+                //             let infoAfterInsert = await this.insert(dataInsert);
+                //             if(infoAfterInsert.error){
+                //                 errorNumber++;
+                //             }
+                //         }
+                //         index ++;
+                //     }
+    
+                //     if(errorNumber != 0)
+                //         return resolve({ error: true, message: "import field" });
+    
+                //     return resolve({ error: false, message: "import success" });
+                // }else{
+                    
+                // }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Dev: HiepNH
      * Func: Tải KPI
      * Date: 8/12/2022
@@ -3562,7 +3613,8 @@ class Model extends BaseModel {
         // console.log({ companyID, year, month, userID, queryFnb })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
+                // if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
+                if(1>0){
                     let yearFilter
                     let currentYear = new Date().getFullYear()
                     let currentMonth = new Date().getMonth() + 1
