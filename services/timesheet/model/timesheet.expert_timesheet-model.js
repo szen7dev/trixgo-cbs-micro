@@ -518,6 +518,14 @@ class Model extends BaseModel {
                     delete conditionObj.$or 
                 }
 
+                // Chi tiết chấm công của 1 nhân sự
+                if(type && type == 3){
+                    conditionObj.parent = { $exists: true, $ne: null }
+                    conditionObj.assignee = humanID
+
+                    delete conditionObj.$or 
+                }
+
                 if(subtype ){
                     conditionObj.subtype = Number(subtype)
                 }
