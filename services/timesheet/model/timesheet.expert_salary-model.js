@@ -920,7 +920,7 @@ class Model extends BaseModel {
                 }
 
 				if(checkObjectIDs(parentID)){
-                    keys	 = ['project__1'];
+                    // keys	 = ['project__1', '_id__-1']; // Đưa vào đây thì phân trang không còn đúng nữa
 
 					conditionObj.parent = parentID
 
@@ -991,7 +991,7 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
                 // sortBy      = { project: 1 };
-                // console.log({sortBy})
+                console.log({sortBy})
 
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
