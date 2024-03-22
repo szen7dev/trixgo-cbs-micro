@@ -93,6 +93,40 @@ module.exports = {
         }
     },
 
+    /**
+     * Name: Remove
+     * Author: HiepNH
+     * Code: 22/3/2024
+     */
+    remove: {
+        auth: "required",
+        params: {
+            arraysRemove : { type: "array", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {  arraysRemove } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                console.log(ctx.params)
+
+                let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.remove({
+                    arraysRemove, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: syncData
+     * Author: HiepNH
+     * Code: 22/3/2024
+     */
     syncData: {
         params: {
             salaryID : { type: "string" },
@@ -108,29 +142,6 @@ module.exports = {
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.syncData({
                     userID, companyID: company._id, option, salaryID, ctx 
                 });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error: true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Name: Remove
-     * Author: HiepNH
-     * Code: 22/11/2023
-     */
-    remove: {
-        params: {
-            expertSalaryID : { type: "string"},
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-
-                let { expertSalaryID } = ctx.params;
-                let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.remove({ expertSalaryID, ctx  });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
