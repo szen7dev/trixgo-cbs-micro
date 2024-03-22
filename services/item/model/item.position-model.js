@@ -241,7 +241,7 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
 					let keys	 = ['createAt__-1', '_id__-1'];
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
