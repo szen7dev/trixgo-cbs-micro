@@ -4,12 +4,13 @@ require('dotenv').config();
 
 let	ApiGateway 				= require("moleculer-web"),
 	express         		= require('express'),
+	path         		    = require('path'),
 	app               		= express(),
 	server            		= require('http').Server(app),
-	{ CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant'),
 	apiV1 					= require("./auth.alias"), // config api
 	apiNonAuthV1 			= require("./non-auth.alias"); // config api
 
+const { CF_DOMAIN_SERVICES } 	        = require('./helper/domain.constant');
 const { CF_ACTIONS_GATEWAY } 	        = require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } 	        	= require('../auth/helper/auth.actions-constant');
 const GATEWAY__HANDLER      			= require('./handler/gateway.handler');
@@ -29,7 +30,9 @@ module.exports = {
 		 * MIDDLEWARE GLOBAL
 		 */
 		// Global Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
-		use: [],
+		use: [
+    		express.static(path.join(__dirname, "public")),
+		],
 
 		cors: {
 			// Configures the Access-Control-Allow-Origin CORS header.

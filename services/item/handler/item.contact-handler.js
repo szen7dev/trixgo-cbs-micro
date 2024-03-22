@@ -448,7 +448,7 @@ module.exports = {
     exportExcel: {
         auth: 'required',
         params: {
-            // companyID: { type: "string", optional: true },
+            companyID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -483,8 +483,6 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let { companyID, filterParams } = ctx.params;
-                // console.log('=============>>>>>>>>>>>>>>>')
-                // console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
