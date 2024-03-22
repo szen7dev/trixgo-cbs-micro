@@ -1544,6 +1544,9 @@ class Model extends BaseModel {
             if(option == 1){
                 let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note subtype')
 
+                monthFilter = new Date(infoParent.date).getMonth() + 1
+                // console.log({ monthFilter })
+
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID})
                 .populate({
                     path: 'work assignee',
@@ -1555,7 +1558,8 @@ class Model extends BaseModel {
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
-                            company: ObjectID(companyID),
+                            // company: ObjectID(companyID),
+                            parent: ObjectID(parentID),
                             assignee: { $exists: true, $ne: null }
                         }
                     },
