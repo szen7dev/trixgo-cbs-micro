@@ -16,7 +16,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
 const { uploadFileS3 }                  = require('../../../tools/s3')
 const { isValidDate }                   = require('../../../tools/utils/time_utils')
 
-const { 
+const {
     CONTACT_CLASSIFY,
     HUMAN_CLASSIFY,
     CONTACT_GENDER,
@@ -53,7 +53,7 @@ const ANALYSIS__HISTORY_DATA_MODEL                  = require('../.../../../anal
 let dataTF = {
     appID: "61e049c9fdebf77b072d1b13", // HUMAN
     menuID: "623f1f0de998e94feda0cd72", //
-    type: 1, 
+    type: 1,
     action: 1, // Xem
 }
 let dataTF2 = {
@@ -90,7 +90,7 @@ class Model extends BaseModel {
 
                 //___________Quyền truy cập ứng dụng Nhân sự
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                    appID: "61e049c9fdebf77b072d1b13", 
+                    appID: "61e049c9fdebf77b072d1b13",
                     userID: authorID
                 })
 
@@ -231,7 +231,7 @@ class Model extends BaseModel {
                     if(!infoAppUser.error && infoAppUser.data.level == 0){
                         dataInsert.parent = parent
                         dataInsert.nestedParents = [parent] // Cha cấp 1
-    
+
                         // Cập nhật Level để phục vụ việc tính toán, đệ quy
                         infoParent = await ITEM__CONTACT_COLL.findById(parent)
                         dataInsert.level = infoParent.level + 1
@@ -383,7 +383,7 @@ class Model extends BaseModel {
                          */
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(parent,
                             {
-                                $addToSet: { 
+                                $addToSet: {
                                     childs: infoAfterInsert._id,
                                     nestedChilds: infoAfterInsert._id,
                                 },
@@ -854,20 +854,20 @@ class Model extends BaseModel {
                 if(parent && checkObjectIDs(parent) && contactID.toString() != parent.toString()){
                     //___________Quyền truy cập ứng dụng Nhân sự
                     let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                        appID: "61e049c9fdebf77b072d1b13", 
+                        appID: "61e049c9fdebf77b072d1b13",
                         userID: authorID
                     })
 
                     // Chỉ admin ứng dụng mới được thêm phần tử cha con
                     if(!infoAppUser.error && infoAppUser.data.level == 0){
                         await ANALYSIS__HISTORY_DATA_MODEL.convertData({
-                            option: 8, 
-                            companyID: company, 
-                            userID: authorID, 
-                            docID: contactID, 
+                            option: 8,
+                            companyID: company,
+                            userID: authorID,
+                            docID: contactID,
                             parentID: parent
                         })
-                    }                    
+                    }
                 }
 
                 // Cập nhật lại số lượng document cho contact
@@ -900,9 +900,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 21/1/2024
      */
-    updateValue({ 
+    updateValue({
         contactID, userID
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
@@ -948,7 +948,7 @@ class Model extends BaseModel {
                 dataUpdate.amountContractHistory = Number(amountContractHistory)
                 dataUpdate.amountEducationHistory = Number(amountEducationHistory)
                 dataUpdate.amountCertificateHistory = Number(amountCertificateHistory)
-                
+
                 let infoAfterUpdate = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_task", status: 403 })
@@ -1026,7 +1026,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "can't_get_info", status: 403 })
                     }
                 }
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1136,24 +1136,23 @@ class Model extends BaseModel {
                 let conditionObjOrg = {
                     // _id: {
                     //     $gte: ObjectID.createFromTime(moment(new Date(fromDate)).startOf('day')._d/1000),
-                    //     $lte: ObjectID.createFromTime(moment(new Date(toDate)).endOf('day')._d/1000) 
+                    //     $lte: ObjectID.createFromTime(moment(new Date(toDate)).endOf('day')._d/1000)
                     // },
                     ...conditionObj
                 };
-                // console.log(conditionObjOrg)
 
-                if(lastestID && checkObjectIDs(lastestID)){
+                if (lastestID && checkObjectIDs(lastestID)){
                     let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
                     if(!infoData)
                         return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
                     if(!dataPagingAndSort || dataPagingAndSort.error)
                         return resolve({ error: true, message: "Can't get range pagination", status: 400 });
                     conditionObj  = dataPagingAndSort.data.find;
                     sortBy        = dataPagingAndSort.data.sort;
-                }else{
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                } else {
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
@@ -1380,7 +1379,7 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    
+
                     conditionObj.namecv = regSearch
                 }
 
@@ -1747,7 +1746,7 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    
+
                     conditionObj.namecv = regSearch
                 }
                 // console.log(conditionObj)
@@ -2039,70 +2038,70 @@ class Model extends BaseModel {
 
                         // return resolve({ error: false, message: `Data bị trùng: ${errorNumber}` });
                     }
-                    
+
                     // Import dữ liệu nếu đã OK
                     else{
-                        for (const data of dataImportJSON) {                           
+                        for (const data of dataImportJSON) {
                             // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                            if(index > 0 && index <= 50){
-                                let prepareData = { 
-                                    authorID: userID, 
+                            if(index > 0 && index < 51){
+                                let prepareData = {
+                                    authorID: userID,
                                     contactID: data?.__EMPTY,
                                     type: data?.__EMPTY_83, //
                                     subtype: data?.__EMPTY_84, //
-                                    name: data?.__EMPTY_3, 
-                                    sign: data?.__EMPTY_4, 
-                                    description: data?.__EMPTY_5, 
+                                    name: data?.__EMPTY_3,
+                                    sign: data?.__EMPTY_4,
+                                    description: data?.__EMPTY_5,
                                     note: data?.__EMPTY_6,
-                                    birthday: data?.__EMPTY_89, // 
-                                    gender: data?.__EMPTY_87, // 
-                                    phone: data?.__EMPTY_9, 
-                                    email: data?.__EMPTY_10, 
+                                    birthday: data?.__EMPTY_89, //
+                                    gender: data?.__EMPTY_87, //
+                                    phone: data?.__EMPTY_9,
+                                    email: data?.__EMPTY_10,
                                     fundaID: data?.__EMPTY_101, //
-                                    department: data?.__EMPTY_102, 
-                                    position: data?.__EMPTY_103, 
-                                    field: data?.__EMPTY_104, 
-                                    property: data?.__EMPTY_105, 
-                                    status: data?.__EMPTY_88, // 
-                                    identity: data?.__EMPTY_17, 
+                                    department: data?.__EMPTY_102,
+                                    position: data?.__EMPTY_103,
+                                    field: data?.__EMPTY_104,
+                                    property: data?.__EMPTY_105,
+                                    status: data?.__EMPTY_88, //
+                                    identity: data?.__EMPTY_17,
                                     dateProvice: data?.__EMPTY_90, //
-                                    place: data?.__EMPTY_19, 
-                                    taxid: data?.__EMPTY_20, 
-                                    insuranceNumber: data?.__EMPTY_21, 
-                                    insuranceSign: data?.__EMPTY_22, 
+                                    place: data?.__EMPTY_19,
+                                    taxid: data?.__EMPTY_20,
+                                    insuranceNumber: data?.__EMPTY_21,
+                                    insuranceSign: data?.__EMPTY_22,
                                     insuranceDate: data?.__EMPTY_91, //
-                                    sallaryBasic: data?.__EMPTY_24, 
-                                    insuranceFee: data?.__EMPTY_25, 
+                                    sallaryBasic: data?.__EMPTY_24,
+                                    insuranceFee: data?.__EMPTY_25,
                                     insuranceStatus: data?.__EMPTY_81, //
-                                    bankAccount: data?.__EMPTY_27, 
-                                    signerIn: data?.__EMPTY_28, 
+                                    bankAccount: data?.__EMPTY_27,
+                                    signerIn: data?.__EMPTY_28,
                                     workStartDate: data?.__EMPTY_92, //
                                     contractDate: data?.__EMPTY_93, //
                                     contractValid: data?.__EMPTY_94, //
                                     contractExpire: data?.__EMPTY_95, //
-                                    contractType: data?.__EMPTY_106, // 
-                                    contractSign: data?.__EMPTY_34, 
+                                    contractType: data?.__EMPTY_106, //
+                                    contractSign: data?.__EMPTY_34,
                                     workingStatus: data?.__EMPTY_107, //
                                     dayOff: data?.__EMPTY_96, //
-                                    signerOut: data?.__EMPTY_37, 
+                                    signerOut: data?.__EMPTY_37,
                                     appointDate: data?.__EMPTY_97, //
                                     changeSallaryDate: data?.__EMPTY_98, //
                                     graduationYear: data?.__EMPTY_99, //
-                                    address: data?.__EMPTY_42, 
+                                    address: data?.__EMPTY_42,
                                     area: data?.__EMPTY_108, //
                                     area1: data?.__EMPTY_109, //
                                     area2: data?.__EMPTY_110, //
                                     saleID: data?.__EMPTY_111, //
                                     linkUser: data?.__EMPTY_112, //
-                                    family: data?.__EMPTY_48, 
+                                    family: data?.__EMPTY_48,
                                     familyPolicy: data?.__EMPTY_82, //
-                                    realStatus: data?.__EMPTY_85, // 
+                                    realStatus: data?.__EMPTY_85, //
                                     new: data?.__EMPTY_86, //
                                     joinedDate: data?.__EMPTY_100, //
-                                    dataSource: data?.__EMPTY_53, 
+                                    dataSource: data?.__EMPTY_53,
                                 }
                                 // console.log(prepareData);
-    
+
                                 if(data?.__EMPTY && checkObjectIDs(data?.__EMPTY)){
                                     let infoAfterInsert = await this.update(prepareData);
                                     if(infoAfterInsert.error){
@@ -2119,47 +2118,47 @@ class Model extends BaseModel {
                         }
                     }
                 }
-                
+
                 // IMPORT HỒ SƠ
                 else if(option == 2){
                     for (const data of dataImportJSON) {
                         // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                         if(index > 0 && index <= 100){
                             let dataInsert = {
-                                userCreate: userID, 
-                                contactID: data?.__EMPTY_56, 
-                                type: data?.__EMPTY_43, 
-                                fromDate: data?.__EMPTY_46, 
-                                toDate: data?.__EMPTY_47, 
-                                workplace: data?.__EMPTY_6, 
-                                reference: data?.__EMPTY_7, 
+                                userCreate: userID,
+                                contactID: data?.__EMPTY_56,
+                                type: data?.__EMPTY_43,
+                                fromDate: data?.__EMPTY_46,
+                                toDate: data?.__EMPTY_47,
+                                workplace: data?.__EMPTY_6,
+                                reference: data?.__EMPTY_7,
                                 currentArea3: data?.__EMPTY_49,
-                                item: data?.__EMPTY_9, 
-                                project: data?.__EMPTY_10, 
+                                item: data?.__EMPTY_9,
+                                project: data?.__EMPTY_10,
                                 client: data?.__EMPTY_11,
                                 position2: data?.__EMPTY_50,
-                                contract: data?.__EMPTY_51, 
-                                name: data?.__EMPTY_14, 
-                                sign: data?.__EMPTY_15, 
+                                contract: data?.__EMPTY_51,
+                                name: data?.__EMPTY_14,
+                                sign: data?.__EMPTY_15,
                                 place: data?.__EMPTY_16,
-                                note: data?.__EMPTY_19, 
-                                description: data?.__EMPTY_18, 
-                                number: data?.__EMPTY_26, 
-                                store: data?.__EMPTY_28, 
+                                note: data?.__EMPTY_19,
+                                description: data?.__EMPTY_18,
+                                number: data?.__EMPTY_26,
+                                store: data?.__EMPTY_28,
                                 status: data?.__EMPTY_45,
-                                field2: data?.__EMPTY_52, 
-                                educationalBackground2: data?.__EMPTY_53, 
+                                field2: data?.__EMPTY_52,
+                                educationalBackground2: data?.__EMPTY_53,
                                 certificateType: data?.__EMPTY_54,
                                 certificateName: data?.__EMPTY_55,
                                 certificateGrade: data?.__EMPTY_44
                             }
                             // console.log(dataInsert);
-    
+
                             let infoAfterInsert = await CONTACT_DOCUMENT_MODEL.insert(dataInsert);
                             if(infoAfterInsert.error){
                                 errorNumber++;
                             }
-    
+
                         }
                         index ++;
                     }
@@ -2177,7 +2176,6 @@ class Model extends BaseModel {
     }
 
     exportExcel({ userID, companyID, type, filterParams, ctx, queue }) {
-        // console.log({userID, companyID, type, filterParams})
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -2230,38 +2228,38 @@ class Model extends BaseModel {
 
                 return resolve({ error: false })
 
-                let keys	     = ['createAt__-1', '_id__-1'];
-                let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
-                let sortBy            = dataPagingAndSort?.data?.sort;
-                const listData = await ITEM__CONTACT_COLL
-                    .find(conditionObj)
-                    .populate({
-                        path: 'department position field property area area1 area2 linkUser workingStatus contractType',
-                        select: 'name sign',
-                        populate:{
-                            path: 'parent',
-                            select: 'name',
-                            populate:{
-                                path: 'parent',
-                                select: 'name',
-                            }
-                        }
-                    })
-                    .sort(sortBy)
-                    .limit(500)
-                    .lean();
+                // let keys	     = ['createAt__-1', '_id__-1'];
+                // let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
+                // let sortBy            = dataPagingAndSort?.data?.sort;
+                // const listData = await ITEM__CONTACT_COLL
+                //     .find(conditionObj)
+                //     .populate({
+                //         path: 'department position field property area area1 area2 linkUser workingStatus contractType',
+                //         select: 'name sign',
+                //         populate:{
+                //             path: 'parent',
+                //             select: 'name',
+                //             populate:{
+                //                 path: 'parent',
+                //                 select: 'name',
+                //             }
+                //         }
+                //     })
+                //     .sort(sortBy)
+                //     .limit(500)
+                //     .lean();
 
-                if(!listData) {
-                    return resolve({
-                        error: true,
-                        message: 'Không tìm thấy dữ liệu',
-                        keyError: 'data_not_exists',
-                        status: 400
-                    });
-                }
+                // if(!listData) {
+                //     return resolve({
+                //         error: true,
+                //         message: 'Không tìm thấy dữ liệu',
+                //         keyError: 'data_not_exists',
+                //         status: 400
+                //     });
+                // }
 
-                const result = await this.downloadExcelFile(listData)
-                return resolve(result);
+                // const result = await this.downloadExcelFile(listData)
+                // return resolve(result);
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
