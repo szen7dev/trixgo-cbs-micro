@@ -375,7 +375,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {}, conditionProject = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}
                 let sortBy = {"amount": -1}

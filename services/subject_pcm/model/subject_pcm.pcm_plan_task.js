@@ -553,7 +553,7 @@ class Model extends BaseModel {
                 }
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 const infoTask = await PCM_PLAN_TASK_COLL
                     .findById(infoAfterInsert._id)
@@ -1937,7 +1937,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 // // Ghi dữ liệu Hồ sơ thầu    
                 // if(infoTask.subtype == 14){
@@ -1985,7 +1985,7 @@ class Model extends BaseModel {
                 }
 
                 //__________Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {}, sortBy, keys = ['modifyAt__-1'], totalTaskDone = 0
 
@@ -2391,7 +2391,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 //__________Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 const validation = validateParamsObjectID({
                     companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
@@ -2648,7 +2648,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 //__________Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {}, conditionProject = {}
                 
@@ -3199,7 +3199,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 //__________Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {}, conditionProject = {}, conditionMatch = {}
                 let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany

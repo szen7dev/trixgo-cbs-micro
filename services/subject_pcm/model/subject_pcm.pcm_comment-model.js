@@ -605,7 +605,7 @@ class Model extends BaseModel {
                 infoAfterInsert.receiversNoti = arrReceiver;
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {

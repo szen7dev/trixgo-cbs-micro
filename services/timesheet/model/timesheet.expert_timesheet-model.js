@@ -399,7 +399,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({ error: false, data: infoAterGet, status: 200 })
             } catch (error) {
@@ -419,7 +419,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 if(Number(limit) > 50){
                     limit = 50;
@@ -600,7 +600,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let yearFilter
                 let currentYear = new Date().getFullYear()

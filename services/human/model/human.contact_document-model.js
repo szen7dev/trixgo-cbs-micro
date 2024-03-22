@@ -137,7 +137,7 @@ class Model extends BaseModel {
                 await this.updateValue({ contactID, userID: userCreate })
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -403,7 +403,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "can't_get_info", keyError: KEY_ERROR.GET_INFO_FAILED, status: 403 });
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
@@ -426,7 +426,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 if(limit > 20){
                     limit = 20
@@ -603,7 +603,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 if(limit > 20){
                     limit = 20;
@@ -854,7 +854,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {};
                 let resultGetList = { error: true };

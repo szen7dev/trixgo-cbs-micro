@@ -482,7 +482,7 @@ class Model extends BaseModel {
                 }
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
@@ -992,7 +992,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "can't_get_info", status: 403 })
 
                     // Record Traffic
-                    // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                    // //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                     return resolve({ error: false, data: infoAterGet, status: 200 })
                 }else{
@@ -1019,7 +1019,7 @@ class Model extends BaseModel {
                             return resolve({ error: true, message: "can't_get_info", status: 403 })
 
                         // Record Traffic
-                        // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                        // //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                         return resolve({ error: false, data: infoAterGet, status: 200 })
                     }else{
@@ -1177,7 +1177,7 @@ class Model extends BaseModel {
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -1327,7 +1327,7 @@ class Model extends BaseModel {
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -1423,7 +1423,7 @@ class Model extends BaseModel {
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -1450,7 +1450,7 @@ class Model extends BaseModel {
             let duration = getTimeBetween(toDate, fromDate)
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let yearFilter
                 let currentYear = new Date().getFullYear()
@@ -1699,7 +1699,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 if(limit > 20){
                     limit = 20
@@ -1814,7 +1814,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let listDepartment = await ITEM__DEPARTMENT_COLL.find({ company: companyID }).select('name').limit(500)
                 let listPosition = await ITEM__POSITION_COLL.find({ company: companyID }).select('name').limit(500)
@@ -2179,7 +2179,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {};
                 let resultGetList = { error: true };
@@ -2271,7 +2271,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 const populates = JSON.stringify({
                     path: 'department position field property area area1 area2 linkUser workingStatus contractType',

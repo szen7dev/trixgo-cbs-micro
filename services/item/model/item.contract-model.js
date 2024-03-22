@@ -364,7 +364,7 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert);
 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -1022,7 +1022,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
                 
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({ error: false, data: info, status: 200 });
             } catch (error) {
@@ -1046,7 +1046,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {};
                 let keys	     = ['date__-1', '_id__-1'];
@@ -1635,7 +1635,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
                 
                 let conditionObj = { members: { $in: [userID] } };
                 let keys	     = ['date__-1', '_id__-1'];
@@ -1848,7 +1848,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = { members: { $in: [userID] } };
                 let keys	     = ['date__-1', '_id__-1'];
