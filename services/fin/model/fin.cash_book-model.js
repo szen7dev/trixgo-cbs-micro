@@ -449,14 +449,14 @@ class Model extends BaseModel {
                     if (!infoData)
                         return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
                     if (!dataPagingAndSort || dataPagingAndSort.error)
                         return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
                     conditionObj = dataPagingAndSort.data.find;
                     sortBy = dataPagingAndSort.data.sort;
                 } else {
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy = dataPagingAndSort.data.sort;
                 }
 
@@ -1544,6 +1544,9 @@ class Model extends BaseModel {
             if(option == 1){
                 let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note subtype')
 
+                monthFilter = new Date(infoParent.date).getMonth() + 1
+                // console.log({ monthFilter })
+
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID})
                 .populate({
                     path: 'work assignee',
@@ -1555,7 +1558,8 @@ class Model extends BaseModel {
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
-                            company: ObjectID(companyID),
+                            // company: ObjectID(companyID),
+                            parent: ObjectID(parentID),
                             assignee: { $exists: true, $ne: null }
                         }
                     },
