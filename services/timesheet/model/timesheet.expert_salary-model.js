@@ -808,6 +808,23 @@ class Model extends BaseModel {
             }
         })
     }
+    
+    /**
+     * Name: Remove
+     * Author: HiepNH
+     * Code: 22/3/2024
+     */
+    remove({ arraysRemove, userID }) { 
+        return new Promise(async (resolve) => {
+            try {   
+                await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({_id: {$in: arraysRemove}})
+
+                return resolve({ error: false, message: "Remove success", status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Name: get info expert timesheet
