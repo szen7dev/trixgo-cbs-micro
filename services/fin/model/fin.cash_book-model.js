@@ -1135,6 +1135,9 @@ class Model extends BaseModel {
                                     workbook.sheet("BangLuong").row(i).cell(30).value(item?.human.contacts[0].bankAccount)     
                                 }
                                     
+                                workbook.sheet("BangLuong").row(i).cell(26).value(Number(item?.subAllowance1))   
+                                workbook.sheet("BangLuong").row(i).cell(27).value(Number(item?.pependent))   
+                                workbook.sheet("BangLuong").row(i).cell(29).value(Number(item?.subAllowance2))   
                                 
                                 // Bảng lương 2
                                 workbook.sheet("BangLuong2").row(i).cell(1).value(Number(index + 1))
@@ -1466,7 +1469,10 @@ class Model extends BaseModel {
                                         advance:  Number(data?.__EMPTY_18), 
                                         paid:  Number(data?.__EMPTY_19), 
 
-                                        kpiFactor:  Number(data?.__EMPTY_23)
+                                        kpiFactor:  Number(data?.__EMPTY_23),
+                                        subAllowance1:  Number(data?.__EMPTY_24),
+                                        pependent:  Number(data?.__EMPTY_25),
+                                        subAllowance2:  Number(data?.__EMPTY_27),
                                     })
     
                                     if(infoAfterUpdate.error){
