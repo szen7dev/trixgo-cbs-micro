@@ -189,7 +189,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor }){
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, pependent }){
         // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
         return new Promise(async (resolve) => {
             const that = this
@@ -239,6 +239,18 @@ class Model extends BaseModel {
 
                 if(kpiFactor){
                     dataUpdate.kpiFactor = Number(kpiFactor);
+                }
+
+                if(subAllowance1){
+                    dataUpdate.subAllowance1 = Number(subAllowance1);
+                }
+
+                if(subAllowance2){
+                    dataUpdate.subAllowance2 = Number(subAllowance2);
+                }
+
+                if(pependent){
+                    dataUpdate.pependent = Number(pependent);
                 }
 
                 if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
