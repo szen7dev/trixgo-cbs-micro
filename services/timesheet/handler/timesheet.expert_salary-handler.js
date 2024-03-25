@@ -41,9 +41,9 @@ module.exports = {
                 // console.log(ctx.params)
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.insert({
-                    userCreate: userID, 
-                    companyID: company._id, 
-                    parentID, date, type, note, projectID, humanID, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, name, ctx 
+                    userCreate: userID,
+                    companyID: company._id,
+                    parentID, date, type, note, projectID, humanID, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, name, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -83,7 +83,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, companyID: company._id 
+                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, companyID: company._id
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -107,9 +107,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {  arraysRemove } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
-
-                console.log(ctx.params)
+        				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.remove({
                     arraysRemove, userID
@@ -140,7 +138,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.syncData({
-                    userID, companyID: company._id, option, salaryID, ctx 
+                    userID, companyID: company._id, option, salaryID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -190,7 +188,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
-                        parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, ctx 
+                        parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, ctx
                     })
                 }
 
@@ -226,7 +224,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getListByProperty({
-                        option, year, companyID, projectID, userID, assigneeID, month, ctx 
+                        option, year, companyID, projectID, userID, assigneeID, month, ctx
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

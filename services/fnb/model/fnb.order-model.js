@@ -16,10 +16,8 @@ const {
 }                                               = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index')
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant')
-const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO } 		                = require('../../zalo_oa/helper/zalo.actions')
 const moment                                    = require('moment')
-const stringUtils					            = require('../../../tools/utils/string_utils')
 
 /**s
  * import inter-coll, exter-coll
@@ -65,7 +63,7 @@ const {
 let dataTF = {
     appID: "61e04971fdebf77b072d1b0f", // FNB
     menuID: "63af81debe33df0012ecaeca", //
-    type: 1, 
+    type: 1,
     action: 1, // Xem
 }
 let dataTF2 = {
@@ -287,7 +285,7 @@ class Model extends BaseModel {
 
                     if(Number(amount) <= Number(discount)){
                         dataInsert.discount = Number(amount)
-                        amount = 0 
+                        amount = 0
                     }else{
                         dataInsert.discount = Number(discount)
                         amount = Number(amount) - Number(discount)
@@ -308,7 +306,7 @@ class Model extends BaseModel {
 
                         if(Number(amount) <= Number(salesoff)){
                             dataInsert.salesoff = Number(amount)
-                            amount = 0 
+                            amount = 0
                         }else{
                             dataInsert.salesoff = Number(salesoff)
                             amount = Number(amount) - Number(salesoff)
@@ -504,7 +502,7 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
-                
+
                 /**
                  *  Demo bắn inbox về Facebook
                  */
@@ -944,16 +942,16 @@ class Model extends BaseModel {
 
                     // Trả cho Sale
                     await FNB_NETWORK_COM_MODEL.insert({
-                        userID, 
-                        companyID: infoFunda.company, 
-                        orderID: infoAfterInsert._id, 
-                        customerID, 
-                        saleID: affiliateID, 
-                        amount, 
-                        uplineID: affiliateID, 
+                        userID,
+                        companyID: infoFunda.company,
+                        orderID: infoAfterInsert._id,
+                        customerID,
+                        saleID: affiliateID,
+                        amount,
+                        uplineID: affiliateID,
                         level: 0, // Người cha đứng cạnh đầu tiên => cấp 1
-                        rate: FNB_AFFILIATE_COM[0].rate, 
-                        commission: Number(FNB_AFFILIATE_COM[0].rate) * amount/100, 
+                        rate: FNB_AFFILIATE_COM[0].rate,
+                        commission: Number(FNB_AFFILIATE_COM[0].rate) * amount/100,
                     })
 
                     for(const item of infoAffiliate.nestedParents){
@@ -961,16 +959,16 @@ class Model extends BaseModel {
                         // console.log({networkLevel})
 
                         let infoNetworkCom = await FNB_NETWORK_COM_MODEL.insert({
-                            userID, 
-                            companyID: infoFunda.company, 
-                            orderID: infoAfterInsert._id, 
-                            customerID, 
-                            saleID: affiliateID, 
-                            amount, 
-                            uplineID: item._id, 
+                            userID,
+                            companyID: infoFunda.company,
+                            orderID: infoAfterInsert._id,
+                            customerID,
+                            saleID: affiliateID,
+                            amount,
+                            uplineID: item._id,
                             level: networkLevel, // Người cha đứng cạnh đầu tiên => cấp 1
-                            rate: FNB_AFFILIATE_COM[Number(networkLevel)].rate, 
-                            commission: Number(FNB_AFFILIATE_COM[Number(networkLevel)].rate) * amount/100, 
+                            rate: FNB_AFFILIATE_COM[Number(networkLevel)].rate,
+                            commission: Number(FNB_AFFILIATE_COM[Number(networkLevel)].rate) * amount/100,
                         })
                         // console.log({infoNetworkCom})
                     }
@@ -1203,7 +1201,7 @@ class Model extends BaseModel {
 
                     if(Number(amount) <= Number(discount)){
                         dataInsert.discount = Number(amount)
-                        amount = 0 
+                        amount = 0
                     }else{
                         dataInsert.discount = Number(discount)
                         amount = Number(amount) - Number(discount)
@@ -1224,7 +1222,7 @@ class Model extends BaseModel {
 
                         if(Number(amount) <= Number(salesoff)){
                             dataInsert.salesoff = Number(amount)
-                            amount = 0 
+                            amount = 0
                         }else{
                             dataInsert.salesoff = Number(salesoff)
                             amount = Number(amount) - Number(salesoff)
@@ -1420,7 +1418,7 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
-                
+
                 /**
                  *  Demo bắn inbox về Facebook
                  */
@@ -1860,16 +1858,16 @@ class Model extends BaseModel {
 
                     // Trả cho Sale
                     await FNB_NETWORK_COM_MODEL.insert({
-                        userID, 
-                        companyID: infoFunda.company, 
-                        orderID: infoAfterInsert._id, 
-                        customerID, 
-                        saleID: affiliateID, 
-                        amount, 
-                        uplineID: affiliateID, 
+                        userID,
+                        companyID: infoFunda.company,
+                        orderID: infoAfterInsert._id,
+                        customerID,
+                        saleID: affiliateID,
+                        amount,
+                        uplineID: affiliateID,
                         level: 0, // Người cha đứng cạnh đầu tiên => cấp 1
-                        rate: FNB_AFFILIATE_COM[0].rate, 
-                        commission: Number(FNB_AFFILIATE_COM[0].rate) * amount/100, 
+                        rate: FNB_AFFILIATE_COM[0].rate,
+                        commission: Number(FNB_AFFILIATE_COM[0].rate) * amount/100,
                     })
 
                     for(const item of infoAffiliate.nestedParents){
@@ -1877,16 +1875,16 @@ class Model extends BaseModel {
                         // console.log({networkLevel})
 
                         let infoNetworkCom = await FNB_NETWORK_COM_MODEL.insert({
-                            userID, 
-                            companyID: infoFunda.company, 
-                            orderID: infoAfterInsert._id, 
-                            customerID, 
-                            saleID: affiliateID, 
-                            amount, 
-                            uplineID: item._id, 
+                            userID,
+                            companyID: infoFunda.company,
+                            orderID: infoAfterInsert._id,
+                            customerID,
+                            saleID: affiliateID,
+                            amount,
+                            uplineID: item._id,
                             level: networkLevel, // Người cha đứng cạnh đầu tiên => cấp 1
-                            rate: FNB_AFFILIATE_COM[Number(networkLevel)].rate, 
-                            commission: Number(FNB_AFFILIATE_COM[Number(networkLevel)].rate) * amount/100, 
+                            rate: FNB_AFFILIATE_COM[Number(networkLevel)].rate,
+                            commission: Number(FNB_AFFILIATE_COM[Number(networkLevel)].rate) * amount/100,
                         })
                         // console.log({infoNetworkCom})
                     }
@@ -2835,7 +2833,7 @@ class Model extends BaseModel {
                     // Xử lý lỗi fundas[] trên Mobile
                     if(optionFixFunda && Number(optionFixFunda) === 1){
                         if(fundas && Number(fundas.length) > 2){
-                            let arr = fundas.split('"') 
+                            let arr = fundas.split('"')
                             let arrFun2 = arr[1].split(" ").map(item=>ObjectID(item))
                             conditionObj.funda = { $in: arrFun2 }
                         }else{
@@ -2846,7 +2844,7 @@ class Model extends BaseModel {
                             } else{
                                 conditionObj.funda = { $in: [] }
                             }
-                        }  
+                        }
                     }
 
                     /**
@@ -3568,19 +3566,19 @@ class Model extends BaseModel {
                 //     for (const data of dataImportJSON) {
                 //         if(index > 0 && index <= 250){
                 //             let dataInsert = {
-                //                 companyID, 
-                //                 userID, 
-                //                 parentID, 
+                //                 companyID,
+                //                 userID,
+                //                 parentID,
                 //                 accountID: data?.__EMPTY_14,
-                //                 customerID: data?.__EMPTY_15, 
-                //                 contractID: data?.__EMPTY_16, 
+                //                 customerID: data?.__EMPTY_15,
+                //                 contractID: data?.__EMPTY_16,
                 //                 name: data?.__EMPTY_1,
-                //                 note: data?.__EMPTY_7, 
-                //                 date: data?.__EMPTY_13, 
-                //                 income: data?.__EMPTY_5, 
+                //                 note: data?.__EMPTY_7,
+                //                 date: data?.__EMPTY_13,
+                //                 income: data?.__EMPTY_5,
                 //                 expense: data?.__EMPTY_6
                 //             }
-    
+
                 //             let infoAfterInsert = await this.insert(dataInsert);
                 //             if(infoAfterInsert.error){
                 //                 errorNumber++;
@@ -3588,13 +3586,13 @@ class Model extends BaseModel {
                 //         }
                 //         index ++;
                 //     }
-    
+
                 //     if(errorNumber != 0)
                 //         return resolve({ error: true, message: "import field" });
-    
+
                 //     return resolve({ error: false, message: "import success" });
                 // }else{
-                    
+
                 // }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -4339,7 +4337,7 @@ class Model extends BaseModel {
                                         { sign: regSearch },
                                     ]
                                 }
-                                
+
                                 let conditionGroup = {}, conditionPopulate = {}
 
                                 conditionPopulate = {
@@ -4422,7 +4420,7 @@ class Model extends BaseModel {
                                     listFundaIsMember?.forEach((item, index) => {
                                         workbook.sheet(`TongSoKhachHang`).row(1).cell(j).value(`${item._id}`)
                                         workbook.sheet(`TongSoKhachHang`).row(2).cell(j).value(item.name)
-                                      
+
                                         j++
                                     })
 
@@ -4432,7 +4430,7 @@ class Model extends BaseModel {
                                             if(Number(item._id.month) === Number(m)){
                                                 for(let j=3; j<=Number(listFundaIsMember.length +2); j++){
                                                     let fundaID = workbook.sheet(`TongSoKhachHang`).row(1).cell(j).value()
-                                                        
+
                                                     if((item._id.funda.toString() === fundaID.toString())){
                                                         workbook.sheet(`TongSoKhachHang`).row(Number(m+2)).cell(j).value(item.quantity)
                                                     }
@@ -4581,7 +4579,7 @@ class Model extends BaseModel {
                                 ]
                             }
                             // console.log(conditionObj)
-                            
+
                             let sortBy = { "_id.funda": 1, "_id.salesChannel": 1 }
                             let conditionGroup = {}, conditionPopulate = {}
 
