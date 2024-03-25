@@ -1,38 +1,43 @@
 "use strict";
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
+// const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const {
+  checkObjectIDs,
+  IsJsonString,
+  validateParamsObjectID
+}  = require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
  */
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../database/timesheet.expert_salary-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
-const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll')
 const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
+// const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
-let dataTF = {
-    appID: "61e049cffdebf77b072d1b14", // TIMESHEET
-    menuID: "623f1ecae998e94feda0cd70", //
-    type: 1, 
-    action: 1,
-}
+// let dataTF = {
+//     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
+//     menuID: "623f1ecae998e94feda0cd70", //
+//     type: 1,
+//     action: 1,
+// }
+
 class Model extends BaseModel {
 
     constructor() {
@@ -59,20 +64,20 @@ class Model extends BaseModel {
                 let year = new Date().getFullYear()
                 let month = new Date().getMonth()
                 let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                    company: companyID, 
+                    company: companyID,
                     parent: { $exists: false },
-                    $where: 
+                    $where:
                     `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
                 })
                 if(checkExists)
-                    return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` }) 
+                    return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` })
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     company: companyID,
-                    userCreate, 
-                    name, 
-                    admins: [userCreate], 
+                    userCreate,
+                    name,
+                    admins: [userCreate],
                     members: [userCreate]
                 }
 
@@ -184,7 +189,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other }){
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor }){
         // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
         return new Promise(async (resolve) => {
             const that = this
@@ -230,6 +235,10 @@ class Model extends BaseModel {
 
                 if(convertFactor){
                     dataUpdate.convertFactor = convertFactor;
+                }
+
+                if(kpiFactor){
+                    dataUpdate.kpiFactor = Number(kpiFactor);
                 }
 
                 if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
@@ -297,7 +306,7 @@ class Model extends BaseModel {
                             dataUpdate.members = [];
                         }
                     }
-                } 
+                }
                 // else{
                 //     if(checkObjectIDs(admins)) {
                 //         return resolve({
@@ -326,7 +335,7 @@ class Model extends BaseModel {
                         keyError: "cannot_update",
                     })
                 }
-                
+
                 if(!infoAfterUpdate.parent){
                     // Cập nhật hệ số chuyển đổi vào Chi tiết lương
                     if(convertFactor){
@@ -386,7 +395,7 @@ class Model extends BaseModel {
                             await this.insertData(dataInsertDetail)
                         }
                     }
-                }               
+                }
 
                 // Cập nhật giá trị vào Bảng lương cha
                 if(infoAfterUpdate.parent && checkObjectIDs(infoAfterUpdate.parent)){
@@ -405,9 +414,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    updateValueTimesheet({ 
+    updateValueTimesheet({
         expertSalaryID, companyID
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
@@ -493,7 +502,7 @@ class Model extends BaseModel {
 
                 for(const item of listData){
                     // console.log(item._id.assignee.toString())
-                    
+
                     let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
@@ -542,7 +551,7 @@ class Model extends BaseModel {
 
                 for(const item of listData2){
                     let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0
-                                       
+
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
                         human: item._id.assignee,
@@ -600,9 +609,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    updateValueKpi({ 
+    updateValueKpi({
         expertSalaryID, userID, companyID
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
@@ -651,7 +660,7 @@ class Model extends BaseModel {
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
                         human: item._id.executor,
-                    }) 
+                    })
 
                     if(info){
                         salary = info.salary
@@ -696,15 +705,15 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
      * Name: Tổng hợp các chi tiết lương vào Bảng lương
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    updateValue({ 
+    updateValue({
         expertSalaryID, userID
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
@@ -736,7 +745,7 @@ class Model extends BaseModel {
                     },
                 ])
                 // console.log(listData[0])
-                
+
                 if(listData[0]){
                     dataUpdate.salary = Number(listData[0].salary)
                     dataUpdate.onLeaveSalary = Number(listData[0].onLeaveSalary)
@@ -753,7 +762,7 @@ class Model extends BaseModel {
                     dataUpdate.share = Number(listData[0].share)
                     dataUpdate.other = Number(listData[0].other)
                 }
-                
+
                 let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_task", status: 403 });
@@ -770,9 +779,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    syncData({ 
+    syncData({
         option, salaryID, userID, companyID
-    }){ 
+    }){
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -790,7 +799,7 @@ class Model extends BaseModel {
                 }else if(option == 2){
                     //___________Quyền truy cập ứng dụng Nhân sự
                     let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                        appID: "61e049cffdebf77b072d1b14", 
+                        appID: "61e049cffdebf77b072d1b14",
                         userID
                     })
 
@@ -808,18 +817,36 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
      * Name: Remove
      * Author: HiepNH
      * Code: 22/3/2024
      */
-    remove({ arraysRemove, userID }) { 
+    remove({ arraysRemove, userID }) {
         return new Promise(async (resolve) => {
-            try {   
-                await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({_id: {$in: arraysRemove}})
+            try {
+                if(!checkObjectIDs(arraysRemove)) {
+                    return resolve({ error: true, message: 'Yêu cầu không hợp lệ', status: 200 });
+                }
 
-                return resolve({ error: false, message: "Remove success", status: 200 });
+                const result = await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({
+                    _id: { $in: arraysRemove },
+                    $or: [
+                        { userCreate: userID },
+                        { admins: { $in: [userID] } }
+                    ]
+                })
+
+                if(result.deletedCount !== arraysRemove.length) {
+                    return resolve({
+                        error: true,
+                        message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
+                        status: 200
+                    });
+                }
+
+                return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -881,8 +908,8 @@ class Model extends BaseModel {
                 // Record Traffic
                 // //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
-                    appID: "61e049cffdebf77b072d1b14", 
+                let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049cffdebf77b072d1b14",
                     userID
                 })
 
@@ -1051,7 +1078,7 @@ class Model extends BaseModel {
                 if(!option){
                     let conditionObj = {
                         company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null }  
+                        parent: { $exists: true, $ne: null }
                     }
 
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
@@ -1087,7 +1114,7 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-                    
+
                     return resolve({ error: false, data: listData })
                 }
 
@@ -1096,7 +1123,7 @@ class Model extends BaseModel {
 
                     let conditionObj = {
                         human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }  
+                        parent: { $exists: true, $ne: null }
                     }
 
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
@@ -1149,7 +1176,7 @@ class Model extends BaseModel {
 
                     let conditionObj = {
                         human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }  
+                        parent: { $exists: true, $ne: null }
                     }
 
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
@@ -1387,13 +1414,13 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, data: listData1 })
                 }
-  
+
                 // Tổng hợp toàn bộ của 1 nhân sự
                 else if(option == 6){
 
                     let conditionObj = {
                         human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }  
+                        parent: { $exists: true, $ne: null }
                     }
 
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([

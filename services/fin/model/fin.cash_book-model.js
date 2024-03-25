@@ -1066,7 +1066,12 @@ class Model extends BaseModel {
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                         .populate({
                             path: 'human project position',
-                            select:'fullname name',
+                            select:'fullname name contacts',
+                            populate: ({
+                                path: 'contacts',
+                                select:'bankAccount',
+                                
+                            })
                         })
                         .sort({project: 1})
 
@@ -1122,7 +1127,14 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuong").row(i).cell(21).value(Number(item.paid))
 
                                 workbook.sheet("BangLuong").row(i).cell(23).value(item?.note)
-                                workbook.sheet("BangLuong").row(i).cell(24).value(`${item?._id}`)          
+                                workbook.sheet("BangLuong").row(i).cell(24).value(`${item?._id}`)   
+                                workbook.sheet("BangLuong").row(i).cell(25).value(Number(item?.kpiFactor))   
+
+                                if(item?.human.contacts.length){
+                                    // console.log(item?.human.contacts[0])
+                                    workbook.sheet("BangLuong").row(i).cell(30).value(item?.human.contacts[0].bankAccount)     
+                                }
+                                    
                                 
                                 // Bảng lương 2
                                 workbook.sheet("BangLuong2").row(i).cell(1).value(Number(index + 1))
@@ -1151,6 +1163,10 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuong2").row(i).cell(21).value(Number(item.remaining))
                                 workbook.sheet("BangLuong2").row(i).cell(22).value(item?.note)
                                 workbook.sheet("BangLuong2").row(i).cell(23).value(`${item?._id}`)   
+                                
+                                if(item?.human.contacts.length){
+                                    workbook.sheet("BangLuong2").row(i).cell(24).value(item?.human.contacts[0].bankAccount)     
+                                }
                                 
                                 i++
                             })
@@ -1449,6 +1465,8 @@ class Model extends BaseModel {
 
                                         advance:  Number(data?.__EMPTY_18), 
                                         paid:  Number(data?.__EMPTY_19), 
+
+                                        kpiFactor:  Number(data?.__EMPTY_23)
                                     })
     
                                     if(infoAfterUpdate.error){
