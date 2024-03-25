@@ -78,6 +78,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 1
     },
+    //_________Hệ số đánh giá
+    kpiFactor: {
+        type: Number,
+        default: 1
+    },
     //________Trừ vi phạm
     punishment: {
         type: Number,

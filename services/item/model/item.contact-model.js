@@ -1990,8 +1990,8 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 8/12/2022
      */
-    importFromExcel({ option, companyID, dataImport, userID, ctx }) {
-        // console.log({ option, companyID, dataImport, userID })
+    importFromExcel({ option, companyID, dataImport, userID }) {
+        console.log({ option, companyID, dataImport, userID })
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
@@ -2002,120 +2002,93 @@ class Model extends BaseModel {
 
                 // IMPORT DANH BẠ
                 if(option == 1){
-                    let arrPhone = []
+                    // let arrPhone = []
+                    // for (const data of dataImportJSON) {
+                    //     arrPhone.push(data?.__EMPTY_9)
+                    // }
+                    // let listErr =  await ITEM__CONTACT_COLL.find({company: companyID, phone: {$in: arrPhone}}).select('name phone')
+
+                    // // Tải báo cáo lỗi
+                    // if(listErr && listErr.length > 0){
+                    //     return resolve({ error: false, data: listErr, status: 200 });
+                    // }else{
+                        
+                    // }
+
                     for (const data of dataImportJSON) {
-                        arrPhone.push(data?.__EMPTY_9)
-                    }
-                    let listErr =  await ITEM__CONTACT_COLL.find({company: companyID, phone: {$in: arrPhone}}).select('name phone')
+                        // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                        if(index > 0 && index < 51){
+                            let prepareData = {
+                                authorID: userID,
+                                contactID: data?.__EMPTY,
+                                type: data?.__EMPTY_83, //
+                                subtype: data?.__EMPTY_84, //
+                                name: data?.__EMPTY_3,
+                                sign: data?.__EMPTY_4,
+                                description: data?.__EMPTY_5,
+                                note: data?.__EMPTY_6,
+                                birthday: data?.__EMPTY_89, //
+                                gender: data?.__EMPTY_87, //
+                                phone: data?.__EMPTY_9,
+                                email: data?.__EMPTY_10,
+                                fundaID: data?.__EMPTY_101, //
+                                department: data?.__EMPTY_102,
+                                position: data?.__EMPTY_103,
+                                field: data?.__EMPTY_104,
+                                property: data?.__EMPTY_105,
+                                status: data?.__EMPTY_88, //
+                                identity: data?.__EMPTY_17,
+                                dateProvice: data?.__EMPTY_90, //
+                                place: data?.__EMPTY_19,
+                                taxid: data?.__EMPTY_20,
+                                insuranceNumber: data?.__EMPTY_21,
+                                insuranceSign: data?.__EMPTY_22,
+                                insuranceDate: data?.__EMPTY_91, //
+                                sallaryBasic: data?.__EMPTY_24,
+                                insuranceFee: data?.__EMPTY_25,
+                                insuranceStatus: data?.__EMPTY_81, //
+                                bankAccount: data?.__EMPTY_27,
+                                signerIn: data?.__EMPTY_28,
+                                workStartDate: data?.__EMPTY_92, //
+                                contractDate: data?.__EMPTY_93, //
+                                contractValid: data?.__EMPTY_94, //
+                                contractExpire: data?.__EMPTY_95, //
+                                contractType: data?.__EMPTY_106, //
+                                contractSign: data?.__EMPTY_34,
+                                workingStatus: data?.__EMPTY_107, //
+                                dayOff: data?.__EMPTY_96, //
+                                signerOut: data?.__EMPTY_37,
+                                appointDate: data?.__EMPTY_97, //
+                                changeSallaryDate: data?.__EMPTY_98, //
+                                graduationYear: data?.__EMPTY_99, //
+                                address: data?.__EMPTY_42,
+                                area: data?.__EMPTY_108, //
+                                area1: data?.__EMPTY_109, //
+                                area2: data?.__EMPTY_110, //
+                                saleID: data?.__EMPTY_111, //
+                                linkUser: data?.__EMPTY_112, //
+                                family: data?.__EMPTY_48,
+                                familyPolicy: data?.__EMPTY_82, //
+                                realStatus: data?.__EMPTY_85, //
+                                new: data?.__EMPTY_86, //
+                                joinedDate: data?.__EMPTY_100, //
+                                dataSource: data?.__EMPTY_53,
+                            }
+                            // console.log(prepareData);
 
-                    // Tải báo cáo lỗi
-                    if(listErr && listErr.length > 0){
-                        return resolve({ error: false, data: listErr, status: 200 });
-
-                        //  // Modify the workbook.
-                        // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_report_duplicate.xlsx')))
-                        // .then(async workbook => {
-
-                        //     var i = 2;
-                        //     arrErr?.forEach((item, index) => {
-                        //         workbook.sheet("Sheet1").row(i).cell(1).value(`${item._id}`);
-                        //         workbook.sheet("Sheet1").row(i).cell(2).value(item?.name);
-                        //         workbook.sheet("Sheet1").row(i).cell(3).value(item?.phone);
-                        //         i++
-                        //     })
-
-                        //     const now = new Date();
-                        //     const filePath = '../../../files/temporary_uploads/';
-                        //     const fileName = `contact_report_duplicate${now.getTime()}.xlsx`;
-                        //     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                        //     await workbook.toFileAsync(pathWriteFile);
-                        //     const result = await uploadFileS3(pathWriteFile, fileName);
-
-                        //     fs.unlinkSync(pathWriteFile);
-                        //     return resolve({ error: false, data: result?.Location, status: 200 });
-                        // });
-
-                        // return resolve({ error: false, message: `Data bị trùng: ${errorNumber}` });
-                    }
-
-                    // Import dữ liệu nếu đã OK
-                    else{
-                        for (const data of dataImportJSON) {
-                            // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                            if(index > 0 && index < 51){
-                                let prepareData = {
-                                    authorID: userID,
-                                    contactID: data?.__EMPTY,
-                                    type: data?.__EMPTY_83, //
-                                    subtype: data?.__EMPTY_84, //
-                                    name: data?.__EMPTY_3,
-                                    sign: data?.__EMPTY_4,
-                                    description: data?.__EMPTY_5,
-                                    note: data?.__EMPTY_6,
-                                    birthday: data?.__EMPTY_89, //
-                                    gender: data?.__EMPTY_87, //
-                                    phone: data?.__EMPTY_9,
-                                    email: data?.__EMPTY_10,
-                                    fundaID: data?.__EMPTY_101, //
-                                    department: data?.__EMPTY_102,
-                                    position: data?.__EMPTY_103,
-                                    field: data?.__EMPTY_104,
-                                    property: data?.__EMPTY_105,
-                                    status: data?.__EMPTY_88, //
-                                    identity: data?.__EMPTY_17,
-                                    dateProvice: data?.__EMPTY_90, //
-                                    place: data?.__EMPTY_19,
-                                    taxid: data?.__EMPTY_20,
-                                    insuranceNumber: data?.__EMPTY_21,
-                                    insuranceSign: data?.__EMPTY_22,
-                                    insuranceDate: data?.__EMPTY_91, //
-                                    sallaryBasic: data?.__EMPTY_24,
-                                    insuranceFee: data?.__EMPTY_25,
-                                    insuranceStatus: data?.__EMPTY_81, //
-                                    bankAccount: data?.__EMPTY_27,
-                                    signerIn: data?.__EMPTY_28,
-                                    workStartDate: data?.__EMPTY_92, //
-                                    contractDate: data?.__EMPTY_93, //
-                                    contractValid: data?.__EMPTY_94, //
-                                    contractExpire: data?.__EMPTY_95, //
-                                    contractType: data?.__EMPTY_106, //
-                                    contractSign: data?.__EMPTY_34,
-                                    workingStatus: data?.__EMPTY_107, //
-                                    dayOff: data?.__EMPTY_96, //
-                                    signerOut: data?.__EMPTY_37,
-                                    appointDate: data?.__EMPTY_97, //
-                                    changeSallaryDate: data?.__EMPTY_98, //
-                                    graduationYear: data?.__EMPTY_99, //
-                                    address: data?.__EMPTY_42,
-                                    area: data?.__EMPTY_108, //
-                                    area1: data?.__EMPTY_109, //
-                                    area2: data?.__EMPTY_110, //
-                                    saleID: data?.__EMPTY_111, //
-                                    linkUser: data?.__EMPTY_112, //
-                                    family: data?.__EMPTY_48,
-                                    familyPolicy: data?.__EMPTY_82, //
-                                    realStatus: data?.__EMPTY_85, //
-                                    new: data?.__EMPTY_86, //
-                                    joinedDate: data?.__EMPTY_100, //
-                                    dataSource: data?.__EMPTY_53,
+                            if(data?.__EMPTY && checkObjectIDs(data?.__EMPTY)){
+                                let infoAfterInsert = await this.update(prepareData);
+                                if(infoAfterInsert.error){
+                                    errorNumber++;
                                 }
-                                // console.log(prepareData);
-
-                                if(data?.__EMPTY && checkObjectIDs(data?.__EMPTY)){
-                                    let infoAfterInsert = await this.update(prepareData);
-                                    if(infoAfterInsert.error){
-                                        errorNumber++;
-                                    }
-                                }else{
-                                    let infoAfterInsert = await this.insert(prepareData);
-                                    if(infoAfterInsert.error){
-                                        errorNumber++;
-                                    }
+                            }else{
+                                let infoAfterInsert = await this.insert(prepareData);
+                                if(infoAfterInsert.error){
+                                    errorNumber++;
                                 }
                             }
-                            index ++;
                         }
+                        index ++;
                     }
                 }
 
