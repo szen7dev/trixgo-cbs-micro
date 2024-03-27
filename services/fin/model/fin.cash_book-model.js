@@ -1110,7 +1110,7 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuong").row(i).cell(3).value(item?.project?.name)
                                 workbook.sheet("BangLuong").row(i).cell(4).value(item?.position?.name)
                                 workbook.sheet("BangLuong").row(i).cell(5).value(Number(item.salary))
-                                workbook.sheet("BangLuong").row(i).cell(6).value(Number(item.convertFactor))
+                                // workbook.sheet("BangLuong").row(i).cell(6).value(Number(item.convertFactor))
                                 workbook.sheet("BangLuong").row(i).cell(7).value(Number(item.onLeaveSalary))
                                 workbook.sheet("BangLuong").row(i).cell(8).value(Number(item.revenueBonus))
                                 workbook.sheet("BangLuong").row(i).cell(9).value(Number(item.reward))
