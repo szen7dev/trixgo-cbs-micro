@@ -74,3 +74,6 @@ temp/self
 ops/db/*
 
 .vim
+provisioning/dump
+ops/db/*
+mongodb-osx-ssl-x86_64-4.0.12.tgz
