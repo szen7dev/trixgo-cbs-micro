@@ -1,4 +1,9 @@
 exports.sendNotificationviaOneSignal = function(data) {
+    console.log({ env: process.env.NODE_ENV })
+    if(process.env.NODE_ENV === "development") {
+      return;
+    }
+
     let headers = {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz",
