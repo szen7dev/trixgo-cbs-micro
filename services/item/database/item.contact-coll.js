@@ -128,8 +128,10 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: "user"
     },
-    //_________Tài khoản ngân hàng (tên ngân hàng, số tài khoản, người hưởng)
+    //_________Tài khoản ngân hàng
     bankAccount: String,
+    //_________Thuộc ngân hàng
+    bank: String,
     //_________Thông tin gia đình (Tên, quan hệ, điện thoại, email, địa chỉ)
     family: String,
     //_________Chính sách gia đình thương binh liệt sỹ
