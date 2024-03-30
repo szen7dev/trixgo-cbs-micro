@@ -1069,7 +1069,7 @@ class Model extends BaseModel {
                             select:'fullname name contacts',
                             populate: ({
                                 path: 'contacts',
-                                select:'bankAccount',
+                                select:'bankAccount bank',
                                 
                             })
                         })
@@ -1169,6 +1169,17 @@ class Model extends BaseModel {
                                 
                                 if(item?.human.contacts.length){
                                     workbook.sheet("BangLuong2").row(i).cell(24).value(item?.human.contacts[0].bankAccount)     
+                                }
+
+                                // Bảng lương 3
+                                workbook.sheet("BangLuong3").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("BangLuong3").row(i).cell(2).value(item?.human?.fullname)
+                                workbook.sheet("BangLuong3").row(i).cell(4).value(Number(item.remaining))
+
+                                if(item?.human.contacts.length){
+                                    workbook.sheet("BangLuong3").row(i).cell(3).value(item?.human.contacts[0].identity)     
+                                    workbook.sheet("BangLuong3").row(i).cell(5).value(item?.human.contacts[0].bankAccount) 
+                                    workbook.sheet("BangLuong3").row(i).cell(6).value(item?.human.contacts[0].bank)     
                                 }
                                 
                                 i++
