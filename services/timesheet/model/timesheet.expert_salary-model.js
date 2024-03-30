@@ -975,16 +975,14 @@ class Model extends BaseModel {
                 }
 
 				if(checkObjectIDs(parentID)){
-                    // keys	 = ['project__1', '_id__-1']; // Đưa vào đây thì phân trang không còn đúng nữa
+                 	conditionObj.parent = parentID
 
-					conditionObj.parent = parentID
-
-                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                       // Admin ứng dụng
-                    }else{
-                        let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
-                        conditionObj.project = { $in: listDepartment.map(item=>item.id) }
-                    }
+                    // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                    //    // Admin ứng dụng
+                    // }else{
+                    //     let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
+                    //     conditionObj.project = { $in: listDepartment.map(item=>item.id) }
+                    // }
 
                     // Lọc dữ liệu
                     if(departmentsID && departmentsID.length){
