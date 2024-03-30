@@ -295,7 +295,7 @@ class Model extends BaseModel {
 
                 // Tính toán giá trị còn lại
                 if(!isNaN(salary) || !isNaN(onLeaveSalary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance) || !isNaN(paid)){
-                    dataUpdate.remaining = Number(salary) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)
+                    dataUpdate.remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
                 }
                 // console.log(dataUpdate)
 
@@ -319,25 +319,6 @@ class Model extends BaseModel {
                         }
                     }
                 }
-                // else{
-                //     if(checkObjectIDs(admins)) {
-                //         return resolve({
-                //             error: true,
-                //             message: 'Bạn không có quyền chia sẻ',
-                //             keyError: "permission_denined",
-                //             status: 403
-                //         });
-                //     }
-
-                //     if(checkObjectIDs(members)) {
-                //         return resolve({
-                //             error: true,
-                //             message: 'Bạn không có quyền chia sẻ',
-                //             keyError: "permission_denined",
-                //             status: 403
-                //         });
-                //     }
-                // }
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
@@ -348,6 +329,7 @@ class Model extends BaseModel {
                     })
                 }
 
+                // Cập nhật Bảng lương
                 if(!infoAfterUpdate.parent){
                     // Cập nhật hệ số chuyển đổi vào Chi tiết lương
                     if(convertFactor){
@@ -515,7 +497,7 @@ class Model extends BaseModel {
                 for(const item of listData){
                     // console.log(item._id.assignee.toString())
 
-                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0
+                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
                         human: item._id.assignee,
@@ -535,11 +517,13 @@ class Model extends BaseModel {
                         other = info.other
                         advance = info.advance
                         paid = info.paid
+                        kpiFactor = info.kpiFactor
                     }
 
-                    remaining = Number(salary) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)
+                    remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
                     let dataUpdate =  {
+                        kpiFactor,
                         salary,
                         onLeaveSalary,
                         reward,
@@ -562,7 +546,7 @@ class Model extends BaseModel {
                 }
 
                 for(const item of listData2){
-                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0
+                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
 
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
@@ -583,11 +567,13 @@ class Model extends BaseModel {
                         other = info.other
                         advance = info.advance
                         paid = info.paid
+                        kpiFactor = info.kpiFactor
                     }
 
-                    remaining = Number(Number(salary) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
+                    remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
                     let dataUpdate =  {
+                        kpiFactor,
                         salary,
                         onLeaveSalary,
                         reward,
@@ -667,7 +653,7 @@ class Model extends BaseModel {
                 // console.log({listData})
 
                 for(const item of listData){
-                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0
+                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
 
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
@@ -688,11 +674,13 @@ class Model extends BaseModel {
                         other = info.other
                         advance = info.advance
                         paid = info.paid
+                        kpiFactor = info.kpiFactor
                     }
 
-                    remaining = Number(Number(salary) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
+                    remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
                     let dataUpdate =  {
+                        kpiFactor,
                         salary,
                         onLeaveSalary,
                         reward,
@@ -728,8 +716,6 @@ class Model extends BaseModel {
     }){
         return new Promise(async (resolve) => {
             try {
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
-
                 let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                     {
                         $match: {
@@ -740,6 +726,7 @@ class Model extends BaseModel {
                         $group: {
                             _id: { },
                             salary: { $sum:"$salary" },
+                            salaryFactor: { $sum: { $multiply: [ "$salary", "$kpiFactor" ] } }, // Tổng hợp lương x Hệ số
                             onLeaveSalary: { $sum:"$onLeaveSalary" },
                             reward: { $sum:"$reward" },
                             punishment: { $sum:"$punishment" },
@@ -758,21 +745,49 @@ class Model extends BaseModel {
                 ])
                 // console.log(listData[0])
 
+                let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1, salaryFactor = 0
+
                 if(listData[0]){
-                    dataUpdate.salary = Number(listData[0].salary)
-                    dataUpdate.onLeaveSalary = Number(listData[0].onLeaveSalary)
-                    dataUpdate.reward = Number(listData[0].reward)
-                    dataUpdate.punishment = Number(listData[0].punishment)
-                    dataUpdate.advance = Number(listData[0].advance)
-                    dataUpdate.remaining = Number(listData[0].remaining)
-                    dataUpdate.paid = Number(listData[0].paid)
-                    dataUpdate.revenueBonus = Number(listData[0].revenueBonus)
-                    dataUpdate.mealAllowance = Number(listData[0].mealAllowance)
-                    dataUpdate.insurance = Number(listData[0].insurance)
-                    dataUpdate.pitax = Number(listData[0].pitax)
-                    dataUpdate.union = Number(listData[0].union)
-                    dataUpdate.share = Number(listData[0].share)
-                    dataUpdate.other = Number(listData[0].other)
+                    salary = Number(listData[0].salary)
+                    onLeaveSalary = Number(listData[0].onLeaveSalary)
+                    reward = Number(listData[0].reward)
+                    punishment = Number(listData[0].punishment)
+                    advance = Number(listData[0].advance)
+                    paid = Number(listData[0].paid)
+                    revenueBonus = Number(listData[0].revenueBonus)
+                    mealAllowance = Number(listData[0].mealAllowance)
+                    insurance = Number(listData[0].insurance)
+                    pitax = Number(listData[0].pitax)
+                    union = Number(listData[0].union)
+                    share = Number(listData[0].share)
+                    other = Number(listData[0].other)
+                    salaryFactor = Number(listData[0].salaryFactor)
+                }
+
+                if(salary != 0){
+                    kpiFactor = salaryFactor/salary
+                }
+
+                remaining = Number(Number(salaryFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
+
+                let dataUpdate =  {
+                    userUpdate: userID, 
+                    modifyAt: new Date(),
+                    kpiFactor,
+                    salary,
+                    onLeaveSalary,
+                    reward,
+                    revenueBonus,
+                    mealAllowance,
+                    punishment,
+                    insurance,
+                    pitax,
+                    union,
+                    share,
+                    other,
+                    advance,
+                    paid,
+                    remaining
                 }
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true });
