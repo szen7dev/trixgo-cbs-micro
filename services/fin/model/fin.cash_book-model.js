@@ -1069,7 +1069,7 @@ class Model extends BaseModel {
                             select:'fullname name contacts',
                             populate: ({
                                 path: 'contacts',
-                                select:'bankAccount bank',
+                                select:'bankAccount bank identity',
                                 
                             })
                         })
