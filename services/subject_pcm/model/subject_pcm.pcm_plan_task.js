@@ -4917,8 +4917,8 @@ class Model extends BaseModel {
      * Func: Download template import excel
      * Date: 15/09/2022
      */
-    downloadTemplateImportExcel({ option, projectID, taskID,  userID }) {
-        // console.log({ option, projectID, taskID, userID })
+    downloadTemplateImportExcel({ option, companyID, projectID, taskID,  userID }) {
+        // console.log({ option, companyID, projectID, taskID, userID })
         return new Promise(async resolve => {
             try {
                 // Mẫu Import excel
@@ -5019,11 +5019,16 @@ class Model extends BaseModel {
 
                 // Báo cáo điểm danh
                 else if(option == 3){
+                    // let listData = await PCM_COMMENT_COLL.find({ companyOfAuthor: companyID, subType: 16 })
                     let listData = await PCM_COMMENT_COLL.find({ project: projectID, subType: 16 })
-                    .select('content author createAt')
+                    .select('content author createAt task')
                     .populate({
                         path: 'author',
-                        select: 'fullname',
+                        select: 'fullname department',
+                        populate: {
+                            path: 'department',
+                            select: 'name',
+                        }
                     })
                     .sort({createAt: 1})
                     // console.log(listData)
@@ -5051,23 +5056,24 @@ class Model extends BaseModel {
 
                             workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
                             workbook.sheet("Data").row(i).cell(2).value(item?.author?.fullname)
-                            workbook.sheet("Data").row(i).cell(3).value(item?.content)
-                            workbook.sheet("Data").row(i).cell(4).value(item?.createAt)
-                            workbook.sheet("Data").row(i).cell(5).value(time1)
-                            workbook.sheet("Data").row(i).cell(6).value(time2)
-                            workbook.sheet("Data").row(i).cell(7).value(time3)
+                            workbook.sheet("Data").row(i).cell(3).value(item?.author?.department?.name)
+                            workbook.sheet("Data").row(i).cell(4).value(item?.content)
+                            workbook.sheet("Data").row(i).cell(5).value(item?.createAt)
+                            workbook.sheet("Data").row(i).cell(6).value(time1)
+                            workbook.sheet("Data").row(i).cell(7).value(time2)
+                            workbook.sheet("Data").row(i).cell(8).value(time3)
                             if(Number(d.getHours()) > 18){
-                                workbook.sheet("Data").row(i).cell(10).value(Number((a - b3) / (1000*60))) 
+                                workbook.sheet("Data").row(i).cell(11).value(Number((a - b3) / (1000*60))) 
                             }else{
                                 if(Number(d.getHours()) > 13){
-                                    workbook.sheet("Data").row(i).cell(9).value(Number((a - b2) / (1000*60)))
+                                    workbook.sheet("Data").row(i).cell(10).value(Number((a - b2) / (1000*60)))
                                 }else{
                                     if(Number(d.getHours()) > 8){
-                                        workbook.sheet("Data").row(i).cell(8).value(Number((a - b1) / (1000*60)))
+                                        workbook.sheet("Data").row(i).cell(9).value(Number((a - b1) / (1000*60)))
                                     }
                                 }
                             }
-                            // workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com//pcm/detail/${taskID}`)
+                            workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com//pcm/detail/${item.task}`)
 
                             i++
                         })
