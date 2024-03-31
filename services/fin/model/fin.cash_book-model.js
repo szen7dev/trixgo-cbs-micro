@@ -1056,12 +1056,12 @@ class Model extends BaseModel {
                         let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
                         let listPosition = await ITEM__POSITION_COLL.find({company:companyID}).select('_id name')
 
-                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                            // Admin ứng dụng
-                         }else{
-                             let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
-                             conditionObj.project = { $in: listDepartment.map(item=>item.id) }
-                         }
+                        // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                        //     // Admin ứng dụng
+                        // }else{
+                        //     let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
+                        //     conditionObj.project = { $in: listDepartment.map(item=>item.id) }
+                        // }
 
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                         .populate({
