@@ -133,13 +133,13 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
+    //_________Đã chi trả
+    paid:  { type: Number, default: 0},
     //________Phải thanh toán
     remaining: {
         type: Number,
         default: 0 
     },
-    //_________Đã chi trả
-    paid:  { type: Number, default: 0},
     //________Ghi chú
     note: String,
     userCreate: {
