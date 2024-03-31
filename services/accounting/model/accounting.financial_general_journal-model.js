@@ -2767,7 +2767,7 @@ class Model extends BaseModel {
     getListByFilter({
         companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
-            console.log({ companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts, limit, lastestID, select, populates, sortKey, isExportExcel })
+            // console.log({ companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts, limit, lastestID, select, populates, sortKey, isExportExcel })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -2905,6 +2905,11 @@ class Model extends BaseModel {
             try {
                 // Record Traffic
                 //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049aefdebf77b072d1b12", 
+                    userID
+                })
                 
                 let conditionObj = {};
                 let resultGetList = { error: true }
@@ -2985,7 +2990,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                const result = await this.downloadExcelFile({userID, data: listData, type, voucherID})
+                const result = await this.downloadExcelFile({ userID, infoAppUser, data: listData, type, voucherID })
                 return resolve(result);
             } catch (error) {
                 console.log({ error })
@@ -2994,7 +2999,7 @@ class Model extends BaseModel {
         })
     }
 
-    downloadExcelFile({ userID, data, type, voucherID }) {
+    downloadExcelFile({ userID, infoAppUser, data, type, voucherID }) {
         return new Promise(resolve => {
             let template
             if(type == 1){
@@ -3002,7 +3007,11 @@ class Model extends BaseModel {
             }else if(type == 2){
                 template = '../../../files/templates/excels/accounting_journal_export.xlsx'
             }else if(type == 3){
-                template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
+                template = '../../../files/templates/excels/accounting_voucher_detail_2.xlsx'
+
+                if(infoAppUser && infoAppUser.data.level == 0){
+                    template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
+                }
             }
 
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
@@ -3083,10 +3092,10 @@ class Model extends BaseModel {
                     }
 
                     else if(type == 3){
-                        let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                            appID: "61e049aefdebf77b072d1b12", 
-                            userID
-                        })
+                        // let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        //     appID: "61e049aefdebf77b072d1b12", 
+                        //     userID
+                        // })
                         // console.log({infoAppUser})
 
                         let infoVoucher = await FINANCIAL_VOUCHER_COLL.findById(voucherID)
@@ -3116,9 +3125,10 @@ class Model extends BaseModel {
                             if(infoAppUser && infoAppUser.data.level == 0){
                                 workbook.sheet("Data").row(i).cell(5).value(Number(item?.unitprice));
                                 workbook.sheet("Data").row(i).cell(6).value(Number(item?.amount));
-                            }
-
-                            workbook.sheet("Data").row(i).cell(7).value(item?.note);    
+                                workbook.sheet("Data").row(i).cell(7).value(item?.note);
+                            }else{
+                                workbook.sheet("Data").row(i).cell(5).value(item?.note);
+                            }  
     
                             i++
                         })
