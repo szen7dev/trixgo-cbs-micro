@@ -1402,7 +1402,7 @@ class Model extends BaseModel {
                         let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
                         .populate({
                             path: 'company human',
-                            select: 'name addess fullname contacts position',
+                            select: 'name address fullname contacts position',
                             populate: ({
                                 path: 'contacts position',
                                 select:'name sign bankAccount bank identity sallaryBasic',
