@@ -337,58 +337,58 @@ class Model extends BaseModel {
                     }
 
                     // Thêm các nhân sự còn thiếu vào bảng lương
-                    let companyID = infoSalary.company, userCreate = userID
-                    let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 })
-                    .select('fullname department position contacts')
-                    .populate({
-                        path: 'contacts',
-                        select: 'company sallaryBasic insuranceFee union share'
-                    })
+                    // let companyID = infoSalary.company, userCreate = userID
+                    // let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 })
+                    // .select('fullname department position contacts')
+                    // .populate({
+                    //     path: 'contacts',
+                    //     select: 'company sallaryBasic insuranceFee union share'
+                    // })
 
-                    for(const item of listHuman){
-                        let infoS = await TIMESHEET__EXPERT_SALARY_COLL.findOne({parent: expertSalaryID, human: item._id})
-                        if(!infoS){
-                            let insuranceFee = 0, union = 0, share = 0
-                            if(item.contacts && item.contacts.length){
-                                for(const contact of item.contacts){
-                                    if(contact.company.toString() === companyID.toString() && contact.insuranceFee){
-                                        insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
-                                        union = Number(union) + Number(contact.union)
-                                        share = Number(share) + Number(contact.share)
-                                    }
-                                }
-                            }
+                    // for(const item of listHuman){
+                    //     let infoS = await TIMESHEET__EXPERT_SALARY_COLL.findOne({parent: expertSalaryID, human: item._id})
+                    //     if(!infoS){
+                    //         let insuranceFee = 0, union = 0, share = 0
+                    //         if(item.contacts && item.contacts.length){
+                    //             for(const contact of item.contacts){
+                    //                 if(contact.company.toString() === companyID.toString() && contact.insuranceFee){
+                    //                     insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
+                    //                     union = Number(union) + Number(contact.union)
+                    //                     share = Number(share) + Number(contact.share)
+                    //                 }
+                    //             }
+                    //         }
 
-                            let dataInsertDetail = {
-                                userCreate,
-                                name: 'Default',
-                                admins: [userCreate],
-                                members: [userCreate],
-                                human: item._id,
-                                parent: expertSalaryID,
-                                company: companyID,
-                                convertFactor: infoSalary.convertFactor,
-                                project: item.department,
-                                position: item.position,
-                                date: infoSalary.date,
-                                type: infoSalary.type,
-                            }
+                    //         let dataInsertDetail = {
+                    //             userCreate,
+                    //             name: 'Default',
+                    //             admins: [userCreate],
+                    //             members: [userCreate],
+                    //             human: item._id,
+                    //             parent: expertSalaryID,
+                    //             company: companyID,
+                    //             convertFactor: infoSalary.convertFactor,
+                    //             project: item.department,
+                    //             position: item.position,
+                    //             date: infoSalary.date,
+                    //             type: infoSalary.type,
+                    //         }
 
-                            if(Number(insuranceFee) > 0){
-                                dataInsertDetail.insurance = Number(insuranceFee)
-                            }
+                    //         if(Number(insuranceFee) > 0){
+                    //             dataInsertDetail.insurance = Number(insuranceFee)
+                    //         }
 
-                            if(Number(union) > 0){
-                                dataInsertDetail.union = Number(union)
-                            }
+                    //         if(Number(union) > 0){
+                    //             dataInsertDetail.union = Number(union)
+                    //         }
 
-                            if(Number(share) > 0){
-                                dataInsertDetail.share = Number(share)
-                            }
+                    //         if(Number(share) > 0){
+                    //             dataInsertDetail.share = Number(share)
+                    //         }
 
-                            await this.insertData(dataInsertDetail)
-                        }
-                    }
+                    //         await this.insertData(dataInsertDetail)
+                    //     }
+                    // }
                 }
 
                 // Cập nhật giá trị vào Bảng lương cha
