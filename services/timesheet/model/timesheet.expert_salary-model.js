@@ -866,6 +866,8 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Yêu cầu không hợp lệ', status: 200 });
                 }
 
+                let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(arraysRemove[0])
+
                 const result = await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({
                     _id: { $in: arraysRemove },
                     userCreate: userID,
@@ -884,7 +886,6 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật số nhân sự bảng lương
-                let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(arraysRemove[0])
                 if(info && info.parent){
                     let numberOfHuman = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: info?.parent})
                     if(numberOfHuman){
