@@ -177,6 +177,11 @@ class Model extends BaseModel {
                     await this.insertData(dataInsertDetail)
                 }
 
+                // Cập nhật số nhân sự bảng lương
+                await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                    numberOfHuman: Number(listHuman.length)
+                }, { new: true })
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -497,13 +502,14 @@ class Model extends BaseModel {
                 for(const item of listData){
                     // console.log(item._id.assignee.toString())
 
-                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
+                    let hours1 = 0, salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
                         human: item._id.assignee,
                     })
 
                     if(info){
+                        hours1 = Number(item.quantity).toFixed(2) // Lấy theo bảng chấm công
                         salary = Number(item.amount).toFixed(0) // Lấy theo bảng chấm công
                         onLeaveSalary = info.onLeaveSalary
                         reward = info.reward
@@ -523,6 +529,7 @@ class Model extends BaseModel {
                     remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
                     let dataUpdate =  {
+                        hours1,
                         kpiFactor,
                         salary,
                         onLeaveSalary,
@@ -546,7 +553,7 @@ class Model extends BaseModel {
                 }
 
                 for(const item of listData2){
-                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
+                    let hours2 = 0, salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
 
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
@@ -554,6 +561,7 @@ class Model extends BaseModel {
                     })
 
                     if(info){
+                        hours2 = Number(item.quantity).toFixed(2) // Lấy theo bảng chấm công
                         salary = info.salary
                         onLeaveSalary = Number(item.amount).toFixed(0)
                         reward = info.reward
@@ -573,6 +581,7 @@ class Model extends BaseModel {
                     remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
                     let dataUpdate =  {
+                        hours2,
                         kpiFactor,
                         salary,
                         onLeaveSalary,
@@ -872,6 +881,19 @@ class Model extends BaseModel {
                         message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
                         status: 200
                     });
+                }
+
+                // Cập nhật số nhân sự bảng lương
+                let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(arraysRemove[0])
+                if(info && info.parent){
+                    let numberOfHuman = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: info?.parent})
+                    if(numberOfHuman){
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info?.parent, {
+                            userUpdate: userID,
+                            modifyAt: Date.now(),
+                            numberOfHuman
+                        }, { new: true })
+                    }
                 }
 
                 return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });

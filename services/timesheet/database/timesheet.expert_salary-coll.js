@@ -41,13 +41,28 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     },
     //________Nội dung (*)
     name: String,
-    //________Nhân sự
+    //________Nhân sự hưởng lương
     human: {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
+    //________Tổng số nhân sự
+    numberOfHuman: {
+        type: Number,
+        default: 0 
+    },
     //_______Ngày tháng
     date: { type: Date, default: Date.now },
+    //________Số giờ làm việc
+    hours1: {
+        type: Number,
+        default: 0 
+    },
+    //________Số giờ nghỉ phép, lễ
+    hours2: {
+        type: Number,
+        default: 0 
+    },
     //________Lương
     salary: {
         type: Number,
