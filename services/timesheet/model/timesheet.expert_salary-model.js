@@ -928,7 +928,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        sortOption, parentID, userID,
+        option, sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID }) {
         // console.log({sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
@@ -1022,6 +1022,11 @@ class Model extends BaseModel {
                         keyword = '.*' + keyword.join(".*") + '.*';
                         conditionObj.name =  new RegExp(keyword, 'i')
                     }
+                }
+
+                if(option && option == 1){
+                    conditionObj.human = userID
+                    conditionObj.parent = { $exists: true, $ne: null }
                 }
                 // console.log(conditionObj)
 
