@@ -3562,38 +3562,39 @@ class Model extends BaseModel {
                 let index = 0;
                 let errorNumber = 0;
 
-                // if(!option){
-                //     for (const data of dataImportJSON) {
-                //         if(index > 0 && index <= 250){
-                //             let dataInsert = {
-                //                 companyID,
-                //                 userID,
-                //                 parentID,
-                //                 accountID: data?.__EMPTY_14,
-                //                 customerID: data?.__EMPTY_15,
-                //                 contractID: data?.__EMPTY_16,
-                //                 name: data?.__EMPTY_1,
-                //                 note: data?.__EMPTY_7,
-                //                 date: data?.__EMPTY_13,
-                //                 income: data?.__EMPTY_5,
-                //                 expense: data?.__EMPTY_6
-                //             }
+                if(!option){
+                    for (const data of dataImportJSON) {
+                        if(index > 0 && index <= 100){
+                            console.log(data)
+                            // let dataInsert = {
+                            //     companyID,
+                            //     userID,
+                            //     parentID,
+                            //     accountID: data?.__EMPTY_14,
+                            //     customerID: data?.__EMPTY_15,
+                            //     contractID: data?.__EMPTY_16,
+                            //     name: data?.__EMPTY_1,
+                            //     note: data?.__EMPTY_7,
+                            //     date: data?.__EMPTY_13,
+                            //     income: data?.__EMPTY_5,
+                            //     expense: data?.__EMPTY_6
+                            // }
 
-                //             let infoAfterInsert = await this.insert(dataInsert);
-                //             if(infoAfterInsert.error){
-                //                 errorNumber++;
-                //             }
-                //         }
-                //         index ++;
-                //     }
+                            // let infoAfterInsert = await this.insert(dataInsert);
+                            // if(infoAfterInsert.error){
+                            //     errorNumber++;
+                            // }
+                        }
+                        index ++;
+                    }
 
-                //     if(errorNumber != 0)
-                //         return resolve({ error: true, message: "import field" });
+                    if(errorNumber != 0)
+                        return resolve({ error: true, message: "import field" });
 
-                //     return resolve({ error: false, message: "import success" });
-                // }else{
+                    return resolve({ error: false, message: "import success" });
+                }else{
 
-                // }
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
