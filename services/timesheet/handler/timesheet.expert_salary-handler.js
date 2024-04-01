@@ -172,7 +172,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertSalaryID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID } = ctx.params;
+                let { expertSalaryID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, option } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log({ EXPERT_SALARY_PARAMS: ctx.params })
@@ -188,7 +188,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({
-                        parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, ctx
+                        parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, option
                     })
                 }
 
