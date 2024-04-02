@@ -4918,7 +4918,7 @@ class Model extends BaseModel {
      * Date: 15/09/2022
      */
     downloadTemplateImportExcel({ option, companyID, projectID, taskID,  userID }) {
-        // console.log({ option, companyID, projectID, taskID, userID })
+        console.log({ option, companyID, projectID, taskID, userID })
         return new Promise(async resolve => {
             try {
                 // Mẫu Import excel
@@ -5019,8 +5019,8 @@ class Model extends BaseModel {
 
                 // Báo cáo điểm danh
                 else if(option == 3){
-                    // let listData = await PCM_COMMENT_COLL.find({ companyOfAuthor: companyID, subType: 16 })
-                    let listData = await PCM_COMMENT_COLL.find({ project: projectID, subType: 16 })
+                    let listData = await PCM_COMMENT_COLL.find({ companyOfAuthor: companyID, subType: 16 })
+                    // let listData = await PCM_COMMENT_COLL.find({ project: projectID, subType: 16 })
                     .select('content author createAt task')
                     .populate({
                         path: 'author',
