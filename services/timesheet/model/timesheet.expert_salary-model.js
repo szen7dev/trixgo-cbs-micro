@@ -334,6 +334,18 @@ class Model extends BaseModel {
                     })
                 }
 
+                // Cập nhật số nhân sự bảng lương
+                if(!infoAfterUpdate.parent){
+                    let numberOfHuman = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: expertSalaryID})
+                    if(numberOfHuman){
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(expertSalaryID, {
+                            userUpdate: userID,
+                            modifyAt: Date.now(),
+                            numberOfHuman
+                        }, { new: true })
+                    }
+                }
+
                 // Cập nhật Bảng lương
                 if(!infoAfterUpdate.parent){
                     // Cập nhật hệ số chuyển đổi vào Chi tiết lương
