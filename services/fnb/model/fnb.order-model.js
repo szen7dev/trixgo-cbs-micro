@@ -84,6 +84,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID, ctx }) {
+        // console.log(products)
         const that = this
         return new Promise(async resolve => {
             try {
@@ -991,6 +992,7 @@ class Model extends BaseModel {
      */
     insert2({ voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID, ctx }) {
         // console.log({ voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID })
+        // console.log(products)
         const that = this
         return new Promise(async resolve => {
             try {
@@ -3554,8 +3556,8 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date: 21/3/2024
      */
-    importFromExcel({ option, companyID, dataImport, userID }) {
-        // console.log({option, companyID, dataImport, userID})
+    importFromExcel({ option, companyID, dataImport, userID, ctx }) {
+        // console.log({ option, companyID, dataImport, userID })
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
@@ -3565,25 +3567,43 @@ class Model extends BaseModel {
                 if(!option){
                     for (const data of dataImportJSON) {
                         if(index > 0 && index <= 100){
-                            console.log(data)
-                            // let dataInsert = {
-                            //     companyID,
-                            //     userID,
-                            //     parentID,
-                            //     accountID: data?.__EMPTY_14,
-                            //     customerID: data?.__EMPTY_15,
-                            //     contractID: data?.__EMPTY_16,
-                            //     name: data?.__EMPTY_1,
-                            //     note: data?.__EMPTY_7,
-                            //     date: data?.__EMPTY_13,
-                            //     income: data?.__EMPTY_5,
-                            //     expense: data?.__EMPTY_6
-                            // }
+                            // console.log(data)
+                            let dataInsert = {
+                                fundaID: data?.__EMPTY, 
+                                customerID: data?.__EMPTY_2, 
+                                businessID: data?.__EMPTY_4, 
+                                channelID: data?.__EMPTY_5, 
+                                affiliateID: data?.__EMPTY_7, 
+                                shiftID: data?.__EMPTY_1, 
+                                date: data?.__EMPTY_16, 
+                                name: data?.__EMPTY_9, 
+                                // appOrderSign, 
+                                // note, 
+                                total: data?.__EMPTY_13, 
+                                discount: 0, 
+                                salesoff: 0, 
+                                credit: 0, 
+                                offer: 0, 
+                                vatAmount: 0, 
+                                shippingFee: 0, 
+                                products:[
+                                    {
+                                        productID: data?.__EMPTY_15,
+                                        quantity: data?.__EMPTY_12,
+                                        size: 1,
+                                        sugar: 1,
+                                        ice: 1,
+                                        unitPrice: data?.__EMPTY_13
+                                    }
+                                ], 
+                                userID, 
+                                ctx
+                            }
 
-                            // let infoAfterInsert = await this.insert(dataInsert);
-                            // if(infoAfterInsert.error){
-                            //     errorNumber++;
-                            // }
+                            let infoAfterInsert = await this.insert2(dataInsert);
+                            if(infoAfterInsert.error){
+                                errorNumber++;
+                            }
                         }
                         index ++;
                     }
