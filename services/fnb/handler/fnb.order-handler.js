@@ -306,7 +306,7 @@ module.exports = {
                 // console.log( ctx.params)
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.importFromExcel({
-                    option, companyID: company._id, dataImport, userID
+                    option, companyID: company._id, dataImport, userID, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
