@@ -99,167 +99,216 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     update({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove }) {
-        // console.log({ companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove })
+        // console.log({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove })
+        const that = this
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(voucherID))
                     return resolve({ error: true, message: 'voucherID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                    let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
-                    let dataAddToset = {};
-                    let dataPullAll  = {};
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataAddToset = {};
+                let dataPullAll  = {};
 
-                    let infoCheck = await FNB_VOUCHER_COLL.findById(voucherID).select('_id type')
+                let infoCheck = await FNB_VOUCHER_COLL.findById(voucherID).select('_id type')
+                // console.log(infoCheck)
 
-                    if(name && name != ""){
-                        dataUpdate.name = name
-                    }
+                if(name && name != ""){
+                    dataUpdate.name = name
+                }
 
-                    if(sign && sign != ""){
-                        let infoVoucher = await FNB_VOUCHER_COLL.findOne({ 
-                            _id: { $ne: voucherID },
-                            company: companyID, 
-                            sign: sign.replace(/\s/g, "")
-                        })
-                        if(infoVoucher)
-                            return resolve({ error: true, message: 'Mã hiệu đã tồn tại' })
+                if(sign && sign != ""){
+                    let infoVoucher = await FNB_VOUCHER_COLL.findOne({ 
+                        _id: { $ne: voucherID },
+                        company: companyID, 
+                        sign: sign.replace(/\s/g, "")
+                    })
+                    if(infoVoucher)
+                        return resolve({ error: true, message: 'Mã hiệu đã tồn tại' })
 
-                        dataUpdate.sign = sign.replace(/\s/g, "")
-                    }
+                    dataUpdate.sign = sign.replace(/\s/g, "")
+                }
 
-                    if(note && note != ""){
-                        dataUpdate.note = note
-                    }
-    
-                    if(expired && expired != ""){
-                        dataUpdate.expired = expired
-                    }
+                if(note && note != ""){
+                    dataUpdate.note = note
+                }
 
-                    if(!isNaN(template) && Number(template) > 0){
-                        dataUpdate.template = Number(template)
-                    }
+                if(expired && expired != ""){
+                    dataUpdate.expired = expired
+                }
 
-                    if(!isNaN(type) && Number(type) > 0){
-                        dataUpdate.type = Number(type)
-                    }
-    
-                    if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
-                        dataUpdate.minOrderAmount = Number(minOrderAmount)
-                    }
-                    if(!isNaN(salesoffAmount) && Number(salesoffAmount) >= 0){
-                        dataUpdate.salesoffAmount = Number(salesoffAmount)
-                    }
-                    if(!isNaN(salesoffRate) && Number(salesoffRate) >= 0){
-                        dataUpdate.salesoffRate = Number(salesoffRate)
-                    }
-                    if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
-                        dataUpdate.minOrderAmount = Number(minOrderAmount)
-                    }
+                if(!isNaN(template) && Number(template) > 0){
+                    dataUpdate.template = Number(template)
+                }
 
-                    /**
-                     * QUẢN LÝ KHÁCH HÀNG
-                     */
-                    //_________Thêm người nhận voucher
-                    if(checkObjectIDs(receivers)){
-                        // console.log('=========1111111111111111111')
-                        if(option && option == 1){
-                            // console.log('=========222222222222222222')
-                            // Không cho phép Import excel với Voucher tặng người giới thiệu hoặc khách mới
-                            if(Number(infoCheck.type) != 2 && Number(infoCheck.type) != 3){
-                                dataAddToset = {
-                                    ...dataAddToset,
-                                    receivers
-                                }
-                            }
-                        }else{
-                            // console.log('=========333333333333333')
+                if(!isNaN(type) && Number(type) > 0){
+                    dataUpdate.type = Number(type)
+                }
+
+                if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
+                    dataUpdate.minOrderAmount = Number(minOrderAmount)
+                }
+                if(!isNaN(salesoffAmount) && Number(salesoffAmount) >= 0){
+                    dataUpdate.salesoffAmount = Number(salesoffAmount)
+                }
+                if(!isNaN(salesoffRate) && Number(salesoffRate) >= 0){
+                    dataUpdate.salesoffRate = Number(salesoffRate)
+                }
+                if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
+                    dataUpdate.minOrderAmount = Number(minOrderAmount)
+                }
+
+                /**
+                 * QUẢN LÝ KHÁCH HÀNG
+                 */
+                //_________Thêm người nhận voucher
+                if(checkObjectIDs(receivers)){
+                    if(option && option == 1){
+                        // Không cho phép Import excel với Voucher tặng người giới thiệu hoặc khách mới
+                        if(Number(infoCheck.type) != 2 && Number(infoCheck.type) != 3){
                             dataAddToset = {
                                 ...dataAddToset,
                                 receivers
                             }
                         }
+                    }else{
+                        dataAddToset = {
+                            ...dataAddToset,
+                            receivers
+                        }
+                    }
+                }
+
+                //_________Người đã sử dụng voucher
+                if(checkObjectIDs(buyers)){
+                    dataAddToset = {
+                        ...dataAddToset,
+                        buyers
+                    }
+                }
+
+                //_________Thành viên truy cập
+                if(checkObjectIDs(membersAdd)){
+                    dataAddToset = {
+                        ...dataAddToset,
+                        members: membersAdd
+                    }
+                }
+
+                //_________Xoá thành viên
+                if(checkObjectIDs(membersRemove)){
+                    dataPullAll = {
+                        ...dataPullAll,
+                        members: membersRemove
+                    }
+                }
+
+                /**
+                 * Cập nhật nhiều dữ liệu addToSet cùng 1 lúc
+                 */
+                if(dataAddToset){
+                    dataUpdate.$addToSet = dataAddToset;
+                }
+                // console.log(dataUpdate)
+
+                /**
+                 * Xóa nhiều dữ liệu cùng 1 lúc
+                 */
+                if(dataPullAll){
+                    dataUpdate.$pullAll = dataPullAll;
+                }
+
+                let infoAfterUpdate = await FNB_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate, { new: true });
+                if (!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                if(dataAddToset){
+                    /**
+                     * KIỂM TRA ĐỂ ĐẢM BẢO
+                     * 1-Khách hàng chỉ đc nhận và sử dụng VoucherID 1 lần
+                     */
+
+                    // Cập nhật vào Người nhận
+                    if(checkObjectIDs(receivers)){
+                        // Cấp phát voucher
+                        await ITEM__CONTACT_COLL.updateMany(
+                            {_id: { $in: receivers }},
+                            { $addToSet:
+                                { getVouchers: voucherID },
+                            },
+                        )
+
+                        // Đánh dấu phân loại chiến dịch
+                        await ITEM__CONTACT_COLL.updateMany(
+                            { _id: { $in: receivers }, campaignType: {$exists: false}},
+                            { 
+                                $set: {campaignType: voucherID}
+                            },
+                        )
                     }
 
-                    //_________Người đã sử dụng voucher
+                    // Cập nhật vào Người sử dụng
                     if(checkObjectIDs(buyers)){
-                        dataAddToset = {
-                            ...dataAddToset,
-                            buyers
-                        }
+                        await ITEM__CONTACT_COLL.updateMany(
+                            {_id: { $in: buyers }},
+                            { $addToSet:
+                                { usedVouchers: voucherID },
+                            },
+                        )
                     }
+                }
 
-                    //_________Thành viên truy cập
-                    if(checkObjectIDs(membersAdd)){
-                        dataAddToset = {
-                            ...dataAddToset,
-                            members: membersAdd
-                        }
-                    }
+                if(voucherID && voucherID.toString() === '64378d6618c77f00128abe93'){
+                    await that.updateMultiple({ 
+                        companyID, 
+                        userID, 
+                        receivers, 
+                        vouchers: [
+                            '66095d0a0b315f001249d158',
+                            '66095d33c1da550011a6d2f8',
+                            '66095d53dc469e00123ac585',
+                            '66095d72dc469e00123ac586',
+                            '66095d910b315f001249d15a',
+                            '66095db6dc469e00123ac58a',
+                        ]
+                    })
+                }
 
-                    //_________Xoá thành viên
-                    if(checkObjectIDs(membersRemove)){
-                        dataPullAll = {
-                            ...dataPullAll,
-                            members: membersRemove
-                        }
-                    }
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
 
-                    /**
-                     * Cập nhật nhiều dữ liệu addToSet cùng 1 lúc
-                     */
-                    if(dataAddToset){
-                        dataUpdate.$addToSet = dataAddToset;
-                    }
-                    // console.log(dataUpdate)
+    /**
+     * Name: Cấp phát nhiều Voucher
+     * Author: HiepNH
+     * Date: 21/3/2023
+     */
+    updateMultiple({ companyID, userID, receivers, vouchers }) {
+        // console.log({ companyID, userID, receivers, vouchers })
+        return new Promise(async resolve => {
+            try {
+               
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date(),
+                    $addToSet: { receivers: receivers }
+                }
 
-                    /**
-                     * Xóa nhiều dữ liệu cùng 1 lúc
-                     */
-                    if(dataPullAll){
-                        dataUpdate.$pullAll = dataPullAll;
-                    }
+                for(const item of vouchers){
+                    await FNB_VOUCHER_COLL.findByIdAndUpdate(item, dataUpdate, { new: true })
 
-                    let infoAfterUpdate = await FNB_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate, { new: true });
-                    if (!infoAfterUpdate)
-                        return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    await ITEM__CONTACT_COLL.updateMany(
+                        {_id: { $in: receivers }},
+                        { $addToSet:
+                            { getVouchers: item },
+                        },
+                    )
+                }
 
-                    if(dataAddToset){
-                        /**
-                         * KIỂM TRA ĐỂ ĐẢM BẢO
-                         * 1-Khách hàng chỉ đc nhận và sử dụng VoucherID 1 lần
-                         */
-
-                        // Cập nhật vào Người nhận
-                        if(checkObjectIDs(receivers)){
-                            // Cấp phát voucher
-                            await ITEM__CONTACT_COLL.updateMany(
-                                {_id: { $in: receivers }},
-                                { $addToSet:
-                                    { getVouchers: voucherID },
-                                },
-                            )
-
-                            // Đánh dấu phân loại chiến dịch
-                            await ITEM__CONTACT_COLL.updateMany(
-                                { _id: { $in: receivers }, campaignType: {$exists: false}},
-                                { 
-                                    $set: {campaignType: voucherID}
-                                },
-                            )
-                        }
-
-                        // Cập nhật vào Người sử dụng
-                        if(checkObjectIDs(buyers)){
-                            await ITEM__CONTACT_COLL.updateMany(
-                                {_id: { $in: buyers }},
-                                { $addToSet:
-                                    { usedVouchers: voucherID },
-                                },
-                            )
-                        }
-                    }
-
-                    return resolve({ error: false, data: infoAfterUpdate });
+                return resolve({ error: false, message: 'Cập nhật thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
