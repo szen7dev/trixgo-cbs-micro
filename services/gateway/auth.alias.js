@@ -13,7 +13,6 @@ const { CF_ROUTINGS_GATEWAY } 		= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-constant');
 const { CF_ROUTINGS_DOCUMENT } 		= require('../document/helper/document.routes-constant');
-const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-constant');
 const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-constant');
 const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
 const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constant');
@@ -34,6 +33,7 @@ const { CF_ROUTINGS_BIDDING }		= require('../bidding/helper/bidding.routes-const
 const { CF_ROUTINGS_FIN }			= require('../fin/helper/fin.routes-constant');
 const { CF_ROUTINGS_BUDGET }		= require('../budget/helper/budget.routes-constant');
 const { CF_ROUTINGS_FNB }			= require('../fnb/helper/fnb.routes-constant');
+const { CF_ROUTINGS_PAYMENT }			= require('../payment/helper/payment.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -42,7 +42,6 @@ const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
 const { CF_ACTIONS_DOCUMENT } 		= require('../document/helper/document.actions-constant');
-const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
 const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-constant');
@@ -63,6 +62,7 @@ const { CF_ACTIONS_BIDDING }		= require('../bidding/helper/bidding.actions-const
 const { CF_ACTIONS_FIN }			= require('../fin/helper/fin.actions-constant');
 const { CF_ACTIONS_BUDGET }			= require('../budget/helper/budget.actions-constant');
 const { CF_ACTIONS_FNB }			= require('../fnb/helper/fnb.actions-constant');
+const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -419,9 +419,6 @@ module.exports = {
 
 		[`POST ${CF_ROUTINGS_PAYMENT.CREATE_URL_PAYMENT}`] :
 		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.CREATE_URL_PAYMENT}`],
-
-		[`GET ${CF_ROUTINGS_PAYMENT.URL_RETURN_PAYMENT}`] :
-		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_RETURN_PAYMENT}`],		
 
 		//--------------------------aliases's REMINDER service--------------------------//
 		[`GET ${CF_ROUTINGS_REMINDER.REMINDERS}`] :
@@ -1396,7 +1393,7 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_LOGS}`] :
 		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_GET_INFO_AND_GET_LIST}`],
-		
+
 		// Data
 		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_DATAS_GET_DATA}`] :
 		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_DATA_GET_DATA}`],

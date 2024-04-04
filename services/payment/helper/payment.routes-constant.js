@@ -7,11 +7,12 @@ const TRANSACTION = '/transactions';
 const CF_ROUTINGS_PAYMENT = {
     ORIGIN_APP: BASE_ROUTE,
 
-    GET_LIST_TRANSACTION                                : `${BASE_ROUTE}${TRANSACTION}`, // /payment/transactions
-    GET_LIST_TRANSACTION_BY_USER_WITH_STATUS            : `${BASE_ROUTE}${TRANSACTION}/users/:userID`, // /payment/transactions/users/:userID
-    CREATE_URL_PAYMENT                                  : `${BASE_ROUTE}${TRANSACTION}/urls`, // /payment/urls
-    URL_RETURN_PAYMENT                                  : `${BASE_ROUTE}${TRANSACTION}/url_return`, // /payment/urls
-    UPDATE_STATUS                                       : `${BASE_ROUTE}${TRANSACTION}/:transactionID`, // /payment/transactions/:transactionID
+    GET_LIST_TRANSACTION                                : `${BASE_ROUTE}${TRANSACTION}`,
+    GET_LIST_TRANSACTION_BY_USER_WITH_STATUS            : `${BASE_ROUTE}${TRANSACTION}/users/:userID`,
+    UPDATE_STATUS                                       : `${BASE_ROUTE}${TRANSACTION}/:transactionID`,
+    CREATE_URL_PAYMENT                                  : `${BASE_ROUTE}/url`,
+    URL_RETURN_PAYMENT                                  : `${BASE_ROUTE}/url-return`,
+    URL_IPN_PAYMENT                                     : `${BASE_ROUTE}/ipn-return`,
 }
 
 exports.CF_ROUTINGS_PAYMENT = CF_ROUTINGS_PAYMENT;

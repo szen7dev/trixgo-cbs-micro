@@ -77,3 +77,4 @@ ops/db/*
 provisioning/dump
 ops/db/*
 mongodb-osx-ssl-x86_64-4.0.12.tgz
+temp/*

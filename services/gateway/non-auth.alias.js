@@ -10,6 +10,7 @@ const { CF_ROUTINGS_GATEWAY } 	= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH }		= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_ZALO } 		= require('../zalo_oa/helper/zalo.routes');
 const { CF_ROUTINGS_FACEBOOK } 	= require('../facebook/helper/facebook.routes');
+const { CF_ROUTINGS_PAYMENT }			= require('../payment/helper/payment.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -18,7 +19,7 @@ const { CF_ACTIONS_GATEWAY }	= require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH }		= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ZALO }		= require('../zalo_oa/helper/zalo.actions');
 const { CF_ACTIONS_FACEBOOK }	= require('../facebook/helper/facebook.actions');
-
+const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -61,6 +62,14 @@ module.exports = {
 		[`POST ${CF_ROUTINGS_AUTH.UPDATE_PASSWORD_RECOVER}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PASSWORD_RECOVER}`],
 
+		/**
+		 * PAYMENT SERVICE
+		 */
+		[`GET ${CF_ROUTINGS_PAYMENT.URL_RETURN_PAYMENT}`] :
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_RETURN_PAYMENT}`],
+
+		[`GET ${CF_ROUTINGS_PAYMENT.URL_IPN_PAYMENT}`] :
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_IPN_PAYMENT}`],
 
 		/**
 		 * KHÁCH HÀNG ĐĂNG KÝ TRẢI NGHIỆM SẢN PHẨM
