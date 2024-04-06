@@ -257,13 +257,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                // // Call traffic
-                // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
-                //     appID: `${APP_ID.DOCUMENT.id}`, menuID: `${APP_ID.DOCUMENT.menuDocumentApp.dashboard.id}`, type: 1
-                // })
-
 				await this.validateEntity(ctx.params);
-
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let {
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, datahubContactID,
@@ -704,21 +698,13 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { filterParams } = ctx.params;
 
-                // console.log(filterParams)
+                // console.log(ctx.params)
 
-                if(!filterParams.option){
-                    const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocumentOfPackage({
-                        userID, filterParams, ctx
-                    })
-    
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-                }else{
-                    const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocumentOfPackage({
-                        userID, filterParams, ctx
-                    })
-    
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-                }
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.exportDocumentOfPackage({
+                    userID, filterParams, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
