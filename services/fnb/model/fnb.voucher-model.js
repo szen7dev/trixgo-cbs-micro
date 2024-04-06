@@ -160,21 +160,34 @@ class Model extends BaseModel {
 
                 /**
                  * QUẢN LÝ KHÁCH HÀNG
+                 * - Kiểm tra để đảm bảo Khách hàng chỉ đc nhận và sử dụng VoucherID 1 lần
                  */
-                //_________Thêm người nhận voucher
-                if(checkObjectIDs(receivers)){
-                    if(option && option == 1){
-                        // Không cho phép Import excel với Voucher tặng người giới thiệu hoặc khách mới
-                        if(Number(infoCheck.type) != 2 && Number(infoCheck.type) != 3){
+                let checkErr = 0, str = ''
+                for(const item of receivers){
+                    let checkExist = await FNB_VOUCHER_COLL.findOne({_id: voucherID, receivers: {$in: [item]}})
+                    if(checkExist){
+                        checkErr++
+                        str = str + item.toString()
+                    }
+                }
+                console.log({____________checkErr:checkErr})
+                console.log({____________str:str})
+                if(Number(checkErr) === 0){
+                    //_________Thêm người nhận voucher
+                    if(checkObjectIDs(receivers)){
+                        if(option && option == 1){
+                            // Không cho phép Import excel với Voucher tặng người giới thiệu hoặc khách mới
+                            if(Number(infoCheck.type) != 2 && Number(infoCheck.type) != 3){
+                                dataAddToset = {
+                                    ...dataAddToset,
+                                    receivers
+                                }
+                            }
+                        }else{
                             dataAddToset = {
                                 ...dataAddToset,
                                 receivers
                             }
-                        }
-                    }else{
-                        dataAddToset = {
-                            ...dataAddToset,
-                            receivers
                         }
                     }
                 }
@@ -222,12 +235,20 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
-                if(dataAddToset){
-                    /**
-                     * KIỂM TRA ĐỂ ĐẢM BẢO
-                     * 1-Khách hàng chỉ đc nhận và sử dụng VoucherID 1 lần
-                     */
+                // Cập nhật vào Người sử dụng
+                if(checkObjectIDs(buyers)){
+                    await ITEM__CONTACT_COLL.updateMany(
+                        {_id: { $in: buyers }},
+                        { $addToSet:
+                            { usedVouchers: voucherID },
+                        },
+                    )
+                }
 
+                /**
+                 * Kiểm tra để đảm bảo Khách hàng chỉ đc nhận và sử dụng VoucherID ZOA
+                 */
+                if(Number(checkErr) === 0){
                     // Cập nhật vào Người nhận
                     if(checkObjectIDs(receivers)){
                         // Cấp phát voucher
@@ -247,31 +268,24 @@ class Model extends BaseModel {
                         )
                     }
 
-                    // Cập nhật vào Người sử dụng
-                    if(checkObjectIDs(buyers)){
-                        await ITEM__CONTACT_COLL.updateMany(
-                            {_id: { $in: buyers }},
-                            { $addToSet:
-                                { usedVouchers: voucherID },
-                            },
-                        )
+                    // Cấp phát thêm các voucher ZOA khác
+                    if(voucherID && voucherID.toString() === '64378d6618c77f00128abe93'){
+                        await that.updateMultiple({ 
+                            companyID, 
+                            userID, 
+                            receivers, 
+                            vouchers: [
+                                '66095d0a0b315f001249d158',
+                                '66095d33c1da550011a6d2f8',
+                                '66095d53dc469e00123ac585',
+                                '66095d72dc469e00123ac586',
+                                '66095d910b315f001249d15a',
+                                '66095db6dc469e00123ac58a',
+                            ]
+                        })
                     }
-                }
-
-                if(voucherID && voucherID.toString() === '64378d6618c77f00128abe93'){
-                    await that.updateMultiple({ 
-                        companyID, 
-                        userID, 
-                        receivers, 
-                        vouchers: [
-                            '66095d0a0b315f001249d158',
-                            '66095d33c1da550011a6d2f8',
-                            '66095d53dc469e00123ac585',
-                            '66095d72dc469e00123ac586',
-                            '66095d910b315f001249d15a',
-                            '66095db6dc469e00123ac58a',
-                        ]
-                    })
+                }else{
+                    return resolve({ error: true, message: 'Khách hàng nhận voucher, không thể cấp phát lại' });
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
