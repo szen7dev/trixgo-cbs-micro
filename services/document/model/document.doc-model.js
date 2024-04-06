@@ -921,8 +921,7 @@ class Model extends BaseModel {
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {}, isParent }) {
         //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
-        //     console.log({
-        //         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
+        //     console.log({ parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
         // requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         // keyword, limit, lastestID, select, populates, isParent })
         return new Promise(async (resolve) => {
@@ -1916,7 +1915,7 @@ class Model extends BaseModel {
      * Date: 15/12/2022
      */
     exportDocumentOfPackage({ userID, filterParams = {} }) {
-        // console.log('==============ĐANG TẢI HỒ SƠ=======================')
+        console.log('==============ĐANG TẢI HỒ SƠ=======================')
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({ userID });

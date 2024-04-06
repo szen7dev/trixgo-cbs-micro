@@ -3133,25 +3133,47 @@ class Model extends BaseModel {
                             i++
                         })
 
-                        const range = workbook.sheet('Data').range(`A15:G${data.length + 14}`);
+                        if(infoAppUser && infoAppUser.data.level == 0){
+                            const range = workbook.sheet('Data').range(`A15:G${data.length + 14}`);
 
-                        range.style({
-                            fontFamily: 'Times New Roman',
-                            fontColor: 'black',
-                            fontSize: 13,
-                            bold: false,
-                            // horizontalAlignment: 'center',
-                            border: true,
-                            borderColor: 'black',
-                            wrapText: true,
-                        })
+                            range.style({
+                                fontFamily: 'Times New Roman',
+                                fontColor: 'black',
+                                fontSize: 13,
+                                bold: false,
+                                // horizontalAlignment: 'center',
+                                border: true,
+                                borderColor: 'black',
+                                wrapText: true,
+                            })
+    
+                            workbook.sheet("Data").row(i + 2).cell(2).value('NGƯỜI GIAO').style({
+                                bold: true,
+                            })
+                            workbook.sheet("Data").row(i + 2).cell(3).value('NGƯỜI NHẬN').style({
+                                bold: true,
+                            })
+                        }else{
+                            const range = workbook.sheet('Data').range(`A15:E${data.length + 14}`);
 
-                        workbook.sheet("Data").row(i + 2).cell(2).value('NGƯỜI GIAO').style({
-                            bold: true,
-                        })
-                        workbook.sheet("Data").row(i + 2).cell(3).value('NGƯỜI NHẬN').style({
-                            bold: true,
-                        })
+                            range.style({
+                                fontFamily: 'Times New Roman',
+                                fontColor: 'black',
+                                fontSize: 13,
+                                bold: false,
+                                // horizontalAlignment: 'center',
+                                border: true,
+                                borderColor: 'black',
+                                wrapText: true,
+                            })
+    
+                            workbook.sheet("Data").row(i + 2).cell(2).value('NGƯỜI GIAO').style({
+                                bold: true,
+                            })
+                            workbook.sheet("Data").row(i + 2).cell(3).value('NGƯỜI NHẬN').style({
+                                bold: true,
+                            })
+                        }  
                     }
 
                     const now = new Date();
