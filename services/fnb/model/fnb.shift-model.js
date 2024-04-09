@@ -858,7 +858,7 @@ class Model extends BaseModel {
      * Date: 15/1/2023
      */
     exportExcel({ companyID, email, fundaID, fromDate, toDate, month, year, userID }) {
-        // console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
+        console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
         return new Promise(async resolve => {
             try {
                 if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
