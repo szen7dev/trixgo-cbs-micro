@@ -1020,7 +1020,7 @@ class Model extends BaseModel {
      * Date: 15/2/2024
      */
     exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year }) {
-        console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
+        // console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
         return new Promise(async resolve => {
             try {
                 let yearFilter
@@ -1048,7 +1048,7 @@ class Model extends BaseModel {
 
                     let listData = await FNB_CUSTOMER_CARE_COLL.find({company: companyID, journey: {$exists: false}})
                     .populate({
-                        path: 'customer mistake manager funda order',
+                        path: 'customer mistake manager funda order userCreate',
                         select:'name sign phone fullname assignee',
                         populate:{
                             path: 'assignee',
@@ -1113,6 +1113,7 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(12).value((item.status && Number(item.type) > 0 && Number(item.type) <= 2)? CRM_TYPES[Number(item?.type) - 1].text : '');
                             workbook.sheet("Data").row(i).cell(13).value(item?.funda?.name);
                             workbook.sheet("Data").row(i).cell(14).value(item?.manager?.fullname);
+                            workbook.sheet("Data").row(i).cell(17).value(item?.userCreate?.fullname);
 
                             if(item.order){
                                 let str = '';
@@ -1281,6 +1282,7 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(8).value(item?.note);
                             workbook.sheet("Data").row(i).cell(9).value(item?.dataSource?.name);
                             workbook.sheet("Data").row(i).cell(10).value(item?.userCreate?.fullname);
+
                             i++
                         })
 
