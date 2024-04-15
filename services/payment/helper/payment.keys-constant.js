@@ -7,5 +7,5 @@ module.exports = {
   neo_Url               : process.env.NEO_PAYMENT_URL || "",
   neo_ReturnUrl         : process.env.PAYMENT_RETURN_URL || "",
   neo_Ipn               : process.env.PAYMENT_IPN_URL || "",
-  client_RedirectUrl    : process.env.PAYMENT_CLIENT_REDIRECT_URL || "",
+  client_Url            : process.env.CLIENT_URL || "",
 }

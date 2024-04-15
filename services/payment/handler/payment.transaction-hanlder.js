@@ -13,7 +13,7 @@ const {
   neo_ClientSecret,
   neo_Url,
   neo_ReturnUrl,
-  client_ReturnUrl
+  client_Url
 } = require('../helper/payment.keys-constant');
 
 /**
@@ -82,6 +82,7 @@ module.exports = {
     // STEP 1: tạo url payemnt từ neox
     createURLPayment: {
         params: {
+            orderID             : { type: "string" },
             orderDescription    : { type: "string", max: 256, min: 3 },
             amount              : { type: "number", positive: true, integer: true },
             orderdata           : { type: "object", optional: true },
@@ -93,9 +94,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 
                 const { ipAddr, infoUser } = ctx.meta;
-                const { orderDescription, amount, currency, locale } = ctx.params;
+                const { orderID, orderDescription, amount, currency, locale } = ctx.params;
                 const userID = infoUser._id;
-                const orderID = dateFormat(new Date(), 'HHmmss');
+                // const orderID = dateFormat(new Date(), 'HHmmss');
 
                 const transaction = await PAYMENT__TRANSACTION_MODEL.insert({
                   merchantCode: neo_MarchantCode,
@@ -182,8 +183,8 @@ module.exports = {
                 if (neo_SecureHash !== secureHash) {
                   return redirectToUrl({
                     ctx,
-                    query: { err: true, msg: 'Transaction_invalid' },
-                    url: client_ReturnUrl
+                    query: { err: true, msg: 'Transaction invalid' },
+                    url: `${client_Url}/payment-error`
                   })
                 }
 
@@ -191,7 +192,7 @@ module.exports = {
                   return redirectToUrl({
                     ctx,
                     query: { err: true, msg: neo_ResponseCode },
-                    url: client_ReturnUrl,
+                    url: `${client_Url}/payment-error`
                   })
                 }
 
@@ -204,11 +205,11 @@ module.exports = {
                   ctx,
                   query: {
                     err: false,
-                    msg: 'Success',
+                    msg: 'Payment Success',
                     orderID: neo_OrderID,
                     txID: neo_MerchantTxnID,
                   },
-                  url: client_ReturnUrl,
+                  url: `${client_Url}/payment-success`
                 })
             } catch (error) {
                 return redirectToUrl({
@@ -217,7 +218,7 @@ module.exports = {
                     err: true,
                     msg: error.message
                   },
-                  url: client_ReturnUrl,
+                  url: `${client_Url}/payment-error`
                 })
             }
         }
