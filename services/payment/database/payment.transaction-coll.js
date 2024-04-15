@@ -54,13 +54,13 @@ module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
         }
     },
 
-    paymentMethod: {
-      type: String,
-      enum: {
-          values: ['WALLET', 'ATM', 'CC', 'QR'],
-          message: '{VALUE} is not supported'
-      }
-    },
+    // paymentMethod: {
+    //   type: String,
+    //   enum: {
+    //       values: ['WALLET', 'ATM', 'CC', 'QR'],
+    //       message: '{VALUE} is not supported'
+    //   }
+    // },
 
     merchantCode: {
       type: String,
@@ -85,5 +85,11 @@ module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
     status: {
         type: Number,
         default: -2
+    },
+
+    // Trạng thái giao dịch
+    statusMsg: {
+      type: String,
+      default: ''
     }
 })

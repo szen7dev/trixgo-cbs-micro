@@ -54,12 +54,12 @@ class Model extends BaseModel {
     }
 
     // Cập nhật trạng thái thành công khi nhận được url return NEOX
-    updateStatus({ txID, orderID, status }) {
+    updateStatus({ txID, orderID, status, statusMsg }) {
         return new Promise(async resolve => {
             try {
                 /**
                  * Chỉ cho phép cập nhật trạng thái
-                 *  CHƯA THANH TOÁN -> THANH CÔNG/THẤT BẠI
+                 * CHƯA THANH TOÁN -> THANH CÔNG/THẤT BẠI
                  */
                 const TRANSACTION_WITH_STATUS_WAITING = -2;
                 const isExistsTransaction = await PAYMENT__TRANSACTION_COLL.findOne({
@@ -74,7 +74,7 @@ class Model extends BaseModel {
 
                 const infoAfterUpdateStatus = await PAYMENT__TRANSACTION_COLL.findOneAndUpdate(
                   { _id: isExistsTransaction._id },
-                  { $set: { status: +status } }
+                  { $set: { status: +status, statusMsg } }
                 );
 
                 if (!infoAfterUpdateStatus)
@@ -136,6 +136,15 @@ class Model extends BaseModel {
         })
     }
 
+    getNeoToken({}) {
+      return new Promise(async resolve => {
+        try {
+
+        } catch (error) {
+            return resolve({ error: true, message: error.message });
+        }
+      })
+    }
 }
 
 exports.MODEL = new Model;
