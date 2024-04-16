@@ -84,7 +84,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID, ctx }) {
-        // console.log(products)
+        // console.log({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -726,6 +726,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO VOUCHER
                  */
                 if(salesChannel == 1 && voucherID && checkObjectIDs(voucherID)){
+                    // console.log('Cập nhật thông tin Người sử dụng voucher')
                     //______Cập nhật thông tin Người sử dụng voucher
                     await FNB_ORDER_VOUCHER_MODEL.update({ userID, voucherID, buyers: [customerID] })
                 }
@@ -992,7 +993,6 @@ class Model extends BaseModel {
      */
     insert2({ voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID, ctx }) {
         // console.log({ voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID })
-        // console.log(products)
         const that = this
         return new Promise(async resolve => {
             try {
@@ -1643,6 +1643,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO VOUCHER
                  */
                 if(salesChannel == 1 && voucherID && checkObjectIDs(voucherID)){
+                    // console.log('Cập nhật thông tin Người sử dụng voucher 11111111111')
                     //______Cập nhật thông tin Người sử dụng voucher
                     await FNB_ORDER_VOUCHER_MODEL.update({ userID, voucherID, buyers: [customerID] })
                 }
