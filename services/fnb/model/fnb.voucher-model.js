@@ -157,21 +157,25 @@ class Model extends BaseModel {
                 if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
                     dataUpdate.minOrderAmount = Number(minOrderAmount)
                 }
+                // console.log('11111111111111111')
 
                 /**
                  * QUẢN LÝ KHÁCH HÀNG
                  * - Kiểm tra để đảm bảo Khách hàng chỉ đc nhận và sử dụng VoucherID 1 lần
                  */
                 let checkErr = 0, str = ''
-                for(const item of receivers){
-                    let checkExist = await FNB_VOUCHER_COLL.findOne({_id: voucherID, receivers: {$in: [item]}})
-                    if(checkExist){
-                        checkErr++
-                        str = str + item.toString()
+                if(checkObjectIDs(receivers)){
+                    for(const item of receivers){
+                        let checkExist = await FNB_VOUCHER_COLL.findOne({_id: voucherID, receivers: {$in: [item]}})
+                        if(checkExist){
+                            checkErr++
+                            str = str + item.toString()
+                        }
                     }
                 }
-                console.log({____________checkErr:checkErr})
-                console.log({____________str:str})
+                // console.log('2222222222222222')
+                // console.log({____________checkErr:checkErr})
+                // console.log({____________str:str})
                 if(Number(checkErr) === 0){
                     //_________Thêm người nhận voucher
                     if(checkObjectIDs(receivers)){
@@ -237,6 +241,7 @@ class Model extends BaseModel {
 
                 // Cập nhật vào Người sử dụng
                 if(checkObjectIDs(buyers)){
+                    // console.log('Cập nhật thông tin Người sử dụng voucher 22222222')
                     await ITEM__CONTACT_COLL.updateMany(
                         {_id: { $in: buyers }},
                         { $addToSet:
