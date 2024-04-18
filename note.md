@@ -12,12 +12,10 @@ Bổ sung status code response cho tất cả api
   [type: {event, action, ...}].[].[service].js
 
 - TODO:
-
   - tạo docs.service.js // cho từng service
   - import doc các service vào doc.service
 
 - CALL SERVICE:
-
   - internal call: ctx.call("products.find", { populate: ["category"]});
   - external-service call: this.broker.call('products.find', { populate: ['category'] })
 
@@ -32,4 +30,3 @@ Bổ sung status code response cho tất cả api
 - Version socket :
   - socket-io : 2.x.x (2.2.2)
   - socket-redis : 5.x.x
-

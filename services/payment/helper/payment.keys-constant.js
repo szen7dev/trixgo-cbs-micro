@@ -1,5 +1,11 @@
-//file chứa các thông tin cung cấp từ cổng thanh toán
-exports.vnp_TmnCode             = process.env.PAYMENT__VNP_TMNCODE      || '1SNJ89L8';
-exports.vnp_HashSecret          = process.env.PAYMENT__VNP_HASHSECRET   || 'ODJLXOCEWMFIEJXHJNMZUVFFVRDDXLOT';
-exports.vnp_Url                 = process.env.PAYMENT__VNP_URL          || 'http://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-exports.vnp_ReturnUrl           = process.env.PAYMENT__VNP_RETURN_URL   || 'http://localhost:3003/api/payment/transactions/url_return';
+module.exports = {
+  neo_MarchantCode      : process.env.NEO_PAYMENT_MERCHANT_CODE || "",
+  neo_SecretKey         : process.env.NEO_PAYMENT_SECRET_KEY   || "",
+  neo_ClientId          : process.env.NEO_CLIENT_ID || "",
+  neo_ClientSecret      : process.env.NEO_CLIENT_SECRET || "",
+  neo_OApiUrl           : process.env.NEO_OAPI_URL || "",
+  neo_Url               : process.env.NEO_PAYMENT_URL || "",
+  neo_ReturnUrl         : process.env.PAYMENT_RETURN_URL || "",
+  neo_Ipn               : process.env.PAYMENT_IPN_URL || "",
+  client_Url            : process.env.CLIENT_URL || "",
+}

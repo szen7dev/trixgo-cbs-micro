@@ -1,24 +1,39 @@
-let dateFormat                                  = require('dateformat');
-let querystring                                 = require('qs');
-let sha256                                      = require('sha256');
+const dateFormat                                  = require('dateformat');
+const uuidv4                                      = require('uuid').v4;
+const crypto                                      = require('crypto');
 
-let PAYMENT__TRANSACTION_MODEL                  = require('../model/payment.transaction-model').MODEL;
-let { vnp_TmnCode, vnp_HashSecret, vnp_Url, vnp_ReturnUrl }  
-                                                = require('../helper/payment.keys-constant');
+const { CF_DOMAIN_SERVICES } 		                  = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_PAYMENT } 	                    = require('../helper/payment.actions-constant');
+const PAYMENT__TRANSACTION_MODEL                  = require('../model/payment.transaction-model').MODEL;
+const {
+  neo_MarchantCode,
+  neo_SecretKey,
+  neo_OApiUrl,
+  neo_ClientId,
+  neo_ClientSecret,
+  neo_Url,
+  neo_ReturnUrl,
+  client_Url
+} = require('../helper/payment.keys-constant');
 
-let { sortObject }                              = require('../../../tools/utils/utils');
+/**
+ * TOOLS
+ */
+const { redirectToUrl }                           = require('../../../tools/utils/status_code');
+const { sortNeoParams }                           = require('../../../tools/utils/utils');
+const httpRequest                                 = require('../../../tools/http');
 
 module.exports = {
     getListTransactions: {
         params: {
-            status : { type: "string", optional: true },
+            status: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { status }        = ctx.params;
+                const { status } = ctx.params;
 
-                let listTransactions = await PAYMENT__TRANSACTION_MODEL.getListTransactions({ status });
+                const listTransactions = await PAYMENT__TRANSACTION_MODEL.getListTransactions({ status });
                 return listTransactions;
             } catch (error) {
                 return { error: true, message: error.message };
@@ -26,20 +41,22 @@ module.exports = {
         }
     },
 
-    getListTransactionsByUserWithStatus: {
+    getListTransactionsByUser: {
         params: {
-            userID  : { type: "string" },
-            status  : { type: "string", optional: true },
+            userID: { type: "string" },
+            status: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { userID, status }        = ctx.params;
+                const { userID, status } = ctx.params;
 
-                let listTransactions = await PAYMENT__TRANSACTION_MODEL.getListByUserWithStatus({ userID, status });
+                const listTransactions = await PAYMENT__TRANSACTION_MODEL.getListByUserWithStatus({
+                  userID, status
+                });
                 return listTransactions;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -52,189 +69,363 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { transactionID, status }        = ctx.params;
+                const { transactionID, status } = ctx.params;
 
-                let infoTransactionAfterUpdateStatus = await PAYMENT__TRANSACTION_MODEL.updateStatus({ transactionID, status });
+                const infoTransactionAfterUpdateStatus = await PAYMENT__TRANSACTION_MODEL.updateStatus({ transactionID, status });
                 return infoTransactionAfterUpdateStatus;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
 
-    // STEP 1: tạo url payemnt (window và href chuyển sang cổng thanh toán)
+    // STEP 1: tạo url payemnt từ neox
     createURLPayment: {
         params: {
-            orderType           : { type: "string" },
-            amount              : { type: "string" },
-            orderDescription    : { type: "string", optional: true },
-            bankCode            : { type: "string", optional: true },
-            language            : { type: "string", optional: true },
+            orderID             : { type: "string" },
+            orderDescription    : { type: "string", max: 256, min: 3 },
+            amount              : { type: "number", positive: true, integer: true },
+            orderdata           : { type: "object", optional: true },
+            currency            : { type: "string", optional: true },
+            locale              : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderType, amount, orderDescription, bankCode, language }        = ctx.params;
-                let ipAddr          = ctx.meta.ipAddr;
-                let tmnCode         = vnp_TmnCode;
-                let secretKey       = vnp_HashSecret;
-                let vnpUrl          = vnp_Url;
-                let returnUrl       = vnp_ReturnUrl;
-                let date            = new Date();
 
-                let createDate      = dateFormat(date, 'yyyymmddHHmmss');
-                let orderId         = dateFormat(date, 'HHmmss');
-                // let amount       = req.body.amount;
-                // let bankCode     = req.body.bankCode;
-                let orderInfo       = orderDescription;
-                // let orderType    = req.body.orderType;
-                let locale          = language || 'vn';
+                const { ipAddr, infoUser } = ctx.meta;
+                const { orderID, orderDescription, amount, currency, locale } = ctx.params;
+                const userID = infoUser._id;
+                // const orderID = dateFormat(new Date(), 'HHmmss');
 
-                let currCode        = 'VND';
-                let vnp_Params      = {};
-                vnp_Params['vnp_Version']   = '2';
-                vnp_Params['vnp_Command']   = 'pay';
-                vnp_Params['vnp_TmnCode']   = tmnCode;
-                // vnp_Params['vnp_Merchant'] = ''
-                vnp_Params['vnp_Locale']    = locale;
-                vnp_Params['vnp_CurrCode']  = currCode;
-                vnp_Params['vnp_TxnRef']    = orderId;
-                vnp_Params['vnp_OrderInfo'] = orderInfo;
-                vnp_Params['vnp_OrderType'] = orderType;
-                vnp_Params['vnp_Amount']    = amount * 100;
-                vnp_Params['vnp_ReturnUrl'] = returnUrl;
-                vnp_Params['vnp_IpAddr']    = ipAddr;
-                vnp_Params['vnp_CreateDate'] = createDate;
-                if(bankCode !== null && bankCode !== '')
-                    vnp_Params['vnp_BankCode'] = bankCode;
-                vnp_Params                  = sortObject(vnp_Params);
-                let signData                = secretKey + querystring.stringify(vnp_Params, { encode: false });
-                let secureHash              = sha256(signData);
-            
-                vnp_Params['vnp_SecureHashType']    =  'SHA256';
-                vnp_Params['vnp_SecureHash']        = secureHash;
-                vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: true });
+                const transaction = await PAYMENT__TRANSACTION_MODEL.insert({
+                  merchantCode: neo_MarchantCode,
+                  orderID, orderDescription,
+                  amount, currency, locale, userID, ipAddr
+                })
 
-                /**
-                 * DB TRANSACTION
-                 */
-                let USER_FAKE_ID = '5e60f58cf63b8a4e196a1942';
-                let infoTransactionAfterInsert = await PAYMENT__TRANSACTION_MODEL.insert({ orderID: orderId, orderInfo, amount, bankCode, orderType, locale, userID: USER_FAKE_ID, ipAddr });
+                if(transaction.error) {
+                  return transaction;
+                }
+
+                const tx = transaction.data;
+                const neoParams = {
+                  "neo_Amount": `${tx.amount}`,
+                  "neo_Command": "PAY",
+                  "neo_Currency": tx.currency,
+                  "neo_Locale": tx.locale,
+                  "neo_MerchantCode": neo_MarchantCode,
+                  "neo_MerchantTxnID": tx._id.toString(),
+                  "neo_OrderID": tx.orderID,
+                  "neo_OrderInfo": tx.orderDescription,
+                  // "neo_PaymentMethod": ["WALLET","ATM","CC","QR"],
+                  "neo_ReturnURL": neo_ReturnUrl,
+                  "neo_Title": "Payment",
+                  "neo_Version": "1",
+                }
+
+                const neoParamsString = sortNeoParams({ ...neoParams }, neo_SecretKey);
+                const secureHash = crypto.createHash('sha256').update(neoParamsString).digest('hex');
+                neoParams['neo_SecureHash'] = secureHash;
+
+                const neoxResponse = await httpRequest.post(neo_Url, neoParams, {
+                  headers: {
+                    'Accept-Language': 'en'
+                  }
+                })
+
+                if(neoxResponse.status !== 200 || neoxResponse.statusText !== 'OK') {
+                    return resolve({ error: true, message: "Can't request to payment service" });
+                }
 
                 return {
-                    error: false, data: {
-                        url: vnpUrl,
-                        infoTransaction: infoTransactionAfterInsert
-                    }
+                  error: false,
+                  data: neoxResponse.data
                 };
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
 
-    // STEP 2.1: url trả về từ browser nếu thanh toán thành công/thất bại
-    //http://localhost:3003/api/payment/transactions/url_return
-        //?vnp_Amount=5000000&vnp_BankCode=NCB&vnp_BankTranNo=20210617005343&vnp_CardType=ATM&
-        //vnp_OrderInfo=Thanh+toan+don+hang+thoi+gian%3A+2021-06-16+23%3A06%3A04&vnp_PayDate=20210617005335&vnp_ResponseCode=00&
-        //vnp_TmnCode=1SNJ89L8&vnp_TransactionNo=13525727&vnp_TransactionStatus=00&vnp_TxnRef=000611&vnp_SecureHashType=SHA256&
-        //vnp_SecureHash=e917a754f6347b44a43ec94c8c94ee4c2fa1a2397fe711884a828f7493f92234 
+    // STEP 2.1: url trả về từ payment return url nếu thanh toán thành công/thất bại
     URL_RETURN: {
         params: {
-            vnp_SecureHash              : { type: "string" },
-            vnp_SecureHashType          : { type: "string" },
-            vnp_TxnRef                  : { type: "string" },
-            vnp_ResponseCode            : { type: "string" },
+          neo_MerchantCode: { type: "string" },
+          neo_Currency: { type: "string" },
+          neo_Locale: { type: "string" },
+          neo_Version: { type: "string" },
+          neo_Command: { type: "string" },
+          neo_Amount: { type: "string" },
+          neo_MerchantTxnID: { type: "string" },
+          neo_OrderID: { type: "string" },
+          neo_OrderInfo: { type: "string" },
+          neo_TransactionID: { type: "string" },
+          neo_SecureHash: { type: "string" },
         },
         async handler(ctx) {
             try {
-                let vnp_Params          = ctx.params;
-                let secureHash          = vnp_Params['vnp_SecureHash'];
-                let transactionStatus   = vnp_Params['vnp_TransactionStatus'];
+                await this.validateEntity(ctx.params);
+                const params = ctx.params;
 
-                delete vnp_Params['vnp_SecureHash'];
-                delete vnp_Params['vnp_SecureHashType'];
-                let orderId         = vnp_Params['vnp_TxnRef'];
-                let rspCode         = vnp_Params['vnp_ResponseCode'];
-                vnp_Params          = sortObject(vnp_Params);
+                const {
+                  neo_SecureHash,
+                  neo_ResponseMsg,
+                  neo_ResponseCode,
+                  neo_MerchantTxnID,
+                  neo_OrderID,
+                } = ctx.params;
 
-                let tmnCode         = vnp_TmnCode;
-                let secretKey       = vnp_HashSecret;
+                delete params['resp'];
+                const neoParamsString = sortNeoParams({ ...params }, neo_SecretKey);
+                const secureHash = crypto.createHash('sha256').update(neoParamsString).digest('hex').toUpperCase();
 
-                let signData        = secretKey + querystring.stringify(vnp_Params, { encode: false });
-                let checkSum        = sha256(signData); 
-
-                const VNPAY_TRANSACTION_WITH_STATUS_SUCCESS = '00';
-                console.log({ transactionStatus })
-                if(secureHash === checkSum && transactionStatus == VNPAY_TRANSACTION_WITH_STATUS_SUCCESS){
-                    //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua 
-                    const TRANSACTION_WITH_STATUS_SUCCESS = 1;
-                    let infoTransactionAfterUpdateStatus = await PAYMENT__TRANSACTION_MODEL.updateStatus({ orderID: orderId, status: TRANSACTION_WITH_STATUS_SUCCESS });
-
-                    if (infoTransactionAfterUpdateStatus.error)
-                        return {
-                            error: true, message: infoTransactionAfterUpdateStatus.message
-                        }
-
-                    return {
-                        error: false, data: {
-                            code: transactionStatus,
-                            orderId, rspCode,
-                            infoTransaction: infoTransactionAfterUpdateStatus
-                        }
-                    }
-                } else{
-                    let infoTransactionAfterUpdateStatus    = await PAYMENT__TRANSACTION_MODEL.updateStatus({ orderID: orderId, status: transactionStatus });
-
-                    return { 
-                        error:  true, message: 'signature_invalid', code: transactionStatus,
-                        infoTransaction: infoTransactionAfterUpdateStatus
-                    };
+                if (neo_SecureHash !== secureHash) {
+                  return redirectToUrl({
+                    ctx,
+                    query: { err: true, msg: 'Transaction invalid' },
+                    url: `${client_Url}/payment-error`
+                  })
                 }
+
+                if (neo_ResponseMsg !== 'Success' || neo_ResponseCode !== '0') {
+                  return redirectToUrl({
+                    ctx,
+                    query: { err: true, msg: neo_ResponseCode },
+                    url: `${client_Url}/payment-error`
+                  })
+                }
+
+                // TODO:
+                // - Check secure hash ✅
+                // - Check transaction status ✅
+                // - Redirect to success page (FE) ✅
+
+                return redirectToUrl({
+                  ctx,
+                  query: {
+                    err: false,
+                    msg: 'Payment Success',
+                    orderID: neo_OrderID,
+                    txID: neo_MerchantTxnID,
+                  },
+                  url: `${client_Url}/payment-success`
+                })
             } catch (error) {
-                return { error:  true, message: error.message };
+                return redirectToUrl({
+                  ctx,
+                  query: {
+                    err: true,
+                    msg: error.message
+                  },
+                  url: `${client_Url}/payment-error`
+                })
             }
         }
     },
+
     // STEP 2.2: url ipn là từ server PAYMENT gọi vào server CBS (server-call-server)
     URL_IPN: {
         params: {
-            vnp_SecureHash              : { type: "string" },
-            vnp_SecureHashType          : { type: "string" },
-            vnp_TxnRef                  : { type: "string" },
-            vnp_ResponseCode            : { type: "string" },
+            neo_MerchantTxnID: { type: "string" },
+            neo_OrderID: { type: "string" },
+            neo_SecureHash: { type: "string" },
         },
         async handler(ctx) {
             try {
-                let vnp_Params          = ctx.params;
-                let secureHash          = vnp_Params['vnp_SecureHash'];
-                let transactionStatus   = vnp_Params['vnp_TransactionStatus'];
+                await this.validateEntity(ctx.params);
+                const params = ctx.params;
 
-                delete vnp_Params['vnp_SecureHash'];
-                delete vnp_Params['vnp_SecureHashType'];
+                const {
+                  neo_SecureHash,
+                  neo_ResponseMsg,
+                  neo_ResponseCode,
+                  neo_MerchantTxnID,
+                  neo_OrderID,
+                } = ctx.params;
 
-                vnp_Params      = sortObject(vnp_Params);
-                let secretKey   = vnp_HashSecret;
-                let signData    = secretKey + querystring.stringify(vnp_Params, { encode: false });
-                
-                let checkSum = sha256(signData);
-                const VNPAY_TRANSACTION_WITH_STATUS_SUCCESS = '00';
-                if(secureHash === checkSum && transactionStatus == VNPAY_TRANSACTION_WITH_STATUS_SUCCESS){
-                    let orderId = vnp_Params['vnp_TxnRef'];
-                    let rspCode = vnp_Params['vnp_ResponseCode'];
-                    //Kiem tra du lieu co hop le khong, cap nhat trang thai don hang va gui ket qua cho VNPAY theo dinh dang duoi
-                    return {
-                        error: false, data: {
-                            code: '00',
-                            orderId, rspCode
-                        }
-                    }
-                } else {
-                    return { error:  true, message: 'signature_invalid' };
+                delete params['neo_TransAmount'];
+                delete params['neo_ExtData'];
+                delete params['neo_SecureHash'];
+
+                const neoParamsString = sortNeoParams({ ...params }, neo_SecretKey);
+                const secureHash = crypto.createHash('sha256').update(neoParamsString).digest('hex').toUpperCase();
+
+                if(neo_SecureHash !== secureHash) {
+                  return { respcode: 0, respmsg: "received" };
                 }
+
+                await PAYMENT__TRANSACTION_MODEL.updateStatus({
+                  txID: neo_MerchantTxnID, orderID: neo_OrderID,
+                  status: neo_ResponseCode, statusMsg: neo_ResponseMsg,
+                });
+
+                return { respcode: 0, respmsg: "received" };
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { respcode: 1, respmsg: error.message };
             }
         }
+    },
+
+    requestAccessToken: {
+      params: {
+        scope: { type: 'string' }
+      },
+      async handler(ctx) {
+        try {
+          await this.validateEntity(ctx.params);
+          const cacher = this.broker.cacher;
+          const { scope } = ctx.params;
+
+          /**
+            * Get access token from cache, if not
+            * Request token from payment service
+            * Cache access token in 1 hour
+            */
+          let token = await cacher.get(`NEOX:token`);
+
+          if (token) {
+            return { token };
+          }
+
+          const payload = {
+            "client_id": neo_ClientId,
+            "client_secret": neo_ClientSecret,
+            "scope": scope, // "disbursement",
+            "grant_type": "client_credentials"
+          };
+
+          const neoxResponse = await httpRequest.post(`${neo_OApiUrl}/auth/oauth2/token`, payload);
+
+          if(neoxResponse.status !== 200 || neoxResponse.statusText !== 'OK') {
+              return { error: true, message: "Can't request to neox service" };
+          }
+
+          const { access_token, expires_in } = neoxResponse.data;
+
+          await cacher.set(`NEOX:token`, access_token, expires_in);
+
+          return { token: access_token };
+        } catch(error) {
+          return { error: true, message: error.message }
+        }
+      }
+    },
+
+    inquiryBankAccount: {
+      params: {
+        bankAccountNumber: { type: "string" },
+        bankSwiftCode: { type: "string" },
+        accountType: { type: "string", default: 'ACCOUNT' },
+      },
+      async handler(ctx) {
+        try {
+          await this.validateEntity(ctx.params);
+          const { bankAccountNumber, bankSwiftCode, accountType } = ctx.params;
+
+          const tokenResponse = await ctx.call(
+            `${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.GET_ACCESS_TOKEN}`,
+            { scope: 'disbursement' }
+          );
+
+          if(tokenResponse.error) {
+            return tokenResponse;
+          }
+
+          const query = {
+            accountNumber: bankAccountNumber,
+            swiftCode: bankSwiftCode,
+            accountType,
+          };
+
+          const searchParams = new URLSearchParams(query);
+          const queryString = searchParams.toString();
+
+          const neoxResponse = await httpRequest.get(`${neo_OApiUrl}/dib/bank/accountInquiry?${queryString}`, {
+            headers: {
+              'Authorization': `Bearer ${tokenResponse.token}`
+            }
+          });
+
+          if(neoxResponse.status !== 200 || neoxResponse.statusText !== 'OK') {
+              return { error: true, message: "Can't request to neox service" };
+          }
+
+          const { data: bankAccount, message } = neoxResponse.data;
+
+          if(!bankAccount.fullName) {
+            return { error: true, message: message || "Account number not exists" };
+          }
+
+          return neoxResponse.data;
+        } catch(error) {
+          return { error: true, message: error.message }
+        }
+      }
+    },
+
+    disbursementRequest: {
+      params: {
+          amount: { type: "number" },
+          bankAccountName: { type: "string" },
+          bankAccountNumber: { type: "string" },
+          bankSwiftCode: { type: "string" },
+          description: { type: "string" },
+      },
+      async handler(ctx) {
+        try {
+            await this.validateEntity(ctx.params);
+            const params = ctx.params;
+
+            // Get access token
+            const tokenResponse = await ctx.call(
+              `${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.GET_ACCESS_TOKEN}`,
+              { scope: 'disbursement' }
+            );
+            if(tokenResponse.error) {
+              return tokenResponse;
+            }
+
+            // Inquiry bank account
+            const checkInquiryAccount = await ctx.call(
+              `${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.INQUIRY_BANK_ACCOUNT}`,
+              {
+                "bankAccountNumber": params.bankAccountNumber,
+                "bankSwiftCode": params.bankSwiftCode,
+              }
+            );
+            if(checkInquiryAccount.error) {
+              return checkInquiryAccount;
+            }
+
+            const payload = {
+              "requestId": uuidv4(),
+              "transactions": [
+                {
+                  "amount": params.amount,
+                  "bankAccountName": params.bankAccountName,
+                  "bankAccountNumber": params.bankAccountNumber,
+                  "bankSwiftCode": params.bankSwiftCode,
+                  "description": params.description,
+                  "requestTransId": uuidv4()
+                }
+              ]
+            };
+
+            const neoxResponse = await httpRequest.post(`${neo_OApiUrl}/dib/disbursementRequests`, payload, {
+              headers: {
+                'Authorization': `Bearer ${tokenResponse.token}`
+              }
+            });
+
+            if(neoxResponse.status !== 200 || neoxResponse.statusText !== 'OK') {
+              return { error: true, message: "Can't request to neox service" };
+            }
+
+            return neoxResponse.data;
+        } catch (error) {
+            return { error: true, message: error.message };
+        }
+      }
     }
 }

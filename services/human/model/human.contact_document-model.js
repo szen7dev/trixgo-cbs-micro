@@ -896,13 +896,13 @@ class Model extends BaseModel {
                 let sortBy            = dataPagingAndSort?.data?.sort;
                 const listData = await HUMAN__CONTACT_DOCUMENT_COLL
                     .find(conditionObj)
-                    .select('name contact sign fromDate toDate place note workplace certificateGrade number')
+                    .select('name contact sign fromDate toDate place note workplace certificateGrade number files')
                     .populate({
                         path: 'contact',
                         select: 'name sign',
                     })
                     .sort(sortBy)
-                    .limit(500)
+                    .limit(10000)
                     .lean()
 
                 // console.log({listData})
@@ -930,6 +930,8 @@ class Model extends BaseModel {
                         workbook.sheet("HoSoNhanSu").row(i).cell(6).value(item.place)
                         workbook.sheet("HoSoNhanSu").row(i).cell(7).value(item?.toDate)
                         workbook.sheet("HoSoNhanSu").row(i).cell(10).value(item.note)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(11).value(item?.files.length ? `Có (${item?.files.length})` : 'Không')
+                        
                         i++
                     })
 
