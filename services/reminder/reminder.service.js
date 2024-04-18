@@ -138,7 +138,7 @@ module.exports = {
 				try {
 					console.log(`========================================`);
 					console.log(`done reminder expired task !!!!`);
-					console.log({ __JOB: job.attrs });
+					// console.log({ __JOB: job.attrs });
 
 					const {
 						taskID,

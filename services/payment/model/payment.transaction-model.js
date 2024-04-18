@@ -1,64 +1,86 @@
 "use strict";
 
-const PAYMENT__TRANSACTION_COLL                 = require('../database/payment.transaction-coll');
-const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
-
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs }                        = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION }                 = require('../../../tools/cursor_base/playground/index');
+
+/**
+ * COLLECTIONS
+ */
+const PAYMENT__TRANSACTION_COLL            			= require('../database/payment.transaction-coll');
 
 class Model extends BaseModel {
     constructor() {
-        super(require('../database/payment.transaction-coll'));
+        super(PAYMENT__TRANSACTION_COLL);
     }
 
-    // tạo order transaction ngay lập tức khi user chọn thông tin thanh toán ngay màn hình CBS
-    insert({ orderID, orderInfo, amount, bankCode, orderType, locale, userID, status=0, ipAddr }) {
-        //orderID: là ID random, ko phải là OBJECTID
-        const that = this;
+    insert({
+      merchantCode, orderID, orderData, orderCustomer, orderDescription,
+      amount, currency, locale, userID, ipAddr
+    }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'object_invalid' });
+                locale = locale ? locale.toLowerCase() : 'vi';
+                currency = currency ? currency.toUpperCase() : 'VND';
 
-                let infoAfterInsert = await that.insertData({ orderID, orderInfo, amount, bankCode, orderType, locale, user: userID, status, ipAddr });
+                if(!checkObjectIDs(userID)) {
+                  return resolve({ error: true, message: 'object_invalid' });
+                }
 
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: 'cannot_insert' });
-                
-                return resolve({ error: false, data: infoAfterInsert});
+                const localeAllow = ['en', 'vi'];
+                if(!localeAllow.includes(locale)) {
+                  return resolve({ error: true, message: 'locale_not_support' });
+                }
+
+                const currencyAllow = ['VND', 'USD'];
+                if(!currencyAllow.includes(currency)) {
+                  return resolve({ error: true, message: 'currency_not_support' });
+                }
+
+                const infoAfterInsert = await this.insertData({
+                  orderID, orderDescription, orderData, orderCustomer,
+                  amount, currency, locale, merchantCode,
+                  userID, status: -2, ipAddr
+                });
+
+                if(!infoAfterInsert) {
+                  return resolve({ error: true, message: 'cannot_insert' });
+                }
+
+                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         })
     }
 
-    // cập nhật trạng thái thành công khi nhận được url return VNPAY
-    updateStatus({ orderID, status }) {
+    // Cập nhật trạng thái thành công khi nhận được url return NEOX
+    updateStatus({ txID, orderID, status, statusMsg }) {
         return new Promise(async resolve => {
             try {
                 /**
-                 * chỉ cho phép cập nhật trạng thái 
-                 *  CHƯA THANH TOÁN -> THANH CÔNG/THẤT BẠI
+                 * Chỉ cho phép cập nhật trạng thái
+                 * CHƯA THANH TOÁN -> THANH CÔNG/THẤT BẠI
                  */
-                const TRANSACTION_WITH_STATUS_WAITING = 0;
-                let isExistsTransaction = await PAYMENT__TRANSACTION_COLL.findOne({
-                    orderID
+                const TRANSACTION_WITH_STATUS_WAITING = -2;
+                const isExistsTransaction = await PAYMENT__TRANSACTION_COLL.findOne({
+                    _id: txID, orderID
                 });
-                console.log({ isExistsTransaction, orderID })
+
                 if (!isExistsTransaction)
                     return resolve({ error: true, message: 'transaction_not_exists' });
 
-                if (isExistsTransaction.status != TRANSACTION_WITH_STATUS_WAITING)
+                if (isExistsTransaction.status !== TRANSACTION_WITH_STATUS_WAITING)
                     return resolve({ error: true, message: 'transaction_not_equal_waiting' });
 
-                let infoAfterUpdateStatus = await PAYMENT__TRANSACTION_COLL.findOneAndUpdate({ orderID }, {
-                    status: +status
-                }, { new: true });
+                const infoAfterUpdateStatus = await PAYMENT__TRANSACTION_COLL.findOneAndUpdate(
+                  { _id: isExistsTransaction._id },
+                  { $set: { status: +status, statusMsg } }
+                );
+
                 if (!infoAfterUpdateStatus)
                     return resolve({ error: true, message: 'cannot_update' });
 
-                return resolve({ error: false, data: infoAfterUpdateStatus });
+                return resolve({ error: false, message: 'update_success' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -114,6 +136,15 @@ class Model extends BaseModel {
         })
     }
 
+    getNeoToken({}) {
+      return new Promise(async resolve => {
+        try {
+
+        } catch (error) {
+            return resolve({ error: true, message: error.message });
+        }
+      })
+    }
 }
 
 exports.MODEL = new Model;

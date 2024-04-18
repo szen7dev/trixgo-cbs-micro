@@ -38,3 +38,10 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
 
 	return resultAfterCallHandler;
 };
+
+exports.redirectToUrl = function ({ ctx, query, url }) {
+  const searchParams = new URLSearchParams(query);
+  const queryString = searchParams.toString();
+  ctx.meta.$statusCode = 307;
+  ctx.meta.$location = `${url}?${queryString}`;
+}

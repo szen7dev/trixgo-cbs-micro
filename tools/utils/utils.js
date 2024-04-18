@@ -114,6 +114,43 @@ exports.sortObject = (o) => {
     return sorted;
 }
 
+exports.sortNeoParams = (body, secretKey) => {
+  const CREATE_PAYMENT_REQUEST_FIELDS = [
+      "neo_MerchantCode",
+      "neo_PaymentMethod",
+      "neo_Currency",
+      "neo_Locale",
+      "neo_Version",
+      "neo_Command",
+      "neo_Amount",
+      "neo_MerchantTxnID",
+      "neo_OrderID",
+      "neo_OrderInfo",
+      "neo_Title",
+      "neo_ReturnURL",
+      "neo_AgainURL",
+      "neo_TransactionID",
+      "neo_ResponseCode",
+      "neo_ResponseMsg",
+      "neo_ResponseData",
+      "neo_ExpiresIn",
+      "neo_TokenCreate"
+  ];
+
+  return CREATE_PAYMENT_REQUEST_FIELDS.sort((a, b) => a.localeCompare(b))
+      .map(field => {
+          // console.log(field, body[field]);
+          if (body[field] !== null && body[field] !== undefined) {
+              if (field === "neo_PaymentMethod") {
+                  return body.neo_PaymentMethod.join(",")
+              }
+              return body[field];
+          } else {
+              return "";
+          }
+      }).join("") + secretKey;
+}
+
 function _checkParametersModel(data, checkValue){
     if(!data || !checkValue || !Array.isArray(data))
         return { error: true, message: `checkValue or data false when check Params` }
@@ -376,7 +413,7 @@ exports.getExtension = path => {
  * Create: 20/09/2021
 */
 exports.checkParamsPopulate = (populates, populates1, populates2, populates3) => {
-    
+
     // populates
     if(populates && typeof populates === 'string'){
         if(!this.IsJsonString(populates))
@@ -563,8 +600,8 @@ exports.parseUserAgent = (userAgent) => {
         case userAgent.includes('iPad'):
             return "Ipad";
         case userAgent.includes('windows'):
-        case userAgent.includes('mac os'): 
-        case userAgent.includes('linux'): 
+        case userAgent.includes('mac os'):
+        case userAgent.includes('linux'):
             return "Desktop";
         default:
             return "Unknown";
