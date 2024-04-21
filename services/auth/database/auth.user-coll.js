@@ -34,6 +34,12 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     bizfullname: String,
     //_______Họ và tên sau khi convert-chữ thường, không dấu (vd: nguyen van nam-trx)
     fullnamecv: String,
+    //_________Tên chủ tài khoản
+    bankName: String,
+    //_________Tài khoản ngân hàng
+    bankAccount: String,
+    //_________Thuộc ngân hàng
+    bank: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,

@@ -46,7 +46,8 @@ class Model extends BaseModel {
         })
     }
 
-    update({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID }) {
+    update({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID, bankName, bankAccount, bank }) {
+        // console.log({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID, bankName, bankAccount, bank })
         return new Promise(async (resolve) => {
             try {
                 let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);
@@ -89,6 +90,19 @@ class Model extends BaseModel {
 
                 if(email){
                     dataUpdate.email = email;
+                }
+
+                
+                if(bankName){
+                    dataUpdate.bankName = bankName;
+                }
+
+                if(bankAccount){
+                    dataUpdate.bankAccount = bankAccount;
+                }
+
+                if(bank){
+                    dataUpdate.bank = bank;
                 }
 
                 if(area && _isValid(area)){
