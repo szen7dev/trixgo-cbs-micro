@@ -91,6 +91,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+              // console.log({ param: ctx.params })
                 await this.validateEntity(ctx.params);
 
                 const { ipAddr, infoUser } = ctx.meta;
