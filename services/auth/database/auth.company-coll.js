@@ -26,6 +26,12 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
     phone: String,
     //_________Email
     email: String,
+    //_________Tên chủ tài khoản
+    bankName: String,
+    //_________Tài khoản ngân hàng
+    bankAccount: String,
+    //_________Thuộc ngân hàng
+    bank: String,
     //_________Lĩnh vực hoạt động
     field: {
         type   : Number,

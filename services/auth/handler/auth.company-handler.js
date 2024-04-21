@@ -43,27 +43,33 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            companyID       : { type: "string" },
-            name            : { type: "string", optional: true },
-            sign            : { type: "string", optional: true },
-            taxid           : { type: "string", optional: true },
-            address         : { type: "string", optional: true },
-            area            : { type: "string", optional: true },
-            phone           : { type: "string", optional: true },
-            email           : { type: "string", optional: true },
-            description     : { type: "string", optional: true },
-            birthDay        : { type: "string", optional: true },
-            image           : { type: "string", optional: true },
-            website         : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            // name            : { type: "string", optional: true },
+            // sign            : { type: "string", optional: true },
+            // taxid           : { type: "string", optional: true },
+            // address         : { type: "string", optional: true },
+            // area            : { type: "string", optional: true },
+            // phone           : { type: "string", optional: true },
+            // email           : { type: "string", optional: true },
+            // description     : { type: "string", optional: true },
+            // birthDay        : { type: "string", optional: true },
+            // image           : { type: "string", optional: true },
+            // website         : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                let { companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, bankName, bankAccount, bank } = ctx.params;
+                // console.log(ctx.params)
+                
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler = await AUTH__COMPANY_MODEL.update({
-                    companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID
+                    companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID, bankName, bankAccount, bank
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -94,6 +100,9 @@ module.exports = {
                 let { 
                     companyID, arrayID, show,
                     keyword, limit, lastestID, select, populates } = ctx.params;
+
+                // console.log(ctx.params)
+
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -106,6 +115,8 @@ module.exports = {
                         arrayID, show, userID, keyword, limit, lastestID, select, populates
                     });
                 }
+
+                // console.log(resultAfterCallHandler)
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

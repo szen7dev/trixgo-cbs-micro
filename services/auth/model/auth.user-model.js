@@ -1104,9 +1104,9 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, ctx }) {
-        console.log('====================>>>>>>>>>>>>>>>>>>>>')
-        console.log({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse })
+    update({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, bankName, bankAccount, bank, ctx }) {
+        // console.log('====================>>>>>>>>>>>>>>>>>>>>')
+        // console.log({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, bankName, bankAccount, bank })
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID)) {
@@ -1152,6 +1152,18 @@ class Model extends BaseModel {
 
                 if(birthDay){
                     dataUpdate.birthDay = birthDay;
+                }
+
+                if(bankName){
+                    dataUpdate.bankName = bankName;
+                }
+
+                if(bankAccount){
+                    dataUpdate.bankAccount = bankAccount;
+                }
+
+                if(bank){
+                    dataUpdate.bank = bank;
                 }
 
                 if(gender){
