@@ -1,6 +1,8 @@
 const dateFormat                                  = require('dateformat');
 const uuidv4                                      = require('uuid').v4;
 const crypto                                      = require('crypto');
+const XlsxPopulate                                = require('xlsx-populate');
+const path                                        = require('path');
 
 const { CF_DOMAIN_SERVICES } 		                  = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_PAYMENT } 	                    = require('../helper/payment.actions-constant');
@@ -21,6 +23,7 @@ const {
  */
 const { redirectToUrl }                           = require('../../../tools/utils/status_code');
 const { sortNeoParams }                           = require('../../../tools/utils/utils');
+const { nonAccentVietnamese }                     = require('../../../tools/utils/string_utils');
 const httpRequest                                 = require('../../../tools/http');
 
 module.exports = {
@@ -91,7 +94,6 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-              // console.log({ param: ctx.params })
                 await this.validateEntity(ctx.params);
 
                 const { ipAddr, infoUser } = ctx.meta;
@@ -352,13 +354,13 @@ module.exports = {
               return { error: true, message: "Can't request to neox service" };
           }
 
-          const { data: bankAccount, message } = neoxResponse.data;
+          const { data: bankAccount, message, code } = neoxResponse.data;
 
-          if(!bankAccount.fullName) {
+          if(!bankAccount?.fullName || code !== 1) {
             return { error: true, message: message || "Account number not exists" };
           }
 
-          return neoxResponse.data;
+          return { error: false, message, code };
         } catch(error) {
           return { error: true, message: error.message }
         }
@@ -407,7 +409,7 @@ module.exports = {
                   "bankAccountName": params.bankAccountName,
                   "bankAccountNumber": params.bankAccountNumber,
                   "bankSwiftCode": params.bankSwiftCode,
-                  "description": params.description,
+                  "description": nonAccentVietnamese(params.description),
                   "requestTransId": uuidv4()
                 }
               ]
@@ -428,5 +430,46 @@ module.exports = {
             return { error: true, message: error.message };
         }
       }
+    },
+
+    getListBanks: {
+      async handler() {
+        return new Promise(async resolve => {
+          try {
+            const cacher = this.broker.cacher;
+            const listBanks = await cacher.get(`NEOX:banks`);
+
+            if (listBanks) {
+              return resolve({ data: listBanks, error: false });
+            }
+
+            const pathFile = path.resolve(__dirname, ('../../../files/templates/excels/template_ycch.xlsx'));
+
+            XlsxPopulate.fromFileAsync(pathFile)
+              .then(async workbook => {
+                const values = workbook.sheet("List Bank").usedRange().value()
+
+                values.shift();
+                const banks = values.map(value => {
+                  return {
+                    bankName: value[1],
+                    swiftCode: value[2],
+                    bankShortName: value[3],
+                  }
+                })
+
+                if(banks.length) {
+                  await cacher.set(`NEOX:banks`, banks, 3600);
+                }
+
+                return resolve({ data: banks, error: false });
+              });
+          } catch (error) {
+              return resolve({ error: true, message: error.message });
+          }
+        })
+      }
     }
+
+    // end
 }

@@ -12,6 +12,7 @@ const CF_ROUTINGS_PAYMENT = {
     GET_LIST_TRANSACTION_BY_USER_WITH_STATUS            : `${BASE_ROUTE}${TRANSACTION}/users/:userID`,
     UPDATE_STATUS                                       : `${BASE_ROUTE}${TRANSACTION}/:transactionID`,
 
+    GET_LIST_BANKS                                      : `${BASE_ROUTE}/banks`,
     INQUIRY_BANK_ACCOUNT                                : `${BASE_ROUTE}/inquiry-bank-account`,
     DISBURSEMENT_REQUEST                                : `${BASE_ROUTE}/disbursement/request`,
     CREATE_URL_PAYMENT                                  : `${BASE_ROUTE}/url`,

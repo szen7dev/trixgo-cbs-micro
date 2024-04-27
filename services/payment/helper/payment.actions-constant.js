@@ -9,6 +9,7 @@ const CF_ACTIONS_PAYMENT = {
     URL_IPN_PAYMENT                             : `${BASE_ACTIONS}_URL_IPN_PAYMENT`,
     UPDATE_STATUS                               : `${BASE_ACTIONS}_UPDATE_STATUS`,
 
+    GET_LIST_BANKS                              : `${BASE_ACTIONS}_GET_LIST_BANKS`,
     GET_ACCESS_TOKEN                            : `${BASE_ACTIONS}_GET_ACCESS_TOKEN`,
     INQUIRY_BANK_ACCOUNT                        : `${BASE_ACTIONS}_INQUIRY_BANK_ACCOUNT`,
     DISBURSEMENT_REQUEST                        : `${BASE_ACTIONS}_DISBURSEMENT_REQUEST`,
