@@ -24,7 +24,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Mật khẩu
     password: {
       type: String,
-      select: false,
+    //   select: false, // Để fix Bảo mật
     },
     //_______Điện thoại
     phone: String,

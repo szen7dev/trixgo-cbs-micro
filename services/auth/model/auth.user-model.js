@@ -99,7 +99,6 @@ class Model extends BaseModel {
             }
         });
     }
-
     // implement by: KHANHNEY
     login({ email, password, platform }) {
         return new Promise(async resolve => {
@@ -170,11 +169,13 @@ class Model extends BaseModel {
                 }
 
                 const token = await sign({ infoUser: newExist }, JWT_SECRET_KEY);
+                console.log({ token })
 
                 // update lastLog of user
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
                     lastLog: new Date()
                 });
+                console.log({ emailValid })
                 // Xóa những trường không cần thiết
                 // delete isExist._doc.friends;
                 // delete isExist._doc.password;
@@ -190,6 +191,7 @@ class Model extends BaseModel {
                     status: 200
                 });
             } catch (error) {
+                console.error({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

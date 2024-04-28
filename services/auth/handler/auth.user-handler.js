@@ -51,6 +51,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { email, password, platform, domain } = ctx.params;
+                // console.log({ params_login: ctx.params })
 
                 /**
                  * validate code platform-domain
@@ -66,9 +67,11 @@ module.exports = {
                 //     }
                 // }
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
+                // console.log({ infoUser })
                 // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5e60f595f63b8a4e196a1943' });
                 return infoUser;
             } catch (error) {
+                console.error(error)
                 return { error:  true, message: error.message };
             }
         }
