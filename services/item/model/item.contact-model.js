@@ -43,6 +43,7 @@ const ITEM__CONTRACT_COLL            				= require('../database/item.contract-co
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll')
 const ITEM__AREA_COLL            				    = require('../database/item.area-coll')
 const FNB_VOUCHER_COLL                              = require('../../fnb/database/fnb.voucher-coll')
+const FNB_ORDER_COLL                                = require('../../fnb/database/fnb.order-coll')
 const HUMAN__CONTACT_DOCUMENT_COLL                  = require('../../human/database/human.contact_document-coll')
 
 const AUTH__APP_USER                                = require('../.../../../auth/model/auth.app_users').MODEL
@@ -2251,41 +2252,122 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcelByFilter({ userID, companyID, filterParams, ctx }) {
+    exportExcelByFilter({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, ctx }) {
+        console.log({ option, userID, companyID, filterParams, fromDate, toDate, page, unit })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
                 //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                const populates = JSON.stringify({
-                    path: 'department position field property area area1 area2 linkUser workingStatus contractType',
-                    select: 'name sign',
-                    populate:{
-                        path: 'parent',
-                        select: 'name',
+                if(!option){
+                    console.log('==========================')
+                    const populates = JSON.stringify({
+                        path: 'department position field property area area1 area2 linkUser workingStatus contractType',
+                        select: 'name sign',
                         populate:{
                             path: 'parent',
                             select: 'name',
+                            populate:{
+                                path: 'parent',
+                                select: 'name',
+                            }
                         }
+                    })
+    
+                    const { data, error } = await this.getListByFilter({
+                        ...filterParams,
+                        populates,
+                        type: 1,
+                        userID,
+                        companyID,
+                        isExportExcel: false,
+                        ctx
+                    });
+    
+                    if(error || !data?.listRecords?.length) {
+                        return resolve({ data, error })
                     }
-                })
+    
+                    const result = await this.downloadExcelFile(data.listRecords)
+                    return resolve(result);
+                }else if(Number(option) == 1){
+                    console.log('11111111111111111111111111111')
 
-                const { data, error } = await this.getListByFilter({
-                    ...filterParams,
-                    populates,
-                    type: 1,
-                    userID,
-                    companyID,
-                    isExportExcel: false,
-                    ctx
-                });
+                    let totalCustomer = 0, newCustomer = 0
 
-                if(error || !data?.listRecords?.length) {
-                    return resolve({ data, error })
+                    // let limit = Number(page * unit)
+                    // let listData = await FNB_ORDER_COLL.find({
+                    //     company: companyID
+                    // })
+                    // .limit(limit)
+
+                    let listData = await FNB_ORDER_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                date: { 
+                                    $gte: moment(fromDate).toDate(),
+                                    $lte: moment(toDate).toDate() 
+                                }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { customer: "$customer", amount: "$amount" },
+                                // quantity: { $sum: 1 },
+                                // numberOfProducts: { $sum: "$numberOfProducts" },
+                                // total: { $sum: "$total" },
+                                // discount: { $sum: "$discount" },
+                                // salesoff: { $sum: "$salesoff" },
+                                // amount: { $sum: "$amount" },
+                            }
+                        }
+                    ])
+
+                    // Khách mới
+                    let listDataNew = await FNB_ORDER_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                new: 1,
+                                date: { 
+                                    $gte: moment(fromDate).toDate(),
+                                    $lte: moment(toDate).toDate() 
+                                }
+                            }
+                        },
+                        {
+                            $group: {
+                                // _id: { customer: "$customer" },
+                                // _id: { customer: "$customer", salesChannel: "$salesChannel" },
+                                _id: { salesChannel: "$salesChannel" },
+                                quantity: { $sum: 1 },
+                                // numberOfProducts: { $sum: "$numberOfProducts" },
+                                // total: { $sum: "$total" },
+                                // discount: { $sum: "$discount" },
+                                // salesoff: { $sum: "$salesoff" },
+                                // amount: { $sum: "$amount" },
+                            }
+                        },
+                        {
+                            $sort: { "quantity": 1 }
+                        }
+                    ])
+                    console.log({
+                        company: ObjectID(companyID),
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate() 
+                        }
+                    })
+                    console.log(listData.length)
+                    console.log(listDataNew.length)
+                    // console.log(listData)
+
+                    // console.log(listData)
+
+                    return resolve({ error: false, data: listDataNew, status: 200 });
                 }
-
-                const result = await this.downloadExcelFile(data.listRecords)
-                return resolve(result);
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });

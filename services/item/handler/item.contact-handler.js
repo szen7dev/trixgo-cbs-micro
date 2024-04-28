@@ -482,14 +482,15 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { companyID, filterParams } = ctx.params;
+                let { option, companyID, filterParams, fromDate, toDate, page, unit } = ctx.params;
+                console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.exportExcelByFilter({
-                    userID, companyID, filterParams, ctx
+                    userID, option, companyID, filterParams, fromDate, toDate, page, unit, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
