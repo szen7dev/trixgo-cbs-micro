@@ -37,6 +37,7 @@ module.exports = {
 		[CF_ACTIONS_PAYMENT.GET_ACCESS_TOKEN] 		                    : PAYMENT__TRANSACTION_HANLDER.requestAccessToken,
 		[CF_ACTIONS_PAYMENT.INQUIRY_BANK_ACCOUNT] 		                : PAYMENT__TRANSACTION_HANLDER.inquiryBankAccount,
 		[CF_ACTIONS_PAYMENT.DISBURSEMENT_REQUEST] 		                : PAYMENT__TRANSACTION_HANLDER.disbursementRequest,
+		[CF_ACTIONS_PAYMENT.DISBURSEMENT_CONFIRM] 		                : PAYMENT__TRANSACTION_HANLDER.disbursementConfirm,
 	},
 
 	/**

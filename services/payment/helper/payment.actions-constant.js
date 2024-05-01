@@ -13,6 +13,7 @@ const CF_ACTIONS_PAYMENT = {
     GET_ACCESS_TOKEN                            : `${BASE_ACTIONS}_GET_ACCESS_TOKEN`,
     INQUIRY_BANK_ACCOUNT                        : `${BASE_ACTIONS}_INQUIRY_BANK_ACCOUNT`,
     DISBURSEMENT_REQUEST                        : `${BASE_ACTIONS}_DISBURSEMENT_REQUEST`,
+    DISBURSEMENT_CONFIRM                        : `${BASE_ACTIONS}_DISBURSEMENT_CONFIRM`,
     URL_NLC_PAYBEHALF                           : `${BASE_ACTIONS}_NLC_PAYBEHALF`,
 }
 

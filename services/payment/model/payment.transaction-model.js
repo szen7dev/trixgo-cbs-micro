@@ -14,8 +14,8 @@ class Model extends BaseModel {
     }
 
     insert({
-      merchantCode, orderID, orderData, orderCustomer, orderDescription,
-      amount, currency, locale, userID, ipAddr
+      merchantCode, orderID, orderCustomer, orderDescription, description,
+      amount, currency, locale, userID, ipAddr, txType, status,
     }) {
         return new Promise(async (resolve) => {
             try {
@@ -37,9 +37,13 @@ class Model extends BaseModel {
                 }
 
                 const infoAfterInsert = await this.insertData({
-                  orderID, orderDescription, orderData, orderCustomer,
+                  orderData: {
+                   orderID, orderDescription
+                  },
+                  orderCustomer,
+                  description,
                   amount, currency, locale, merchantCode,
-                  userID, status: -2, ipAddr
+                  userID, status, txType, ipAddr
                 });
 
                 if(!infoAfterInsert) {
@@ -54,7 +58,7 @@ class Model extends BaseModel {
     }
 
     // Cập nhật trạng thái thành công khi nhận được url return NEOX
-    updateStatus({ txID, orderID, status, statusMsg }) {
+    updateStatus({ txID, status, statusMsg }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -62,9 +66,7 @@ class Model extends BaseModel {
                  * CHƯA THANH TOÁN -> THANH CÔNG/THẤT BẠI
                  */
                 const TRANSACTION_WITH_STATUS_WAITING = -2;
-                const isExistsTransaction = await PAYMENT__TRANSACTION_COLL.findOne({
-                    _id: txID, orderID
-                });
+                const isExistsTransaction = await PAYMENT__TRANSACTION_COLL.findById(txID);
 
                 if (!isExistsTransaction)
                     return resolve({ error: true, message: 'transaction_not_exists' });
@@ -136,14 +138,37 @@ class Model extends BaseModel {
         })
     }
 
-    getNeoToken({}) {
-      return new Promise(async resolve => {
-        try {
+    getInfo({ userID, txID, txType, status }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(txID))
+                    return resolve({ error: true, message: 'txID invalid' });
 
-        } catch (error) {
-            return resolve({ error: true, message: error.message });
-        }
-      })
+                const filters = {
+                  _id: txID,
+                  userID,
+                };
+
+                if(txType) {
+                  filters['txType'] = txType;
+                }
+
+                if(status) {
+                  filters['status'] = status;
+                }
+
+                const transaction = await PAYMENT__TRANSACTION_COLL
+                  .findOne(filters)
+                  .lean();
+
+                if (!transaction)
+                    return resolve({ error: true, message: 'Transaction not found' });
+
+                return resolve({ error: false, data: transaction });
+            } catch (error) {
+                return resolve({ error: true, message: message });
+            }
+        })
     }
 }
 

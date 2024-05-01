@@ -101,10 +101,11 @@ module.exports = {
                 const userID = infoUser._id;
                 // const orderID = dateFormat(new Date(), 'HHmmss');
 
+                const txType = 'order_payment';
                 const transaction = await PAYMENT__TRANSACTION_MODEL.insert({
                   merchantCode: neo_MarchantCode,
                   orderID, orderDescription,
-                  amount, currency, locale, userID, ipAddr
+                  amount, currency, locale, userID, ipAddr, txType, status: -2
                 })
 
                 if(transaction.error) {
@@ -244,7 +245,6 @@ module.exports = {
                   neo_ResponseMsg,
                   neo_ResponseCode,
                   neo_MerchantTxnID,
-                  neo_OrderID,
                 } = ctx.params;
 
                 delete params['neo_TransAmount'];
@@ -259,7 +259,7 @@ module.exports = {
                 }
 
                 await PAYMENT__TRANSACTION_MODEL.updateStatus({
-                  txID: neo_MerchantTxnID, orderID: neo_OrderID,
+                  txID: neo_MerchantTxnID,
                   status: neo_ResponseCode, statusMsg: neo_ResponseMsg,
                 });
 
@@ -379,6 +379,8 @@ module.exports = {
         try {
             await this.validateEntity(ctx.params);
             const params = ctx.params;
+            const { ipAddr, infoUser } = ctx.meta;
+            const userID = infoUser._id;
 
             // Get access token
             const tokenResponse = await ctx.call(
@@ -401,15 +403,73 @@ module.exports = {
               return checkInquiryAccount;
             }
 
+            const txType = 'disbursement_request';
+            const transaction = await PAYMENT__TRANSACTION_MODEL.insert({
+              merchantCode: neo_MarchantCode,
+              customerData: {
+                userID,
+                bankAccountName: params.bankAccountName,
+                bankAccountNumber: params.bankAccountNumber,
+                bankSwiftCode: params.bankSwiftCode,
+              },
+              description: nonAccentVietnamese(params.description),
+              amount: params.amount,
+              userID, ipAddr, txType, status: -2
+            })
+
+            return transaction;
+        } catch (error) {
+            return { error: true, message: error.message };
+        }
+      }
+    },
+
+    disbursementConfirm: {
+      params: {
+          txID: { type: "string" },
+          userID: { type: "string" },
+          isConfirm: { type: "boolean" },
+      },
+      async handler(ctx) {
+        try {
+            await this.validateEntity(ctx.params);
+            const { txID, userID, isConfirm } = ctx.params;
+            console.log({ params: ctx.params });
+
+            const tx = await PAYMENT__TRANSACTION_MODEL.getInfo({
+              txID,
+              userID,
+              txType: 'disbursement_request',
+              status: -2
+            });
+
+            if(tx.error) {
+              return tx;
+            }
+
+            if(!isConfirm) {
+              return { message: 'request disbursement rejected!' }
+            }
+
+            // Get access token
+            const tokenResponse = await ctx.call(
+              `${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.GET_ACCESS_TOKEN}`,
+              { scope: 'disbursement' }
+            );
+            if(tokenResponse.error) {
+              return tokenResponse;
+            }
+
+            const { bankAccountName, bankAccountNumber, bankSwiftCode } = tx.customerData;
             const payload = {
               "requestId": uuidv4(),
               "transactions": [
                 {
-                  "amount": params.amount,
-                  "bankAccountName": params.bankAccountName,
-                  "bankAccountNumber": params.bankAccountNumber,
-                  "bankSwiftCode": params.bankSwiftCode,
-                  "description": nonAccentVietnamese(params.description),
+                  "amount": tx.amount,
+                  "bankAccountName": bankAccountName,
+                  "bankAccountNumber": bankAccountNumber,
+                  "bankSwiftCode": bankSwiftCode,
+                  "description": tx.description,
                   "requestTransId": uuidv4()
                 }
               ]
