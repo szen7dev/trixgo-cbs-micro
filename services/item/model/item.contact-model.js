@@ -2371,10 +2371,10 @@ class Model extends BaseModel {
                 }
 
                 else if(Number(option) === 2){
-                    console.log('222222222222222223333')
+                    // console.log('222222222222222223333')
 
                     let conditionObj = {
-                        company: companyID
+                        company: ObjectID(companyID)
                     }
 
                     if(Number(validatePhone) === 1){
@@ -2389,9 +2389,30 @@ class Model extends BaseModel {
 
                     let limit = Number(page * unit)
                     let listData = await ITEM__CONTACT_COLL.find(conditionObj)
-                    .select('name phone email birthday purchasedValue type note')
-                    .sort({purchasedValue: -1})
-                    .limit(limit)                  
+                    .select('_id name phone email birthday purchasedValue type note getVouchers modifyAt')
+                    .sort({modifyAt: -1})
+                    // .sort({purchasedValue: -1})
+                    .limit(limit)               
+                    
+                    // let limit = Number(page * unit)
+                    // let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                    // .select('_id')
+                    // .sort({_id: 1})
+                    // .limit(limit)
+                    // .lean()
+
+                    // let infoBegin = listData[Number(page - 1)*unit]
+                    // let infoEnd = listData.slice(-1)
+
+                    // console.log(infoBegin)
+                    // console.log(infoEnd)
+
+                    // conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+
+                    // let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
+                    // .select('_id name phone email birthday purchasedValue type note getVouchers')
+                    // .sort({_id: 1})
+                    // .lean()
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_ads.xlsx')))
@@ -2399,6 +2420,7 @@ class Model extends BaseModel {
 
                         var i = 3;
                         listData?.forEach((item, index) => {
+                            
                             workbook.sheet("Export").row(i).cell(1).value(Number(index+1))
                             workbook.sheet("Export").row(i).cell(2).value(item.name)
                             workbook.sheet("Export").row(i).cell(3).value(item?.phone)
@@ -2407,6 +2429,10 @@ class Model extends BaseModel {
                             workbook.sheet("Export").row(i).cell(6).value(Number(item?.type))
                             workbook.sheet("Export").row(i).cell(7).value(item?.note)
                             workbook.sheet("Export").row(i).cell(8).value(Number(item?.purchasedValue))
+                            if(item?.getVouchers.length && item?.getVouchers.includes("64378d6618c77f00128abe93")){
+                                workbook.sheet("Export").row(i).cell(9).value('Quan tâm OA')
+                            }
+                            workbook.sheet("Export").row(i).cell(10).value(item.modifyAt)
 
                             i++
                         });
