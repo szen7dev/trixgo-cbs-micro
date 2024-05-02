@@ -3,32 +3,34 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+const TX_TYPES = ['order_payment', 'disbursement_request'];
+
 module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
-    orderID: {
-        type: String,
-        require: true,
-        trim: true
-    },
-
-    // Nội dung thanh toán
-    orderDescription: {
-        type: String,
-        require: true,
-        trim: true
-    },
-
-    // Loại thanh toán
-    orderType: {
-        type: String,
-    },
-
     orderData: {
-      type: Schema.Types.Mixed,
+        orderID: {
+            type: String,
+            require: true,
+            trim: true
+        },
+
+        // Nội dung thanh toán
+        orderDescription: {
+            type: String,
+            require: true,
+            trim: true
+        },
+
+        // Loại thanh toán
+        orderType: {
+            type: String,
+        },
     },
 
     customerData: {
       type: Schema.Types.Mixed,
     },
+
+    description: String,
 
     // số tiền thanh toán
     amount: {
@@ -54,6 +56,14 @@ module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
         }
     },
 
+    txType: {
+      type: String,
+      enum: {
+          values: TX_TYPES,
+          message: '{VALUE} is not supported'
+      }
+    },
+
     // paymentMethod: {
     //   type: String,
     //   enum: {
@@ -62,11 +72,7 @@ module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
     //   }
     // },
 
-    merchantCode: {
-      type: String,
-      require: true
-    },
-
+    merchantCode: String,
     ipAddr: String,
 
     userID: {
@@ -75,7 +81,7 @@ module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
     },
 
     /**
-     * -2. khởi tạo transaction (chưa thanh toán)
+     * -2. khởi tạo transaction (chưa chuyển tiền)
      * -1. Order is expired
      * 0. đã thanh toán -> thành công
      * 1. đã thanh toán -> thất bại

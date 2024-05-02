@@ -22,7 +22,10 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         unique : true
     },
     //_______Mật khẩu
-    password: String,
+    password: {
+      type: String,
+    //   select: false, // Để fix Bảo mật
+    },
     //_______Điện thoại
     phone: String,
     //_______Tên (vd: Nam)
@@ -35,11 +38,13 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Họ và tên sau khi convert-chữ thường, không dấu (vd: nguyen van nam-trx)
     fullnamecv: String,
     //_________Tên chủ tài khoản
-    bankName: String,
+    bankAccountName: String,
     //_________Tài khoản ngân hàng
-    bankAccount: String,
+    bankAccountNumber: String,
     //_________Thuộc ngân hàng
-    bank: String,
+    bankName: String,
+    //_________Swift code ngân hàng
+    bankSwiftCode: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,

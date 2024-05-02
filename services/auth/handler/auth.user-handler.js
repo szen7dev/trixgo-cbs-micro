@@ -51,6 +51,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { email, password, platform, domain } = ctx.params;
+                // console.log({ params_login: ctx.params })
 
                 /**
                  * validate code platform-domain
@@ -66,9 +67,11 @@ module.exports = {
                 //     }
                 // }
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
+                // console.log({ infoUser })
                 // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5e60f595f63b8a4e196a1943' });
                 return infoUser;
             } catch (error) {
+                console.error(error)
                 return { error:  true, message: error.message };
             }
         }
@@ -383,7 +386,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 let infoUser = ctx.meta.infoUser;
-				let { populates, select } = ctx.params;
+        				let { populates, select } = ctx.params;
 
                 let { _id: userID } = infoUser;
                 let infoUserAfterFind = await AUTH__USER_MODEL.getInfoV2({ userID, select, populates });
@@ -562,7 +565,7 @@ module.exports = {
                 let {
                     userID, resetPass, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
-                    companyID, departmentID, positionID, level, status, storageUse, bankName, bankAccount, bank
+                    companyID, departmentID, positionID, level, status, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode
                 } = ctx.params;
 				let { _id: currentUserID, company } = ctx.meta.infoUser;
 
@@ -573,7 +576,7 @@ module.exports = {
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
                     userID, resetPass, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
-                    companyID, departmentID, positionID, level, status, company, storageUse, bankName, bankAccount, bank, ctx
+                    companyID, departmentID, positionID, level, status, company, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -728,7 +731,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH 
+	 * Dev: HiepNH
 	 * Func: getList and getInfo user
 	 */
     getInfoAndGetList: {
@@ -748,13 +751,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                
+
                 let {
                     userID, projectID, companyID, arrayID,
                     keyword, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
                 // console.log(ctx.params)
-                
+
                 let resultAfterCallHandler;
 
                 // console.log('=======DANH SÁCH USER 222222222222==========>>>>>>>>>>>>>>>>>')

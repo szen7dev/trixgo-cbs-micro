@@ -99,7 +99,6 @@ class Model extends BaseModel {
             }
         });
     }
-
     // implement by: KHANHNEY
     login({ email, password, platform }) {
         return new Promise(async resolve => {
@@ -170,11 +169,13 @@ class Model extends BaseModel {
                 }
 
                 const token = await sign({ infoUser: newExist }, JWT_SECRET_KEY);
+                console.log({ token })
 
                 // update lastLog of user
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
                     lastLog: new Date()
                 });
+                console.log({ emailValid })
                 // Xóa những trường không cần thiết
                 // delete isExist._doc.friends;
                 // delete isExist._doc.password;
@@ -190,6 +191,7 @@ class Model extends BaseModel {
                     status: 200
                 });
             } catch (error) {
+                console.error({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -1104,7 +1106,7 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, bankName, bankAccount, bank, ctx }) {
+    update({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode, ctx }) {
         // console.log('====================>>>>>>>>>>>>>>>>>>>>')
         // console.log({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, bankName, bankAccount, bank })
         return new Promise(async (resolve) => {
@@ -1158,12 +1160,16 @@ class Model extends BaseModel {
                     dataUpdate.bankName = bankName;
                 }
 
-                if(bankAccount){
-                    dataUpdate.bankAccount = bankAccount;
+                if(bankAccountNumber){
+                    dataUpdate.bankAccountNumber = bankAccountNumber;
                 }
 
-                if(bank){
-                    dataUpdate.bank = bank;
+                if(bankAccountName){
+                    dataUpdate.bankAccountName = bankAccountName;
+                }
+
+                if(bankSwiftCode) {
+                  dataUpdate.bankSwiftCode = bankSwiftCode;
                 }
 
                 if(gender){
