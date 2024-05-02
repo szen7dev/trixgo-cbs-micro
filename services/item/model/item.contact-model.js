@@ -2252,8 +2252,8 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcelByFilter({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, ctx }) {
-        console.log({ option, userID, companyID, filterParams, fromDate, toDate, page, unit })
+    exportExcelByFilter({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail, ctx }) {
+        console.log({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -2290,7 +2290,8 @@ class Model extends BaseModel {
     
                     const result = await this.downloadExcelFile(data.listRecords)
                     return resolve(result);
-                }else if(Number(option) == 1){
+                }
+                else if(Number(option) === 1){
                     console.log('11111111111111111111111111111')
 
                     let totalCustomer = 0, newCustomer = 0
@@ -2353,20 +2354,76 @@ class Model extends BaseModel {
                             $sort: { "quantity": 1 }
                         }
                     ])
-                    console.log({
-                        company: ObjectID(companyID),
-                        date: { 
-                            $gte: moment(fromDate).toDate(),
-                            $lte: moment(toDate).toDate() 
-                        }
-                    })
-                    console.log(listData.length)
-                    console.log(listDataNew.length)
-                    // console.log(listData)
+                    // console.log({
+                    //     company: ObjectID(companyID),
+                    //     date: { 
+                    //         $gte: moment(fromDate).toDate(),
+                    //         $lte: moment(toDate).toDate() 
+                    //     }
+                    // })
+                    // console.log(listData.length)
+                    // console.log(listDataNew.length)
+                    // // console.log(listData)
 
                     // console.log(listData)
 
                     return resolve({ error: false, data: listDataNew, status: 200 });
+                }
+
+                else if(Number(option) === 2){
+                    console.log('222222222222222223333')
+
+                    let conditionObj = {
+                        company: companyID
+                    }
+
+                    if(Number(validatePhone) === 1){
+                        conditionObj.phone = {$exists: true, $ne: null}
+                    }
+
+                    if(Number(validateMail) === 1){
+                        conditionObj.email = {$exists: true, $ne: null}
+                    }
+
+                    // let totalCustomer = 0, newCustomer = 0
+
+                    let limit = Number(page * unit)
+                    let listData = await ITEM__CONTACT_COLL.find(conditionObj)
+                    .select('name phone email birthday purchasedValue type note')
+                    .sort({purchasedValue: -1})
+                    .limit(limit)                  
+
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_ads.xlsx')))
+                    .then(async workbook => {
+
+                        var i = 3;
+                        listData?.forEach((item, index) => {
+                            workbook.sheet("Export").row(i).cell(1).value(Number(index+1))
+                            workbook.sheet("Export").row(i).cell(2).value(item.name)
+                            workbook.sheet("Export").row(i).cell(3).value(item?.phone)
+                            workbook.sheet("Export").row(i).cell(4).value(item?.email)
+                            workbook.sheet("Export").row(i).cell(5).value(item?.birthday)
+                            workbook.sheet("Export").row(i).cell(6).value(Number(item?.type))
+                            workbook.sheet("Export").row(i).cell(7).value(item?.note)
+                            workbook.sheet("Export").row(i).cell(8).value(Number(item?.purchasedValue))
+
+                            i++
+                        });
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `contact_ads${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+
+                    // return resolve({ error: false, data: listData, status: 200 });
                 }
             } catch (error) {
                 console.log({ error })
