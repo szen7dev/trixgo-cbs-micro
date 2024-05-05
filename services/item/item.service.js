@@ -115,6 +115,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DOCTYPE_IMPORT_FROM_EXCEL]				: ITEM__DOCTYPE_HANDLER.importFromExcel,
 
 		//==========================================  CONTACT  ===================================
+		[CF_ACTIONS_ITEM.CONTACT_REGISTER] 					: ITEM__CONTACT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.CONTACT_INSERT] 						: ITEM__CONTACT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.CONTACT_UPDATE] 						: ITEM__CONTACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,

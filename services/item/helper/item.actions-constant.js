@@ -65,6 +65,7 @@ const CF_ACTIONS_ITEM = {
      /**
      * CONTACT
      */
+    CONTACT_REGISTER                            : `${BASE_ACTIONS}_${CONTACT}_REGISTER`,
     CONTACT_INSERT                              : `${BASE_ACTIONS}_${CONTACT}_INSERT`,
     CONTACT_UPDATE                              : `${BASE_ACTIONS}_${CONTACT}_UPDATE`,
     CONTACT_REMOVE                              : `${BASE_ACTIONS}_${CONTACT}_REMOVE`,
@@ -126,7 +127,7 @@ const CF_ACTIONS_ITEM = {
     FUNDA_UPDATE                                : `${BASE_ACTIONS}_${FUNDA}_UPDATE`,
     FUNDA_GET_INFO_AND_GET_LIST                 : `${BASE_ACTIONS}_${FUNDA}_GET_INFO_AND_GET_LIST`,
     FUNDA_GET_LIST_BY_COMPANY_USER              : `${BASE_ACTIONS}_${FUNDA}_GET_LIST_BY_COMPANY_USER`,
-    
+
     /**
     * GOODS
     */

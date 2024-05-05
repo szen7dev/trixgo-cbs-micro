@@ -73,10 +73,22 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource } = ctx.params;
-				const { _id: userID, company } = ctx.meta.infoUser;
+                let { parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource, authorID } = ctx.params;
+        				const user = ctx.meta.infoUser;
+                let userID = user?._id;
 
-                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({ authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource, ctx });
+                if (!userID) {
+                  userID = authorID;
+                }
+
+                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
+                  authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email,
+                  department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+                  insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2,
+                  insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff,
+                  appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID,
+                  bankAccount, bank, dataSource, ctx
+                });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

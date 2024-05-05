@@ -19,7 +19,7 @@ const CONFIG     = "/configs";
 
 const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
-    
+
     // ================================DEPARTMENT=======================================//
     DEPARTMENTS                                : `${BASE_ROUTE}${DEPARTMENT}`,
     DEPARTMENT_UPDATE_VALUE                    : `${BASE_ROUTE}${DEPARTMENT}/update-value`,
@@ -46,6 +46,7 @@ const CF_ROUTINGS_ITEM = {
     DOCTYPES_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${DOCTYPE}/import-from-excel`,
 
     // ================================CONTACT==========================================//
+    CONTACT_REGISTER                           : `${BASE_ROUTE}${CONTACT}/register`,
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,
     CONTACTS_PRODUCT_GET_LIST_BY_PROPERTY      : `${BASE_ROUTE}${CONTACT}/get-list-by-property`,
     CONTACTS_GET_LIST_BY_FILTER                : `${BASE_ROUTE}${CONTACT}/filter-human`,
