@@ -11,6 +11,7 @@ const { CF_ROUTINGS_AUTH }		= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_ZALO } 		= require('../zalo_oa/helper/zalo.routes');
 const { CF_ROUTINGS_FACEBOOK } 	= require('../facebook/helper/facebook.routes');
 const { CF_ROUTINGS_PAYMENT }			= require('../payment/helper/payment.routes-constant');
+const { CF_ROUTINGS_ITEM }			= require('../item/helper/item.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -20,6 +21,7 @@ const { CF_ACTIONS_AUTH }		= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ZALO }		= require('../zalo_oa/helper/zalo.actions');
 const { CF_ACTIONS_FACEBOOK }	= require('../facebook/helper/facebook.actions');
 const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
+const { CF_ACTIONS_ITEM } 		= require('../item/helper/item.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -74,6 +76,8 @@ module.exports = {
 		/**
 		 * KHÁCH HÀNG ĐĂNG KÝ TRẢI NGHIỆM SẢN PHẨM
 		 */
+		[`POST ${CF_ROUTINGS_ITEM.CONTACT_REGISTER}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_REGISTER}`],
 
 		/**
 		 * Check version app
