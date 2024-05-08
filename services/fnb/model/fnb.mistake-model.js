@@ -11,6 +11,7 @@ const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.consta
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
+const moment                            = require('moment');
 
 /**s
  * import inter-coll, exter-coll
@@ -820,7 +821,7 @@ class Model extends BaseModel {
      * Date: 15/2/2023
      */
     exportExcel({ companyID, userID, fundaID, fromDate, toDate, month, year }) {
-        // console.log({ companyID, year, month, userID })
+        console.log({ companyID, userID, fundaID, fromDate, toDate, month, year })
         return new Promise(async resolve => {
             try {
                 let yearFilter
@@ -923,6 +924,24 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_MISTAKE_COLL.populate(listDataErrCombine4, conditionPopulate)
+
+                let listData  = await FNB_MISTAKE_COLL.find({ 
+                    company: ObjectID(companyID),
+                    createAt: {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                 })
+                .populate({
+                    path: "funda mistake executor userCreate",
+                    select: "name sign fullname note manager",
+                    populate:{
+                        path: "manager",
+                        select: "fullname"
+                    }
+                })
+                .sort({createAt: -1})
+                // console.log(listData)
                
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_mistake.xlsx')))
@@ -946,6 +965,23 @@ class Model extends BaseModel {
                                 }
                             })
                         }
+                        i++
+                    });
+
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("ErrorReport").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("ErrorReport").row(i).cell(2).value(item.createAt);
+                        workbook.sheet("ErrorReport").row(i).cell(3).value(item?.executor?.fullname);
+                        workbook.sheet("ErrorReport").row(i).cell(4).value(item?.funda?.name);
+                        workbook.sheet("ErrorReport").row(i).cell(5).value((item?.funda?.manager?.fullname));
+                        workbook.sheet("ErrorReport").row(i).cell(6).value(item?.mistake?.name);
+                        workbook.sheet("ErrorReport").row(i).cell(7).value(item?.userCreate?.fullname);
+                        workbook.sheet("ErrorReport").row(i).cell(8).value(item.type);
+                        workbook.sheet("ErrorReport").row(i).cell(9).value(item.status);
+                        workbook.sheet("ErrorReport").row(i).cell(10).value(Number(item?.amount));
+                        workbook.sheet("ErrorReport").row(i).cell(11).value(Number(item?.number));
+                        workbook.sheet("ErrorReport").row(i).cell(12).value(item.note);
                         i++
                     });
                    
