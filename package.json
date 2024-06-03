@@ -97,25 +97,6 @@
   "engines": {
     "node": ">= 10.x.x"
   },
-  "jest": {
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "rootDir": "./services",
-    "roots": [
-      "../test"
-    ]
-  },
   "main": ".eslintrc.js",
-  "directories": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://gitlab.com/nphuocnguyen2000/micro-demo-shop.git"
-  },
-  "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/nphuocnguyen2000/micro-demo-shop/issues"
-  },
-  "homepage": "https://gitlab.com/nphuocnguyen2000/micro-demo-shop#readme"
+  "license": "ISC"
 }
