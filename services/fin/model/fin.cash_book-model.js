@@ -145,10 +145,24 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
-
                 if (!checkObjectIDs(cashBookID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
+
+                const infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
+                .populate('parent')
+                .lean();
+                // console.log(infoCashBook)
+
+                if(!infoCashBook) {
+                    return resolve({
+                        error: true,
+                        message: 'Cashbook không tồn tại',
+                        keyError: "cashbook_not_exists",
+                        status: 400
+                    });
+                }
+
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 if (checkObjectIDs(accountID)) {
                     dataUpdate.account = accountID;
@@ -176,34 +190,30 @@ class Model extends BaseModel {
                     dataUpdate.sign = sign;
                 }
 
-                if (note) {
-                    dataUpdate.note = note;
+                let str = ''
+                if(infoCashBook.note != undefined && infoCashBook.note != ""){
+                    str = `${infoCashBook.note}`
                 }
-
+                 
                 if (income >= 0) {
+                    str = str + `-Thu cũ: ${infoCashBook.income}`
+
                     dataUpdate.income = income;
                 }
 
                 if (expense >= 0) {
+                    str = str + `-Chi cũ: ${infoCashBook.expense}`
+
                     dataUpdate.expense = expense;
                 }
 
+                if (note) {
+                    str = str + note;
+                }
+                dataUpdate.note = str;
+
                 if (active && !isNaN(active) && Number(active) > 0) {
                     dataUpdate.active = active;
-                }
-
-                const infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
-                .populate('parent')
-                .lean();
-                // console.log(infoCashBook)
-
-                if(!infoCashBook) {
-                    return resolve({
-                        error: true,
-                        message: 'Cashbook không tồn tại',
-                        keyError: "cashbook_not_exists",
-                        status: 400
-                    });
                 }
 
                 // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
