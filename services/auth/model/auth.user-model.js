@@ -165,6 +165,8 @@ class Model extends BaseModel {
                     level: isExist.level,
                     lang: isExist.lang,
                     groupDefault: isExist.groupDefault,
+                    balance: isExist.balance,
+                    rewards: isExist.rewards,
                     _id: isExist._id,
                 }
 
@@ -175,7 +177,7 @@ class Model extends BaseModel {
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
                     lastLog: new Date()
                 });
-                console.log({ emailValid })
+                // console.log({ emailValid })
                 // Xóa những trường không cần thiết
                 // delete isExist._doc.friends;
                 // delete isExist._doc.password;

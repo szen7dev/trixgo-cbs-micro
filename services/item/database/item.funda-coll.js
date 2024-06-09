@@ -85,6 +85,8 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     /**
      * Khu vực
      */
+    //_________Địa chỉ theo google map
+    location: String,
     //_________Địa chỉ
     address: String,
     //_________Tỉnh/Thành phố
