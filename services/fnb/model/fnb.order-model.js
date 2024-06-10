@@ -441,6 +441,7 @@ class Model extends BaseModel {
 
                     // Nhân viên thực hiện
                     dataInsert.assignee = arrStaffs;
+                    dataInsert.doer = arrStaffs[0];
 
                     // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
                     if(Number(numberStaff) != 0){
@@ -451,6 +452,7 @@ class Model extends BaseModel {
                 } else{
                     numberStaff = 1
                     dataInsert.assignee = [userID];
+                    dataInsert.doer = userID;
 
                     // Doanh số trung bình/đầu nhân viên (1 nhân viên)
                     dataInsert.avgTotalPerStaff = Number(amount/Number(numberStaff)).toFixed(0)
@@ -1358,6 +1360,7 @@ class Model extends BaseModel {
 
                     // Nhân viên thực hiện
                     dataInsert.assignee = arrStaffs;
+                    dataInsert.doer = arrStaffs[0];
 
                     // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
                     if(Number(numberStaff) != 0){
@@ -1368,6 +1371,7 @@ class Model extends BaseModel {
                 } else{
                     numberStaff = 1
                     dataInsert.assignee = [userID];
+                    dataInsert.doer = userID;
 
                     // Doanh số trung bình/đầu nhân viên (1 nhân viên)
                     dataInsert.avgTotalPerStaff = Number(amount/Number(numberStaff)).toFixed(0)

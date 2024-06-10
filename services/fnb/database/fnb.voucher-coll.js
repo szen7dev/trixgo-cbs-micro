@@ -50,21 +50,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_voucher", {
         type: Schema.Types.ObjectId,
         ref : 'contact' 
     },
-    // //_________Dành cho khách hàng (BỎ)
-    // customer: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: "contact"
-    // },
-    // //_________Người nhận
-    // receiversUser: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "user"
-    // }],
-    // //_________Người sử dụng
-    // buyersUser: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "user"
-    // }],
     //_________Người nhận
     receivers: [{
         type: Schema.Types.ObjectId,

@@ -62,8 +62,9 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_booking", {
     alert: { type: Number, default: 0 },
     /**
      * Tình trạng xử lý
-     * 1-Chưa xử lý
-     * 2-Hoàn thành
+     * 1-Chưa xử lý/Chờ xác nhận
+     * 2-Hoàn thành/Đã xác nhận
+     * 3-Hủy
      */
     status: {
         type: Number,

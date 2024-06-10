@@ -56,11 +56,11 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
      * NGƯỜI PHỤC VỤ
      */
     //_________Rating chất lượng phục vụ
-    rating: { type: Number, default: 1 },
+    rating: { type: Number, default: 0 },
     //_________Số lượng đánh giá
-    numberOfRating: { type: Number, default: 1 },
+    numberOfRating: { type: Number, default: 0 },
     //_________Số lượng đơn hàng phục vụ
-    numberOfOrders: { type: Number, default: 1 },
+    numberOfOrders: { type: Number, default: 0 },
     //_______Ngày sinh
     birthDay: {
         type   : Date,
