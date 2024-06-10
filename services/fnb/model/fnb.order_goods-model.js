@@ -21,7 +21,7 @@ const { getTimeBetween }                            = require('../../../tools/ut
  */
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
-const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
+// const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_GOODS_COLL                     = require('../database/fnb.order_goods-coll');
 
 /**

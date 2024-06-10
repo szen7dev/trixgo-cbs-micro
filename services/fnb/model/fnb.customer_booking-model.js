@@ -150,8 +150,6 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(assigneeID)) {
                     dataUpdate.assignee = assigneeID;
-                }else{
-                    dataUpdate.assignee = userID
                 }
              
                 let infoOrder
