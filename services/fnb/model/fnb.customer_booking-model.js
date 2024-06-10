@@ -37,8 +37,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 12/2/2024
      */
-    insert({ userID, companyID, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, files }) {
-        console.log({ userID, companyID, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, files })
+    insert({ userID, companyID, customerID, orderID, businessID, goodsID, voucherID, assigneeID, name, note, date, alert, status, files }) {
+        // console.log({ userID, companyID, customerID, orderID, businessID, goodsID, voucherID, assigneeID, name, note, date, alert, status, files })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "" || !checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
@@ -53,6 +53,14 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(businessID)) {
                     dataInsert.business = businessID;
+                }
+
+                if(checkObjectIDs(goodsID)) {
+                    dataInsert.goods = goodsID;
+                }
+
+                if(checkObjectIDs(voucherID)) {
+                    dataInsert.voucher = voucherID;
                 }
 
                 if(checkObjectIDs(assigneeID)) {

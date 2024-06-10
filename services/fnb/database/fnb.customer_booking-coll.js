@@ -36,6 +36,16 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_booking", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    //_________Sản phẩm, dịch vụ
+    goods: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
+    },
+    //_________Voucher ưu đãi
+    voucher: {
+        type: Schema.Types.ObjectId,
+        ref: "fnb_voucher"
+    },
     //_________Nội dung
     name: String,
     namecv: String,
