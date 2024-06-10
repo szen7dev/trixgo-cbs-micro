@@ -18,8 +18,8 @@ module.exports = {
         auth: "required",
         params: {
             customerID          : { type: "string" },
-            orderID             : { type: "string", optional: true },
             name                : { type: "string" },
+            orderID             : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             date                : { type: "string", optional: true },
             status              : { type: "number", optional: true },
@@ -27,14 +27,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { customerID, orderID, businessID, assigneeID, name, note, date, alert, status, files } = ctx.params;
+                let { customerID, orderID, businessID, goodsID, voucherID, assigneeID, name, note, date, alert, status, files } = ctx.params;
                 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_CUSTOMER_BOOKING_MODEL.insert({
-                    userID, companyID: company._id, customerID, orderID, businessID, assigneeID, name, note, date, alert, status, files  
+                    userID, companyID: company._id, customerID, orderID, businessID, goodsID, voucherID, assigneeID, name, note, date, alert, status, files  
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

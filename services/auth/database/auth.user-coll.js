@@ -45,6 +45,22 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     bankName: String,
     //_________Swift code ngân hàng
     bankSwiftCode: String,
+    /**
+     * KHÁCH HÀNG
+     */
+    //_________Số dư tài khoản
+    balance: { type: Number, default: 0 },
+    //_________Điểm thưởng
+    rewards: { type: Number, default: 0 },
+    /**
+     * NGƯỜI PHỤC VỤ
+     */
+    //_________Rating chất lượng phục vụ
+    rating: { type: Number, default: 1 },
+    //_________Số lượng đánh giá
+    numberOfRating: { type: Number, default: 1 },
+    //_________Số lượng đơn hàng phục vụ
+    numberOfOrders: { type: Number, default: 1 },
     //_______Ngày sinh
     birthDay: {
         type   : Date,
