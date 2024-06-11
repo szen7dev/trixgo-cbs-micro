@@ -49,7 +49,11 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
      * tokenKey
      * ...
      */
-    tokenKey: String,
+    key: String,
+
+    metadata: {
+      type: Schema.Types.Mixed,
+    },
     /**
      * Tình trạng
      * 1-Hoạt động (cấu hình chính-1 công ty có thể có nhiều kênh/biến)

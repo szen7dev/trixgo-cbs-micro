@@ -13,6 +13,7 @@ const { CF_DOMAIN_SERVICES }    = require('../../gateway/helper/domain.constant'
 
 const BaseModel                 = require('../../../tools/db/base_model');
 const ZALOOA_FOLLOWER_COLL      = require('../database/zalooa.follower-coll')
+const ITEM__CONFIG_COLL         = require("../../item/database/item.config-coll");
 
 const {
     ZALO_ZNS_OPEN_API_URL,
@@ -24,16 +25,19 @@ const {
 } = process.env;
 
 class Model extends BaseModel {
-    generateUrlRequest(cacher) {
+    generateUrlRequest({ cacher, appId }) {
         return new Promise(async resolve => {
             const state = generateRandomString(10);
             const verifier = base64url(crypto.randomBytes(32));
             const codeChallenge = base64url(crypto.createHash('sha256').update(verifier).digest());
 
-            const urlRequest = `${ZALO_OA_OAUTH_URL}/v4/oa/permission?app_id=${ZALO_OA_APP_ID}&redirect_uri=${encodeURIComponent(ZALO_OA_REDIRECT_URI)}&code_challenge=${codeChallenge}&state=${state}`;
+            const urlRequest = `${ZALO_OA_OAUTH_URL}/v4/oa/permission?app_id=${appId}&redirect_uri=${encodeURIComponent(ZALO_OA_REDIRECT_URI)}&code_challenge=${codeChallenge}&state=${state}`;
 
             // Cache in 5 minutes
-            await cacher.set(`ZALO:oa:verifier:${state}`, verifier, 5 * 1000);
+            await cacher.set(`ZALO:oa:verifier:${state}`, {
+              verifier,
+              appId,
+            }, 5 * 1000);
 
             resolve({
                 error: false,
@@ -46,28 +50,34 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const verifierCacheKey = `ZALO:oa:verifier:${state}`;
-                const verifier = await cacher.get(verifierCacheKey);
-                if(!verifier) {
+                const stateVerify = await cacher.get(verifierCacheKey);
+                if(!stateVerify) {
                     return resolve({ error: true, message: 'Request is expired' });
                 }
                 await cacher.del(verifierCacheKey);
 
+                const { verifier, appId } = stateVerify;
                 const codeChallenge = base64url(crypto.createHash('sha256').update(verifier).digest());
 
                 if(code_challenge !== codeChallenge) {
                     return resolve({ error: true, message: 'Code challenge is not match!'});
                 }
 
+                const config = await ITEM__CONFIG_COLL.findOne({ channel: appId }).lean();
+                if (!config) {
+                  return resolve({ error: true, message: 'Config not found' });
+                }
+
                 const response = await httpRequest.post(`${ZALO_OA_OAUTH_URL}/v4/oa/access_token`, {
-                    app_id: ZALO_OA_APP_ID,
-					code: authCode,
-					code_verifier: verifier,
-					grant_type: 'authorization_code',
+                    app_id: appId,
+           					code: authCode,
+           					code_verifier: verifier,
+           					grant_type: 'authorization_code',
                 }, {
                     headers: {
-						secret_key: ZALO_OA_APP_SECRET,
-						'Content-type': 'application/x-www-form-urlencoded',
-					},
+          						secret_key: config.secretKey,
+          						'Content-type': 'application/x-www-form-urlencoded',
+         					},
                 });
                 if(response.status !== 200 || response.statusText !== 'OK') {
                     return resolve({ error: true, message: "Can't request to zalo" });
@@ -79,10 +89,12 @@ class Model extends BaseModel {
                  * Cache refresh token in 60 days
                  * and token is 24h
                  */
-                await cacher.set(`ZALO:oa:token`, access_token, 24 * 60 * 60);
-                await cacher.set(`ZALO:oa:refresh_token`, refresh_token, 24 * 60 * 60 * 60);
+                await cacher.set(`ZALO:oa:token:${appId}`, access_token, 24 * 60 * 60);
+                await cacher.set(`ZALO:oa:refresh_token:${appId}`, refresh_token, 24 * 60 * 60 * 60);
 
-                await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REFRESH_TOKEN_ZALO_OA}`);
+                await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REFRESH_TOKEN_ZALO_OA}`, {
+                  appId
+                });
 
                 resolve({ error: false, data: access_token });
             } catch(error) {
@@ -91,21 +103,26 @@ class Model extends BaseModel {
         })
     }
 
-    renewAccessToken({ cacher, isCache = false }) {
+    renewAccessToken({ appId, cacher, isCache = false }) {
         return new Promise(async resolve => {
             try {
-                const refreshToken = await cacher.get(`ZALO:oa:refresh_token`);
+                const refreshToken = await cacher.get(`ZALO:oa:refresh_token:${appId}`);
                 if(!refreshToken) {
                     return resolve({ error: true, message: 'Refresh token is required' });
                 }
 
+                const config = await ITEM__CONFIG_COLL.findOne({ channel: appId }).lean();
+                if (!config) {
+                  return resolve({ error: true, message: 'Config not found' });
+                }
+
                 const response = await httpRequest.post(`${ZALO_OA_OAUTH_URL}/v4/oa/access_token`, {
-                    app_id: ZALO_OA_APP_ID,
+                    app_id: appId,
 					refresh_token: refreshToken,
 					grant_type: 'refresh_token',
                 }, {
                     headers: {
-						secret_key: ZALO_OA_APP_SECRET,
+						secret_key: config.secretKey,
 						'Content-type': 'application/x-www-form-urlencoded',
 					},
                 });
@@ -120,8 +137,8 @@ class Model extends BaseModel {
                      * Cache refresh token in 60 days
                      * and token is 24h
                      */
-                    await cacher.set(`ZALO:oa:token`, access_token, 24 * 60 * 60);
-                    await cacher.set(`ZALO:oa:refresh_token`, refresh_token, 24 * 60 * 60 * 60);
+                    await cacher.set(`ZALO:oa:token:${appId}`, access_token, 24 * 60 * 60);
+                    await cacher.set(`ZALO:oa:refresh_token:${appId}`, refresh_token, 24 * 60 * 60 * 60);
                 }
 
                 resolve(response.data);
@@ -131,26 +148,26 @@ class Model extends BaseModel {
         })
     }
 
-    sendMessage({ text, userId, cacher }) {
+    sendMessage({ text, appId, userId, cacher }) {
         return new Promise(async resolve => {
             try {
-                const token = await cacher.get(`ZALO:oa:token`);
+                const token = await cacher.get(`ZALO:oa:token:${appId}`);
                 if(!token) {
                     return resolve({ error: true, message: 'Token is required' });
                 }
 
                 const response = await httpRequest.post(`${ZALO_OPEN_API_URL}/v2.0/oa/message`, {
-                    recipient: {
-						user_id: userId,
-					},
-					message: {
-						text,
-					},
+                  recipient: {
+        						user_id: userId,
+         					},
+         					message: {
+        						text,
+         					},
                 }, {
-                    headers: {
-						access_token: token,
-						'Content-type': 'application/json',
-					},
+                  headers: {
+        						access_token: token,
+        						'Content-type': 'application/json',
+         					},
                 });
                 if(response.status !== 200 || response.statusText !== 'OK') {
                     return resolve({ error: true, message: "Can't request to zalo" });
@@ -163,10 +180,10 @@ class Model extends BaseModel {
         })
     }
 
-    sendMessageZNS({ phone, templateData, templateId = 257162, cacher }) {
+    sendMessageZNS({ phone, templateData, templateId = 257162, appId, cacher }) {
         return new Promise(async resolve => {
             try {
-                const token = await cacher.get(`ZALO:oa:token`);
+                const token = await cacher.get(`ZALO:oa:token:${appId}`);
                 if(!token) {
                     return resolve({ error: true, message: 'Token is required' });
                 }
