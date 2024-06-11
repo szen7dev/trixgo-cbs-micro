@@ -36,7 +36,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage }){
+	insert({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID }){
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")
@@ -50,6 +50,12 @@ class Model extends BaseModel {
                     name, 
                 }    
 
+                if(authorID && checkObjectIDs(authorID)){
+                    dataInsert.author = authorID
+                }else{
+                    dataInsert.author = userID
+                }
+
                 if(parentID && checkObjectIDs(parentID)){
                     let infoParent = await ITEM__GOODS_COLL.findById(parentID);
                     dataInsert.parent = parentID;
@@ -62,6 +68,10 @@ class Model extends BaseModel {
 
                 if(unit && unit != ""){
                     dataInsert.unit = unit;
+                }
+
+                if(!isNaN(duration)){
+                    dataInsert.duration = Number(duration);
                 }
 
                 if(!isNaN(unitprice)){
@@ -148,7 +158,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, imagesID }){
+	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(goodsID))
@@ -157,6 +167,10 @@ class Model extends BaseModel {
                 let dataUpdate = {
                     userUpdate: userID, 
                     modifyAt: new Date()
+                }
+
+                if(authorID && checkObjectIDs(authorID)){
+                    userUpdate.author = authorID
                 }
 
                 if(imagesID && imagesID.length) {
@@ -175,6 +189,10 @@ class Model extends BaseModel {
 
                 if(unit && unit != ""){
                     dataUpdate.unit = unit;
+                }
+
+                if(!isNaN(duration)){
+                    dataUpdate.duration = Number(duration);
                 }
 
                 if(!isNaN(unitprice)){

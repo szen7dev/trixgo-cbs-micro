@@ -1,5 +1,6 @@
 "use strict";
 
+const { duration } = require('moment');
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
@@ -117,7 +118,7 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     },
     //_________Định mức chuyển đổi
     convertQuantity: { type: Number, default: 1 },
-    //______Sử dụng cho (1-Chung, 2-Đơn hàng)
+    //______Mục đích sử dụng (1-Chung, 2-Đơn hàng)
     usage: {
         type: Number,
         default : 1
@@ -132,6 +133,16 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
+    /**
+     * KHÓA HỌC
+     */
+    //_________Tác giả
+    author: {
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    },
+    //_________Thời lượng (giờ)
+    duration: { type: Number, default: 0 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
