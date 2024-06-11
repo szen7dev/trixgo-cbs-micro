@@ -274,14 +274,20 @@ module.exports = {
     },
 
 	addJobRefreshTokenZaloOA: {
-		async handler() {
-            try {
+   	params: {
+      appId: { type: 'string' },
+    },
+		async handler(ctx) {
+      try {
+        const { appId } = ctx.params;
 				const timeScheduler = new Date(moment().add(24, 'hours')).getTime();
 
-				agenda.schedule(timeScheduler, 'zalo_oa_refresh_token');
+				agenda.schedule(timeScheduler, 'zalo_oa_refresh_token', {
+				  appId
+				});
 				console.log(`agenda: zalo_oa_refresh_token added - ${timeScheduler}`);
 
-                return { error: false, message: 'success' };
+        return { error: false, message: 'success' };
 			} catch(error) {
 				throw new Error(error.message);
 			}

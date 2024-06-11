@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "My Moleculer-based microservices project",
   "scripts": {
-    "dev": "moleculer-runner --repl --hot services/**/*.service.js",
+    "dev": "moleculer-runner -r --hot ./services/**/*.service.js",
     "start": "moleculer-runner services/**/*.service.js",
     "ngrok": "node ./tools/https/ngrok.js",
     "cli": "moleculer connect NATS",
@@ -97,25 +97,6 @@
   "engines": {
     "node": ">= 10.x.x"
   },
-  "jest": {
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "rootDir": "./services",
-    "roots": [
-      "../test"
-    ]
-  },
   "main": ".eslintrc.js",
-  "directories": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://gitlab.com/nphuocnguyen2000/micro-demo-shop.git"
-  },
-  "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/nphuocnguyen2000/micro-demo-shop/issues"
-  },
-  "homepage": "https://gitlab.com/nphuocnguyen2000/micro-demo-shop#readme"
+  "license": "ISC"
 }

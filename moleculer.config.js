@@ -1,5 +1,8 @@
 "use strict";
-const { REDIS_SEPERATOR } 			= require('./tools/cache/cf_redis');
+
+const { REDIS_SEPERATOR } = require('./tools/cache/cf_redis');
+console.log({ REDIS_SEPERATOR })
+
 /**
  * Moleculer ServiceBroker configuration file
  *
@@ -27,7 +30,7 @@ const { REDIS_SEPERATOR } 			= require('./tools/cache/cf_redis');
  */
 module.exports = {
 	// Namespace of nodes to segment your nodes on the same network.
-	namespace: "",
+	namespace: `trixgo-${process.env.NODE_ENV}`,
 	// Unique node identifier. Must be unique in a namespace.
 	nodeID: null,
 	// Custom metadata store. Store here what you want. Accessing: `this.broker.metadata`
@@ -83,26 +86,26 @@ module.exports = {
 				staleTime: 10, // If the TTL is less than this number, means that the resources are staled
 			},
 			//   4308215003496
-		  	// Redlock settings
-		//   redlock: {
-		// 	// Redis clients. Support node-redis or ioredis. By default will use the local client.
-		// 	clients: [client1, client2, client3],
-		// 	// the expected clock drift; for more details
-		// 	// see http://redis.io/topics/distlock
-		// 	driftFactor: 0.01, // time in ms
+			// Redlock settings
+			//   redlock: {
+			// 	// Redis clients. Support node-redis or ioredis. By default will use the local client.
+			// 	clients: [client1, client2, client3],
+			// 	// the expected clock drift; for more details
+			// 	// see http://redis.io/topics/distlock
+			// 	driftFactor: 0.01, // time in ms
 
-		// 	// the max number of times Redlock will attempt
-		// 	// to lock a resource before erroring
-		// 	retryCount: 10,
+			// 	// the max number of times Redlock will attempt
+			// 	// to lock a resource before erroring
+			// 	retryCount: 10,
 
-		// 	// the time in ms between attempts
-		// 	retryDelay: 200, // time in ms
+			// 	// the time in ms between attempts
+			// 	retryDelay: 200, // time in ms
 
-		// 	// the max time in ms randomly added to retries
-		// 	// to improve performance under high contention
-		// 	// see https://www.awsarchitectureblog.com/2015/03/backoff.html
-		// 	retryJitter: 200 // time in ms
-		//   }
+			// 	// the max time in ms randomly added to retries
+			// 	// to improve performance under high contention
+			// 	// see https://www.awsarchitectureblog.com/2015/03/backoff.html
+			// 	retryJitter: 200 // time in ms
+			//   }
 		}
 	},
 	// Define a serializer.
@@ -188,13 +191,13 @@ module.exports = {
 
 	// Enable action & event parameter validation. More info: https://moleculer.services/docs/0.14/validating.html
 	validator: {
-        type: "Fastest",
-        options: {
-            useNewCustomCheckerFunction: true,
-            defaults: { /*...*/ },
-            messages: { /*...*/ },
-            aliases: { /*...*/ }
-        }
+		type: "Fastest",
+		options: {
+			useNewCustomCheckerFunction: true,
+			defaults: { /*...*/ },
+			messages: { /*...*/ },
+			aliases: { /*...*/ }
+		}
 	},
 
 	errorHandler: null,
@@ -202,7 +205,7 @@ module.exports = {
 	// Enable/disable built-in metrics function. More info: https://moleculer.services/docs/0.14/metrics.html
 	// metrics: false,
 	metrics: {
-		enabled: true,
+		enabled: false,
 		// Available built-in reporters: "Console", "CSV", "Event", "Prometheus", "Datadog", "StatsD"
 		reporter: {
 			type: "Prometheus",
@@ -222,7 +225,7 @@ module.exports = {
 
 	// Enable built-in tracing function. More info: https://moleculer.services/docs/0.14/tracing.html
 	tracing: {
-		enabled: true,
+		enabled: false,
 		// Available built-in exporters: "Console", "Datadog", "Event", "EventLegacy", "Jaeger", "Zipkin"
 		exporter: {
 			type: "Console", // Console exporter is only for development!
@@ -246,7 +249,9 @@ module.exports = {
 	],
 
 	// Register custom REPL commands.
-	replCommands: null,
+	replCommands: [],
+
+	hotReload: true,
 
 	// Called after broker created.
 	created(broker) {

@@ -16,6 +16,7 @@ const FNB__CUSTOMER_CARE_HANDLER  			= require('./handler/fnb.customer_care-hand
 const FNB__NETWORK_COM_HANDLER  			= require('./handler/fnb.network_com-handler');
 const FNB__CUSTOMER_BOOKING_HANDLER  		= require('./handler/fnb.customer_booking-handler');
 const FNB__AFFILIATE_SIGNUP_HANDLER  		= require('./handler/fnb.affiliate_signup-handler');
+const FNB__BATCH_HANDLER  					= require('./handler/fnb.batch-handler');
 
 const FNB__ORDER_COLL  			 			= require('./database/fnb.order-coll');
 const FNB__PRODUCT_COLL  			 		= require('./database/fnb.product-coll');
@@ -28,6 +29,7 @@ const FNB__CUSTOMER_CARE_COLL  				= require('./database/fnb.customer_care-coll'
 const FNB__NETWORK_COM_COLL  				= require('./database/fnb.network_com-coll');
 const FNB__CUSTOMER_BOOKING_COLL  			= require('./database/fnb.customer_booking-coll');
 const FNB__AFFILIATE_SIGNUP_COLL  			= require('./database/fnb.affiliate_signup-coll');
+const FNB__BATCH_SIGNUP_COLL  				= require('./database/fnb.batch-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FNB,
@@ -43,6 +45,7 @@ module.exports = {
 		DbService(FNB__NETWORK_COM_COLL),
 		DbService(FNB__CUSTOMER_BOOKING_COLL),
 		DbService(FNB__AFFILIATE_SIGNUP_COLL),
+		DbService(FNB__BATCH_SIGNUP_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.FNB])
     ],
 
@@ -177,6 +180,16 @@ module.exports = {
 		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_DOWNLOAD_TEMPLATE_EXCEL]					: FNB__AFFILIATE_SIGNUP_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_IMPORT_FROM_EXCEL]							: FNB__AFFILIATE_SIGNUP_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.AFFILIATE_SIGNUP_EXPORT_EXCEL]								: FNB__AFFILIATE_SIGNUP_HANDLER.exportExcel,
+
+		//========================================== FNB_BATCH ==============================================//
+		[CF_ACTIONS_FNB.BATCH_INSERT]							: FNB__BATCH_HANDLER.insert,
+		[CF_ACTIONS_FNB.BATCH_UPDATE]							: FNB__BATCH_HANDLER.update,
+		[CF_ACTIONS_FNB.BATCH_REMOVE]							: FNB__BATCH_HANDLER.remove,
+		[CF_ACTIONS_FNB.BATCH_GET_INFO_AND_GET_LIST]			: FNB__BATCH_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FNB.BATCH_GET_LIST_BY_PROPERTY]				: FNB__BATCH_HANDLER.getListByProperty,
+		[CF_ACTIONS_FNB.BATCH_DOWNLOAD_TEMPLATE_EXCEL]			: FNB__BATCH_HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_FNB.BATCH_IMPORT_FROM_EXCEL]				: FNB__BATCH_HANDLER.importFromExcel,
+		[CF_ACTIONS_FNB.BATCH_EXPORT_EXCEL]						: FNB__BATCH_HANDLER.exportExcel,
 	},
 
 	/**

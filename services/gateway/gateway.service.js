@@ -2,18 +2,18 @@
 
 require('dotenv').config();
 
-let	ApiGateway 				= require("moleculer-web"),
-	express         		= require('express'),
-	path         		    = require('path'),
-	app               		= express(),
-	server            		= require('http').Server(app),
-	apiV1 					= require("./auth.alias"), // config api
-	apiNonAuthV1 			= require("./non-auth.alias"); // config api
+let ApiGateway = require("moleculer-web"),
+	express = require('express'),
+	path = require('path'),
+	app = express(),
+	server = require('http').Server(app),
+	apiV1 = require("./auth.alias"), // config api
+	apiNonAuthV1 = require("./non-auth.alias"); // config api
 
-const { CF_DOMAIN_SERVICES } 	        = require('./helper/domain.constant');
-const { CF_ACTIONS_GATEWAY } 	        = require('./helper/gateway.actions-constant');
-const { CF_ACTIONS_AUTH } 	        	= require('../auth/helper/auth.actions-constant');
-const GATEWAY__HANDLER      			= require('./handler/gateway.handler');
+const { CF_DOMAIN_SERVICES } = require('./helper/domain.constant');
+const { CF_ACTIONS_GATEWAY } = require('./helper/gateway.actions-constant');
+const { CF_ACTIONS_AUTH } = require('../auth/helper/auth.actions-constant');
+const GATEWAY__HANDLER = require('./handler/gateway.handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.GATEWAY,
@@ -31,7 +31,7 @@ module.exports = {
 		 */
 		// Global Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
 		use: [
-    		express.static(path.join(__dirname, "public")),
+			express.static(path.join(__dirname, "public")),
 		],
 
 		cors: {
@@ -47,7 +47,7 @@ module.exports = {
 			credentials: true,
 			// Configures the Access-Control-Max-Age CORS header.
 			maxAge: 3600
-        },
+		},
 		routes: [
 			// get routes from external file - merged with subproject if applicable
 			// sppf.subprojectMergeRoutes(apiV1, path.resolve(resourcesDirectory+"/routes/apiV1") ),
@@ -78,13 +78,13 @@ module.exports = {
 	* Actions HEALTH/VERSION
 	*/
 	actions: {
-		[CF_ACTIONS_GATEWAY.CHECK_HEALTH] 			: GATEWAY__HANDLER.checkHealth,
-		[CF_ACTIONS_GATEWAY.CHECK_VERSION] 			: GATEWAY__HANDLER.checkVersion,
+		[CF_ACTIONS_GATEWAY.CHECK_HEALTH]: GATEWAY__HANDLER.checkHealth,
+		[CF_ACTIONS_GATEWAY.CHECK_VERSION]: GATEWAY__HANDLER.checkVersion,
 	},
 
 	methods: {
 		initRoutes(app) {
-			app.get('/', function(req,res) {
+			app.get('/', function (req, res) {
 				res.redirect('/ui');
 			});
 		},
@@ -107,7 +107,7 @@ module.exports = {
 		// 	} catch (error) {
 		// 		return Promise.reject(error);
 		// 	}
-        // },
+		// },
 
 		/**
 		 * Authorize the request
@@ -128,11 +128,11 @@ module.exports = {
 			try {
 				let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token });
 
-				if(checkAuthorization.error){
+				if (checkAuthorization.error) {
 					return Promise.reject(checkAuthorization.message);
 				}
 
-				if(!checkAuthorization.data) {
+				if (!checkAuthorization.data) {
 					return Promise.reject('Unauthorized');
 				}
 
@@ -146,7 +146,7 @@ module.exports = {
 
 				// Reduce user fields (it will be transferred to other nodes)
 				ctx.meta.infoUser = infoUser;
-				ctx.meta.token 	  = token;
+				ctx.meta.token = token;
 
 				let userAuth = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
 					userID: infoUser._id.toString(),
@@ -157,10 +157,10 @@ module.exports = {
 					})
 				});
 
-				if(!userAuth.error) {
+				if (!userAuth.error) {
 					userAuth = userAuth.data;
 
-					if(userAuth.status === 0) {
+					if (userAuth.status === 0) {
 						return Promise.reject('user_blocked');
 					}
 				}
@@ -201,10 +201,10 @@ module.exports = {
 	},
 
 	// some lifecycle
-	created() {},
-	started() {},
+	created() { },
+	started() { },
 	stopped() {
-		if (this.app.listening) {
+		if (this.app?.listening) {
 			this.app.close(err => {
 				if (err)
 					return this.logger.error("WWW server close error!", err);

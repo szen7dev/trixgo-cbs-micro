@@ -15,6 +15,7 @@ const CUSTOMER_CARE         = '/customer_cares';
 const NETWORK_COM           = '/network_coms';
 const CUSTOMER_BOOKING      = '/customer_bookings';
 const AFFILIATE_SIGNUP      = '/affiliate_signups';
+const BATCH                 = '/batches';
 
 const CF_ROUTINGS_FNB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -107,6 +108,13 @@ const CF_ROUTINGS_FNB = {
     AFFILIATE_SIGNUP_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${AFFILIATE_SIGNUP}/download-template-excel`,
     AFFILIATE_SIGNUP_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${AFFILIATE_SIGNUP}/import-from-excel`,
     AFFILIATE_SIGNUP_EXPORT_EXCEL                    : `${BASE_ROUTE}${AFFILIATE_SIGNUP}/export-excel`,
+
+    //================================FNB_BATCH=======================================//
+    BATCH                           : `${BASE_ROUTE}${BATCH}`,
+    BATCH_GET_LIST_BY_PROPERTY      : `${BASE_ROUTE}${BATCH}/get-list-by-property`,
+    BATCH_DOWNLOAD_TEMPLATE_EXCEL   : `${BASE_ROUTE}${BATCH}/download-template-excel`,
+    BATCH_IMPORT_FROM_EXCEL         : `${BASE_ROUTE}${BATCH}/import-from-excel`,
+    BATCH_EXPORT_EXCEL              : `${BASE_ROUTE}${BATCH}/export-excel`,
 }
 
 exports.CF_ROUTINGS_FNB = CF_ROUTINGS_FNB;
