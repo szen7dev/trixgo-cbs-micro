@@ -214,7 +214,10 @@ module.exports = {
 					console.log(`========================================`);
 					console.log(`zalo_oa_refresh_token !!!!`);
 
+					const { appId } = job.attrs.data;
+
 					await this.broker.call(`${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_RENEW_TOKEN}`, {
+  					appId,
 						isCache: true
 					});
 				} catch(error) {
