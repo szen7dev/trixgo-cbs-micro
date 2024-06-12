@@ -46,6 +46,7 @@ const FNB_VOUCHER_COLL                              = require('../../fnb/databas
 const FNB_ORDER_COLL                                = require('../../fnb/database/fnb.order-coll')
 const HUMAN__CONTACT_DOCUMENT_COLL                  = require('../../human/database/human.contact_document-coll')
 
+const AUTH__USER                                    = require('../../auth/model/auth.user-model').MODEL
 const AUTH__APP_USER                                = require('../.../../../auth/model/auth.app_users').MODEL
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL
 const CONTACT_DOCUMENT_MODEL                        = require('../../human/model/human.contact_document-model').MODEL
@@ -75,7 +76,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee, ctx
+    insert({ option, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee, ctx
     }) {
         // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee })
         return new Promise(async resolve => {
@@ -415,6 +416,11 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                // Tạo tài khoản cho khách hàng
+                // if(option && option == 1){
+                //     let infoUserCustomer = await AUTH__USER.i
+                // }
 
                 // Cập nhật linkUser với tài khoản
                 if(linkUser && checkObjectIDs(linkUser)){

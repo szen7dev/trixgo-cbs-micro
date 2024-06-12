@@ -73,7 +73,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource, authorID } = ctx.params;
+                let { option, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource, authorID } = ctx.params;
         				const user = ctx.meta.infoUser;
                 let userID = user?._id;
 
@@ -82,7 +82,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
-                  authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email,
+                option, authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email,
                   department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
                   insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2,
                   insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff,
