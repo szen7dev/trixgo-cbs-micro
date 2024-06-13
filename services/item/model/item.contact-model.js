@@ -417,10 +417,47 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Tạo tài khoản cho khách hàng
-                // if(option && option == 1){
-                //     let infoUserCustomer = await AUTH__USER.i
-                // }
+                /**
+                 * TẠO TÀI KHOẢN CHO KHÁCH HÀNG
+                 */
+                if(option){
+                    let companyID, departmentID, positionID, userID
+                    
+                    // Dành cho Việt Nguyên Holding
+                    if(option == 1){
+                        companyID = '6046be79b55525368b11bc2b';
+                        departmentID = '6046be79b55525368b11bc36';
+                        positionID = '6046be79b55525368b11bc38';
+                        userID = '6046be7ab55525368b11bc7d';
+                    }
+
+                    let infoUserCustomer = await AUTH__USER.insert({
+                        email, 
+                        fullname: name, 
+                        level: 1, 
+                        departmentID, 
+                        positionID, 
+                        companyID, 
+                        phone,
+                        // birthDay,
+                        userID
+                    })
+                    // console.log(infoUserCustomer)
+
+                    if(infoUserCustomer){
+                        await USER_COLL.findByIdAndUpdate(infoUserCustomer.data._id,
+                            {
+                                $addToSet: {contacts: infoAfterInsert._id }
+                            },
+                            { new: true })
+
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id,
+                            {
+                                linkUser: infoUserCustomer.data._id
+                            },
+                            { new: true })
+                    }
+                }
 
                 // Cập nhật linkUser với tài khoản
                 if(linkUser && checkObjectIDs(linkUser)){
@@ -664,6 +701,7 @@ class Model extends BaseModel {
                         dataUpdate.linkUser = linkUser;
                     }
                 }
+
                 if(field && checkObjectIDs(field)){
                     dataUpdate.field = field;
                 }
