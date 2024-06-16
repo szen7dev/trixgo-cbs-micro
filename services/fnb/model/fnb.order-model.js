@@ -3061,6 +3061,7 @@ class Model extends BaseModel {
           conditionObj = { company: companyID };
         }
 
+        // Đơn hàng theo Affiliate
         if (type && type == 1) {
           conditionObj.affiliate = { $exists: true, $ne: null };
         }
@@ -3383,7 +3384,6 @@ class Model extends BaseModel {
            */
           if (option && Number(option) == 1) {
             conditionGroup = {
-              // _id: { new: "$new", shiftType: "$shiftType", internal: "$internal", salesChannel: "$salesChannel", paymentMethod: "$paymentMethod", doctype: "$doctype" },
               _id: {
                 new: "$new",
                 internal: "$internal",
@@ -3991,7 +3991,9 @@ class Model extends BaseModel {
                 $sort: sortBy,
               },
             ]);
-          } else {
+          }
+          
+          else {
             listData = await FNB_ORDER_COLL.aggregate([
               {
                 $match: conditionObj,

@@ -46,6 +46,7 @@ const FNB_VOUCHER_COLL                              = require('../../fnb/databas
 const FNB_ORDER_COLL                                = require('../../fnb/database/fnb.order-coll')
 const HUMAN__CONTACT_DOCUMENT_COLL                  = require('../../human/database/human.contact_document-coll')
 
+const AUTH__USER                                    = require('../../auth/model/auth.user-model').MODEL
 const AUTH__APP_USER                                = require('../.../../../auth/model/auth.app_users').MODEL
 const FNB_ORDER_VOUCHER_MODEL                       = require('../../fnb/model/fnb.voucher-model').MODEL
 const CONTACT_DOCUMENT_MODEL                        = require('../../human/model/human.contact_document-model').MODEL
@@ -75,7 +76,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee, ctx
+    insert({ option, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee, ctx
     }) {
         // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee })
         return new Promise(async resolve => {
@@ -416,6 +417,48 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * TẠO TÀI KHOẢN CHO KHÁCH HÀNG
+                 */
+                if(option){
+                    let companyID, departmentID, positionID, userID
+                    
+                    // Dành cho Việt Nguyên Holding
+                    if(option == 1){
+                        companyID = '6046be79b55525368b11bc2b';
+                        departmentID = '6046be79b55525368b11bc36';
+                        positionID = '6046be79b55525368b11bc38';
+                        userID = '6046be7ab55525368b11bc7d';
+                    }
+
+                    let infoUserCustomer = await AUTH__USER.insert({
+                        email, 
+                        fullname: name, 
+                        level: 1, 
+                        departmentID, 
+                        positionID, 
+                        companyID, 
+                        phone,
+                        // birthDay,
+                        userID
+                    })
+                    // console.log(infoUserCustomer)
+
+                    if(infoUserCustomer){
+                        await USER_COLL.findByIdAndUpdate(infoUserCustomer.data._id,
+                            {
+                                $addToSet: {contacts: infoAfterInsert._id }
+                            },
+                            { new: true })
+
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id,
+                            {
+                                linkUser: infoUserCustomer.data._id
+                            },
+                            { new: true })
+                    }
+                }
+
                 // Cập nhật linkUser với tài khoản
                 if(linkUser && checkObjectIDs(linkUser)){
                     await USER_COLL.findByIdAndUpdate(linkUser,
@@ -658,6 +701,7 @@ class Model extends BaseModel {
                         dataUpdate.linkUser = linkUser;
                     }
                 }
+
                 if(field && checkObjectIDs(field)){
                     dataUpdate.field = field;
                 }

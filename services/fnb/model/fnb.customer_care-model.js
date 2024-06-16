@@ -12,6 +12,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  * import inter-coll, exter-coll
  */
 const USER_COLL                                = require('../../auth/database/auth.user-coll')
+const ITEM__FUNDA_COLL                         = require("../../item/database/item.funda-coll");
 const ITEM__DOCTYPE_COLL            		   = require('../../item/database/item.doctype-coll')
 const ITEM__COCNTACT_COLL            		   = require('../../item/database/item.contact-coll')
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
@@ -40,7 +41,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files }) {
+    insert({ userID, companyID, fundaID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files }) {
         // console.log({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files })
         return new Promise(async resolve => {
             try {
@@ -52,6 +53,15 @@ class Model extends BaseModel {
                     customer: customerID,
                     company: companyID,
                     name
+                }
+
+                if(checkObjectIDs(fundaID)) {
+                    dataInsert.funda = fundaID;
+                }else{
+                    let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
+                    if(infoFunda){
+                        dataInsert.funda = infoFunda._id;
+                    }
                 }
 
                 let infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID)

@@ -17,6 +17,8 @@ const USER_COLL                         = require('../../auth/database/auth.user
 const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll')
 const FNB_ORDER_COLL                    = require('../database/fnb.order-coll');
 const FNB_CUSTOMER_BOOKING_COLL         = require('../database/fnb.customer_booking-coll');
+const ITEM__FUNDA_COLL                  = require("../../item/database/item.funda-coll");
+const ITEM__GOODS_COLL                  = require("../../item/database/item.goods-coll");
 
 /**
  * import inter-model, exter-model
@@ -37,7 +39,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 12/2/2024
      */
-    insert({ userID, companyID, customerID, orderID, businessID, goodsID, voucherID, assigneeID, name, note, date, alert, status, files }) {
+    insert({ userID, companyID, fundaID, customerID, orderID, businessID, goodsID, voucherID, assigneeID, name, note, date, alert, status, files }) {
         // console.log({ userID, companyID, customerID, orderID, businessID, goodsID, voucherID, assigneeID, name, note, date, alert, status, files })
         return new Promise(async resolve => {
             try {
@@ -49,6 +51,15 @@ class Model extends BaseModel {
                     customer: customerID,
                     company: companyID,
                     name
+                }
+
+                if(checkObjectIDs(fundaID)) {
+                    dataInsert.funda = fundaID;
+                }else{
+                    let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
+                    if(infoFunda){
+                        dataInsert.funda = infoFunda._id;
+                    }
                 }
 
                 if(checkObjectIDs(businessID)) {
@@ -397,7 +408,7 @@ class Model extends BaseModel {
      * Code: 15/2/2024
      */
     getListByProperty({ option, optionGroup, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
-        // console.log({ option, optionGroup, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+        console.log({ option, optionGroup, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -529,7 +540,7 @@ class Model extends BaseModel {
                     }
 
                     // Gom nhóm theo Người thực hiện
-                    else if(option && Number(option) == 4){
+                    else if(option && Number(option) == 5){
                         conditionObj.assignee = {$exists: true, $ne: null}
 
                         conditionGroup = {
@@ -545,7 +556,7 @@ class Model extends BaseModel {
                     }
                     
                     // Phân loại thời tiến độ theo thời hạn: OK
-                    else if(option && Number(option) == 5){
+                    else if(option && Number(option) == 6){
                         let start = new Date();
                         let end = new Date();
                         start.setHours(0,0,0,0);
@@ -575,9 +586,7 @@ class Model extends BaseModel {
                         })
                     }
 
-                    /**
-                     * Gom nhóm theo user: OK
-                     */
+                    // Gom nhóm theo user:
                     else if(option && Number(option) == 10){
                         if(!optionGroup){
                             conditionGroup = {
@@ -595,38 +604,56 @@ class Model extends BaseModel {
                     // console.log(conditionObjYear)
                     // console.log(conditionGroup)
 
-                    let listData
+                    let listData;                   
 
                     if(option != 5){
-                        listData = await FNB_CUSTOMER_BOOKING_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project : {
-                                    year : {$year : "$date"},
-                                    month : {$month : "$date"},
-                                    hour : {$hour : "$date"},
-                                    funda : 1,
-                                    business : 1,
-                                    channel : 1,
-                                    customer : 1,
-                                    assignee : 1,
-                                    area3 : 1,
-                                    seasons : 1,
-                                    userCreate: 1,
+                        if (option == 11) {
+                            listData = await FNB_CUSTOMER_BOOKING_COLL.find({
+                                company: companyID,
+                            // customer: customerID
+                            })
+                            .select('name funda goods assignee')
+                            .limit(2)
+                            .sort({
+                                createAt: -1
+                            })
+
+                            let listFunda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item.funda)}}).select('name')
+                            let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: listData.map(item=>item.goods)}}).select('name')
+                            let listAssignee = await USER_COLL.find({_id: {$in: listData.map(item=>item.assignee)}}).select('fullname image')
+
+                            return resolve({ error: false, data: {listFunda, listGoods, listAssignee} });
+                        }else{
+                            listData = await FNB_CUSTOMER_BOOKING_COLL.aggregate([
+                                {
+                                    $match: conditionObj
+                                },
+                                {
+                                    $project : {
+                                        year : {$year : "$date"},
+                                        month : {$month : "$date"},
+                                        hour : {$hour : "$date"},
+                                        funda : 1,
+                                        business : 1,
+                                        channel : 1,
+                                        customer : 1,
+                                        assignee : 1,
+                                        area3 : 1,
+                                        seasons : 1,
+                                        userCreate: 1,
+                                    }
+                                },
+                                {
+                                    $match: conditionObjYear
+                                },
+                                {
+                                    $group: conditionGroup
+                                },
+                                {
+                                    $sort: sortBy
                                 }
-                            },
-                            {
-                                $match: conditionObjYear
-                            },
-                            {
-                                $group: conditionGroup
-                            },
-                            {
-                                $sort: sortBy
-                            }
-                        ])
+                            ])
+                        }
 
                         if(!isNaN(option) && [2,3,4].includes(Number(option))){
                             await FNB_CUSTOMER_BOOKING_COLL.populate(listData, conditionPopulate)
