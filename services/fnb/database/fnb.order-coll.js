@@ -88,16 +88,16 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     }, 
-    //_________Người thực hiện với trường hợp 1 người 1 ca
-    doer: {
-        type: Schema.Types.ObjectId,
-        ref: "user"
-    },
-    //_________Người thực hiện/Sale
+    //_________Người thực hiện/Sale theo ca nhiều người
     assignee: [{
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
+    //_________Người thực hiện ca 1 người
+    doer: {
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },
     //_________Phân loại chiến dịch
     campaignType: {
         type: Schema.Types.ObjectId,
