@@ -278,11 +278,18 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     }],
+    //_________Ghi chú nội dung review
+    reviewNotes: String,
     //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
     numberOfMistakes: {
         type: Number,
         default: 0
     },  
+    //_________Danh mục lỗi
+    mistakes: [{
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    }],
     /**
      * SẢN PHẨM VÀ SIZE
      */

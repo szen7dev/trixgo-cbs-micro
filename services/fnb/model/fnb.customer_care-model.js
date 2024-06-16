@@ -41,8 +41,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, fundaID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files }) {
-        // console.log({ userID, companyID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files })
+    insert({ userID, companyID, fundaID, customerID, goodsID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files }) {
+        // console.log({ userID, companyID, customerID, goodsID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "" || !checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
@@ -157,10 +157,7 @@ class Model extends BaseModel {
                 dataInsert.namecv = convertStr
 
                 let infoItem;
-                if(checkObjectIDs(journeyID)) {
-                    // Mỗi khách hàng-1 hành trình chỉ tồn tại duy nhất 1 mẩu tin
-                    // let checkOne = await FNB_CUSTOMER_CARE_COLL.findOne({journey: journeyID, customer: customerID, company: companyID})
-                    
+                if(checkObjectIDs(journeyID)) {                    
                     infoItem = await ITEM__DOCTYPE_COLL.findById(journeyID)
                     if(!infoItem.linkItem)
                         return resolve({
@@ -169,10 +166,6 @@ class Model extends BaseModel {
                             keyError: "params_journey_invalid",
                             status: 400
                         })
-                    // if(!checkOne){
-                    //     dataInsert.journey = journeyID;
-                    //     dataInsert.business = infoItem.linkItem;
-                    // }
 
                     dataInsert.journey = journeyID;
                     dataInsert.business = infoItem.linkItem;
@@ -218,6 +211,49 @@ class Model extends BaseModel {
                 //  }
 
                 return resolve({ error: false, data: infoAfterInsert })
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
+     * Name: Insert Many
+     * Author: HiepNH
+     * Code: 16/6/2024
+     */
+    updateRating({ userID, rating, note, arrMistakeID, orderID }) {
+        // console.log({ userID, rating, note, arrMistakeID, orderID })
+        return new Promise(async resolve => {
+            try {
+                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                if(!infoOrder)
+                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+
+                // Ghi nhận các góp ý
+                for(const item of arrMistakeID){
+                    let dataInsert = { 
+                        userCreate: userID,
+                        company: infoOrder.company,
+                        funda: infoOrder.funda,
+                        business: infoOrder.business,
+                        order: orderID,
+                        customer: infoOrder.customer,
+                        mistake: item,
+                        rating: Number(rating),
+                    }
+
+                    await this.insertData(dataInsert)
+                }
+
+                // Cập nhật đánh giá đơn hàng
+                await FNB_ORDER_COLL.findByIdAndUpdate(orderID, {
+                    complaints: arrMistakeID,
+                    starRating: Number(rating),
+                    reviewNotes: note,
+                }, { new: true });
+
+                return resolve({ error: false, message: 'Cập nhật thành công' })
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }

@@ -18,10 +18,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Schema.Types.ObjectId,
         ref : "funda"
     },
-    //_________Đơn hàng gặp lỗi (add lỗi theo từng đơn hàng)
+    //_________Đơn hàng gặp lỗi
     order: {
         type: Schema.Types.ObjectId,
         ref : "fnb_order"
+    },
+    //_________Sản phẩm gặp lỗi
+    goods: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
     },
     //_________Lĩnh vực kinh doanh (NEW)
     business: {
@@ -43,6 +48,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
+    //_________Người quản lý (lấy từ funda)
+    manager: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
     //_________Mã khách (để biết các lỗi mà hay gặp ở khách để sau lưu ý)
     customer: {
         type: Schema.Types.ObjectId,
@@ -52,11 +62,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
     mistake: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
-    },
-    //_________Người quản lý (lấy từ funda)
-    manager: {
-        type: Schema.Types.ObjectId,
-        ref : "user"
     },
     /**
      * Phân loại

@@ -320,8 +320,7 @@ class Model extends BaseModel {
         /**
          * TÍNH TOÁN GIÁ TRỊ ĐƠN HÀNG
          */
-        let loyaltyPoints = 0,
-          amount = 0;
+        let loyaltyPoints = 0, amount = 0;
 
         if (!isNaN(total)) {
           dataInsert.total = Number(total);
@@ -786,6 +785,7 @@ class Model extends BaseModel {
         }
 
         if (!isNaN(paymentMethod) && Number(paymentMethod) === 2) {
+          console.log({amount})
           dataUpdateFw.$inc.transferAmount = Number(amount);
         }
         // console.log(dataUpdateFw)

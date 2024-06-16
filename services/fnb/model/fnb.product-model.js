@@ -61,6 +61,7 @@ class Model extends BaseModel {
                     
                     dataInsert.parent = parentID;
                     dataInsert.level = infoParent.level + 1;
+                    dataInsert.fundas = infoParent.fundas;
                 }
 
                 if(unit && unit != ""){
