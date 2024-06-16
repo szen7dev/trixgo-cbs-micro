@@ -82,7 +82,7 @@ module.exports = {
             status              : { type: "number", optional: true },
             paymentMethod       : { type: "number", optional: true },
             salesChannel        : { type: "number", optional: true },
-            starRating          : { type: "number", optional: true },
+            // starRating          : { type: "number", optional: true },
             complaint           : { type: "number", optional: true },
             filesID             : { type: "array", optional: true },
         },

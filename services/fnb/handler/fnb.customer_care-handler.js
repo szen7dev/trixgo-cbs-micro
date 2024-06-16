@@ -33,7 +33,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, customerID, goodsID, arrMistakeID, fundaID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files } = ctx.params;
+                let { option, customerID, goodsID, arrMistakeID, fundaID, name, businessID, orderID, orderGoodsID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files } = ctx.params;
                 
 
                 // console.log(ctx.params)
@@ -49,7 +49,7 @@ module.exports = {
                     }
                 }else{
                     resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.updateRating({
-                        userID, rating, note, orderID, arrMistakeID, type
+                        userID, rating, note, orderID, orderGoodsID, arrMistakeID, type
                     });
                 } 
 

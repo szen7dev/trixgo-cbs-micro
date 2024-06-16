@@ -408,15 +408,15 @@ class Model extends BaseModel {
            */
           if (voucherID && checkObjectIDs(voucherID)) {
             /**
-                         * Voucher Không có giá trị quy đổi thành tiền mặt
-                            Chỉ áp dụng dành riêng đối với đơn hàng tiếp theo
-                            Voucher chỉ sử dụng một lần cho một hóa đơn/1 khách hàng
-                            Mỗi đơn hàng chỉ được sử dụng một Voucher giảm giá duy nhất
-                            Voucher mệnh giá có thể sử dụng chung cho cùng một đơn hàng
-                            Không trả lại tiền thừa nếu giá trị Voucher lớn hơn giá trị đơn hàng
-                            Voucher chỉ có giá trị trong thời gian được ghi trên thẻ.
-                            Voucher không áp dụng chung với các chương trình khuyến mãi khác (trường hợp quý khách muốn sử dụng voucher để áp dụng mua các sản phẩm đang khuyến mãi thì voucher chỉ áp dụng cho giá gốc chưa khuyến mãi của sản phẩm đó).
-                        */
+             * Voucher Không có giá trị quy đổi thành tiền mặt
+                Chỉ áp dụng dành riêng đối với đơn hàng tiếp theo
+                Voucher chỉ sử dụng một lần cho một hóa đơn/1 khách hàng
+                Mỗi đơn hàng chỉ được sử dụng một Voucher giảm giá duy nhất
+                Voucher mệnh giá có thể sử dụng chung cho cùng một đơn hàng
+                Không trả lại tiền thừa nếu giá trị Voucher lớn hơn giá trị đơn hàng
+                Voucher chỉ có giá trị trong thời gian được ghi trên thẻ.
+                Voucher không áp dụng chung với các chương trình khuyến mãi khác (trường hợp quý khách muốn sử dụng voucher để áp dụng mua các sản phẩm đang khuyến mãi thì voucher chỉ áp dụng cho giá gốc chưa khuyến mãi của sản phẩm đó).
+            */
             let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID);
             if (!infoVoucher)
               return resolve({
@@ -1476,15 +1476,15 @@ class Model extends BaseModel {
            */
           if (voucherID && checkObjectIDs(voucherID)) {
             /**
-                         * Voucher Không có giá trị quy đổi thành tiền mặt
-                            Chỉ áp dụng dành riêng đối với đơn hàng tiếp theo
-                            Voucher chỉ sử dụng một lần cho một hóa đơn/1 khách hàng
-                            Mỗi đơn hàng chỉ được sử dụng một Voucher giảm giá duy nhất
-                            Voucher mệnh giá có thể sử dụng chung cho cùng một đơn hàng
-                            Không trả lại tiền thừa nếu giá trị Voucher lớn hơn giá trị đơn hàng
-                            Voucher chỉ có giá trị trong thời gian được ghi trên thẻ.
-                            Voucher không áp dụng chung với các chương trình khuyến mãi khác (trường hợp quý khách muốn sử dụng voucher để áp dụng mua các sản phẩm đang khuyến mãi thì voucher chỉ áp dụng cho giá gốc chưa khuyến mãi của sản phẩm đó).
-                        */
+             * Voucher Không có giá trị quy đổi thành tiền mặt
+                Chỉ áp dụng dành riêng đối với đơn hàng tiếp theo
+                Voucher chỉ sử dụng một lần cho một hóa đơn/1 khách hàng
+                Mỗi đơn hàng chỉ được sử dụng một Voucher giảm giá duy nhất
+                Voucher mệnh giá có thể sử dụng chung cho cùng một đơn hàng
+                Không trả lại tiền thừa nếu giá trị Voucher lớn hơn giá trị đơn hàng
+                Voucher chỉ có giá trị trong thời gian được ghi trên thẻ.
+                Voucher không áp dụng chung với các chương trình khuyến mãi khác (trường hợp quý khách muốn sử dụng voucher để áp dụng mua các sản phẩm đang khuyến mãi thì voucher chỉ áp dụng cho giá gốc chưa khuyến mãi của sản phẩm đó).
+            */
             let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID);
             if (!infoVoucher)
               return resolve({
@@ -1585,6 +1585,7 @@ class Model extends BaseModel {
 
           // Nhân viên thực hiện
           dataInsert.assignee = arrStaffs;
+          dataInsert.doer = arrStaffs[0];
 
           // Doanh số trung bình/đầu nhân viên (nhiều nhân viên)
           if (Number(numberStaff) != 0) {
@@ -1597,6 +1598,7 @@ class Model extends BaseModel {
         } else {
           numberStaff = 1;
           dataInsert.assignee = [userID];
+          dataInsert.doer = userID;
 
           // Doanh số trung bình/đầu nhân viên (1 nhân viên)
           dataInsert.avgTotalPerStaff = Number(
@@ -2242,20 +2244,9 @@ class Model extends BaseModel {
          * ***CẬP NHẬT LẠI MÃ KHÁCH
          * => Cập nhật lại thông tin của đơn hàng vào Khách mới => Xóa thông tin ở Khách cũ
          */
-        if (!checkObjectIDs(orderID))
-          return resolve({
-            error: true,
-            message: "orderID invalid",
-            keyError: KEY_ERROR.PARAMS_INVALID,
-          });
-
         let infoOrder = await FNB_ORDER_COLL.findById(orderID);
         if (!infoOrder)
-          return resolve({
-            error: true,
-            message: "orderID invalid",
-            keyError: KEY_ERROR.PARAMS_INVALID,
-          });
+          return resolve({ error: true, message: "orderID invalid", keyError: KEY_ERROR.PARAMS_INVALID });
 
         let oldCustomerID = infoOrder.customer;
         let oldSalesChannel = infoOrder.salesChannel;

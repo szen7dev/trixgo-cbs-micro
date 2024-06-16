@@ -278,8 +278,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     }],
-    //_________Ghi chú nội dung review
-    reviewNotes: String,
+    //_________Ghi chú nội dung feedback
+    feedbackNotes: String,
     //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
     numberOfMistakes: {
         type: Number,

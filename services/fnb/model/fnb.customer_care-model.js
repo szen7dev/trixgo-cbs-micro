@@ -16,6 +16,7 @@ const ITEM__FUNDA_COLL                         = require("../../item/database/it
 const ITEM__DOCTYPE_COLL            		   = require('../../item/database/item.doctype-coll')
 const ITEM__COCNTACT_COLL            		   = require('../../item/database/item.contact-coll')
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
+const FNB_ORDER_GOODS_COLL                     = require('../database/fnb.order_goods-coll');
 const FNB_CUSTOMER_CARE_COLL                   = require('../database/fnb.customer_care-coll');
 
 /**
@@ -222,36 +223,70 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 16/6/2024
      */
-    updateRating({ userID, rating, note, arrMistakeID, orderID }) {
+    updateRating({ userID, rating, note, arrMistakeID, orderID, orderGoodsID }) {
         // console.log({ userID, rating, note, arrMistakeID, orderID })
         return new Promise(async resolve => {
             try {
-                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
-                if(!infoOrder)
-                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                if(orderID && checkObjectIDs(orderID)){
+                    let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                    if(!infoOrder)
+                        return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                // Ghi nhận các góp ý
-                for(const item of arrMistakeID){
-                    let dataInsert = { 
-                        userCreate: userID,
-                        company: infoOrder.company,
-                        funda: infoOrder.funda,
-                        business: infoOrder.business,
-                        order: orderID,
-                        customer: infoOrder.customer,
-                        mistake: item,
-                        rating: Number(rating),
+                    // Ghi nhận các góp ý
+                    for(const item of arrMistakeID){
+                        let dataInsert = { 
+                            userCreate: userID,
+                            company: infoOrder.company,
+                            funda: infoOrder.funda,
+                            business: infoOrder.business,
+                            order: orderID,
+                            customer: infoOrder.customer,
+                            doer: infoOrder.doer,
+                            mistake: item,
+                            rating: Number(rating),
+                        }
+
+                        await this.insertData(dataInsert)
                     }
 
-                    await this.insertData(dataInsert)
+                    // Cập nhật đánh giá đơn hàng
+                    await FNB_ORDER_COLL.findByIdAndUpdate(orderID, {
+                        complaints: arrMistakeID,
+                        starRating: Number(rating),
+                        feedbackNotes: note,
+                    }, { new: true });
                 }
 
-                // Cập nhật đánh giá đơn hàng
-                await FNB_ORDER_COLL.findByIdAndUpdate(orderID, {
-                    complaints: arrMistakeID,
-                    starRating: Number(rating),
-                    reviewNotes: note,
-                }, { new: true });
+                if(orderGoodsID && checkObjectIDs(orderGoodsID)){
+                    let infoOrderGoods = await FNB_ORDER_GOODS_COLL.findById(orderGoodsID)
+                    if(!infoOrderGoods)
+                        return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+
+                    // Ghi nhận các góp ý
+                    for(const item of arrMistakeID){
+                        let dataInsert = { 
+                            userCreate: userID,
+                            company: infoOrderGoods.company,
+                            funda: infoOrderGoods.funda,
+                            // business: infoOrderGoods.business,
+                            order: infoOrderGoods.order,
+                            goods: infoOrderGoods.goods,
+                            customer: infoOrderGoods.customer,
+                            // doer: infoOrderGoods.doer,
+                            mistake: item,
+                            rating: Number(rating),
+                        }
+
+                        await this.insertData(dataInsert)
+                    }
+
+                    // Cập nhật đánh giá sản phẩm
+                    await FNB_ORDER_GOODS_COLL.findByIdAndUpdate(orderGoodsID, {
+                        feedbacks: arrMistakeID,
+                        rating: Number(rating),
+                        feedbackNotes: note,
+                    }, { new: true });
+                }
 
                 return resolve({ error: false, message: 'Cập nhật thành công' })
             } catch (error) {

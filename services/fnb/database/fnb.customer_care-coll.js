@@ -63,6 +63,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_customer_care", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
+    //_________Người thực hiện đơn hàng
+    doer: {
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },
     /**
      * Phân loại
      * 1-Lỗi chủ quan
