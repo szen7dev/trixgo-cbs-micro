@@ -17,7 +17,7 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            customerID          : { type: "string" },
+            customerID          : { type: "string", optional: true },
             name                : { type: "string", optional: true },
             businessID          : { type: "string", optional: true },
             orderID             : { type: "string", optional: true },
@@ -26,22 +26,32 @@ module.exports = {
             type                : { type: "number", optional: true },
             description         : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            rating              : { type: "number", optional: true },
+            // rating              : { type: "number", optional: true },
             amount              : { type: "number", optional: true },
             status              : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { customerID, fundaID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files } = ctx.params;
+                let { option, customerID, goodsID, arrMistakeID, fundaID, name, businessID, orderID, orderGoodsID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files } = ctx.params;
                 
+
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.insert({
-                    userID, companyID: company._id, fundaID, customerID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files 
-                });
+                let resultAfterCallHandler;
+                if(!option){
+                    if(customerID != ""){
+                        resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.insert({
+                            userID, companyID: company._id, fundaID, customerID, goodsID, name, businessID, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files 
+                        });
+                    }
+                }else{
+                    resultAfterCallHandler = await FNB_CUSTOMER_CARE_MODEL.updateRating({
+                        userID, rating, note, orderID, orderGoodsID, arrMistakeID, type
+                    });
+                } 
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

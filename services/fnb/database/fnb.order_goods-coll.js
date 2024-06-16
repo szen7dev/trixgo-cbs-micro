@@ -26,6 +26,18 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_goods", {
         type: Schema.Types.ObjectId,
         ref : "goods"
     },
+    //_________Phản hồi của khách hàng
+    feedbacks: [{
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    }],
+    //_________Ghi chú nội dung feedback
+    feedbackNotes: String,
+    //_________Rating
+    rating: {
+        type: Number,
+        default: 5
+    },
     /**
      * Trân châu đen hay trắng
      * 1-Đen

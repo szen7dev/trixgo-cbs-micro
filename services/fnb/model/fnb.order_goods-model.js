@@ -54,8 +54,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, userID }) {
-        // console.log({ orderID, goodsID, subGoodsID, quantity, unitPrice, note, userID })
+    insert({ orderID, goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, rating, userID }) {
+        // console.log({ orderID, goodsID, subGoodsID, quantity, unitPrice, note, rating, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -104,6 +104,10 @@ class Model extends BaseModel {
 
                 if(subGoodsID && checkObjectIDs(subGoodsID)){
                     dataInsert.subGoods = [...new Set(subGoodsID)];
+                }
+
+                if(rating && !isNaN(rating)){
+                    dataInsert.rating = Number(rating);
                 }
 
                 if(unitPrice && !isNaN(unitPrice)){
