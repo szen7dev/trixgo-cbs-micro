@@ -79,6 +79,10 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     sellingUnitprice: { type: Number, default: 0 },
     //_________Số lượng đã bán ra
     quantitySold: { type: Number, default: 0 },
+    //_________Rating chất lượng phục vụ
+    rating: { type: Number, default: 0 },
+    //_________Số lượng đánh giá
+    numberOfRating: { type: Number, default: 0 },
     //_________Giảm giá
     discount: { type: Number, default: 0 },
     //_________Tỷ lệ Giảm giá
