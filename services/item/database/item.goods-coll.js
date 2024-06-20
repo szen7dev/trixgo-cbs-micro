@@ -79,6 +79,10 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     sellingUnitprice: { type: Number, default: 0 },
     //_________Số lượng đã bán ra
     quantitySold: { type: Number, default: 0 },
+    //_________Rating chất lượng phục vụ
+    rating: { type: Number, default: 0 },
+    //_________Số lượng đánh giá
+    numberOfRating: { type: Number, default: 0 },
     //_________Giảm giá
     discount: { type: Number, default: 0 },
     //_________Tỷ lệ Giảm giá
@@ -120,6 +124,11 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     convertQuantity: { type: Number, default: 1 },
     //______Mục đích sử dụng (1-Chung, 2-Đơn hàng)
     usage: {
+        type: Number,
+        default : 1
+    },
+    //______Sử dụng cho khách hàng (1-Sử dụng, 2-Không)
+    forCustomer: {
         type: Number,
         default : 1
     },
