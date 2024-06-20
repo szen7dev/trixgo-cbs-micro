@@ -618,9 +618,9 @@ class Model extends BaseModel {
                                 createAt: -1
                             })
 
-                            let listFunda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item.funda)}}).select('name')
-                            let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: listData.map(item=>item.goods)}}).select('name')
-                            let listAssignee = await USER_COLL.find({_id: {$in: listData.map(item=>item.assignee)}}).select('fullname image')
+                            let listFunda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item.funda)}}).select('name location address')
+                            let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: listData.map(item=>item.goods)}}).select('name note sellingUnitprice')
+                            let listAssignee = await USER_COLL.find({_id: {$in: listData.map(item=>item.assignee)}}).select('fullname image rating numberOfRating')
 
                             return resolve({ error: false, data: {listFunda, listGoods, listAssignee} });
                         }else{
