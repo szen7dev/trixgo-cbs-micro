@@ -127,6 +127,11 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Number,
         default : 1
     },
+    //______Sử dụng cho khách hàng (1-Sử dụng, 2-Không)
+    forCustomer: {
+        type: Number,
+        default : 1
+    },
     //______Trạng thái (1-ON, 2-OFF)
     status: {
         type: Number,
