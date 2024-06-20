@@ -308,7 +308,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, parentID, fundaID, type, isParent, status, usage, isListParentOfListChilds,
+        companyID, parentID, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         // console.log({companyID, parentID, fundaID, type, isParent })
         return new Promise(async (resolve) => {
@@ -330,6 +330,10 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = ObjectID(parentID);
+                }
+
+                if(forCustomer && !isNaN(forCustomer)){
+                    conditionObj.forCustomer = Number(forCustomer)
                 }
 
                 // Chỉ lấy danh mục
