@@ -408,7 +408,7 @@ class Model extends BaseModel {
      * Code: 15/2/2024
      */
     getListByProperty({ option, optionGroup, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID }) { 
-        console.log({ option, optionGroup, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
+        // console.log({ option, optionGroup, companyID, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter
@@ -620,7 +620,7 @@ class Model extends BaseModel {
 
                             let listFunda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item=>item.funda)}}).select('name location address')
                             let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: listData.map(item=>item.goods)}}).select('name note sellingUnitprice')
-                            let listAssignee = await USER_COLL.find({_id: {$in: listData.map(item=>item.assignee)}}).select('fullname image rating numberOfRating')
+                            let listAssignee = await USER_COLL.find({_id: {$in: listData.map(item=>item.assignee)}}).select('fullname image rating numberOfRating numberOfOrders')
 
                             return resolve({ error: false, data: {listFunda, listGoods, listAssignee} });
                         }else{
