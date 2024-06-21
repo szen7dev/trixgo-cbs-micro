@@ -49,9 +49,9 @@ module.exports = {
      * Dev: HiepNH ✅
      * Func: Cập nhật goods
      */
-    update:{  
+    update:{
         params: {
-            goodsID         : { type: "string" }, 
+            goodsID         : { type: "string" },
             name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
             unit            : { type: "string", optional: true },
@@ -82,7 +82,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH 
+	 * Dev: HiepNH
 	 * Func: Danh sách goods
 	 */
     getInfoAndGetList: {
@@ -91,7 +91,7 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             isListParentOfListChilds: { type: "string", optional: true },
-            
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -101,14 +101,15 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                console.log({ PARAMS: ctx.params })
                 await this.validateEntity(ctx.params);
                 let { goodsID, companyID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer } = ctx.params;
-                const { _id: userID, company } = ctx.meta.infoUser;
+                const { company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
-                
+
                 let resultAfterCallHandler;
                 if(goodsID){
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getInfo({
@@ -142,7 +143,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await ITEM__GOODS_MODEL.downloadTemplateExcel({
-                    companyID: company._id, userID 
+                    companyID: company._id, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
