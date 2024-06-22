@@ -24,7 +24,7 @@ const APP_COLL                                  = require('../../auth/database/p
 const COMPANY_COLL                              = require('../../auth/database/auth.company-coll')
 const ANALYSIS__HISTORY_DATA_COLL               = require('../database/analysis.history_data-coll')
 const ANALYSIS__HISTORY_TRAFFIC_COLL            = require('../database/analysis.history_traffic-coll')
-const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
+// const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
 const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll')
@@ -72,7 +72,7 @@ class Model extends BaseModel {
         })
     }
 
-    convertData({ option, companyID, userID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, docID, parentID }){
+    convertData({ option, companyID, userID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, docID, parentID, goodsID }){
         // console.log({ option, companyID, page, unit, getNumber, newPassword })
         const that = this
         return new Promise(async resolve => { 
@@ -426,6 +426,11 @@ class Model extends BaseModel {
                         let number = await FNB_CUSTOMER_CARE_COLL.count(conditionObj)
                         return resolve({ error: false, number: number })
                     }
+                }
+
+                else if(option == 10){
+                    // console.log({companyID,goodsID, fundasID})
+                    await ITEM__GOODS_COLL.updateMany({company: companyID, _id: {$in: goodsID}},{$set: {fundas: fundasID}})
                 }
 
                 return resolve({ error: false, data: 'Convert thành công' });

@@ -24,6 +24,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
  * COLLECTIONS
  */
 const ITEM__GOODS_COLL            				= require('../database/item.goods-coll');
+// const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
 
 class Model extends BaseModel {
 
