@@ -91,13 +91,14 @@ module.exports = {
             orderdata           : { type: "object", optional: true },
             currency            : { type: "string", optional: true },
             locale              : { type: "string", optional: true },
+            callbackURL         : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 
                 const { ipAddr, infoUser } = ctx.meta;
-                const { orderID, orderDescription, amount, currency, locale } = ctx.params;
+                const { orderID, orderDescription, amount, currency, locale, callbackURL } = ctx.params;
                 const userID = infoUser._id;
                 // const orderID = dateFormat(new Date(), 'HHmmss');
 
@@ -120,10 +121,11 @@ module.exports = {
                   "neo_Locale": tx.locale,
                   "neo_MerchantCode": neo_MarchantCode,
                   "neo_MerchantTxnID": tx._id.toString(),
-                  "neo_OrderID": tx.orderID,
-                  "neo_OrderInfo": tx.orderDescription,
+                  "neo_OrderID": orderID,
+                  "neo_OrderInfo": orderDescription,
                   // "neo_PaymentMethod": ["WALLET","ATM","CC","QR"],
-                  "neo_ReturnURL": neo_ReturnUrl,
+                  "neo_PaymentMethod": ["QR"],
+                  "neo_ReturnURL": callbackURL,
                   "neo_Title": "Payment",
                   "neo_Version": "1",
                 }
@@ -237,6 +239,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+              console.log({ URL_IPN_PARAMS: ctx.params })
                 await this.validateEntity(ctx.params);
                 const params = ctx.params;
 

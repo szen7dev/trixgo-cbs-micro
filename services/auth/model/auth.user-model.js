@@ -990,8 +990,6 @@ class Model extends BaseModel {
 	 * Date: 03/03/2022
 	 */
     insert({ email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse, userID }) {
-        // console.log('====================>>>>>>>>>>>>>>>>>>>>')
-        // console.log({ email, fullname, level, departmentID, positionID, companyID, phone, storageUse, userID })
         return new Promise(async resolve => {
             try {
                 if(!email || !fullname) {

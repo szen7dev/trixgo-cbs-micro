@@ -88,6 +88,7 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             goodsID         : { type: "string", optional: true },
+            vimeoId         : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             isListParentOfListChilds: { type: "string", optional: true },
@@ -98,12 +99,13 @@ module.exports = {
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
+            sortDirection   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                console.log({ PARAMS: ctx.params })
                 await this.validateEntity(ctx.params);
-                let { goodsID, companyID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer } = ctx.params;
+                let { goodsID, companyID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection, vimeoId } = ctx.params;
+
                 const { company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -111,15 +113,16 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler;
-                if(goodsID){
+                if(goodsID || vimeoId){
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getInfo({
-                        goodsID, select, populates
+                        goodsID, vimeoId, select, populates
                     });
-                }else{
+                } else{
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getList({
-                        companyID, parentID, fundaID, type, isParent, status, usage, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer
+                        companyID, parentID, fundaID, type, isParent, status, usage, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer, sortDirection
                     });
                 }
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
