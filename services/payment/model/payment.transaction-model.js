@@ -38,7 +38,8 @@ class Model extends BaseModel {
 
                 const infoAfterInsert = await this.insertData({
                   orderData: {
-                   orderID, orderDescription
+                   orderID,
+                   orderDescription
                   },
                   orderCustomer,
                   description,

@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }                        
+const { checkObjectIDs, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -48,8 +48,8 @@ class Model extends BaseModel {
                     userUpdate: userID,
                     modifyAt: new Date(),
                     company: companyID,
-                    name, 
-                }    
+                    name,
+                }
 
                 if(authorID && checkObjectIDs(authorID)){
                     dataInsert.author = authorID
@@ -160,13 +160,13 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID }){
-        return new Promise(async resolve => { 
+        return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(goodsID))
                     return resolve({ error: true, message: "goodsID không hợp lệ", keyError: "Request params goodsID invalid" });
-                
+
                 let dataUpdate = {
-                    userUpdate: userID, 
+                    userUpdate: userID,
                     modifyAt: new Date()
                 }
 
@@ -270,14 +270,14 @@ class Model extends BaseModel {
     /**
      * Name: get info goods ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ goodsID, select, populates }) { 
+    getInfo({ goodsID, vimeoId, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(goodsID))
+                if(goodsID && !checkObjectIDs(goodsID))
                     return resolve({ error: true, message: 'Request params goodsID invalid', status: 400 });
-                
+
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -290,40 +290,45 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await ITEM__GOODS_COLL.findById(goodsID)
+                 const filter = {};
+                 goodsID && (filter['_id'] = goodsID);
+                 vimeoId && (filter['sign'] = vimeoId);
+                 console.log({ filter })
+
+                let infoAterGet = await ITEM__GOODS_COLL.findOne(filter)
                     .select(select)
                     .populate(populates)
+                    .lean();
+
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /**
-     * Name  : Danh sách goods 
+     * Name  : Danh sách goods
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({
         companyID, parentID, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
-        // console.log({companyID, parentID, fundaID, type, isParent })
+        keyword, limit = 10, lastestID, select, populates = {}, sortDirection = '-1' }) {
         return new Promise(async (resolve) => {
             try {
-                
                 if(limit > 20){
                     limit = 20
-                }else{
+                } else{
                     limit = +limit;
                 }
 
                 let sortBy;
                 let conditionObj = { };
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = [`createAt__${sortDirection}`, `_id__${sortDirection}`];
 
                 if(fundaID && checkObjectIDs(fundaID)){
                     conditionObj.fundas = {$in: [fundaID]}
@@ -361,7 +366,7 @@ class Model extends BaseModel {
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -380,13 +385,13 @@ class Model extends BaseModel {
                         conditionObj.parent = { $exists: false };
                     }
                 }
-                
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-                
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__GOODS_COLL.findById(lastestID);
@@ -403,13 +408,13 @@ class Model extends BaseModel {
                     let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await ITEM__GOODS_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -432,7 +437,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -515,7 +520,7 @@ class Model extends BaseModel {
                             status: data?.__EMPTY_12,
                             parentID: data?.__EMPTY_13,
                         }
-                    
+
                         let infoAfterInsert = await this.insert(dataInsert);
                         if(infoAfterInsert.error){
                             errorNumber++;

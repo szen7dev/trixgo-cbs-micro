@@ -25,7 +25,7 @@ const {
     CONTACT_POLICY,
     CONTACT_NEW,
     PAYMENT_STATUS,
- }                = require('../helper/item.keys-constant')
+ } = require('../helper/item.keys-constant')
 const stringUtils					    = require('../../../tools/utils/string_utils')
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -58,6 +58,7 @@ let dataTF = {
     type: 1,
     action: 1, // Xem
 }
+
 let dataTF2 = {
     appID: "61e049c9fdebf77b072d1b13", // HUMAN
     menuID: "623f1f0de998e94feda0cd72", //
@@ -66,7 +67,6 @@ let dataTF2 = {
 }
 
 class Model extends BaseModel {
-
     constructor() {
         super(ITEM__CONTACT_COLL);
     }
@@ -106,7 +106,6 @@ class Model extends BaseModel {
                 let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                 if(!infoFunda)
                     return resolve({ error: true, message: 'can_not_get_funda_info' })
-                // console.log(infoFunda)
 
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
@@ -125,11 +124,9 @@ class Model extends BaseModel {
                 if((phone && phone != "")){
                     conditionObj.$or.push({phone: phone.replace(/\s/g, "")})
                 }
-                // console.log(conditionObj)
 
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
-
                     return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
 
                 let dataInsert = {
@@ -421,8 +418,8 @@ class Model extends BaseModel {
                  * TẠO TÀI KHOẢN CHO KHÁCH HÀNG
                  */
                 if(option){
-                    let companyID, departmentID, positionID, userID
-                    
+                    let companyID, departmentID, positionID, userID;
+
                     // Dành cho Việt Nguyên Holding
                     if(option == 1){
                         companyID = '6046be79b55525368b11bc2b';
@@ -432,19 +429,17 @@ class Model extends BaseModel {
                     }
 
                     let infoUserCustomer = await AUTH__USER.insert({
-                        email, 
-                        fullname: name, 
-                        level: 1, 
-                        departmentID, 
-                        positionID, 
-                        companyID, 
+                        email,
+                        fullname: name,
+                        level: 1,
+                        departmentID,
+                        positionID,
+                        companyID,
                         phone,
-                        // birthDay,
                         userID
                     })
-                    // console.log(infoUserCustomer)
 
-                    if(infoUserCustomer){
+                    if(infoUserCustomer && infoUserCustomer.data){
                         await USER_COLL.findByIdAndUpdate(infoUserCustomer.data._id,
                             {
                                 $addToSet: {contacts: infoAfterInsert._id }
@@ -2067,7 +2062,7 @@ class Model extends BaseModel {
                     // if(listErr && listErr.length > 0){
                     //     return resolve({ error: false, data: listErr, status: 200 });
                     // }else{
-                        
+
                     // }
 
                     for (const data of dataImportJSON) {
@@ -2317,7 +2312,7 @@ class Model extends BaseModel {
                             }
                         }
                     })
-    
+
                     const { data, error } = await this.getListByFilter({
                         ...filterParams,
                         populates,
@@ -2327,11 +2322,11 @@ class Model extends BaseModel {
                         isExportExcel: false,
                         ctx
                     });
-    
+
                     if(error || !data?.listRecords?.length) {
                         return resolve({ data, error })
                     }
-    
+
                     const result = await this.downloadExcelFile(data.listRecords)
                     return resolve(result);
                 }
@@ -2350,9 +2345,9 @@ class Model extends BaseModel {
                         {
                             $match: {
                                 company: ObjectID(companyID),
-                                date: { 
+                                date: {
                                     $gte: moment(fromDate).toDate(),
-                                    $lte: moment(toDate).toDate() 
+                                    $lte: moment(toDate).toDate()
                                 }
                             }
                         },
@@ -2375,9 +2370,9 @@ class Model extends BaseModel {
                             $match: {
                                 company: ObjectID(companyID),
                                 new: 1,
-                                date: { 
+                                date: {
                                     $gte: moment(fromDate).toDate(),
-                                    $lte: moment(toDate).toDate() 
+                                    $lte: moment(toDate).toDate()
                                 }
                             }
                         },
@@ -2400,9 +2395,9 @@ class Model extends BaseModel {
                     ])
                     // console.log({
                     //     company: ObjectID(companyID),
-                    //     date: { 
+                    //     date: {
                     //         $gte: moment(fromDate).toDate(),
-                    //         $lte: moment(toDate).toDate() 
+                    //         $lte: moment(toDate).toDate()
                     //     }
                     // })
                     // console.log(listData.length)
@@ -2436,8 +2431,8 @@ class Model extends BaseModel {
                     .select('_id name phone email birthday purchasedValue type note getVouchers modifyAt')
                     .sort({modifyAt: -1})
                     // .sort({purchasedValue: -1})
-                    .limit(limit)               
-                    
+                    .limit(limit)
+
                     // let limit = Number(page * unit)
                     // let listData = await ITEM__CONTACT_COLL.find(conditionObj)
                     // .select('_id')
@@ -2464,7 +2459,7 @@ class Model extends BaseModel {
 
                         var i = 3;
                         listData?.forEach((item, index) => {
-                            
+
                             workbook.sheet("Export").row(i).cell(1).value(Number(index+1))
                             workbook.sheet("Export").row(i).cell(2).value(item.name)
                             workbook.sheet("Export").row(i).cell(3).value(item?.phone)

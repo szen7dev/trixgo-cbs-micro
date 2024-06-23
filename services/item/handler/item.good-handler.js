@@ -49,9 +49,9 @@ module.exports = {
      * Dev: HiepNH ✅
      * Func: Cập nhật goods
      */
-    update:{  
+    update:{
         params: {
-            goodsID         : { type: "string" }, 
+            goodsID         : { type: "string" },
             name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
             unit            : { type: "string", optional: true },
@@ -82,43 +82,47 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH 
+	 * Dev: HiepNH
 	 * Func: Danh sách goods
 	 */
     getInfoAndGetList: {
         params: {
             goodsID         : { type: "string", optional: true },
+            vimeoId         : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             isListParentOfListChilds: { type: "string", optional: true },
-            
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
+            sortDirection   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { goodsID, companyID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer } = ctx.params;
-                const { _id: userID, company } = ctx.meta.infoUser;
+                let { goodsID, companyID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection, vimeoId } = ctx.params;
+
+                const { company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
-                
+
                 let resultAfterCallHandler;
-                if(goodsID){
+                if(goodsID || vimeoId){
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getInfo({
-                        goodsID, select, populates
+                        goodsID, vimeoId, select, populates
                     });
-                }else{
+                } else{
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getList({
-                        companyID, parentID, fundaID, type, isParent, status, usage, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer
+                        companyID, parentID, fundaID, type, isParent, status, usage, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer, sortDirection
                     });
                 }
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -142,7 +146,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await ITEM__GOODS_MODEL.downloadTemplateExcel({
-                    companyID: company._id, userID 
+                    companyID: company._id, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
