@@ -14,6 +14,7 @@ const STORAGE           = 'STORAGE';
 const ACCOUNT           = 'ACCOUNT';
 const FUNDA             = 'FUNDA';
 const GOOD              = 'GOOD';
+const COURSE            = 'COURSE';
 const SIGNATURE         = 'SIGNATURE';
 const DEPARTMENT_DIRECTORY = 'DEPARTMENT_DIRECTORY';
 const CONFIG            = 'CONFIG';
@@ -137,6 +138,7 @@ const CF_ACTIONS_ITEM = {
     GOOD_DOWNLOAD_TEMPLATE_EXCEL                : `${BASE_ACTIONS}_${GOOD}_DOWNLOAD_TEMPLATE_EXCEL`,
     GOOD_IMPORT_FROM_EXCEL                      : `${BASE_ACTIONS}_${GOOD}_IMPORT_FROM_EXCEL`,
     GOOD_EXPORT_EXCEL                           : `${BASE_ACTIONS}_${GOOD}_EXPORT_EXCEL`,
+    COURSE_GET_INFO_AND_GET_LIST                : `${BASE_ACTIONS}_${COURSE}_GET_INFO_AND_GET_LIST`,
 
     /**
     * SIGNATURE

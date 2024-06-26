@@ -97,16 +97,23 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
+                console.log({ meta: ctx.meta })
                 const { ipAddr, infoUser } = ctx.meta;
-                const { orderID, orderDescription, amount, currency, locale, callbackURL } = ctx.params;
-                const userID = infoUser._id;
+                const { orderID, orderDescription, amount, currency, locale, callbackURL, userID } = ctx.params;
+                let authorID = "";
                 // const orderID = dateFormat(new Date(), 'HHmmss');
+
+                if(!infoUser) {
+                  authorID = userID;
+                } else {
+                  authorID = infoUser._id;
+                }
 
                 const txType = 'order_payment';
                 const transaction = await PAYMENT__TRANSACTION_MODEL.insert({
                   merchantCode: neo_MarchantCode,
                   orderID, orderDescription,
-                  amount, currency, locale, userID, ipAddr, txType, status: -2
+                  amount, currency, locale, userID: authorID, ipAddr, txType, status: -2
                 })
 
                 if(transaction.error) {
@@ -134,11 +141,13 @@ module.exports = {
                 const secureHash = crypto.createHash('sha256').update(neoParamsString).digest('hex');
                 neoParams['neo_SecureHash'] = secureHash;
 
+                console.log({ neoParams })
                 const neoxResponse = await httpRequest.post(neo_Url, neoParams, {
                   headers: {
                     'Accept-Language': 'en'
                   }
                 })
+                console.log({ neoxResponse })
 
                 if(neoxResponse.status !== 200 || neoxResponse.statusText !== 'OK') {
                     return resolve({ error: true, message: "Can't request to payment service" });

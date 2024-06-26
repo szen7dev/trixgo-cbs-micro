@@ -169,6 +169,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.GOOD_DOWNLOAD_TEMPLATE_EXCEL]	: ITEM__GOOD_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_ITEM.GOOD_IMPORT_FROM_EXCEL]				: ITEM__GOOD_HANDLER.importFromExcel,
 		[CF_ACTIONS_ITEM.GOOD_EXPORT_EXCEL] 					: ITEM__GOOD_HANDLER.exportExcel,
+		[CF_ACTIONS_ITEM.COURSE_GET_INFO_AND_GET_LIST] 			: ITEM__GOOD_HANDLER.getInfoAndGetList,
 
 		//==========================================  SIGNATURE  ======================================
 		[CF_ACTIONS_ITEM.SIGNATURE_INSERT] 						: ITEM__SIGNATURE_HANDLER.insert,

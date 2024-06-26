@@ -106,10 +106,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { goodsID, companyID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection, vimeoId } = ctx.params;
 
-                const { company } = ctx.meta.infoUser;
+                const infoUser = ctx?.meta?.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
+                if(!companyID && infoUser?.company){
+                    companyID = infoUser?.company?._id
                 }
 
                 let resultAfterCallHandler;
