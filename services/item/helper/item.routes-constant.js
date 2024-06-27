@@ -12,6 +12,7 @@ const POSITION   = '/positions';
 const STORAGE    = '/storages';
 const ACCOUNT    = '/accounts';
 const GOODS      = '/goods';
+const COURSES      = '/courses';
 const FUNDA      = '/fundas';
 const SIGNATURE  = '/signatures';
 const DEPARTMENT_DIRECTORIES = "/department_directories";
@@ -78,6 +79,7 @@ const CF_ROUTINGS_ITEM = {
     GOOD_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${GOODS}/download-template-excel`,
     GOOD_IMPORT_FROM_EXCEL                      : `${BASE_ROUTE}${GOODS}/import-from-excel`,
     GOOD_EXPORT_EXCEL                           : `${BASE_ROUTE}${GOODS}/export-excel`,
+    COURSES                                : `${BASE_ROUTE}${COURSES}`,
 
     // ================================FUNDA===========================================//
     FUNDA                                      : `${BASE_ROUTE}${FUNDA}`,

@@ -16,7 +16,9 @@ const CF_ROUTINGS_PAYMENT = {
     INQUIRY_BANK_ACCOUNT                                : `${BASE_ROUTE}/inquiry-bank-account`,
     DISBURSEMENT_REQUEST                                : `${BASE_ROUTE}/disbursement/request`,
     DISBURSEMENT_CONFIRM                                : `${BASE_ROUTE}/disbursement/confirm`,
+
     CREATE_URL_PAYMENT                                  : `${BASE_ROUTE}/url`,
+    CREATE_URL_PAYMENT_PUBLIC                           : `${BASE_ROUTE}/url/public`,
     URL_RETURN_PAYMENT                                  : `${BASE_ROUTE}/url-return`,
     URL_IPN_PAYMENT                                     : `${BASE_ROUTE}/ipn-return`,
     URL_NLC_PAYBEHALF                                   : `${BASE_ROUTE}/nlc-return`,

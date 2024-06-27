@@ -3983,7 +3983,7 @@ class Model extends BaseModel {
               },
             ]);
           }
-          
+
           else {
             listData = await FNB_ORDER_COLL.aggregate([
               {
